@@ -16,8 +16,8 @@ TEST_CASE("whatwg_decode_view satisfies input_range", "[transcoding::whatwg_deco
 }
 
 TEST_CASE("whatwg_decode ASCII passthrough", "[transcoding::whatwg_decode]") {
-    std::vector<char>    ascii{'H', 'e', 'l', 'l', 'o'};
-    auto                 decoded = ascii | whatwg_decode<codec::utf_8>;
+    std::vector<char>     ascii{'H', 'e', 'l', 'l', 'o'};
+    auto                  decoded = ascii | whatwg_decode<codec::utf_8>;
     std::vector<char32_t> result;
     for (char32_t cp : decoded)
         result.push_back(cp);

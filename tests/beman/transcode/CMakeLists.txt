@@ -30,8 +30,19 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.whatwg_decode)
+target_sources(
+    beman.transcode.tests.whatwg_decode
+    PRIVATE whatwg_decode.test.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.whatwg_decode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
 catch_discover_tests(beman.transcode.tests.concepts)
 catch_discover_tests(beman.transcode.tests.null_term)
+catch_discover_tests(beman.transcode.tests.whatwg_decode)
