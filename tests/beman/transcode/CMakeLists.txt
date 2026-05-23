@@ -108,7 +108,8 @@ add_test(
 set_tests_properties(
     iconv_transcode_iterator_copy_fail
     PROPERTIES
-        PASS_REGULAR_EXPRESSION "transcode: iconv_transcode iterator is move-only"
+        PASS_REGULAR_EXPRESSION
+            "transcode: iconv_transcode iterator is move-only"
 )
 
 # ---------------------------------------------------------------------------
