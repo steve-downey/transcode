@@ -90,6 +90,20 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain Iconv::Iconv
 )
 
+add_executable(beman.transcode.tests.iconv_transcode_or_error)
+target_sources(
+    beman.transcode.tests.iconv_transcode_or_error
+    PRIVATE iconv_transcode_or_error.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.iconv_transcode_or_error
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.iconv_transcode_or_error
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -99,6 +113,35 @@ catch_discover_tests(beman.transcode.tests.whatwg_decode)
 catch_discover_tests(beman.transcode.tests.whatwg_decode_or_error)
 catch_discover_tests(beman.transcode.tests.iconv_transcode)
 catch_discover_tests(beman.transcode.tests.iconv_real)
+catch_discover_tests(beman.transcode.tests.iconv_transcode_or_error)
+
+# iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
+add_library(beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail OBJECT)
+target_sources(
+    beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
+    PRIVATE iconv_transcode_or_error_iterator_copy_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME iconv_transcode_or_error_iterator_copy_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    iconv_transcode_or_error_iterator_copy_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "transcode: iconv_transcode_or_error iterator is move-only"
+)
 
 # iconv_transcode iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(beman.transcode.tests.iconv_transcode_iterator_copy_fail OBJECT)
