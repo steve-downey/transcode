@@ -11,11 +11,11 @@ import beman.transcode;
 
 #else
 
-namespace beman::transcode {
+namespace beman::transcoding {
 
 // TODO
 
-} // namespace beman::transcode
+} // namespace beman::transcoding
 
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)
