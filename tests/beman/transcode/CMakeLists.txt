@@ -16,6 +16,14 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.concepts)
+target_sources(beman.transcode.tests.concepts PRIVATE concepts.test.cpp)
+target_link_libraries(
+    beman.transcode.tests.concepts
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
+catch_discover_tests(beman.transcode.tests.concepts)
