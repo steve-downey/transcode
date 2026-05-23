@@ -43,9 +43,9 @@ static_assert(!legacy_byte_range<const char[5]>);
 static_assert(!legacy_byte_range<unsigned char[5]>);
 
 TEST_CASE("legacy_byte_range accepts runtime ranges", "[transcoding::concepts]") {
-    std::vector<char> vc{'a', 'b'};
+    std::vector<char>          vc{'a', 'b'};
     std::vector<unsigned char> vuc{1, 2};
-    std::vector<std::byte> vb{std::byte{0}, std::byte{1}};
+    std::vector<std::byte>     vb{std::byte{0}, std::byte{1}};
 
     CHECK(std::ranges::range<decltype(vc)>);
     CHECK(std::ranges::range<decltype(vuc)>);

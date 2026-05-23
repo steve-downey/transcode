@@ -47,19 +47,13 @@ repos:
     hooks:
       - id: mbake-validate
 
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
   - repo: local
     hooks:
-      - id: checkmake
-        name: checkmake
-        entry: checkmake
-        language: system
-        files: '(^|/)Makefile$'
-        types: [text]
-      - id: gitleaks
-        name: gitleaks
-        entry: gitleaks protect --staged --no-banner
-        language: system
-        pass_filenames: false
       - id: shellcheck
         name: shellcheck
         entry: shellcheck
