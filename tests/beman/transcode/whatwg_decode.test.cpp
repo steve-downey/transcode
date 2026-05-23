@@ -60,6 +60,41 @@ TEST_CASE("whatwg_decode mixed ASCII and multi-byte", "[transcoding::whatwg_deco
     CHECK(collect(bytes | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'H', U'i', U'é', U'!'});
 }
 
+// Step 6: WHATWG-specific error replacement behavior
+
+TEST_CASE("whatwg_decode invalid lead byte 0xFF", "[transcoding::whatwg_decode]") {
+    // 0xFF is never valid in UTF-8; followed by ASCII 'A' which is re-processed.
+    std::vector<char> bytes{'\xFF', 'A'};
+    CHECK(collect(bytes | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'�', U'A'});
+}
+
+TEST_CASE("whatwg_decode 0xC0 pre-rejected continuation re-processed", "[transcoding::whatwg_decode]") {
+    // WHATWG pre-rejects 0xC0 immediately (→ U+FFFD); 0x80 is then an
+    // unexpected continuation byte → second U+FFFD.
+    std::vector<char> bytes{'\xC0', '\x80'};
+    CHECK(collect(bytes | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'�', U'�'});
+}
+
+TEST_CASE("whatwg_decode bad continuation causes re-processing", "[transcoding::whatwg_decode]") {
+    // 0xC3 starts a 2-byte sequence; '(' (0x28) is not a continuation byte.
+    // Result: U+FFFD for the incomplete sequence, then '(' re-processed as ASCII.
+    std::vector<char> bytes{'\xC3', '\x28'};
+    CHECK(collect(bytes | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'�', U'('});
+}
+
+TEST_CASE("whatwg_decode surrogate codepoint rejected", "[transcoding::whatwg_decode]") {
+    // U+D800 encoded as UTF-8: 0xED 0xA0 0x80 — continuation bytes are valid,
+    // but the assembled codepoint is a surrogate.
+    std::vector<char> bytes{'\xED', '\xA0', '\x80'};
+    CHECK(collect(bytes | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'�'});
+}
+
+TEST_CASE("whatwg_decode truncated sequence at end of input", "[transcoding::whatwg_decode]") {
+    // 0xC3 is a 2-byte lead; no continuation follows → one U+FFFD.
+    std::vector<char> bytes{'\xC3'};
+    CHECK(collect(bytes | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'�'});
+}
+
 TEST_CASE("whatwg_decode consteval 2-byte", "[transcoding::whatwg_decode]") {
     using beman::transcoding::tests::constify;
     constexpr auto decode_two_byte = []() consteval {
