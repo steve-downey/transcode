@@ -66,6 +66,12 @@ inline size_t mock_iconv_e2big(iconv_t, char** in, size_t* inleft, char** out, s
     return (size_t)-1;
 }
 
+// EILSEQ mock: always signals an invalid byte sequence (0 bytes written, 0 consumed).
+inline size_t mock_iconv_eilseq(iconv_t, char**, size_t*, char**, size_t*) {
+    errno = EILSEQ;
+    return (size_t)-1;
+}
+
 } // namespace beman::transcoding::tests
 
 #endif // TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP
