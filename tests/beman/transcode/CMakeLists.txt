@@ -51,12 +51,27 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.whatwg_decode_or_error)
+target_sources(
+    beman.transcode.tests.whatwg_decode_or_error
+    PRIVATE whatwg_decode_or_error.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.whatwg_decode_or_error
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.whatwg_decode_or_error
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
 catch_discover_tests(beman.transcode.tests.concepts)
 catch_discover_tests(beman.transcode.tests.null_term)
 catch_discover_tests(beman.transcode.tests.whatwg_decode)
+catch_discover_tests(beman.transcode.tests.whatwg_decode_or_error)
 
 # ---------------------------------------------------------------------------
 # Negative compile tests: verify that constraints cause compile errors for the
