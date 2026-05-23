@@ -26,7 +26,7 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         char32_t  value_{};
         bool      done_{false};
 
-        void load() {
+        constexpr void load() {
             if (current_ == end_) {
                 done_ = true;
                 return;
@@ -34,17 +34,61 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
             value_ = decode_one();
         }
 
-        char32_t decode_one() {
+        constexpr char32_t decode_one() {
             auto byte = static_cast<unsigned char>(*current_);
             ++current_;
-            // All WHATWG codecs share the 7-bit ASCII base (U+0000–U+007F):
-            // bytes 0x00–0x7F map directly to their code point value.
+
+            // ASCII fast path: all WHATWG codecs share the 7-bit base.
             if (byte < 0x80)
                 return static_cast<char32_t>(byte);
-            // TODO: multi-byte UTF-8 sequences (step 5/6) and WHATWG error
-            // replacement rules (step 7) are not yet implemented. Any byte
-            // with the high bit set incorrectly emits U+FFFD here.
-            return U'�';
+
+            // Determine sequence length and initial code point bits.
+            int      extra;
+            char32_t cp;
+            if (byte >= 0xC2 && byte <= 0xDF) {
+                extra = 1;
+                cp    = byte & 0x1F;
+            } else if (byte >= 0xE0 && byte <= 0xEF) {
+                extra = 2;
+                cp    = byte & 0x0F;
+            } else if (byte >= 0xF0 && byte <= 0xF4) {
+                extra = 3;
+                cp    = byte & 0x07;
+            } else {
+                // 0x80–0xBF: unexpected continuation byte.
+                // 0xC0–0xC1: always-overlong leads (pre-rejected).
+                // 0xF5–0xFF: out-of-range leads.
+                return U'�';
+            }
+
+            // Consume continuation bytes (0x80–0xBF each).
+            for (int i = 0; i < extra; ++i) {
+                if (current_ == end_)
+                    return U'�'; // truncated sequence
+                auto cont = static_cast<unsigned char>(*current_);
+                if ((cont & 0xC0) != 0x80)
+                    return U'�'; // bad continuation; do NOT advance —
+                                 // next load() re-processes this byte
+                ++current_;
+                cp = (cp << 6) | (cont & 0x3F);
+            }
+
+            // Validity: surrogates and out-of-Unicode-range.
+            if (cp >= 0xD800 && cp <= 0xDFFF)
+                return U'�';
+            if (cp > 0x10FFFF)
+                return U'�';
+
+            // Overlong check (should not be reachable given lead byte range
+            // above, but guard explicitly for clarity).
+            if (extra == 1 && cp < 0x80)
+                return U'�';
+            if (extra == 2 && cp < 0x800)
+                return U'�';
+            if (extra == 3 && cp < 0x10000)
+                return U'�';
+
+            return cp;
         }
 
       public:
@@ -53,37 +97,39 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         using difference_type  = std::ptrdiff_t;
         using reference        = char32_t;
 
-        iterator(base_iter current, base_sent end) : current_(std::move(current)), end_(std::move(end)) { load(); }
+        constexpr iterator(base_iter current, base_sent end) : current_(std::move(current)), end_(std::move(end)) {
+            load();
+        }
 
-        char32_t operator*() const { return value_; }
+        constexpr char32_t operator*() const { return value_; }
 
-        iterator& operator++() {
+        constexpr iterator& operator++() {
             load();
             return *this;
         }
 
-        void operator++(int) { ++*this; }
+        constexpr void operator++(int) { ++*this; }
 
         friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
   public:
-    explicit whatwg_decode_view(R base) : base_(std::move(base)) {}
+    constexpr explicit whatwg_decode_view(R base) : base_(std::move(base)) {}
 
-    iterator begin() { return iterator(std::ranges::begin(base_), std::ranges::end(base_)); }
+    constexpr iterator begin() { return iterator(std::ranges::begin(base_), std::ranges::end(base_)); }
 
-    std::default_sentinel_t end() const { return std::default_sentinel; }
+    constexpr std::default_sentinel_t end() const { return std::default_sentinel; }
 };
 
 template <codec C>
 struct whatwg_decode_closure {
     template <legacy_byte_range R>
-    auto operator()(R&& r) const {
+    constexpr auto operator()(R&& r) const {
         return whatwg_decode_view<C, std::views::all_t<R>>(std::views::all(std::forward<R>(r)));
     }
 
     template <legacy_byte_range R>
-    friend auto operator|(R&& r, const whatwg_decode_closure& self) {
+    constexpr friend auto operator|(R&& r, const whatwg_decode_closure& self) {
         return self(std::forward<R>(r));
     }
 

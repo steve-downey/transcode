@@ -42,6 +42,10 @@ target_sources(
     beman.transcode.tests.whatwg_decode
     PRIVATE whatwg_decode.test.cpp
 )
+target_include_directories(
+    beman.transcode.tests.whatwg_decode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
 target_link_libraries(
     beman.transcode.tests.whatwg_decode
     PRIVATE beman::transcode Catch2::Catch2WithMain
