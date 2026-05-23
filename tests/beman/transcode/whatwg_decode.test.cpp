@@ -2,8 +2,10 @@
 
 #include <beman/transcode/whatwg_decode_view.hpp>
 #include <catch2/catch_all.hpp>
+#include <tests/beman/transcode/test_utilities.hpp>
 
 #include <ranges>
+#include <span>
 #include <vector>
 
 namespace {
@@ -29,8 +31,7 @@ TEST_CASE("whatwg_decode_view satisfies input_range", "[transcoding::whatwg_deco
 // All WHATWG codecs share the 7-bit ASCII base (U+0000–U+007F).
 TEST_CASE("whatwg_decode 7-bit ASCII shared base", "[transcoding::whatwg_decode]") {
     std::vector<char> ascii{'H', 'e', 'l', 'l', 'o'};
-    CHECK(collect(ascii | whatwg_decode<codec::utf_8>) ==
-          std::vector<char32_t>{U'H', U'e', U'l', U'l', U'o'});
+    CHECK(collect(ascii | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'H', U'e', U'l', U'l', U'o'});
 }
 
 // Step 5: valid multi-byte UTF-8 sequences
@@ -56,6 +57,15 @@ TEST_CASE("whatwg_decode 4-byte UTF-8", "[transcoding::whatwg_decode]") {
 TEST_CASE("whatwg_decode mixed ASCII and multi-byte", "[transcoding::whatwg_decode]") {
     // "Hi" + é (0xC3 0xA9) + "!"
     std::vector<char> bytes{'H', 'i', '\xC3', '\xA9', '!'};
-    CHECK(collect(bytes | whatwg_decode<codec::utf_8>) ==
-          std::vector<char32_t>{U'H', U'i', U'é', U'!'});
+    CHECK(collect(bytes | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'H', U'i', U'é', U'!'});
+}
+
+TEST_CASE("whatwg_decode consteval 2-byte", "[transcoding::whatwg_decode]") {
+    using beman::transcoding::tests::constify;
+    constexpr auto decode_two_byte = []() consteval {
+        constexpr char        bytes[] = {'\xC3', '\xA9'};
+        std::span<const char> sp(bytes, 2);
+        return *(sp | whatwg_decode<codec::utf_8>).begin();
+    };
+    CHECK(constify(decode_two_byte()) == U'é');
 }
