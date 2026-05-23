@@ -2,6 +2,9 @@
 
 find_package(Catch2 3 REQUIRED)
 
+# Common include path for test_utilities.hpp (tests/beman/transcode/test_utilities.hpp)
+set(TEST_INCLUDE_DIR "${PROJECT_SOURCE_DIR}")
+
 add_executable(beman.transcode.tests.todo)
 target_sources(beman.transcode.tests.todo PRIVATE todo.test.cpp)
 target_link_libraries(
@@ -25,6 +28,10 @@ target_link_libraries(
 
 add_executable(beman.transcode.tests.null_term)
 target_sources(beman.transcode.tests.null_term PRIVATE null_term.test.cpp)
+target_include_directories(
+    beman.transcode.tests.null_term
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
 target_link_libraries(
     beman.transcode.tests.null_term
     PRIVATE beman::transcode Catch2::Catch2WithMain
@@ -46,3 +53,94 @@ catch_discover_tests(beman.transcode.tests.error)
 catch_discover_tests(beman.transcode.tests.concepts)
 catch_discover_tests(beman.transcode.tests.null_term)
 catch_discover_tests(beman.transcode.tests.whatwg_decode)
+
+# ---------------------------------------------------------------------------
+# Negative compile tests: verify that constraints cause compile errors for the
+# correct reason, not just any compile error.
+# Each target is excluded from the default build and registered as a ctest test
+# that is expected to fail (WILL_FAIL), with a PASS_REGULAR_EXPRESSION that
+# confirms the failure is due to the intended constraint, not an unrelated error.
+# ---------------------------------------------------------------------------
+
+# legacy_byte_range rejects raw arrays (char[N]) via !is_array_v
+add_library(beman.transcode.tests.concepts_reject_arrays_fail OBJECT)
+target_sources(
+    beman.transcode.tests.concepts_reject_arrays_fail
+    PRIVATE concepts_reject_arrays_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.concepts_reject_arrays_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.concepts_reject_arrays_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME concepts_reject_arrays_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.concepts_reject_arrays_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    concepts_reject_arrays_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "transcode: raw arrays are not valid input to whatwg_decode"
+)
+
+# legacy_byte_range rejects unicode char types (char8_t etc.) via legacy_byte_type disjunction
+add_library(beman.transcode.tests.concepts_reject_unicode_chars_fail OBJECT)
+target_sources(
+    beman.transcode.tests.concepts_reject_unicode_chars_fail
+    PRIVATE concepts_reject_unicode_chars_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.concepts_reject_unicode_chars_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.concepts_reject_unicode_chars_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME concepts_reject_unicode_chars_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.concepts_reject_unicode_chars_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    concepts_reject_unicode_chars_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION "no operand of the disjunction is satisfied"
+)
+
+# views::null_term rejects non-pointer ranges via is_pointer_v constraint
+add_library(beman.transcode.tests.null_term_reject_range_fail OBJECT)
+target_sources(
+    beman.transcode.tests.null_term_reject_range_fail
+    PRIVATE null_term_reject_range_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.null_term_reject_range_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.null_term_reject_range_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME null_term_reject_range_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.null_term_reject_range_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    null_term_reject_range_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "transcode: views::null_term requires a pointer or array type"
+)
