@@ -27,6 +27,7 @@ var namespacebeman_1_1transcoding =
       [ "surrogate_code_point", "namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d", null ],
       [ "out_of_range", "namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0", null ]
     ] ],
+    [ "make_real_iconv_fns", "namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b", null ],
     [ "null_term_view", "namespacebeman_1_1transcoding.html#a603156a9d20e68760ab8a23fb1e64f70", null ],
     [ "null_sentinel", "namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311", null ],
     [ "whatwg_decode", "namespacebeman_1_1transcoding.html#a73a91c92245e7a8b395fbf3e0334c063", null ],
