@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef BEMAN_TRANSCODE_TRANSCODE_HPP
-#define BEMAN_TRANSCODE_TRANSCODE_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_TRANSCODE_HPP
+#define INCLUDE_BEMAN_TRANSCODE_TRANSCODE_HPP
 
 #include <beman/transcode/config.hpp>
 
@@ -16,4 +16,4 @@ import beman.transcode;
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)
 
-#endif // BEMAN_TRANSCODE_TRANSCODE_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_TRANSCODE_HPP

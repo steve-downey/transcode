@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <beman/transcode/iconv_transcode_view.hpp>
+#include <beman/transcode/iconv_transcode_view.hpp>
 #include <catch2/catch_all.hpp>
 
-#include "tests/beman/transcode/iconv_mock.hpp"
+#include <tests/beman/transcode/iconv_mock.hpp>
 
 #include <algorithm>
 #include <concepts>

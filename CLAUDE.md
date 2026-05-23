@@ -76,6 +76,32 @@ Negative compile tests are registered in `tests/beman/transcode/CMakeLists.txt` 
 
 ## Code Style
 
-Formatting is enforced by `.clang-format` (clang-format 22). Run `make lint` to apply. CMake files are formatted by `gersemi`.
+Formatting is enforced by `.clang-format` (clang-format 22).
+Run `make lint` to apply.
+CMake files are formatted by `gersemi`.
 
 License header on every file: `// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception`
+
+## Coding Rules
+
+**Include guards** — use `#ifndef`/`#define`/`#endif`, never `#pragma once`.
+Guard name mirrors the repo-relative path with `/` and `.` replaced by `_`, uppercased.
+Examples: `include/beman/transcode/detail/concepts.hpp` → `INCLUDE_BEMAN_TRANSCODE_DETAIL_CONCEPTS_HPP`; `tests/beman/transcode/iconv_mock.hpp` → `TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP`.
+
+**Includes** — always angle brackets (`<...>`), never quotes (`"..."`).
+Use the full path from the include root: `<beman/transcode/detail/concepts.hpp>`, `<tests/beman/transcode/test_utilities.hpp>`.
+Never use relative `.`/`..` paths.
+Never rely on transitive includes — include every header you directly use.
+
+**Include order in test files** — the component header under test goes first (verifies it is self-contained).
+Include it twice consecutively to verify idempotent inclusion (the include guard must prevent duplicate definitions).
+
+**Functions out-of-line** — define function bodies outside the class body, inside the header, with full `ClassName::method_name` qualification (see `iconv_transcode_view.hpp` and `whatwg_decode_view.hpp` for the pattern).
+Exception: hidden `friend` functions used as customization points (e.g., `operator==` against `default_sentinel_t`, `operator|` for pipe adapters) may be defined inline inside the class body.
+
+**No `using namespace` in headers.**
+Namespace nesting mirrors directory depth.
+
+**`constexpr`** — make every API that can be `constexpr` so, and add a compile-time test using `constify()` from `tests/beman/transcode/test_utilities.hpp`.
+
+**Directory layout** — split `include/`/`src/`/`tests/` trees; no co-located component trios.
