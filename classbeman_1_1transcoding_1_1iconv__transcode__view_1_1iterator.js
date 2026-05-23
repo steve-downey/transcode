@@ -25,5 +25,7 @@ var classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator =
     [ "fns_", "classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#adc46ea3f68caf5317547484cbcbe549e", null ],
     [ "handle_", "classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#aea361942e397fb4f4953b11eb0db6f9e", null ],
     [ "output_end_", "classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#acfcde90628819d44ba9f49d6c984e044", null ],
-    [ "output_pos_", "classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a74afdff3aacafb365a457ac301a861dd", null ]
+    [ "output_pos_", "classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a74afdff3aacafb365a457ac301a861dd", null ],
+    [ "staging_", "classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a44b2ca0156bf13888b24f099bcd72cd4", null ],
+    [ "staging_len_", "classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a204103d9670cdd628fddad9e75008af8", null ]
 ];
