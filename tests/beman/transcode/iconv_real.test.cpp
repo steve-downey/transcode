@@ -19,9 +19,9 @@ TEST_CASE("real iconv UTF-8 to UTF-32LE ASCII", "[transcoding::iconv_real]") {
     // 'i' (U+0069) -> {0x69, 0x00, 0x00, 0x00}
     std::vector<char>    input{'H', 'i'};
     std::array<char, 64> buf{};
-    auto                 fns  = make_real_iconv_fns();
-    auto                 view = iconv_transcode_view<iconv_functions, std::vector<char>>(
-        input, fns, "UTF-8", "UTF-32LE", std::span(buf));
+    auto                 fns = make_real_iconv_fns();
+    auto                 view =
+        iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "UTF-8", "UTF-32LE", std::span(buf));
     std::vector<char> output;
     for (char c : view)
         output.push_back(c);
@@ -39,9 +39,8 @@ TEST_CASE("real iconv UTF-8 to UTF-32LE ASCII", "[transcoding::iconv_real]") {
 TEST_CASE("real iconv UTF-8 to UTF-8 identity", "[transcoding::iconv_real]") {
     std::string          input = "Hello";
     std::array<char, 64> buf{};
-    auto                 fns  = make_real_iconv_fns();
-    auto                 view = iconv_transcode_view<iconv_functions, std::string>(
-        input, fns, "UTF-8", "UTF-8", std::span(buf));
+    auto                 fns = make_real_iconv_fns();
+    auto view = iconv_transcode_view<iconv_functions, std::string>(input, fns, "UTF-8", "UTF-8", std::span(buf));
     std::string output;
     for (char c : view)
         output.push_back(c);
