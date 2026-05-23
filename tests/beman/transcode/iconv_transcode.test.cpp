@@ -63,24 +63,21 @@ TEST_CASE("iconv_transcode_view handles EINVAL by accumulating pairs", "[transco
     std::vector<char>    input{0x41, 0x42, 0x43, 0x44};
     std::array<char, 16> buf{};
     iconv_functions      fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
-    auto                 view =
-        iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
     std::vector<char> output;
     for (char c : view)
         output.push_back(c);
     CHECK(output == input);
 }
 
-TEST_CASE("iconv_transcode_view discards incomplete trailing sequence on EINVAL",
-          "[transcoding::iconv_transcode]") {
+TEST_CASE("iconv_transcode_view discards incomplete trailing sequence on EINVAL", "[transcoding::iconv_transcode]") {
     // 3-byte input: one complete pair {0x41,0x42} plus one incomplete byte {0x43}.
     // The complete pair must be converted; the trailing byte must be discarded
     // (EINVAL with no more input → done).
     std::vector<char>    input{0x41, 0x42, 0x43};
     std::array<char, 16> buf{};
     iconv_functions      fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
-    auto                 view =
-        iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
     std::vector<char> output;
     for (char c : view)
         output.push_back(c);
@@ -88,15 +85,13 @@ TEST_CASE("iconv_transcode_view discards incomplete trailing sequence on EINVAL"
     CHECK(output == expected);
 }
 
-TEST_CASE("iconv_transcode_view yields all bytes despite repeated E2BIG",
-          "[transcoding::iconv_transcode]") {
+TEST_CASE("iconv_transcode_view yields all bytes despite repeated E2BIG", "[transcoding::iconv_transcode]") {
     // mock_iconv_e2big writes 1 byte then always returns E2BIG; the iterator must
     // yield that byte and continue rather than stalling or dropping input.
     std::vector<char>    input{'H', 'i', '!'};
     std::array<char, 16> buf{};
     iconv_functions      fns{mock_iconv_open, mock_iconv_e2big, mock_iconv_close};
-    auto                 view =
-        iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
     std::vector<char> output;
     for (char c : view)
         output.push_back(c);
