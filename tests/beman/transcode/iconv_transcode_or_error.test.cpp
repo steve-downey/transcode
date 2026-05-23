@@ -40,8 +40,7 @@ TEST_CASE("iconv_transcode_or_error_view satisfies input_range", "[transcoding::
     static_assert(std::movable<iter_t>);
 }
 
-TEST_CASE("iconv_transcode_or_error_view identity yields expected values",
-          "[transcoding::iconv_transcode_or_error]") {
+TEST_CASE("iconv_transcode_or_error_view identity yields expected values", "[transcoding::iconv_transcode_or_error]") {
     std::vector<char>    input{'H', 'i'};
     std::array<char, 16> buf{};
     iconv_functions      fns{mock_iconv_open, mock_iconv, mock_iconv_close};
@@ -60,8 +59,8 @@ TEST_CASE("iconv_transcode_or_error_view EILSEQ yields unexpected invalid_sequen
     std::vector<char>    input{'\xFF', '\xFE'};
     std::array<char, 16> buf{};
     iconv_functions      fns{mock_iconv_open, mock_iconv_eilseq, mock_iconv_close};
-    auto                 view = iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(
-        input, fns, "X", "X", std::span(buf));
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
     auto result = collect(view);
     REQUIRE(result.size() == 2);
     CHECK(!result[0].has_value());
@@ -76,8 +75,8 @@ TEST_CASE("iconv_transcode_or_error_view EINVAL at end yields unexpected incompl
     std::vector<char>    input{0x41, 0x42, 0x43};
     std::array<char, 16> buf{};
     iconv_functions      fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
-    auto                 view = iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(
-        input, fns, "X", "X", std::span(buf));
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
     auto result = collect(view);
     REQUIRE(result.size() == 3);
     REQUIRE(result[0].has_value());
@@ -88,8 +87,7 @@ TEST_CASE("iconv_transcode_or_error_view EINVAL at end yields unexpected incompl
     CHECK(result[2].error() == iconv_error::incomplete_sequence);
 }
 
-TEST_CASE("iconv_transcode_or_error_view destructor closes handle",
-          "[transcoding::iconv_transcode_or_error]") {
+TEST_CASE("iconv_transcode_or_error_view destructor closes handle", "[transcoding::iconv_transcode_or_error]") {
     struct close_counting_fns {
         int* close_count;
 

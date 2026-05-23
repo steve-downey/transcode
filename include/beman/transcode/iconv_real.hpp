@@ -9,9 +9,7 @@
 
 namespace beman::transcoding {
 
-inline iconv_functions make_real_iconv_fns() noexcept {
-    return {::iconv_open, ::iconv, ::iconv_close};
-}
+inline iconv_functions make_real_iconv_fns() noexcept { return {::iconv_open, ::iconv, ::iconv_close}; }
 
 } // namespace beman::transcoding
 

@@ -116,7 +116,10 @@ catch_discover_tests(beman.transcode.tests.iconv_real)
 catch_discover_tests(beman.transcode.tests.iconv_transcode_or_error)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
-add_library(beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail OBJECT)
+add_library(
+    beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
+    OBJECT
+)
 target_sources(
     beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
     PRIVATE iconv_transcode_or_error_iterator_copy_fail.cpp
@@ -133,8 +136,8 @@ add_test(
     NAME iconv_transcode_or_error_iterator_copy_fail
     COMMAND
         ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail --config
-        $<CONFIGURATION>
+        beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
+        --config $<CONFIGURATION>
 )
 set_tests_properties(
     iconv_transcode_or_error_iterator_copy_fail
