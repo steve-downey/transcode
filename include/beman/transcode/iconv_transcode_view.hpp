@@ -8,6 +8,7 @@
 
 #include <iconv.h>
 
+#include <cerrno>
 #include <iterator>
 #include <ranges>
 #include <span>
@@ -50,15 +51,21 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         std::span<char> buffer_;
         char*           output_pos_;
         char*           output_end_;
-        base_iter       current_;
-        base_sent       end_;
-        bool            done_;
+        // Accumulates unconsumed input bytes across load() calls so that
+        // multi-byte sequences can be assembled before passing to iconv.
+        char      staging_[4];
+        size_t    staging_len_;
+        base_iter current_;
+        base_sent end_;
+        bool      done_;
 
         iterator(const iterator&)            = delete;
         iterator& operator=(const iterator&) = delete;
 
-        // Reads the next input byte, calls iconv, fills the output buffer.
-        // Sets done_ = true when both input and output are exhausted.
+        // Fills output_pos_/output_end_ with the next batch of converted bytes.
+        // Handles EINVAL (incomplete sequence) by accumulating more input, and
+        // E2BIG/EILSEQ by yielding partial output or skipping one staging byte.
+        // Sets done_ = true when all input and staging bytes are exhausted.
         void load();
 
         // Only iconv_transcode_view::begin() may construct an iterator.
@@ -124,6 +131,7 @@ iconv_transcode_view<IconvFns, R>::iterator::iterator(
       buffer_(buffer),
       output_pos_(buffer.data()),
       output_end_(buffer.data()),
+      staging_len_(0),
       current_(std::move(current)),
       end_(std::move(end)),
       done_(handle == (iconv_t)-1) {
@@ -135,23 +143,70 @@ template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 void iconv_transcode_view<IconvFns, R>::iterator::load() {
     while (true) {
-        if (current_ == end_) {
+        // Append one input byte to staging (if any remains).
+        if (current_ != end_) {
+            staging_[staging_len_++] = static_cast<char>(*current_);
+            ++current_;
+        } else if (staging_len_ == 0) {
             done_ = true;
             return;
         }
-        char in_byte = static_cast<char>(*current_);
-        ++current_;
-        char*  in_ptr  = &in_byte;
-        size_t inleft  = 1;
+        // else: staging holds bytes from a previous EINVAL; try to convert as-is.
+
+        char*  in_ptr  = staging_;
+        size_t inleft  = staging_len_;
         char*  out_ptr = buffer_.data();
         size_t outleft = buffer_.size();
-        fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
+        size_t rc      = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
+
         output_pos_ = buffer_.data();
         output_end_ = out_ptr;
+
+        // Shift consumed bytes out of staging_.
+        size_t consumed = staging_len_ - inleft;
+        if (consumed > 0) {
+            for (size_t i = 0; i < inleft; ++i)
+                staging_[i] = staging_[consumed + i];
+            staging_len_ = inleft;
+        }
+
+        if (rc != (size_t)-1) {
+            if (output_pos_ < output_end_)
+                return;
+            if (staging_len_ == 0 && current_ == end_) {
+                done_ = true;
+                return;
+            }
+            continue;
+        }
+
+        if (errno == EINVAL) {
+            // Incomplete input sequence: need more bytes before converting.
+            if (current_ == end_) {
+                // No more input; discard the partial sequence.
+                staging_len_ = 0;
+                done_        = true;
+                return;
+            }
+            // Loop to read another byte into staging.
+            if (output_pos_ < output_end_)
+                return;
+            continue;
+        }
+
+        // E2BIG or EILSEQ: yield whatever was written to the output buffer.
         if (output_pos_ < output_end_)
             return;
-        // iconv consumed the byte but produced no output (e.g., start of multibyte);
-        // read the next input byte and try again.
+        // Nothing written; skip one staging byte to avoid stalling.
+        if (staging_len_ > 0) {
+            for (size_t i = 0; i + 1 < staging_len_; ++i)
+                staging_[i] = staging_[i + 1];
+            --staging_len_;
+        }
+        if (staging_len_ == 0 && current_ == end_) {
+            done_ = true;
+            return;
+        }
     }
 }
 
@@ -163,11 +218,15 @@ iconv_transcode_view<IconvFns, R>::iterator::iterator(iterator&& other) noexcept
       buffer_(other.buffer_),
       output_pos_(other.output_pos_),
       output_end_(other.output_end_),
+      staging_len_(other.staging_len_),
       current_(std::move(other.current_)),
       end_(std::move(other.end_)),
       done_(other.done_) {
-    other.handle_ = (iconv_t)-1;
-    other.done_   = true;
+    for (size_t i = 0; i < other.staging_len_; ++i)
+        staging_[i] = other.staging_[i];
+    other.handle_      = (iconv_t)-1;
+    other.done_        = true;
+    other.staging_len_ = 0;
 }
 
 template <typename IconvFns, std::ranges::input_range R>
@@ -176,16 +235,20 @@ auto iconv_transcode_view<IconvFns, R>::iterator::operator=(iterator&& other) no
     if (this != &other) {
         if (handle_ != (iconv_t)-1)
             fns_.close(handle_);
-        handle_       = other.handle_;
-        fns_          = std::move(other.fns_);
-        buffer_       = other.buffer_;
-        output_pos_   = other.output_pos_;
-        output_end_   = other.output_end_;
-        current_      = std::move(other.current_);
-        end_          = std::move(other.end_);
-        done_         = other.done_;
-        other.handle_ = (iconv_t)-1;
-        other.done_   = true;
+        handle_      = other.handle_;
+        fns_         = std::move(other.fns_);
+        buffer_      = other.buffer_;
+        output_pos_  = other.output_pos_;
+        output_end_  = other.output_end_;
+        staging_len_ = other.staging_len_;
+        for (size_t i = 0; i < other.staging_len_; ++i)
+            staging_[i] = other.staging_[i];
+        current_           = std::move(other.current_);
+        end_               = std::move(other.end_);
+        done_              = other.done_;
+        other.handle_      = (iconv_t)-1;
+        other.done_        = true;
+        other.staging_len_ = 0;
     }
     return *this;
 }

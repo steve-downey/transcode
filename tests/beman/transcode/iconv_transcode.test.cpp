@@ -57,6 +57,47 @@ TEST_CASE("iconv_transcode_view destructor closes handle", "[transcoding::iconv_
     CHECK(close_count == 1);
 }
 
+TEST_CASE("iconv_transcode_view handles EINVAL by accumulating pairs", "[transcoding::iconv_transcode]") {
+    // mock_iconv_pairwise returns EINVAL for < 2 input bytes; the iterator must
+    // accumulate bytes in a staging buffer until a complete pair is available.
+    std::vector<char>    input{0x41, 0x42, 0x43, 0x44};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    std::vector<char> output;
+    for (char c : view)
+        output.push_back(c);
+    CHECK(output == input);
+}
+
+TEST_CASE("iconv_transcode_view discards incomplete trailing sequence on EINVAL", "[transcoding::iconv_transcode]") {
+    // 3-byte input: one complete pair {0x41,0x42} plus one incomplete byte {0x43}.
+    // The complete pair must be converted; the trailing byte must be discarded
+    // (EINVAL with no more input → done).
+    std::vector<char>    input{0x41, 0x42, 0x43};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    std::vector<char> output;
+    for (char c : view)
+        output.push_back(c);
+    std::vector<char> expected{0x41, 0x42};
+    CHECK(output == expected);
+}
+
+TEST_CASE("iconv_transcode_view yields all bytes despite repeated E2BIG", "[transcoding::iconv_transcode]") {
+    // mock_iconv_e2big writes 1 byte then always returns E2BIG; the iterator must
+    // yield that byte and continue rather than stalling or dropping input.
+    std::vector<char>    input{'H', 'i', '!'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_e2big, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    std::vector<char> output;
+    for (char c : view)
+        output.push_back(c);
+    CHECK(output == input);
+}
+
 TEST_CASE("iconv_transcode_view satisfies input_range", "[transcoding::iconv_transcode]") {
     using view_t = iconv_transcode_view<iconv_functions, std::vector<char>>;
     static_assert(std::ranges::input_range<view_t>);
