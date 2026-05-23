@@ -79,6 +79,17 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.iconv_real)
+target_sources(beman.transcode.tests.iconv_real PRIVATE iconv_real.test.cpp)
+target_include_directories(
+    beman.transcode.tests.iconv_real
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.iconv_real
+    PRIVATE beman::transcode Catch2::Catch2WithMain Iconv::Iconv
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -87,6 +98,7 @@ catch_discover_tests(beman.transcode.tests.null_term)
 catch_discover_tests(beman.transcode.tests.whatwg_decode)
 catch_discover_tests(beman.transcode.tests.whatwg_decode_or_error)
 catch_discover_tests(beman.transcode.tests.iconv_transcode)
+catch_discover_tests(beman.transcode.tests.iconv_real)
 
 # iconv_transcode iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(beman.transcode.tests.iconv_transcode_iterator_copy_fail OBJECT)
