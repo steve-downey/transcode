@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ptr_5f_0',['ptr_',['../classbeman_1_1transcoding_1_1null__term__view.html#a4769d0a29f6f92f8c5cd0cb13e7e0c2f',1,'beman::transcoding::null_term_view']]]
+  ['current_5f_0',['current_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a47a69459d289f834bcad7e41f9b82fc3',1,'beman::transcoding::whatwg_decode_view::iterator']]]
 ];

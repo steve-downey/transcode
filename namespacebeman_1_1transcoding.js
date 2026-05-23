@@ -5,7 +5,12 @@ var namespacebeman_1_1transcoding =
     ] ],
     [ "null_sentinel_t", "structbeman_1_1transcoding_1_1null__sentinel__t.html", "structbeman_1_1transcoding_1_1null__sentinel__t" ],
     [ "null_term_view", "classbeman_1_1transcoding_1_1null__term__view.html", "classbeman_1_1transcoding_1_1null__term__view" ],
+    [ "whatwg_decode_closure", "structbeman_1_1transcoding_1_1whatwg__decode__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__closure" ],
+    [ "whatwg_decode_view", "classbeman_1_1transcoding_1_1whatwg__decode__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__view" ],
     [ "legacy_byte_range", "conceptbeman_1_1transcoding_1_1legacy__byte__range.html", null ],
+    [ "codec", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a", [
+      [ "utf_8", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3", null ]
+    ] ],
     [ "iconv_error", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730", [
       [ "invalid_sequence", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed", null ],
       [ "incomplete_sequence", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82", null ],
@@ -19,5 +24,6 @@ var namespacebeman_1_1transcoding =
       [ "out_of_range", "namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0", null ]
     ] ],
     [ "null_term_view", "namespacebeman_1_1transcoding.html#a603156a9d20e68760ab8a23fb1e64f70", null ],
-    [ "null_sentinel", "namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311", null ]
+    [ "null_sentinel", "namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311", null ],
+    [ "whatwg_decode", "namespacebeman_1_1transcoding.html#a73a91c92245e7a8b395fbf3e0334c063", null ]
 ];

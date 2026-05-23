@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['whatwg_5ferror_0',['whatwg_error',['../namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab',1,'beman::transcoding']]]
+  ['iconv_5ferror_0',['iconv_error',['../namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730',1,'beman::transcoding']]]
 ];

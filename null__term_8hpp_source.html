@@ -150,33 +150,43 @@ $(document).ready(function(){initNavTree('null__term_8hpp_source.html',''); init
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keyword">constexpr</span> <span class="keyword">auto</span> operator()(T (&amp;arr)[N])<span class="keyword"> const </span>{</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a>(<span class="keyword">static_cast&lt;</span><span class="keyword">const </span>T*<span class="keyword">&gt;</span>(arr));</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    }</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>};</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">struct </span>null_term_adaptor : null_term_fn {</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keyword">using </span>null_term_fn::operator();</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> R&gt;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keyword">friend</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> operator|(R&amp;&amp; r, <span class="keyword">const</span> null_term_adaptor&amp; self) {</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>        <span class="keywordflow">return</span> self(std::forward&lt;R&gt;(r));</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    }</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>};</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>} <span class="comment">// namespace detail</span></div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno"><a class="line" href="namespacebeman_1_1transcoding_1_1views.html">   65</a></span><span class="keyword">namespace </span>views {</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">   66</a></span><span class="keyword">inline</span> <span class="keyword">constexpr</span> detail::null_term_adaptor <a class="code hl_variable" href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">null_term</a>{};</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>} <span class="comment">// namespace views</span></div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>} <span class="comment">// namespace beman::transcoding</span></div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="preprocessor">#endif </span><span class="comment">// BEMAN_TRANSCODE_DETAIL_NULL_TERM_HPP</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <span class="comment">// Explicit diagnostic for non-pointer, non-array types (e.g. std::vector&lt;char&gt;).</span></div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="comment">// The static_assert fires with a stable message instead of a deep substitution error.</span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>        <span class="keyword">requires</span>(!std::is_pointer_v&lt;std::decay_t&lt;T&gt;&gt; &amp;&amp; !std::is_array_v&lt;std::decay_t&lt;T&gt;&gt;)</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keyword">constexpr</span> <span class="keyword">auto</span> <span class="keyword">operator</span>()(T&amp;&amp;) <span class="keyword">const</span> {</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>        <span class="keyword">static_assert</span>(std::is_pointer_v&lt;std::decay_t&lt;T&gt;&gt;,</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>                      <span class="stringliteral">&quot;transcode: views::null_term requires a pointer or array type; &quot;</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>                      <span class="stringliteral">&quot;pass a const char* or use a range that already has a null terminator&quot;</span>);</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    }</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>};</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="keyword">struct </span>null_term_adaptor : null_term_fn {</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keyword">using </span>null_term_fn::operator();</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> R&gt;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keyword">friend</span> <span class="keyword">constexpr</span> <span class="keyword">auto</span> operator|(R&amp;&amp; r, <span class="keyword">const</span> null_term_adaptor&amp; self) {</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>        <span class="keywordflow">return</span> self(std::forward&lt;R&gt;(r));</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    }</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>};</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>} <span class="comment">// namespace detail</span></div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="namespacebeman_1_1transcoding_1_1views.html">   75</a></span><span class="keyword">namespace </span>views {</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno"><a class="line" href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">   76</a></span><span class="keyword">inline</span> <span class="keyword">constexpr</span> detail::null_term_adaptor <a class="code hl_variable" href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">null_term</a>{};</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>} <span class="comment">// namespace views</span></div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>} <span class="comment">// namespace beman::transcoding</span></div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span><span class="preprocessor">#endif </span><span class="comment">// BEMAN_TRANSCODE_DETAIL_NULL_TERM_HPP</span></div>
 <div class="ttc" id="aclassbeman_1_1transcoding_1_1null__term__view_html"><div class="ttname"><a href="classbeman_1_1transcoding_1_1null__term__view.html">beman::transcoding::null_term_view</a></div><div class="ttdef"><b>Definition:</b> null_term.hpp:25</div></div>
 <div class="ttc" id="aclassbeman_1_1transcoding_1_1null__term__view_html_a4769d0a29f6f92f8c5cd0cb13e7e0c2f"><div class="ttname"><a href="classbeman_1_1transcoding_1_1null__term__view.html#a4769d0a29f6f92f8c5cd0cb13e7e0c2f">beman::transcoding::null_term_view::ptr_</a></div><div class="ttdeci">I ptr_</div><div class="ttdef"><b>Definition:</b> null_term.hpp:26</div></div>
 <div class="ttc" id="aclassbeman_1_1transcoding_1_1null__term__view_html_a6dddf2967a784e959edcef24a3f0201c"><div class="ttname"><a href="classbeman_1_1transcoding_1_1null__term__view.html#a6dddf2967a784e959edcef24a3f0201c">beman::transcoding::null_term_view::begin</a></div><div class="ttdeci">constexpr I begin() const</div><div class="ttdef"><b>Definition:</b> null_term.hpp:32</div></div>
 <div class="ttc" id="aclassbeman_1_1transcoding_1_1null__term__view_html_a6f122cebaeb759d6294e4b5c7535a6df"><div class="ttname"><a href="classbeman_1_1transcoding_1_1null__term__view.html#a6f122cebaeb759d6294e4b5c7535a6df">beman::transcoding::null_term_view::end</a></div><div class="ttdeci">constexpr null_sentinel_t end() const</div><div class="ttdef"><b>Definition:</b> null_term.hpp:33</div></div>
 <div class="ttc" id="aclassbeman_1_1transcoding_1_1null__term__view_html_ad6677374a0a7aed4685f98ee9e4dc75c"><div class="ttname"><a href="classbeman_1_1transcoding_1_1null__term__view.html#ad6677374a0a7aed4685f98ee9e4dc75c">beman::transcoding::null_term_view::null_term_view</a></div><div class="ttdeci">constexpr null_term_view(I ptr)</div><div class="ttdef"><b>Definition:</b> null_term.hpp:30</div></div>
 <div class="ttc" id="aclassbeman_1_1transcoding_1_1null__term__view_html_ae852b8dd8ace9d65b11fe023aece55c2"><div class="ttname"><a href="classbeman_1_1transcoding_1_1null__term__view.html#ae852b8dd8ace9d65b11fe023aece55c2">beman::transcoding::null_term_view::null_term_view</a></div><div class="ttdeci">constexpr null_term_view()=default</div></div>
-<div class="ttc" id="anamespacebeman_1_1transcoding_1_1views_html_aaa8c7a22aa85348f2156d62b50097952"><div class="ttname"><a href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">beman::transcoding::views::null_term</a></div><div class="ttdeci">constexpr detail::null_term_adaptor null_term</div><div class="ttdef"><b>Definition:</b> null_term.hpp:66</div></div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_1_1views_html_aaa8c7a22aa85348f2156d62b50097952"><div class="ttname"><a href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">beman::transcoding::views::null_term</a></div><div class="ttdeci">constexpr detail::null_term_adaptor null_term</div><div class="ttdef"><b>Definition:</b> null_term.hpp:76</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html"><div class="ttname"><a href="namespacebeman_1_1transcoding.html">beman::transcoding</a></div><div class="ttdef"><b>Definition:</b> concepts.hpp:11</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_afd0d40bb9a9bf664c3f2573d5f941311"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311">beman::transcoding::null_sentinel</a></div><div class="ttdeci">constexpr null_sentinel_t null_sentinel</div><div class="ttdef"><b>Definition:</b> null_term.hpp:22</div></div>
 <div class="ttc" id="astructbeman_1_1transcoding_1_1null__sentinel__t_html"><div class="ttname"><a href="structbeman_1_1transcoding_1_1null__sentinel__t.html">beman::transcoding::null_sentinel_t</a></div><div class="ttdef"><b>Definition:</b> null_term.hpp:12</div></div>

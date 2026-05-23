@@ -118,6 +118,10 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__closure.html">whatwg_decode_closure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">whatwg_decode_view</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="concepts" name="concepts"></a>
 Concepts</h2></td></tr>
@@ -141,6 +145,9 @@ Enumerations</h2></td></tr>
 , <a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844">output_full</a>
  }</td></tr>
 <tr class="separator:aab196b86b3b7eea71d38ca7ca6e65730"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20dfb324ebd26c6127d014520f93005a"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> { <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3">utf_8</a>
+ }</td></tr>
+<tr class="separator:a20dfb324ebd26c6127d014520f93005a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -152,8 +159,36 @@ Functions</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:afd0d40bb9a9bf664c3f2573d5f941311"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1null__sentinel__t.html">null_sentinel_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311">null_sentinel</a> {}</td></tr>
 <tr class="separator:afd0d40bb9a9bf664c3f2573d5f941311"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73a91c92245e7a8b395fbf3e0334c063"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C&gt; </td></tr>
+<tr class="memitem:a73a91c92245e7a8b395fbf3e0334c063"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__closure.html">whatwg_decode_closure</a>&lt; C &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a73a91c92245e7a8b395fbf3e0334c063">whatwg_decode</a> {}</td></tr>
+<tr class="separator:a73a91c92245e7a8b395fbf3e0334c063"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a20dfb324ebd26c6127d014520f93005a" name="a20dfb324ebd26c6127d014520f93005a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20dfb324ebd26c6127d014520f93005a">&#9670;&#160;</a></span>codec</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">beman::transcoding::codec</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3" name="a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3"></a>utf_8&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
 <a id="aab196b86b3b7eea71d38ca7ca6e65730" name="aab196b86b3b7eea71d38ca7ca6e65730"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aab196b86b3b7eea71d38ca7ca6e65730">&#9670;&#160;</a></span>iconv_error</h2>
 
@@ -243,6 +278,30 @@ template&lt;std::contiguous_iterator I&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">constexpr <a class="el" href="structbeman_1_1transcoding_1_1null__sentinel__t.html">null_sentinel_t</a> beman::transcoding::null_sentinel {}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a73a91c92245e7a8b395fbf3e0334c063" name="a73a91c92245e7a8b395fbf3e0334c063"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73a91c92245e7a8b395fbf3e0334c063">&#9670;&#160;</a></span>whatwg_decode</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__closure.html">whatwg_decode_closure</a>&lt;C&gt; beman::transcoding::whatwg_decode {}</td>
         </tr>
       </table>
   </td>
