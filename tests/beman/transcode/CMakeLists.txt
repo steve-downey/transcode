@@ -8,12 +8,14 @@ target_link_libraries(
     beman.transcode.tests.todo
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
-if(BEMAN_EXEMPLAR_USE_MODULES)
-    set_target_properties(
-        beman.transcode.tests.todo
-        PROPERTIES CXX_MODULE_STD ON
-    )
-endif()
+
+add_executable(beman.transcode.tests.error)
+target_sources(beman.transcode.tests.error PRIVATE error.test.cpp)
+target_link_libraries(
+    beman.transcode.tests.error
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
 
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
+catch_discover_tests(beman.transcode.tests.error)

@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#ifndef BEMAN_TRANSCODE_DETAIL_ERROR_HPP
+#define BEMAN_TRANSCODE_DETAIL_ERROR_HPP
+
+namespace beman::transcoding {
+
+enum class whatwg_error {
+    invalid_byte,
+    truncated_sequence,
+    overlong_encoding,
+    surrogate_code_point,
+    out_of_range,
+};
+
+enum class iconv_error {
+    invalid_sequence,
+    incomplete_sequence,
+    output_full,
+};
+
+} // namespace beman::transcoding
+
+#endif // BEMAN_TRANSCODE_DETAIL_ERROR_HPP
