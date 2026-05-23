@@ -23,7 +23,15 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.null_term)
+target_sources(beman.transcode.tests.null_term PRIVATE null_term.test.cpp)
+target_link_libraries(
+    beman.transcode.tests.null_term
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
 catch_discover_tests(beman.transcode.tests.concepts)
+catch_discover_tests(beman.transcode.tests.null_term)
