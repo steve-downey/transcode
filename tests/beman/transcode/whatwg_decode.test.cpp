@@ -15,7 +15,10 @@ TEST_CASE("whatwg_decode_view satisfies input_range", "[transcoding::whatwg_deco
     static_assert(std::same_as<std::ranges::range_value_t<decltype(view)>, char32_t>);
 }
 
-TEST_CASE("whatwg_decode ASCII passthrough", "[transcoding::whatwg_decode]") {
+// All WHATWG codecs share the 7-bit ASCII base (U+0000–U+007F). This test
+// covers that shared base only. UTF-8 multi-byte sequences (U+0080 and above)
+// are not yet implemented and will produce U+FFFD — see steps 5/6/7.
+TEST_CASE("whatwg_decode 7-bit ASCII shared base", "[transcoding::whatwg_decode]") {
     std::vector<char>     ascii{'H', 'e', 'l', 'l', 'o'};
     auto                  decoded = ascii | whatwg_decode<codec::utf_8>;
     std::vector<char32_t> result;

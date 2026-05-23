@@ -37,9 +37,13 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         char32_t decode_one() {
             auto byte = static_cast<unsigned char>(*current_);
             ++current_;
+            // All WHATWG codecs share the 7-bit ASCII base (U+0000–U+007F):
+            // bytes 0x00–0x7F map directly to their code point value.
             if (byte < 0x80)
                 return static_cast<char32_t>(byte);
-            // Placeholder: multi-byte and error handling in later steps
+            // TODO: multi-byte UTF-8 sequences (step 5/6) and WHATWG error
+            // replacement rules (step 7) are not yet implemented. Any byte
+            // with the high bit set incorrectly emits U+FFFD here.
             return U'�';
         }
 
