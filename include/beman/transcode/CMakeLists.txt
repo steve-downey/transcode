@@ -25,6 +25,7 @@ else()
                     detail/error.hpp
                     detail/null_term.hpp
                     detail/utf8.hpp
+                    iconv_transcode_view.hpp
                     whatwg_decode_view.hpp
                     "${PROJECT_BINARY_DIR}/include/beman/transcode/config_generated.hpp"
     )
