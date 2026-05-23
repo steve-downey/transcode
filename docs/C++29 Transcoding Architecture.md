@@ -84,4 +84,4 @@ Package the architecture and findings into a formal WG21 standard proposal.
 
 1. **Wording Draft (papers/PXXXX.md):** Translate the Beman C++ implementation into standardese. Define the exposition-only concepts, the constexpr requirements, and the strict single-pass/move-only iterator constraints.
 2. **Rationale & Defense:** Highlight the compile-time elimination of array decay (via P3705R2 null\_term) and the architectural resilience against E2BIG/EINVAL POSIX attacks.
-3. **The "Clean Room" Selling Point:** Explicitly document the out-of-tree conformance suite in the proposal. Assure SG16 (Text) and SG9 (Ranges) that the architecture is exhaustively proven while completely shielding standard library implementors from intellectual property risks.
+3. **The "Clean Room" Selling Point:** Explicitly document the out-of-tree conformance suite in the proposal. Assure SG16 (Text) and SG9 (Ranges) that the architecture is exhaustively proven while completely shielding standard library implementers from intellectual property risks.
