@@ -1,5 +1,5 @@
 # Standard answers and internal state managed by Copier
-_commit: v2.4.0-23-g36573cf
+_commit: v2.4.0-26-gdab6527
 _src_path: git+file:///home/sdowney/src/steve-downey/exemplar/copier/
 description: Transcoding Views and Ranges
 maintainer: steve-downey
