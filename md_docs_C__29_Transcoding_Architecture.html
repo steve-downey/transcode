@@ -134,7 +134,7 @@ $(document).ready(function(){initNavTree('md_docs_C__29_Transcoding_Architecture
 <li>Implement whatwg_decode (yielding U+FFFD on failure) and whatwg_decode_or_error (yielding std::expected or monadic equivalents on failure).</li>
 </ul>
 </li>
-<li><b>POSIX iconv View (iconv_transcode_view.hpp):</b><ul>
+<li><b>POSIX iconv View (<a class="el" href="iconv__transcode__view_8hpp.html">iconv_transcode_view.hpp</a>):</b><ul>
 <li>Implement as a move-only std::input_iterator to safeguard the uncopyable iconv_t resource.</li>
 <li>Accept an external std::span&lt;char&gt; working buffer to prevent internal heap allocations.</li>
 <li>Inject the iconv execution routine as a callable to decouple the view from the host OS libc.</li>
@@ -186,7 +186,7 @@ $(document).ready(function(){initNavTree('md_docs_C__29_Transcoding_Architecture
 <ol type="1">
 <li><b>Wording Draft (papers/PXXXX.md):</b> Translate the Beman C++ implementation into standardese. Define the exposition-only concepts, the constexpr requirements, and the strict single-pass/move-only iterator constraints.</li>
 <li><b>Rationale &amp; Defense:</b> Highlight the compile-time elimination of array decay (via P3705R2 null_term) and the architectural resilience against E2BIG/EINVAL POSIX attacks.</li>
-<li><b>The "Clean Room" Selling Point:</b> Explicitly document the out-of-tree conformance suite in the proposal. Assure SG16 (Text) and SG9 (Ranges) that the architecture is exhaustively proven while completely shielding standard library implementors from intellectual property risks. </li>
+<li><b>The "Clean Room" Selling Point:</b> Explicitly document the out-of-tree conformance suite in the proposal. Assure SG16 (Text) and SG9 (Ranges) that the architecture is exhaustively proven while completely shielding standard library implementers from intellectual property risks. </li>
 </ol>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

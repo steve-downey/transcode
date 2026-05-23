@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['utf8_2ehpp_0',['utf8.hpp',['../utf8_8hpp.html',1,'']]],
-  ['utf_5f8_1',['utf_8',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3',1,'beman::transcoding']]]
+  ['surrogate_5fcode_5fpoint_0',['surrogate_code_point',['../namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d',1,'beman::transcoding']]]
 ];

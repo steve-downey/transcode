@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['null_5fsentinel_0',['null_sentinel',['../namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311',1,'beman::transcoding']]],
-  ['null_5fterm_1',['null_term',['../namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952',1,'beman::transcoding::views']]]
+  ['fns_5f_0',['fns_',['../classbeman_1_1transcoding_1_1iconv__transcode__view.html#acdf7dd8f4b5897f6aac56e779d775703',1,'beman::transcoding::iconv_transcode_view']]],
+  ['from_5f_1',['from_',['../classbeman_1_1transcoding_1_1iconv__transcode__view.html#a5f37e4142fa20d09b32a3cb69e1d6022',1,'beman::transcoding::iconv_transcode_view']]]
 ];

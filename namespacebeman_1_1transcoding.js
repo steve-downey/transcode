@@ -3,6 +3,8 @@ var namespacebeman_1_1transcoding =
     [ "views", "namespacebeman_1_1transcoding_1_1views.html", [
       [ "null_term", "namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952", null ]
     ] ],
+    [ "iconv_functions", "structbeman_1_1transcoding_1_1iconv__functions.html", "structbeman_1_1transcoding_1_1iconv__functions" ],
+    [ "iconv_transcode_view", "classbeman_1_1transcoding_1_1iconv__transcode__view.html", "classbeman_1_1transcoding_1_1iconv__transcode__view" ],
     [ "null_sentinel_t", "structbeman_1_1transcoding_1_1null__sentinel__t.html", "structbeman_1_1transcoding_1_1null__sentinel__t" ],
     [ "null_term_view", "classbeman_1_1transcoding_1_1null__term__view.html", "classbeman_1_1transcoding_1_1null__term__view" ],
     [ "whatwg_decode_closure", "structbeman_1_1transcoding_1_1whatwg__decode__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__closure" ],

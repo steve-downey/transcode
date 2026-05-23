@@ -70,7 +70,8 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"annotated.html"
+"annotated.html",
+"structbeman_1_1transcoding_1_1iconv__functions.html#a8a8cb4569ed9d79f8d45af61aed5185d"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
