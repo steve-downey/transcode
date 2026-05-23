@@ -105,6 +105,9 @@ $(document).ready(function(){initNavTree('whatwg__decode__view_8hpp.html',''); i
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/detail/concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="error_8hpp_source.html">beman/transcode/detail/error.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="utf8_8hpp_source.html">beman/transcode/detail/utf8.hpp</a>&gt;</code><br />
+<code>#include &lt;expected&gt;</code><br />
 <code>#include &lt;iterator&gt;</code><br />
 <code>#include &lt;ranges&gt;</code><br />
 </div>
@@ -117,6 +120,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html">beman::transcoding::whatwg_decode_view&lt; C, R &gt;::iterator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__closure.html">beman::transcoding::whatwg_decode_closure&lt; C &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view&lt; C, R &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">beman::transcoding::whatwg_decode_or_error_view&lt; C, R &gt;::iterator</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html">beman::transcoding::whatwg_decode_or_error_closure&lt; C &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -137,6 +146,9 @@ Variables</h2></td></tr>
 <tr class="memitem:a73a91c92245e7a8b395fbf3e0334c063"><td class="memTemplParams" colspan="2">template&lt;codec C&gt; </td></tr>
 <tr class="memitem:a73a91c92245e7a8b395fbf3e0334c063"><td class="memTemplItemLeft" align="right" valign="top">constexpr whatwg_decode_closure&lt; C &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a73a91c92245e7a8b395fbf3e0334c063">beman::transcoding::whatwg_decode</a> {}</td></tr>
 <tr class="separator:a73a91c92245e7a8b395fbf3e0334c063"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad15ffa8f43ff243d79c92bf31e8aefc2"><td class="memTemplParams" colspan="2">template&lt;codec C&gt; </td></tr>
+<tr class="memitem:ad15ffa8f43ff243d79c92bf31e8aefc2"><td class="memTemplItemLeft" align="right" valign="top">constexpr whatwg_decode_or_error_closure&lt; C &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#ad15ffa8f43ff243d79c92bf31e8aefc2">beman::transcoding::whatwg_decode_or_error</a> {}</td></tr>
+<tr class="separator:ad15ffa8f43ff243d79c92bf31e8aefc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

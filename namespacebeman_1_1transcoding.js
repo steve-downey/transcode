@@ -6,6 +6,8 @@ var namespacebeman_1_1transcoding =
     [ "null_sentinel_t", "structbeman_1_1transcoding_1_1null__sentinel__t.html", "structbeman_1_1transcoding_1_1null__sentinel__t" ],
     [ "null_term_view", "classbeman_1_1transcoding_1_1null__term__view.html", "classbeman_1_1transcoding_1_1null__term__view" ],
     [ "whatwg_decode_closure", "structbeman_1_1transcoding_1_1whatwg__decode__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__closure" ],
+    [ "whatwg_decode_or_error_closure", "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure" ],
+    [ "whatwg_decode_or_error_view", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view" ],
     [ "whatwg_decode_view", "classbeman_1_1transcoding_1_1whatwg__decode__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__view" ],
     [ "legacy_byte_range", "conceptbeman_1_1transcoding_1_1legacy__byte__range.html", null ],
     [ "codec", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a", [
@@ -25,5 +27,6 @@ var namespacebeman_1_1transcoding =
     ] ],
     [ "null_term_view", "namespacebeman_1_1transcoding.html#a603156a9d20e68760ab8a23fb1e64f70", null ],
     [ "null_sentinel", "namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311", null ],
-    [ "whatwg_decode", "namespacebeman_1_1transcoding.html#a73a91c92245e7a8b395fbf3e0334c063", null ]
+    [ "whatwg_decode", "namespacebeman_1_1transcoding.html#a73a91c92245e7a8b395fbf3e0334c063", null ],
+    [ "whatwg_decode_or_error", "namespacebeman_1_1transcoding.html#ad15ffa8f43ff243d79c92bf31e8aefc2", null ]
 ];
