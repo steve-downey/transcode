@@ -1,0 +1,14 @@
+# Standard answers and internal state managed by Copier
+_commit: v2.4.0-23-g36573cf
+_src_path: git+file:///home/sdowney/src/steve-downey/exemplar/copier/
+description: Transcoding Views and Ranges
+maintainer: steve-downey
+minimum_cpp_build_version: '20'
+paper: PnnnnRr
+project_name: transcode
+unit_test_library: catch2
+# Hidden variables manually tracked because 'when: false' omits them from _copier_answers
+generating_exemplar: false
+owner: "bemanproject"
+ci_tests_cron: "11 9 * * 1"
+pre_commit_update_cron: "29 12 * * 4"
