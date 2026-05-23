@@ -25,6 +25,17 @@
 var NAVTREE =
 [
   [ "beman.transcode", "index.html", [
+    [ "C++29 Transcoding Architecture", "md_docs_C__29_Transcoding_Architecture.html", [
+      [ "—", "md_docs_C__29_Transcoding_Architecture.html#autotoc_md0", [
+        [ "<strong>Executive Summary</strong>", "md_docs_C__29_Transcoding_Architecture.html#autotoc_md1", null ],
+        [ "—", "md_docs_C__29_Transcoding_Architecture.html#autotoc_md2", null ],
+        [ "—", "md_docs_C__29_Transcoding_Architecture.html#autotoc_md3", null ],
+        [ "—", "md_docs_C__29_Transcoding_Architecture.html#autotoc_md4", null ],
+        [ "—", "md_docs_C__29_Transcoding_Architecture.html#autotoc_md5", null ],
+        [ "—", "md_docs_C__29_Transcoding_Architecture.html#autotoc_md6", null ],
+        [ "—", "md_docs_C__29_Transcoding_Architecture.html#autotoc_md7", null ]
+      ] ]
+    ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
       [ "Namespace Members", "namespacemembers.html", [
