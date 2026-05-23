@@ -21,6 +21,10 @@ else()
                     config.hpp
                     transcode.hpp
                     todo.hpp
+                    detail/concepts.hpp
+                    detail/error.hpp
+                    detail/null_term.hpp
+                    whatwg_decode_view.hpp
                     "${PROJECT_BINARY_DIR}/include/beman/transcode/config_generated.hpp"
     )
 endif()

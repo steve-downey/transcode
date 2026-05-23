@@ -49,6 +49,16 @@ struct null_term_fn {
     constexpr auto operator()(T (&arr)[N]) const {
         return null_term_view(static_cast<const T*>(arr));
     }
+
+    // Explicit diagnostic for non-pointer, non-array types (e.g. std::vector<char>).
+    // The static_assert fires with a stable message instead of a deep substitution error.
+    template <typename T>
+        requires(!std::is_pointer_v<std::decay_t<T>> && !std::is_array_v<std::decay_t<T>>)
+    constexpr auto operator()(T&&) const {
+        static_assert(std::is_pointer_v<std::decay_t<T>>,
+                      "transcode: views::null_term requires a pointer or array type; "
+                      "pass a const char* or use a range that already has a null terminator");
+    }
 };
 
 struct null_term_adaptor : null_term_fn {
