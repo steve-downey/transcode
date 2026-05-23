@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef BEMAN_TRANSCODE_DETAIL_CONCEPTS_HPP
-#define BEMAN_TRANSCODE_DETAIL_CONCEPTS_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_CONCEPTS_HPP
+#define INCLUDE_BEMAN_TRANSCODE_DETAIL_CONCEPTS_HPP
 
 #include <concepts>
 #include <cstddef>
@@ -24,4 +24,4 @@ concept legacy_byte_range = std::ranges::range<R> && !std::is_array_v<std::remov
 
 } // namespace beman::transcoding
 
-#endif // BEMAN_TRANSCODE_DETAIL_CONCEPTS_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_CONCEPTS_HPP

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef BEMAN_TRANSCODE_ICONV_TRANSCODE_VIEW_HPP
-#define BEMAN_TRANSCODE_ICONV_TRANSCODE_VIEW_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_ICONV_TRANSCODE_VIEW_HPP
+#define INCLUDE_BEMAN_TRANSCODE_ICONV_TRANSCODE_VIEW_HPP
 
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
@@ -220,4 +220,4 @@ void iconv_transcode_view<IconvFns, R>::iterator::operator++(int) {
 
 } // namespace beman::transcoding
 
-#endif // BEMAN_TRANSCODE_ICONV_TRANSCODE_VIEW_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_ICONV_TRANSCODE_VIEW_HPP

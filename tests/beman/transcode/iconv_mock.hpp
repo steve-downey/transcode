@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef BEMAN_TRANSCODE_TESTS_ICONV_MOCK_HPP
-#define BEMAN_TRANSCODE_TESTS_ICONV_MOCK_HPP
+#ifndef TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP
+#define TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP
 
 #include <iconv.h>
 
@@ -27,4 +27,4 @@ inline int mock_iconv_close(iconv_t) { return 0; }
 
 } // namespace beman::transcoding::tests
 
-#endif // BEMAN_TRANSCODE_TESTS_ICONV_MOCK_HPP
+#endif // TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP

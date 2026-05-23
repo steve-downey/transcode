@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef BEMAN_TRANSCODE_DETAIL_UTF8_HPP
-#define BEMAN_TRANSCODE_DETAIL_UTF8_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF8_HPP
+#define INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF8_HPP
 
 #include <beman/transcode/detail/error.hpp>
 
@@ -70,4 +70,4 @@ constexpr utf8_result utf8_decode_one(I& current, S end) {
 
 } // namespace beman::transcoding::detail
 
-#endif // BEMAN_TRANSCODE_DETAIL_UTF8_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF8_HPP
