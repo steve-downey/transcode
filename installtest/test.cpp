@@ -3,6 +3,4 @@
 
 #include <beman/transcode/transcode.hpp>
 
-int main() {
-    return 0;
-}
+int main() { return 0; }

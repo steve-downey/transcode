@@ -25,7 +25,11 @@ option(
     ${PROJECT_IS_TOP_LEVEL}
 )
 
-option(BEMAN_TRANSCODE_USE_MODULES "Provide beman.transcode as a C++ module" OFF)
+option(
+    BEMAN_TRANSCODE_USE_MODULES
+    "Provide beman.transcode as a C++ module"
+    OFF
+)
 
 if(BEMAN_TRANSCODE_USE_MODULES)
     set(CMAKE_CXX_SCAN_FOR_MODULES ON)
