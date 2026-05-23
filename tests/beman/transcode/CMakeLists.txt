@@ -56,6 +56,10 @@ target_sources(
     beman.transcode.tests.iconv_transcode
     PRIVATE iconv_transcode.test.cpp
 )
+target_include_directories(
+    beman.transcode.tests.iconv_transcode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
 target_link_libraries(
     beman.transcode.tests.iconv_transcode
     PRIVATE beman::transcode Catch2::Catch2WithMain
