@@ -3,12 +3,27 @@
 /.cache
 /compile_commands.json
 /build
+/.build/
+/.install/
+.update-submodules
+/installtest/.build/
 
-# ignore emacs temp files
+# Python / uv
+/.venv/
+uv.lock
+
+# Emacs
 *~
 \#*\#
+/.emacs.d/eln-cache/
+/.emacs.d/elpa*/
+*.deps
+*.html
 
-# ignore vscode settings
+# Doxygen
+/docs/html/
+
+# IDE settings
 .vscode
 
 # ignore vim swap files
