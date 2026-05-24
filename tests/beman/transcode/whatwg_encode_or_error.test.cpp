@@ -74,3 +74,43 @@ TEST_CASE("whatwg_encode_or_error consteval", "[transcoding::whatwg_encode_or_er
     };
     CHECK(constify(encode_euro()) == '\x80');
 }
+
+// ---------------------------------------------------------------------------
+// UTF-8 or_error tests (step 20)
+// ---------------------------------------------------------------------------
+
+TEST_CASE("whatwg_encode_or_error UTF-8 surrogate yields unexpected", "[transcoding::whatwg_encode_or_error][utf8]") {
+    std::vector<char32_t> cps{static_cast<char32_t>(0xD800)};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::utf_8>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::surrogate_code_point);
+}
+
+TEST_CASE("whatwg_encode_or_error UTF-8 out_of_range yields unexpected", "[transcoding::whatwg_encode_or_error][utf8]") {
+    std::vector<char32_t> cps{static_cast<char32_t>(0x110000)};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::utf_8>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::out_of_range);
+}
+
+TEST_CASE("whatwg_encode_or_error UTF-8 valid ASCII has_value", "[transcoding::whatwg_encode_or_error][utf8]") {
+    std::vector<char32_t> cps{U'A'};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::utf_8>);
+    REQUIRE(result.size() == 1);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == 'A');
+}
+
+TEST_CASE("whatwg_encode_or_error UTF-8 3-byte has_value correct bytes", "[transcoding::whatwg_encode_or_error][utf8]") {
+    // U+20AC -> {0xE2, 0x82, 0xAC}
+    std::vector<char32_t> cps{U'\x20AC'};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::utf_8>);
+    REQUIRE(result.size() == 3);
+    for (auto& r : result)
+        REQUIRE(r.has_value());
+    CHECK(static_cast<unsigned char>(result[0].value()) == 0xE2);
+    CHECK(static_cast<unsigned char>(result[1].value()) == 0x82);
+    CHECK(static_cast<unsigned char>(result[2].value()) == 0xAC);
+}
