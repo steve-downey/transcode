@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–22 complete. 194 C++ + 44 Python tests pass. On `main`.
+**Current state:** Steps 0–23 complete. 223 C++ + 56 Python tests pass. On `main`.
 
 ---
 
@@ -123,12 +123,12 @@ Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.
 
 ## Step 23: gb18030 decode + encode (`step23-gb18030`)
 
-- [ ] Create branch from `main`
-- [ ] Generate gb18030 tables + ranges
-- [ ] Tests (RED → GREEN)
-- [ ] Implement decode + encode
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Generate gb18030 tables + ranges
+- [x] Tests (RED → GREEN)
+- [x] Implement decode + encode
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ## Step 24: Big5 decode + encode (`step24-big5`)
 
