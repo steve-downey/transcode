@@ -34,6 +34,7 @@
 #include <beman/transcode/detail/tables/windows_1258.hpp>
 #include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
 #include <beman/transcode/detail/utf8.hpp>
+#include <beman/transcode/detail/utf16.hpp>
 #include <beman/transcode/detail/x_user_defined.hpp>
 
 #include <expected>
@@ -74,6 +75,8 @@ enum class codec {
     windows_1257,
     windows_1258,
     x_mac_cyrillic,
+    utf_16be,
+    utf_16le,
 };
 
 // ---------------------------------------------------------------------------
@@ -89,10 +92,12 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         using base_iter = std::ranges::iterator_t<R>;
         using base_sent = std::ranges::sentinel_t<R>;
 
-        base_iter current_;
-        base_sent end_;
-        char32_t  value_{};
-        bool      done_{false};
+        base_iter     current_;
+        base_sent     end_;
+        char32_t      value_{};
+        bool          done_{false};
+        bool          has_pending_{false};
+        unsigned char pending_[2]{};
 
         constexpr void load();
 
@@ -159,10 +164,12 @@ class whatwg_decode_or_error_view : public std::ranges::view_interface<whatwg_de
         using base_sent = std::ranges::sentinel_t<R>;
         using result_t  = std::expected<char32_t, whatwg_error>;
 
-        base_iter current_;
-        base_sent end_;
-        result_t  value_{};
-        bool      done_{false};
+        base_iter     current_;
+        base_sent     end_;
+        result_t      value_{};
+        bool          done_{false};
+        bool          has_pending_{false};
+        unsigned char pending_[2]{};
 
         constexpr void load();
 
@@ -239,8 +246,10 @@ template <codec C, std::ranges::input_range R>
     requires legacy_byte_range<R>
 constexpr void whatwg_decode_view<C, R>::iterator::load() {
     if (current_ == end_) {
-        done_ = true;
-        return;
+        if (!has_pending_) {
+            done_ = true;
+            return;
+        }
     }
     if constexpr (C == codec::replacement) {
         while (current_ != end_)
@@ -332,6 +341,62 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::x_mac_cyrillic) {
         auto r = detail::single_byte_decode_one(current_, end_, detail::tables::x_mac_cyrillic);
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::utf_16be || C == codec::utf_16le) {
+        // Read the first code unit (2 bytes), using pending buffer if available.
+        unsigned char b0, b1;
+        if (has_pending_) {
+            b0           = pending_[0];
+            b1           = pending_[1];
+            has_pending_ = false;
+        } else {
+            b0 = static_cast<unsigned char>(*current_);
+            ++current_;
+            if (current_ == end_) {
+                value_ = U'\xFFFD';
+                return;
+            }
+            b1 = static_cast<unsigned char>(*current_);
+            ++current_;
+        }
+        char16_t unit;
+        if constexpr (C == codec::utf_16be)
+            unit = static_cast<char16_t>((static_cast<unsigned>(b0) << 8) | b1);
+        else
+            unit = static_cast<char16_t>((static_cast<unsigned>(b1) << 8) | b0);
+
+        if (unit >= 0xD800 && unit <= 0xDBFF) {
+            // High surrogate: peek next 2 bytes
+            if (current_ == end_) {
+                value_ = U'\xFFFD';
+                return;
+            }
+            auto b2 = static_cast<unsigned char>(*current_);
+            ++current_;
+            if (current_ == end_) {
+                value_ = U'\xFFFD';
+                return;
+            }
+            auto b3 = static_cast<unsigned char>(*current_);
+            ++current_;
+            char16_t low;
+            if constexpr (C == codec::utf_16be)
+                low = static_cast<char16_t>((static_cast<unsigned>(b2) << 8) | b3);
+            else
+                low = static_cast<char16_t>((static_cast<unsigned>(b3) << 8) | b2);
+            if (low >= 0xDC00 && low <= 0xDFFF) {
+                value_ = 0x10000 + ((static_cast<char32_t>(unit - 0xD800) << 10) | (low - 0xDC00));
+            } else {
+                // Not a valid low surrogate: emit U+FFFD and save b2/b3 for next call
+                value_       = U'\xFFFD';
+                pending_[0]  = b2;
+                pending_[1]  = b3;
+                has_pending_ = true;
+            }
+        } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
+            value_ = U'\xFFFD';
+        } else {
+            value_ = static_cast<char32_t>(unit);
+        }
     }
 }
 
@@ -399,8 +464,10 @@ template <codec C, std::ranges::input_range R>
     requires legacy_byte_range<R>
 constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
     if (current_ == end_) {
-        done_ = true;
-        return;
+        if (!has_pending_) {
+            done_ = true;
+            return;
+        }
     }
     if constexpr (C == codec::replacement) {
         while (current_ != end_)
@@ -577,6 +644,59 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
             value_ = std::unexpected(r.error);
         else
             value_ = r.code_point;
+    } else if constexpr (C == codec::utf_16be || C == codec::utf_16le) {
+        unsigned char b0, b1;
+        if (has_pending_) {
+            b0           = pending_[0];
+            b1           = pending_[1];
+            has_pending_ = false;
+        } else {
+            b0 = static_cast<unsigned char>(*current_);
+            ++current_;
+            if (current_ == end_) {
+                value_ = std::unexpected(whatwg_error::truncated_sequence);
+                return;
+            }
+            b1 = static_cast<unsigned char>(*current_);
+            ++current_;
+        }
+        char16_t unit;
+        if constexpr (C == codec::utf_16be)
+            unit = static_cast<char16_t>((static_cast<unsigned>(b0) << 8) | b1);
+        else
+            unit = static_cast<char16_t>((static_cast<unsigned>(b1) << 8) | b0);
+
+        if (unit >= 0xD800 && unit <= 0xDBFF) {
+            if (current_ == end_) {
+                value_ = std::unexpected(whatwg_error::truncated_sequence);
+                return;
+            }
+            auto b2 = static_cast<unsigned char>(*current_);
+            ++current_;
+            if (current_ == end_) {
+                value_ = std::unexpected(whatwg_error::truncated_sequence);
+                return;
+            }
+            auto b3 = static_cast<unsigned char>(*current_);
+            ++current_;
+            char16_t low;
+            if constexpr (C == codec::utf_16be)
+                low = static_cast<char16_t>((static_cast<unsigned>(b2) << 8) | b3);
+            else
+                low = static_cast<char16_t>((static_cast<unsigned>(b3) << 8) | b2);
+            if (low >= 0xDC00 && low <= 0xDFFF) {
+                value_ = 0x10000 + ((static_cast<char32_t>(unit - 0xD800) << 10) | (low - 0xDC00));
+            } else {
+                value_       = std::unexpected(whatwg_error::surrogate_code_point);
+                pending_[0]  = b2;
+                pending_[1]  = b3;
+                has_pending_ = true;
+            }
+        } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
+            value_ = std::unexpected(whatwg_error::surrogate_code_point);
+        } else {
+            value_ = static_cast<char32_t>(unit);
+        }
     }
 }
 

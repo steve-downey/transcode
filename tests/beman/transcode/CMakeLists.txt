@@ -134,7 +134,10 @@ target_link_libraries(
 
 add_executable(beman.transcode.tests.utf16_decode)
 target_sources(beman.transcode.tests.utf16_decode PRIVATE utf16_decode.test.cpp)
-target_include_directories(beman.transcode.tests.utf16_decode PRIVATE ${TEST_INCLUDE_DIR})
+target_include_directories(
+    beman.transcode.tests.utf16_decode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
 target_link_libraries(
     beman.transcode.tests.utf16_decode
     PRIVATE beman::transcode Catch2::Catch2WithMain
@@ -142,7 +145,10 @@ target_link_libraries(
 
 add_executable(beman.transcode.tests.utf16_encode)
 target_sources(beman.transcode.tests.utf16_encode PRIVATE utf16_encode.test.cpp)
-target_include_directories(beman.transcode.tests.utf16_encode PRIVATE ${TEST_INCLUDE_DIR})
+target_include_directories(
+    beman.transcode.tests.utf16_encode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
 target_link_libraries(
     beman.transcode.tests.utf16_encode
     PRIVATE beman::transcode Catch2::Catch2WithMain

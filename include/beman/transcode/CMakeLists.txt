@@ -54,6 +54,7 @@ else()
                     detail/tables/x_mac_cyrillic.hpp
                     detail/utf8.hpp
                     detail/utf8_encode.hpp
+                    detail/utf16.hpp
                     iconv_transcode_view.hpp
                     whatwg_decode_view.hpp
                     whatwg_encode_view.hpp

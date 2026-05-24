@@ -100,9 +100,9 @@ TEST_CASE("utf16be decode multiple codepoints", "[transcoding::utf16be]") {
 }
 
 TEST_CASE("utf16be decode pipe syntax with span", "[transcoding::utf16be]") {
-    std::vector<char>         bytes{'\x00', '\x41'};
-    std::span<const char>     sp(bytes);
-    std::vector<char32_t>     result;
+    std::vector<char>     bytes{'\x00', '\x41'};
+    std::span<const char> sp(bytes);
+    std::vector<char32_t> result;
     for (char32_t cp : sp | whatwg_decode<codec::utf_16be>)
         result.push_back(cp);
     REQUIRE(result.size() == 1);
@@ -112,8 +112,8 @@ TEST_CASE("utf16be decode pipe syntax with span", "[transcoding::utf16be]") {
 TEST_CASE("utf16be decode consteval", "[transcoding::utf16be]") {
     using beman::transcoding::tests::constify;
     constexpr auto decode_a = []() consteval {
-        constexpr char            bytes[] = {'\x00', '\x41'};
-        std::span<const char>     sp(bytes, 2);
+        constexpr char        bytes[] = {'\x00', '\x41'};
+        std::span<const char> sp(bytes, 2);
         return *(sp | whatwg_decode<codec::utf_16be>).begin();
     };
     CHECK(constify(decode_a()) == U'A');

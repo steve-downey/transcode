@@ -7,6 +7,7 @@
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/single_byte.hpp>
 #include <beman/transcode/detail/utf8_encode.hpp>
+#include <beman/transcode/detail/utf16.hpp>
 #include <beman/transcode/detail/tables/ibm866.hpp>
 #include <beman/transcode/detail/tables/iso_8859_10.hpp>
 #include <beman/transcode/detail/tables/iso_8859_13.hpp>
@@ -282,6 +283,34 @@ constexpr void whatwg_encode_view<C, R>::iterator::load() {
         encode_single(detail::tables::windows_1258);
     } else if constexpr (C == codec::x_mac_cyrillic) {
         encode_single(detail::tables::x_mac_cyrillic);
+    } else if constexpr (C == codec::utf_16be) {
+        auto r = detail::utf16be_encode_one(static_cast<char32_t>(*current_));
+        ++current_;
+        if (r.is_error) {
+            // U+FFFD in UTF-16BE: 0xFF 0xFD
+            buf_[0] = '\xFF';
+            buf_[1] = '\xFD';
+            len_    = 2;
+        } else {
+            for (int i = 0; i < r.count; ++i)
+                buf_[i] = r.bytes[i];
+            len_ = r.count;
+        }
+        pos_ = 0;
+    } else if constexpr (C == codec::utf_16le) {
+        auto r = detail::utf16le_encode_one(static_cast<char32_t>(*current_));
+        ++current_;
+        if (r.is_error) {
+            // U+FFFD in UTF-16LE: 0xFD 0xFF
+            buf_[0] = '\xFD';
+            buf_[1] = '\xFF';
+            len_    = 2;
+        } else {
+            for (int i = 0; i < r.count; ++i)
+                buf_[i] = r.bytes[i];
+            len_ = r.count;
+        }
+        pos_ = 0;
     }
 }
 
@@ -429,6 +458,30 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         encode_single(detail::tables::windows_1258);
     } else if constexpr (C == codec::x_mac_cyrillic) {
         encode_single(detail::tables::x_mac_cyrillic);
+    } else if constexpr (C == codec::utf_16be) {
+        auto r = detail::utf16be_encode_one(static_cast<char32_t>(*current_));
+        ++current_;
+        if (r.is_error) {
+            buf_[0] = std::unexpected(whatwg_error::surrogate_code_point);
+            len_    = 1;
+        } else {
+            for (int i = 0; i < r.count; ++i)
+                buf_[i] = static_cast<char>(r.bytes[i]);
+            len_ = r.count;
+        }
+        pos_ = 0;
+    } else if constexpr (C == codec::utf_16le) {
+        auto r = detail::utf16le_encode_one(static_cast<char32_t>(*current_));
+        ++current_;
+        if (r.is_error) {
+            buf_[0] = std::unexpected(whatwg_error::surrogate_code_point);
+            len_    = 1;
+        } else {
+            for (int i = 0; i < r.count; ++i)
+                buf_[i] = static_cast<char>(r.bytes[i]);
+            len_ = r.count;
+        }
+        pos_ = 0;
     }
 }
 
