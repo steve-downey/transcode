@@ -1,6 +1,7 @@
 var dir_56330be2367402bf2c78bcc1a3c20fc7 =
 [
     [ "big5.hpp", "tables_2big5_8hpp.html", null ],
+    [ "euc_jp_jis0212.hpp", "euc__jp__jis0212_8hpp.html", null ],
     [ "gb18030_ranges.hpp", "gb18030__ranges_8hpp.html", null ],
     [ "gbk.hpp", "tables_2gbk_8hpp.html", null ],
     [ "ibm866.hpp", "ibm866_8hpp.html", null ],

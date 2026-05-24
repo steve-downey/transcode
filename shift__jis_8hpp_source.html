@@ -220,10 +220,10 @@ $(document).ready(function(){initNavTree('shift__jis_8hpp_source.html',''); init
 <div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>    <span class="comment">// Search the decode table for the lowest pointer mapping to cp</span></div>
 <div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 11280; ++i) {</div>
 <div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>        <span class="keywordflow">if</span> (tables::shift_jis[i] == cp) {</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>            <span class="keywordtype">int</span> lead_offset  = i / 188;</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>            <span class="keywordtype">int</span> trail_offset = i % 188;</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>            <span class="keywordtype">int</span> lead         = (lead_offset &lt; 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1;</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>            <span class="keywordtype">int</span> trail        = (trail_offset &lt; 63) ? trail_offset + 0x40 : trail_offset + 0x41;</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>            <span class="keywordtype">int</span>                     lead_offset  = i / 188;</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>            <span class="keywordtype">int</span>                     trail_offset = i % 188;</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>            <span class="keywordtype">int</span>                     lead         = (lead_offset &lt; 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1;</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>            <span class="keywordtype">int</span>                     trail        = (trail_offset &lt; 63) ? trail_offset + 0x40 : trail_offset + 0x41;</div>
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>            shift_jis_encode_result r{};</div>
 <div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>            r.bytes[0] = <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span> <span class="keywordtype">char</span><span class="keyword">&gt;</span>(lead);</div>
 <div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>            r.bytes[1] = <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span> <span class="keywordtype">char</span><span class="keyword">&gt;</span>(trail);</div>
