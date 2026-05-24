@@ -118,14 +118,12 @@ TEST_CASE("iconv_transcode_or_error_view destructor closes handle", "[transcodin
     CHECK(close_count == 1);
 }
 
-TEST_CASE("iconv_transcode_or_error_closure pipe syntax with mock fns",
-          "[transcoding::iconv_transcode_or_error]") {
+TEST_CASE("iconv_transcode_or_error_closure pipe syntax with mock fns", "[transcoding::iconv_transcode_or_error]") {
     std::vector<char>    input{'H', 'i'};
     std::array<char, 16> buf{};
     iconv_functions      fns{mock_iconv_open, mock_iconv, mock_iconv_close};
-    auto                 closure =
-        iconv_transcode_or_error_closure<iconv_functions>{fns, "ASCII", "ASCII", std::span(buf)};
-    auto result = collect(input | closure);
+    auto closure = iconv_transcode_or_error_closure<iconv_functions>{fns, "ASCII", "ASCII", std::span(buf)};
+    auto result  = collect(input | closure);
     REQUIRE(result.size() == 2);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == 'H');

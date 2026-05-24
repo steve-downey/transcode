@@ -28,8 +28,7 @@ namespace beman::transcoding {
 // iconv_t is an OS-managed handle that cannot be copied.
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
-class iconv_transcode_or_error_view
-    : public std::ranges::view_interface<iconv_transcode_or_error_view<IconvFns, R>> {
+class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_transcode_or_error_view<IconvFns, R>> {
     R               base_;
     IconvFns        fns_;
     const char*     from_;
@@ -241,8 +240,7 @@ iconv_transcode_or_error_view<IconvFns, R>::iterator::iterator(iterator&& other)
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
-auto iconv_transcode_or_error_view<IconvFns, R>::iterator::operator=(iterator&& other) noexcept
-    -> iterator& {
+auto iconv_transcode_or_error_view<IconvFns, R>::iterator::operator=(iterator&& other) noexcept -> iterator& {
     if (this != &other) {
         if (handle_ != (iconv_t)-1)
             fns_.close(handle_);
@@ -301,6 +299,26 @@ template <typename IconvFns, std::ranges::input_range R>
 void iconv_transcode_or_error_view<IconvFns, R>::iterator::operator++(int) {
     ++*this;
 }
+
+// iconv_transcode_or_error_closure<IconvFns> — pipe adapter for iconv_transcode_or_error_view.
+template <typename IconvFns>
+struct iconv_transcode_or_error_closure {
+    IconvFns        fns_;
+    const char*     from_;
+    const char*     to_;
+    std::span<char> buffer_;
+
+    template <legacy_byte_range R>
+    auto operator()(R&& r) const {
+        return iconv_transcode_or_error_view<IconvFns, std::views::all_t<R>>(
+            std::views::all(std::forward<R>(r)), fns_, from_, to_, buffer_);
+    }
+
+    template <legacy_byte_range R>
+    friend auto operator|(R&& r, const iconv_transcode_or_error_closure& self) {
+        return self(std::forward<R>(r));
+    }
+};
 
 } // namespace beman::transcoding
 
