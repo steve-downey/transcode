@@ -134,3 +134,28 @@ TEST_CASE("whatwg_decode replacement consteval", "[transcoding::whatwg_decode]")
     };
     CHECK(constify(decode_replacement()) == U'\xFFFD');
 }
+
+// Step 15: codec::x_user_defined tests
+
+TEST_CASE("whatwg_decode x_user_defined ASCII", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A', 'z'};
+    CHECK(collect(bytes | whatwg_decode<codec::x_user_defined>) == std::vector<char32_t>{U'A', U'z'});
+}
+
+TEST_CASE("whatwg_decode x_user_defined high bytes", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'\x80', '\xFF'};
+    auto              result = collect(bytes | whatwg_decode<codec::x_user_defined>);
+    REQUIRE(result.size() == 2);
+    CHECK(result[0] == char32_t(0xF780));
+    CHECK(result[1] == char32_t(0xF7FF));
+}
+
+TEST_CASE("whatwg_decode x_user_defined consteval", "[transcoding::whatwg_decode]") {
+    using beman::transcoding::tests::constify;
+    constexpr auto decode_x = []() consteval {
+        constexpr char        bytes[] = {'\x80'};
+        std::span<const char> sp(bytes, 1);
+        return *(sp | whatwg_decode<codec::x_user_defined>).begin();
+    };
+    CHECK(constify(decode_x()) == char32_t(0xF780));
+}

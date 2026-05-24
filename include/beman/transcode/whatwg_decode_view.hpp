@@ -6,6 +6,7 @@
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/utf8.hpp>
+#include <beman/transcode/detail/x_user_defined.hpp>
 
 #include <expected>
 #include <iterator>
@@ -13,7 +14,7 @@
 
 namespace beman::transcoding {
 
-enum class codec { utf_8, replacement };
+enum class codec { utf_8, replacement, x_user_defined };
 
 // ---------------------------------------------------------------------------
 // whatwg_decode_view — decodes bytes to char32_t, replacing errors with U+FFFD
