@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–17 complete. 70 tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–18 complete. 76 tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -162,13 +162,14 @@ Step 17: Data tooling (&lt;tt&gt;step17-data-tooling&lt;/tt&gt;)</h1>
 Step 18: All single-byte decoders (&lt;tt&gt;step18-all-single-byte-decode&lt;/tt&gt;)</h1>
 <p>21 remaining single-byte codecs. Each needs: enum value, table include, dispatch in both <code>load()</code> functions, tests.</p>
 <ul>
-<li>[ ] Create branch from <code>main</code></li>
-<li>[ ] Add all 21 enum values + includes + dispatch branches</li>
-<li>[ ] Replace hand-written <code><a class="el" href="windows__1252_8hpp.html">windows_1252.hpp</a></code> with generated version</li>
-<li>[ ] Tests for representative codecs (RED → GREEN)</li>
-<li>[ ] <code>make test</code> + <code>make lint</code></li>
-<li>[ ] Push both remotes + merge to main</li>
+<li>[x] Create branch from <code>main</code></li>
+<li>[x] Add all 27 enum values + includes + dispatch branches</li>
+<li>[x] Replace hand-written <code><a class="el" href="windows__1252_8hpp.html">windows_1252.hpp</a></code> with WHATWG-correct generated version</li>
+<li>[x] Tests for representative codecs (RED → GREEN)</li>
+<li>[x] <code>make test</code> + <code>make lint</code></li>
+<li>[x] Push both remotes + merge to main</li>
 </ul>
+<p>Tables placed in <code>include/beman/transcode/detail/tables/</code> (proper include tree, not <code>data/tables/</code>). iso-8859-8-i shares iso-8859-8 table.</p>
 <p>Codecs: IBM866, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-5, ISO-8859-6, ISO-8859-7, ISO-8859-8, ISO-8859-8-I, ISO-8859-10, ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, KOI8-R, KOI8-U, macintosh, windows-874, windows-1250, windows-1251, windows-1253, windows-1254, windows-1255, windows-1256, windows-1257, windows-1258, x-mac-cyrillic.</p>
 <p>(ISO-8859-8-I shares ISO-8859-8's table; counted as one codec pair.)</p>
 <h1><a class="anchor" id="autotoc_md15"></a>
