@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–16 complete. 70 tests pass. On `main`.
+**Current state:** Steps 0–17 complete. 70 tests pass. On `main`.
 
 ---
 
@@ -42,21 +42,21 @@ Mark items `[x]` as they complete. Read this file first when resuming work.
 
 ## Step 17: Data tooling (`step17-data-tooling`)
 
-- [ ] Create branch `step17-data-tooling` from `main`
-- [ ] Add ruff, mypy, pytest to pyproject.toml + pre-commit config
-- [ ] Write `tools/download_indexes.py` (typed, stdlib only)
-- [ ] Write `tools/tests/test_download.py`
-- [ ] Download all WHATWG index files → `docs/whatwg/` (pristine)
-- [ ] Write `docs/whatwg/SOURCE.md` (provenance, license, checksums)
-- [ ] Write `docs/whatwg/source.bib` (BibTeX citation)
-- [ ] Commit pristine upstream data + provenance + script + tests
-- [ ] Write `tools/generate_tables.py` (typed, stdlib only)
-- [ ] Write `tools/tests/test_generate.py`
-- [ ] Generate tables → `data/tables/`
-- [ ] Commit generated/derived data + script + tests
-- [ ] `uv run pytest tools/tests/` + `uv run mypy tools/`
-- [ ] `make test` + `make lint` (includes ruff)
-- [ ] Push both remotes + merge to main
+- [x] Create branch `step17-data-tooling` from `main`
+- [x] Add ruff, mypy, pytest to pyproject.toml + pre-commit config
+- [x] Write `tools/download_indexes.py` (typed, stdlib only)
+- [x] Write `tools/tests/test_download.py`
+- [x] Download all WHATWG index files → `docs/whatwg/` (pristine)
+- [x] Write `docs/whatwg/SOURCE.md` (provenance, license, checksums)
+- [x] Write `docs/whatwg/source.bib` (BibTeX citation)
+- [x] Commit pristine upstream data + provenance + script + tests
+- [x] Write `tools/generate_tables.py` (typed, stdlib only)
+- [x] Write `tools/tests/test_generate.py`
+- [x] Generate tables → `data/tables/`
+- [x] Commit generated/derived data + script + tests
+- [x] `uv run pytest tools/tests/` + `uv run mypy tools/`
+- [x] `make test` + `make lint` (includes ruff)
+- [x] Push both remotes + merge to main
 
 ## Step 18: All single-byte decoders (`step18-all-single-byte-decode`)
 
