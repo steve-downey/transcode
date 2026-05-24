@@ -64,10 +64,11 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
 
         base_iter current_;
         base_sent end_;
-        char      buf_[4]{};
+        char      buf_[8]{};
         int       len_{0};
         int       pos_{0};
         bool      done_{false};
+        int       iso2022jp_state_{0};
 
         constexpr void load();
 
@@ -132,10 +133,11 @@ class whatwg_encode_or_error_view : public std::ranges::view_interface<whatwg_en
 
         base_iter current_;
         base_sent end_;
-        result_t  buf_[4]{};
+        result_t  buf_[8]{};
         int       len_{0};
         int       pos_{0};
         bool      done_{false};
+        int       iso2022jp_state_{0};
 
         constexpr void load();
 
@@ -211,6 +213,17 @@ template <codec C, std::ranges::input_range R>
     requires unicode_scalar_range<R>
 constexpr void whatwg_encode_view<C, R>::iterator::load() {
     if (current_ == end_) {
+        if constexpr (C == codec::iso_2022_jp) {
+            if (iso2022jp_state_ != 0) {
+                buf_[0]          = '\x1B';
+                buf_[1]          = '\x28';
+                buf_[2]          = '\x42';
+                len_             = 3;
+                pos_             = 0;
+                iso2022jp_state_ = 0;
+                return;
+            }
+        }
         done_ = true;
         return;
     }
@@ -371,6 +384,76 @@ constexpr void whatwg_encode_view<C, R>::iterator::load() {
             len_ = r.count;
         }
         pos_ = 0;
+    } else if constexpr (C == codec::iso_2022_jp) {
+        auto cp = static_cast<char32_t>(*current_);
+        ++current_;
+        // Roman state: U+00A5 (YEN SIGN) and U+203E (OVERLINE)
+        if (cp == 0x00A5 || cp == 0x203E) {
+            char ascii_byte = (cp == 0x00A5) ? '\x5C' : '\x7E';
+            if (iso2022jp_state_ != 1) {
+                buf_[0]          = '\x1B';
+                buf_[1]          = '\x28';
+                buf_[2]          = '\x4A';
+                buf_[3]          = ascii_byte;
+                len_             = 4;
+                iso2022jp_state_ = 1;
+            } else {
+                buf_[0] = ascii_byte;
+                len_    = 1;
+            }
+            pos_ = 0;
+            return;
+        }
+        if (cp < 0x80) {
+            char ascii_byte = static_cast<char>(cp);
+            if (iso2022jp_state_ != 0) {
+                buf_[0]          = '\x1B';
+                buf_[1]          = '\x28';
+                buf_[2]          = '\x42';
+                buf_[3]          = ascii_byte;
+                len_             = 4;
+                iso2022jp_state_ = 0;
+            } else {
+                buf_[0] = ascii_byte;
+                len_    = 1;
+            }
+            pos_ = 0;
+            return;
+        }
+        for (int i = 0; i < 8836; ++i) {
+            if (detail::tables::shift_jis[i] == cp) {
+                int lead  = (i / 94) + 0x21;
+                int trail = (i % 94) + 0x21;
+                if (iso2022jp_state_ != 2) {
+                    buf_[0]          = '\x1B';
+                    buf_[1]          = '\x24';
+                    buf_[2]          = '\x42';
+                    buf_[3]          = static_cast<char>(lead);
+                    buf_[4]          = static_cast<char>(trail);
+                    len_             = 5;
+                    iso2022jp_state_ = 2;
+                } else {
+                    buf_[0] = static_cast<char>(lead);
+                    buf_[1] = static_cast<char>(trail);
+                    len_    = 2;
+                }
+                pos_ = 0;
+                return;
+            }
+        }
+        // Unmapped
+        if (iso2022jp_state_ != 0) {
+            buf_[0]          = '\x1B';
+            buf_[1]          = '\x28';
+            buf_[2]          = '\x42';
+            buf_[3]          = '?';
+            len_             = 4;
+            iso2022jp_state_ = 0;
+        } else {
+            buf_[0] = '?';
+            len_    = 1;
+        }
+        pos_ = 0;
     }
 }
 
@@ -440,6 +523,17 @@ template <codec C, std::ranges::input_range R>
     requires unicode_scalar_range<R>
 constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
     if (current_ == end_) {
+        if constexpr (C == codec::iso_2022_jp) {
+            if (iso2022jp_state_ != 0) {
+                buf_[0]          = result_t{'\x1B'};
+                buf_[1]          = result_t{'\x28'};
+                buf_[2]          = result_t{'\x42'};
+                len_             = 3;
+                pos_             = 0;
+                iso2022jp_state_ = 0;
+                return;
+            }
+        }
         done_ = true;
         return;
     }
@@ -597,6 +691,68 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_ = r.count;
         }
         pos_ = 0;
+    } else if constexpr (C == codec::iso_2022_jp) {
+        auto cp = static_cast<char32_t>(*current_);
+        ++current_;
+        // Roman state: U+00A5 (YEN SIGN) and U+203E (OVERLINE)
+        if (cp == 0x00A5 || cp == 0x203E) {
+            char ascii_byte = (cp == 0x00A5) ? '\x5C' : '\x7E';
+            if (iso2022jp_state_ != 1) {
+                buf_[0]          = result_t{'\x1B'};
+                buf_[1]          = result_t{'\x28'};
+                buf_[2]          = result_t{'\x4A'};
+                buf_[3]          = result_t{ascii_byte};
+                len_             = 4;
+                iso2022jp_state_ = 1;
+            } else {
+                buf_[0] = result_t{ascii_byte};
+                len_    = 1;
+            }
+            pos_ = 0;
+            return;
+        }
+        if (cp < 0x80) {
+            char ascii_byte = static_cast<char>(cp);
+            if (iso2022jp_state_ != 0) {
+                buf_[0]          = result_t{'\x1B'};
+                buf_[1]          = result_t{'\x28'};
+                buf_[2]          = result_t{'\x42'};
+                buf_[3]          = result_t{ascii_byte};
+                len_             = 4;
+                iso2022jp_state_ = 0;
+            } else {
+                buf_[0] = result_t{ascii_byte};
+                len_    = 1;
+            }
+            pos_ = 0;
+            return;
+        }
+        for (int i = 0; i < 8836; ++i) {
+            if (detail::tables::shift_jis[i] == cp) {
+                int lead  = (i / 94) + 0x21;
+                int trail = (i % 94) + 0x21;
+                if (iso2022jp_state_ != 2) {
+                    buf_[0]          = result_t{'\x1B'};
+                    buf_[1]          = result_t{'\x24'};
+                    buf_[2]          = result_t{'\x42'};
+                    buf_[3]          = result_t{static_cast<char>(lead)};
+                    buf_[4]          = result_t{static_cast<char>(trail)};
+                    len_             = 5;
+                    iso2022jp_state_ = 2;
+                } else {
+                    buf_[0] = result_t{static_cast<char>(lead)};
+                    buf_[1] = result_t{static_cast<char>(trail)};
+                    len_    = 2;
+                }
+                pos_ = 0;
+                return;
+            }
+        }
+        // Unmapped: reset to ASCII, emit error
+        iso2022jp_state_ = 0;
+        buf_[0]          = std::unexpected(whatwg_error::unmapped_codepoint);
+        len_             = 1;
+        pos_             = 0;
     }
 }
 
