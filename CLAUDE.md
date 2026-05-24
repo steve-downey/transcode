@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 The project uses CMake Ninja Multi-Config with `uv` managing Python-based tools (cmake, ninja, ctest, pre-commit).
 
 ```bash
-# Build and run all tests (default target)
+# Build and run all tests — C++ (ctest) + Python (pytest)
 make test
 
 # Build only
@@ -20,11 +20,17 @@ make compile
 # Run tests without rebuilding
 make ctest
 
-# Lint (clang-format, cmake formatting, spell check, etc.)
+# Lint: clang-format, cmake formatting, spell check, ruff, mypy, etc.
 make lint
 
 # Coverage report
 make coverage
+
+# Run Python tool tests only
+make pytest
+
+# Run mypy type checker only
+make mypy
 ```
 
 The `make` commands invoke `uv run cmake`/`uv run ctest`, so `uv` must be installed. The build directory is `.build/build-system/` by default; build config defaults to `Asan`.

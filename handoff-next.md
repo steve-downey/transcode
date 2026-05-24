@@ -190,12 +190,12 @@ following the existing pattern.
 ## Build Commands
 
 ```bash
-make test      # build + run all tests (currently 102)
-make lint      # clang-format + gersemi + ruff + codespell + gitleaks
+make test      # build + run ALL tests: C++ (ctest) + Python (pytest)
+make lint      # clang-format + gersemi + ruff + codespell + mypy + gitleaks
 make compile   # build only
 make coverage  # gcovr coverage report
-uv run pytest tools/tests/    # Python tool tests
-uv run mypy tools/            # Python type check
+make pytest    # Python tool tests only
+make mypy      # mypy type check only
 ```
 
 ## Coverage Rule

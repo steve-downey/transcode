@@ -130,8 +130,16 @@ ctest: $(_build_path)/CMakeCache.txt ## Run CTest on current build
 ctest_: compile
 	$(CTEST) --test-dir $(_build_path) --output-on-failure -C $(CONFIG)
 
+.PHONY: pytest
+pytest: venv ## Run Python tool tests
+	$(UV) run pytest tools/tests/
+
+.PHONY: mypy
+mypy: venv ## Run mypy type checker on Python tools
+	$(UV) run mypy tools/
+
 .PHONY: test
-test: ctest_ ## Rebuild and run tests
+test: ctest_ pytest ## Rebuild and run all tests (C++ and Python)
 
 .PHONY: cmake
 cmake: |  $(_build_path)
@@ -189,8 +197,8 @@ bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
 .PHONY: lint
-lint: venv
-lint: ## Run all configured tools in pre-commit
+lint: venv mypy
+lint: ## Run all configured tools in pre-commit and mypy
 	$(PRE_COMMIT) run -a
 
 .PHONY: lint-manual
