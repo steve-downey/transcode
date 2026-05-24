@@ -254,6 +254,34 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.euc_jp_decode)
+target_sources(
+    beman.transcode.tests.euc_jp_decode
+    PRIVATE euc_jp_decode.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.euc_jp_decode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.euc_jp_decode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.euc_jp_encode)
+target_sources(
+    beman.transcode.tests.euc_jp_encode
+    PRIVATE euc_jp_encode.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.euc_jp_encode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.euc_jp_encode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -276,6 +304,8 @@ catch_discover_tests(beman.transcode.tests.big5_decode)
 catch_discover_tests(beman.transcode.tests.big5_encode)
 catch_discover_tests(beman.transcode.tests.shift_jis_decode)
 catch_discover_tests(beman.transcode.tests.shift_jis_encode)
+catch_discover_tests(beman.transcode.tests.euc_jp_decode)
+catch_discover_tests(beman.transcode.tests.euc_jp_encode)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(

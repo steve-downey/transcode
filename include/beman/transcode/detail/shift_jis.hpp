@@ -119,10 +119,10 @@ constexpr shift_jis_encode_result shift_jis_encode_one(char32_t cp) {
     // Search the decode table for the lowest pointer mapping to cp
     for (int i = 0; i < 11280; ++i) {
         if (tables::shift_jis[i] == cp) {
-            int lead_offset  = i / 188;
-            int trail_offset = i % 188;
-            int lead         = (lead_offset < 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1;
-            int trail        = (trail_offset < 63) ? trail_offset + 0x40 : trail_offset + 0x41;
+            int                     lead_offset  = i / 188;
+            int                     trail_offset = i % 188;
+            int                     lead         = (lead_offset < 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1;
+            int                     trail        = (trail_offset < 63) ? trail_offset + 0x40 : trail_offset + 0x41;
             shift_jis_encode_result r{};
             r.bytes[0] = static_cast<unsigned char>(lead);
             r.bytes[1] = static_cast<unsigned char>(trail);
