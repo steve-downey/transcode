@@ -40,35 +40,143 @@ Mark items `[x]` as they complete. Read this file first when resuming work.
 - [x] Commit GREEN + push both remotes
 - [x] Merge to main + push both remotes
 
-## Step 17: ISO-8859 tables (`step17-iso-8859-tables`)
+## Step 17: Data tooling (`step17-data-tooling`)
 
-- [ ] Create branch `step17-iso-8859-tables` from `main`
-- [ ] Write failing tests (RED)
-- [ ] Commit RED + push both remotes
-- [ ] Create table headers + dispatch (GREEN)
+- [ ] Create branch `step17-data-tooling` from `main`
+- [ ] Write `tools/download_indexes.py`
+- [ ] Download all WHATWG index files → `docs/whatwg-indexes/`
+- [ ] Write `docs/whatwg-indexes/PROVENANCE.md` (source, license, checksums)
+- [ ] Commit downloaded data + provenance
+- [ ] Write `tools/generate_tables.py` (single-byte → .hpp + .bin)
+- [ ] Generate tables → `include/.../tables/generated/`
+- [ ] Commit generated files
 - [ ] `make test` + `make lint`
-- [ ] Commit GREEN + push both remotes
-- [ ] Merge to main + push both remotes
+- [ ] Push both remotes + merge to main
 
-## Step 18: UTF-8 encoder (`step18-utf8-encoder`)
+## Step 18: All single-byte decoders (`step18-all-single-byte-decode`)
 
-- [ ] Create branch `step18-utf8-encoder` from `main`
+21 remaining single-byte codecs. Each needs: enum value, table include,
+dispatch in both `load()` functions, tests.
+
+- [ ] Create branch from `main`
+- [ ] Add all 21 enum values + includes + dispatch branches
+- [ ] Replace hand-written `windows_1252.hpp` with generated version
+- [ ] Tests for representative codecs (RED → GREEN)
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
+
+Codecs: IBM866, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-5,
+ISO-8859-6, ISO-8859-7, ISO-8859-8, ISO-8859-8-I, ISO-8859-10,
+ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, KOI8-R, KOI8-U,
+macintosh, windows-874, windows-1250, windows-1251, windows-1253,
+windows-1254, windows-1255, windows-1256, windows-1257, windows-1258,
+x-mac-cyrillic.
+
+(ISO-8859-8-I shares ISO-8859-8's table; counted as one codec pair.)
+
+## Step 19: Single-byte encoder infra + all encoders (`step19-single-byte-encode`)
+
+Reverse lookup: codepoint → byte. Needs `single_byte_encode_one()` +
+`whatwg_encode_view` dispatch for all 22 single-byte codecs.
+
+- [ ] Create branch from `main`
+- [ ] Implement single-byte encoder infrastructure
+- [ ] Add encode dispatch for all 22 single-byte codecs
+- [ ] Tests (RED → GREEN)
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
+
+## Step 20: UTF-8 encoder (`step20-utf8-encoder`)
+
+- [ ] Create branch from `main`
 - [ ] Write failing tests + negative compile test (RED)
-- [ ] Commit RED + push both remotes
-- [ ] Implement `detail/utf8_encode.hpp` + `whatwg_encode_view.hpp` + `unicode_scalar_range` concept (GREEN)
+- [ ] Implement `detail/utf8_encode.hpp` + `whatwg_encode_view.hpp`
+- [ ] Add `unicode_scalar_range` concept
 - [ ] `make test` + `make lint`
-- [ ] Commit GREEN + push both remotes
-- [ ] Merge to main + push both remotes
+- [ ] Push both remotes + merge to main
 
-## Step 19: Round-trip composition (`step19-roundtrip`)
+## Step 21: UTF-16 decode + encode (`step21-utf16`)
 
-- [ ] Create branch `step19-roundtrip` from `main`
-- [ ] Write composition tests (RED — depends on step 18 encoder existing)
-- [ ] Commit RED + push both remotes
-- [ ] Tests should pass immediately if encoder is correct (GREEN = no new library code)
+Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.
+
+- [ ] Create branch from `main`
+- [ ] Tests (RED → GREEN)
+- [ ] Implement decode + encode for both byte orders
 - [ ] `make test` + `make lint`
-- [ ] Commit GREEN + push both remotes
-- [ ] Merge to main + push both remotes
+- [ ] Push both remotes + merge to main
+
+## Step 22: GBK decode + encode (`step22-gbk`)
+
+- [ ] Create branch from `main`
+- [ ] Generate GBK tables (extend `generate_tables.py`)
+- [ ] Tests (RED → GREEN)
+- [ ] Implement decode + encode
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
+
+## Step 23: gb18030 decode + encode (`step23-gb18030`)
+
+- [ ] Create branch from `main`
+- [ ] Generate gb18030 tables + ranges
+- [ ] Tests (RED → GREEN)
+- [ ] Implement decode + encode
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
+
+## Step 24: Big5 decode + encode (`step24-big5`)
+
+- [ ] Create branch from `main`
+- [ ] Generate Big5 tables
+- [ ] Tests (RED → GREEN)
+- [ ] Implement decode + encode
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
+
+## Step 25: Shift_JIS decode + encode (`step25-shift-jis`)
+
+- [ ] Create branch from `main`
+- [ ] Generate Shift_JIS tables
+- [ ] Tests (RED → GREEN)
+- [ ] Implement decode + encode
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
+
+## Step 26: EUC-JP decode + encode (`step26-euc-jp`)
+
+- [ ] Create branch from `main`
+- [ ] Generate EUC-JP tables (JIS X 0208 + 0212)
+- [ ] Tests (RED → GREEN)
+- [ ] Implement decode + encode
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
+
+## Step 27: ISO-2022-JP decode + encode (`step27-iso-2022-jp`)
+
+Stateful encoding (escape sequences).
+
+- [ ] Create branch from `main`
+- [ ] Tests (RED → GREEN)
+- [ ] Implement stateful decode + encode
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
+
+## Step 28: EUC-KR decode + encode (`step28-euc-kr`)
+
+- [ ] Create branch from `main`
+- [ ] Generate EUC-KR tables
+- [ ] Tests (RED → GREEN)
+- [ ] Implement decode + encode
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
+
+## Step 29: Round-trip composition (`step29-roundtrip`)
+
+Comprehensive round-trip tests for all implemented codecs.
+
+- [ ] Create branch from `main`
+- [ ] Write composition tests for all codec pairs
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
 
 ---
 
@@ -76,6 +184,7 @@ Mark items `[x]` as they complete. Read this file first when resuming work.
 
 - Each step's detailed plan: `docs/plans/step<N>-<slug>.md`
 - Phase 2 overview: `docs/plans/phase2-index.md`
-- TDD convention: RED commit msg = `"step<N>: <desc> (RED)"`, GREEN = `"step<N>: <desc> (GREEN)"`
+- TDD convention: RED = `"step<N>: <desc> (RED)"`, GREEN = `"step<N>: <desc> (GREEN)"`
 - Push both remotes: `git push origin <branch> && git push bbgithub <branch>`
 - No `Co-Authored-By` trailers in this project
+- Downloaded WHATWG data: `docs/whatwg-indexes/` with PROVENANCE.md
