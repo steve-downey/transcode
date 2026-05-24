@@ -267,6 +267,32 @@ set_tests_properties(
         PASS_REGULAR_EXPRESSION "no operand of the disjunction is satisfied"
 )
 
+# unicode_scalar_range rejects non-char32_t ranges (e.g. vector<char>)
+add_library(beman.transcode.tests.whatwg_encode_reject_char_range_fail OBJECT)
+target_sources(
+    beman.transcode.tests.whatwg_encode_reject_char_range_fail
+    PRIVATE whatwg_encode_reject_char_range_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.whatwg_encode_reject_char_range_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.whatwg_encode_reject_char_range_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME whatwg_encode_reject_char_range_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.whatwg_encode_reject_char_range_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    whatwg_encode_reject_char_range_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "unicode_scalar_range"
+)
+
 # views::null_term rejects non-pointer ranges via is_pointer_v constraint
 add_library(beman.transcode.tests.null_term_reject_range_fail OBJECT)
 target_sources(
