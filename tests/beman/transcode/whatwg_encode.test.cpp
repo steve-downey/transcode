@@ -84,36 +84,31 @@ TEST_CASE("whatwg_encode UTF-8 ASCII single byte", "[transcoding::whatwg_encode]
 TEST_CASE("whatwg_encode UTF-8 2-byte sequence", "[transcoding::whatwg_encode][utf8]") {
     // U+00E9 (e acute) -> 0xC3 0xA9
     std::vector<char32_t> cps{U'\x00E9'};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) ==
-          std::vector<char>{'\xC3', '\xA9'});
+    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'\xC3', '\xA9'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 3-byte sequence", "[transcoding::whatwg_encode][utf8]") {
     // U+20AC (Euro sign) -> 0xE2 0x82 0xAC
     std::vector<char32_t> cps{U'\x20AC'};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) ==
-          std::vector<char>{'\xE2', '\x82', '\xAC'});
+    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'\xE2', '\x82', '\xAC'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 4-byte sequence", "[transcoding::whatwg_encode][utf8]") {
     // U+1F600 (grinning face emoji) -> 0xF0 0x9F 0x98 0x80
     std::vector<char32_t> cps{U'\x1F600'};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) ==
-          std::vector<char>{'\xF0', '\x9F', '\x98', '\x80'});
+    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'\xF0', '\x9F', '\x98', '\x80'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 surrogate replaced with U+FFFD", "[transcoding::whatwg_encode][utf8]") {
     // U+D800 (surrogate) -> U+FFFD encoded as {0xEF, 0xBF, 0xBD}
     std::vector<char32_t> cps{static_cast<char32_t>(0xD800)};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) ==
-          std::vector<char>{'\xEF', '\xBF', '\xBD'});
+    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'\xEF', '\xBF', '\xBD'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 multi-codepoint string", "[transcoding::whatwg_encode][utf8]") {
     // "Hi" + Euro -> "Hi" + 3 bytes
     std::vector<char32_t> cps{U'H', U'i', U'\x20AC'};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) ==
-          std::vector<char>{'H', 'i', '\xE2', '\x82', '\xAC'});
+    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'H', 'i', '\xE2', '\x82', '\xAC'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 consteval", "[transcoding::whatwg_encode][utf8]") {

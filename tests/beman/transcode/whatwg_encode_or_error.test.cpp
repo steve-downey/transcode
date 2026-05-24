@@ -87,7 +87,8 @@ TEST_CASE("whatwg_encode_or_error UTF-8 surrogate yields unexpected", "[transcod
     CHECK(result[0].error() == whatwg_error::surrogate_code_point);
 }
 
-TEST_CASE("whatwg_encode_or_error UTF-8 out_of_range yields unexpected", "[transcoding::whatwg_encode_or_error][utf8]") {
+TEST_CASE("whatwg_encode_or_error UTF-8 out_of_range yields unexpected",
+          "[transcoding::whatwg_encode_or_error][utf8]") {
     std::vector<char32_t> cps{static_cast<char32_t>(0x110000)};
     auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::utf_8>);
     REQUIRE(result.size() == 1);
@@ -103,7 +104,8 @@ TEST_CASE("whatwg_encode_or_error UTF-8 valid ASCII has_value", "[transcoding::w
     CHECK(result[0].value() == 'A');
 }
 
-TEST_CASE("whatwg_encode_or_error UTF-8 3-byte has_value correct bytes", "[transcoding::whatwg_encode_or_error][utf8]") {
+TEST_CASE("whatwg_encode_or_error UTF-8 3-byte has_value correct bytes",
+          "[transcoding::whatwg_encode_or_error][utf8]") {
     // U+20AC -> {0xE2, 0x82, 0xAC}
     std::vector<char32_t> cps{U'\x20AC'};
     auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::utf_8>);

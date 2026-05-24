@@ -290,8 +290,7 @@ add_test(
 )
 set_tests_properties(
     whatwg_encode_reject_char_range_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION "unicode_scalar_range"
+    PROPERTIES PASS_REGULAR_EXPRESSION "unicode_scalar_range"
 )
 
 # views::null_term rejects non-pointer ranges via is_pointer_v constraint
