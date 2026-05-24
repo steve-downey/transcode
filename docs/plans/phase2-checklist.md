@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–24 complete. 254 C++ + 68 Python tests pass. On `main`.
+**Current state:** Steps 0–25 complete. 289 C++ + 80 Python tests pass. On `main`.
 
 ---
 
@@ -141,12 +141,12 @@ Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.
 
 ## Step 25: Shift_JIS decode + encode (`step25-shift-jis`)
 
-- [ ] Create branch from `main`
-- [ ] Generate Shift_JIS tables
-- [ ] Tests (RED → GREEN)
-- [ ] Implement decode + encode
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Generate Shift_JIS tables
+- [x] Tests (RED → GREEN)
+- [x] Implement decode + encode
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ## Step 26: EUC-JP decode + encode (`step26-euc-jp`)
 
