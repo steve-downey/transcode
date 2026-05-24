@@ -6,5 +6,6 @@ var dir_9d798d0e78a5d20e3b6770198d219460 =
     [ "null_term.hpp", "null__term_8hpp.html", "null__term_8hpp" ],
     [ "single_byte.hpp", "single__byte_8hpp.html", null ],
     [ "utf8.hpp", "utf8_8hpp.html", null ],
+    [ "utf8_encode.hpp", "utf8__encode_8hpp.html", null ],
     [ "x_user_defined.hpp", "x__user__defined_8hpp.html", null ]
 ];

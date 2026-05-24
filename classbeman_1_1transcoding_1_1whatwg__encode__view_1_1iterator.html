@@ -148,8 +148,12 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a97e29085d2ee0743fe80cce33e055f00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a968ed7ab986b795bf59b0c061ce08a98"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#ac9a5ce09169a2f7a489616905063a9d0">base_sent</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a968ed7ab986b795bf59b0c061ce08a98">end_</a></td></tr>
 <tr class="separator:a968ed7ab986b795bf59b0c061ce08a98"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a483640da391d485c459604d55458d0e3"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a483640da391d485c459604d55458d0e3">value_</a> {}</td></tr>
-<tr class="separator:a483640da391d485c459604d55458d0e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d001798d7498ce2c2e53d1cd3aab1c7"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a0d001798d7498ce2c2e53d1cd3aab1c7">buf_</a> [4] {}</td></tr>
+<tr class="separator:a0d001798d7498ce2c2e53d1cd3aab1c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d91dd53ab7a5aa2a959a8f2d0e31059"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a0d91dd53ab7a5aa2a959a8f2d0e31059">len_</a> {0}</td></tr>
+<tr class="separator:a0d91dd53ab7a5aa2a959a8f2d0e31059"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8abab988e792b224bbacee0bc64e9ab1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a8abab988e792b224bbacee0bc64e9ab1">pos_</a> {0}</td></tr>
+<tr class="separator:a8abab988e792b224bbacee0bc64e9ab1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad31ea0281c9fec6dbf7ae30805f44adb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#ad31ea0281c9fec6dbf7ae30805f44adb">done_</a> {false}</td></tr>
 <tr class="separator:ad31ea0281c9fec6dbf7ae30805f44adb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -456,6 +460,30 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a0d001798d7498ce2c2e53d1cd3aab1c7" name="a0d001798d7498ce2c2e53d1cd3aab1c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d001798d7498ce2c2e53d1cd3aab1c7">&#9670;&#160;</a></span>buf_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">char <a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view.html">beman::transcoding::whatwg_encode_view</a>&lt; C, R &gt;::iterator::buf_[4] {}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a97e29085d2ee0743fe80cce33e055f00" name="a97e29085d2ee0743fe80cce33e055f00"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a97e29085d2ee0743fe80cce33e055f00">&#9670;&#160;</a></span>current_</h2>
 
@@ -528,8 +556,8 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a483640da391d485c459604d55458d0e3" name="a483640da391d485c459604d55458d0e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a483640da391d485c459604d55458d0e3">&#9670;&#160;</a></span>value_</h2>
+<a id="a0d91dd53ab7a5aa2a959a8f2d0e31059" name="a0d91dd53ab7a5aa2a959a8f2d0e31059"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d91dd53ab7a5aa2a959a8f2d0e31059">&#9670;&#160;</a></span>len_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -540,7 +568,31 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">char <a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view.html">beman::transcoding::whatwg_encode_view</a>&lt; C, R &gt;::iterator::value_ {}</td>
+          <td class="memname">int <a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view.html">beman::transcoding::whatwg_encode_view</a>&lt; C, R &gt;::iterator::len_ {0}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8abab988e792b224bbacee0bc64e9ab1" name="a8abab988e792b224bbacee0bc64e9ab1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8abab988e792b224bbacee0bc64e9ab1">&#9670;&#160;</a></span>pos_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view.html">beman::transcoding::whatwg_encode_view</a>&lt; C, R &gt;::iterator::pos_ {0}</td>
         </tr>
       </table>
   </td>
