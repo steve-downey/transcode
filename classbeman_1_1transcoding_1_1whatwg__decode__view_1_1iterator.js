@@ -17,6 +17,8 @@ var classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator =
     [ "end_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#aefbe4c6fc53788685853ba3f14fe2093", null ],
     [ "has_pending_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad2183a75cbac7b19cd4157a2a17847f3", null ],
     [ "has_pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ab7e2e6a4441d233dedcc9323a8bf9629", null ],
+    [ "iso2022jp_lead_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad951367b1e0f51548f2477ac3ef39b0b", null ],
+    [ "iso2022jp_state_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a609917d2f7086b2e885e6b002460e1a6", null ],
     [ "pending_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#abf9b012597542a2de9ab54744246e296", null ],
     [ "pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad90f7c1463256a4888e7674069d75372", null ],
     [ "value_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a32bd825ca112aac1071ca77ed034f553", null ]

@@ -13,10 +13,11 @@ var classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator =
     [ "operator++", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#ac84a7c2fec9b468a4051d596bdc7c6a2", null ],
     [ "operator++", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#ab3839953a5948f953b48f3a025f46f56", null ],
     [ "operator==", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a862ad61b8e374e951eb51b200eaebf5b", null ],
-    [ "buf_", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a53d78c3fa6f3a1345b79e63a50d5cac2", null ],
+    [ "buf_", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a5ddc6ca121d5288fdc78b646ce4afea4", null ],
     [ "current_", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a6b0a4aef0bd488475ec91d744879370c", null ],
     [ "done_", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a87364b9e6bb85d9d499ede882780d93f", null ],
     [ "end_", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a250026bd7c5d3a0fc768fa878c6d1bbe", null ],
+    [ "iso2022jp_state_", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a917d019a6bfe8911d8cc0f78577b9ff3", null ],
     [ "len_", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#ab8ce591d38fccd045d2b0efae60b059a", null ],
     [ "pos_", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a0a94ee341cdcfb5e5bb1469412321856", null ]
 ];

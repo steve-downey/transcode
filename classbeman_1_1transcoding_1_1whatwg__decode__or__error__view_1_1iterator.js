@@ -18,6 +18,8 @@ var classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator =
     [ "end_", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ac8f9eef1e9430688c4a3648ee2ea8f67", null ],
     [ "has_pending_", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a265bc78c4abd32cd05ec3b0d9ed677ee", null ],
     [ "has_pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#aafed159cb1718ba43ba21a8569b28870", null ],
+    [ "iso2022jp_lead_", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ae14078a5ce631aadbc42b85d0fe0b88d", null ],
+    [ "iso2022jp_state_", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ac6f53fd546d0d67d8083a0ed503d518b", null ],
     [ "pending_", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ac4afabd054e7ef0c645a493b20562ca8", null ],
     [ "pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a98f3b2bfa5c691bc68cdf6f8a37a390c", null ],
     [ "value_", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a07c27c13517899ad02719b6119d06766", null ]

@@ -160,6 +160,10 @@ Private Attributes</h2></td></tr>
 <tr class="separator:ad90f7c1463256a4888e7674069d75372"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7e2e6a4441d233dedcc9323a8bf9629"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ab7e2e6a4441d233dedcc9323a8bf9629">has_pending_cp_</a> {false}</td></tr>
 <tr class="separator:ab7e2e6a4441d233dedcc9323a8bf9629"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a609917d2f7086b2e885e6b002460e1a6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a609917d2f7086b2e885e6b002460e1a6">iso2022jp_state_</a> {0}</td></tr>
+<tr class="separator:a609917d2f7086b2e885e6b002460e1a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad951367b1e0f51548f2477ac3ef39b0b"><td class="memItemLeft" align="right" valign="top">unsigned char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad951367b1e0f51548f2477ac3ef39b0b">iso2022jp_lead_</a> {0}</td></tr>
+<tr class="separator:ad951367b1e0f51548f2477ac3ef39b0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
@@ -573,6 +577,54 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
       <table class="memname">
         <tr>
           <td class="memname">bool <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">beman::transcoding::whatwg_decode_view</a>&lt; C, R &gt;::iterator::has_pending_cp_ {false}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad951367b1e0f51548f2477ac3ef39b0b" name="ad951367b1e0f51548f2477ac3ef39b0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad951367b1e0f51548f2477ac3ef39b0b">&#9670;&#160;</a></span>iso2022jp_lead_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned char <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">beman::transcoding::whatwg_decode_view</a>&lt; C, R &gt;::iterator::iso2022jp_lead_ {0}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a609917d2f7086b2e885e6b002460e1a6" name="a609917d2f7086b2e885e6b002460e1a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a609917d2f7086b2e885e6b002460e1a6">&#9670;&#160;</a></span>iso2022jp_state_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">beman::transcoding::whatwg_decode_view</a>&lt; C, R &gt;::iterator::iso2022jp_state_ {0}</td>
         </tr>
       </table>
   </td>

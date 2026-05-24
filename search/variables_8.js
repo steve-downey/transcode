@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['open_0',['open',['../structbeman_1_1transcoding_1_1iconv__functions.html#a45a78085df5e82fe1e8a5d9964411414',1,'beman::transcoding::iconv_functions']]],
-  ['output_5fend_5f_1',['output_end_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a14fcd7645df963630f86cebfc470ae17',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::output_end_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#acfcde90628819d44ba9f49d6c984e044',1,'beman::transcoding::iconv_transcode_view::iterator::output_end_()']]],
-  ['output_5fpos_5f_2',['output_pos_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#ae7eca2405ff8ebac36cd12a21e9ac497',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::output_pos_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a74afdff3aacafb365a457ac301a861dd',1,'beman::transcoding::iconv_transcode_view::iterator::output_pos_()']]]
+  ['null_5fsentinel_0',['null_sentinel',['../namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311',1,'beman::transcoding']]],
+  ['null_5fterm_1',['null_term',['../namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952',1,'beman::transcoding::views']]]
 ];
