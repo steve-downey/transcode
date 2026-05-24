@@ -123,6 +123,10 @@ var NAVTREE =
       [ "Verification", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md84", null ],
       [ "Notes", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md85", null ]
     ] ],
+    [ "WHATWG Encoding Standard — Index Data", "md_docs_whatwg_SOURCE.html", [
+      [ "File Provenance", "md_docs_whatwg_SOURCE.html#autotoc_md87", null ],
+      [ "Full Checksums", "md_docs_whatwg_SOURCE.html#autotoc_md88", null ]
+    ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
       [ "Namespace Members", "namespacemembers.html", [
@@ -159,7 +163,7 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ac6fbf2fab89e3b57337f233d67ba7bcf",
-"whatwg__decode__view_8hpp_source.html"
+"whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -154,12 +154,12 @@ Directory Layout</h1>
 <ul>
 <li>All <code>index-*.txt</code> files (single-byte + multi-byte)</li>
 <li><code>encodings.json</code></li>
-<li><code>SOURCE.md</code> — human-readable provenance (see below)</li>
+<li><code><a class="el" href="SOURCE_8md.html">SOURCE.md</a></code> — human-readable provenance (see below)</li>
 <li><code>source.bib</code> — BibTeX citation entry</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md73"></a>
 &lt;tt&gt;docs/wpt/&lt;/tt&gt; — Web Platform Tests (future)</h2>
-<p>Unmodified test vectors from the WPT encoding test suite, if/when needed for conformance validation. Same provenance discipline: pristine files + SOURCE.md + BibTeX.</p>
+<p>Unmodified test vectors from the WPT encoding test suite, if/when needed for conformance validation. Same provenance discipline: pristine files + <a class="el" href="SOURCE_8md.html">SOURCE.md</a> + BibTeX.</p>
 <h2><a class="anchor" id="autotoc_md74"></a>
 &lt;tt&gt;data/&lt;/tt&gt; — our derived/processed artifacts</h2>
 <p>Generated tables, test vectors, processed binary data. Everything here is reproducible from the pristine upstream in <code>docs/</code> plus the scripts in <code>tools/</code>.</p>
@@ -218,7 +218,7 @@ Python Quality Requirements</h1>
 Deliverables</h1>
 <h2><a class="anchor" id="autotoc_md79"></a>
 Script: &lt;tt&gt;tools/download_indexes.py&lt;/tt&gt;</h2>
-<p>Typed Python script (stdlib only for runtime deps) that downloads all WHATWG index files into <code>docs/whatwg/</code>. Idempotent — checks SHA-256 before re-downloading. Generates/updates <code>SOURCE.md</code> and <code>source.bib</code> with checksums and download date.</p>
+<p>Typed Python script (stdlib only for runtime deps) that downloads all WHATWG index files into <code>docs/whatwg/</code>. Idempotent — checks SHA-256 before re-downloading. Generates/updates <code><a class="el" href="SOURCE_8md.html">SOURCE.md</a></code> and <code>source.bib</code> with checksums and download date.</p>
 <h2><a class="anchor" id="autotoc_md80"></a>
 Script: &lt;tt&gt;tools/generate_tables.py&lt;/tt&gt;</h2>
 <p>Typed Python script (stdlib only for runtime deps) that:</p>
@@ -236,7 +236,7 @@ Tests: &lt;tt&gt;tools/tests/&lt;/tt&gt;</h2>
 <li>Parsing a sample WHATWG index-*.txt file produces correct table</li>
 <li>Known mappings spot-checked (e.g., windows-1252 0x80 → U+20AC)</li>
 <li>Generated .hpp content is syntactically valid</li>
-<li>SOURCE.md includes required provenance fields</li>
+<li><a class="el" href="SOURCE_8md.html">SOURCE.md</a> includes required provenance fields</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md82"></a>
 Generated files (single-byte, 22 total)</h2>
@@ -264,7 +264,7 @@ Procedure</h1>
 <li>Add <code>[tool.ruff]</code> and <code>[tool.mypy]</code> sections to <code>pyproject.toml</code></li>
 <li>Write <code>tools/download_indexes.py</code> — typed, fetch all index files</li>
 <li>Write <code>tools/tests/test_download.py</code></li>
-<li>Run download script → creates <code>docs/whatwg/</code> with pristine data + SOURCE.md + source.bib</li>
+<li>Run download script → creates <code>docs/whatwg/</code> with pristine data + <a class="el" href="SOURCE_8md.html">SOURCE.md</a> + source.bib</li>
 <li>Commit the downloaded data + provenance + script + tests</li>
 <li>Write <code>tools/generate_tables.py</code> — typed, parse indexes, emit <code>.hpp</code> + <code>.bin</code> into <code>data/tables/</code></li>
 <li>Write <code>tools/tests/test_generate.py</code></li>
