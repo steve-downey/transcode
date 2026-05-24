@@ -156,6 +156,10 @@ Private Attributes</h2></td></tr>
 <tr class="separator:ad2183a75cbac7b19cd4157a2a17847f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf9b012597542a2de9ab54744246e296"><td class="memItemLeft" align="right" valign="top">unsigned char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#abf9b012597542a2de9ab54744246e296">pending_</a> [2] {}</td></tr>
 <tr class="separator:abf9b012597542a2de9ab54744246e296"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad90f7c1463256a4888e7674069d75372"><td class="memItemLeft" align="right" valign="top">char32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad90f7c1463256a4888e7674069d75372">pending_cp_</a> {}</td></tr>
+<tr class="separator:ad90f7c1463256a4888e7674069d75372"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7e2e6a4441d233dedcc9323a8bf9629"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ab7e2e6a4441d233dedcc9323a8bf9629">has_pending_cp_</a> {false}</td></tr>
+<tr class="separator:ab7e2e6a4441d233dedcc9323a8bf9629"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
@@ -556,6 +560,30 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
+<a id="ab7e2e6a4441d233dedcc9323a8bf9629" name="ab7e2e6a4441d233dedcc9323a8bf9629"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7e2e6a4441d233dedcc9323a8bf9629">&#9670;&#160;</a></span>has_pending_cp_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">beman::transcoding::whatwg_decode_view</a>&lt; C, R &gt;::iterator::has_pending_cp_ {false}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="abf9b012597542a2de9ab54744246e296" name="abf9b012597542a2de9ab54744246e296"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abf9b012597542a2de9ab54744246e296">&#9670;&#160;</a></span>pending_</h2>
 
@@ -569,6 +597,30 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
       <table class="memname">
         <tr>
           <td class="memname">unsigned char <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">beman::transcoding::whatwg_decode_view</a>&lt; C, R &gt;::iterator::pending_[2] {}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad90f7c1463256a4888e7674069d75372" name="ad90f7c1463256a4888e7674069d75372"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad90f7c1463256a4888e7674069d75372">&#9670;&#160;</a></span>pending_cp_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">char32_t <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">beman::transcoding::whatwg_decode_view</a>&lt; C, R &gt;::iterator::pending_cp_ {}</td>
         </tr>
       </table>
   </td>

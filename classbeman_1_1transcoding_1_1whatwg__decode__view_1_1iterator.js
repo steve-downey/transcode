@@ -16,6 +16,8 @@ var classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator =
     [ "done_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a51fdc13f12ed04a35c1aa76da46b9b8a", null ],
     [ "end_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#aefbe4c6fc53788685853ba3f14fe2093", null ],
     [ "has_pending_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad2183a75cbac7b19cd4157a2a17847f3", null ],
+    [ "has_pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ab7e2e6a4441d233dedcc9323a8bf9629", null ],
     [ "pending_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#abf9b012597542a2de9ab54744246e296", null ],
+    [ "pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad90f7c1463256a4888e7674069d75372", null ],
     [ "value_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a32bd825ca112aac1071ca77ed034f553", null ]
 ];

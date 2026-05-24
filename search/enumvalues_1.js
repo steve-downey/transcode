@@ -1,20 +1,5 @@
 var searchData=
 [
-  ['ibm866_0',['ibm866',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa67e3d142d06befb5e5ff2367193c1b67',1,'beman::transcoding']]],
-  ['incomplete_5fsequence_1',['incomplete_sequence',['../namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82',1,'beman::transcoding']]],
-  ['invalid_5fbyte_2',['invalid_byte',['../namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0',1,'beman::transcoding']]],
-  ['invalid_5fsequence_3',['invalid_sequence',['../namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed',1,'beman::transcoding']]],
-  ['iso_5f8859_5f10_4',['iso_8859_10',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa638ac6a64991d6773e1b71560f9c6ab2',1,'beman::transcoding']]],
-  ['iso_5f8859_5f13_5',['iso_8859_13',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa43ae8d96de61721ef967c13e51dcf11b',1,'beman::transcoding']]],
-  ['iso_5f8859_5f14_6',['iso_8859_14',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa1fb738da7485572f0e1a04da6caf5aad',1,'beman::transcoding']]],
-  ['iso_5f8859_5f15_7',['iso_8859_15',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2c009742754c079a449be8fa9492a76c',1,'beman::transcoding']]],
-  ['iso_5f8859_5f16_8',['iso_8859_16',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa9ef904d285fb3c0315eea84e6cb688c8',1,'beman::transcoding']]],
-  ['iso_5f8859_5f2_9',['iso_8859_2',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa99d669ffd526081afe3119aa749870f6',1,'beman::transcoding']]],
-  ['iso_5f8859_5f3_10',['iso_8859_3',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aacbeba6881309052da9e5702cda7da698',1,'beman::transcoding']]],
-  ['iso_5f8859_5f4_11',['iso_8859_4',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa722ae99064c1ffc63fa333425e73d718',1,'beman::transcoding']]],
-  ['iso_5f8859_5f5_12',['iso_8859_5',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa870b1c8d709ae13c6f3125309e99e10a',1,'beman::transcoding']]],
-  ['iso_5f8859_5f6_13',['iso_8859_6',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa4d72b7d26907ba6f74a13528580ba0c1',1,'beman::transcoding']]],
-  ['iso_5f8859_5f7_14',['iso_8859_7',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa568fb0dac10de662d39ca1fd88769cf7',1,'beman::transcoding']]],
-  ['iso_5f8859_5f8_15',['iso_8859_8',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa079ec8076fce3fe0828f9a0959c8c48f',1,'beman::transcoding']]],
-  ['iso_5f8859_5f8_5fi_16',['iso_8859_8_i',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aac1a7d0a69f900692e08617b1073229f9',1,'beman::transcoding']]]
+  ['gb18030_0',['gb18030',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadf5406096b7ec5329d3a13468430e56a',1,'beman::transcoding']]],
+  ['gbk_1',['gbk',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadeb297cfef1bd867fa7f55bebd119cec',1,'beman::transcoding']]]
 ];

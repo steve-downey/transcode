@@ -1,6 +1,7 @@
 var dir_9d798d0e78a5d20e3b6770198d219460 =
 [
     [ "tables", "dir_56330be2367402bf2c78bcc1a3c20fc7.html", "dir_56330be2367402bf2c78bcc1a3c20fc7" ],
+    [ "big5.hpp", "big5_8hpp.html", null ],
     [ "concepts.hpp", "concepts_8hpp.html", "concepts_8hpp" ],
     [ "error.hpp", "error_8hpp.html", "error_8hpp" ],
     [ "gb18030.hpp", "gb18030_8hpp.html", null ],
