@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–28 complete. 393 C++ + 102 Python tests pass. On `main`.
+**Current state:** Steps 0–29 complete. 420 C++ + 102 Python tests pass. On `main`.
 
 ---
 
@@ -180,10 +180,10 @@ Stateful encoding (escape sequences).
 
 Comprehensive round-trip tests for all implemented codecs.
 
-- [ ] Create branch from `main`
-- [ ] Write composition tests for all codec pairs
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Write composition tests for all codec pairs
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ---
 
