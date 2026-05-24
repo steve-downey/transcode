@@ -8,12 +8,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_tables import (
+    BIG5_POINTER_COUNT,
     GBK_POINTER_COUNT,
     codec_to_guard,
     codec_to_identifier,
+    parse_big5_index,
     parse_gb18030_ranges,
     parse_gbk_index,
     parse_single_byte_index,
+    render_big5_hpp,
     render_gb18030_ranges_hpp,
     render_gbk_hpp,
     render_hpp,
@@ -370,3 +373,105 @@ def test_render_gb18030_ranges_hpp_known_entry() -> None:
     assert "0x0080" in hpp
     assert "189000" in hpp
     assert "0x10000" in hpp
+
+
+# ---------------------------------------------------------------------------
+# Big5 table tests
+# ---------------------------------------------------------------------------
+
+
+def _make_big5_index_file(tmp_path: Path, entries: dict[int, int]) -> Path:
+    """Write a minimal WHATWG index-big5.txt with given pointer→codepoint map."""
+    lines = [
+        "# test big5 index file",
+        "#",
+    ]
+    for ptr, cp in sorted(entries.items()):
+        lines.append(f"  {ptr}\t0x{cp:04X}\t# comment")
+    path = tmp_path / "index-big5.txt"
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def test_big5_pointer_count() -> None:
+    assert BIG5_POINTER_COUNT == 19782
+
+
+def test_parse_big5_index_length(tmp_path: Path) -> None:
+    path = _make_big5_index_file(tmp_path, {5495: 0x4E00})
+    table = parse_big5_index(path)
+    assert len(table) == BIG5_POINTER_COUNT
+
+
+def test_parse_big5_index_known_entry(tmp_path: Path) -> None:
+    path = _make_big5_index_file(tmp_path, {5495: 0x4E00})
+    table = parse_big5_index(path)
+    assert table[5495] == 0x4E00
+
+
+def test_parse_big5_index_unmapped_is_zero(tmp_path: Path) -> None:
+    path = _make_big5_index_file(tmp_path, {5495: 0x4E00})
+    table = parse_big5_index(path)
+    assert table[0] == 0
+
+
+def test_parse_big5_index_ignores_out_of_range(tmp_path: Path) -> None:
+    path = _make_big5_index_file(tmp_path, {0: 0x4E02, 19782: 0x1234})
+    table = parse_big5_index(path)
+    assert len(table) == BIG5_POINTER_COUNT
+    assert table[0] == 0x4E02
+
+
+def test_parse_big5_index_real_spot_check_pointer5495() -> None:
+    """WHATWG spec: pointer 5495 -> U+4E00 (一)."""
+    path = Path("docs/whatwg/index-big5.txt")
+    if not path.exists():
+        import pytest
+
+        pytest.skip("docs/whatwg not present")
+    table = parse_big5_index(path)
+    assert table[5495] == 0x4E00
+
+
+def test_parse_big5_index_real_special_pointers_null() -> None:
+    """Pointers 1133, 1135, 1164 are null in the table (special-cased in decoder)."""
+    path = Path("docs/whatwg/index-big5.txt")
+    if not path.exists():
+        import pytest
+
+        pytest.skip("docs/whatwg not present")
+    table = parse_big5_index(path)
+    assert table[1133] == 0
+    assert table[1135] == 0
+    assert table[1164] == 0
+
+
+def test_render_big5_hpp_contains_guard() -> None:
+    table = [0] * BIG5_POINTER_COUNT
+    hpp = render_big5_hpp(table)
+    assert "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_BIG5_HPP" in hpp
+
+
+def test_render_big5_hpp_contains_array_size() -> None:
+    table = [0] * BIG5_POINTER_COUNT
+    hpp = render_big5_hpp(table)
+    assert f"big5[{BIG5_POINTER_COUNT}]" in hpp
+
+
+def test_render_big5_hpp_contains_namespace() -> None:
+    table = [0] * BIG5_POINTER_COUNT
+    hpp = render_big5_hpp(table)
+    assert "beman::transcoding::detail::tables" in hpp
+
+
+def test_render_big5_hpp_contains_spdx() -> None:
+    table = [0] * BIG5_POINTER_COUNT
+    hpp = render_big5_hpp(table)
+    assert "SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception" in hpp
+
+
+def test_render_big5_hpp_known_codepoint() -> None:
+    table = [0] * BIG5_POINTER_COUNT
+    table[5495] = 0x4E00
+    hpp = render_big5_hpp(table)
+    assert "0x4E00" in hpp
