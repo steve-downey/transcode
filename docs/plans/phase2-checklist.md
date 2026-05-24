@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–17 complete. 70 tests pass. On `main`.
+**Current state:** Steps 0–18 complete. 76 tests pass. On `main`.
 
 ---
 
@@ -63,12 +63,15 @@ Mark items `[x]` as they complete. Read this file first when resuming work.
 21 remaining single-byte codecs. Each needs: enum value, table include,
 dispatch in both `load()` functions, tests.
 
-- [ ] Create branch from `main`
-- [ ] Add all 21 enum values + includes + dispatch branches
-- [ ] Replace hand-written `windows_1252.hpp` with generated version
-- [ ] Tests for representative codecs (RED → GREEN)
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Add all 27 enum values + includes + dispatch branches
+- [x] Replace hand-written `windows_1252.hpp` with WHATWG-correct generated version
+- [x] Tests for representative codecs (RED → GREEN)
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
+
+Tables placed in `include/beman/transcode/detail/tables/` (proper include
+tree, not `data/tables/`). iso-8859-8-i shares iso-8859-8 table.
 
 Codecs: IBM866, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-5,
 ISO-8859-6, ISO-8859-7, ISO-8859-8, ISO-8859-8-I, ISO-8859-10,

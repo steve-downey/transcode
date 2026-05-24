@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 17 (Data Tooling)
+# Handoff: beman.transcode — Step 19 (Single-byte encoders)
 
 ## Project
 
@@ -14,146 +14,140 @@ proposal.
 
 ## Current State
 
-**70 tests pass** (`make test`). Steps 0–16 complete on `main`.
+**76 tests pass** (`make test`). Steps 0–18 complete on `main`.
 
-The single-byte table-driven decoder infrastructure exists
-(`detail/single_byte.hpp` + one hand-written table `windows_1252.hpp`).
-The task now is to build the tooling that generates tables for ALL
-remaining codecs from the WHATWG normative data.
+The `codec` enum now has 31 values covering all WHATWG single-byte
+decoders: utf_8, replacement, x_user_defined, ibm866, iso_8859_2–16
+(skipping 1/9/11/12; iso_8859_8_i shares iso_8859_8 table), koi8_r,
+koi8_u, macintosh, windows_874, windows_1250–1258, x_mac_cyrillic.
 
-## What To Do Next — Step 17
+All 27 table headers live in `include/beman/transcode/detail/tables/`
+with guards `INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_*_HPP`.
 
-**Read the detailed plan:**
+The decode infrastructure (`whatwg_decode_view` + `whatwg_decode_or_error_view`)
+dispatches every codec via `detail::single_byte_decode_one()`.
+
+## What To Do Next — Step 19
+
+**Read the checklist first:**
 ```
-docs/plans/step17-iso-8859-tables.md
-```
-
-This is a **tooling/data step**, not a library code step. There is
-no RED/GREEN TDD cycle. The deliverables are:
-
-1. Python scripts in `tools/`
-2. Pristine WHATWG data in `docs/whatwg/` with provenance metadata
-3. Generated table files in `data/tables/`
-4. Existing tests still pass (`make test`), lint clean (`make lint`)
-
-### Directory layout (create all of these)
-
-```
-docs/whatwg/           ← pristine upstream; never edited after download
-docs/whatwg/SOURCE.md  ← human-readable provenance
-docs/whatwg/source.bib ← BibTeX citation
-data/tables/           ← our generated/derived artifacts (.hpp + .bin)
-tools/                 ← Python scripts
-tools/tests/           ← pytest tests for the scripts
+docs/plans/phase2-checklist.md
 ```
 
-None of these directories exist yet. Create them.
+### What Step 19 Does
 
-### Python quality requirements
+Implement single-byte encoding: codepoint → legacy byte.
 
-The scripts are adjunct code but must be production quality:
+1. Add `single_byte_encode_one()` to `detail/single_byte.hpp` — reverse
+   lookup through a 128-entry table to find the byte for a given codepoint.
+   Returns `std::optional<unsigned char>` (nullopt if the codepoint is not
+   in the table).
 
-- **Type annotations:** full hints on all functions, no `Any` escapes
-- **Testing:** `tools/tests/` with pytest, covering parsing logic and
-  known-mapping spot checks
-- **Formatting + linting:** ruff (format + lint)
-- **Type checking:** mypy in strict mode
+2. Create `include/beman/transcode/whatwg_encode_view.hpp`:
+   - New view `whatwg_encode_view<C, R>` where R is a range of `char32_t`
+     (or `char32_t`-convertible scalar values).
+   - Encodes each codepoint to a legacy byte; invalid codepoints yield
+     `U+003F` (question mark `?`) per WHATWG fallback.
+   - Pipe adapter `whatwg_encode<codec::windows_1252>` etc.
+   - `whatwg_encode_or_error_view` variant yielding
+     `expected<unsigned char, whatwg_error>`.
 
-**Changes to project config (do these first):**
+3. Add dispatch in the encode view's `load()` for all 27 single-byte
+   codecs (same list as decode). utf_8/replacement/x_user_defined are
+   encode-side algorithmic — save them for steps 20/21.
 
-1. Add to `pyproject.toml` `[dependency-groups] dev`:
-   `"mypy>=1.15"`, `"pytest>=8.0"`, `"ruff>=0.11"`
+4. Write tests for representative codecs (at least windows_1252,
+   iso_8859_2, koi8_r) — both the success path and the fallback/error path.
 
-2. Add `[tool.ruff]` and `[tool.mypy]` sections to `pyproject.toml`
+### single_byte_encode_one() design
 
-3. Add ruff pre-commit hook to `.pre-commit-config.yaml`:
-   ```yaml
-     - repo: https://github.com/astral-sh/ruff-pre-commit
-       rev: v0.11.13
-       hooks:
-       - id: ruff
-         args: [--fix]
-       - id: ruff-format
-   ```
+```cpp
+// In detail/single_byte.hpp:
+struct single_byte_encode_result {
+    unsigned char byte{};
+    bool          is_error{false};
+};
 
-4. Run `uv sync` to install new deps
+template <std::ranges::input_iterator I, std::sentinel_for<I> S>
+constexpr single_byte_encode_result
+single_byte_encode_one(I& current, S end, const char32_t (&table)[128]);
+```
 
-### What the scripts do
+The reverse lookup scans `table[0..127]` for `*current == table[i]`.
+If found, returns `{static_cast<unsigned char>(0x80 + i), false}`.
+For codepoints < 0x80 (ASCII), returns `{static_cast<unsigned char>(*current), false}`.
+If not found, returns `{{}, true}` (error).
 
-**`tools/download_indexes.py`** — typed Python script (stdlib only for
-runtime deps). Downloads all WHATWG `index-*.txt` files (22 single-byte
-+ 7 multi-byte) plus `encodings.json` into `docs/whatwg/`. Writes
-`SOURCE.md` and `source.bib` with:
-- Source URL for each file
-- ISO-8601 download date
-- SHA-256 checksums
-- License (CC-BY 4.0 for data, BSD-3-Clause for code portions)
-- Attribution to WHATWG Encoding Standard
+### New concept
 
-**`tools/generate_tables.py`** — typed Python script (stdlib only for
-runtime deps). Reads `docs/whatwg/index-*.txt`, generates for each
-single-byte codec:
-- A `.bin` file (128 × 4 bytes, little-endian uint32, 0 = unmapped)
-- A `.hpp` file (constexpr array, same pattern as the hand-written
-  `windows_1252.hpp` in `include/beman/transcode/detail/tables/`)
+The encode view needs a concept for the input range:
 
-Output goes to `data/tables/`. Multi-byte generation is deferred.
+```cpp
+// In detail/concepts.hpp or a new detail/unicode_scalar.hpp:
+template <typename T>
+concept unicode_scalar_type = std::same_as<T, char32_t>;
 
-### Python environment
+template <typename R>
+concept unicode_scalar_range = std::ranges::input_range<R> &&
+    unicode_scalar_type<std::ranges::range_value_t<R>>;
+```
 
-- Python 3.13 available via `uv run python`
-- Scripts use stdlib only for runtime (test/lint deps are dev-only)
-- `curl` is available at `/usr/bin/curl` if needed
-- Run tests: `uv run pytest tools/tests/`
-- Type check: `uv run mypy tools/`
+(This will be refined in step 20 when the UTF-8 encoder is added.)
 
-### Commit sequence
+### Include structure
 
-1. Branch: `git checkout -b step17-data-tooling`
-2. Add ruff/mypy/pytest to pyproject.toml + pre-commit config → commit
-3. Write `tools/download_indexes.py` + `tools/tests/test_download.py`
-4. Run download script → commit `docs/whatwg/` + scripts + tests
-5. Write `tools/generate_tables.py` + `tools/tests/test_generate.py`
-6. Run generate script → commit `data/tables/` + scripts + tests
-7. `uv run pytest tools/tests/` (pass) + `uv run mypy tools/` (clean)
-8. `make test` (70 C++ tests still pass) + `make lint` (clean,
-   now includes ruff)
-9. Push both remotes
-10. `git checkout main && git merge --no-ff step17-data-tooling`
-11. Push main to both remotes
-12. Update `docs/plans/phase2-checklist.md` — mark step 17 `[x]`
+New header: `include/beman/transcode/whatwg_encode_view.hpp`
+- Add it to the FILE_SET in `include/beman/transcode/CMakeLists.txt`
+- Include it from `include/beman/transcode/transcode.hpp` if that's the
+  umbrella header pattern (check the existing `transcode.hpp`)
 
-### Important details
+### TDD Process (RED → GREEN)
 
-- `make lint` runs `pre-commit run -a`. After adding the ruff hook,
-  it checks BOTH C++/CMake AND Python formatting/linting.
-- The generated `.hpp` files ARE C++ and WILL be checked by
-  clang-format. Make sure they pass (proper indentation, line length).
-- The hand-written `include/beman/transcode/detail/tables/windows_1252.hpp`
-  stays in place for now; step 18 will replace it with the generated
-  version.
-- No `Co-Authored-By` trailers in commits.
-- Scripts must pass `mypy --strict` — no untyped defs, no implicit
-  optionals.
+1. Branch: `git checkout -b step19-single-byte-encode`
+2. Write failing tests (RED) → commit → push both
+3. Implement (GREEN): `single_byte_encode_one()` + `whatwg_encode_view.hpp`
+4. `make test` + `make lint` → commit → push both
+5. Merge to main + push both
+6. Mark checklist items `[x]`
+
+## Important Facts from Steps 16–18
+
+- `single_byte_decode_one()` treats table entry `0` as "unmapped" error.
+  The same convention applies to encode: scan the table; if codepoint not
+  found → error.
+
+- The generated (WHATWG-normative) windows_1252 table maps bytes
+  0x81/8D/8F/90/9D to C1 control characters (U+0081 etc.), not to 0.
+  So the encode side WILL find mappings for those C1 codepoints.
+
+- `iso_8859_8_i` shares `detail::tables::iso_8859_8` — both codec enum
+  values dispatch to the same table for both encode and decode.
+
+- Tables are in `include/beman/transcode/detail/tables/*.hpp` with guards
+  `INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_*_HPP`. Do not use `data/tables/`
+  for new code — the `include/` tree is authoritative.
+
+- The `tools/generate_tables.py` script targets `data/tables/`. Future
+  steps may update it to target `include/beman/transcode/detail/tables/`
+  directly, but that is out of scope for step 19.
 
 ## Coding Rules (abbreviated)
 
-- License header on every file: `// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception`
-- Generated headers: add `// GENERATED — do not edit. Regenerate: uv run tools/generate_tables.py`
-- Include guards: path-based, uppercase, `_` for `/` and `.`
-- Namespace for tables: `beman::transcoding::detail::tables`
+- Include guards: `INCLUDE_BEMAN_TRANSCODE_*_HPP` (path-based, uppercase)
+- Includes: angle brackets only, full path from include root
+- Test files: include primary header twice (idempotent check)
+- Functions: out-of-line in headers with full qualification
+- `constexpr` everything that can be
+- License: `// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception`
+- No `Co-Authored-By` trailers in commits
 - Full rules in `CLAUDE.md`
 
 ## Build Commands
 
 ```bash
 make test      # build + run all tests
-make lint      # clang-format + gersemi + codespell + gitleaks
+make lint      # clang-format + gersemi + codespell + ruff + gitleaks
 make compile   # build only
+uv run pytest tools/tests/   # Python tests
+uv run mypy tools/           # Python type check
 ```
-
-## After Step 17
-
-Step 18 will use the generated tables to add all 21 remaining
-single-byte decoders in one pass. The full plan is in
-`docs/plans/phase2-checklist.md` and `docs/plans/phase2-index.md`.
