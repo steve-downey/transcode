@@ -193,3 +193,42 @@ TEST_CASE("whatwg_decode windows_1252 consteval", "[transcoding::whatwg_decode]"
     };
     CHECK(constify(decode_euro()) == char32_t(0x20AC));
 }
+
+// Step 18: representative tests for the 27 new single-byte codecs
+
+TEST_CASE("whatwg_decode ibm866 ASCII", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A'};
+    CHECK(collect(bytes | whatwg_decode<codec::ibm866>) == std::vector<char32_t>{U'A'});
+}
+
+TEST_CASE("whatwg_decode ibm866 box drawing", "[transcoding::whatwg_decode]") {
+    // 0xB3 -> U+2502 (BOX DRAWINGS LIGHT VERTICAL)
+    std::vector<char> bytes{'\xB3'};
+    CHECK(collect(bytes | whatwg_decode<codec::ibm866>) == std::vector<char32_t>{U'\x2502'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_2 ogonek A", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+0104 (LATIN CAPITAL LETTER A WITH OGONEK)
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_2>) == std::vector<char32_t>{U'\x0104'});
+}
+
+TEST_CASE("whatwg_decode koi8_r cyrillic a", "[transcoding::whatwg_decode]") {
+    // 0xC1 -> U+0430 (CYRILLIC SMALL LETTER A)
+    std::vector<char> bytes{'\xC1'};
+    CHECK(collect(bytes | whatwg_decode<codec::koi8_r>) == std::vector<char32_t>{U'\x0430'});
+}
+
+TEST_CASE("whatwg_decode windows_1250 ogonek A", "[transcoding::whatwg_decode]") {
+    // 0xA5 -> U+0104 (LATIN CAPITAL LETTER A WITH OGONEK)
+    std::vector<char> bytes{'\xA5'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1250>) == std::vector<char32_t>{U'\x0104'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_8_i shares iso_8859_8 table", "[transcoding::whatwg_decode]") {
+    // 0xE0 -> U+05D0 (HEBREW LETTER ALEF) in both iso-8859-8 and iso-8859-8-i
+    std::vector<char> bytes{'\xE0'};
+    auto              r8  = collect(bytes | whatwg_decode<codec::iso_8859_8>);
+    auto              r8i = collect(bytes | whatwg_decode<codec::iso_8859_8_i>);
+    CHECK(r8 == r8i);
+}
