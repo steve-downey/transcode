@@ -227,7 +227,10 @@ target_link_libraries(
 )
 
 add_executable(beman.transcode.tests.shift_jis_decode)
-target_sources(beman.transcode.tests.shift_jis_decode PRIVATE shift_jis_decode.test.cpp)
+target_sources(
+    beman.transcode.tests.shift_jis_decode
+    PRIVATE shift_jis_decode.test.cpp
+)
 target_include_directories(
     beman.transcode.tests.shift_jis_decode
     PRIVATE ${TEST_INCLUDE_DIR}
@@ -238,7 +241,10 @@ target_link_libraries(
 )
 
 add_executable(beman.transcode.tests.shift_jis_encode)
-target_sources(beman.transcode.tests.shift_jis_encode PRIVATE shift_jis_encode.test.cpp)
+target_sources(
+    beman.transcode.tests.shift_jis_encode
+    PRIVATE shift_jis_encode.test.cpp
+)
 target_include_directories(
     beman.transcode.tests.shift_jis_encode
     PRIVATE ${TEST_INCLUDE_DIR}
