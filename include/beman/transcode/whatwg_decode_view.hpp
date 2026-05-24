@@ -181,8 +181,14 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         done_ = true;
         return;
     }
-    auto r = detail::utf8_decode_one(current_, end_);
-    value_ = r.is_error ? U'�' : r.code_point;
+    if constexpr (C == codec::replacement) {
+        while (current_ != end_)
+            ++current_;
+        value_ = U'\xFFFD';
+    } else if constexpr (C == codec::utf_8) {
+        auto r = detail::utf8_decode_one(current_, end_);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    }
 }
 
 template <codec C, std::ranges::input_range R>
@@ -252,11 +258,17 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         done_ = true;
         return;
     }
-    auto r = detail::utf8_decode_one(current_, end_);
-    if (r.is_error)
-        value_ = std::unexpected(r.error);
-    else
-        value_ = r.code_point;
+    if constexpr (C == codec::replacement) {
+        while (current_ != end_)
+            ++current_;
+        value_ = std::unexpected(whatwg_error::invalid_byte);
+    } else if constexpr (C == codec::utf_8) {
+        auto r = detail::utf8_decode_one(current_, end_);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    }
 }
 
 template <codec C, std::ranges::input_range R>
