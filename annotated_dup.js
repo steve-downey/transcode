@@ -12,7 +12,11 @@ var annotated_dup =
         [ "whatwg_decode_closure", "structbeman_1_1transcoding_1_1whatwg__decode__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__closure" ],
         [ "whatwg_decode_or_error_closure", "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure" ],
         [ "whatwg_decode_or_error_view", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view" ],
-        [ "whatwg_decode_view", "classbeman_1_1transcoding_1_1whatwg__decode__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__view" ]
+        [ "whatwg_decode_view", "classbeman_1_1transcoding_1_1whatwg__decode__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__view" ],
+        [ "whatwg_encode_closure", "structbeman_1_1transcoding_1_1whatwg__encode__closure.html", "structbeman_1_1transcoding_1_1whatwg__encode__closure" ],
+        [ "whatwg_encode_or_error_closure", "structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html", "structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure" ],
+        [ "whatwg_encode_or_error_view", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view.html", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view" ],
+        [ "whatwg_encode_view", "classbeman_1_1transcoding_1_1whatwg__encode__view.html", "classbeman_1_1transcoding_1_1whatwg__encode__view" ]
       ] ]
     ] ]
 ];

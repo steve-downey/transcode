@@ -10,6 +10,7 @@ var error_8hpp =
       [ "truncated_sequence", "error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30baba3c77c8fa3468fd7bfd6123cbcbc26a3e", null ],
       [ "overlong_encoding", "error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30baba6a0e0bbe71573653a91e08488f6d7e60", null ],
       [ "surrogate_code_point", "error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d", null ],
-      [ "out_of_range", "error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0", null ]
+      [ "out_of_range", "error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0", null ],
+      [ "unmapped_codepoint", "error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30baba41a389ed570cf4bd17e392adceb1bf31", null ]
     ] ]
 ];

@@ -136,10 +136,20 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">whatwg_decode_view</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1whatwg__encode__closure.html">whatwg_encode_closure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html">whatwg_encode_or_error_closure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__or__error__view.html">whatwg_encode_or_error_view</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view.html">whatwg_encode_view</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="concepts" name="concepts"></a>
 Concepts</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptbeman_1_1transcoding_1_1legacy__byte__range.html">legacy_byte_range</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptbeman_1_1transcoding_1_1unicode__scalar__range.html">unicode_scalar_range</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
@@ -151,6 +161,7 @@ Enumerations</h2></td></tr>
 , <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d">surrogate_code_point</a>
 , <br />
 &#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0">out_of_range</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba41a389ed570cf4bd17e392adceb1bf31">unmapped_codepoint</a>
 <br />
  }</td></tr>
 <tr class="separator:a3823b84e4fc7b689f0b2b38741b30bab"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -224,6 +235,12 @@ Variables</h2></td></tr>
 <tr class="memitem:ad15ffa8f43ff243d79c92bf31e8aefc2"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C&gt; </td></tr>
 <tr class="memitem:ad15ffa8f43ff243d79c92bf31e8aefc2"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html">whatwg_decode_or_error_closure</a>&lt; C &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#ad15ffa8f43ff243d79c92bf31e8aefc2">whatwg_decode_or_error</a> {}</td></tr>
 <tr class="separator:ad15ffa8f43ff243d79c92bf31e8aefc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1d7219d1a0e414363d643942b48024f"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C&gt; </td></tr>
+<tr class="memitem:ab1d7219d1a0e414363d643942b48024f"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1whatwg__encode__closure.html">whatwg_encode_closure</a>&lt; C &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#ab1d7219d1a0e414363d643942b48024f">whatwg_encode</a> {}</td></tr>
+<tr class="separator:ab1d7219d1a0e414363d643942b48024f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62b7811f7a198b10e6372e16c5683b07"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C&gt; </td></tr>
+<tr class="memitem:a62b7811f7a198b10e6372e16c5683b07"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html">whatwg_encode_or_error_closure</a>&lt; C &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a62b7811f7a198b10e6372e16c5683b07">whatwg_encode_or_error</a> {}</td></tr>
+<tr class="separator:a62b7811f7a198b10e6372e16c5683b07"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="a20dfb324ebd26c6127d014520f93005a" name="a20dfb324ebd26c6127d014520f93005a"></a>
@@ -333,6 +350,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a3823b84e4fc7b689f0b2b38741b30baba6a0e0bbe71573653a91e08488f6d7e60" name="a3823b84e4fc7b689f0b2b38741b30baba6a0e0bbe71573653a91e08488f6d7e60"></a>overlong_encoding&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d" name="a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d"></a>surrogate_code_point&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0" name="a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0"></a>out_of_range&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3823b84e4fc7b689f0b2b38741b30baba41a389ed570cf4bd17e392adceb1bf31" name="a3823b84e4fc7b689f0b2b38741b30baba41a389ed570cf4bd17e392adceb1bf31"></a>unmapped_codepoint&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -527,6 +545,54 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
       <table class="memname">
         <tr>
           <td class="memname">constexpr <a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html">whatwg_decode_or_error_closure</a>&lt;C&gt; beman::transcoding::whatwg_decode_or_error {}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab1d7219d1a0e414363d643942b48024f" name="ab1d7219d1a0e414363d643942b48024f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1d7219d1a0e414363d643942b48024f">&#9670;&#160;</a></span>whatwg_encode</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structbeman_1_1transcoding_1_1whatwg__encode__closure.html">whatwg_encode_closure</a>&lt;C&gt; beman::transcoding::whatwg_encode {}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a62b7811f7a198b10e6372e16c5683b07" name="a62b7811f7a198b10e6372e16c5683b07"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62b7811f7a198b10e6372e16c5683b07">&#9670;&#160;</a></span>whatwg_encode_or_error</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html">whatwg_encode_or_error_closure</a>&lt;C&gt; beman::transcoding::whatwg_encode_or_error {}</td>
         </tr>
       </table>
   </td>
