@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['handle_5f_0',['handle_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3fcae46ebebc5e9e79e61bcfe1375f23',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::handle_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#aea361942e397fb4f4953b11eb0db6f9e',1,'beman::transcoding::iconv_transcode_view::iterator::handle_()']]],
-  ['has_5ferror_5f_1',['has_error_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3f5e8cf2c0a2c63c44d9bba7a5bc307f',1,'beman::transcoding::iconv_transcode_or_error_view::iterator']]],
-  ['has_5fpending_5f_2',['has_pending_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad2183a75cbac7b19cd4157a2a17847f3',1,'beman::transcoding::whatwg_decode_view::iterator::has_pending_()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a265bc78c4abd32cd05ec3b0d9ed677ee',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::has_pending_()']]]
+  ['gbk_0',['gbk',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadeb297cfef1bd867fa7f55bebd119cec',1,'beman::transcoding']]],
+  ['gbk_2ehpp_1',['gbk.hpp',['../gbk_8hpp.html',1,'(Global Namespace)'],['../tables_2gbk_8hpp.html',1,'(Global Namespace)']]]
 ];

@@ -53,7 +53,8 @@ var namespacebeman_1_1transcoding =
       [ "windows_1258", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaaf1e58bdd6df2320dac522c75d2e09e0", null ],
       [ "x_mac_cyrillic", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf327dc91d47fbbc1d9957b9a7d3f2983", null ],
       [ "utf_16be", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa0f4291507e17c4c6d550ebdd51087c65", null ],
-      [ "utf_16le", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa8995e63b559f0f74f3efa7dc973dd2a8", null ]
+      [ "utf_16le", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa8995e63b559f0f74f3efa7dc973dd2a8", null ],
+      [ "gbk", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadeb297cfef1bd867fa7f55bebd119cec", null ]
     ] ],
     [ "iconv_error", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730", [
       [ "invalid_sequence", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed", null ],
