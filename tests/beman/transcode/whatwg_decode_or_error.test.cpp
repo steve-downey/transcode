@@ -108,3 +108,16 @@ TEST_CASE("whatwg_decode_or_error replacement yields one error", "[transcoding::
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::invalid_byte);
 }
+
+// Step 15: codec::x_user_defined tests
+
+TEST_CASE("whatwg_decode_or_error x_user_defined never errors", "[transcoding::whatwg_decode_or_error]") {
+    std::vector<char> bytes{'\x80', '\xFF', 'A'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::x_user_defined>);
+    REQUIRE(result.size() == 3);
+    for (auto& r : result)
+        CHECK(r.has_value());
+    CHECK(result[0].value() == char32_t(0xF780));
+    CHECK(result[1].value() == char32_t(0xF7FF));
+    CHECK(result[2].value() == U'A');
+}

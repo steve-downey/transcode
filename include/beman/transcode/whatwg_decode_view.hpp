@@ -6,6 +6,7 @@
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/utf8.hpp>
+#include <beman/transcode/detail/x_user_defined.hpp>
 
 #include <expected>
 #include <iterator>
@@ -13,7 +14,7 @@
 
 namespace beman::transcoding {
 
-enum class codec { utf_8, replacement };
+enum class codec { utf_8, replacement, x_user_defined };
 
 // ---------------------------------------------------------------------------
 // whatwg_decode_view — decodes bytes to char32_t, replacing errors with U+FFFD
@@ -188,6 +189,8 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::utf_8) {
         auto r = detail::utf8_decode_one(current_, end_);
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::x_user_defined) {
+        value_ = detail::x_user_defined_decode_one(current_, end_);
     }
 }
 
@@ -268,6 +271,8 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
             value_ = std::unexpected(r.error);
         else
             value_ = r.code_point;
+    } else if constexpr (C == codec::x_user_defined) {
+        value_ = detail::x_user_defined_decode_one(current_, end_);
     }
 }
 
