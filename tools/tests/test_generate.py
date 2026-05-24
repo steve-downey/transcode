@@ -21,8 +21,8 @@ from generate_tables import (
     render_big5_hpp,
     render_gb18030_ranges_hpp,
     render_gbk_hpp,
-    render_shift_jis_hpp,
     render_hpp,
+    render_shift_jis_hpp,
     write_bin,
 )
 

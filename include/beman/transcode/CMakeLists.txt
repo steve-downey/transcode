@@ -27,8 +27,10 @@ else()
                     detail/null_term.hpp
                     detail/gb18030.hpp
                     detail/gbk.hpp
+                    detail/shift_jis.hpp
                     detail/single_byte.hpp
                     detail/tables/big5.hpp
+                    detail/tables/shift_jis.hpp
                     detail/tables/gb18030_ranges.hpp
                     detail/tables/gbk.hpp
                     detail/tables/ibm866.hpp

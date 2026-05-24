@@ -566,7 +566,7 @@ def main(argv: list[str] | None = None) -> int:
     generate_shift_jis(in_dir, include_tables_dir, run_clang_format=run_cf)
 
     n = len(SINGLE_BYTE_INDEXES)
-    print(f"Done. {n} single-byte codecs + GBK + GB18030 ranges + Big5 + Shift_JIS processed.")
+    print(f"Done. {n} single-byte + GBK + GB18030 ranges + Big5 + Shift_JIS.")
     return 0
 
 
