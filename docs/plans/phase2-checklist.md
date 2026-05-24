@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–26 complete. 330 C++ + 91 Python tests pass. On `main`.
+**Current state:** Steps 0–27 complete. 363 C++ + 91 Python tests pass. On `main`.
 
 ---
 
@@ -161,11 +161,11 @@ Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.
 
 Stateful encoding (escape sequences).
 
-- [ ] Create branch from `main`
-- [ ] Tests (RED → GREEN)
-- [ ] Implement stateful decode + encode
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Tests (RED → GREEN)
+- [x] Implement stateful decode + encode
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ## Step 28: EUC-KR decode + encode (`step28-euc-kr`)
 
