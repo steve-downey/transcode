@@ -11,8 +11,10 @@ from generate_tables import (
     GBK_POINTER_COUNT,
     codec_to_guard,
     codec_to_identifier,
+    parse_gb18030_ranges,
     parse_gbk_index,
     parse_single_byte_index,
+    render_gb18030_ranges_hpp,
     render_gbk_hpp,
     render_hpp,
     write_bin,
@@ -262,3 +264,106 @@ def test_render_gbk_hpp_known_codepoint() -> None:
     table[0] = 0x4E02
     hpp = render_gbk_hpp(table)
     assert "0x4E02" in hpp
+
+
+# ---------------------------------------------------------------------------
+# GB18030 ranges tests
+# ---------------------------------------------------------------------------
+
+
+def _make_gb18030_ranges_file(tmp_path: Path, entries: list[tuple[int, int]]) -> Path:
+    """Write a minimal index-gb18030-ranges.txt with given (pointer, codepoint) pairs."""
+    lines = ["# test gb18030-ranges index", "#"]
+    for ptr, cp in entries:
+        lines.append(f"  {ptr}\t0x{cp:04X}")
+    path = tmp_path / "index-gb18030-ranges.txt"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def test_parse_gb18030_ranges_empty(tmp_path: Path) -> None:
+    path = _make_gb18030_ranges_file(tmp_path, [])
+    result = parse_gb18030_ranges(path)
+    assert result == []
+
+
+def test_parse_gb18030_ranges_single_entry(tmp_path: Path) -> None:
+    path = _make_gb18030_ranges_file(tmp_path, [(0, 0x0080)])
+    result = parse_gb18030_ranges(path)
+    assert len(result) == 1
+    assert result[0] == (0, 0x0080)
+
+
+def test_parse_gb18030_ranges_sorted(tmp_path: Path) -> None:
+    path = _make_gb18030_ranges_file(tmp_path, [(36, 0x00A5), (0, 0x0080)])
+    result = parse_gb18030_ranges(path)
+    assert result[0] == (0, 0x0080)
+    assert result[1] == (36, 0x00A5)
+
+
+def test_parse_gb18030_ranges_ignores_comments(tmp_path: Path) -> None:
+    lines = ["# comment line", "  0\t0x0080", "# another comment", "  36\t0x00A5"]
+    path = tmp_path / "index-gb18030-ranges.txt"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    result = parse_gb18030_ranges(path)
+    assert len(result) == 2
+
+
+def test_parse_gb18030_ranges_real_first_entry() -> None:
+    path = Path("docs/whatwg/index-gb18030-ranges.txt")
+    if not path.exists():
+        import pytest
+
+        pytest.skip("docs/whatwg not present")
+    result = parse_gb18030_ranges(path)
+    assert result[0] == (0, 0x0080)
+
+
+def test_parse_gb18030_ranges_real_count() -> None:
+    path = Path("docs/whatwg/index-gb18030-ranges.txt")
+    if not path.exists():
+        import pytest
+
+        pytest.skip("docs/whatwg not present")
+    result = parse_gb18030_ranges(path)
+    assert len(result) == 207
+
+
+def test_parse_gb18030_ranges_real_last_entry() -> None:
+    path = Path("docs/whatwg/index-gb18030-ranges.txt")
+    if not path.exists():
+        import pytest
+
+        pytest.skip("docs/whatwg not present")
+    result = parse_gb18030_ranges(path)
+    assert result[-1] == (189000, 0x10000)
+
+
+def test_render_gb18030_ranges_hpp_contains_guard() -> None:
+    hpp = render_gb18030_ranges_hpp([])
+    assert "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_GB18030_RANGES_HPP" in hpp
+
+
+def test_render_gb18030_ranges_hpp_contains_spdx() -> None:
+    hpp = render_gb18030_ranges_hpp([])
+    assert "SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception" in hpp
+
+
+def test_render_gb18030_ranges_hpp_contains_namespace() -> None:
+    hpp = render_gb18030_ranges_hpp([])
+    assert "beman::transcoding::detail::tables" in hpp
+
+
+def test_render_gb18030_ranges_hpp_count() -> None:
+    entries = [(0, 0x0080), (36, 0x00A5)]
+    hpp = render_gb18030_ranges_hpp(entries)
+    assert "gb18030_ranges[2]" in hpp
+    assert "gb18030_ranges_count = 2" in hpp
+
+
+def test_render_gb18030_ranges_hpp_known_entry() -> None:
+    entries = [(0, 0x0080), (189000, 0x10000)]
+    hpp = render_gb18030_ranges_hpp(entries)
+    assert "0x0080" in hpp
+    assert "189000" in hpp
+    assert "0x10000" in hpp
