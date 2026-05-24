@@ -29,6 +29,29 @@ constexpr single_byte_result single_byte_decode_one(I& current, [[maybe_unused]]
     return {cp, {}, false};
 }
 
+struct single_byte_encode_result {
+    unsigned char byte{};
+    bool          is_error{false};
+};
+
+// Encode one codepoint to a single legacy byte.
+// ASCII (cp < 0x80) is a direct passthrough.
+// For cp >= 0x80: scans table[0..127] for table[i] == cp;
+// returns {0x80 + i, false} if found, {{}, true} if not.
+template <std::input_iterator I, std::sentinel_for<I> S>
+constexpr single_byte_encode_result
+single_byte_encode_one(I& current, [[maybe_unused]] S end, const char32_t (&table)[128]) {
+    auto cp = static_cast<char32_t>(*current);
+    ++current;
+    if (cp < 0x80)
+        return {static_cast<unsigned char>(cp), false};
+    for (int i = 0; i < 128; ++i) {
+        if (table[i] == cp)
+            return {static_cast<unsigned char>(0x80 + i), false};
+    }
+    return {{}, true};
+}
+
 } // namespace beman::transcoding::detail
 
 #endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_SINGLE_BYTE_HPP

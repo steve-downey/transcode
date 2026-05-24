@@ -22,6 +22,10 @@ template <typename R>
 concept legacy_byte_range = std::ranges::range<R> && !std::is_array_v<std::remove_cvref_t<R>> &&
                             detail::legacy_byte_type<std::remove_cv_t<std::ranges::range_value_t<R>>>;
 
+template <typename R>
+concept unicode_scalar_range = std::ranges::input_range<R> && !std::is_array_v<std::remove_cvref_t<R>> &&
+                               std::same_as<std::remove_cv_t<std::ranges::range_value_t<R>>, char32_t>;
+
 } // namespace beman::transcoding
 
 #endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_CONCEPTS_HPP
