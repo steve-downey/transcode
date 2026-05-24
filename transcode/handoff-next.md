@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 25 (Shift_JIS decode + encode)
+# Handoff: beman.transcode — Step 26 (EUC-JP decode + encode)
 
 ## Project
 
@@ -14,37 +14,35 @@ proposal.
 
 ## Current State
 
-**254 C++ tests + 68 Python tests pass** (`make test`). Steps 0–24
+**289 C++ tests + 80 Python tests pass** (`make test`). Steps 0–25
 complete. On `main`.
 
-### What Step 24 Built
+### What Step 25 Built
 
-Step 24 added Big5 decode and encode:
+Step 25 added Shift_JIS decode and encode:
 
-- **`tools/generate_tables.py`** — extended with `BIG5_POINTER_COUNT`,
-  `parse_big5_index()`, `render_big5_hpp()`, and `generate_big5()`.
-  Called from `main()`.
+- **`tools/generate_tables.py`** — extended with `SHIFTJIS_POINTER_COUNT`,
+  `SHIFTJIS_LEAD_COUNT`, `SHIFTJIS_TRAIL_COUNT`, `parse_shift_jis_index()`,
+  `render_shift_jis_hpp()`, and `generate_shift_jis()`. Called from `main()`.
 
-- **`include/beman/transcode/detail/tables/big5.hpp`** — generated
-  `inline constexpr char32_t big5[19782]`. Pointer formula:
+- **`include/beman/transcode/detail/tables/shift_jis.hpp`** — generated
+  `inline constexpr char32_t shift_jis[11280]`. Source: `index-jis0208.txt`.
+  Pointer formula:
   ```
-  lead: 0x81–0xFE (126 values)
-  trail: 0x40–0x7E (offset 0–62) + 0xA1–0xFE (offset 63–156) = 157 values
-  pointer = (lead - 0x81) * 157 + offset
+  lead bytes: 0x81-0x9F (offset 0-30) + 0xE0-0xFC (offset 31-59) = 60 values
+  trail bytes: 0x40-0x7E (offset 0-62) + 0x80-0xFC (offset 63-187) = 188 values
+  pointer = lead_offset * 188 + trail_offset
   ```
-  Four special pointers (1133, 1135, 1164, 1165) yield two codepoints each.
-  They are null in the table but intercepted before table lookup.
 
-- **`include/beman/transcode/detail/big5.hpp`** — `big5_decode_result`
-  (with `code_point2` field for 2-codepoint results), `big5_encode_result`,
-  `big5_decode_one()`, `big5_encode_one()`.
+- **`include/beman/transcode/detail/shift_jis.hpp`** — `shift_jis_decode_result`,
+  `shift_jis_encode_result`, `shift_jis_decode_one()`, `shift_jis_encode_one()`.
+  Special cases: ASCII (0x00-0x7F) passthrough, half-width katakana (0xA1-0xDF
+  → U+FF61-U+FF9F), U+00A5 → 0x5C, U+203E → 0x7E.
 
-- **`include/beman/transcode/whatwg_decode_view.hpp`** — added
-  `codec::big5` to enum; added `pending_cp_` / `has_pending_cp_` fields
-  to both decode iterators; added pending-codepoint check at top of both
-  `load()` functions; added Big5 dispatch arms.
+- **`include/beman/transcode/whatwg_decode_view.hpp`** — added `codec::shift_jis`
+  to enum; added Shift_JIS dispatch arms in both `load()` functions.
 
-- **`include/beman/transcode/whatwg_encode_view.hpp`** — added Big5
+- **`include/beman/transcode/whatwg_encode_view.hpp`** — added Shift_JIS
   dispatch arms in both `load()` functions.
 
 ### Current codec enum (in `whatwg_decode_view.hpp`)
@@ -60,195 +58,197 @@ enum class codec {
     gbk,
     gb18030,
     big5,
-    // shift_jis, euc_jp, euc_kr NOT YET — step 25+
+    shift_jis,
+    // euc_jp, euc_kr NOT YET — step 26+
 };
 ```
 
-### Current decode iterator design (IMPORTANT for step 25)
+### IMPORTANT: The `index-jis0208.txt` table is SHARED
 
-Both decode iterators now hold:
+The Shift_JIS table (`tables::shift_jis[11280]`) was generated from
+`index-jis0208.txt` using the Shift_JIS pointer formula. **EUC-JP also
+uses `index-jis0208.txt`** — but with a different pointer formula:
 
-```cpp
-base_iter     current_;
-base_sent     end_;
-char32_t      value_{};
-bool          done_{false};
-bool          has_pending_{false};   // raw bytes pending (UTF-16 only)
-unsigned char pending_[2]{};        // raw bytes pending (UTF-16 only)
-char32_t      pending_cp_{};        // codepoint pending (Big5 only)
-bool          has_pending_cp_{false};
-```
+- **EUC-JP jis0208 pointer** = `(lead - 0xA1) * 94 + (trail - 0xA1)`
+  - Lead: 0xA1-0xFE (94 values), Trail: 0xA1-0xFE (94 values)
+  - Max pointer: 93 × 94 + 93 = 8835 (so table size 8836)
 
-The `pending_cp_` mechanism is checked at the **very top** of `load()`,
-before any EOF check or codec dispatch. This is already in place for Big5;
-Shift_JIS does NOT need it (Shift_JIS is always 1-codepoint-per-call).
+The codepoints at each pointer are the **same** in both tables. The
+Shift_JIS table (`shift_jis[11280]`) already contains all pointers
+0–8835 (EUC-JP jis0208 range) as its first 8836 entries. Therefore:
 
-## What To Do Next — Step 25
+**EUC-JP decode/encode for jis0208 can reuse `tables::shift_jis`** —
+just use the EUC-JP pointer formula and index into `tables::shift_jis`.
 
-**Branch:** `step25-shift-jis`
+Verified:
+- jis0208 pointer 0 → U+3000 → EUC-JP bytes: 0xA1, 0xA1
+- jis0208 pointer 1485 → U+4E00 (一) → EUC-JP bytes: 0xB0, 0xEC
+
+### EUC-JP also needs a NEW table: jis0212
+
+EUC-JP's 3-byte sequence (0x8F lead) uses `index-jis0212.txt`:
+- Lead: 0x8F (prefix), then 0xA1-0xFE, then 0xA1-0xFE
+- JIS X 0212 pointer = `(b1 - 0xA1) * 94 + (b2 - 0xA1)`
+- Max pointer from data: 7210; table size: 8836 entries
+- Non-null entries start at pointer 108
+
+Known entry: pointer 108 → U+02D8 (BREVE) → EUC-JP: 0x8F, 0xA2, 0xAF
+
+## What To Do Next — Step 26
+
+**Branch:** `step26-euc-jp`
 
 **Read the checklist:** `docs/plans/phase2-checklist.md`
 
-There is no detailed step25 plan file. Use this handoff as the
+There is no detailed step26 plan file. Use this handoff as the
 authoritative spec.
 
-### WHATWG Shift_JIS decode algorithm
+### WHATWG EUC-JP decode algorithm
 
-Source: https://encoding.spec.whatwg.org/#shift_jis-decoder
+Source: https://encoding.spec.whatwg.org/#euc-jp-decoder
 
-**Single-byte paths (1 byte consumed):**
-1. `0x00–0x7F`: emit byte as codepoint directly (ASCII passthrough).
-2. `0xA1–0xDF`: emit `U+FF61 + byte - 0xA1` (half-width katakana).
-3. Any other byte not in lead range (`0x80`, `0xA0`, `0xFD–0xFF`): emit
-   U+FFFD (non-error) or `invalid_byte` error.
+EUC-JP byte sequences:
+1. `0x00–0x7F`: emit byte as codepoint (ASCII passthrough, 1 byte).
+2. `0x8E` (SS2 prefix):
+   - Read next byte. If in `0xA1–0xDF`: emit `U+FF61 + byte - 0xA1`
+     (half-width katakana, 2 bytes consumed).
+   - Otherwise: error (U+FFFD non-error, or `invalid_byte`).
+3. `0x8F` (SS3 prefix, JIS X 0212):
+   - Read two more bytes (b1, b2). If both in `0xA1–0xFE`:
+     pointer = `(b1 - 0xA1) * 94 + (b2 - 0xA1)`; look up `tables::euc_jp_jis0212`.
+   - If table entry is 0: error.
+   - Otherwise: emit codepoint (3 bytes consumed).
+   - If b1 or b2 out of range: error.
+4. `0xA1–0xFE` (JIS X 0208):
+   - Read next byte. If in `0xA1–0xFE`:
+     pointer = `(lead - 0xA1) * 94 + (trail - 0xA1)`; look up `tables::shift_jis[pointer]`.
+   - If table entry is 0: error.
+   - Otherwise: emit codepoint (2 bytes consumed).
+   - If trail out of range: error.
+5. Any other byte: error (U+FFFD / `invalid_byte`).
 
-**Multi-byte path (lead byte `0x81–0x9F` or `0xE0–0xFC`, 2 bytes consumed):**
-1. Read trail byte.
-2. If trail is not in `0x40–0x7E` or `0x80–0xFC`: emit U+FFFD / error.
-3. Compute:
-   ```
-   lead_offset  = (lead <= 0x9F) ? lead - 0x81 : lead - 0xC1
-   trail_offset = (trail < 0x7F) ? trail - 0x40 : trail - 0x41
-   pointer      = lead_offset * 188 + trail_offset
-   ```
-4. Look up `tables::shift_jis[pointer]`. If zero: U+FFFD / error.
-5. Otherwise: emit codepoint.
+### WHATWG EUC-JP encode algorithm
 
-If end of input after reading lead (no trail): truncated sequence error.
-
-### WHATWG Shift_JIS encode algorithm
-
-1. If `cp` < 0x80: emit 1 byte (ASCII).
-2. If `cp` == U+00A5: emit 0x5C (YEN SIGN).
-3. If `cp` == U+203E: emit 0x7E (OVERLINE).
-4. If `cp` is in `U+FF61–U+FF9F` (half-width katakana):
-   emit `0xA1 + cp - U+FF61` (1 byte).
-5. Otherwise: search `tables::shift_jis` for first pointer that maps to `cp`.
-   - Convert pointer to bytes:
-     ```
-     lead_offset  = pointer / 188
-     trail_offset = pointer % 188
-     lead  = (lead_offset < 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1
-     trail = (trail_offset < 63)  ? trail_offset + 0x40 : trail_offset + 0x41
-     ```
-   - If trail would be `0x7F`: skip this pointer (continue search). There
-     are no valid trail offsets that map to 0x7F.
-   - Emit 2 bytes.
-6. If not found: error (U+FFFD replacement byte `0x3F` = `'?'`, or
-   `unmapped_codepoint` in the or_error variant).
+1. If `cp < 0x80`: emit 1 byte (ASCII).
+2. If `cp == U+00A5`: emit 0x5C (1 byte).
+3. If `cp == U+203E`: emit 0x7E (1 byte).
+4. If `cp` in `U+FF61–U+FF9F`: emit 2 bytes: `0x8E, 0xA1 + cp - U+FF61`.
+5. Search `tables::shift_jis[0..8835]` for first pointer P where
+   `tables::shift_jis[P] == cp`:
+   - `lead = (P / 94) + 0xA1`
+   - `trail = (P % 94) + 0xA1`
+   - Emit 2 bytes: lead, trail.
+6. Search `tables::euc_jp_jis0212[0..8835]` for first pointer P where
+   `tables::euc_jp_jis0212[P] == cp`:
+   - `b1 = (P / 94) + 0xA1`
+   - `b2 = (P % 94) + 0xA1`
+   - Emit 3 bytes: 0x8F, b1, b2.
+7. If not found: error (`'?'` or `unmapped_codepoint`).
 
 ### Table structure
 
-Index file: `docs/whatwg/index-jis0208.txt`
+**jis0208 for EUC-JP:** reuse `tables::shift_jis`. The EUC-JP pointer
+formula accesses only indices 0–8835 — all within the existing array.
 
-- 7724 non-null entries, max pointer value 11103.
-- Table size: `60 * 188 = 11280` slots (60 lead offsets × 188 trail offsets).
-- Guard: `INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_SHIFT_JIS_HPP`
-- Array: `inline constexpr char32_t shift_jis[11280] = { ... };`
-
-Verify pointer formula for a known entry: pointer 0 should be U+3000
-(IDEOGRAPHIC SPACE):
-```
-grep "^[[:space:]]*0[[:space:]]" docs/whatwg/index-jis0208.txt
-```
-
-Inverse for encode: given pointer P:
-- `lead_offset = P / 188`
-- `trail_offset = P % 188`
-- `lead  = (lead_offset < 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1`
-- `trail = (trail_offset < 63)  ? trail_offset + 0x40 : trail_offset + 0x41`
-- Skip if trail == 0x7F (but this cannot happen given the valid range of trail_offset).
+**jis0212:** needs a new generated table:
+- Index file: `docs/whatwg/index-jis0212.txt`
+- Non-null entries: pointer 108 → 7210 (6067 entries), rest are 0
+- Table size: 8836 entries (pointer = (b1-0xA1)*94 + (b2-0xA1))
+- Guard: `INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_JP_JIS0212_HPP`
+- Array: `inline constexpr char32_t euc_jp_jis0212[8836] = { ... };`
+- Output: `include/beman/transcode/detail/tables/euc_jp_jis0212.hpp`
 
 ### Implementation order
 
 1. **Extend `tools/generate_tables.py`**:
-   - Add `SHIFTJIS_POINTER_COUNT = 11280` constant.
-   - Add `parse_shift_jis_index(path)` → 11280-entry list. Parse
-     `index-jis0208.txt` (same format as `index-gb18030.txt` and
-     `index-big5.txt`). Pointers outside 0–11279 are ignored.
-   - Add `render_shift_jis_hpp(table)` → header with guard
-     `INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_SHIFT_JIS_HPP` and array
-     `shift_jis[11280]`.
-   - Add `generate_shift_jis(in_dir, out_dir)` and call from `main()`.
+   - Add `EUC_JP_JIS0212_POINTER_COUNT = 8836` constant.
+   - Add `parse_euc_jp_jis0212_index(path)` → 8836-entry list.
+     Parse `index-jis0212.txt` (same format as jis0208).
+   - Add `render_euc_jp_jis0212_hpp(table)` → header with guard
+     `INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_JP_JIS0212_HPP` and
+     array `euc_jp_jis0212[8836]`.
+   - Add `generate_euc_jp_jis0212(in_dir, out_dir)` called from `main()`.
    - Add Python tests for the new functions.
 
-2. **Create `include/beman/transcode/detail/shift_jis.hpp`**:
+2. **Create `include/beman/transcode/detail/euc_jp.hpp`**:
    ```cpp
-   struct shift_jis_decode_result {
+   struct euc_jp_decode_result {
        char32_t     code_point{0xFFFD};
        whatwg_error error{};
        bool         is_error{false};
    };
-   struct shift_jis_encode_result {
-       unsigned char bytes[2]{};
+   struct euc_jp_encode_result {
+       unsigned char bytes[3]{};  // up to 3 bytes (0x8F + two trail bytes)
        int           count{0};
        bool          is_error{false};
    };
    template <std::input_iterator I, std::sentinel_for<I> S>
-   constexpr shift_jis_decode_result shift_jis_decode_one(I& current, S end);
-   constexpr shift_jis_encode_result shift_jis_encode_one(char32_t cp);
+   constexpr euc_jp_decode_result euc_jp_decode_one(I& current, S end);
+   constexpr euc_jp_encode_result euc_jp_encode_one(char32_t cp);
    ```
-   No `code_point2` field — Shift_JIS is always 1-codepoint-per-call.
+   Include `<beman/transcode/detail/tables/shift_jis.hpp>` and
+   `<beman/transcode/detail/tables/euc_jp_jis0212.hpp>`.
 
-3. **Add `codec::shift_jis`** to the enum in `whatwg_decode_view.hpp`
-   (after `big5`).
+3. **Add `codec::euc_jp`** to the enum in `whatwg_decode_view.hpp`
+   (after `shift_jis`).
 
-4. **Add Shift_JIS dispatch arms** in both decode `load()` functions and
-   both encode `load()` functions (same single-result pattern as GBK).
+4. **Add EUC-JP dispatch arms** in both decode `load()` functions and
+   both encode `load()` functions.
 
-5. **Add `#include <beman/transcode/detail/shift_jis.hpp>`** to both
+5. **Add `#include <beman/transcode/detail/euc_jp.hpp>`** to both
    view headers.
 
 6. **Update `include/beman/transcode/CMakeLists.txt`**: add
-   `detail/shift_jis.hpp` and `detail/tables/shift_jis.hpp`.
+   `detail/euc_jp.hpp` and `detail/tables/euc_jp_jis0212.hpp`.
 
 7. **Create test files**:
-   - `tests/beman/transcode/shift_jis_decode.test.cpp`
-   - `tests/beman/transcode/shift_jis_encode.test.cpp`
+   - `tests/beman/transcode/euc_jp_decode.test.cpp`
+   - `tests/beman/transcode/euc_jp_encode.test.cpp`
    - Register in `tests/beman/transcode/CMakeLists.txt`.
 
 8. **Test cases to write**:
 
    Decode:
    - ASCII passthrough `0x41` → U'A'
-   - Half-width katakana `0xA1` → U+FF61 (HALFWIDTH IDEOGRAPHIC FULL STOP)
-   - Half-width katakana `0xDF` → U+FF9F (HALFWIDTH KATAKANA VOICED ITERATION MARK)
-   - Multi-byte: verify pointer 0 (look up byte sequence) → U+3000
-   - Multi-byte: known CJK character (e.g. pointer for 一)
-   - Invalid lead byte `0x80` → U+FFFD
+   - JIS X 0208 multi-byte: `0xA1 0xA1` → U+3000 (pointer 0)
+   - JIS X 0208 multi-byte: `0xB0 0xEC` → U+4E00 (一)
+   - Half-width katakana: `0x8E 0xA1` → U+FF61
+   - JIS X 0212 three-byte: `0x8F 0xA2 0xAF` → U+02D8 (pointer 108)
+   - Invalid lead byte → U+FFFD
    - Bad trail byte → U+FFFD
-   - Truncated lead byte → U+FFFD
-   - or_error variants for each error case
+   - Truncated sequences → U+FFFD / error
+   - or_error variants
    - Pipe syntax + consteval
 
    Encode:
    - ASCII → 1 byte
-   - U+FF61 → `0xA1` (half-width katakana)
-   - U+3000 → 2-byte Shift_JIS bytes (pointer 0)
+   - U+3000 → 0xA1 0xA1 (2 bytes, jis0208)
+   - U+4E00 (一) → 0xB0 0xEC (2 bytes, jis0208)
+   - U+FF61 → 0x8E 0xA1 (2 bytes, half-width katakana)
+   - U+02D8 (BREVE) → 0x8F 0xA2 0xAF (3 bytes, jis0212)
    - Unmapped → `'?'` / `unmapped_codepoint`
-   - U+00A5 → `0x5C` (yen sign special case)
-   - U+203E → `0x7E` (overline special case)
    - Pipe syntax + consteval
 
-### Verifying the pointer formula for known entries
+### Note on `euc_jp_encode_one` buffer size
 
-```bash
-# pointer 0: lead_offset=0, trail_offset=0
-# lead = 0 + 0x81 = 0x81
-# trail = 0 + 0x40 = 0x40
-# bytes: 0x81 0x40 → U+3000 (IDEOGRAPHIC SPACE)
+The `euc_jp_encode_result.bytes` field must be at least 3 bytes to hold
+the JIS X 0212 sequence (0x8F + b1 + b2). The `whatwg_encode_view`
+buffer `buf_[4]` is already large enough.
 
-grep "^[[:space:]]*0[[:space:]]" docs/whatwg/index-jis0208.txt
+### Note on reusing `tables::shift_jis` for jis0208 lookup
+
+When searching for a codepoint to encode (step 5 above), limit the
+search to indices 0–8835 of `tables::shift_jis`, not 0–11279. This
+avoids producing byte sequences that are only valid in Shift_JIS but
+not in EUC-JP.
+
+```cpp
+for (int i = 0; i < 8836; ++i) {
+    if (tables::shift_jis[i] == cp) {
+        // found in jis0208 range
+    }
+}
 ```
-
-### Note on `0x7F` trail byte
-
-The valid trail ranges (0x40–0x7E and 0x80–0xFC) exclude 0x7F. In the
-decode direction, 0x7F as a trail byte is an error. In the encode
-direction, the inverse formula can never produce 0x7F because:
-- offset 0–62 maps to 0x40–0x7E (max 0x7E, not 0x7F)
-- offset 63–187 maps to 0x80–0xFC (min 0x80, not 0x7F)
-So no guard against 0x7F is needed in `shift_jis_encode_one`.
 
 ## Coding Rules (abbreviated)
 
@@ -274,22 +274,24 @@ make mypy      # mypy type check only
 
 ## TDD Process
 
-1. Branch: `git checkout -b step25-shift-jis`
-2. Write failing tests (RED) → commit → push both remotes
-3. Implement (GREEN): table generation + shift_jis.hpp + dispatch arms +
-   CMakeLists updates
-4. `make test` (all pass) + `make lint` (clean) → commit → push both
-5. `make coverage` — ASCII, half-width katakana, multi-byte, error paths covered
-6. Merge to main + push both
-7. Mark checklist `[x]`
+1. Branch: `git checkout -b step26-euc-jp`
+2. Write failing tests (RED): tests reference `codec::euc_jp` (compile
+   failure since enum value missing) + Python tooling tests
+3. Commit RED → push both remotes
+4. Implement (GREEN): generate jis0212 table, create `euc_jp.hpp`,
+   add enum value, dispatch arms, CMakeLists updates
+5. `make test` (all pass) + `make lint` (clean) → commit → push both
+6. `make coverage` — ASCII, jis0208, jis0212, half-width katakana, and
+   error paths should all be covered
+7. Merge to main + push both
+8. Mark checklist `[x]`
 
 ## Coverage Notes
 
-- ASCII passthrough path should be covered.
-- Half-width katakana path (0xA1–0xDF) should be covered.
-- Valid multi-byte path should be covered.
-- Invalid lead byte path should be covered.
-- Bad trail byte error path should be covered.
-- Encode: all 4 paths (ASCII, katakana, 2-byte table, unmapped) should be covered.
-- Defensive empty-range check at function entry (line 1 of decode function)
-  is unreachable from the view; a ~96% coverage result is fine.
+- ASCII passthrough covered by encode + decode ASCII tests.
+- jis0208 2-byte path (0xA1-0xFE lead) should be covered.
+- Half-width katakana path (0x8E prefix) should be covered.
+- jis0212 3-byte path (0x8F prefix) should be covered.
+- Error paths (invalid lead, truncated sequences) should be covered.
+- The defensive `if (current == end)` at top of decode is unreachable
+  from the view; ~96% line coverage is acceptable.

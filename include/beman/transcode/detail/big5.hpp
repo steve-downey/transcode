@@ -99,9 +99,9 @@ constexpr big5_encode_result big5_encode_one(char32_t cp) {
 
     for (int i = 0; i < 19782; ++i) {
         if (tables::big5[i] == cp) {
-            int lead   = i / 157 + 0x81;
-            int offset = i % 157;
-            int trail  = (offset < 63) ? offset + 0x40 : offset + 0x62;
+            int                lead   = i / 157 + 0x81;
+            int                offset = i % 157;
+            int                trail  = (offset < 63) ? offset + 0x40 : offset + 0x62;
             big5_encode_result r{};
             r.bytes[0] = static_cast<unsigned char>(lead);
             r.bytes[1] = static_cast<unsigned char>(trail);

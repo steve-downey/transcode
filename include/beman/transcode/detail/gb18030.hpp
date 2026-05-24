@@ -120,8 +120,8 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
         if (fourth < 0x30 || fourth > 0x39)
             return {{}, whatwg_error::invalid_byte, true};
 
-        std::uint32_t pointer = ((lead - 0x81u) * 10u + (second - 0x30u)) * 126u * 10u +
-                                (third - 0x81u) * 10u + (fourth - 0x30u);
+        std::uint32_t pointer =
+            ((lead - 0x81u) * 10u + (second - 0x30u)) * 126u * 10u + (third - 0x81u) * 10u + (fourth - 0x30u);
         char32_t cp = gb18030_ranges_decode(pointer);
         return {cp, {}, false};
     }
