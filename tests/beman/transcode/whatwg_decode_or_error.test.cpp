@@ -140,3 +140,44 @@ TEST_CASE("whatwg_decode_or_error windows_1252 valid high byte", "[transcoding::
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == char32_t(0x20AC));
 }
+
+// Coverage: iso_8859_6 success path (valid high byte).
+// 0xA0 -> U+00A0 (NO-BREAK SPACE).
+TEST_CASE("whatwg_decode_or_error iso_8859_6 valid high byte", "[transcoding::whatwg_decode_or_error]") {
+    std::vector<char> bytes{'\xA0'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_8859_6>);
+    REQUIRE(result.size() == 1);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == char32_t(0x00A0));
+}
+
+// Coverage gap: single_byte_decode_one() error path (cp == 0 in table).
+// iso-8859-6 has genuine null entries; byte 0xA1 is unmapped.
+TEST_CASE("whatwg_decode_or_error iso_8859_6 unmapped byte yields error", "[transcoding::whatwg_decode_or_error]") {
+    std::vector<char> bytes{'\xA1'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_8859_6>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+}
+
+// Coverage gaps: overlong UTF-8 encodings (utf8.hpp lines 64 and 66).
+// A 3-byte sequence encoding a codepoint < U+0800 is overlong.
+TEST_CASE("whatwg_decode_or_error overlong 3-byte sequence", "[transcoding::whatwg_decode_or_error]") {
+    // 0xE0 0x80 0x80 encodes U+0000 in 3 bytes — always overlong.
+    std::vector<char> bytes{'\xE0', '\x80', '\x80'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::utf_8>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::overlong_encoding);
+}
+
+// A 4-byte sequence encoding a codepoint < U+10000 is overlong.
+TEST_CASE("whatwg_decode_or_error overlong 4-byte sequence", "[transcoding::whatwg_decode_or_error]") {
+    // 0xF0 0x80 0x80 0x80 encodes U+0000 in 4 bytes — always overlong.
+    std::vector<char> bytes{'\xF0', '\x80', '\x80', '\x80'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::utf_8>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::overlong_encoding);
+}
