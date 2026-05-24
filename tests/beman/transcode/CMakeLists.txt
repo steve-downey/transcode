@@ -132,6 +132,28 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.utf16_decode)
+target_sources(beman.transcode.tests.utf16_decode PRIVATE utf16_decode.test.cpp)
+target_include_directories(
+    beman.transcode.tests.utf16_decode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.utf16_decode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.utf16_encode)
+target_sources(beman.transcode.tests.utf16_encode PRIVATE utf16_encode.test.cpp)
+target_include_directories(
+    beman.transcode.tests.utf16_encode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.utf16_encode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -144,6 +166,8 @@ catch_discover_tests(beman.transcode.tests.iconv_real)
 catch_discover_tests(beman.transcode.tests.iconv_transcode_or_error)
 catch_discover_tests(beman.transcode.tests.whatwg_encode)
 catch_discover_tests(beman.transcode.tests.whatwg_encode_or_error)
+catch_discover_tests(beman.transcode.tests.utf16_decode)
+catch_discover_tests(beman.transcode.tests.utf16_encode)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(
@@ -319,4 +343,30 @@ set_tests_properties(
     PROPERTIES
         PASS_REGULAR_EXPRESSION
             "transcode: views::null_term requires a pointer or array type"
+)
+
+# legacy_byte_range rejects char32_t ranges (e.g. vector<char32_t>) for UTF-16 decode
+add_library(beman.transcode.tests.utf16_decode_reject_char32_range_fail OBJECT)
+target_sources(
+    beman.transcode.tests.utf16_decode_reject_char32_range_fail
+    PRIVATE utf16_decode_reject_char32_range_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.utf16_decode_reject_char32_range_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.utf16_decode_reject_char32_range_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME utf16_decode_reject_char32_range_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.utf16_decode_reject_char32_range_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    utf16_decode_reject_char32_range_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
 )
