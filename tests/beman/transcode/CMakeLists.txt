@@ -338,6 +338,17 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.roundtrip)
+target_sources(beman.transcode.tests.roundtrip PRIVATE roundtrip.test.cpp)
+target_include_directories(
+    beman.transcode.tests.roundtrip
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.roundtrip
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -366,6 +377,7 @@ catch_discover_tests(beman.transcode.tests.iso2022jp_decode)
 catch_discover_tests(beman.transcode.tests.iso2022jp_encode)
 catch_discover_tests(beman.transcode.tests.euc_kr_decode)
 catch_discover_tests(beman.transcode.tests.euc_kr_encode)
+catch_discover_tests(beman.transcode.tests.roundtrip)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(
