@@ -25,6 +25,7 @@ else()
                     detail/concepts.hpp
                     detail/error.hpp
                     detail/euc_jp.hpp
+                    detail/euc_kr.hpp
                     detail/null_term.hpp
                     detail/gb18030.hpp
                     detail/gbk.hpp
@@ -32,6 +33,7 @@ else()
                     detail/single_byte.hpp
                     detail/tables/big5.hpp
                     detail/tables/euc_jp_jis0212.hpp
+                    detail/tables/euc_kr.hpp
                     detail/tables/shift_jis.hpp
                     detail/tables/gb18030_ranges.hpp
                     detail/tables/gbk.hpp

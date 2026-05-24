@@ -35,6 +35,7 @@
 #include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
 #include <beman/transcode/detail/big5.hpp>
 #include <beman/transcode/detail/euc_jp.hpp>
+#include <beman/transcode/detail/euc_kr.hpp>
 #include <beman/transcode/detail/gb18030.hpp>
 #include <beman/transcode/detail/gbk.hpp>
 #include <beman/transcode/detail/shift_jis.hpp>
@@ -88,6 +89,7 @@ enum class codec {
     shift_jis,
     euc_jp,
     iso_2022_jp,
+    euc_kr,
 };
 
 // ---------------------------------------------------------------------------
@@ -579,6 +581,9 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
             value_ = (byte >= 0xA1 && byte <= 0xDF) ? static_cast<char32_t>(0xFF61 + byte - 0xA1) : U'\xFFFD';
             return;
         }
+    } else if constexpr (C == codec::euc_kr) {
+        auto r = detail::euc_kr_decode_one(current_, end_);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
     }
 }
 
@@ -1064,6 +1069,12 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
                 value_ = std::unexpected(whatwg_error::invalid_byte);
             return;
         }
+    } else if constexpr (C == codec::euc_kr) {
+        auto r = detail::euc_kr_decode_one(current_, end_);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
     }
 }
 
