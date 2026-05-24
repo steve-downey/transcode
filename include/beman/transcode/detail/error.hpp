@@ -11,6 +11,7 @@ enum class whatwg_error {
     overlong_encoding,
     surrogate_code_point,
     out_of_range,
+    unmapped_codepoint,
 };
 
 enum class iconv_error {

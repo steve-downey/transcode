@@ -39,8 +39,7 @@ TEST_CASE("whatwg_encode windows_1252 euro sign", "[transcoding::whatwg_encode]"
     CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'\x80'});
 }
 
-TEST_CASE("whatwg_encode windows_1252 unmapped codepoint yields question mark",
-          "[transcoding::whatwg_encode]") {
+TEST_CASE("whatwg_encode windows_1252 unmapped codepoint yields question mark", "[transcoding::whatwg_encode]") {
     // U+4E2D (CJK) is not in windows-1252
     std::vector<char32_t> cps{U'\x4E2D'};
     CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'?'});
@@ -60,14 +59,13 @@ TEST_CASE("whatwg_encode koi8_r Cyrillic A", "[transcoding::whatwg_encode]") {
 
 TEST_CASE("whatwg_encode windows_1252 mixed ASCII and high", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'A', U'\x20AC', U'B'};
-    CHECK(collect(cps | whatwg_encode<codec::windows_1252>) ==
-          std::vector<char>{'A', '\x80', 'B'});
+    CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'A', '\x80', 'B'});
 }
 
 TEST_CASE("whatwg_encode windows_1252 consteval", "[transcoding::whatwg_encode]") {
     using beman::transcoding::tests::constify;
     constexpr auto encode_euro = []() consteval {
-        constexpr char32_t    cps[] = {U'\x20AC'};
+        constexpr char32_t        cps[] = {U'\x20AC'};
         std::span<const char32_t> sp(cps, 1);
         return *(sp | whatwg_encode<codec::windows_1252>).begin();
     };

@@ -55,6 +55,7 @@ else()
                     detail/utf8.hpp
                     iconv_transcode_view.hpp
                     whatwg_decode_view.hpp
+                    whatwg_encode_view.hpp
                     "${PROJECT_BINARY_DIR}/include/beman/transcode/config_generated.hpp"
     )
 endif()

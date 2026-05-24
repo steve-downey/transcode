@@ -47,8 +47,7 @@ TEST_CASE("whatwg_encode_or_error windows_1252 valid high byte", "[transcoding::
     CHECK(result[0].value() == '\x80');
 }
 
-TEST_CASE("whatwg_encode_or_error windows_1252 unmapped codepoint",
-          "[transcoding::whatwg_encode_or_error]") {
+TEST_CASE("whatwg_encode_or_error windows_1252 unmapped codepoint", "[transcoding::whatwg_encode_or_error]") {
     // U+4E2D (CJK) is not in windows-1252
     std::vector<char32_t> cps{U'\x4E2D'};
     auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::windows_1252>);
@@ -57,8 +56,7 @@ TEST_CASE("whatwg_encode_or_error windows_1252 unmapped codepoint",
     CHECK(result[0].error() == whatwg_error::unmapped_codepoint);
 }
 
-TEST_CASE("whatwg_encode_or_error iso_8859_6 unmapped codepoint",
-          "[transcoding::whatwg_encode_or_error]") {
+TEST_CASE("whatwg_encode_or_error iso_8859_6 unmapped codepoint", "[transcoding::whatwg_encode_or_error]") {
     // U+00A3 (pound sign) is not in iso-8859-6 (Arabic)
     std::vector<char32_t> cps{U'\x00A3'};
     auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::iso_8859_6>);
