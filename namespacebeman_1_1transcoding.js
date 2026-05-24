@@ -56,7 +56,8 @@ var namespacebeman_1_1transcoding =
       [ "utf_16le", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa8995e63b559f0f74f3efa7dc973dd2a8", null ],
       [ "gbk", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadeb297cfef1bd867fa7f55bebd119cec", null ],
       [ "gb18030", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadf5406096b7ec5329d3a13468430e56a", null ],
-      [ "big5", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaed8f9582ae6bae8870badee92f2e158c", null ]
+      [ "big5", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaed8f9582ae6bae8870badee92f2e158c", null ],
+      [ "shift_jis", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa4d845cd5636875635b0ffea37c56b4eb", null ]
     ] ],
     [ "iconv_error", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730", [
       [ "invalid_sequence", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed", null ],

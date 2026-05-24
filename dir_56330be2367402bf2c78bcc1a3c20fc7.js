@@ -19,6 +19,7 @@ var dir_56330be2367402bf2c78bcc1a3c20fc7 =
     [ "koi8_r.hpp", "koi8__r_8hpp.html", null ],
     [ "koi8_u.hpp", "koi8__u_8hpp.html", null ],
     [ "macintosh.hpp", "macintosh_8hpp.html", null ],
+    [ "shift_jis.hpp", "tables_2shift__jis_8hpp.html", null ],
     [ "windows_1250.hpp", "windows__1250_8hpp.html", null ],
     [ "windows_1251.hpp", "windows__1251_8hpp.html", null ],
     [ "windows_1252.hpp", "windows__1252_8hpp.html", null ],
