@@ -531,6 +531,7 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::windows_1252) {
         auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1252);
         if (r.is_error)
+            // WHATWG normative windows_1252 table has no null entries; unreachable in practice.
             value_ = std::unexpected(r.error);
         else
             value_ = r.code_point;

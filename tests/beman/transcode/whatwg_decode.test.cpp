@@ -361,3 +361,10 @@ TEST_CASE("whatwg_decode x_mac_cyrillic cyrillic A", "[transcoding::whatwg_decod
     std::vector<char> bytes{'\x80'};
     CHECK(collect(bytes | whatwg_decode<codec::x_mac_cyrillic>) == std::vector<char32_t>{U'\x0410'});
 }
+
+// Coverage gap: single_byte_decode_one() error→replacement path.
+// iso-8859-6 byte 0xA1 is genuinely unmapped (null entry in WHATWG table).
+TEST_CASE("whatwg_decode iso_8859_6 unmapped byte yields U+FFFD", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_6>) == std::vector<char32_t>{U'\xFFFD'});
+}
