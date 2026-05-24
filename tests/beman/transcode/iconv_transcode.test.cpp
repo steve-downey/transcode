@@ -107,3 +107,14 @@ TEST_CASE("iconv_transcode_view satisfies input_range", "[transcoding::iconv_tra
     static_assert(!std::copy_constructible<iter_t>);
     static_assert(std::movable<iter_t>);
 }
+
+TEST_CASE("iconv_transcode_closure pipe syntax with mock fns", "[transcoding::iconv_transcode]") {
+    std::vector<char>    input{'H', 'e', 'l', 'l', 'o'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv, mock_iconv_close};
+    auto                 closure = iconv_transcode_closure<iconv_functions>{fns, "ASCII", "ASCII", std::span(buf)};
+    std::vector<char>    output;
+    for (char c : input | closure)
+        output.push_back(c);
+    CHECK(output == input);
+}
