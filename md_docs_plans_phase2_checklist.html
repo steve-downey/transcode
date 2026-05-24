@@ -140,47 +140,152 @@ Step 16: Single-byte infra + &lt;tt&gt;windows_1252&lt;/tt&gt; (&lt;tt&gt;step16
 <li>[x] Merge to main + push both remotes</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md13"></a>
-Step 17: ISO-8859 tables (&lt;tt&gt;step17-iso-8859-tables&lt;/tt&gt;)</h1>
+Step 17: Data tooling (&lt;tt&gt;step17-data-tooling&lt;/tt&gt;)</h1>
 <ul>
-<li>[ ] Create branch <code>step17-iso-8859-tables</code> from <code>main</code></li>
-<li>[ ] Write failing tests (RED)</li>
-<li>[ ] Commit RED + push both remotes</li>
-<li>[ ] Create table headers + dispatch (GREEN)</li>
+<li>[ ] Create branch <code>step17-data-tooling</code> from <code>main</code></li>
+<li>[ ] Write <code>tools/download_indexes.py</code></li>
+<li>[ ] Download all WHATWG index files → <code>docs/whatwg-indexes/</code></li>
+<li>[ ] Write <code>docs/whatwg-indexes/PROVENANCE.md</code> (source, license, checksums)</li>
+<li>[ ] Commit downloaded data + provenance</li>
+<li>[ ] Write <code>tools/generate_tables.py</code> (single-byte → .hpp + .bin)</li>
+<li>[ ] Generate tables → <code>include/.../tables/generated/</code></li>
+<li>[ ] Commit generated files</li>
 <li>[ ] <code>make test</code> + <code>make lint</code></li>
-<li>[ ] Commit GREEN + push both remotes</li>
-<li>[ ] Merge to main + push both remotes</li>
+<li>[ ] Push both remotes + merge to main</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md14"></a>
-Step 18: UTF-8 encoder (&lt;tt&gt;step18-utf8-encoder&lt;/tt&gt;)</h1>
+Step 18: All single-byte decoders (&lt;tt&gt;step18-all-single-byte-decode&lt;/tt&gt;)</h1>
+<p>21 remaining single-byte codecs. Each needs: enum value, table include, dispatch in both <code>load()</code> functions, tests.</p>
 <ul>
-<li>[ ] Create branch <code>step18-utf8-encoder</code> from <code>main</code></li>
-<li>[ ] Write failing tests + negative compile test (RED)</li>
-<li>[ ] Commit RED + push both remotes</li>
-<li>[ ] Implement <code>detail/utf8_encode.hpp</code> + <code>whatwg_encode_view.hpp</code> + <code>unicode_scalar_range</code> concept (GREEN)</li>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Add all 21 enum values + includes + dispatch branches</li>
+<li>[ ] Replace hand-written <code><a class="el" href="windows__1252_8hpp.html">windows_1252.hpp</a></code> with generated version</li>
+<li>[ ] Tests for representative codecs (RED → GREEN)</li>
 <li>[ ] <code>make test</code> + <code>make lint</code></li>
-<li>[ ] Commit GREEN + push both remotes</li>
-<li>[ ] Merge to main + push both remotes</li>
+<li>[ ] Push both remotes + merge to main</li>
 </ul>
+<p>Codecs: IBM866, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-5, ISO-8859-6, ISO-8859-7, ISO-8859-8, ISO-8859-8-I, ISO-8859-10, ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, KOI8-R, KOI8-U, macintosh, windows-874, windows-1250, windows-1251, windows-1253, windows-1254, windows-1255, windows-1256, windows-1257, windows-1258, x-mac-cyrillic.</p>
+<p>(ISO-8859-8-I shares ISO-8859-8's table; counted as one codec pair.)</p>
 <h1><a class="anchor" id="autotoc_md15"></a>
-Step 19: Round-trip composition (&lt;tt&gt;step19-roundtrip&lt;/tt&gt;)</h1>
+Step 19: Single-byte encoder infra + all encoders (&lt;tt&gt;step19-single-byte-encode&lt;/tt&gt;)</h1>
+<p>Reverse lookup: codepoint → byte. Needs <code>single_byte_encode_one()</code> + <code>whatwg_encode_view</code> dispatch for all 22 single-byte codecs.</p>
 <ul>
-<li>[ ] Create branch <code>step19-roundtrip</code> from <code>main</code></li>
-<li>[ ] Write composition tests (RED — depends on step 18 encoder existing)</li>
-<li>[ ] Commit RED + push both remotes</li>
-<li>[ ] Tests should pass immediately if encoder is correct (GREEN = no new library code)</li>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Implement single-byte encoder infrastructure</li>
+<li>[ ] Add encode dispatch for all 22 single-byte codecs</li>
+<li>[ ] Tests (RED → GREEN)</li>
 <li>[ ] <code>make test</code> + <code>make lint</code></li>
-<li>[ ] Commit GREEN + push both remotes</li>
-<li>[ ] Merge to main + push both remotes</li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md16"></a>
+Step 20: UTF-8 encoder (&lt;tt&gt;step20-utf8-encoder&lt;/tt&gt;)</h1>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Write failing tests + negative compile test (RED)</li>
+<li>[ ] Implement <code>detail/utf8_encode.hpp</code> + <code>whatwg_encode_view.hpp</code></li>
+<li>[ ] Add <code>unicode_scalar_range</code> concept</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md17"></a>
+Step 21: UTF-16 decode + encode (&lt;tt&gt;step21-utf16&lt;/tt&gt;)</h1>
+<p>Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.</p>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Tests (RED → GREEN)</li>
+<li>[ ] Implement decode + encode for both byte orders</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md18"></a>
+Step 22: GBK decode + encode (&lt;tt&gt;step22-gbk&lt;/tt&gt;)</h1>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Generate GBK tables (extend <code>generate_tables.py</code>)</li>
+<li>[ ] Tests (RED → GREEN)</li>
+<li>[ ] Implement decode + encode</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md19"></a>
+Step 23: gb18030 decode + encode (&lt;tt&gt;step23-gb18030&lt;/tt&gt;)</h1>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Generate gb18030 tables + ranges</li>
+<li>[ ] Tests (RED → GREEN)</li>
+<li>[ ] Implement decode + encode</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md20"></a>
+Step 24: Big5 decode + encode (&lt;tt&gt;step24-big5&lt;/tt&gt;)</h1>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Generate Big5 tables</li>
+<li>[ ] Tests (RED → GREEN)</li>
+<li>[ ] Implement decode + encode</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md21"></a>
+Step 25: Shift_JIS decode + encode (&lt;tt&gt;step25-shift-jis&lt;/tt&gt;)</h1>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Generate Shift_JIS tables</li>
+<li>[ ] Tests (RED → GREEN)</li>
+<li>[ ] Implement decode + encode</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md22"></a>
+Step 26: EUC-JP decode + encode (&lt;tt&gt;step26-euc-jp&lt;/tt&gt;)</h1>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Generate EUC-JP tables (JIS X 0208 + 0212)</li>
+<li>[ ] Tests (RED → GREEN)</li>
+<li>[ ] Implement decode + encode</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md23"></a>
+Step 27: ISO-2022-JP decode + encode (&lt;tt&gt;step27-iso-2022-jp&lt;/tt&gt;)</h1>
+<p>Stateful encoding (escape sequences).</p>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Tests (RED → GREEN)</li>
+<li>[ ] Implement stateful decode + encode</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md24"></a>
+Step 28: EUC-KR decode + encode (&lt;tt&gt;step28-euc-kr&lt;/tt&gt;)</h1>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Generate EUC-KR tables</li>
+<li>[ ] Tests (RED → GREEN)</li>
+<li>[ ] Implement decode + encode</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md25"></a>
+Step 29: Round-trip composition (&lt;tt&gt;step29-roundtrip&lt;/tt&gt;)</h1>
+<p>Comprehensive round-trip tests for all implemented codecs.</p>
+<ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Write composition tests for all codec pairs</li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md17"></a>
+<h1><a class="anchor" id="autotoc_md27"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
-<li>Phase 2 overview: <code>docs/plans/phase2-index.md</code></li>
-<li>TDD convention: RED commit msg = <code>"step&lt;N&gt;: &lt;desc&gt; (RED)"</code>, GREEN = <code>"step&lt;N&gt;: &lt;desc&gt; (GREEN)"</code></li>
+<li>Phase 2 overview: <code><a class="el" href="phase2-index_8md.html">docs/plans/phase2-index.md</a></code></li>
+<li>TDD convention: RED = <code>"step&lt;N&gt;: &lt;desc&gt; (RED)"</code>, GREEN = <code>"step&lt;N&gt;: &lt;desc&gt; (GREEN)"</code></li>
 <li>Push both remotes: <code>git push origin &lt;branch&gt; &amp;&amp; git push bbgithub &lt;branch&gt;</code></li>
-<li>No <code>Co-Authored-By</code> trailers in this project </li>
+<li>No <code>Co-Authored-By</code> trailers in this project</li>
+<li>Downloaded WHATWG data: <code>docs/whatwg-indexes/</code> with PROVENANCE.md </li>
 </ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
