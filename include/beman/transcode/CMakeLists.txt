@@ -25,7 +25,33 @@ else()
                     detail/error.hpp
                     detail/null_term.hpp
                     detail/single_byte.hpp
+                    detail/tables/ibm866.hpp
+                    detail/tables/iso_8859_2.hpp
+                    detail/tables/iso_8859_3.hpp
+                    detail/tables/iso_8859_4.hpp
+                    detail/tables/iso_8859_5.hpp
+                    detail/tables/iso_8859_6.hpp
+                    detail/tables/iso_8859_7.hpp
+                    detail/tables/iso_8859_8.hpp
+                    detail/tables/iso_8859_10.hpp
+                    detail/tables/iso_8859_13.hpp
+                    detail/tables/iso_8859_14.hpp
+                    detail/tables/iso_8859_15.hpp
+                    detail/tables/iso_8859_16.hpp
+                    detail/tables/koi8_r.hpp
+                    detail/tables/koi8_u.hpp
+                    detail/tables/macintosh.hpp
+                    detail/tables/windows_874.hpp
+                    detail/tables/windows_1250.hpp
+                    detail/tables/windows_1251.hpp
                     detail/tables/windows_1252.hpp
+                    detail/tables/windows_1253.hpp
+                    detail/tables/windows_1254.hpp
+                    detail/tables/windows_1255.hpp
+                    detail/tables/windows_1256.hpp
+                    detail/tables/windows_1257.hpp
+                    detail/tables/windows_1258.hpp
+                    detail/tables/x_mac_cyrillic.hpp
                     detail/utf8.hpp
                     iconv_transcode_view.hpp
                     whatwg_decode_view.hpp

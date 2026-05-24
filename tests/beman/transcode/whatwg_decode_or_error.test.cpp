@@ -124,12 +124,13 @@ TEST_CASE("whatwg_decode_or_error x_user_defined never errors", "[transcoding::w
 
 // Step 16: codec::windows_1252 tests
 
-TEST_CASE("whatwg_decode_or_error windows_1252 undefined byte", "[transcoding::whatwg_decode_or_error]") {
+TEST_CASE("whatwg_decode_or_error windows_1252 c1 control byte", "[transcoding::whatwg_decode_or_error]") {
+    // WHATWG maps 0x81 to U+0081 (C1 control); it is a valid mapping, not an error.
     std::vector<char> bytes{'\x81'};
     auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::windows_1252>);
     REQUIRE(result.size() == 1);
-    CHECK(!result[0].has_value());
-    CHECK(result[0].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == char32_t(0x0081));
 }
 
 TEST_CASE("whatwg_decode_or_error windows_1252 valid high byte", "[transcoding::whatwg_decode_or_error]") {
