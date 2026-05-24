@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–21 complete. 167 C++ + 33 Python tests pass. On `main`.
+**Current state:** Steps 0–22 complete. 194 C++ + 44 Python tests pass. On `main`.
 
 ---
 
@@ -114,12 +114,12 @@ Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.
 
 ## Step 22: GBK decode + encode (`step22-gbk`)
 
-- [ ] Create branch from `main`
-- [ ] Generate GBK tables (extend `generate_tables.py`)
-- [ ] Tests (RED → GREEN)
-- [ ] Implement decode + encode
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Generate GBK tables (extend `generate_tables.py`)
+- [x] Tests (RED → GREEN)
+- [x] Implement decode + encode
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ## Step 23: gb18030 decode + encode (`step23-gb18030`)
 

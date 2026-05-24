@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 22 (GBK decode + encode)
+# Handoff: beman.transcode — Step 23 (GB18030 decode + encode)
 
 ## Project
 
@@ -14,49 +14,41 @@ proposal.
 
 ## Current State
 
-**167 C++ tests + 33 Python tests pass** (`make test`). Steps 0–21
+**194 C++ tests + 44 Python tests pass** (`make test`). Steps 0–22
 complete. On `main`.
 
-### What Step 21 Built
+### What Step 22 Built
 
-Step 21 added UTF-16BE and UTF-16LE decode and encode:
+Step 22 added GBK decode and encode:
 
-- **`include/beman/transcode/detail/utf16.hpp`** — new file with
-  `utf16_encode_result`, `utf16be_encode_one(char32_t)`, and
-  `utf16le_encode_one(char32_t)`. Also has decode result/function
-  declarations and definitions (used only from encode dispatch; decode
-  is now inlined in the view iterators).
+- **`tools/generate_tables.py`** — extended with `parse_gbk_index()`,
+  `render_gbk_hpp()`, and `generate_gbk()`. Now generates
+  `include/beman/transcode/detail/tables/gbk.hpp` (23,940-entry table)
+  from `docs/whatwg/index-gb18030.txt`. New `--include-tables-dir`
+  argument added to `main()`.
+
+- **`tools/tests/test_generate.py`** — 13 new tests for GBK table
+  generation (length, known entries, spot checks, render output).
+
+- **`include/beman/transcode/detail/gbk.hpp`** — new file with
+  `gbk_decode_result`, `gbk_encode_result`, `gbk_decode_one(I&, S)`,
+  and `gbk_encode_one(char32_t)`. ASCII passthrough on decode; trail
+  byte always consumed even when invalid.
+
+- **`include/beman/transcode/detail/tables/gbk.hpp`** — generated
+  `inline constexpr char32_t gbk[23940]`. All 23,940 GBK pointers are
+  mapped (no null entries in the WHATWG table).
 
 - **`include/beman/transcode/whatwg_decode_view.hpp`** — added
-  `utf_16be` and `utf_16le` to the `codec` enum; added
-  `has_pending_` / `pending_[2]` fields to both
-  `whatwg_decode_view::iterator` and
-  `whatwg_decode_or_error_view::iterator`; updated the initial
-  `done_` check to `if (!has_pending_ && current_ == end_)` so
-  pending bytes survive end-of-input; added combined
-  `utf_16be || utf_16le` dispatch arms that inline all surrogate-pair
-  logic with pending-buffer support.
+  `codec::gbk` to the enum; added `#include <beman/transcode/detail/gbk.hpp>`;
+  added `gbk` dispatch arm in both `load()` functions.
 
 - **`include/beman/transcode/whatwg_encode_view.hpp`** — added
-  `utf_16be` and `utf_16le` dispatch arms in both `load()` functions,
-  calling `utf16be_encode_one` / `utf16le_encode_one`. Surrogates
-  emit U+FFFD bytes (non-error) or
-  `unexpected(surrogate_code_point)` (or_error).
+  `#include <beman/transcode/detail/gbk.hpp>`; added `gbk` dispatch arm
+  in both `load()` functions.
 
-- **`tests/beman/transcode/utf16_decode.test.cpp`** and
-  **`tests/beman/transcode/utf16_encode.test.cpp`** — new test files.
-
-- **`tests/beman/transcode/utf16_decode_reject_char32_range_fail.cpp`**
-  — negative compile test confirming `vector<char32_t>` is rejected
-  as input to `whatwg_decode_view<codec::utf_16be>`.
-
-### Key design decision for UTF-16 decode
-
-Input iterators cannot retreat. When a high surrogate is followed by
-a non-low-surrogate code unit, the decode view saves the two bytes of
-the "bad" code unit in a 2-byte `pending_[]` buffer and re-processes
-them on the next `load()` call. This is why both iterator types now
-carry `has_pending_` and `pending_[2]` fields.
+- **`tests/beman/transcode/gbk_decode.test.cpp`** and
+  **`tests/beman/transcode/gbk_encode.test.cpp`** — new test files.
 
 ### Codec enum (current, in `whatwg_decode_view.hpp`)
 
@@ -68,124 +60,173 @@ enum class codec {
     ibm866, iso_8859_2, ..., x_mac_cyrillic,
     utf_16be,
     utf_16le,
-    // gbk, gb18030, big5, shift_jis, euc_jp, euc_kr NOT YET — step 22+
+    gbk,
+    // gb18030, big5, shift_jis, euc_jp, euc_kr NOT YET — step 23+
 };
 ```
 
-## What To Do Next — Step 22
+### Key design note: GBK has no unmapped table entries
 
-**Branch:** `step22-gbk`
+The WHATWG index-gb18030.txt has exactly 23,940 non-null entries covering
+all valid GBK pointers 0–23939. The defensive `if (cp == 0)` guard in
+`gbk_decode_one` is unreachable in practice for GBK. GB18030 decode uses
+the same table but also handles supplementary characters via ranges (step 23).
+
+## What To Do Next — Step 23
+
+**Branch:** `step23-gb18030`
 
 **Read the checklist:** `docs/plans/phase2-checklist.md`
 
-There is no detailed step22 plan file yet. Use this handoff as the
+There is no detailed step23 plan file yet. Use this handoff as the
 authoritative spec.
 
-### GBK overview
+### GB18030 overview
 
-GBK is a Chinese multi-byte encoding. The WHATWG encoding spec defines
-it as an extension of GB 2312. There is a WHATWG index file
-(`docs/whatwg/index-gb18030.txt`) that covers both GBK and GB 18030
-mappings.
+GB18030 is a superset of GBK that adds 4-byte sequences to cover all
+Unicode codepoints. The WHATWG encoding spec defines it as:
 
-GBK decode uses a 2-byte lead-trail scheme:
-- Lead byte: 0x81–0xFE
-- Trail byte: 0x40–0xFE (excluding 0x7F)
-- The index is: `(lead - 0x81) * 190 + (trail - 0x40) - (trail > 0x7F ? 1 : 0)`
-- Total entries: 126 leads × 190 trail positions = 23,940 entries
-- The WHATWG index maps these positions to Unicode codepoints (or null
-  for unmapped).
+- **GBK range** (same as step 22): 1-byte ASCII + 2-byte lead/trail
+- **4-byte range**: Lead byte 0x81–0xFE, followed by a decimal ASCII byte
+  (0x30–0x39), another lead (0x81–0xFE), and another decimal (0x30–0x39).
+  These 4-byte sequences are decoded via a range table
+  (`docs/whatwg/index-gb18030-ranges.txt`).
 
-GBK encode: for a codepoint, find its position in the index table and
-convert back to lead/trail bytes.
-
-### Data tooling
-
-The existing `tools/generate_tables.py` already downloads and processes
-WHATWG index files. The GBK table needs to be generated from
-`docs/whatwg/index-gb18030.txt` (the same file used for GB 18030).
-
-**Step 22 is primarily a data-tooling step:**
-
-1. Extend `tools/generate_tables.py` to generate a GBK table:
-   - Output: `include/beman/transcode/detail/tables/gbk.hpp`
-   - Format: a `constexpr char32_t gbk_decode[23940]` array, where
-     index is `(lead-0x81)*190 + (trail-0x40) - (trail>0x7F?1:0)`.
-   - Unmapped entries should be `0` (or a sentinel like `U'�'`
-     that the decode function can detect).
-   - Add a Python test in `tools/tests/test_generate.py` to verify
-     the table is generated correctly (spot-check a few known
-     mappings from the WHATWG spec, e.g. 0x81 0x40 → U+4E02).
-
-2. **Create `include/beman/transcode/detail/gbk.hpp`**:
-   - `gbk_decode_result` struct
-   - `constexpr gbk_decode_result gbk_decode_one(I& current, S end)`
-   - `gbk_encode_result` struct
-   - `constexpr gbk_encode_result gbk_encode_one(char32_t cp)`
-   - Pattern: similar to `detail/single_byte.hpp` but 2-byte.
-
-3. **Add `codec::gbk`** to the enum in `whatwg_decode_view.hpp`.
-
-4. **Add dispatch arms** in both decode views and both encode views.
-
-5. **Test files**:
-   - `tests/beman/transcode/gbk_decode.test.cpp`
-   - `tests/beman/transcode/gbk_encode.test.cpp`
-
-6. **CMakeLists.txt** updates (include list + test registration).
-
-### WHATWG GBK decode algorithm
-
-From the WHATWG Encoding spec (§12.1 GBK decoder):
+### WHATWG GB18030 decoder algorithm
 
 ```
-1. If byte is in 0x00–0x7F: output it as a codepoint directly (ASCII passthrough).
-2. If lead byte 0x81–0xFE: read next byte (trail).
-   - If trail is 0x40–0xFE (not 0x7F):
-       index = (lead - 0x81) * 190 + (trail - 0x40) - (trail > 0x7F ? 1 : 0)
-       cp = gbk_decode[index]  (0 means unmapped → U+FFFD or error)
-   - Otherwise: error (bad trail byte)
-3. Otherwise: error (invalid lead byte range)
+1. If byte is ASCII (0x00–0x7F): output it directly.
+2. If byte is 0x80: output U+20AC (EURO SIGN). [GBK special case]
+3. If byte is 0x81–0xFE (lead):
+   a. Read next byte (second).
+   b. If second is 0x30–0x39 (decimal ASCII digit):
+      → 4-byte sequence. Read third (0x81–0xFE) and fourth (0x30–0x39).
+      index = ((lead - 0x81) * 10 + (second - 0x30)) * 126 * 10
+              + (third - 0x81) * 10 + (fourth - 0x30)
+      Look up via gb18030 ranges table to get the codepoint.
+   c. If second is 0x40–0xFE (not 0x7F):
+      → 2-byte GBK sequence. Same as GBK decode.
+   d. Otherwise: error (bad second byte).
+4. Otherwise: error (invalid lead).
 ```
 
-Note: for the ASCII passthrough, GBK decode processes 1 byte at a time
-for ASCII, unlike UTF-16 which always reads 2 bytes. The decode view
-iterator's current design reads bytes one at a time from the base range
-in the codec arm — this is fine because the iterator already tracks
-`current_` as it reads.
+### GB18030 encoder algorithm
 
-### WHATWG GBK encode algorithm
+```
+For codepoint cp:
+1. If cp is ASCII: output 1 byte.
+2. If cp == U+20AC: output 0x80. [GBK special case]
+3. Search GBK table for cp → output 2-byte sequence.
+4. If not found: encode via GB18030 ranges → output 4-byte sequence.
+5. If still not found: error (unmapped).
+```
 
-For a codepoint `cp`:
-1. If `cp` is ASCII (0x00–0x7F): output 1 byte directly.
-2. Find index `i` such that `gbk_decode[i] == cp`.
-   - lead  = i / 190 + 0x81
-   - trail = i % 190 + 0x40 + (i % 190 >= 0x3F ? 1 : 0)
-   - Output 2 bytes: lead, trail.
-3. If not found: unmapped → '?' (non-error) or error (or_error).
+### The ranges table (`docs/whatwg/index-gb18030-ranges.txt`)
 
-### GBK iterator design
+This file has ~207 data entries. Each entry is a pair:
+`  <pointer>  <codepoint>`
 
-Unlike UTF-16 (always 2 bytes) or UTF-8 (1–4 bytes with buffer), GBK
-decode can produce 1 codepoint from 1 byte (ASCII) or 2 bytes
-(multi-byte). The `whatwg_decode_view::iterator::load()` design handles
-this naturally: it just reads however many bytes `gbk_decode_one` needs,
-advancing `current_`.
+The pointer is a "linear" GB18030 4-byte pointer (0–1,274,739).
+The table is used to convert between linear pointers and codepoints via
+binary search + range interpolation:
 
-For GBK encode, a codepoint can produce 1 byte (ASCII) or 2 bytes
-(multi-byte). The existing `buf_[4]` / `len_` / `pos_` buffer design
-handles this without changes to the iterator structure.
+- **Decode** (pointer → codepoint): find the entry where
+  `ranges[i].pointer <= p < ranges[i+1].pointer`. Then:
+  `cp = ranges[i].codepoint + (p - ranges[i].pointer)`
+- **Encode** (codepoint → pointer): find the entry where
+  `ranges[i].codepoint <= cp < ranges[i+1].codepoint`. Then:
+  `p = ranges[i].pointer + (cp - ranges[i].codepoint)`
+
+The linear pointer is related to the 4-byte sequence by:
+```
+p = ((b1 - 0x81) * 10 + (b2 - 0x30)) * 126 * 10
+    + (b3 - 0x81) * 10 + (b4 - 0x30)
+```
+where b1=lead, b2=second, b3=third, b4=fourth.
+
+To convert a linear pointer back to 4 bytes:
+```
+b4 = p % 10 + 0x30;   p /= 10;
+b3 = p % 126 + 0x81;  p /= 126;
+b2 = p % 10 + 0x30;   p /= 10;
+b1 = p + 0x81;
+```
 
 ### Implementation order
 
-1. Extend `tools/generate_tables.py` + add Python test
-2. Generate table → `include/beman/transcode/detail/tables/gbk.hpp`
-3. Create `include/beman/transcode/detail/gbk.hpp`
-4. Add `codec::gbk` to enum in `whatwg_decode_view.hpp`
-5. Add dispatch arms in both views (decode + encode)
-6. Add `detail/gbk.hpp` + `detail/tables/gbk.hpp` to include CMakeLists.txt
-7. Write test files and register in tests CMakeLists.txt
-8. `make test` + `make lint` + `make coverage`
+1. **Extend `tools/generate_tables.py`**:
+   - Add `parse_gb18030_ranges(path)` → returns a list of `(pointer, codepoint)`
+     tuples sorted by pointer.
+   - Add `render_gb18030_ranges_hpp(ranges)` → outputs
+     `include/beman/transcode/detail/tables/gb18030_ranges.hpp` with a
+     `constexpr` struct array like:
+     ```cpp
+     struct gb18030_range { uint32_t pointer; char32_t codepoint; };
+     inline constexpr gb18030_range gb18030_ranges[] = { ... };
+     inline constexpr int gb18030_ranges_count = N;
+     ```
+   - Add `generate_gb18030_ranges(in_dir, include_tables_dir)` and call it
+     from `main()`.
+   - Add Python tests for the new functions.
+
+2. **Create `include/beman/transcode/detail/gb18030.hpp`**:
+   - `gb18030_decode_result` struct (same shape as `gbk_decode_result`)
+   - `gb18030_encode_result` struct (same shape, but bytes[4])
+   - `constexpr gb18030_decode_result gb18030_decode_one(I& current, S end)`
+   - `constexpr gb18030_encode_result gb18030_encode_one(char32_t cp)`
+   - Include `<beman/transcode/detail/tables/gbk.hpp>` and
+     `<beman/transcode/detail/tables/gb18030_ranges.hpp>`.
+
+3. **Add `codec::gb18030`** to the enum in `whatwg_decode_view.hpp`
+   (after `codec::gbk`).
+
+4. **Add dispatch arms** in both decode views and both encode views,
+   calling `gb18030_decode_one` / `gb18030_encode_one`.
+
+5. **Add includes** for `detail/gb18030.hpp` in both view headers.
+
+6. **Update `include/beman/transcode/CMakeLists.txt`**: add
+   `detail/gb18030.hpp` and `detail/tables/gb18030_ranges.hpp`.
+
+7. **Test files**:
+   - `tests/beman/transcode/gb18030_decode.test.cpp`
+   - `tests/beman/transcode/gb18030_encode.test.cpp`
+   - Register in `tests/beman/transcode/CMakeLists.txt`.
+
+8. **Test cases to write**:
+
+   Decode:
+   - ASCII passthrough `0x41` → U+0041
+   - 0x80 → U+20AC (EURO SIGN)
+   - 2-byte GBK sequence `0x81 0x40` → U+4E02
+   - 4-byte sequence for a supplementary codepoint (e.g. U+10000)
+     `0x90 0x30 0x81 0x30` → U+10000
+   - 4-byte sequence for U+1F600 (emoji) → encode then decode
+   - Invalid lead → U+FFFD
+   - Truncated 4-byte → U+FFFD
+   - Pipe syntax + consteval
+
+   Encode:
+   - ASCII `U'A'` → `0x41`
+   - `U'€'` → `0x80`
+   - `U'丂'` → `0x81 0x40` (GBK 2-byte)
+   - U+10000 → `0x90 0x30 0x81 0x30` (4-byte)
+   - Unmapped? (GB18030 covers all Unicode so no unmapped)
+   - Pipe syntax + consteval
+
+### Note on GB18030 coverage of Unicode
+
+GB18030 covers all 1,114,112 Unicode code points — there are no unmapped
+codepoints. The encode function never returns `is_error=true` for valid
+Unicode scalar values. The or_error variant can therefore be tested with
+normal codepoints only.
+
+### Note on the 4-byte U+20AC special case
+
+The WHATWG spec says: "If byte is 0x80, return code point U+20AC." This is
+a special-case fallback inherited from GBK. In 4-byte mode, U+20AC is
+encoded as `0xA2 0xE3` (2-byte GBK), NOT as `0x80`. Only decoding of
+the byte `0x80` triggers this special case.
 
 ## Coding Rules (abbreviated)
 
@@ -211,18 +252,19 @@ make mypy      # mypy type check only
 
 ## TDD Process
 
-1. Branch: `git checkout -b step22-gbk`
+1. Branch: `git checkout -b step23-gb18030`
 2. Write failing tests (RED) → commit → push both remotes
-3. Implement (GREEN): table generation + gbk.hpp + dispatch arms
+3. Implement (GREEN): ranges table generation + gb18030.hpp + dispatch arms
 4. `make test` (all pass) + `make lint` (clean) → commit → push both
-5. `make coverage` — gbk.hpp and gbk table should have good coverage
+5. `make coverage` — both paths (2-byte GBK and 4-byte range) covered
 6. Merge to main + push both
 7. Mark checklist `[x]`
 
 ## Coverage Notes
 
-- ASCII passthrough path (decode + encode) should be covered.
-- Multi-byte decode path should be covered.
-- Unmapped/error path should be covered.
-- The table has ~23,940 entries; not all need direct test coverage —
+- ASCII passthrough path should be covered.
+- 2-byte GBK path should be covered.
+- 4-byte range path should be covered.
+- The 0x80 → U+20AC special case should be covered.
+- All GBK pointers and all range entries don't need individual tests —
   spot-check a representative sample.
