@@ -33,6 +33,7 @@
 #include <beman/transcode/detail/tables/windows_1257.hpp>
 #include <beman/transcode/detail/tables/windows_1258.hpp>
 #include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
+#include <beman/transcode/detail/gb18030.hpp>
 #include <beman/transcode/detail/gbk.hpp>
 #include <beman/transcode/detail/utf8.hpp>
 #include <beman/transcode/detail/utf16.hpp>
@@ -79,6 +80,7 @@ enum class codec {
     utf_16be,
     utf_16le,
     gbk,
+    gb18030,
 };
 
 // ---------------------------------------------------------------------------
@@ -402,6 +404,9 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::gbk) {
         auto r = detail::gbk_decode_one(current_, end_);
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::gb18030) {
+        auto r = detail::gb18030_decode_one(current_, end_);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
     }
 }
 
@@ -704,6 +709,12 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         }
     } else if constexpr (C == codec::gbk) {
         auto r = detail::gbk_decode_one(current_, end_);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::gb18030) {
+        auto r = detail::gb18030_decode_one(current_, end_);
         if (r.is_error)
             value_ = std::unexpected(r.error);
         else

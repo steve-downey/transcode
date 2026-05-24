@@ -272,7 +272,10 @@ def test_render_gbk_hpp_known_codepoint() -> None:
 
 
 def _make_gb18030_ranges_file(tmp_path: Path, entries: list[tuple[int, int]]) -> Path:
-    """Write a minimal index-gb18030-ranges.txt with given (pointer, codepoint) pairs."""
+    """Write a minimal index-gb18030-ranges.txt with given (pointer, codepoint) pairs.
+
+    Returns the path to the written file.
+    """
     lines = ["# test gb18030-ranges index", "#"]
     for ptr, cp in entries:
         lines.append(f"  {ptr}\t0x{cp:04X}")

@@ -5,6 +5,7 @@
 
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
+#include <beman/transcode/detail/gb18030.hpp>
 #include <beman/transcode/detail/gbk.hpp>
 #include <beman/transcode/detail/single_byte.hpp>
 #include <beman/transcode/detail/utf8_encode.hpp>
@@ -324,6 +325,13 @@ constexpr void whatwg_encode_view<C, R>::iterator::load() {
             len_ = r.count;
         }
         pos_ = 0;
+    } else if constexpr (C == codec::gb18030) {
+        auto r = detail::gb18030_encode_one(static_cast<char32_t>(*current_));
+        ++current_;
+        for (int i = 0; i < r.count; ++i)
+            buf_[i] = static_cast<char>(r.bytes[i]);
+        len_ = r.count;
+        pos_ = 0;
     }
 }
 
@@ -506,6 +514,13 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
                 buf_[i] = static_cast<char>(r.bytes[i]);
             len_ = r.count;
         }
+        pos_ = 0;
+    } else if constexpr (C == codec::gb18030) {
+        auto r = detail::gb18030_encode_one(static_cast<char32_t>(*current_));
+        ++current_;
+        for (int i = 0; i < r.count; ++i)
+            buf_[i] = static_cast<char>(r.bytes[i]);
+        len_ = r.count;
         pos_ = 0;
     }
 }

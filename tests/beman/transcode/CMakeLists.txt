@@ -177,7 +177,10 @@ target_link_libraries(
 )
 
 add_executable(beman.transcode.tests.gb18030_decode)
-target_sources(beman.transcode.tests.gb18030_decode PRIVATE gb18030_decode.test.cpp)
+target_sources(
+    beman.transcode.tests.gb18030_decode
+    PRIVATE gb18030_decode.test.cpp
+)
 target_include_directories(
     beman.transcode.tests.gb18030_decode
     PRIVATE ${TEST_INCLUDE_DIR}
@@ -188,7 +191,10 @@ target_link_libraries(
 )
 
 add_executable(beman.transcode.tests.gb18030_encode)
-target_sources(beman.transcode.tests.gb18030_encode PRIVATE gb18030_encode.test.cpp)
+target_sources(
+    beman.transcode.tests.gb18030_encode
+    PRIVATE gb18030_encode.test.cpp
+)
 target_include_directories(
     beman.transcode.tests.gb18030_encode
     PRIVATE ${TEST_INCLUDE_DIR}

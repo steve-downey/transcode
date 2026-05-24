@@ -234,7 +234,7 @@ def generate_gbk(
 
 
 def parse_gb18030_ranges(path: Path) -> list[tuple[int, int]]:
-    """Parse WHATWG index-gb18030-ranges.txt; return list of (pointer, codepoint) tuples.
+    """Parse WHATWG index-gb18030-ranges.txt; return (pointer, codepoint) tuples.
 
     Each entry is a pair: pointer (decimal) and codepoint (hex with 0x prefix).
     Returns entries sorted by pointer.
@@ -365,7 +365,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Generating GB18030 ranges table from {in_dir}/ → {include_tables_dir}/")
     generate_gb18030_ranges(in_dir, include_tables_dir, run_clang_format=run_cf)
 
-    print(f"Done. {len(SINGLE_BYTE_INDEXES)} single-byte codecs + GBK + GB18030 ranges processed.")
+    n = len(SINGLE_BYTE_INDEXES)
+    print(f"Done. {n} single-byte codecs + GBK + GB18030 ranges processed.")
     return 0
 
 
