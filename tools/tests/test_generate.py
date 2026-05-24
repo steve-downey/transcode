@@ -9,16 +9,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_tables import (
     BIG5_POINTER_COUNT,
+    EUC_JP_JIS0212_POINTER_COUNT,
     GBK_POINTER_COUNT,
     SHIFTJIS_POINTER_COUNT,
     codec_to_guard,
     codec_to_identifier,
     parse_big5_index,
+    parse_euc_jp_jis0212_index,
     parse_gb18030_ranges,
     parse_gbk_index,
     parse_shift_jis_index,
     parse_single_byte_index,
     render_big5_hpp,
+    render_euc_jp_jis0212_hpp,
     render_gb18030_ranges_hpp,
     render_gbk_hpp,
     render_hpp,
@@ -578,3 +581,92 @@ def test_render_shift_jis_hpp_known_codepoint() -> None:
     table[0] = 0x3000
     hpp = render_shift_jis_hpp(table)
     assert "0x3000" in hpp
+
+
+# ---------------------------------------------------------------------------
+# EUC-JP JIS X 0212 table
+# ---------------------------------------------------------------------------
+
+
+def _make_jis0212_index_file(tmp_path: Path, entries: dict[int, int]) -> Path:
+    """Write a minimal index-jis0212.txt with given pointer→codepoint map."""
+    lines = [
+        "# test jis0212 index file",
+        "#",
+    ]
+    for ptr, cp in sorted(entries.items()):
+        lines.append(f"  {ptr}\t0x{cp:04X}\t# comment")
+    path = tmp_path / "index-jis0212.txt"
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def test_euc_jp_jis0212_pointer_count() -> None:
+    assert EUC_JP_JIS0212_POINTER_COUNT == 8836
+
+
+def test_parse_euc_jp_jis0212_index_length(tmp_path: Path) -> None:
+    path = _make_jis0212_index_file(tmp_path, {108: 0x02D8})
+    table = parse_euc_jp_jis0212_index(path)
+    assert len(table) == EUC_JP_JIS0212_POINTER_COUNT
+
+
+def test_parse_euc_jp_jis0212_index_known_entry(tmp_path: Path) -> None:
+    path = _make_jis0212_index_file(tmp_path, {108: 0x02D8})
+    table = parse_euc_jp_jis0212_index(path)
+    assert table[108] == 0x02D8
+
+
+def test_parse_euc_jp_jis0212_index_unmapped_is_zero(tmp_path: Path) -> None:
+    path = _make_jis0212_index_file(tmp_path, {108: 0x02D8})
+    table = parse_euc_jp_jis0212_index(path)
+    assert table[0] == 0
+
+
+def test_parse_euc_jp_jis0212_index_ignores_out_of_range(tmp_path: Path) -> None:
+    path = _make_jis0212_index_file(tmp_path, {108: 0x02D8, 8836: 0x1234})
+    table = parse_euc_jp_jis0212_index(path)
+    assert len(table) == EUC_JP_JIS0212_POINTER_COUNT
+    assert table[108] == 0x02D8
+
+
+def test_parse_euc_jp_jis0212_index_real_pointer108() -> None:
+    """WHATWG spec: pointer 108 -> U+02D8 (BREVE). EUC-JP: 0x8F 0xA2 0xAF."""
+    path = Path("docs/whatwg/index-jis0212.txt")
+    if not path.exists():
+        import pytest
+
+        pytest.skip("docs/whatwg not present")
+    table = parse_euc_jp_jis0212_index(path)
+    assert table[108] == 0x02D8
+
+
+def test_render_euc_jp_jis0212_hpp_contains_guard() -> None:
+    table = [0] * EUC_JP_JIS0212_POINTER_COUNT
+    hpp = render_euc_jp_jis0212_hpp(table)
+    assert "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_JP_JIS0212_HPP" in hpp
+
+
+def test_render_euc_jp_jis0212_hpp_contains_array_size() -> None:
+    table = [0] * EUC_JP_JIS0212_POINTER_COUNT
+    hpp = render_euc_jp_jis0212_hpp(table)
+    assert f"euc_jp_jis0212[{EUC_JP_JIS0212_POINTER_COUNT}]" in hpp
+
+
+def test_render_euc_jp_jis0212_hpp_contains_namespace() -> None:
+    table = [0] * EUC_JP_JIS0212_POINTER_COUNT
+    hpp = render_euc_jp_jis0212_hpp(table)
+    assert "beman::transcoding::detail::tables" in hpp
+
+
+def test_render_euc_jp_jis0212_hpp_contains_spdx() -> None:
+    table = [0] * EUC_JP_JIS0212_POINTER_COUNT
+    hpp = render_euc_jp_jis0212_hpp(table)
+    assert "SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception" in hpp
+
+
+def test_render_euc_jp_jis0212_hpp_known_codepoint() -> None:
+    table = [0] * EUC_JP_JIS0212_POINTER_COUNT
+    table[108] = 0x02D8
+    hpp = render_euc_jp_jis0212_hpp(table)
+    assert "0x02D8" in hpp
