@@ -33,6 +33,7 @@
 #include <beman/transcode/detail/tables/windows_1257.hpp>
 #include <beman/transcode/detail/tables/windows_1258.hpp>
 #include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
+#include <beman/transcode/detail/big5.hpp>
 #include <beman/transcode/detail/gb18030.hpp>
 #include <beman/transcode/detail/gbk.hpp>
 #include <beman/transcode/detail/utf8.hpp>
@@ -81,6 +82,7 @@ enum class codec {
     utf_16le,
     gbk,
     gb18030,
+    big5,
 };
 
 // ---------------------------------------------------------------------------
@@ -102,6 +104,8 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         bool          done_{false};
         bool          has_pending_{false};
         unsigned char pending_[2]{};
+        char32_t      pending_cp_{};
+        bool          has_pending_cp_{false};
 
         constexpr void load();
 
@@ -174,6 +178,8 @@ class whatwg_decode_or_error_view : public std::ranges::view_interface<whatwg_de
         bool          done_{false};
         bool          has_pending_{false};
         unsigned char pending_[2]{};
+        char32_t      pending_cp_{};
+        bool          has_pending_cp_{false};
 
         constexpr void load();
 
@@ -249,6 +255,11 @@ constexpr std::default_sentinel_t whatwg_decode_view<C, R>::end() const {
 template <codec C, std::ranges::input_range R>
     requires legacy_byte_range<R>
 constexpr void whatwg_decode_view<C, R>::iterator::load() {
+    if (has_pending_cp_) {
+        value_          = pending_cp_;
+        has_pending_cp_ = false;
+        return;
+    }
     if (current_ == end_) {
         if (!has_pending_) {
             done_ = true;
@@ -407,6 +418,17 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::gb18030) {
         auto r = detail::gb18030_decode_one(current_, end_);
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::big5) {
+        auto r = detail::big5_decode_one(current_, end_);
+        if (r.is_error) {
+            value_ = U'\xFFFD';
+        } else {
+            value_ = r.code_point;
+            if (r.code_point2 != 0) {
+                pending_cp_     = r.code_point2;
+                has_pending_cp_ = true;
+            }
+        }
     }
 }
 
@@ -473,6 +495,11 @@ constexpr std::default_sentinel_t whatwg_decode_or_error_view<C, R>::end() const
 template <codec C, std::ranges::input_range R>
     requires legacy_byte_range<R>
 constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
+    if (has_pending_cp_) {
+        value_          = pending_cp_;
+        has_pending_cp_ = false;
+        return;
+    }
     if (current_ == end_) {
         if (!has_pending_) {
             done_ = true;
@@ -719,6 +746,17 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
             value_ = std::unexpected(r.error);
         else
             value_ = r.code_point;
+    } else if constexpr (C == codec::big5) {
+        auto r = detail::big5_decode_one(current_, end_);
+        if (r.is_error) {
+            value_ = std::unexpected(r.error);
+        } else {
+            value_ = r.code_point;
+            if (r.code_point2 != 0) {
+                pending_cp_     = r.code_point2;
+                has_pending_cp_ = true;
+            }
+        }
     }
 }
 
