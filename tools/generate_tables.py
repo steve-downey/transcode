@@ -233,6 +233,92 @@ def generate_gbk(
     print(f"  generated: {hpp_path} ({len(table)} entries)")
 
 
+def parse_gb18030_ranges(path: Path) -> list[tuple[int, int]]:
+    """Parse WHATWG index-gb18030-ranges.txt; return (pointer, codepoint) tuples.
+
+    Each entry is a pair: pointer (decimal) and codepoint (hex with 0x prefix).
+    Returns entries sorted by pointer.
+    """
+    entries: list[tuple[int, int]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split()
+        if len(parts) < 2:
+            continue
+        pointer = int(parts[0])
+        codepoint = int(parts[1], 16)
+        entries.append((pointer, codepoint))
+    return sorted(entries, key=lambda e: e[0])
+
+
+def render_gb18030_ranges_hpp(ranges: list[tuple[int, int]]) -> str:
+    """Render the GB18030 ranges table as a C++ header."""
+    guard = "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_GB18030_RANGES_HPP"
+    n = len(ranges)
+
+    rows: list[str] = []
+    for pointer, codepoint in ranges:
+        rows.append(f"    {{{pointer}u, 0x{codepoint:04X}u}},")
+    if rows:
+        rows[-1] = rows[-1].rstrip(",")
+
+    array_body = "\n".join(rows)
+
+    return f"""\
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// GENERATED — do not edit. Regenerate: uv run tools/generate_tables.py
+// Source: WHATWG Encoding Standard index-gb18030-ranges.txt
+
+#ifndef {guard}
+#define {guard}
+
+#include <cstdint>
+
+namespace beman::transcoding::detail::tables {{
+
+struct gb18030_range {{
+    std::uint32_t pointer;
+    char32_t      codepoint;
+}};
+
+inline constexpr gb18030_range gb18030_ranges[{n}] = {{
+{array_body}
+}};
+
+inline constexpr int gb18030_ranges_count = {n};
+
+}} // namespace beman::transcoding::detail::tables
+
+#endif // {guard}
+"""
+
+
+def generate_gb18030_ranges(
+    in_dir: Path,
+    out_dir: Path,
+    run_clang_format: bool = True,
+) -> None:
+    """Generate GB18030 ranges table HPP into the include tree."""
+    index_path = in_dir / "index-gb18030-ranges.txt"
+    if not index_path.exists():
+        print(f"  WARNING: {index_path} not found, skipping GB18030 ranges")
+        return
+
+    ranges = parse_gb18030_ranges(index_path)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    hpp_path = out_dir / "gb18030_ranges.hpp"
+    hpp_content = render_gb18030_ranges_hpp(ranges)
+    hpp_path.write_text(hpp_content, encoding="utf-8")
+
+    if run_clang_format:
+        clang_format_file(hpp_path)
+
+    print(f"  generated: {hpp_path} ({len(ranges)} entries)")
+
+
 def main(argv: list[str] | None = None) -> int:
     import argparse
 
@@ -276,7 +362,11 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Generating GBK table from {in_dir}/ → {include_tables_dir}/")
     generate_gbk(in_dir, include_tables_dir, run_clang_format=run_cf)
 
-    print(f"Done. {len(SINGLE_BYTE_INDEXES)} single-byte codecs + GBK processed.")
+    print(f"Generating GB18030 ranges table from {in_dir}/ → {include_tables_dir}/")
+    generate_gb18030_ranges(in_dir, include_tables_dir, run_clang_format=run_cf)
+
+    n = len(SINGLE_BYTE_INDEXES)
+    print(f"Done. {n} single-byte codecs + GBK + GB18030 ranges processed.")
     return 0
 
 
