@@ -43,15 +43,19 @@ Mark items `[x]` as they complete. Read this file first when resuming work.
 ## Step 17: Data tooling (`step17-data-tooling`)
 
 - [ ] Create branch `step17-data-tooling` from `main`
-- [ ] Write `tools/download_indexes.py`
+- [ ] Add ruff, mypy, pytest to pyproject.toml + pre-commit config
+- [ ] Write `tools/download_indexes.py` (typed, stdlib only)
+- [ ] Write `tools/tests/test_download.py`
 - [ ] Download all WHATWG index files → `docs/whatwg/` (pristine)
 - [ ] Write `docs/whatwg/SOURCE.md` (provenance, license, checksums)
 - [ ] Write `docs/whatwg/source.bib` (BibTeX citation)
-- [ ] Commit pristine upstream data + provenance
-- [ ] Write `tools/generate_tables.py` (single-byte → .hpp + .bin)
+- [ ] Commit pristine upstream data + provenance + script + tests
+- [ ] Write `tools/generate_tables.py` (typed, stdlib only)
+- [ ] Write `tools/tests/test_generate.py`
 - [ ] Generate tables → `data/tables/`
-- [ ] Commit generated/derived data
-- [ ] `make test` + `make lint`
+- [ ] Commit generated/derived data + script + tests
+- [ ] `uv run pytest tools/tests/` + `uv run mypy tools/`
+- [ ] `make test` + `make lint` (includes ruff)
 - [ ] Push both remotes + merge to main
 
 ## Step 18: All single-byte decoders (`step18-all-single-byte-decode`)

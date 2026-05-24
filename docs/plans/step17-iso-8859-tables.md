@@ -126,18 +126,64 @@ Human-readable document recording:
 }
 ```
 
+## Python Quality Requirements
+
+The `tools/` scripts are adjunct code but must be production quality.
+
+**Type annotations:** Full type hints on all functions and module-level
+variables. No `Any` escape hatches unless genuinely needed.
+
+**Testing:** Unit tests in `tools/tests/` using `pytest`. Cover
+parsing logic, table generation correctness (spot-check known
+mappings), and provenance output format. Tests run via
+`uv run pytest tools/tests/`.
+
+**Formatting + linting:** `ruff` for formatting and linting. Add a
+`[tool.ruff]` section to `pyproject.toml`. Add a ruff pre-commit hook
+to `.pre-commit-config.yaml`.
+
+**Type checking:** `mypy` in strict mode. Add `[tool.mypy]` to
+`pyproject.toml`. Add mypy to the dev dependency group.
+
+**Dev dependencies to add to `pyproject.toml` `[dependency-groups]`:**
+
+```toml
+[dependency-groups]
+dev = [
+  # ... existing entries ...
+  "mypy>=1.15",
+  "pytest>=8.0",
+  "ruff>=0.11",
+]
+```
+
+**Pre-commit hooks to add to `.pre-commit-config.yaml`:**
+
+```yaml
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.13
+    hooks:
+    - id: ruff
+      args: [--fix]
+    - id: ruff-format
+```
+
+**Verification:** `make lint` must pass with the new hooks active.
+`uv run pytest tools/tests/` must pass. `uv run mypy tools/` must
+pass.
+
 ## Deliverables
 
 ### Script: `tools/download_indexes.py`
 
-Python script (stdlib only) that downloads all WHATWG index files into
-`docs/whatwg/`. Idempotent — checks SHA-256 before re-downloading.
-Generates/updates `SOURCE.md` and `source.bib` with checksums and
-download date.
+Typed Python script (stdlib only for runtime deps) that downloads
+all WHATWG index files into `docs/whatwg/`. Idempotent — checks
+SHA-256 before re-downloading. Generates/updates `SOURCE.md` and
+`source.bib` with checksums and download date.
 
 ### Script: `tools/generate_tables.py`
 
-Python script (stdlib only) that:
+Typed Python script (stdlib only for runtime deps) that:
 
 1. Reads `docs/whatwg/index-*.txt` files
 2. For single-byte codecs: emits a 128-entry binary file
@@ -148,6 +194,15 @@ Python script (stdlib only) that:
    without `#embed`
 
 Output directory: `data/tables/`
+
+### Tests: `tools/tests/`
+
+Pytest tests for both scripts. At minimum:
+
+- Parsing a sample WHATWG index-*.txt file produces correct table
+- Known mappings spot-checked (e.g., windows-1252 0x80 → U+20AC)
+- Generated .hpp content is syntactically valid
+- SOURCE.md includes required provenance fields
 
 ### Generated files (single-byte, 22 total)
 
@@ -176,30 +231,41 @@ inline constexpr char32_t iso_8859_2[128] = { /* ... */ };
 ## Procedure
 
 1. Create branch `step17-data-tooling` from `main`
-2. Write `tools/download_indexes.py` — fetch all index files
-3. Run it → creates `docs/whatwg/` with pristine data +
+2. Add ruff, mypy, pytest to `pyproject.toml` dev deps
+3. Add ruff pre-commit hook to `.pre-commit-config.yaml`
+4. Add `[tool.ruff]` and `[tool.mypy]` sections to `pyproject.toml`
+5. Write `tools/download_indexes.py` — typed, fetch all index files
+6. Write `tools/tests/test_download.py`
+7. Run download script → creates `docs/whatwg/` with pristine data +
    SOURCE.md + source.bib
-4. Commit the downloaded data + provenance
-5. Write `tools/generate_tables.py` — parse single-byte indexes,
-   emit `.hpp` + `.bin` into `data/tables/`
-6. Run it → populates `data/tables/`
-7. Commit generated files
-8. `make test` — all existing tests still pass (no runtime changes)
-9. `make lint` — clean
-10. Push both remotes
-11. Merge to main
+8. Commit the downloaded data + provenance + script + tests
+9. Write `tools/generate_tables.py` — typed, parse indexes, emit
+   `.hpp` + `.bin` into `data/tables/`
+10. Write `tools/tests/test_generate.py`
+11. Run generate script → populates `data/tables/`
+12. Commit generated files + script + tests
+13. `uv run pytest tools/tests/` — all pass
+14. `uv run mypy tools/` — clean
+15. `make test` — all existing C++ tests still pass
+16. `make lint` — clean (including new ruff hooks)
+17. Push both remotes
+18. Merge to main
 
 ## Verification
 
 ```bash
-# Scripts run without error
+# Python quality
+uv run pytest tools/tests/
+uv run mypy tools/
+
+# Scripts produce output
 uv run tools/download_indexes.py
 uv run tools/generate_tables.py
 
-# Existing tests still pass (no runtime changes)
+# C++ tests still pass (no runtime changes)
 make test
 
-# Generated files pass lint
+# All lint (C++ + Python) passes
 make lint
 ```
 
