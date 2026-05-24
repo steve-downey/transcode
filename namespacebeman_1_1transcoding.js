@@ -16,7 +16,8 @@ var namespacebeman_1_1transcoding =
     [ "whatwg_decode_view", "classbeman_1_1transcoding_1_1whatwg__decode__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__view" ],
     [ "legacy_byte_range", "conceptbeman_1_1transcoding_1_1legacy__byte__range.html", null ],
     [ "codec", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a", [
-      [ "utf_8", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3", null ]
+      [ "utf_8", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3", null ],
+      [ "replacement", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79", null ]
     ] ],
     [ "iconv_error", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730", [
       [ "invalid_sequence", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed", null ],

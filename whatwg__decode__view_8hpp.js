@@ -7,7 +7,8 @@ var whatwg__decode__view_8hpp =
     [ "beman::transcoding::whatwg_decode_or_error_view< C, R >::iterator", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator" ],
     [ "beman::transcoding::whatwg_decode_or_error_closure< C >", "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure" ],
     [ "codec", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005a", [
-      [ "utf_8", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3", null ]
+      [ "utf_8", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3", null ],
+      [ "replacement", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79", null ]
     ] ],
     [ "whatwg_decode", "whatwg__decode__view_8hpp.html#a73a91c92245e7a8b395fbf3e0334c063", null ],
     [ "whatwg_decode_or_error", "whatwg__decode__view_8hpp.html#ad15ffa8f43ff243d79c92bf31e8aefc2", null ]

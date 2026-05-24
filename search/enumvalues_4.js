@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['utf_5f8_0',['utf_8',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3',1,'beman::transcoding']]]
+  ['truncated_5fsequence_0',['truncated_sequence',['../namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba3c77c8fa3468fd7bfd6123cbcbc26a3e',1,'beman::transcoding']]]
 ];
