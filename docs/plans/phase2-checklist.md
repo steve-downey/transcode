@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–23 complete. 223 C++ + 56 Python tests pass. On `main`.
+**Current state:** Steps 0–24 complete. 254 C++ + 68 Python tests pass. On `main`.
 
 ---
 
@@ -132,12 +132,12 @@ Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.
 
 ## Step 24: Big5 decode + encode (`step24-big5`)
 
-- [ ] Create branch from `main`
-- [ ] Generate Big5 tables
-- [ ] Tests (RED → GREEN)
-- [ ] Implement decode + encode
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Generate Big5 tables
+- [x] Tests (RED → GREEN)
+- [x] Implement decode + encode
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ## Step 25: Shift_JIS decode + encode (`step25-shift-jis`)
 
