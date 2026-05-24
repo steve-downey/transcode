@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–18 complete + coverage gaps addressed. 102 tests pass. On `main`.
+**Current state:** Steps 0–19 complete. 116 C++ + 33 Python tests pass. On `main`.
 
 ---
 
@@ -84,15 +84,14 @@ x-mac-cyrillic.
 
 ## Step 19: Single-byte encoder infra + all encoders (`step19-single-byte-encode`)
 
-Reverse lookup: codepoint → byte. Needs `single_byte_encode_one()` +
-`whatwg_encode_view` dispatch for all 22 single-byte codecs.
-
-- [ ] Create branch from `main`
-- [ ] Implement single-byte encoder infrastructure
-- [ ] Add encode dispatch for all 22 single-byte codecs
-- [ ] Tests (RED → GREEN)
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Write failing tests (RED) + push both remotes
+- [x] Add `unmapped_codepoint` to `whatwg_error` enum
+- [x] Add `unicode_scalar_range` concept to `detail/concepts.hpp`
+- [x] Add `single_byte_encode_one()` to `detail/single_byte.hpp`
+- [x] Create `whatwg_encode_view.hpp` (28 single-byte codec arms)
+- [x] `make test` + `make lint` + `make coverage` (100% on new files)
+- [x] Push both remotes + merge to main
 
 ## Step 20: UTF-8 encoder (`step20-utf8-encoder`)
 
