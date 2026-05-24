@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 29 (Round-trip composition)
+# Handoff: beman.transcode — Phase 3 (WPT Conformance)
 
 ## Project
 
@@ -14,141 +14,110 @@ proposal.
 
 ## Current State
 
-**393 C++ tests + 102 Python tests pass** (`make test`). Steps 0–28
-complete. On `main`.
+**Phase 2 is complete.** 420 C++ tests + 102 Python tests pass (`make
+test`). Steps 0–29 done. On `main`.
 
-### What Step 28 Built
+### What Phase 2 Built (Steps 14–29)
 
-Step 28 added EUC-KR (UHC/CP949) decode and encode — a **stateless**
-two-byte codec for Korean.
+All WHATWG codecs are implemented with full decode **and** encode support:
 
-Key design decisions:
+- **Single-byte** (28 codecs): windows-1252, KOI8-R, KOI8-U,
+  ISO-8859-2..16, IBM866, macintosh, windows-874, windows-1250..1258,
+  x-mac-cyrillic
+- **Multi-byte**: GBK, GB18030, Big5, Shift_JIS, EUC-JP (JIS X 0208 +
+  0212), ISO-2022-JP (stateful), EUC-KR
+- **Algorithmic**: UTF-8 (encode), UTF-16BE, UTF-16LE
+- **Special**: `replacement` (decode-only), `x_user_defined`
+- **Round-trip tests** (step 29): `encode_then_decode` and
+  `decode_then_encode` for all bidirectional codecs
 
-- **Table size**: `euc_kr[23940]` — `126 × 190 = 23940` entries.
-  The handoff document had an incorrect size of 17176; the correct
-  size is 23940 based on lead∈[0x81,0xFE] × trail∈[0x41,0xFE].
-
-- **0x7F skip**: In DECODE, `trail == 0x7F` is treated as invalid byte
-  (explicitly checked). In the decode pointer formula: `offset = trail >
-  0x7F ? 1 : 0; pointer = (lead-0x81)*190 + (trail-0x41) - offset`.
-  In ENCODE: `trail = i%190 + 0x41; if (trail >= 0x7F) ++trail;`
-
-- **No state fields** needed (EUC-KR is stateless, unlike ISO-2022-JP).
-
-### Current codec enum (in `whatwg_decode_view.hpp`)
+### Codec enum (in `whatwg_decode_view.hpp`)
 
 ```cpp
 enum class codec {
     utf_8, replacement, x_user_defined,
     ibm866, iso_8859_2, ..., x_mac_cyrillic,
     utf_16be, utf_16le,
-    gbk, gb18030, big5, shift_jis, euc_jp, iso_2022_jp,
-    euc_kr,
+    gbk, gb18030, big5, shift_jis, euc_jp, iso_2022_jp, euc_kr,
 };
 ```
 
-## What To Do Next — Step 29
+---
 
-**Branch:** `step29-roundtrip`
+## What To Do Next — Phase 3
 
-**Read the checklist:** `docs/plans/phase2-checklist.md`
+**Phase 3: WPT Conformance Testing**
 
-### Overview
+The goal is to run the official W3C Web Platform Tests (WPT) encoding
+test vectors through the library to verify bug-for-bug browser
+compatibility.
 
-Step 29 adds **comprehensive round-trip tests**: for each bidirectional
-codec (all except `replacement` and `x_user_defined`), verify that
-encoding then decoding returns the original codepoints, and vice versa.
+### Existing Stubs (UNTRACKED — not in git yet)
 
-### What round-trip means
+`tests/whatwg/codec/tests/` contains aspirational drafts:
+- `test_cases.hpp` — `DecodeTestCase` / `EncodeTestCase` structs
+- `vectors.hpp` — a few hand-written test vectors
+- `verify.hpp` — a template `verify_decoder_vectors` using a mock
+  `TextDecoder` that doesn't exist yet
+- `CMakeLists.txt` — a draft build description (not wired into the main
+  CMakeLists.txt)
+- `whatwg_indices.hpp` — sketch of C++26 `#embed` approach
+- `generate_indices.py` — referenced but doesn't exist in `tools/`
+- `whatwg_wpt_testing_plan.md` — the planning document
 
-For a codec like `windows_1252`:
-- Take a set of codepoints that are known to be in the codec's range.
-- Encode them: `cps | whatwg_encode<codec::windows_1252>` → bytes
-- Decode them back: `bytes | whatwg_decode<codec::windows_1252>` → cps2
-- Check: `cps == cps2`
+**These stubs are incomplete and unintegrated.** They describe an
+aspirational C++26 `consteval`/`#embed` architecture, but the immediate
+practical step is simpler: use the existing library APIs
+(`whatwg_decode_view`, `whatwg_encode_view`) with WPT JSON test vectors
+and Catch2, following the same patterns as Phase 2.
 
-And the reverse:
-- Start with a known byte sequence.
-- Decode: bytes → cps
-- Encode back: cps → bytes2
-- Check: `bytes == bytes2`
+### The WPT Encoding Tests
 
-### Codecs to test (all bidirectional)
-
-**Single-byte** (all share the same decode/encode infrastructure):
-- `windows_1252` (representative — already has unit tests)
-- Pick 2–3 more: `koi8_r`, `iso_8859_2`, `windows_1251`
-
-**Multi-byte**:
-- `gbk` — round-trip a known 2-byte sequence (e.g., U+4E00 = 一)
-- `gb18030` — round-trip U+4E00 and a supplementary codepoint (U+1F600)
-- `big5` — round-trip U+4E00 and a Big5-specific char
-- `shift_jis` — round-trip U+3000 (IDEOGRAPHIC SPACE) and U+4E00
-- `euc_jp` — round-trip U+3000, U+FF61 (half-width katakana), U+02D8 (jis0212)
-- `iso_2022_jp` — round-trip U+3000 (stateful; special care needed)
-- `euc_kr` — round-trip U+AC00 (가) and U+AC02
-- `utf_8` — round-trip ASCII, BMP, and supplementary
-- `utf_16be` and `utf_16le` — round-trip ASCII, BMP, surrogate pair
-
-**Skip**: `replacement` (decode-only outputs U+FFFD), `x_user_defined`
-(passthrough for encode only).
-
-### Test structure
-
-Create `tests/beman/transcode/roundtrip.test.cpp`. Register in
-`tests/beman/transcode/CMakeLists.txt`.
-
-Helper templates:
-```cpp
-template <codec C>
-std::vector<char32_t> encode_then_decode(std::vector<char32_t> cps) {
-    std::vector<char> bytes;
-    for (char b : cps | whatwg_encode<C>)
-        bytes.push_back(b);
-    std::vector<char32_t> result;
-    for (char32_t cp : bytes | whatwg_decode<C>)
-        result.push_back(cp);
-    return result;
-}
-
-template <codec C>
-std::vector<char> decode_then_encode(std::vector<char> bytes) {
-    std::vector<char32_t> cps;
-    for (char32_t cp : bytes | whatwg_decode<C>)
-        cps.push_back(cp);
-    std::vector<char> result;
-    for (char b : cps | whatwg_encode<C>)
-        result.push_back(b);
-    return result;
-}
+The WPT encoding tests are at:
+```
+https://github.com/web-platform-tests/wpt/tree/master/encoding
 ```
 
-### Important caveats
+Key files:
+- `idna.json`, `legacy-mb-*.json`, `utf-8.json` — JSON test vectors
+- Each vector: `{input: [...bytes...], output: [...codepoints...], encoding: "..."}`
 
-- **ISO-2022-JP stateful encode**: encoding a JIS X 0208 codepoint
-  emits escape + lead + trail + `ESC ( B` (reset). So encoding U+3000
-  gives 8 bytes: `1B 24 42 21 21 1B 28 42`. Decoding those 8 bytes
-  gives [U+3000]. Round-trip works but bytes differ from what you might
-  expect. When testing decode→encode round-trip, start from the 8-byte
-  sequence (already reset), not just 2 bytes.
+The WHATWG index data is already downloaded (from step 17) at:
+```
+docs/whatwg/   (SOURCE.md and source.bib describe provenance)
+data/tables/   (generated C++ tables)
+```
 
-- **replacement codec**: decode-only (outputs U+FFFD for every byte).
-  Skip round-trip.
+### Recommended Next Step: Step 30 — WPT Test Vector Integration
 
-- **x_user_defined**: decode maps 0x80–0xFF to U+F780–U+F7FF. Encode
-  maps U+F780–U+F7FF back to 0x80–0xFF. Round-trip for those works;
-  ASCII also round-trips.
+**Branch:** `step30-wpt-vectors`
 
-- **gb18030 supplementary**: gb18030 encodes all of Unicode. U+1F600
-  encodes to 4 bytes. The 4-byte decode/encode round-trip should work.
+1. **Download WPT encoding test vectors** into `docs/wpt/` (pristine
+   upstream, with SOURCE.md + source.bib for provenance, matching the
+   pattern from step 17).
 
-### No new headers needed
+2. **Write a Python tool** `tools/run_wpt_vectors.py` or extend
+   `tools/generate_tables.py` to extract WPT JSON decode/encode test
+   vectors and run them against the library.
 
-Step 29 is test-only. No new `.hpp` files. Just:
-1. `tests/beman/transcode/roundtrip.test.cpp`
-2. Update `tests/beman/transcode/CMakeLists.txt`
+3. **Or**: Write a C++ test file `tests/beman/transcode/wpt.test.cpp`
+   that hard-codes a representative selection of WPT vectors (the
+   non-trivial ones that exercise error handling and edge cases), wired
+   into ctest the same way as all Phase 2 tests.
 
-### Build Commands
+4. **Wire into CMakeLists.txt** following the existing pattern.
+
+### Alternative Next Step: API Polish / Beman Integration
+
+If WPT conformance is not the priority, other candidates:
+- `beman.transcode` CMake install targets (for downstream use)
+- C++23 module interface (`transcode.cppm`) — already stubbed
+- Benchmarks
+- PR/issue cleanup for Beman project incubation review
+
+---
+
+## Build Commands
 
 ```bash
 make test      # build + run ALL tests: C++ (ctest) + Python (pytest)
@@ -158,18 +127,14 @@ make coverage  # gcovr coverage report
 make pytest    # Python tool tests only
 ```
 
-## TDD Process
+## TDD Process (unchanged from Phase 2)
 
-1. Branch: `git checkout -b step29-roundtrip`
-2. Write failing tests (RED) — include `whatwg_encode` from
-   `whatwg_encode_view.hpp`, which already exists. Tests simply verify
-   round-trip invariants using the helpers above.
-3. Commit RED → push both remotes
-4. Since all codecs are already implemented, the tests should go GREEN
-   immediately after adding the `roundtrip.test.cpp` file and building.
-5. `make test` (all pass) + `make lint` (clean) → commit → push both
-6. Merge to main + push both
-7. Mark checklist `[x]`
+1. Branch: `git checkout -b step30-<slug>`
+2. Write failing tests (RED) → commit → push both remotes
+3. Implement (GREEN) → `make test` + `make lint` → commit → push both
+4. Merge to main: `git checkout main && git merge --no-ff step30-<slug>`
+5. Push main to both remotes
+6. Mark checklist `[x]`
 
 ## Coding Rules (abbreviated)
 
@@ -177,3 +142,10 @@ make pytest    # Python tool tests only
 - Test files: include the primary header **twice** (idempotent check)
 - No `Co-Authored-By` trailers in commits
 - Full rules in `CLAUDE.md`
+
+## Phase 2 History Summary (for context)
+
+Steps 14–29 added all WHATWG codecs. Each step followed: RED commit
+(failing tests) → GREEN commit (implementation) → `make lint` → merge
+to main. The checklist at `docs/plans/phase2-checklist.md` is fully
+marked `[x]`.
