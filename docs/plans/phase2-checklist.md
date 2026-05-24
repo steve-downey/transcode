@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–18 complete. 76 tests pass. On `main`.
+**Current state:** Steps 0–18 complete + coverage gaps addressed. 102 tests pass. On `main`.
 
 ---
 
