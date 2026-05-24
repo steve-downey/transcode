@@ -226,6 +226,28 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.shift_jis_decode)
+target_sources(beman.transcode.tests.shift_jis_decode PRIVATE shift_jis_decode.test.cpp)
+target_include_directories(
+    beman.transcode.tests.shift_jis_decode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.shift_jis_decode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.shift_jis_encode)
+target_sources(beman.transcode.tests.shift_jis_encode PRIVATE shift_jis_encode.test.cpp)
+target_include_directories(
+    beman.transcode.tests.shift_jis_encode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.shift_jis_encode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -246,6 +268,8 @@ catch_discover_tests(beman.transcode.tests.gb18030_decode)
 catch_discover_tests(beman.transcode.tests.gb18030_encode)
 catch_discover_tests(beman.transcode.tests.big5_decode)
 catch_discover_tests(beman.transcode.tests.big5_encode)
+catch_discover_tests(beman.transcode.tests.shift_jis_decode)
+catch_discover_tests(beman.transcode.tests.shift_jis_encode)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(

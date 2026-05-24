@@ -32,6 +32,10 @@ BIG5_POINTER_COUNT = (
     BIG5_LEAD_MAX - BIG5_LEAD_MIN + 1
 ) * BIG5_TRAIL_COUNT  # 126 * 157 = 19782
 
+SHIFTJIS_TRAIL_COUNT = 63 + 125  # 188: 0x40-0x7E + 0x80-0xFC
+SHIFTJIS_LEAD_COUNT = 31 + 29  # 60: 0x81-0x9F + 0xE0-0xFC
+SHIFTJIS_POINTER_COUNT = SHIFTJIS_LEAD_COUNT * SHIFTJIS_TRAIL_COUNT  # 60 * 188 = 11280
+
 CLANG_FORMAT = "clang-format"
 
 
@@ -419,6 +423,96 @@ def generate_big5(
     print(f"  generated: {hpp_path} ({len(table)} entries)")
 
 
+def parse_shift_jis_index(path: Path) -> list[int]:
+    """Parse WHATWG index-jis0208.txt; return 11280-entry Shift_JIS decode table.
+
+    Each entry is the Unicode codepoint at that Shift_JIS pointer position, or 0 if
+    unmapped. Lead bytes are 0x81–0x9F (31 values, lead_offset 0–30) and 0xE0–0xFC
+    (29 values, lead_offset 31–59). Trail bytes are 0x40–0x7E (63 values,
+    trail_offset 0–62) and 0x80–0xFC (125 values, trail_offset 63–187), giving 188
+    trail values. Total pointers: 60 × 188 = 11280.
+    """
+    table: list[int] = [0] * SHIFTJIS_POINTER_COUNT
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split()
+        if len(parts) < 2:
+            continue
+        pointer = int(parts[0])
+        cp_str = parts[1]
+        if pointer < 0 or pointer >= SHIFTJIS_POINTER_COUNT:
+            continue
+        codepoint = int(cp_str, 16)
+        table[pointer] = codepoint
+    return table
+
+
+def _format_shift_jis_row(values: list[int], start_idx: int) -> str:
+    """Format up to 8 Shift_JIS table entries as a C++ initializer row."""
+    hex_vals = [f"0x{v:04X}" if v != 0 else "0" for v in values]
+    end_idx = start_idx + len(values) - 1
+    entries = ", ".join(hex_vals)
+    return f"    {entries},  // [{start_idx}–{end_idx}]"
+
+
+def render_shift_jis_hpp(table: list[int]) -> str:
+    """Render the Shift_JIS decode table as a C++ header."""
+    guard = "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_SHIFT_JIS_HPP"
+    n = len(table)
+    rows: list[str] = []
+    for i in range(0, n, 8):
+        chunk = table[i : i + 8]
+        rows.append(_format_shift_jis_row(chunk, i))
+    rows[-1] = rows[-1].rstrip(",")
+
+    array_body = "\n".join(rows)
+
+    return f"""\
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// GENERATED — do not edit. Regenerate: uv run tools/generate_tables.py
+// Source: WHATWG Encoding Standard index-jis0208.txt
+
+#ifndef {guard}
+#define {guard}
+
+namespace beman::transcoding::detail::tables {{
+
+inline constexpr char32_t shift_jis[{n}] = {{
+{array_body}
+}};
+
+}} // namespace beman::transcoding::detail::tables
+
+#endif // {guard}
+"""
+
+
+def generate_shift_jis(
+    in_dir: Path,
+    out_dir: Path,
+    run_clang_format: bool = True,
+) -> None:
+    """Generate Shift_JIS decode table HPP into the include tree."""
+    index_path = in_dir / "index-jis0208.txt"
+    if not index_path.exists():
+        print(f"  WARNING: {index_path} not found, skipping Shift_JIS")
+        return
+
+    table = parse_shift_jis_index(index_path)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    hpp_path = out_dir / "shift_jis.hpp"
+    hpp_content = render_shift_jis_hpp(table)
+    hpp_path.write_text(hpp_content, encoding="utf-8")
+
+    if run_clang_format:
+        clang_format_file(hpp_path)
+
+    print(f"  generated: {hpp_path} ({len(table)} entries)")
+
+
 def main(argv: list[str] | None = None) -> int:
     import argparse
 
@@ -468,8 +562,11 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Generating Big5 table from {in_dir}/ → {include_tables_dir}/")
     generate_big5(in_dir, include_tables_dir, run_clang_format=run_cf)
 
+    print(f"Generating Shift_JIS table from {in_dir}/ → {include_tables_dir}/")
+    generate_shift_jis(in_dir, include_tables_dir, run_clang_format=run_cf)
+
     n = len(SINGLE_BYTE_INDEXES)
-    print(f"Done. {n} single-byte codecs + GBK + GB18030 ranges + Big5 processed.")
+    print(f"Done. {n} single-byte codecs + GBK + GB18030 ranges + Big5 + Shift_JIS processed.")
     return 0
 
 
