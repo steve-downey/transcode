@@ -100,8 +100,7 @@ TEST_CASE("euc_jp encode U+4E00 (一) -> 0xB0 0xEC (JIS X 0208 pointer 1485)", "
     CHECK(result[1] == '\xEC');
 }
 
-TEST_CASE("euc_jp encode U+02D8 (BREVE) -> 0x8F 0xA2 0xAF (JIS X 0212 pointer 108)",
-          "[transcoding::euc_jp_encode]") {
+TEST_CASE("euc_jp encode U+02D8 (BREVE) -> 0x8F 0xA2 0xAF (JIS X 0212 pointer 108)", "[transcoding::euc_jp_encode]") {
     // pointer 108 in jis0212: lead=(108/94)+0xA1=1+0xA1=0xA2, trail=(108%94)+0xA1=14+0xA1=0xAF
     // Encoded as: 0x8F (SS3) + 0xA2 + 0xAF
     std::vector<char32_t> cps{U'\x02D8'};

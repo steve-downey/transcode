@@ -34,6 +34,7 @@
 #include <beman/transcode/detail/tables/windows_1258.hpp>
 #include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
 #include <beman/transcode/detail/big5.hpp>
+#include <beman/transcode/detail/euc_jp.hpp>
 #include <beman/transcode/detail/gb18030.hpp>
 #include <beman/transcode/detail/gbk.hpp>
 #include <beman/transcode/detail/shift_jis.hpp>
@@ -85,6 +86,7 @@ enum class codec {
     gb18030,
     big5,
     shift_jis,
+    euc_jp,
 };
 
 // ---------------------------------------------------------------------------
@@ -434,6 +436,9 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::shift_jis) {
         auto r = detail::shift_jis_decode_one(current_, end_);
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::euc_jp) {
+        auto r = detail::euc_jp_decode_one(current_, end_);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
     }
 }
 
@@ -764,6 +769,12 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         }
     } else if constexpr (C == codec::shift_jis) {
         auto r = detail::shift_jis_decode_one(current_, end_);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::euc_jp) {
+        auto r = detail::euc_jp_decode_one(current_, end_);
         if (r.is_error)
             value_ = std::unexpected(r.error);
         else

@@ -36,6 +36,10 @@ SHIFTJIS_TRAIL_COUNT = 63 + 125  # 188: 0x40-0x7E + 0x80-0xFC
 SHIFTJIS_LEAD_COUNT = 31 + 29  # 60: 0x81-0x9F + 0xE0-0xFC
 SHIFTJIS_POINTER_COUNT = SHIFTJIS_LEAD_COUNT * SHIFTJIS_TRAIL_COUNT  # 60 * 188 = 11280
 
+# EUC-JP JIS X 0212: lead 0xA1-0xFE (94), trail 0xA1-0xFE (94)
+# pointer = (b1 - 0xA1) * 94 + (b2 - 0xA1)
+EUC_JP_JIS0212_POINTER_COUNT = 94 * 94  # 8836
+
 CLANG_FORMAT = "clang-format"
 
 
@@ -513,6 +517,93 @@ def generate_shift_jis(
     print(f"  generated: {hpp_path} ({len(table)} entries)")
 
 
+def parse_euc_jp_jis0212_index(path: Path) -> list[int]:
+    """Parse WHATWG index-jis0212.txt; return 8836-entry JIS X 0212 decode table.
+
+    Pointer formula: pointer = (b1 - 0xA1) * 94 + (b2 - 0xA1), where b1 and b2
+    are both in 0xA1–0xFE (94 values each). Total pointers: 94 × 94 = 8836.
+    """
+    table: list[int] = [0] * EUC_JP_JIS0212_POINTER_COUNT
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split()
+        if len(parts) < 2:
+            continue
+        pointer = int(parts[0])
+        cp_str = parts[1]
+        if pointer < 0 or pointer >= EUC_JP_JIS0212_POINTER_COUNT:
+            continue
+        codepoint = int(cp_str, 16)
+        table[pointer] = codepoint
+    return table
+
+
+def _format_euc_jp_jis0212_row(values: list[int], start_idx: int) -> str:
+    """Format up to 8 JIS X 0212 table entries as a C++ initializer row."""
+    hex_vals = [f"0x{v:04X}" if v != 0 else "0" for v in values]
+    end_idx = start_idx + len(values) - 1
+    entries = ", ".join(hex_vals)
+    return f"    {entries},  // [{start_idx}–{end_idx}]"
+
+
+def render_euc_jp_jis0212_hpp(table: list[int]) -> str:
+    """Render the EUC-JP JIS X 0212 decode table as a C++ header."""
+    guard = "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_JP_JIS0212_HPP"
+    n = len(table)
+    rows: list[str] = []
+    for i in range(0, n, 8):
+        chunk = table[i : i + 8]
+        rows.append(_format_euc_jp_jis0212_row(chunk, i))
+    rows[-1] = rows[-1].rstrip(",")
+
+    array_body = "\n".join(rows)
+
+    return f"""\
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// GENERATED — do not edit. Regenerate: uv run tools/generate_tables.py
+// Source: WHATWG Encoding Standard index-jis0212.txt
+
+#ifndef {guard}
+#define {guard}
+
+namespace beman::transcoding::detail::tables {{
+
+inline constexpr char32_t euc_jp_jis0212[{n}] = {{
+{array_body}
+}};
+
+}} // namespace beman::transcoding::detail::tables
+
+#endif // {guard}
+"""
+
+
+def generate_euc_jp_jis0212(
+    in_dir: Path,
+    out_dir: Path,
+    run_clang_format: bool = True,
+) -> None:
+    """Generate EUC-JP JIS X 0212 decode table HPP into the include tree."""
+    index_path = in_dir / "index-jis0212.txt"
+    if not index_path.exists():
+        print(f"  WARNING: {index_path} not found, skipping EUC-JP JIS X 0212")
+        return
+
+    table = parse_euc_jp_jis0212_index(index_path)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    hpp_path = out_dir / "euc_jp_jis0212.hpp"
+    hpp_content = render_euc_jp_jis0212_hpp(table)
+    hpp_path.write_text(hpp_content, encoding="utf-8")
+
+    if run_clang_format:
+        clang_format_file(hpp_path)
+
+    print(f"  generated: {hpp_path} ({len(table)} entries)")
+
+
 def main(argv: list[str] | None = None) -> int:
     import argparse
 
@@ -565,8 +656,14 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Generating Shift_JIS table from {in_dir}/ → {include_tables_dir}/")
     generate_shift_jis(in_dir, include_tables_dir, run_clang_format=run_cf)
 
+    print(f"Generating EUC-JP JIS X 0212 table from {in_dir}/ → {include_tables_dir}/")
+    generate_euc_jp_jis0212(in_dir, include_tables_dir, run_clang_format=run_cf)
+
     n = len(SINGLE_BYTE_INDEXES)
-    print(f"Done. {n} single-byte + GBK + GB18030 ranges + Big5 + Shift_JIS.")
+    print(
+        f"Done. {n} single-byte + GBK + GB18030 ranges"
+        " + Big5 + Shift_JIS + EUC-JP JIS X 0212."
+    )
     return 0
 
 
