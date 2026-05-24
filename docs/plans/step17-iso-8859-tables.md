@@ -267,6 +267,10 @@ make test
 
 # All lint (C++ + Python) passes
 make lint
+
+# Coverage — no regressions (no new C++ code in this step,
+# but verify the report still generates cleanly)
+make coverage
 ```
 
 ## Notes

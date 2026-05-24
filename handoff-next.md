@@ -148,6 +148,15 @@ New header: `include/beman/transcode/whatwg_encode_view.hpp`
 make test      # build + run all tests
 make lint      # clang-format + gersemi + codespell + ruff + gitleaks
 make compile   # build only
+make coverage  # coverage report
 uv run pytest tools/tests/   # Python tests
 uv run mypy tools/           # Python type check
 ```
+
+## Coverage Rule
+
+Run `make coverage` after tests and lint pass. New code should have
+coverage. Don't fight the compiler for 100% — template instantiations
+and unreachable platform branches are fine uncovered. But any
+*surprising* uncovered code should either get a test or a note for
+follow-up. Branch coverage is not a priority.

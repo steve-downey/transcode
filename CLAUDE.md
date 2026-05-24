@@ -74,6 +74,10 @@ Every concept constraint or `static_assert` must have:
 
 Negative compile tests are registered in `tests/beman/transcode/CMakeLists.txt` as `OBJECT` libraries with `EXCLUDE_FROM_ALL` plus an `add_test` that invokes `cmake --build --target <name>` and checks `PASS_REGULAR_EXPRESSION` against the compiler output.
 
+### Coverage
+
+Run `make coverage` to generate a coverage report. New code should have coverage. Don't fight the compiler to reach 100% — template instantiations and platform-specific branches may not all be reachable. But any *surprising* uncovered code (logic you expected tests to hit) should either get a test added or be noted for follow-up. Branch coverage is not a priority; line/function coverage is what matters.
+
 ## Code Style
 
 Formatting is enforced by `.clang-format` (clang-format 22).
