@@ -36,6 +36,7 @@
 #include <beman/transcode/detail/big5.hpp>
 #include <beman/transcode/detail/gb18030.hpp>
 #include <beman/transcode/detail/gbk.hpp>
+#include <beman/transcode/detail/shift_jis.hpp>
 #include <beman/transcode/detail/utf8.hpp>
 #include <beman/transcode/detail/utf16.hpp>
 #include <beman/transcode/detail/x_user_defined.hpp>
@@ -83,6 +84,7 @@ enum class codec {
     gbk,
     gb18030,
     big5,
+    shift_jis,
 };
 
 // ---------------------------------------------------------------------------
@@ -429,6 +431,9 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
                 has_pending_cp_ = true;
             }
         }
+    } else if constexpr (C == codec::shift_jis) {
+        auto r = detail::shift_jis_decode_one(current_, end_);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
     }
 }
 
@@ -757,6 +762,12 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
                 has_pending_cp_ = true;
             }
         }
+    } else if constexpr (C == codec::shift_jis) {
+        auto r = detail::shift_jis_decode_one(current_, end_);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
     }
 }
 
