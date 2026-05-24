@@ -24,6 +24,8 @@ else()
                     detail/concepts.hpp
                     detail/error.hpp
                     detail/null_term.hpp
+                    detail/single_byte.hpp
+                    detail/tables/windows_1252.hpp
                     detail/utf8.hpp
                     iconv_transcode_view.hpp
                     whatwg_decode_view.hpp

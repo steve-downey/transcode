@@ -159,3 +159,37 @@ TEST_CASE("whatwg_decode x_user_defined consteval", "[transcoding::whatwg_decode
     };
     CHECK(constify(decode_x()) == char32_t(0xF780));
 }
+
+// Step 16: codec::windows_1252 tests
+
+TEST_CASE("whatwg_decode windows_1252 ASCII", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1252>) == std::vector<char32_t>{U'A'});
+}
+
+TEST_CASE("whatwg_decode windows_1252 euro sign", "[transcoding::whatwg_decode]") {
+    // 0x80 -> U+20AC (Euro sign) — the iconic windows-1252 mapping
+    std::vector<char> bytes{'\x80'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1252>) == std::vector<char32_t>{U'\x20AC'});
+}
+
+TEST_CASE("whatwg_decode windows_1252 smart quotes", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'\x93', '\x94'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1252>) == std::vector<char32_t>{U'\x201C', U'\x201D'});
+}
+
+TEST_CASE("whatwg_decode windows_1252 undefined byte", "[transcoding::whatwg_decode]") {
+    // 0x81 is null/unmapped in windows-1252 per WHATWG
+    std::vector<char> bytes{'\x81'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1252>) == std::vector<char32_t>{U'\xFFFD'});
+}
+
+TEST_CASE("whatwg_decode windows_1252 consteval", "[transcoding::whatwg_decode]") {
+    using beman::transcoding::tests::constify;
+    constexpr auto decode_euro = []() consteval {
+        constexpr char        bytes[] = {'\x80'};
+        std::span<const char> sp(bytes, 1);
+        return *(sp | whatwg_decode<codec::windows_1252>).begin();
+    };
+    CHECK(constify(decode_euro()) == char32_t(0x20AC));
+}
