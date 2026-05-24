@@ -2,9 +2,8 @@
 """Tests for tools/generate_tables.py."""
 
 import struct
-from pathlib import Path
-
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 

@@ -3,12 +3,11 @@
 
 import hashlib
 import json
+import sys
 from datetime import date
 from pathlib import Path
 
 import pytest
-
-import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -17,9 +16,9 @@ from download_indexes import (
     MULTI_BYTE_INDEXES,
     SINGLE_BYTE_INDEXES,
     sha256_of,
+    validate_encodings_json,
     write_source_bib,
     write_source_md,
-    validate_encodings_json,
 )
 
 

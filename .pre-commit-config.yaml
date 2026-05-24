@@ -40,6 +40,11 @@ repos:
     rev: v2.4.2
     hooks:
       - id: codespell
+        # docs/whatwg/ contains pristine WHATWG data with Unicode char names
+        # (e.g. "LAMDA", "TEH") that are correct Unicode terminology, not typos.
+        exclude: ^docs/whatwg/
+        args:
+          - --ignore-words-list=implementors
 
   #  MBake Makefile formatting
   - repo: https://github.com/EbodShojaei/bake

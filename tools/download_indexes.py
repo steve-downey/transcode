@@ -134,7 +134,8 @@ def write_source_md(
     lines: list[str] = [
         "# WHATWG Encoding Standard — Index Data",
         "",
-        "Pristine upstream data. **Do not edit.** To refresh: `uv run tools/download_indexes.py`",
+        "Pristine upstream data. **Do not edit.**"
+        " To refresh: `uv run tools/download_indexes.py`",
         "",
         f"**Retrieved:** {retrieved.isoformat()}",
         "",
@@ -145,7 +146,8 @@ def write_source_md(
         "- Data/documentation: CC-BY 4.0",
         "- Code portions derived from the spec: BSD-3-Clause",
         "",
-        "**Attribution required (CC-BY 4.0):** Derived from the WHATWG Encoding Standard,",
+        "**Attribution required (CC-BY 4.0):**"
+        " Derived from the WHATWG Encoding Standard,",
         "https://encoding.spec.whatwg.org/, Living Standard.",
         "",
         "## File Provenance",

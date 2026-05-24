@@ -4,7 +4,7 @@ Pristine upstream data. **Do not edit.** To refresh: `uv run tools/download_inde
 
 **Retrieved:** 2026-05-23
 
-**Source:** WHATWG Encoding Standard, <https://encoding.spec.whatwg.org/>  
+**Source:** WHATWG Encoding Standard, <https://encoding.spec.whatwg.org/>
 Living Standard, maintained by the WHATWG community.
 
 **License:**
