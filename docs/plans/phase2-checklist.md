@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–20 complete. 128 C++ + 33 Python tests pass. On `main`.
+**Current state:** Steps 0–21 complete. 167 C++ + 33 Python tests pass. On `main`.
 
 ---
 
@@ -106,11 +106,11 @@ x-mac-cyrillic.
 
 Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.
 
-- [ ] Create branch from `main`
-- [ ] Tests (RED → GREEN)
-- [ ] Implement decode + encode for both byte orders
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Tests (RED → GREEN)
+- [x] Implement decode + encode for both byte orders
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ## Step 22: GBK decode + encode (`step22-gbk`)
 
