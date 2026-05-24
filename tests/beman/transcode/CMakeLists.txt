@@ -154,6 +154,28 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.gbk_decode)
+target_sources(beman.transcode.tests.gbk_decode PRIVATE gbk_decode.test.cpp)
+target_include_directories(
+    beman.transcode.tests.gbk_decode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.gbk_decode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.gbk_encode)
+target_sources(beman.transcode.tests.gbk_encode PRIVATE gbk_encode.test.cpp)
+target_include_directories(
+    beman.transcode.tests.gbk_encode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.gbk_encode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -168,6 +190,8 @@ catch_discover_tests(beman.transcode.tests.whatwg_encode)
 catch_discover_tests(beman.transcode.tests.whatwg_encode_or_error)
 catch_discover_tests(beman.transcode.tests.utf16_decode)
 catch_discover_tests(beman.transcode.tests.utf16_encode)
+catch_discover_tests(beman.transcode.tests.gbk_decode)
+catch_discover_tests(beman.transcode.tests.gbk_encode)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(
