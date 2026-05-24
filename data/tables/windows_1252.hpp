@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// GENERATED — do not edit. Regenerate: uv run tools/generate_tables.py
+// Source: WHATWG Encoding Standard index-windows-1252.txt
 
-#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_WINDOWS_1252_HPP
-#define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_WINDOWS_1252_HPP
+#ifndef DATA_TABLES_WINDOWS_1252_HPP
+#define DATA_TABLES_WINDOWS_1252_HPP
 
 namespace beman::transcoding::detail::tables {
 
-// WHATWG index-windows-1252: maps bytes 0x80–0xFF.
-// Entry 0 = unmapped (error). Indexes: table[byte - 0x80].
-// Source: https://encoding.spec.whatwg.org/index-windows-1252.txt
 inline constexpr char32_t windows_1252[128] = {
-    0x20AC, 0,      0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, // 80–87
-    0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0,      0x017D, 0,      // 88–8F
-    0,      0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, // 90–97
-    0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0,      0x017E, 0x0178, // 98–9F
+    0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, // 80–87
+    0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F, // 88–8F
+    0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, // 90–97
+    0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178, // 98–9F
     0x00A0, 0x00A1, 0x00A2, 0x00A3, 0x00A4, 0x00A5, 0x00A6, 0x00A7, // A0–A7
     0x00A8, 0x00A9, 0x00AA, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF, // A8–AF
     0x00B0, 0x00B1, 0x00B2, 0x00B3, 0x00B4, 0x00B5, 0x00B6, 0x00B7, // B0–B7
@@ -29,4 +28,4 @@ inline constexpr char32_t windows_1252[128] = {
 
 } // namespace beman::transcoding::detail::tables
 
-#endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_WINDOWS_1252_HPP
+#endif // DATA_TABLES_WINDOWS_1252_HPP
