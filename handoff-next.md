@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 20 (UTF-8 Encoder)
+# Handoff: beman.transcode — Step 21 (UTF-16 decode + encode)
 
 ## Project
 
@@ -14,183 +14,238 @@ proposal.
 
 ## Current State
 
-**116 C++ tests + 33 Python tests pass** (`make test`). Steps 0–19
+**128 C++ tests + 33 Python tests pass** (`make test`). Steps 0–20
 complete. On `main`.
 
-### What Step 19 Built
+### What Step 20 Built
 
-Step 19 created the encode direction for all 28 single-byte codecs:
+Step 20 added the UTF-8 encode direction and refactored the encode
+iterator to a buffer design:
 
-- **`include/beman/transcode/whatwg_encode_view.hpp`** — new file
-  containing `whatwg_encode_view<C, R>`,
-  `whatwg_encode_or_error_view<C, R>`, their closures and global pipe
-  adapters. Dispatch covers all 28 single-byte codec enum values.
-  `iso_8859_8_i` shares the `iso_8859_8` table.
+- **`include/beman/transcode/detail/utf8_encode.hpp`** — new file with
+  `utf8_encode_result` and `constexpr utf8_encode_one(char32_t)`.
+  Covers all 4 byte-length ranges plus surrogate and out-of-range errors.
 
-- **`detail/single_byte.hpp`** extended with `single_byte_encode_one()`
-  and `single_byte_encode_result`. The encoder does a linear scan of
-  the 128-entry table (O(128) per codepoint).
+- **`include/beman/transcode/whatwg_encode_view.hpp`** — refactored
+  both iterators from a single-value `value_` field to a buffer design
+  (`buf_[4]`, `len_`, `pos_`). Added `codec::utf_8` dispatch arm in
+  both `load()` functions. Single-byte arms now use `encode_single()`
+  lambda, UTF-8 arm calls `utf8_encode_one()` directly.
 
-- **`detail/concepts.hpp`** extended with `unicode_scalar_range` —
-  `input_range<R>` with `range_value_t == char32_t`, also rejects
-  raw arrays.
+- **`tests/beman/transcode/whatwg_encode_reject_char_range_fail.cpp`** —
+  new negative compile test: `vector<char>` rejected as
+  `unicode_scalar_range` (elements are `char`, not `char32_t`).
 
-- **`detail/error.hpp`** extended with `whatwg_error::unmapped_codepoint`.
+### Current iterator designs — IMPORTANT for step 21
 
-- **Test files** (already exist — APPEND to them for step 20):
-  - `tests/beman/transcode/whatwg_encode.test.cpp`
-  - `tests/beman/transcode/whatwg_encode_or_error.test.cpp`
+**Decode side** (`whatwg_decode_view::iterator`):
+```cpp
+base_iter current_;
+base_sent end_;
+char32_t  value_{};   // single decoded codepoint
+bool      done_{false};
+```
+`load()` consumes bytes and produces one `char32_t`. This design works
+for UTF-16 too: consume 2 or 4 bytes, produce one `char32_t`. No buffer
+refactor needed for the decode side.
 
-- **Test executables** already registered in
-  `tests/beman/transcode/CMakeLists.txt`.
+**Encode side** (`whatwg_encode_view::iterator`) — already uses buffer:
+```cpp
+char buf_[4]{};
+int  len_{0};
+int  pos_{0};
+bool done_{false};
+```
+UTF-16 produces exactly 2 bytes (BMP) or 4 bytes (surrogate pair) per
+codepoint. The buffer design handles this. No refactor needed.
 
-### Current iterator design — IMPORTANT for step 20
-
-The `whatwg_encode_view::iterator` currently uses a simple
-`char value_` field because single-byte codecs produce exactly
-one byte per codepoint:
+### Current `codec` enum (in `whatwg_decode_view.hpp`)
 
 ```cpp
-class iterator {
-    base_iter current_;
-    base_sent end_;
-    char      value_{};   // ← single byte only
-    bool      done_{false};
-    ...
+enum class codec {
+    utf_8,
+    replacement,
+    x_user_defined,
+    ibm866, iso_8859_2, ..., x_mac_cyrillic,
+    // utf_16be and utf_16le NOT YET HERE — step 21 adds them
 };
 ```
 
-**Step 20 must refactor this** to support UTF-8's variable-length
-output (1–4 bytes per codepoint). Use a buffer design:
+## What To Do Next — Step 21
 
-```cpp
-class iterator {
-    base_iter current_;
-    base_sent end_;
-    char      buf_[4]{};  // encoded bytes for current codepoint
-    int       len_{0};    // how many valid bytes in buf_
-    int       pos_{0};    // index of next byte to yield
-    bool      done_{false};
-    ...
-};
-
-constexpr char operator*() const { return buf_[pos_]; }
-constexpr iterator& operator++() {
-    if (++pos_ < len_)
-        return *this;    // still bytes left from current codepoint
-    load();              // advance to next codepoint
-    return *this;
-}
-```
-
-For single-byte codecs `load()` sets `buf_[0]`, `len_=1`, `pos_=0`.
-For UTF-8 `load()` fills up to 4 bytes. The same iterator class works
-for both after this refactor.
-
-The same refactor applies to `whatwg_encode_or_error_view::iterator`,
-which currently uses `result_t value_`. After the refactor it uses
-`result_t buf_[4]` with the same `len_`/`pos_` logic but yielding
-`expected<char, whatwg_error>`.
-
-## What To Do Next — Step 20
-
-**Branch:** `step20-utf8-encoder`
+**Branch:** `step21-utf16`
 
 **Read the checklist:** `docs/plans/phase2-checklist.md`
 
-Note: the old plan file `docs/plans/step18-utf8-encoder.md` describes
-this step (it was written as step 18 before step 19 was inserted). The
-plan is still accurate for the implementation except:
-- `whatwg_encode_view.hpp` already exists — do not create it fresh
-- `unicode_scalar_range` already exists in `detail/concepts.hpp`
-- Test files and their CMake registration already exist
-- Need to **refactor** the iterator to use the buffer design first,
-  then add UTF-8 arms
+There is no detailed step21 plan file yet. Use this handoff as the
+authoritative spec.
+
+### WHATWG UTF-16 decoder algorithm
+
+UTF-16 decode (`codec::utf_16be` / `codec::utf_16le`):
+
+1. Read 2 bytes; interpret as a 16-bit code unit (BE: `b0<<8 | b1`, LE: `b1<<8 | b0`).
+2. If the code unit is in `0xD800–0xDBFF` (high surrogate):
+   a. Read another 2 bytes as a low surrogate unit.
+   b. If low surrogate is in `0xDC00–0xDFFF`, combine:
+      `cp = 0x10000 + ((high - 0xD800) << 10) + (low - 0xDC00)`
+   c. Otherwise: emit U+FFFD (non-error variant) or `surrogate_code_point`
+      error (or_error variant), and do NOT consume the second pair.
+3. If the code unit is in `0xDC00–0xDFFF` (lone low surrogate):
+   emit U+FFFD or error.
+4. Otherwise: the code unit IS the codepoint.
+5. If fewer than 2 bytes remain: emit U+FFFD or error.
+
+### WHATWG UTF-16 encoder algorithm
+
+UTF-16 encode (`codec::utf_16be` / `codec::utf_16le`):
+
+1. If `cp` is a surrogate (`0xD800–0xDFFF`): error (`surrogate_code_point`).
+2. If `cp <= 0xFFFF`: emit 2 bytes (the 16-bit value in BE or LE).
+3. If `cp >= 0x10000`: emit 4 bytes (surrogate pair):
+   ```
+   high = 0xD800 + ((cp - 0x10000) >> 10)
+   low  = 0xDC00 + ((cp - 0x10000) & 0x3FF)
+   ```
+   Output high then low (each as 2 bytes in the correct byte order).
 
 ### Implementation order
 
-1. Refactor `whatwg_encode_view::iterator` and
-   `whatwg_encode_or_error_view::iterator` to buffer design
-   (single-byte arms still work with `len_=1`)
-
-2. Create `include/beman/transcode/detail/utf8_encode.hpp`:
-
+1. **Add enum values** to `codec` enum in `whatwg_decode_view.hpp`:
    ```cpp
-   struct utf8_encode_result {
-       char         bytes[4]{};
-       int          count{};
-       whatwg_error error{};
-       bool         is_error{false};
+   utf_16be,
+   utf_16le,
+   ```
+   Add after `x_mac_cyrillic` (end of enum).
+
+2. **Create `include/beman/transcode/detail/utf16.hpp`**:
+   ```cpp
+   // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+   #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF16_HPP
+   #define INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF16_HPP
+   #include <beman/transcode/detail/error.hpp>
+   #include <iterator>
+
+   namespace beman::transcoding::detail {
+
+   struct utf16_decode_result {
+       char32_t codepoint{0xFFFD};
+       int      bytes_consumed{0};
+       bool     is_error{false};
    };
 
-   constexpr utf8_encode_result utf8_encode_one(char32_t cp);
+   struct utf16_encode_result {
+       char bytes[4]{};
+       int  count{0};
+       bool is_error{false};
+   };
+
+   template <typename I, typename S>
+   constexpr utf16_decode_result utf16be_decode_one(I& current, S end);
+
+   template <typename I, typename S>
+   constexpr utf16_decode_result utf16le_decode_one(I& current, S end);
+
+   constexpr utf16_encode_result utf16be_encode_one(char32_t cp);
+   constexpr utf16_encode_result utf16le_encode_one(char32_t cp);
+
+   // ... out-of-line definitions ...
+
+   } // namespace beman::transcoding::detail
+   #endif
    ```
 
-   WHATWG UTF-8 encoder:
-   - U+0000–U+007F → 1 byte
-   - U+0080–U+07FF → 2 bytes
-   - U+0800–U+FFFF (non-surrogate) → 3 bytes
-   - U+10000–U+10FFFF → 4 bytes
-   - Surrogates (U+D800–U+DFFF) → error (`surrogate_code_point`)
-   - > U+10FFFF → error (`out_of_range`)
+   Decode functions take `I& current, S end` (like `utf8_decode_one`),
+   advance `current` as they consume bytes, and return the result.
+   Encode functions take a `char32_t` and return bytes.
 
-3. Add `#include <beman/transcode/detail/utf8_encode.hpp>` to
-   `whatwg_encode_view.hpp`
-
-4. Add dispatch arms in `whatwg_encode_view::iterator::load()`:
+3. **Add UTF-16 decode dispatch** in `whatwg_decode_view.hpp`
+   `load()` functions. The decode side already has the right shape: it
+   calls e.g. `auto r = detail::utf8_decode_one(current_, end_)` and
+   sets `value_`, `done_`. Add after the `x_mac_cyrillic` arm:
    ```cpp
-   } else if constexpr (C == codec::utf_8) {
-       auto r = detail::utf8_encode_one(static_cast<char32_t>(*current_));
+   } else if constexpr (C == codec::utf_16be) {
+       auto r = detail::utf16be_decode_one(current_, end_);
+       if (r.bytes_consumed == 0) { done_ = true; return; }
+       value_ = r.codepoint;
+   } else if constexpr (C == codec::utf_16le) {
+       auto r = detail::utf16le_decode_one(current_, end_);
+       if (r.bytes_consumed == 0) { done_ = true; return; }
+       value_ = r.codepoint;
+   }
+   ```
+   Same pattern in `whatwg_decode_or_error_view` `load()`.
+
+4. **Add UTF-16 encode dispatch** in `whatwg_encode_view.hpp`
+   `load()` functions. Same buffer-pattern as UTF-8:
+   ```cpp
+   } else if constexpr (C == codec::utf_16be) {
+       auto r = detail::utf16be_encode_one(static_cast<char32_t>(*current_));
        ++current_;
        if (r.is_error) {
-           // substitute U+FFFD encoded as UTF-8: {0xEF, 0xBF, 0xBD}
-           buf_[0] = '\xEF'; buf_[1] = '\xBF'; buf_[2] = '\xBD';
-           len_ = 3;
+           // U+FFFD in UTF-16BE: 0xFF 0xFD
+           buf_[0] = '\xFF'; buf_[1] = '\xFD'; len_ = 2;
        } else {
            for (int i = 0; i < r.count; ++i) buf_[i] = r.bytes[i];
            len_ = r.count;
        }
        pos_ = 0;
-   }
    ```
 
-   And in `whatwg_encode_or_error_view::iterator::load()`:
-   ```cpp
-   } else if constexpr (C == codec::utf_8) {
-       auto r = detail::utf8_encode_one(static_cast<char32_t>(*current_));
-       ++current_;
-       if (r.is_error) {
-           buf_[0] = std::unexpected(r.error);
-           len_ = 1;
-       } else {
-           for (int i = 0; i < r.count; ++i)
-               buf_[i] = static_cast<char>(r.bytes[i]);
-           len_ = r.count;
-       }
-       pos_ = 0;
-   }
-   ```
+5. **Add `#include <beman/transcode/detail/utf16.hpp>`** to both
+   `whatwg_decode_view.hpp` and `whatwg_encode_view.hpp`.
 
-5. Add `detail/utf8_encode.hpp` to
-   `include/beman/transcode/CMakeLists.txt` HEADERS FILES list.
+6. **Add `detail/utf16.hpp`** to `include/beman/transcode/CMakeLists.txt`
+   HEADERS FILES list.
 
-6. Append UTF-8 tests to the existing test files:
-   - `whatwg_encode.test.cpp`: ASCII, 2-byte, 3-byte, 4-byte, surrogate
-     replaced with U+FFFD bytes, consteval
-   - `whatwg_encode_or_error.test.cpp`: surrogate → unexpected,
-     out-of-range → unexpected, valid codepoint → has_value()
+7. **Create test files** (new executables):
+   - `tests/beman/transcode/utf16_decode.test.cpp`
+   - `tests/beman/transcode/utf16_encode.test.cpp`
 
-7. Add negative compile test (`whatwg_encode_reject_char_range_fail.cpp`)
-   verifying that `vector<char>` is rejected as input because it does
-   not satisfy `unicode_scalar_range`. Register in
-   `tests/beman/transcode/CMakeLists.txt` with PASS_REGULAR_EXPRESSION.
+   Register in `tests/beman/transcode/CMakeLists.txt` (same pattern as
+   `whatwg_encode` / `whatwg_decode`).
 
-### Note on the `replacement` and `x_user_defined` encode codecs
+8. **Test cases to write:**
 
-Those three algorithmic codecs are NOT yet in the encode view's dispatch.
-Step 20 adds only `codec::utf_8`. The `replacement` and `x_user_defined`
-encode directions are deferred to a later step (or may be skipped as
-they are niche). Do not add them in step 20.
+   Decode:
+   - ASCII codepoint via UTF-16BE (`0x00 0x41` → `U'A'`)
+   - ASCII codepoint via UTF-16LE (`0x41 0x00` → `U'A'`)
+   - BMP non-ASCII via UTF-16BE/LE
+   - Surrogate pair → supplementary codepoint (UTF-16BE and LE)
+   - Lone surrogate → U+FFFD (non-error variant)
+   - Lone surrogate → `unexpected(surrogate_code_point)` (or_error variant)
+   - Input with odd byte count handled gracefully
+   - Pipe syntax: `span<byte> | whatwg_decode<codec::utf_16be>`
+   - Consteval test
+
+   Encode:
+   - BMP codepoint to UTF-16BE (2 bytes)
+   - BMP codepoint to UTF-16LE (2 bytes, swapped)
+   - Supplementary codepoint to UTF-16BE (4 bytes, surrogate pair)
+   - Supplementary codepoint to UTF-16LE (4 bytes, swapped)
+   - Surrogate → U+FFFD bytes (non-error variant)
+   - Surrogate → `unexpected(surrogate_code_point)` (or_error variant)
+   - Pipe syntax: `vector<char32_t> | whatwg_encode<codec::utf_16be>`
+   - Consteval test
+
+9. **Negative compile tests** (optional but preferred):
+   - `utf16_decode_reject_char32_range_fail.cpp` — `vector<char32_t>`
+     should fail as input to `whatwg_decode_view<codec::utf_16be>` (not
+     a `legacy_byte_range`)
+
+### Note on `whatwg_decode_or_error_view`
+
+The `or_error` decode view lives in the same file (`whatwg_decode_view.hpp`).
+Its `load()` also needs the UTF-16 dispatch arms, yielding
+`std::unexpected(whatwg_error::surrogate_code_point)` for lone surrogates.
+
+### Note on decode iterator byte-consumption design
+
+Look at `detail/utf8.hpp` to see the pattern for `utf8_decode_one`:
+it takes `I& current, S end` by reference, advances `current` by the
+bytes consumed, returns the decoded result. UTF-16 decode should follow
+the exact same pattern (advance `current` by 2 for BMP, 4 for surrogate
+pairs).
 
 ## Coding Rules (abbreviated)
 
@@ -216,21 +271,18 @@ make mypy      # mypy type check only
 
 ## TDD Process
 
-1. Branch: `git checkout -b step20-utf8-encoder`
+1. Branch: `git checkout -b step21-utf16`
 2. Write failing tests (RED) → commit → push both remotes
-3. Implement (GREEN): refactor iterator, `utf8_encode.hpp`,
-   add UTF-8 arms, add negative compile test
+3. Implement (GREEN): add enum values, `utf16.hpp`, dispatch arms,
+   update CMakeLists files
 4. `make test` (all pass) + `make lint` (clean) → commit → push both
-5. `make coverage` — new code should be covered; check `utf8_encode.hpp`
-   lines specifically
+5. `make coverage` — `utf16.hpp` should have good coverage
 6. Merge to main + push both
 7. Mark checklist `[x]`
 
 ## Coverage Notes
 
-- `utf8_encode.hpp` will have two dead-code lines: the `cp > 0x10FFFF`
-  guard after the F0–F4 lead-byte check, and the `extra==1 && cp < 0x80`
-  guard. These are defensive and unreachable. Do not add tests for them.
-  (Same situation as `utf8.hpp` in the decoder.)
-- All other lines in `utf8_encode.hpp` and the new iterator buffer logic
-  should be covered.
+- Both byte-order paths (BE and LE) should be covered.
+- Both BMP and surrogate-pair paths should be covered.
+- The lone-surrogate error path should be covered (or_error variant test).
+- Any truly defensive unreachable lines may be skipped; note them.
