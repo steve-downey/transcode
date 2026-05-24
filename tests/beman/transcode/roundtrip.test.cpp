@@ -216,8 +216,7 @@ TEST_CASE("shift_jis decode-then-encode: bytes from encoding", "[roundtrip::shif
 // EUC-JP
 // ---------------------------------------------------------------------------
 
-TEST_CASE("euc_jp encode-then-decode: ASCII, JIS X 0208, half-width katakana, JIS X 0212",
-          "[roundtrip::euc_jp]") {
+TEST_CASE("euc_jp encode-then-decode: ASCII, JIS X 0208, half-width katakana, JIS X 0212", "[roundtrip::euc_jp]") {
     // U+3000 -> 0xA1 0xA1 (JIS X 0208)
     // U+FF61 -> 0x8E 0xA1 (SS2 + half-width katakana)
     // U+02D8 -> 0x8F 0xA2 0xAF (SS3 + JIS X 0212)
