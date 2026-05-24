@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–25 complete. 289 C++ + 80 Python tests pass. On `main`.
+**Current state:** Steps 0–26 complete. 330 C++ + 91 Python tests pass. On `main`.
 
 ---
 
@@ -150,12 +150,12 @@ Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.
 
 ## Step 26: EUC-JP decode + encode (`step26-euc-jp`)
 
-- [ ] Create branch from `main`
-- [ ] Generate EUC-JP tables (JIS X 0208 + 0212)
-- [ ] Tests (RED → GREEN)
-- [ ] Implement decode + encode
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Generate EUC-JP tables (JIS X 0208 + 0212)
+- [x] Tests (RED → GREEN)
+- [x] Implement decode + encode
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ## Step 27: ISO-2022-JP decode + encode (`step27-iso-2022-jp`)
 
