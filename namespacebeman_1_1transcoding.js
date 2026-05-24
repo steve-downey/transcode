@@ -59,7 +59,8 @@ var namespacebeman_1_1transcoding =
       [ "big5", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaed8f9582ae6bae8870badee92f2e158c", null ],
       [ "shift_jis", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa4d845cd5636875635b0ffea37c56b4eb", null ],
       [ "euc_jp", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa75565a04b50fefc842397c1d3f700edd", null ],
-      [ "iso_2022_jp", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa1cb1e17468c4d59d51f3998f250c1b3f", null ]
+      [ "iso_2022_jp", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa1cb1e17468c4d59d51f3998f250c1b3f", null ],
+      [ "euc_kr", "namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa86c9996b17a77b9a0033b639a7018ebd", null ]
     ] ],
     [ "iconv_error", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730", [
       [ "invalid_sequence", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed", null ],

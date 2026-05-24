@@ -163,8 +163,8 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a39142c5c4da5d5eca07c119ed2292c25",
-"md_docs_C__29_Transcoding_Architecture.html#autotoc_md0",
-"utf8__encode_8hpp.html"
+"macintosh_8hpp_source.html",
+"transcode_8hpp_source.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

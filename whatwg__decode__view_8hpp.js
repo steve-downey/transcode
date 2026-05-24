@@ -45,7 +45,8 @@ var whatwg__decode__view_8hpp =
       [ "big5", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aaed8f9582ae6bae8870badee92f2e158c", null ],
       [ "shift_jis", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa4d845cd5636875635b0ffea37c56b4eb", null ],
       [ "euc_jp", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa75565a04b50fefc842397c1d3f700edd", null ],
-      [ "iso_2022_jp", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa1cb1e17468c4d59d51f3998f250c1b3f", null ]
+      [ "iso_2022_jp", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa1cb1e17468c4d59d51f3998f250c1b3f", null ],
+      [ "euc_kr", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa86c9996b17a77b9a0033b639a7018ebd", null ]
     ] ],
     [ "whatwg_decode", "whatwg__decode__view_8hpp.html#a73a91c92245e7a8b395fbf3e0334c063", null ],
     [ "whatwg_decode_or_error", "whatwg__decode__view_8hpp.html#ad15ffa8f43ff243d79c92bf31e8aefc2", null ]
