@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 28 (EUC-KR decode + encode)
+# Handoff: beman.transcode — Step 29 (Round-trip composition)
 
 ## Project
 
@@ -14,40 +14,26 @@ proposal.
 
 ## Current State
 
-**363 C++ tests + 91 Python tests pass** (`make test`). Steps 0–27
+**393 C++ tests + 102 Python tests pass** (`make test`). Steps 0–28
 complete. On `main`.
 
-### What Step 27 Built
+### What Step 28 Built
 
-Step 27 added ISO-2022-JP decode and encode — a **stateful** codec with
-escape-sequence-driven state transitions.
+Step 28 added EUC-KR (UHC/CP949) decode and encode — a **stateless**
+two-byte codec for Korean.
 
-Key design decisions that affect all future work:
+Key design decisions:
 
-- **Encode buffers resized** from `[4]` to `[8]` in both
-  `whatwg_encode_view::iterator` and `whatwg_encode_or_error_view::iterator`.
-  (ISO-2022-JP needs up to 5 bytes for ESC$B+lead+trail.)
+- **Table size**: `euc_kr[23940]` — `126 × 190 = 23940` entries.
+  The handoff document had an incorrect size of 17176; the correct
+  size is 23940 based on lead∈[0x81,0xFE] × trail∈[0x41,0xFE].
 
-- **State fields** added to all four iterator classes (always present,
-  zeroed for non-ISO-2022-JP codecs):
-  - Decode iterators: `int iso2022jp_state_{0}` and
-    `unsigned char iso2022jp_lead_{0}`
-  - Encode iterators: `int iso2022jp_state_{0}`
+- **0x7F skip**: In DECODE, `trail == 0x7F` is treated as invalid byte
+  (explicitly checked). In the decode pointer formula: `offset = trail >
+  0x7F ? 1 : 0; pointer = (lead-0x81)*190 + (trail-0x41) - offset`.
+  In ENCODE: `trail = i%190 + 0x41; if (trail >= 0x7F) ++trail;`
 
-- **Pre-dispatch end-of-stream guard** modified in both decode `load()`
-  functions: `if (!has_pending_ && iso2022jp_state_ < 2)` — states 2–6
-  fall through to the codec arm. This is safe for all other codecs since
-  `iso2022jp_state_` is always 0 for them.
-
-- **WHATWG ISO-2022-JP semantics**:
-  - ESC in Lead_Byte state: silent transition (no U+FFFD) per WHATWG
-  - End-of-stream in Lead_Byte state: U+FFFD (error) per WHATWG
-  - Encode end-of-stream in non-ASCII state: appends `ESC ( B`
-  - So encoding a single JIS0208 char like U+3000 produces 8 bytes total:
-    `1B 24 42 21 21 1B 28 42`
-
-- **No new table**: ISO-2022-JP reuses `tables::shift_jis[0..8835]`
-  (JIS X 0208 range, pointer = `(lead-0x21)*94 + (trail-0x21)`).
+- **No state fields** needed (EUC-KR is stateless, unlike ISO-2022-JP).
 
 ### Current codec enum (in `whatwg_decode_view.hpp`)
 
@@ -56,204 +42,113 @@ enum class codec {
     utf_8, replacement, x_user_defined,
     ibm866, iso_8859_2, ..., x_mac_cyrillic,
     utf_16be, utf_16le,
-    gbk, gb18030, big5, shift_jis, euc_jp,
-    iso_2022_jp,
-    // euc_kr NOT YET — step 28
+    gbk, gb18030, big5, shift_jis, euc_jp, iso_2022_jp,
+    euc_kr,
 };
 ```
 
-## What To Do Next — Step 28
+## What To Do Next — Step 29
 
-**Branch:** `step28-euc-kr`
+**Branch:** `step29-roundtrip`
 
 **Read the checklist:** `docs/plans/phase2-checklist.md`
 
 ### Overview
 
-EUC-KR is a **stateless** two-byte encoding for Korean. It is the
-simplest of the remaining codecs — no state machine. The WHATWG encoding
-includes the UHC extension (aka CP949).
+Step 29 adds **comprehensive round-trip tests**: for each bidirectional
+codec (all except `replacement` and `x_user_defined`), verify that
+encoding then decoding returns the original codepoints, and vice versa.
 
-WHATWG index: `docs/whatwg/index-euc-kr.txt` (already downloaded).
+### What round-trip means
 
-### Table structure
+For a codec like `windows_1252`:
+- Take a set of codepoints that are known to be in the codec's range.
+- Encode them: `cps | whatwg_encode<codec::windows_1252>` → bytes
+- Decode them back: `bytes | whatwg_decode<codec::windows_1252>` → cps2
+- Check: `cps == cps2`
 
-```
-pointer = (lead - 0x81) * 190 + (trail - 0x41)
-lead  in [0x81, 0xFE]   (126 values)
-trail in [0x41, 0xFE]   (190 values, but 0x7F excluded)
-```
+And the reverse:
+- Start with a known byte sequence.
+- Decode: bytes → cps
+- Encode back: cps → bytes2
+- Check: `bytes == bytes2`
 
-The WHATWG EUC-KR index has **17176 entries** (verify:
-`wc -l docs/whatwg/index-euc-kr.txt`). Some entries are 0 (unmapped).
+### Codecs to test (all bidirectional)
 
-### Step 1: Extend `tools/generate_tables.py`
+**Single-byte** (all share the same decode/encode infrastructure):
+- `windows_1252` (representative — already has unit tests)
+- Pick 2–3 more: `koi8_r`, `iso_8859_2`, `windows_1251`
 
-Add:
-- `EUC_KR_POINTER_COUNT = 17176`
-- `parse_euc_kr_index()`: reads `docs/whatwg/index-euc-kr.txt`
-- `render_euc_kr_hpp()`: generates
-  `include/beman/transcode/detail/tables/euc_kr.hpp`
-- `generate_euc_kr()`: orchestrate; call from `main()`
+**Multi-byte**:
+- `gbk` — round-trip a known 2-byte sequence (e.g., U+4E00 = 一)
+- `gb18030` — round-trip U+4E00 and a supplementary codepoint (U+1F600)
+- `big5` — round-trip U+4E00 and a Big5-specific char
+- `shift_jis` — round-trip U+3000 (IDEOGRAPHIC SPACE) and U+4E00
+- `euc_jp` — round-trip U+3000, U+FF61 (half-width katakana), U+02D8 (jis0212)
+- `iso_2022_jp` — round-trip U+3000 (stateful; special care needed)
+- `euc_kr` — round-trip U+AC00 (가) and U+AC02
+- `utf_8` — round-trip ASCII, BMP, and supplementary
+- `utf_16be` and `utf_16le` — round-trip ASCII, BMP, surrogate pair
 
-Guard: `INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_KR_HPP`
-Array: `inline constexpr char32_t euc_kr[17176] = { ... };`
+**Skip**: `replacement` (decode-only outputs U+FFFD), `x_user_defined`
+(passthrough for encode only).
 
-Also add tests to `tools/tests/test_generate.py`.
+### Test structure
 
-### Step 2: Create `include/beman/transcode/detail/euc_kr.hpp`
-
-```cpp
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_EUC_KR_HPP
-#define INCLUDE_BEMAN_TRANSCODE_DETAIL_EUC_KR_HPP
-
-#include <beman/transcode/detail/error.hpp>
-#include <beman/transcode/detail/tables/euc_kr.hpp>
-#include <iterator>
-
-namespace beman::transcoding::detail {
-
-struct euc_kr_decode_result {
-    char32_t     code_point{0xFFFD};
-    whatwg_error error{};
-    bool         is_error{false};
-};
-
-struct euc_kr_encode_result {
-    unsigned char bytes[2]{};
-    int           count{0};
-    bool          is_error{false};
-};
-
-template <std::input_iterator I, std::sentinel_for<I> S>
-constexpr euc_kr_decode_result euc_kr_decode_one(I& current, S end);
-
-constexpr euc_kr_encode_result euc_kr_encode_one(char32_t cp);
-
-// Out-of-line definitions follow...
-```
-
-**Decode algorithm**:
-```
-if current == end: return {0xFFFD, truncated_sequence, true}
-lead = *current++
-if lead < 0x80: return {char32_t(lead), {}, false}
-if lead < 0x81 or lead > 0xFE: return {0xFFFD, invalid_byte, true}
-if current == end: return {0xFFFD, truncated_sequence, true}
-trail = *current++
-if trail < 0x41 or trail > 0xFE or trail == 0x7F:
-    return {0xFFFD, invalid_byte, true}
-pointer = (lead - 0x81) * 190 + (trail - 0x41)
-cp = tables::euc_kr[pointer]
-if cp == 0: return {0xFFFD, invalid_byte, true}
-return {cp, {}, false}
-```
-
-**Encode algorithm**:
-```
-if cp < 0x80: return {cp, 1, false}
-for i in 0..17175:
-    if tables::euc_kr[i] == cp:
-        lead  = (i / 190) + 0x81
-        trail = (i % 190) + 0x41
-        if trail >= 0x7F: trail += 1  // skip DEL
-        return {{lead, trail}, 2, false}
-return {{}, 0, true}  // unmapped
-```
-
-### Step 3: Add `codec::euc_kr` to the enum
-
-In `whatwg_decode_view.hpp`, after `iso_2022_jp`:
-```cpp
-    iso_2022_jp,
-    euc_kr,
-```
-
-### Step 4: Add dispatch arms in both view headers
-
-In `whatwg_decode_view.hpp` (both `load()` functions):
-```cpp
-} else if constexpr (C == codec::euc_kr) {
-    auto r = detail::euc_kr_decode_one(current_, end_);
-    value_ = r.is_error ? U'\xFFFD' : r.code_point;
-```
-
-Or-error variant:
-```cpp
-} else if constexpr (C == codec::euc_kr) {
-    auto r = detail::euc_kr_decode_one(current_, end_);
-    if (r.is_error) value_ = std::unexpected(r.error);
-    else value_ = r.code_point;
-```
-
-In `whatwg_encode_view.hpp` (both `load()` functions):
-```cpp
-} else if constexpr (C == codec::euc_kr) {
-    auto r = detail::euc_kr_encode_one(static_cast<char32_t>(*current_));
-    ++current_;
-    if (r.is_error) { buf_[0] = '?'; len_ = 1; }
-    else {
-        for (int i = 0; i < r.count; ++i)
-            buf_[i] = static_cast<char>(r.bytes[i]);
-        len_ = r.count;
-    }
-    pos_ = 0;
-```
-
-Or-error variant replaces `'?'` with
-`std::unexpected(whatwg_error::unmapped_codepoint)`.
-
-### Step 5: Add includes
-
-In `whatwg_decode_view.hpp`:
-```cpp
-#include <beman/transcode/detail/euc_kr.hpp>
-```
-
-In `whatwg_encode_view.hpp`: same (or it comes via `whatwg_decode_view.hpp`).
-
-### Step 6: Test files
-
-Create `tests/beman/transcode/euc_kr_decode.test.cpp` and
-`tests/beman/transcode/euc_kr_encode.test.cpp`. Register both in
+Create `tests/beman/transcode/roundtrip.test.cpp`. Register in
 `tests/beman/transcode/CMakeLists.txt`.
 
-**Key test values** — verify by running:
-```bash
-python3 -c "
-lines = [l.strip() for l in open('docs/whatwg/index-euc-kr.txt') if l.strip() and not l.startswith('#')]
-for i, line in enumerate(lines):
-    parts = line.split()
-    if parts[1] == '0xAC00':
-        lead = (i // 190) + 0x81
-        trail_raw = (i % 190) + 0x41
-        trail = trail_raw if trail_raw < 0x7F else trail_raw + 1
-        print(f'U+AC00: pointer={i}, lead=0x{lead:02X}, trail=0x{trail:02X}')
-        break
-"
+Helper templates:
+```cpp
+template <codec C>
+std::vector<char32_t> encode_then_decode(std::vector<char32_t> cps) {
+    std::vector<char> bytes;
+    for (char b : cps | whatwg_encode<C>)
+        bytes.push_back(b);
+    std::vector<char32_t> result;
+    for (char32_t cp : bytes | whatwg_decode<C>)
+        result.push_back(cp);
+    return result;
+}
+
+template <codec C>
+std::vector<char> decode_then_encode(std::vector<char> bytes) {
+    std::vector<char32_t> cps;
+    for (char32_t cp : bytes | whatwg_decode<C>)
+        cps.push_back(cp);
+    std::vector<char> result;
+    for (char b : cps | whatwg_encode<C>)
+        result.push_back(b);
+    return result;
+}
 ```
 
-Then use those values in:
-- Decode test: `{lead_byte, trail_byte}` → U+AC00 (가)
-- Encode test: U+AC00 → `{lead_byte, trail_byte}`
+### Important caveats
 
-Standard test cases:
-- ASCII passthrough ('A' = 0x41 → U'A')
-- Korean syllable (verify exact bytes)
-- Unmapped pointer (find a zero entry in the table) → U+FFFD
-- Invalid lead byte 0x80 → U+FFFD
-- Invalid trail byte 0x7F → U+FFFD
-- Truncated sequence (lone lead byte) → U+FFFD
-- or_error variants for each error
-- Pipe syntax and consteval (ASCII only)
+- **ISO-2022-JP stateful encode**: encoding a JIS X 0208 codepoint
+  emits escape + lead + trail + `ESC ( B` (reset). So encoding U+3000
+  gives 8 bytes: `1B 24 42 21 21 1B 28 42`. Decoding those 8 bytes
+  gives [U+3000]. Round-trip works but bytes differ from what you might
+  expect. When testing decode→encode round-trip, start from the 8-byte
+  sequence (already reset), not just 2 bytes.
 
-### No changes needed to `tools/generate_tables.py` invocation
+- **replacement codec**: decode-only (outputs U+FFFD for every byte).
+  Skip round-trip.
 
-The `main()` function already calls `generate_euc_jp()` etc. Just add
-`generate_euc_kr()` to that list.
+- **x_user_defined**: decode maps 0x80–0xFF to U+F780–U+F7FF. Encode
+  maps U+F780–U+F7FF back to 0x80–0xFF. Round-trip for those works;
+  ASCII also round-trips.
 
-## Build Commands
+- **gb18030 supplementary**: gb18030 encodes all of Unicode. U+1F600
+  encodes to 4 bytes. The 4-byte decode/encode round-trip should work.
+
+### No new headers needed
+
+Step 29 is test-only. No new `.hpp` files. Just:
+1. `tests/beman/transcode/roundtrip.test.cpp`
+2. Update `tests/beman/transcode/CMakeLists.txt`
+
+### Build Commands
 
 ```bash
 make test      # build + run ALL tests: C++ (ctest) + Python (pytest)
@@ -265,10 +160,20 @@ make pytest    # Python tool tests only
 
 ## TDD Process
 
-1. Branch: `git checkout -b step28-euc-kr`
-2. Write failing tests (RED) → commit → push both remotes
-3. Implement (GREEN): generate table, create header, add enum + dispatch
-4. `make test` (all pass) + `make lint` (clean) → commit → push both
-5. `make coverage`
+1. Branch: `git checkout -b step29-roundtrip`
+2. Write failing tests (RED) — include `whatwg_encode` from
+   `whatwg_encode_view.hpp`, which already exists. Tests simply verify
+   round-trip invariants using the helpers above.
+3. Commit RED → push both remotes
+4. Since all codecs are already implemented, the tests should go GREEN
+   immediately after adding the `roundtrip.test.cpp` file and building.
+5. `make test` (all pass) + `make lint` (clean) → commit → push both
 6. Merge to main + push both
 7. Mark checklist `[x]`
+
+## Coding Rules (abbreviated)
+
+- Include guards: `INCLUDE_BEMAN_TRANSCODE_*_HPP` (path-based, uppercase)
+- Test files: include the primary header **twice** (idempotent check)
+- No `Co-Authored-By` trailers in commits
+- Full rules in `CLAUDE.md`

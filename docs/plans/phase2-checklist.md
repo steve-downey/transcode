@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–27 complete. 363 C++ + 91 Python tests pass. On `main`.
+**Current state:** Steps 0–28 complete. 393 C++ + 102 Python tests pass. On `main`.
 
 ---
 
@@ -169,12 +169,12 @@ Stateful encoding (escape sequences).
 
 ## Step 28: EUC-KR decode + encode (`step28-euc-kr`)
 
-- [ ] Create branch from `main`
-- [ ] Generate EUC-KR tables
-- [ ] Tests (RED → GREEN)
-- [ ] Implement decode + encode
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Generate EUC-KR tables
+- [x] Tests (RED → GREEN)
+- [x] Implement decode + encode
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ## Step 29: Round-trip composition (`step29-roundtrip`)
 
