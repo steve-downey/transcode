@@ -44,12 +44,13 @@ Mark items `[x]` as they complete. Read this file first when resuming work.
 
 - [ ] Create branch `step17-data-tooling` from `main`
 - [ ] Write `tools/download_indexes.py`
-- [ ] Download all WHATWG index files → `docs/whatwg-indexes/`
-- [ ] Write `docs/whatwg-indexes/PROVENANCE.md` (source, license, checksums)
-- [ ] Commit downloaded data + provenance
+- [ ] Download all WHATWG index files → `docs/whatwg/` (pristine)
+- [ ] Write `docs/whatwg/SOURCE.md` (provenance, license, checksums)
+- [ ] Write `docs/whatwg/source.bib` (BibTeX citation)
+- [ ] Commit pristine upstream data + provenance
 - [ ] Write `tools/generate_tables.py` (single-byte → .hpp + .bin)
-- [ ] Generate tables → `include/.../tables/generated/`
-- [ ] Commit generated files
+- [ ] Generate tables → `data/tables/`
+- [ ] Commit generated/derived data
 - [ ] `make test` + `make lint`
 - [ ] Push both remotes + merge to main
 
@@ -187,4 +188,6 @@ Comprehensive round-trip tests for all implemented codecs.
 - TDD convention: RED = `"step<N>: <desc> (RED)"`, GREEN = `"step<N>: <desc> (GREEN)"`
 - Push both remotes: `git push origin <branch> && git push bbgithub <branch>`
 - No `Co-Authored-By` trailers in this project
-- Downloaded WHATWG data: `docs/whatwg-indexes/` with PROVENANCE.md
+- Pristine upstream: `docs/whatwg/` (WHATWG), `docs/wpt/` (WPT) — each
+  with SOURCE.md (human-readable provenance) + source.bib (BibTeX)
+- Derived/processed data: `data/` (tables, test vectors, etc.)
