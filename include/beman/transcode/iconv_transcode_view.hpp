@@ -281,6 +281,30 @@ void iconv_transcode_view<IconvFns, R>::iterator::operator++(int) {
     ++*this;
 }
 
+// iconv_transcode_closure<IconvFns> — pipe adapter for iconv_transcode_view.
+//
+// Stores the callable set, encoding pair, and output buffer so that
+// operator| can construct the view lazily:
+//   auto v = input | iconv_transcode_closure<iconv_functions>{fns, "UTF-8", "UTF-32LE", buf};
+template <typename IconvFns>
+struct iconv_transcode_closure {
+    IconvFns        fns_;
+    const char*     from_;
+    const char*     to_;
+    std::span<char> buffer_;
+
+    template <legacy_byte_range R>
+    auto operator()(R&& r) const {
+        return iconv_transcode_view<IconvFns, std::views::all_t<R>>(
+            std::views::all(std::forward<R>(r)), fns_, from_, to_, buffer_);
+    }
+
+    template <legacy_byte_range R>
+    friend auto operator|(R&& r, const iconv_transcode_closure& self) {
+        return self(std::forward<R>(r));
+    }
+};
+
 } // namespace beman::transcoding
 
 #endif // INCLUDE_BEMAN_TRANSCODE_ICONV_TRANSCODE_VIEW_HPP
