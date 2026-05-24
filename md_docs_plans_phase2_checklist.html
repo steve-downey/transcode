@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–18 complete + coverage gaps addressed. 102 tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–19 complete. 116 C++ + 33 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -174,14 +174,15 @@ Step 18: All single-byte decoders (&lt;tt&gt;step18-all-single-byte-decode&lt;/t
 <p>(ISO-8859-8-I shares ISO-8859-8's table; counted as one codec pair.)</p>
 <h1><a class="anchor" id="autotoc_md15"></a>
 Step 19: Single-byte encoder infra + all encoders (&lt;tt&gt;step19-single-byte-encode&lt;/tt&gt;)</h1>
-<p>Reverse lookup: codepoint → byte. Needs <code>single_byte_encode_one()</code> + <code>whatwg_encode_view</code> dispatch for all 22 single-byte codecs.</p>
 <ul>
-<li>[ ] Create branch from <code>main</code></li>
-<li>[ ] Implement single-byte encoder infrastructure</li>
-<li>[ ] Add encode dispatch for all 22 single-byte codecs</li>
-<li>[ ] Tests (RED → GREEN)</li>
-<li>[ ] <code>make test</code> + <code>make lint</code></li>
-<li>[ ] Push both remotes + merge to main</li>
+<li>[x] Create branch from <code>main</code></li>
+<li>[x] Write failing tests (RED) + push both remotes</li>
+<li>[x] Add <code>unmapped_codepoint</code> to <code>whatwg_error</code> enum</li>
+<li>[x] Add <code>unicode_scalar_range</code> concept to <code><a class="el" href="concepts_8hpp.html">detail/concepts.hpp</a></code></li>
+<li>[x] Add <code>single_byte_encode_one()</code> to <code><a class="el" href="single__byte_8hpp.html">detail/single_byte.hpp</a></code></li>
+<li>[x] Create <code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code> (28 single-byte codec arms)</li>
+<li>[x] <code>make test</code> + <code>make lint</code> + <code>make coverage</code> (100% on new files)</li>
+<li>[x] Push both remotes + merge to main</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md16"></a>
 Step 20: UTF-8 encoder (&lt;tt&gt;step20-utf8-encoder&lt;/tt&gt;)</h1>
