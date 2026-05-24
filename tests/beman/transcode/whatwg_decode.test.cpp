@@ -178,10 +178,10 @@ TEST_CASE("whatwg_decode windows_1252 smart quotes", "[transcoding::whatwg_decod
     CHECK(collect(bytes | whatwg_decode<codec::windows_1252>) == std::vector<char32_t>{U'\x201C', U'\x201D'});
 }
 
-TEST_CASE("whatwg_decode windows_1252 undefined byte", "[transcoding::whatwg_decode]") {
-    // 0x81 is null/unmapped in windows-1252 per WHATWG
+TEST_CASE("whatwg_decode windows_1252 c1 control byte", "[transcoding::whatwg_decode]") {
+    // WHATWG maps 0x81 to U+0081 (C1 control); hand-written table had it as error.
     std::vector<char> bytes{'\x81'};
-    CHECK(collect(bytes | whatwg_decode<codec::windows_1252>) == std::vector<char32_t>{U'\xFFFD'});
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1252>) == std::vector<char32_t>{U'\x0081'});
 }
 
 TEST_CASE("whatwg_decode windows_1252 consteval", "[transcoding::whatwg_decode]") {

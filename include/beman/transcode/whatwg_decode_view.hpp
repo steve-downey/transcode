@@ -6,7 +6,33 @@
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/single_byte.hpp>
+#include <beman/transcode/detail/tables/ibm866.hpp>
+#include <beman/transcode/detail/tables/iso_8859_2.hpp>
+#include <beman/transcode/detail/tables/iso_8859_3.hpp>
+#include <beman/transcode/detail/tables/iso_8859_4.hpp>
+#include <beman/transcode/detail/tables/iso_8859_5.hpp>
+#include <beman/transcode/detail/tables/iso_8859_6.hpp>
+#include <beman/transcode/detail/tables/iso_8859_7.hpp>
+#include <beman/transcode/detail/tables/iso_8859_8.hpp>
+#include <beman/transcode/detail/tables/iso_8859_10.hpp>
+#include <beman/transcode/detail/tables/iso_8859_13.hpp>
+#include <beman/transcode/detail/tables/iso_8859_14.hpp>
+#include <beman/transcode/detail/tables/iso_8859_15.hpp>
+#include <beman/transcode/detail/tables/iso_8859_16.hpp>
+#include <beman/transcode/detail/tables/koi8_r.hpp>
+#include <beman/transcode/detail/tables/koi8_u.hpp>
+#include <beman/transcode/detail/tables/macintosh.hpp>
+#include <beman/transcode/detail/tables/windows_874.hpp>
+#include <beman/transcode/detail/tables/windows_1250.hpp>
+#include <beman/transcode/detail/tables/windows_1251.hpp>
 #include <beman/transcode/detail/tables/windows_1252.hpp>
+#include <beman/transcode/detail/tables/windows_1253.hpp>
+#include <beman/transcode/detail/tables/windows_1254.hpp>
+#include <beman/transcode/detail/tables/windows_1255.hpp>
+#include <beman/transcode/detail/tables/windows_1256.hpp>
+#include <beman/transcode/detail/tables/windows_1257.hpp>
+#include <beman/transcode/detail/tables/windows_1258.hpp>
+#include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
 #include <beman/transcode/detail/utf8.hpp>
 #include <beman/transcode/detail/x_user_defined.hpp>
 
@@ -16,7 +42,39 @@
 
 namespace beman::transcoding {
 
-enum class codec { utf_8, replacement, x_user_defined, windows_1252 };
+enum class codec {
+    utf_8,
+    replacement,
+    x_user_defined,
+    ibm866,
+    iso_8859_2,
+    iso_8859_3,
+    iso_8859_4,
+    iso_8859_5,
+    iso_8859_6,
+    iso_8859_7,
+    iso_8859_8,
+    iso_8859_8_i,
+    iso_8859_10,
+    iso_8859_13,
+    iso_8859_14,
+    iso_8859_15,
+    iso_8859_16,
+    koi8_r,
+    koi8_u,
+    macintosh,
+    windows_874,
+    windows_1250,
+    windows_1251,
+    windows_1252,
+    windows_1253,
+    windows_1254,
+    windows_1255,
+    windows_1256,
+    windows_1257,
+    windows_1258,
+    x_mac_cyrillic,
+};
 
 // ---------------------------------------------------------------------------
 // whatwg_decode_view — decodes bytes to char32_t, replacing errors with U+FFFD
@@ -193,8 +251,86 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
     } else if constexpr (C == codec::x_user_defined) {
         value_ = detail::x_user_defined_decode_one(current_, end_);
+    } else if constexpr (C == codec::ibm866) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::ibm866);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_2) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_2);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_3) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_3);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_4) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_4);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_5) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_5);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_6) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_6);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_7) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_7);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_8 || C == codec::iso_8859_8_i) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_8);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_10) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_10);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_13) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_13);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_14) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_14);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_15) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_15);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::iso_8859_16) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_16);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::koi8_r) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::koi8_r);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::koi8_u) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::koi8_u);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::macintosh) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::macintosh);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::windows_874) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_874);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::windows_1250) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1250);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::windows_1251) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1251);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
     } else if constexpr (C == codec::windows_1252) {
         auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1252);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::windows_1253) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1253);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::windows_1254) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1254);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::windows_1255) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1255);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::windows_1256) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1256);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::windows_1257) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1257);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::windows_1258) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1258);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::x_mac_cyrillic) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::x_mac_cyrillic);
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
     }
 }
@@ -278,8 +414,164 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
             value_ = r.code_point;
     } else if constexpr (C == codec::x_user_defined) {
         value_ = detail::x_user_defined_decode_one(current_, end_);
+    } else if constexpr (C == codec::ibm866) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::ibm866);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_2) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_2);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_3) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_3);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_4) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_4);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_5) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_5);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_6) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_6);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_7) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_7);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_8 || C == codec::iso_8859_8_i) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_8);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_10) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_10);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_13) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_13);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_14) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_14);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_15) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_15);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::iso_8859_16) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::iso_8859_16);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::koi8_r) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::koi8_r);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::koi8_u) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::koi8_u);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::macintosh) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::macintosh);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::windows_874) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_874);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::windows_1250) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1250);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::windows_1251) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1251);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
     } else if constexpr (C == codec::windows_1252) {
         auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1252);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::windows_1253) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1253);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::windows_1254) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1254);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::windows_1255) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1255);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::windows_1256) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1256);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::windows_1257) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1257);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::windows_1258) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1258);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
+    } else if constexpr (C == codec::x_mac_cyrillic) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::x_mac_cyrillic);
         if (r.is_error)
             value_ = std::unexpected(r.error);
         else
