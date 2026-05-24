@@ -232,3 +232,132 @@ TEST_CASE("whatwg_decode iso_8859_8_i shares iso_8859_8 table", "[transcoding::w
     auto              r8i = collect(bytes | whatwg_decode<codec::iso_8859_8_i>);
     CHECK(r8 == r8i);
 }
+
+// Step 18: smoke tests for remaining 21 single-byte codecs (one distinctive
+// high-byte mapping per codec to exercise the enum value and table lookup).
+
+TEST_CASE("whatwg_decode iso_8859_3 H-stroke", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+0126 (LATIN CAPITAL LETTER H WITH STROKE)
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_3>) == std::vector<char32_t>{U'\x0126'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_4 ogonek A", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+0104 (LATIN CAPITAL LETTER A WITH OGONEK)
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_4>) == std::vector<char32_t>{U'\x0104'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_5 cyrillic IO", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+0401 (CYRILLIC CAPITAL LETTER IO)
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_5>) == std::vector<char32_t>{U'\x0401'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_6 arabic hamza", "[transcoding::whatwg_decode]") {
+    // 0xC1 -> U+0621 (ARABIC LETTER HAMZA)
+    std::vector<char> bytes{'\xC1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_6>) == std::vector<char32_t>{U'\x0621'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_7 left single quote", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+2018 (LEFT SINGLE QUOTATION MARK)
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_7>) == std::vector<char32_t>{U'\x2018'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_10 ogonek A", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+0104 (LATIN CAPITAL LETTER A WITH OGONEK)
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_10>) == std::vector<char32_t>{U'\x0104'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_13 right double quote", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+201D (RIGHT DOUBLE QUOTATION MARK)
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_13>) == std::vector<char32_t>{U'\x201D'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_14 B-dot-above", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+1E02 (LATIN CAPITAL LETTER B WITH DOT ABOVE) — Welsh
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_14>) == std::vector<char32_t>{U'\x1E02'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_15 euro sign", "[transcoding::whatwg_decode]") {
+    // 0xA4 -> U+20AC (EURO SIGN) — differs from Latin-1's CURRENCY SIGN
+    std::vector<char> bytes{'\xA4'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_15>) == std::vector<char32_t>{U'\x20AC'});
+}
+
+TEST_CASE("whatwg_decode iso_8859_16 euro sign", "[transcoding::whatwg_decode]") {
+    // 0xA4 -> U+20AC (EURO SIGN)
+    std::vector<char> bytes{'\xA4'};
+    CHECK(collect(bytes | whatwg_decode<codec::iso_8859_16>) == std::vector<char32_t>{U'\x20AC'});
+}
+
+TEST_CASE("whatwg_decode koi8_u ukrainian IE", "[transcoding::whatwg_decode]") {
+    // 0xA4 -> U+0454 (CYRILLIC SMALL LETTER UKRAINIAN IE) — differs from koi8_r
+    std::vector<char> bytes{'\xA4'};
+    CHECK(collect(bytes | whatwg_decode<codec::koi8_u>) == std::vector<char32_t>{U'\x0454'});
+}
+
+TEST_CASE("whatwg_decode macintosh A-diaeresis", "[transcoding::whatwg_decode]") {
+    // 0x80 -> U+00C4 (LATIN CAPITAL LETTER A WITH DIAERESIS)
+    std::vector<char> bytes{'\x80'};
+    CHECK(collect(bytes | whatwg_decode<codec::macintosh>) == std::vector<char32_t>{U'\x00C4'});
+}
+
+TEST_CASE("whatwg_decode windows_874 thai ko kai", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+0E01 (THAI CHARACTER KO KAI)
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_874>) == std::vector<char32_t>{U'\x0E01'});
+}
+
+TEST_CASE("whatwg_decode windows_1251 cyrillic DJE", "[transcoding::whatwg_decode]") {
+    // 0x80 -> U+0402 (CYRILLIC CAPITAL LETTER DJE)
+    std::vector<char> bytes{'\x80'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1251>) == std::vector<char32_t>{U'\x0402'});
+}
+
+TEST_CASE("whatwg_decode windows_1253 greek dialytika tonos", "[transcoding::whatwg_decode]") {
+    // 0xA1 -> U+0385 (GREEK DIALYTIKA TONOS)
+    std::vector<char> bytes{'\xA1'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1253>) == std::vector<char32_t>{U'\x0385'});
+}
+
+TEST_CASE("whatwg_decode windows_1254 euro sign", "[transcoding::whatwg_decode]") {
+    // 0x80 -> U+20AC (EURO SIGN)
+    std::vector<char> bytes{'\x80'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1254>) == std::vector<char32_t>{U'\x20AC'});
+}
+
+TEST_CASE("whatwg_decode windows_1255 new sheqel", "[transcoding::whatwg_decode]") {
+    // 0xA4 -> U+20AA (NEW SHEQEL SIGN)
+    std::vector<char> bytes{'\xA4'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1255>) == std::vector<char32_t>{U'\x20AA'});
+}
+
+TEST_CASE("whatwg_decode windows_1256 arabic peh", "[transcoding::whatwg_decode]") {
+    // 0x81 -> U+067E (ARABIC LETTER PEH)
+    std::vector<char> bytes{'\x81'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1256>) == std::vector<char32_t>{U'\x067E'});
+}
+
+TEST_CASE("whatwg_decode windows_1257 euro sign", "[transcoding::whatwg_decode]") {
+    // 0x80 -> U+20AC (EURO SIGN)
+    std::vector<char> bytes{'\x80'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1257>) == std::vector<char32_t>{U'\x20AC'});
+}
+
+TEST_CASE("whatwg_decode windows_1258 euro sign", "[transcoding::whatwg_decode]") {
+    // 0x80 -> U+20AC (EURO SIGN)
+    std::vector<char> bytes{'\x80'};
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1258>) == std::vector<char32_t>{U'\x20AC'});
+}
+
+TEST_CASE("whatwg_decode x_mac_cyrillic cyrillic A", "[transcoding::whatwg_decode]") {
+    // 0x80 -> U+0410 (CYRILLIC CAPITAL LETTER A)
+    std::vector<char> bytes{'\x80'};
+    CHECK(collect(bytes | whatwg_decode<codec::x_mac_cyrillic>) == std::vector<char32_t>{U'\x0410'});
+}
