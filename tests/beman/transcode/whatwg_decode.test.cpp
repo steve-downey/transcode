@@ -105,3 +105,32 @@ TEST_CASE("whatwg_decode consteval 2-byte", "[transcoding::whatwg_decode]") {
     };
     CHECK(constify(decode_two_byte()) == U'é');
 }
+
+// Step 14: codec::replacement tests
+
+TEST_CASE("whatwg_decode replacement empty input", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{};
+    CHECK(collect(bytes | whatwg_decode<codec::replacement>).empty());
+}
+
+TEST_CASE("whatwg_decode replacement single byte", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'X'};
+    CHECK(collect(bytes | whatwg_decode<codec::replacement>) == std::vector<char32_t>{U'\xFFFD'});
+}
+
+TEST_CASE("whatwg_decode replacement multiple bytes yields one U+FFFD", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'H', 'e', 'l', 'l', 'o'};
+    auto              result = collect(bytes | whatwg_decode<codec::replacement>);
+    REQUIRE(result.size() == 1);
+    CHECK(result[0] == U'\xFFFD');
+}
+
+TEST_CASE("whatwg_decode replacement consteval", "[transcoding::whatwg_decode]") {
+    using beman::transcoding::tests::constify;
+    constexpr auto decode_replacement = []() consteval {
+        constexpr char        bytes[] = {'a', 'b', 'c'};
+        std::span<const char> sp(bytes, 3);
+        return *(sp | whatwg_decode<codec::replacement>).begin();
+    };
+    CHECK(constify(decode_replacement()) == U'\xFFFD');
+}

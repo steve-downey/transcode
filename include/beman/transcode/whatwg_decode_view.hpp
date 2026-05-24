@@ -13,7 +13,7 @@
 
 namespace beman::transcoding {
 
-enum class codec { utf_8 };
+enum class codec { utf_8, replacement };
 
 // ---------------------------------------------------------------------------
 // whatwg_decode_view — decodes bytes to char32_t, replacing errors with U+FFFD
