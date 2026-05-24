@@ -189,6 +189,8 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::utf_8) {
         auto r = detail::utf8_decode_one(current_, end_);
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
+    } else if constexpr (C == codec::x_user_defined) {
+        value_ = detail::x_user_defined_decode_one(current_, end_);
     }
 }
 
@@ -269,6 +271,8 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
             value_ = std::unexpected(r.error);
         else
             value_ = r.code_point;
+    } else if constexpr (C == codec::x_user_defined) {
+        value_ = detail::x_user_defined_decode_one(current_, end_);
     }
 }
 
