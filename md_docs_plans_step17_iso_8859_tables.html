@@ -192,13 +192,36 @@ Provenance: &lt;tt&gt;docs/whatwg/source.bib&lt;/tt&gt;</h1>
 <div class="line">  license      = {CC-BY-4.0 and BSD-3-Clause}</div>
 <div class="line">}</div>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md77"></a>
+Python Quality Requirements</h1>
+<p>The <code>tools/</code> scripts are adjunct code but must be production quality.</p>
+<p><b>Type annotations:</b> Full type hints on all functions and module-level variables. No <code>Any</code> escape hatches unless genuinely needed.</p>
+<p><b>Testing:</b> Unit tests in <code>tools/tests/</code> using <code>pytest</code>. Cover parsing logic, table generation correctness (spot-check known mappings), and provenance output format. Tests run via <code>uv run pytest tools/tests/</code>.</p>
+<p><b>Formatting + linting:</b> <code>ruff</code> for formatting and linting. Add a <code>[tool.ruff]</code> section to <code>pyproject.toml</code>. Add a ruff pre-commit hook to <code>.pre-commit-config.yaml</code>.</p>
+<p><b>Type checking:</b> <code>mypy</code> in strict mode. Add <code>[tool.mypy]</code> to <code>pyproject.toml</code>. Add mypy to the dev dependency group.</p>
+<p><b>Dev dependencies to add to <code>pyproject.toml</code> <code>[dependency-groups]</code>:</b></p>
+<div class="fragment"><div class="line">[dependency-groups]</div>
+<div class="line">dev = [</div>
+<div class="line">  # ... existing entries ...</div>
+<div class="line">  &quot;mypy&gt;=1.15&quot;,</div>
+<div class="line">  &quot;pytest&gt;=8.0&quot;,</div>
+<div class="line">  &quot;ruff&gt;=0.11&quot;,</div>
+<div class="line">]</div>
+</div><!-- fragment --><p><b>Pre-commit hooks to add to <code>.pre-commit-config.yaml</code>:</b></p>
+<div class="fragment"><div class="line">- repo: https://github.com/astral-sh/ruff-pre-commit</div>
+<div class="line">  rev: v0.11.13</div>
+<div class="line">  hooks:</div>
+<div class="line">  - id: ruff</div>
+<div class="line">    args: [--fix]</div>
+<div class="line">  - id: ruff-format</div>
+</div><!-- fragment --><p><b>Verification:</b> <code>make lint</code> must pass with the new hooks active. <code>uv run pytest tools/tests/</code> must pass. <code>uv run mypy tools/</code> must pass.</p>
+<h1><a class="anchor" id="autotoc_md78"></a>
 Deliverables</h1>
-<h2><a class="anchor" id="autotoc_md78"></a>
-Script: &lt;tt&gt;tools/download_indexes.py&lt;/tt&gt;</h2>
-<p>Python script (stdlib only) that downloads all WHATWG index files into <code>docs/whatwg/</code>. Idempotent — checks SHA-256 before re-downloading. Generates/updates <code>SOURCE.md</code> and <code>source.bib</code> with checksums and download date.</p>
 <h2><a class="anchor" id="autotoc_md79"></a>
+Script: &lt;tt&gt;tools/download_indexes.py&lt;/tt&gt;</h2>
+<p>Typed Python script (stdlib only for runtime deps) that downloads all WHATWG index files into <code>docs/whatwg/</code>. Idempotent — checks SHA-256 before re-downloading. Generates/updates <code>SOURCE.md</code> and <code>source.bib</code> with checksums and download date.</p>
+<h2><a class="anchor" id="autotoc_md80"></a>
 Script: &lt;tt&gt;tools/generate_tables.py&lt;/tt&gt;</h2>
-<p>Python script (stdlib only) that:</p>
+<p>Typed Python script (stdlib only for runtime deps) that:</p>
 <ol type="1">
 <li>Reads <code>docs/whatwg/index-*.txt</code> files</li>
 <li>For single-byte codecs: emits a 128-entry binary file (128 × 4 bytes, little-endian uint32 per codepoint, 0 = unmapped)</li>
@@ -206,7 +229,16 @@ Script: &lt;tt&gt;tools/generate_tables.py&lt;/tt&gt;</h2>
 <li>Generates C++ header fallbacks (constexpr arrays) for compilers without <code>#embed</code></li>
 </ol>
 <p>Output directory: <code>data/tables/</code></p>
-<h2><a class="anchor" id="autotoc_md80"></a>
+<h2><a class="anchor" id="autotoc_md81"></a>
+Tests: &lt;tt&gt;tools/tests/&lt;/tt&gt;</h2>
+<p>Pytest tests for both scripts. At minimum:</p>
+<ul>
+<li>Parsing a sample WHATWG index-*.txt file produces correct table</li>
+<li>Known mappings spot-checked (e.g., windows-1252 0x80 → U+20AC)</li>
+<li>Generated .hpp content is syntactically valid</li>
+<li>SOURCE.md includes required provenance fields</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md82"></a>
 Generated files (single-byte, 22 total)</h2>
 <p>Each codec gets a <code>.bin</code> (for future <code>#embed</code>) and a <code>.hpp</code> (constexpr array fallback). The <code>.hpp</code> files are included from <code>include/beman/transcode/detail/tables/</code> which will contain thin wrappers or direct includes of the generated data.</p>
 <div class="fragment"><div class="line"><span class="comment">// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span></div>
@@ -223,33 +255,44 @@ Generated files (single-byte, 22 total)</h2>
 <div class="line">} <span class="comment">// namespace beman::transcoding::detail::tables</span></div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#endif</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md81"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md83"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>step17-data-tooling</code> from <code>main</code></li>
-<li>Write <code>tools/download_indexes.py</code> — fetch all index files</li>
-<li>Run it → creates <code>docs/whatwg/</code> with pristine data + SOURCE.md + source.bib</li>
-<li>Commit the downloaded data + provenance</li>
-<li>Write <code>tools/generate_tables.py</code> — parse single-byte indexes, emit <code>.hpp</code> + <code>.bin</code> into <code>data/tables/</code></li>
-<li>Run it → populates <code>data/tables/</code></li>
-<li>Commit generated files</li>
-<li><code>make test</code> — all existing tests still pass (no runtime changes)</li>
-<li><code>make lint</code> — clean</li>
+<li>Add ruff, mypy, pytest to <code>pyproject.toml</code> dev deps</li>
+<li>Add ruff pre-commit hook to <code>.pre-commit-config.yaml</code></li>
+<li>Add <code>[tool.ruff]</code> and <code>[tool.mypy]</code> sections to <code>pyproject.toml</code></li>
+<li>Write <code>tools/download_indexes.py</code> — typed, fetch all index files</li>
+<li>Write <code>tools/tests/test_download.py</code></li>
+<li>Run download script → creates <code>docs/whatwg/</code> with pristine data + SOURCE.md + source.bib</li>
+<li>Commit the downloaded data + provenance + script + tests</li>
+<li>Write <code>tools/generate_tables.py</code> — typed, parse indexes, emit <code>.hpp</code> + <code>.bin</code> into <code>data/tables/</code></li>
+<li>Write <code>tools/tests/test_generate.py</code></li>
+<li>Run generate script → populates <code>data/tables/</code></li>
+<li>Commit generated files + script + tests</li>
+<li><code>uv run pytest tools/tests/</code> — all pass</li>
+<li><code>uv run mypy tools/</code> — clean</li>
+<li><code>make test</code> — all existing C++ tests still pass</li>
+<li><code>make lint</code> — clean (including new ruff hooks)</li>
 <li>Push both remotes</li>
 <li>Merge to main</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md82"></a>
+<h1><a class="anchor" id="autotoc_md84"></a>
 Verification</h1>
-<div class="fragment"><div class="line"># Scripts run without error</div>
+<div class="fragment"><div class="line"># Python quality</div>
+<div class="line">uv run pytest tools/tests/</div>
+<div class="line">uv run mypy tools/</div>
+<div class="line"> </div>
+<div class="line"># Scripts produce output</div>
 <div class="line">uv run tools/download_indexes.py</div>
 <div class="line">uv run tools/generate_tables.py</div>
 <div class="line"> </div>
-<div class="line"># Existing tests still pass (no runtime changes)</div>
+<div class="line"># C++ tests still pass (no runtime changes)</div>
 <div class="line">make test</div>
 <div class="line"> </div>
-<div class="line"># Generated files pass lint</div>
+<div class="line"># All lint (C++ + Python) passes</div>
 <div class="line">make lint</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md83"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md85"></a>
 Notes</h1>
 <ul>
 <li>The hand-written <code><a class="el" href="windows__1252_8hpp.html">detail/tables/windows_1252.hpp</a></code> from step 16 will be superseded by the generated version in step 18. Keep it for now; step 18 will replace it.</li>

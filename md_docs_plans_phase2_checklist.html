@@ -143,15 +143,19 @@ Step 16: Single-byte infra + &lt;tt&gt;windows_1252&lt;/tt&gt; (&lt;tt&gt;step16
 Step 17: Data tooling (&lt;tt&gt;step17-data-tooling&lt;/tt&gt;)</h1>
 <ul>
 <li>[ ] Create branch <code>step17-data-tooling</code> from <code>main</code></li>
-<li>[ ] Write <code>tools/download_indexes.py</code></li>
+<li>[ ] Add ruff, mypy, pytest to pyproject.toml + pre-commit config</li>
+<li>[ ] Write <code>tools/download_indexes.py</code> (typed, stdlib only)</li>
+<li>[ ] Write <code>tools/tests/test_download.py</code></li>
 <li>[ ] Download all WHATWG index files → <code>docs/whatwg/</code> (pristine)</li>
 <li>[ ] Write <code>docs/whatwg/SOURCE.md</code> (provenance, license, checksums)</li>
 <li>[ ] Write <code>docs/whatwg/source.bib</code> (BibTeX citation)</li>
-<li>[ ] Commit pristine upstream data + provenance</li>
-<li>[ ] Write <code>tools/generate_tables.py</code> (single-byte → .hpp + .bin)</li>
+<li>[ ] Commit pristine upstream data + provenance + script + tests</li>
+<li>[ ] Write <code>tools/generate_tables.py</code> (typed, stdlib only)</li>
+<li>[ ] Write <code>tools/tests/test_generate.py</code></li>
 <li>[ ] Generate tables → <code>data/tables/</code></li>
-<li>[ ] Commit generated/derived data</li>
-<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Commit generated/derived data + script + tests</li>
+<li>[ ] <code>uv run pytest tools/tests/</code> + <code>uv run mypy tools/</code></li>
+<li>[ ] <code>make test</code> + <code>make lint</code> (includes ruff)</li>
 <li>[ ] Push both remotes + merge to main</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md14"></a>
