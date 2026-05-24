@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–19 complete. 116 C++ + 33 Python tests pass. On `main`.
+**Current state:** Steps 0–20 complete. 128 C++ + 33 Python tests pass. On `main`.
 
 ---
 
@@ -95,12 +95,12 @@ x-mac-cyrillic.
 
 ## Step 20: UTF-8 encoder (`step20-utf8-encoder`)
 
-- [ ] Create branch from `main`
-- [ ] Write failing tests + negative compile test (RED)
-- [ ] Implement `detail/utf8_encode.hpp` + `whatwg_encode_view.hpp`
-- [ ] Add `unicode_scalar_range` concept
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Write failing tests + negative compile test (RED)
+- [x] Implement `detail/utf8_encode.hpp` + `whatwg_encode_view.hpp`
+- [x] Add `unicode_scalar_range` concept
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
 
 ## Step 21: UTF-16 decode + encode (`step21-utf16`)
 
