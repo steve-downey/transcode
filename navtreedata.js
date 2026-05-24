@@ -105,15 +105,21 @@ var NAVTREE =
         [ "Multi-byte indexes", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md69", null ],
         [ "Metadata", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md70", null ]
       ] ],
-      [ "Deliverables", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md71", [
-        [ "Directory: <tt>docs/whatwg-indexes/</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md72", null ],
-        [ "Script: <tt>tools/download_indexes.py</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md73", null ],
-        [ "Script: <tt>tools/generate_tables.py</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md74", null ],
-        [ "Generated files (single-byte, 22 total)", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md75", null ]
+      [ "Directory Layout", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md71", [
+        [ "<tt>docs/whatwg/</tt> — pristine upstream data", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md72", null ],
+        [ "<tt>docs/wpt/</tt> — Web Platform Tests (future)", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md73", null ],
+        [ "<tt>data/</tt> — our derived/processed artifacts", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md74", null ]
       ] ],
-      [ "Procedure", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md76", null ],
-      [ "Verification", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md77", null ],
-      [ "Notes", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md78", null ]
+      [ "Provenance: <tt>docs/whatwg/SOURCE.md</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md75", null ],
+      [ "Provenance: <tt>docs/whatwg/source.bib</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md76", null ],
+      [ "Deliverables", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md77", [
+        [ "Script: <tt>tools/download_indexes.py</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md78", null ],
+        [ "Script: <tt>tools/generate_tables.py</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md79", null ],
+        [ "Generated files (single-byte, 22 total)", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md80", null ]
+      ] ],
+      [ "Procedure", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md81", null ],
+      [ "Verification", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md82", null ],
+      [ "Notes", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md83", null ]
     ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
@@ -150,7 +156,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ac6fbf2fab89e3b57337f233d67ba7bcf"
+"classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ac6fbf2fab89e3b57337f233d67ba7bcf",
+"windows__1252_8hpp_source.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
