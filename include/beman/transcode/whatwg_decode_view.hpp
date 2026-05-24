@@ -5,6 +5,8 @@
 
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
+#include <beman/transcode/detail/single_byte.hpp>
+#include <beman/transcode/detail/tables/windows_1252.hpp>
 #include <beman/transcode/detail/utf8.hpp>
 #include <beman/transcode/detail/x_user_defined.hpp>
 
@@ -14,7 +16,7 @@
 
 namespace beman::transcoding {
 
-enum class codec { utf_8, replacement, x_user_defined };
+enum class codec { utf_8, replacement, x_user_defined, windows_1252 };
 
 // ---------------------------------------------------------------------------
 // whatwg_decode_view — decodes bytes to char32_t, replacing errors with U+FFFD
@@ -191,6 +193,9 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
     } else if constexpr (C == codec::x_user_defined) {
         value_ = detail::x_user_defined_decode_one(current_, end_);
+    } else if constexpr (C == codec::windows_1252) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1252);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
     }
 }
 
@@ -273,6 +278,12 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
             value_ = r.code_point;
     } else if constexpr (C == codec::x_user_defined) {
         value_ = detail::x_user_defined_decode_one(current_, end_);
+    } else if constexpr (C == codec::windows_1252) {
+        auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1252);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
     }
 }
 

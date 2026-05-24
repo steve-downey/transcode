@@ -175,8 +175,7 @@ TEST_CASE("whatwg_decode windows_1252 euro sign", "[transcoding::whatwg_decode]"
 
 TEST_CASE("whatwg_decode windows_1252 smart quotes", "[transcoding::whatwg_decode]") {
     std::vector<char> bytes{'\x93', '\x94'};
-    CHECK(collect(bytes | whatwg_decode<codec::windows_1252>) ==
-          std::vector<char32_t>{U'\x201C', U'\x201D'});
+    CHECK(collect(bytes | whatwg_decode<codec::windows_1252>) == std::vector<char32_t>{U'\x201C', U'\x201D'});
 }
 
 TEST_CASE("whatwg_decode windows_1252 undefined byte", "[transcoding::whatwg_decode]") {
