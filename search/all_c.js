@@ -1,9 +1,10 @@
 var searchData=
 [
-  ['phase_202_20progress_20checklist_0',['Phase 2 Progress Checklist',['../md_docs_plans_phase2_checklist.html',1,'']]],
-  ['phase_202_3a_20full_20whatwg_20codec_20implementation_1',['Phase 2: Full WHATWG Codec Implementation',['../md_docs_plans_phase2_index.html',1,'']]],
-  ['phase2_2dchecklist_2emd_2',['phase2-checklist.md',['../phase2-checklist_8md.html',1,'']]],
-  ['phase2_2dindex_2emd_3',['phase2-index.md',['../phase2-index_8md.html',1,'']]],
-  ['pos_5f_4',['pos_',['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a8abab988e792b224bbacee0bc64e9ab1',1,'beman::transcoding::whatwg_encode_view::iterator::pos_()'],['../classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a0a94ee341cdcfb5e5bb1469412321856',1,'beman::transcoding::whatwg_encode_or_error_view::iterator::pos_()']]],
-  ['ptr_5f_5',['ptr_',['../classbeman_1_1transcoding_1_1null__term__view.html#a4769d0a29f6f92f8c5cd0cb13e7e0c2f',1,'beman::transcoding::null_term_view']]]
+  ['pending_5f_0',['pending_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#abf9b012597542a2de9ab54744246e296',1,'beman::transcoding::whatwg_decode_view::iterator::pending_()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ac4afabd054e7ef0c645a493b20562ca8',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::pending_()']]],
+  ['phase_202_20progress_20checklist_1',['Phase 2 Progress Checklist',['../md_docs_plans_phase2_checklist.html',1,'']]],
+  ['phase_202_3a_20full_20whatwg_20codec_20implementation_2',['Phase 2: Full WHATWG Codec Implementation',['../md_docs_plans_phase2_index.html',1,'']]],
+  ['phase2_2dchecklist_2emd_3',['phase2-checklist.md',['../phase2-checklist_8md.html',1,'']]],
+  ['phase2_2dindex_2emd_4',['phase2-index.md',['../phase2-index_8md.html',1,'']]],
+  ['pos_5f_5',['pos_',['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a8abab988e792b224bbacee0bc64e9ab1',1,'beman::transcoding::whatwg_encode_view::iterator::pos_()'],['../classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a0a94ee341cdcfb5e5bb1469412321856',1,'beman::transcoding::whatwg_encode_or_error_view::iterator::pos_()']]],
+  ['ptr_5f_6',['ptr_',['../classbeman_1_1transcoding_1_1null__term__view.html#a4769d0a29f6f92f8c5cd0cb13e7e0c2f',1,'beman::transcoding::null_term_view']]]
 ];

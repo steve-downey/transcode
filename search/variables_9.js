@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['pos_5f_0',['pos_',['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a8abab988e792b224bbacee0bc64e9ab1',1,'beman::transcoding::whatwg_encode_view::iterator::pos_()'],['../classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a0a94ee341cdcfb5e5bb1469412321856',1,'beman::transcoding::whatwg_encode_or_error_view::iterator::pos_()']]],
-  ['ptr_5f_1',['ptr_',['../classbeman_1_1transcoding_1_1null__term__view.html#a4769d0a29f6f92f8c5cd0cb13e7e0c2f',1,'beman::transcoding::null_term_view']]]
+  ['pending_5f_0',['pending_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#abf9b012597542a2de9ab54744246e296',1,'beman::transcoding::whatwg_decode_view::iterator::pending_()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ac4afabd054e7ef0c645a493b20562ca8',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::pending_()']]],
+  ['pos_5f_1',['pos_',['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a8abab988e792b224bbacee0bc64e9ab1',1,'beman::transcoding::whatwg_encode_view::iterator::pos_()'],['../classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a0a94ee341cdcfb5e5bb1469412321856',1,'beman::transcoding::whatwg_encode_or_error_view::iterator::pos_()']]],
+  ['ptr_5f_2',['ptr_',['../classbeman_1_1transcoding_1_1null__term__view.html#a4769d0a29f6f92f8c5cd0cb13e7e0c2f',1,'beman::transcoding::null_term_view']]]
 ];
