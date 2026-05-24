@@ -221,8 +221,8 @@ $(document).ready(function(){initNavTree('gb18030_8hpp_source.html',''); initRes
 <div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>        <span class="keywordflow">if</span> (fourth &lt; 0x30 || fourth &gt; 0x39)</div>
 <div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>            <span class="keywordflow">return</span> {{}, <a class="code hl_enumvalue" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0">whatwg_error::invalid_byte</a>, <span class="keyword">true</span>};</div>
 <div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span> </div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>        std::uint32_t pointer = ((lead - 0x81u) * 10u + (second - 0x30u)) * 126u * 10u +</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>                                (third - 0x81u) * 10u + (fourth - 0x30u);</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>        std::uint32_t pointer =</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>            ((lead - 0x81u) * 10u + (second - 0x30u)) * 126u * 10u + (third - 0x81u) * 10u + (fourth - 0x30u);</div>
 <div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>        <span class="keywordtype">char32_t</span> cp = gb18030_ranges_decode(pointer);</div>
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>        <span class="keywordflow">return</span> {cp, {}, <span class="keyword">false</span>};</div>
 <div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>    }</div>

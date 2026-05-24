@@ -200,9 +200,9 @@ $(document).ready(function(){initNavTree('big5_8hpp_source.html',''); initResiza
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 19782; ++i) {</div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>        <span class="keywordflow">if</span> (tables::big5[i] == cp) {</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>            <span class="keywordtype">int</span> lead   = i / 157 + 0x81;</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>            <span class="keywordtype">int</span> offset = i % 157;</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>            <span class="keywordtype">int</span> trail  = (offset &lt; 63) ? offset + 0x40 : offset + 0x62;</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>            <span class="keywordtype">int</span>                lead   = i / 157 + 0x81;</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>            <span class="keywordtype">int</span>                offset = i % 157;</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>            <span class="keywordtype">int</span>                trail  = (offset &lt; 63) ? offset + 0x40 : offset + 0x62;</div>
 <div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>            big5_encode_result r{};</div>
 <div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>            r.bytes[0] = <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span> <span class="keywordtype">char</span><span class="keyword">&gt;</span>(lead);</div>
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>            r.bytes[1] = <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span> <span class="keywordtype">char</span><span class="keyword">&gt;</span>(trail);</div>
