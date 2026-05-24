@@ -142,9 +142,9 @@ constexpr utf16_encode_result utf16be_encode_one(char32_t cp) {
         return r;
     }
     // Supplementary plane
-    char32_t offset = cp - 0x10000;
-    auto     high   = static_cast<char16_t>(0xD800 + (offset >> 10));
-    auto     low    = static_cast<char16_t>(0xDC00 + (offset & 0x3FF));
+    char32_t            offset = cp - 0x10000;
+    auto                high   = static_cast<char16_t>(0xD800 + (offset >> 10));
+    auto                low    = static_cast<char16_t>(0xDC00 + (offset & 0x3FF));
     utf16_encode_result r{};
     r.bytes[0] = static_cast<char>((high >> 8) & 0xFF);
     r.bytes[1] = static_cast<char>(high & 0xFF);
@@ -164,9 +164,9 @@ constexpr utf16_encode_result utf16le_encode_one(char32_t cp) {
         r.count    = 2;
         return r;
     }
-    char32_t offset = cp - 0x10000;
-    auto     high   = static_cast<char16_t>(0xD800 + (offset >> 10));
-    auto     low    = static_cast<char16_t>(0xDC00 + (offset & 0x3FF));
+    char32_t            offset = cp - 0x10000;
+    auto                high   = static_cast<char16_t>(0xD800 + (offset >> 10));
+    auto                low    = static_cast<char16_t>(0xDC00 + (offset & 0x3FF));
     utf16_encode_result r{};
     r.bytes[0] = static_cast<char>(high & 0xFF);
     r.bytes[1] = static_cast<char>((high >> 8) & 0xFF);
