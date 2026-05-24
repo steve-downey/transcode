@@ -5,6 +5,7 @@
 
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
+#include <beman/transcode/detail/gbk.hpp>
 #include <beman/transcode/detail/single_byte.hpp>
 #include <beman/transcode/detail/utf8_encode.hpp>
 #include <beman/transcode/detail/utf16.hpp>
@@ -311,6 +312,18 @@ constexpr void whatwg_encode_view<C, R>::iterator::load() {
             len_ = r.count;
         }
         pos_ = 0;
+    } else if constexpr (C == codec::gbk) {
+        auto r = detail::gbk_encode_one(static_cast<char32_t>(*current_));
+        ++current_;
+        if (r.is_error) {
+            buf_[0] = '?';
+            len_    = 1;
+        } else {
+            for (int i = 0; i < r.count; ++i)
+                buf_[i] = static_cast<char>(r.bytes[i]);
+            len_ = r.count;
+        }
+        pos_ = 0;
     }
 }
 
@@ -475,6 +488,18 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         ++current_;
         if (r.is_error) {
             buf_[0] = std::unexpected(whatwg_error::surrogate_code_point);
+            len_    = 1;
+        } else {
+            for (int i = 0; i < r.count; ++i)
+                buf_[i] = static_cast<char>(r.bytes[i]);
+            len_ = r.count;
+        }
+        pos_ = 0;
+    } else if constexpr (C == codec::gbk) {
+        auto r = detail::gbk_encode_one(static_cast<char32_t>(*current_));
+        ++current_;
+        if (r.is_error) {
+            buf_[0] = std::unexpected(whatwg_error::unmapped_codepoint);
             len_    = 1;
         } else {
             for (int i = 0; i < r.count; ++i)

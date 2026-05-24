@@ -33,6 +33,7 @@
 #include <beman/transcode/detail/tables/windows_1257.hpp>
 #include <beman/transcode/detail/tables/windows_1258.hpp>
 #include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
+#include <beman/transcode/detail/gbk.hpp>
 #include <beman/transcode/detail/utf8.hpp>
 #include <beman/transcode/detail/utf16.hpp>
 #include <beman/transcode/detail/x_user_defined.hpp>
@@ -77,6 +78,7 @@ enum class codec {
     x_mac_cyrillic,
     utf_16be,
     utf_16le,
+    gbk,
 };
 
 // ---------------------------------------------------------------------------
@@ -397,6 +399,9 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         } else {
             value_ = static_cast<char32_t>(unit);
         }
+    } else if constexpr (C == codec::gbk) {
+        auto r = detail::gbk_decode_one(current_, end_);
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
     }
 }
 
@@ -697,6 +702,12 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         } else {
             value_ = static_cast<char32_t>(unit);
         }
+    } else if constexpr (C == codec::gbk) {
+        auto r = detail::gbk_decode_one(current_, end_);
+        if (r.is_error)
+            value_ = std::unexpected(r.error);
+        else
+            value_ = r.code_point;
     }
 }
 

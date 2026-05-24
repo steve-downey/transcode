@@ -24,7 +24,9 @@ else()
                     detail/concepts.hpp
                     detail/error.hpp
                     detail/null_term.hpp
+                    detail/gbk.hpp
                     detail/single_byte.hpp
+                    detail/tables/gbk.hpp
                     detail/tables/ibm866.hpp
                     detail/tables/iso_8859_2.hpp
                     detail/tables/iso_8859_3.hpp
