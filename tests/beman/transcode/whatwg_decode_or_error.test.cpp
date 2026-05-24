@@ -93,3 +93,18 @@ TEST_CASE("whatwg_decode_or_error consteval ASCII", "[transcoding::whatwg_decode
     };
     CHECK(constify(decode_ascii()) == U'A');
 }
+
+// Step 14: codec::replacement tests
+
+TEST_CASE("whatwg_decode_or_error replacement empty", "[transcoding::whatwg_decode_or_error]") {
+    std::vector<char> bytes{};
+    CHECK(collect_or_error(bytes | whatwg_decode_or_error<codec::replacement>).empty());
+}
+
+TEST_CASE("whatwg_decode_or_error replacement yields one error", "[transcoding::whatwg_decode_or_error]") {
+    std::vector<char> bytes{'H', 'e', 'l', 'l', 'o'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::replacement>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+}
