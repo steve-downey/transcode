@@ -10,18 +10,21 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from generate_tables import (
     BIG5_POINTER_COUNT,
     EUC_JP_JIS0212_POINTER_COUNT,
+    EUC_KR_POINTER_COUNT,
     GBK_POINTER_COUNT,
     SHIFTJIS_POINTER_COUNT,
     codec_to_guard,
     codec_to_identifier,
     parse_big5_index,
     parse_euc_jp_jis0212_index,
+    parse_euc_kr_index,
     parse_gb18030_ranges,
     parse_gbk_index,
     parse_shift_jis_index,
     parse_single_byte_index,
     render_big5_hpp,
     render_euc_jp_jis0212_hpp,
+    render_euc_kr_hpp,
     render_gb18030_ranges_hpp,
     render_gbk_hpp,
     render_hpp,
@@ -670,3 +673,92 @@ def test_render_euc_jp_jis0212_hpp_known_codepoint() -> None:
     table[108] = 0x02D8
     hpp = render_euc_jp_jis0212_hpp(table)
     assert "0x02D8" in hpp
+
+
+# ---------------------------------------------------------------------------
+# EUC-KR table
+# ---------------------------------------------------------------------------
+
+
+def _make_euc_kr_index_file(tmp_path: Path, entries: dict[int, int]) -> Path:
+    """Write a minimal index-euc-kr.txt with given pointer→codepoint map."""
+    lines = [
+        "# test euc-kr index file",
+        "#",
+    ]
+    for ptr, cp in sorted(entries.items()):
+        lines.append(f"  {ptr}\t0x{cp:04X}\t# comment")
+    path = tmp_path / "index-euc-kr.txt"
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def test_euc_kr_pointer_count() -> None:
+    assert EUC_KR_POINTER_COUNT == 23940
+
+
+def test_parse_euc_kr_index_length(tmp_path: Path) -> None:
+    path = _make_euc_kr_index_file(tmp_path, {0: 0xAC02})
+    table = parse_euc_kr_index(path)
+    assert len(table) == EUC_KR_POINTER_COUNT
+
+
+def test_parse_euc_kr_index_known_entry(tmp_path: Path) -> None:
+    path = _make_euc_kr_index_file(tmp_path, {0: 0xAC02})
+    table = parse_euc_kr_index(path)
+    assert table[0] == 0xAC02
+
+
+def test_parse_euc_kr_index_unmapped_is_zero(tmp_path: Path) -> None:
+    path = _make_euc_kr_index_file(tmp_path, {0: 0xAC02})
+    table = parse_euc_kr_index(path)
+    assert table[1] == 0
+
+
+def test_parse_euc_kr_index_ignores_out_of_range(tmp_path: Path) -> None:
+    path = _make_euc_kr_index_file(tmp_path, {0: 0xAC02, 23940: 0x1234})
+    table = parse_euc_kr_index(path)
+    assert len(table) == EUC_KR_POINTER_COUNT
+    assert table[0] == 0xAC02
+
+
+def test_parse_euc_kr_index_real_pointer9026() -> None:
+    """WHATWG spec: pointer 9026 -> U+AC00 (가). EUC-KR: 0xB0 0xA2."""
+    path = Path("docs/whatwg/index-euc-kr.txt")
+    if not path.exists():
+        import pytest
+
+        pytest.skip("docs/whatwg not present")
+    table = parse_euc_kr_index(path)
+    assert table[9026] == 0xAC00
+
+
+def test_render_euc_kr_hpp_contains_guard() -> None:
+    table = [0] * EUC_KR_POINTER_COUNT
+    hpp = render_euc_kr_hpp(table)
+    assert "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_KR_HPP" in hpp
+
+
+def test_render_euc_kr_hpp_contains_array_size() -> None:
+    table = [0] * EUC_KR_POINTER_COUNT
+    hpp = render_euc_kr_hpp(table)
+    assert f"euc_kr[{EUC_KR_POINTER_COUNT}]" in hpp
+
+
+def test_render_euc_kr_hpp_contains_namespace() -> None:
+    table = [0] * EUC_KR_POINTER_COUNT
+    hpp = render_euc_kr_hpp(table)
+    assert "beman::transcoding::detail::tables" in hpp
+
+
+def test_render_euc_kr_hpp_contains_spdx() -> None:
+    table = [0] * EUC_KR_POINTER_COUNT
+    hpp = render_euc_kr_hpp(table)
+    assert "SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception" in hpp
+
+
+def test_render_euc_kr_hpp_known_codepoint() -> None:
+    table = [0] * EUC_KR_POINTER_COUNT
+    table[9026] = 0xAC00
+    hpp = render_euc_kr_hpp(table)
+    assert "0xAC00" in hpp

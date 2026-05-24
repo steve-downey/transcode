@@ -40,6 +40,10 @@ SHIFTJIS_POINTER_COUNT = SHIFTJIS_LEAD_COUNT * SHIFTJIS_TRAIL_COUNT  # 60 * 188 
 # pointer = (b1 - 0xA1) * 94 + (b2 - 0xA1)
 EUC_JP_JIS0212_POINTER_COUNT = 94 * 94  # 8836
 
+# EUC-KR (UHC/CP949): lead 0x81-0xFE (126), trail 0x41-0xFE (190, includes 0x7F slot)
+# pointer = (lead - 0x81) * 190 + (trail - 0x41) - (1 if trail > 0x7F else 0)
+EUC_KR_POINTER_COUNT = 126 * 190  # 23940
+
 CLANG_FORMAT = "clang-format"
 
 
@@ -604,6 +608,94 @@ def generate_euc_jp_jis0212(
     print(f"  generated: {hpp_path} ({len(table)} entries)")
 
 
+def parse_euc_kr_index(path: Path) -> list[int]:
+    """Parse WHATWG index-euc-kr.txt; return 23940-entry EUC-KR decode table.
+
+    Pointer formula: pointer = (lead - 0x81) * 190 + (trail - 0x41) - offset,
+    where offset=1 if trail > 0x7F else 0. Lead in 0x81-0xFE (126 values),
+    trail in 0x41-0xFE (190 slots including 0x7F). Total pointers: 126 x 190 = 23940.
+    """
+    table: list[int] = [0] * EUC_KR_POINTER_COUNT
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split()
+        if len(parts) < 2:
+            continue
+        pointer = int(parts[0])
+        cp_str = parts[1]
+        if pointer < 0 or pointer >= EUC_KR_POINTER_COUNT:
+            continue
+        codepoint = int(cp_str, 16)
+        table[pointer] = codepoint
+    return table
+
+
+def _format_euc_kr_row(values: list[int], start_idx: int) -> str:
+    """Format up to 8 EUC-KR table entries as a C++ initializer row."""
+    hex_vals = [f"0x{v:04X}" if v != 0 else "0" for v in values]
+    end_idx = start_idx + len(values) - 1
+    entries = ", ".join(hex_vals)
+    return f"    {entries},  // [{start_idx}–{end_idx}]"
+
+
+def render_euc_kr_hpp(table: list[int]) -> str:
+    """Render the EUC-KR decode table as a C++ header."""
+    guard = "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_KR_HPP"
+    n = len(table)
+    rows: list[str] = []
+    for i in range(0, n, 8):
+        chunk = table[i : i + 8]
+        rows.append(_format_euc_kr_row(chunk, i))
+    rows[-1] = rows[-1].rstrip(",")
+
+    array_body = "\n".join(rows)
+
+    return f"""\
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// GENERATED — do not edit. Regenerate: uv run tools/generate_tables.py
+// Source: WHATWG Encoding Standard index-euc-kr.txt
+
+#ifndef {guard}
+#define {guard}
+
+namespace beman::transcoding::detail::tables {{
+
+inline constexpr char32_t euc_kr[{n}] = {{
+{array_body}
+}};
+
+}} // namespace beman::transcoding::detail::tables
+
+#endif // {guard}
+"""
+
+
+def generate_euc_kr(
+    in_dir: Path,
+    out_dir: Path,
+    run_clang_format: bool = True,
+) -> None:
+    """Generate EUC-KR decode table HPP into the include tree."""
+    index_path = in_dir / "index-euc-kr.txt"
+    if not index_path.exists():
+        print(f"  WARNING: {index_path} not found, skipping EUC-KR")
+        return
+
+    table = parse_euc_kr_index(index_path)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    hpp_path = out_dir / "euc_kr.hpp"
+    hpp_content = render_euc_kr_hpp(table)
+    hpp_path.write_text(hpp_content, encoding="utf-8")
+
+    if run_clang_format:
+        clang_format_file(hpp_path)
+
+    print(f"  generated: {hpp_path} ({len(table)} entries)")
+
+
 def main(argv: list[str] | None = None) -> int:
     import argparse
 
@@ -659,10 +751,13 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Generating EUC-JP JIS X 0212 table from {in_dir}/ → {include_tables_dir}/")
     generate_euc_jp_jis0212(in_dir, include_tables_dir, run_clang_format=run_cf)
 
+    print(f"Generating EUC-KR table from {in_dir}/ → {include_tables_dir}/")
+    generate_euc_kr(in_dir, include_tables_dir, run_clang_format=run_cf)
+
     n = len(SINGLE_BYTE_INDEXES)
     print(
         f"Done. {n} single-byte + GBK + GB18030 ranges"
-        " + Big5 + Shift_JIS + EUC-JP JIS X 0212."
+        " + Big5 + Shift_JIS + EUC-JP JIS X 0212 + EUC-KR."
     )
     return 0
 
