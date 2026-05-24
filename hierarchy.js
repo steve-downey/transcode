@@ -1,6 +1,8 @@
 var hierarchy =
 [
     [ "beman::transcoding::iconv_functions", "structbeman_1_1transcoding_1_1iconv__functions.html", null ],
+    [ "beman::transcoding::iconv_transcode_closure< IconvFns >", "structbeman_1_1transcoding_1_1iconv__transcode__closure.html", null ],
+    [ "beman::transcoding::iconv_transcode_or_error_closure< IconvFns >", "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html", null ],
     [ "beman::transcoding::iconv_transcode_or_error_view< IconvFns, R >::iterator", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html", null ],
     [ "beman::transcoding::iconv_transcode_view< IconvFns, R >::iterator", "classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html", null ],
     [ "beman::transcoding::whatwg_decode_or_error_view< C, R >::iterator", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html", null ],

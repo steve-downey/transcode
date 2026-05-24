@@ -116,6 +116,10 @@ Namespaces</h2></td></tr>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1iconv__functions.html">iconv_functions</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1iconv__transcode__closure.html">iconv_transcode_closure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html">iconv_transcode_or_error_closure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html">iconv_transcode_or_error_view</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a></td></tr>
@@ -166,6 +170,10 @@ Functions</h2></td></tr>
 <tr class="separator:a603156a9d20e68760ab8a23fb1e64f70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8052302218d5a4ad20fe0e26e198765b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structbeman_1_1transcoding_1_1iconv__functions.html">iconv_functions</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b">make_real_iconv_fns</a> () noexcept</td></tr>
 <tr class="separator:a8052302218d5a4ad20fe0e26e198765b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab66a3b96e24d01f79bc11a5b9731dcb"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#aab66a3b96e24d01f79bc11a5b9731dcb">iconv_transcode</a> (const char *from, const char *to, std::span&lt; char &gt; buf)</td></tr>
+<tr class="separator:aab66a3b96e24d01f79bc11a5b9731dcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b9d1350ae333361ebeca4ed71a3d2cd"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a0b9d1350ae333361ebeca4ed71a3d2cd">iconv_transcode_or_error</a> (const char *from, const char *to, std::span&lt; char &gt; buf)</td></tr>
+<tr class="separator:a0b9d1350ae333361ebeca4ed71a3d2cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -261,6 +269,90 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="aab66a3b96e24d01f79bc11a5b9731dcb" name="aab66a3b96e24d01f79bc11a5b9731dcb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab66a3b96e24d01f79bc11a5b9731dcb">&#9670;&#160;</a></span>iconv_transcode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto beman::transcoding::iconv_transcode </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>to</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::span&lt; char &gt;&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0b9d1350ae333361ebeca4ed71a3d2cd" name="a0b9d1350ae333361ebeca4ed71a3d2cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b9d1350ae333361ebeca4ed71a3d2cd">&#9670;&#160;</a></span>iconv_transcode_or_error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto beman::transcoding::iconv_transcode_or_error </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>to</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::span&lt; char &gt;&#160;</td>
+          <td class="paramname"><em>buf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a8052302218d5a4ad20fe0e26e198765b" name="a8052302218d5a4ad20fe0e26e198765b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8052302218d5a4ad20fe0e26e198765b">&#9670;&#160;</a></span>make_real_iconv_fns()</h2>
 

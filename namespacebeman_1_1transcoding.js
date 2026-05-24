@@ -4,6 +4,8 @@ var namespacebeman_1_1transcoding =
       [ "null_term", "namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952", null ]
     ] ],
     [ "iconv_functions", "structbeman_1_1transcoding_1_1iconv__functions.html", "structbeman_1_1transcoding_1_1iconv__functions" ],
+    [ "iconv_transcode_closure", "structbeman_1_1transcoding_1_1iconv__transcode__closure.html", "structbeman_1_1transcoding_1_1iconv__transcode__closure" ],
+    [ "iconv_transcode_or_error_closure", "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html", "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure" ],
     [ "iconv_transcode_or_error_view", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view" ],
     [ "iconv_transcode_view", "classbeman_1_1transcoding_1_1iconv__transcode__view.html", "classbeman_1_1transcoding_1_1iconv__transcode__view" ],
     [ "null_sentinel_t", "structbeman_1_1transcoding_1_1null__sentinel__t.html", "structbeman_1_1transcoding_1_1null__sentinel__t" ],
@@ -28,6 +30,8 @@ var namespacebeman_1_1transcoding =
       [ "surrogate_code_point", "namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d", null ],
       [ "out_of_range", "namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0", null ]
     ] ],
+    [ "iconv_transcode", "namespacebeman_1_1transcoding.html#aab66a3b96e24d01f79bc11a5b9731dcb", null ],
+    [ "iconv_transcode_or_error", "namespacebeman_1_1transcoding.html#a0b9d1350ae333361ebeca4ed71a3d2cd", null ],
     [ "make_real_iconv_fns", "namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b", null ],
     [ "null_term_view", "namespacebeman_1_1transcoding.html#a603156a9d20e68760ab8a23fb1e64f70", null ],
     [ "null_sentinel", "namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311", null ],

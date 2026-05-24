@@ -102,8 +102,10 @@ $(document).ready(function(){initNavTree('iconv__real_8hpp.html',''); initResiza
   <div class="headertitle"><div class="title">iconv_real.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="iconv__transcode__view_8hpp_source.html">beman/transcode/iconv_transcode_view.hpp</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="iconv__transcode__or__error__view_8hpp_source.html">beman/transcode/iconv_transcode_or_error_view.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iconv__transcode__view_8hpp_source.html">beman/transcode/iconv_transcode_view.hpp</a>&gt;</code><br />
 <code>#include &lt;iconv.h&gt;</code><br />
+<code>#include &lt;span&gt;</code><br />
 </div>
 <p><a href="iconv__real_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -118,6 +120,10 @@ Namespaces</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:a8052302218d5a4ad20fe0e26e198765b"><td class="memItemLeft" align="right" valign="top">iconv_functions&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b">beman::transcoding::make_real_iconv_fns</a> () noexcept</td></tr>
 <tr class="separator:a8052302218d5a4ad20fe0e26e198765b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab66a3b96e24d01f79bc11a5b9731dcb"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#aab66a3b96e24d01f79bc11a5b9731dcb">beman::transcoding::iconv_transcode</a> (const char *from, const char *to, std::span&lt; char &gt; buf)</td></tr>
+<tr class="separator:aab66a3b96e24d01f79bc11a5b9731dcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b9d1350ae333361ebeca4ed71a3d2cd"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a0b9d1350ae333361ebeca4ed71a3d2cd">beman::transcoding::iconv_transcode_or_error</a> (const char *from, const char *to, std::span&lt; char &gt; buf)</td></tr>
+<tr class="separator:a0b9d1350ae333361ebeca4ed71a3d2cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

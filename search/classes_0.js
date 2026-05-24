@@ -1,7 +1,9 @@
 var searchData=
 [
   ['iconv_5ffunctions_0',['iconv_functions',['../structbeman_1_1transcoding_1_1iconv__functions.html',1,'beman::transcoding']]],
-  ['iconv_5ftranscode_5for_5ferror_5fview_1',['iconv_transcode_or_error_view',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html',1,'beman::transcoding']]],
-  ['iconv_5ftranscode_5fview_2',['iconv_transcode_view',['../classbeman_1_1transcoding_1_1iconv__transcode__view.html',1,'beman::transcoding']]],
-  ['iterator_3',['iterator',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html',1,'beman::transcoding::iconv_transcode_or_error_view&lt; IconvFns, R &gt;::iterator'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html',1,'beman::transcoding::iconv_transcode_view&lt; IconvFns, R &gt;::iterator'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html',1,'beman::transcoding::whatwg_decode_or_error_view&lt; C, R &gt;::iterator'],['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html',1,'beman::transcoding::whatwg_decode_view&lt; C, R &gt;::iterator']]]
+  ['iconv_5ftranscode_5fclosure_1',['iconv_transcode_closure',['../structbeman_1_1transcoding_1_1iconv__transcode__closure.html',1,'beman::transcoding']]],
+  ['iconv_5ftranscode_5for_5ferror_5fclosure_2',['iconv_transcode_or_error_closure',['../structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html',1,'beman::transcoding']]],
+  ['iconv_5ftranscode_5for_5ferror_5fview_3',['iconv_transcode_or_error_view',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html',1,'beman::transcoding']]],
+  ['iconv_5ftranscode_5fview_4',['iconv_transcode_view',['../classbeman_1_1transcoding_1_1iconv__transcode__view.html',1,'beman::transcoding']]],
+  ['iterator_5',['iterator',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html',1,'beman::transcoding::iconv_transcode_or_error_view&lt; IconvFns, R &gt;::iterator'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html',1,'beman::transcoding::iconv_transcode_view&lt; IconvFns, R &gt;::iterator'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html',1,'beman::transcoding::whatwg_decode_or_error_view&lt; C, R &gt;::iterator'],['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html',1,'beman::transcoding::whatwg_decode_view&lt; C, R &gt;::iterator']]]
 ];
