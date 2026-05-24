@@ -107,7 +107,33 @@ $(document).ready(function(){initNavTree('whatwg__decode__view_8hpp.html',''); i
 <div class="textblock"><code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/detail/concepts.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="error_8hpp_source.html">beman/transcode/detail/error.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="single__byte_8hpp_source.html">beman/transcode/detail/single_byte.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="ibm866_8hpp_source.html">beman/transcode/detail/tables/ibm866.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__2_8hpp_source.html">beman/transcode/detail/tables/iso_8859_2.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__3_8hpp_source.html">beman/transcode/detail/tables/iso_8859_3.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__4_8hpp_source.html">beman/transcode/detail/tables/iso_8859_4.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__5_8hpp_source.html">beman/transcode/detail/tables/iso_8859_5.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__6_8hpp_source.html">beman/transcode/detail/tables/iso_8859_6.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__7_8hpp_source.html">beman/transcode/detail/tables/iso_8859_7.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__8_8hpp_source.html">beman/transcode/detail/tables/iso_8859_8.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__10_8hpp_source.html">beman/transcode/detail/tables/iso_8859_10.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__13_8hpp_source.html">beman/transcode/detail/tables/iso_8859_13.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__14_8hpp_source.html">beman/transcode/detail/tables/iso_8859_14.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__15_8hpp_source.html">beman/transcode/detail/tables/iso_8859_15.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__16_8hpp_source.html">beman/transcode/detail/tables/iso_8859_16.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="koi8__r_8hpp_source.html">beman/transcode/detail/tables/koi8_r.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="koi8__u_8hpp_source.html">beman/transcode/detail/tables/koi8_u.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="macintosh_8hpp_source.html">beman/transcode/detail/tables/macintosh.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__874_8hpp_source.html">beman/transcode/detail/tables/windows_874.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__1250_8hpp_source.html">beman/transcode/detail/tables/windows_1250.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__1251_8hpp_source.html">beman/transcode/detail/tables/windows_1251.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="windows__1252_8hpp_source.html">beman/transcode/detail/tables/windows_1252.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__1253_8hpp_source.html">beman/transcode/detail/tables/windows_1253.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__1254_8hpp_source.html">beman/transcode/detail/tables/windows_1254.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__1255_8hpp_source.html">beman/transcode/detail/tables/windows_1255.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__1256_8hpp_source.html">beman/transcode/detail/tables/windows_1256.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__1257_8hpp_source.html">beman/transcode/detail/tables/windows_1257.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__1258_8hpp_source.html">beman/transcode/detail/tables/windows_1258.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="x__mac__cyrillic_8hpp_source.html">beman/transcode/detail/tables/x_mac_cyrillic.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="utf8_8hpp_source.html">beman/transcode/detail/utf8.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="x__user__defined_8hpp_source.html">beman/transcode/detail/x_user_defined.hpp</a>&gt;</code><br />
 <code>#include &lt;expected&gt;</code><br />
@@ -140,10 +166,46 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a20dfb324ebd26c6127d014520f93005a"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">beman::transcoding::codec</a> { <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3">beman::transcoding::utf_8</a>
+<tr class="memitem:a20dfb324ebd26c6127d014520f93005a"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">beman::transcoding::codec</a> { <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3">beman::transcoding::utf_8</a>
 , <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79">beman::transcoding::replacement</a>
 , <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa0d8c71b93188d250d8368cac870134ae">beman::transcoding::x_user_defined</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa67e3d142d06befb5e5ff2367193c1b67">beman::transcoding::ibm866</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa99d669ffd526081afe3119aa749870f6">beman::transcoding::iso_8859_2</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aacbeba6881309052da9e5702cda7da698">beman::transcoding::iso_8859_3</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa722ae99064c1ffc63fa333425e73d718">beman::transcoding::iso_8859_4</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa870b1c8d709ae13c6f3125309e99e10a">beman::transcoding::iso_8859_5</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa4d72b7d26907ba6f74a13528580ba0c1">beman::transcoding::iso_8859_6</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa568fb0dac10de662d39ca1fd88769cf7">beman::transcoding::iso_8859_7</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa079ec8076fce3fe0828f9a0959c8c48f">beman::transcoding::iso_8859_8</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aac1a7d0a69f900692e08617b1073229f9">beman::transcoding::iso_8859_8_i</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa638ac6a64991d6773e1b71560f9c6ab2">beman::transcoding::iso_8859_10</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa43ae8d96de61721ef967c13e51dcf11b">beman::transcoding::iso_8859_13</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa1fb738da7485572f0e1a04da6caf5aad">beman::transcoding::iso_8859_14</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2c009742754c079a449be8fa9492a76c">beman::transcoding::iso_8859_15</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa9ef904d285fb3c0315eea84e6cb688c8">beman::transcoding::iso_8859_16</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa26309b71972721c4aab1d6bcf236f5d1">beman::transcoding::koi8_r</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa3b64ef546458f581c956e61e0ce371a3">beman::transcoding::koi8_u</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa88b12deabfb301d0d62b6fb5fa8f2565">beman::transcoding::macintosh</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa66e5d531270a80b8431b05866ce455c2">beman::transcoding::windows_874</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa9fad170b4372ea350044144d3b31edb0">beman::transcoding::windows_1250</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaec500c37785afe29b8f74e3bd58bb135">beman::transcoding::windows_1251</a>
 , <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa00b1d00a5438928d45b2ccf9c82ead4e">beman::transcoding::windows_1252</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aacfc65138654b7f3eecc2546b8bb34074">beman::transcoding::windows_1253</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa297be6c394734ffe9a99938f7e33d076">beman::transcoding::windows_1254</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aab669221809b79ab6931c05ea16bae7fe">beman::transcoding::windows_1255</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa29e5a8fb230a3155887bde0f5ca31baf">beman::transcoding::windows_1256</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa8034dde2b07847e0eef3470fb0865816">beman::transcoding::windows_1257</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaaf1e58bdd6df2320dac522c75d2e09e0">beman::transcoding::windows_1258</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf327dc91d47fbbc1d9957b9a7d3f2983">beman::transcoding::x_mac_cyrillic</a>
+<br />
  }</td></tr>
 <tr class="separator:a20dfb324ebd26c6127d014520f93005a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">

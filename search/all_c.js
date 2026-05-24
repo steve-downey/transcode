@@ -1,6 +1,8 @@
 var searchData=
 [
-  ['reference_0',['reference',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a6982c3c39ff971c68ad06106493dea80',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::reference()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a190388404c5743a0ca2f06742173dba2',1,'beman::transcoding::iconv_transcode_view::iterator::reference()'],['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a81d9b00dbeee47ac99a2cdefaf8d9f55',1,'beman::transcoding::whatwg_decode_view::iterator::reference()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a7da64f0598ffe9059b3980db6a327b3a',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::reference()']]],
-  ['replacement_1',['replacement',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79',1,'beman::transcoding']]],
-  ['result_5ft_2',['result_t',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a1dc1fd8f4e9af7d1cf60025f15918076',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::result_t()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#af2c271e382fde4f7addbd69e40878950',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::result_t()']]]
+  ['phase_202_20progress_20checklist_0',['Phase 2 Progress Checklist',['../md_docs_plans_phase2_checklist.html',1,'']]],
+  ['phase_202_3a_20full_20whatwg_20codec_20implementation_1',['Phase 2: Full WHATWG Codec Implementation',['../md_docs_plans_phase2_index.html',1,'']]],
+  ['phase2_2dchecklist_2emd_2',['phase2-checklist.md',['../phase2-checklist_8md.html',1,'']]],
+  ['phase2_2dindex_2emd_3',['phase2-index.md',['../phase2-index_8md.html',1,'']]],
+  ['ptr_5f_4',['ptr_',['../classbeman_1_1transcoding_1_1null__term__view.html#a4769d0a29f6f92f8c5cd0cb13e7e0c2f',1,'beman::transcoding::null_term_view']]]
 ];

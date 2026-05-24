@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['utf8_2ehpp_0',['utf8.hpp',['../utf8_8hpp.html',1,'']]],
-  ['utf_5f8_1',['utf_8',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3',1,'beman::transcoding']]]
+  ['to_5f_0',['to_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html#a50ebf5768c3e229dff24a9307ce3be1b',1,'beman::transcoding::iconv_transcode_or_error_view::to_()'],['../structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html#abb43cff6264bc669a077dcd4200f82b7',1,'beman::transcoding::iconv_transcode_or_error_closure::to_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view.html#ae3feadcf01fdb9ad10af6d5c7fdfdaac',1,'beman::transcoding::iconv_transcode_view::to_()'],['../structbeman_1_1transcoding_1_1iconv__transcode__closure.html#a1e76c71f03d7664a5d1030987ccac7f2',1,'beman::transcoding::iconv_transcode_closure::to_()']]],
+  ['todo_2ecpp_1',['todo.cpp',['../todo_8cpp.html',1,'']]],
+  ['todo_2ehpp_2',['todo.hpp',['../todo_8hpp.html',1,'']]],
+  ['transcode_2ehpp_3',['transcode.hpp',['../transcode_8hpp.html',1,'']]],
+  ['truncated_5fsequence_4',['truncated_sequence',['../namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba3c77c8fa3468fd7bfd6123cbcbc26a3e',1,'beman::transcoding']]]
 ];
