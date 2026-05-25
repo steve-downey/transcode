@@ -130,6 +130,56 @@ inline size_t mock_iconv_stateful(iconv_t, char** in, size_t* inleft, char** out
     return 0;
 }
 
+// Output-then-EILSEQ mock: writes 1 byte then returns EILSEQ.
+// Always returns EILSEQ; this tests the "output before error" path.
+inline size_t mock_iconv_output_then_eilseq(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+    if (in == nullptr || *in == nullptr)
+        return 0;
+    if (*inleft == 0)
+        return 0;
+    // Write one byte of output
+    if (*outleft > 0) {
+        **out = **in;
+        ++*out;
+        --*outleft;
+        ++*in;
+        --*inleft;
+    }
+    errno = EILSEQ;
+    return (size_t)-1;
+}
+
+// Output-then-E2BIG mock: writes 1 byte then returns E2BIG.
+// Always returns E2BIG; this tests the "output before error" path.
+inline size_t mock_iconv_output_then_e2big(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+    if (in == nullptr || *in == nullptr)
+        return 0;
+    if (*inleft == 0)
+        return 0;
+    // Write one byte of output
+    if (*outleft > 0) {
+        **out = **in;
+        ++*out;
+        --*outleft;
+        ++*in;
+        --*inleft;
+    }
+    errno = E2BIG;
+    return (size_t)-1;
+}
+
+// No-output-EILSEQ-multi-staging mock: consumes multiple staging bytes
+// on EILSEQ with no output, forcing the shift loop.
+// Needs 3+ staging bytes to trigger the loop iteration.
+inline size_t mock_iconv_eilseq_multi_byte(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+    if (in == nullptr || *in == nullptr)
+        return 0;
+    // If we have 3+ bytes in staging, signal EILSEQ with no output
+    // (the iterator's caller staging will have 3+ bytes)
+    errno = EILSEQ;
+    return (size_t)-1;
+}
+
 } // namespace beman::transcoding::tests
 
 #endif // TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP
