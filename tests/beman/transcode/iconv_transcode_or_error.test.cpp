@@ -93,6 +93,8 @@ TEST_CASE("iconv_transcode_or_error_view destructor closes handle", "[transcodin
 
         iconv_t open(const char*, const char*) const { return (iconv_t)1; }
         size_t  convert(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) const {
+            if (in == nullptr || *in == nullptr)
+                return 0;
             size_t n = std::min(*inleft, *outleft);
             std::memcpy(*out, *in, n);
             *in += n;
@@ -129,6 +131,23 @@ TEST_CASE("iconv_transcode_or_error_closure pipe syntax with mock fns", "[transc
     CHECK(result[0].value() == 'H');
     REQUIRE(result[1].has_value());
     CHECK(result[1].value() == 'i');
+}
+
+TEST_CASE("iconv_transcode_or_error_view stateful flush produces trailing bytes",
+          "[transcoding::iconv_transcode_or_error]") {
+    std::vector<char>    input{'A', 'B'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_stateful, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    REQUIRE(result.size() == 3);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == 'A');
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == 'B');
+    REQUIRE(result[2].has_value());
+    CHECK(result[2].value() == 0x0F);
 }
 
 TEST_CASE("iconv_transcode_or_error_view E2BIG with zero output yields output_full error",

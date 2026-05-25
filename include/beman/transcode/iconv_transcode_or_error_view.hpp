@@ -51,6 +51,7 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
         base_iter       current_;
         base_sent       end_;
         bool            done_;
+        bool            flushed_;
         bool            has_error_;
         iconv_error     error_value_;
 
@@ -126,6 +127,7 @@ iconv_transcode_or_error_view<IconvFns, R>::iterator::iterator(
       current_(std::move(current)),
       end_(std::move(end)),
       done_(handle == (iconv_t)-1),
+      flushed_(false),
       has_error_(false),
       error_value_() {
     if (!done_)
@@ -140,6 +142,16 @@ void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
             staging_[staging_len_++] = static_cast<char>(*current_);
             ++current_;
         } else if (staging_len_ == 0) {
+            if (!flushed_) {
+                flushed_       = true;
+                char*  out_ptr = buffer_.data();
+                size_t outleft = buffer_.size();
+                fns_.convert(handle_, nullptr, nullptr, &out_ptr, &outleft);
+                output_pos_ = buffer_.data();
+                output_end_ = out_ptr;
+                if (output_pos_ < output_end_)
+                    return;
+            }
             done_ = true;
             return;
         }
@@ -228,6 +240,7 @@ iconv_transcode_or_error_view<IconvFns, R>::iterator::iterator(iterator&& other)
       current_(std::move(other.current_)),
       end_(std::move(other.end_)),
       done_(other.done_),
+      flushed_(other.flushed_),
       has_error_(other.has_error_),
       error_value_(other.error_value_) {
     for (size_t i = 0; i < other.staging_len_; ++i)
@@ -255,6 +268,7 @@ auto iconv_transcode_or_error_view<IconvFns, R>::iterator::operator=(iterator&& 
         current_           = std::move(other.current_);
         end_               = std::move(other.end_);
         done_              = other.done_;
+        flushed_           = other.flushed_;
         has_error_         = other.has_error_;
         error_value_       = other.error_value_;
         other.handle_      = (iconv_t)-1;
