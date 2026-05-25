@@ -840,3 +840,29 @@ set_tests_properties(
         PASS_REGULAR_EXPRESSION
             "transcode: raw arrays are not valid input to transcode"
 )
+
+# sniff_encoding requires legacy_byte_range; char32_t ranges must be rejected.
+add_library(beman.transcode.tests.sniff_reject_char32_range_fail OBJECT)
+target_sources(
+    beman.transcode.tests.sniff_reject_char32_range_fail
+    PRIVATE sniff_reject_char32_range_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.sniff_reject_char32_range_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.sniff_reject_char32_range_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME sniff_reject_char32_range_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.sniff_reject_char32_range_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    sniff_reject_char32_range_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
+)
