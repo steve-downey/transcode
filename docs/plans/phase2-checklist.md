@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–29 complete. 420 C++ + 102 Python tests pass. On `main`.
+**Current state:** Steps 0–33 complete. 453 C++ + 131 Python tests pass. On `main`.
 
 ---
 
@@ -184,6 +184,51 @@ Comprehensive round-trip tests for all implemented codecs.
 - [x] Write composition tests for all codec pairs
 - [x] `make test` + `make lint`
 - [x] Push both remotes + merge to main
+
+---
+
+## Step 30: WPT test vector integration (`step30-wpt-vectors`)
+
+- [x] Create branch from `main`
+- [x] Download WPT JS files → `docs/wpt/` (gb18030, mistakes/utf8)
+- [x] Write `tools/generate_wpt_vectors.py` + parser/renderer
+- [x] Generate `wpt_gb18030_vectors.hpp`, `wpt_utf8_vectors.hpp`
+- [x] Write `wpt_gb18030.test.cpp`, `wpt_utf8.test.cpp`
+- [x] Fix conformance bugs found by WPT vectors
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
+
+## Step 31: WPT ISO-2022-JP + single-byte exhaustive (`step31-wpt-iso2022jp-singlebyte`)
+
+- [x] Create branch from `main`
+- [x] Download `iso-2022-jp-decoder.any.js` + `single-byte-decoder.window.js` → `docs/wpt/`
+- [x] Extend generator for ISO-2022-JP + single-byte indexes
+- [x] Generate `wpt_iso2022jp_vectors.hpp`, `wpt_single_byte_vectors.hpp`
+- [x] Write `wpt_iso2022jp.test.cpp`, `wpt_single_byte.test.cpp`
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
+
+## Step 32: ISO-2022-JP full WHATWG conformance (`step32-iso2022jp-conformance`)
+
+- [x] Create branch from `main`
+- [x] Fix all 7 ISO-2022-JP decoder bugs (katakana range, SO/SI, output state, output flag, escape EOS, invalid escape, lead byte EOS)
+- [x] All 34 WPT ISO-2022-JP vectors pass
+- [x] `make test` + `make lint`
+- [x] Push both remotes + merge to main
+
+## Step 33: WPT UTF-16 surrogate conformance (`step33-wpt-utf16-surrogates`)
+
+- [x] Create branch from `main`
+- [x] Write failing test (RED) referencing missing vector header
+- [x] Push RED to both remotes
+- [x] Download `textdecoder-utf16-surrogates.any.js` → `docs/wpt/`
+- [x] Update `docs/wpt/SOURCE.md` with provenance + checksum
+- [x] Add `parse_utf16_surrogate_vectors()` + `render_utf16_surrogates_vectors_hpp()` to `generate_wpt_vectors.py`
+- [x] Add 4 new Python tests to `test_generate_wpt.py`
+- [x] Generate `wpt_utf16_surrogates_vectors.hpp` (5 vectors)
+- [x] `make test` (453 C++ + 131 Python all pass)
+- [x] `make lint` — clean
+- [x] Push GREEN to both remotes + merge to main
 
 ---
 
