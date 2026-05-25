@@ -101,17 +101,17 @@ $(document).ready(function(){initNavTree('md_docs_plans_step19_roundtrip.html','
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>step19-roundtrip</code> <b>Depends on:</b> Step 18 (UTF-8 encoder must exist)</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md366"></a>
+<h1><a class="anchor" id="autotoc_md367"></a>
 Goal</h1>
 <p>Validate that <code>whatwg_decode&lt;codec::utf_8&gt;</code> composed with <code>whatwg_encode&lt;codec::utf_8&gt;</code> is a round-trip for valid UTF-8 input. This is the first test of view composition in the library and confirms the pipeline architecture works end-to-end.</p>
 <p><b>No new library code is added.</b> This step creates only a new test file.</p>
-<h1><a class="anchor" id="autotoc_md367"></a>
+<h1><a class="anchor" id="autotoc_md368"></a>
 Composition Syntax</h1>
 <div class="fragment"><div class="line"><span class="keyword">auto</span> result = bytes | whatwg_decode&lt;codec::utf_8&gt; | whatwg_encode&lt;codec::utf_8&gt;;</div>
 </div><!-- fragment --><p>This should produce the same byte sequence as the input, provided the input is valid UTF-8.</p>
-<h1><a class="anchor" id="autotoc_md368"></a>
+<h1><a class="anchor" id="autotoc_md369"></a>
 Files Created</h1>
-<h2><a class="anchor" id="autotoc_md369"></a>
+<h2><a class="anchor" id="autotoc_md370"></a>
 &lt;tt&gt;tests/beman/transcode/roundtrip.test.cpp&lt;/tt&gt;</h2>
 <div class="fragment"><div class="line"><span class="comment">// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span></div>
 <div class="line"> </div>
@@ -196,9 +196,9 @@ Files Created</h1>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html"><div class="ttname"><a href="namespacebeman_1_1transcoding.html">beman::transcoding</a></div><div class="ttdef"><b>Definition:</b> big5.hpp:11</div></div>
 <div class="ttc" id="awhatwg__decode__view_8hpp_html"><div class="ttname"><a href="whatwg__decode__view_8hpp.html">whatwg_decode_view.hpp</a></div></div>
 <div class="ttc" id="awhatwg__encode__view_8hpp_html"><div class="ttname"><a href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md370"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md371"></a>
 Files Modified</h1>
-<h2><a class="anchor" id="autotoc_md371"></a>
+<h2><a class="anchor" id="autotoc_md372"></a>
 &lt;tt&gt;tests/beman/transcode/CMakeLists.txt&lt;/tt&gt;</h2>
 <p>Add new test executable:</p>
 <div class="fragment"><div class="line">add_executable(beman.transcode.tests.roundtrip)</div>
@@ -212,11 +212,11 @@ Files Modified</h1>
 <div class="line">    PRIVATE beman::transcode Catch2::Catch2WithMain</div>
 <div class="line">)</div>
 </div><!-- fragment --><p>Add to <code>catch_discover_tests</code>: </p><div class="fragment"><div class="line">catch_discover_tests(beman.transcode.tests.roundtrip)</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md372"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md373"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test   # all previous + ~6 new tests pass</div>
 <div class="line">make lint   # clean</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md373"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md374"></a>
 Notes</h1>
 <p>If invalid UTF-8 round-trips, the decode step produces U+FFFD and the encode step re-encodes that as {0xEF, 0xBF, 0xBD}. This is correct behavior — the round-trip identity property only holds for valid UTF-8 input. </p>
 </div></div><!-- contents -->

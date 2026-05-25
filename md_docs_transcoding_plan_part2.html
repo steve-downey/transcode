@@ -99,7 +99,7 @@ $(document).ready(function(){initNavTree('md_docs_transcoding_plan_part2.html','
   <div class="headertitle"><div class="title">Execution Plan: C++29 Transcoding Architecture (Beman Project) </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md414"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md415"></a>
 1. Type Architecture &amp; I/O Interfaces</h1>
 <p>To prevent strict-aliasing pessimizations and structurally ban array decay, the foundational types must be rigorously constrained before any pipelines are built.</p>
 <ul>
@@ -113,17 +113,17 @@ $(document).ready(function(){initNavTree('md_docs_transcoding_plan_part2.html','
 </li>
 <li><b>Array Decay Ban:</b> All byte ingestion pipelines will <code>static_assert</code> against taking <code>const char[N]</code> directly. Users must wrap C-style string literals via C++26's <code>std::views::null_term</code> (P3705R2) to prevent accidental null-byte transposition.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md415"></a>
+<h1><a class="anchor" id="autotoc_md416"></a>
 2. WHATWG Codecs: Symmetric Pipelines &amp; Concrete Roster</h1>
 <p>The WHATWG pipeline models strict adherence to the web platform, reifying the <code>char32_t</code> scalar intermediate between bytes and encoded structures.</p>
-<h2><a class="anchor" id="autotoc_md416"></a>
+<h2><a class="anchor" id="autotoc_md417"></a>
 The Interfaces</h2>
 <ul>
 <li><b>Decoder:</b> <code>whatwg_decode_view&lt;Encoding, InByte = char&gt;</code> (Consumes <code>byte_like</code>, yields <code>char32_t</code>).</li>
 <li><b>Encoder:</b> <code>whatwg_encode_view&lt;Encoding, OutByte = char&gt;</code> (Consumes <code>char32_t</code>, yields <code>byte_like</code>).</li>
 <li><b>Error Handling:</b> Both views feature <code>_or_error</code> variants that return <code>std::expected</code> types rather than web-standard <code>U+FFFD</code> / Numeric Character Reference (NCR) substitution.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md417"></a>
+<h2><a class="anchor" id="autotoc_md418"></a>
 The Codec Roster &amp; Algorithm/Table Sources</h2>
 <p>The WHATWG Encoding Standard is closed; no new encodings will be added. All data is officially sourced from the machine-readable <code><a href="https://encoding.spec.whatwg.org/indexes.json">https://encoding.spec.whatwg.org/indexes.json</a></code>.</p>
 <ol type="1">
@@ -148,27 +148,27 @@ The Codec Roster &amp; Algorithm/Table Sources</h2>
 </ul>
 </li>
 </ol>
-<h1><a class="anchor" id="autotoc_md418"></a>
+<h1><a class="anchor" id="autotoc_md419"></a>
 3. POSIX &lt;tt&gt;iconv&lt;/tt&gt;: Direct Legacy-to-Legacy Abstraction</h1>
 <p>The <code>iconv</code> pipeline acts as a zero-cost abstraction over the native OS C library. Unlike WHATWG, <code>iconv</code> natively manages the translation matrix between legacy encodings.</p>
-<h2><a class="anchor" id="autotoc_md419"></a>
+<h2><a class="anchor" id="autotoc_md420"></a>
 The Interface</h2>
 <ul>
 <li><b>Transcoder:</b> <code>iconv_transcode_view&lt;InByte = char, OutByte = char&gt;</code> (Consumes <code>byte_like</code>, yields <code>byte_like</code>).</li>
 <li><b>Key Distinction:</b> This view completely bypasses the <code>char32_t</code> constraint. It allows a user to pipe <code>shift_jis</code> bytes directly into <code>utf_8</code> bytes in a single pass without reifying the intermediate scalar in C++, preventing memory bottlenecking and unlocking maximum pipeline throughput.</li>
 <li><b>Constraint Safety:</b> Models a move-only iterator to safely handle the lifetime of the <code>iconv_t</code> POSIX system handle. Operates over a user-injected <code>std::span&lt;OutByte&gt;</code> to eliminate heap allocations.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md420"></a>
+<h1><a class="anchor" id="autotoc_md421"></a>
 4. Validation Architecture</h1>
 <p>To ensure implementation immutability, safety, and correct licensing, testing is bifurcated.</p>
-<h2><a class="anchor" id="autotoc_md421"></a>
+<h2><a class="anchor" id="autotoc_md422"></a>
 A. In-Tree WHATWG Conformance (W3C Web Platform Tests)</h2>
 <ul>
 <li><b>Data Source:</b> The <code>encoding/</code> directory from the <code>web-platform-tests/wpt</code> GitHub repository.</li>
 <li><b>Execution:</b> A build script will extract the JSON-based WPT vectors (which the W3C provides under permissive licenses) and serialize them into C++ <code>constexpr</code> arrays.</li>
 <li><b>Result:</b> <code>tests/beman/transcoding/whatwg.test.cpp</code> runs these arrays to prove 100% bug-for-bug compatibility with major browsers (including stateful BOM sniffing and <code>gb18030</code> fallbacks).</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md422"></a>
+<h2><a class="anchor" id="autotoc_md423"></a>
 B. Out-of-Tree Iconv Conformance ("Clean Room" Testing)</h2>
 <ul>
 <li><b>Data Source:</b> Edge-case test buffers generated from FreeBSD's Citrus tests, <code>musl libc</code>, and fuzzed JSON outputs from GNU <code>libiconv</code>.</li>
@@ -176,7 +176,7 @@ B. Out-of-Tree Iconv Conformance ("Clean Room" Testing)</h2>
 <li><b>Execution:</b> A data-driven C++ test harness parses JSON vectors to test <code>E2BIG</code> (buffer exhaustion), <code>EINVAL</code> (incomplete sequences), and <code>EILSEQ</code> (invalid sequences).</li>
 <li><b>Result:</b> Standard Library maintainers (like MSVC and LLVM) can run this harness against their <code>iconv_transcode_view</code> to prove state-machine resilience without their engineers ever reading potentially GPL-tainted GNU test data.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md423"></a>
+<h1><a class="anchor" id="autotoc_md424"></a>
 5. Next Steps &amp; Standardization</h1>
 <ol type="1">
 <li><b>Repository Setup:</b> Stand up the <code>transcoding</code> directory using Beman <code>stamp.sh</code>.</li>
