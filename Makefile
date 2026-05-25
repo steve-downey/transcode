@@ -102,6 +102,12 @@ compile_commands.json: ## symlink the current compile commands db
 		ln -sf $(_build_path)/compile_commands.json ; \
 	fi
 
+.PHONY: clean-compile-commands
+clean-compile-commands: ## Delete the compile commands symlink
+	-rm -f compile_commands.json
+
+clean: clean-compile-commands
+
 .PHONY: compile
 compile: $(_build_path)/CMakeCache.txt compile_commands.json
 compile: ## Compile the project
@@ -117,10 +123,12 @@ install: $(_build_path)/CMakeCache.txt compile ## Install the project
 
 .PHONY: clean-install
 clean-install:
-	-rm -rf .install
+	-rm -rf $(INSTALL_PREFIX)
+
+clean: clean-install
 
 .PHONY: realclean
-realclean: clean-install
+realclean: clean clean-install
 
 .PHONY: ctest
 ctest: $(_build_path)/CMakeCache.txt ## Run CTest on current build
@@ -146,12 +154,21 @@ cmake: |  $(_build_path)
 	cd $(_build_path) && ${run_cmake}
 
 .PHONY: clean
-clean: $(_build_path)/CMakeCache.txt ## Clean the build artifacts
-	$(CMAKE) --build $(_build_path)  --config $(CONFIG) --target clean
+clean: ## Clean the build artifacts without recreating the build tree
+	if [ -f $(_build_path)/CMakeCache.txt ] ; then \
+		$(CMAKE) --build $(_build_path) --config $(CONFIG) --target clean ; \
+	fi
+
+.PHONY: clean-reconf
+clean-reconf: ## Delete the current configured build tree
+	rm -rf $(_build_path)
+
+.PHONY: reconf
+reconf: clean-reconf cmake ## Recreate the current configured build tree
 
 .PHONY: realclean
-realclean: ## Delete the build directory
-	rm -rf $(_build_path)
+realclean: ## Delete the generated build infrastructure
+	rm -rf $(_build_dir) build
 
 .PHONY: env
 env:
@@ -168,7 +185,12 @@ venv: $(VENV)/$(MARKER)
 clean-venv: ## Delete python virtual env
 	-rm -rf $(VENV)
 
+.PHONY: clean-uv-lock
+clean-uv-lock: ## Delete the generated uv lockfile
+	-rm -f uv.lock
+
 realclean: clean-venv
+realclean: clean-uv-lock
 
 .PHONY: show-venv
 show-venv: venv
@@ -213,6 +235,13 @@ coverage: venv $(_build_path)/CMakeCache.txt
 	$(ACTIVATE) ctest --build-config Gcov --output-on-failure --test-dir $(_build_path)
 	$(CMAKE) --build $(_build_path) --config Gcov --target process_coverage
 
+.PHONY: clean-coverage
+clean-coverage: ## Delete generated coverage reports
+	-rm -rf $(_build_path)/coverage
+	-rm -f .coverage .coverage.* coverage.xml
+
+clean: clean-coverage
+
 .PHONY: view-coverage
 view-coverage: ## View the coverage report
 	sensible-browser $(_build_path)/coverage/coverage.html
@@ -221,11 +250,23 @@ view-coverage: ## View the coverage report
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile
 
+.PHONY: clean-docs
+clean-docs: ## Delete generated Doxygen output
+	-rm -rf docs/html docs/latex
+
+clean: clean-docs
+
 .PHONY: mrdocs
 mrdocs: ## Build the docs with MrDocs
 	-rm -rf docs/adoc
 	cd docs && NO_COLOR=1 mrdocs mrdocs.yml 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
 	find docs/adoc -name '*.adoc' | xargs asciidoctor
+
+.PHONY: clean-mrdocs
+clean-mrdocs: ## Delete generated MrDocs output
+	-rm -rf docs/adoc
+
+clean: clean-mrdocs
 
 .PHONY: testinstall
 testinstall: install
@@ -238,6 +279,8 @@ testinstall: ## Test the installed package
 .PHONY: clean-testinstall
 clean-testinstall:
 	-rm -rf installtest/.build
+
+clean: clean-testinstall
 
 realclean: clean-testinstall
 
@@ -300,13 +343,26 @@ realclean: clean-emacs.d
 
 .PHONY: clean-org-deps
 clean-org-deps:
-	-rm $(ORGFILES:%.org=%.org.deps)
+	-rm -f $(ORGFILES:%.org=%.org.deps)
 clean: clean-org-deps
 
 .PHONY: clean-org-html
 clean-org-html:
-	-rm $(ORGFILES:%.org=%.html) $(ORGFILES:%.org=%-slides.html)
+	-rm -f $(ORGFILES:%.org=%.html) $(ORGFILES:%.org=%-slides.html)
 clean: clean-org-html
+
+.PHONY: clean-python-artifacts
+clean-python-artifacts: ## Delete Python test and lint caches
+	-rm -rf .cache .mypy_cache .pytest_cache .ruff_cache .tox .nox htmlcov cover
+	-find tools -type d -name __pycache__ -prune -exec rm -rf {} +
+
+clean: clean-python-artifacts
+
+.PHONY: clean-submodules
+clean-submodules: ## Delete the submodule update stamp
+	-rm -f .update-submodules
+
+realclean: clean-submodules
 
 .PHONY: presentation
 presentation: test
