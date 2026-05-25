@@ -74,3 +74,36 @@ TEST_CASE("iconv_transcode_or_error pipe syntax EILSEQ", "[transcoding::iconv_re
     }
     CHECK(output == input);
 }
+
+TEST_CASE("real iconv E2BIG: long input with small buffer", "[transcoding::iconv_real]") {
+    // Scenario A from iconv-testing.md: 100 'A' chars → UTF-32LE with tiny buffer.
+    // Forces repeated E2BIG as the 4-byte buffer can only hold one codepoint.
+    std::string         input(100, 'A');
+    std::array<char, 4> buf{};
+    std::vector<char>   output;
+    for (char c : input | iconv_transcode("UTF-8", "UTF-32LE", std::span(buf)))
+        output.push_back(c);
+    REQUIRE(output.size() == 400);
+    for (int i = 0; i < 100; ++i) {
+        CHECK(static_cast<unsigned char>(output[i * 4]) == 0x41);
+        CHECK(static_cast<unsigned char>(output[i * 4 + 1]) == 0x00);
+        CHECK(static_cast<unsigned char>(output[i * 4 + 2]) == 0x00);
+        CHECK(static_cast<unsigned char>(output[i * 4 + 3]) == 0x00);
+    }
+}
+
+TEST_CASE("real iconv split multi-byte: U+1D11E (4-byte UTF-8)", "[transcoding::iconv_real]") {
+    // Scenario B from iconv-testing.md: 𝄞 (U+1D11E) = F0 9D 84 9E in UTF-8.
+    // The view must accumulate all 4 bytes before iconv can decode them.
+    std::vector<char>   input{'\xF0', '\x9D', '\x84', '\x9E'};
+    std::array<char, 4> buf{};
+    std::vector<char>   output;
+    for (char c : input | iconv_transcode("UTF-8", "UTF-32LE", std::span(buf)))
+        output.push_back(c);
+    REQUIRE(output.size() == 4);
+    // U+1D11E in UTF-32LE: 1E D1 01 00
+    CHECK(static_cast<unsigned char>(output[0]) == 0x1E);
+    CHECK(static_cast<unsigned char>(output[1]) == 0xD1);
+    CHECK(static_cast<unsigned char>(output[2]) == 0x01);
+    CHECK(static_cast<unsigned char>(output[3]) == 0x00);
+}

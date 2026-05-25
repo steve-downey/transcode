@@ -130,3 +130,30 @@ TEST_CASE("iconv_transcode_or_error_closure pipe syntax with mock fns", "[transc
     REQUIRE(result[1].has_value());
     CHECK(result[1].value() == 'i');
 }
+
+TEST_CASE("iconv_transcode_or_error_view E2BIG with zero output yields output_full error",
+          "[transcoding::iconv_transcode_or_error]") {
+    std::vector<char>    input{'A', 'B'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_e2big_zero_output, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    REQUIRE(result.size() >= 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == iconv_error::output_full);
+}
+
+TEST_CASE("iconv_transcode_or_error_view partial consume yields output then continues",
+          "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_partial_consume consumes 1 byte, writes 1, returns EINVAL.
+    std::vector<char>    input{0x41, 0x42, 0x43, 0x44};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_partial_consume, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    REQUIRE(result.size() >= 2);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == 0x41);
+}

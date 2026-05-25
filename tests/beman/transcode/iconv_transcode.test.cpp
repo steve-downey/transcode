@@ -118,3 +118,27 @@ TEST_CASE("iconv_transcode_closure pipe syntax with mock fns", "[transcoding::ic
         output.push_back(c);
     CHECK(output == input);
 }
+
+TEST_CASE("iconv_transcode_view EILSEQ skips bad bytes and terminates", "[transcoding::iconv_transcode]") {
+    std::vector<char>    input{'\xFF', '\xFE'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_eilseq, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    std::vector<char> output;
+    for (char c : view)
+        output.push_back(c);
+    CHECK(output.empty());
+}
+
+TEST_CASE("iconv_transcode_view partial staging consume shifts correctly", "[transcoding::iconv_transcode]") {
+    // mock_iconv_partial_consume consumes 1 byte, writes 1, returns EINVAL.
+    // With 4-byte input, each pair of bytes produces output after accumulating.
+    std::vector<char>    input{0x41, 0x42, 0x43, 0x44};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_partial_consume, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    std::vector<char> output;
+    for (char c : view)
+        output.push_back(c);
+    CHECK(output.size() >= 2);
+}
