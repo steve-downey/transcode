@@ -24,6 +24,7 @@ var classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator =
     [ "done_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#ae8ddcc530097423b3a275e1c714ee598", null ],
     [ "end_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#aea2fb4dd1fec260ff37e62fd1bd9c4c0", null ],
     [ "error_value_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a62b88503f5a8d47d75983b0b1a93ef1d", null ],
+    [ "flushed_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#ac493c2927fd7a0eff6b54db386cd0d21", null ],
     [ "fns_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a2f5c75d19f2007feaf867ebbd38e7af5", null ],
     [ "handle_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3fcae46ebebc5e9e79e61bcfe1375f23", null ],
     [ "has_error_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3f5e8cf2c0a2c63c44d9bba7a5bc307f", null ],

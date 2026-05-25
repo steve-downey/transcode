@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['macintosh_0',['macintosh',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa88b12deabfb301d0d62b6fb5fa8f2565',1,'beman::transcoding']]],
-  ['macintosh_2ehpp_1',['macintosh.hpp',['../macintosh_8hpp.html',1,'']]],
-  ['main_2',['main',['../todo_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'todo.cpp']]],
-  ['make_5freal_5ficonv_5ffns_3',['make_real_iconv_fns',['../namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b',1,'beman::transcoding']]]
+  ['labels_2ehpp_0',['labels.hpp',['../labels_8hpp.html',1,'']]],
+  ['len_5f_1',['len_',['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a0d91dd53ab7a5aa2a959a8f2d0e31059',1,'beman::transcoding::whatwg_encode_view::iterator::len_()'],['../classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#ab8ce591d38fccd045d2b0efae60b059a',1,'beman::transcoding::whatwg_encode_or_error_view::iterator::len_()']]],
+  ['load_2',['load',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#aefea5e5e3fa7152efdb3684924358270',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::load()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a674f616132d5d7b4b0432f4c8ea888af',1,'beman::transcoding::iconv_transcode_view::iterator::load()'],['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a1a857c52b9777fa68495ab1501b3116d',1,'beman::transcoding::whatwg_decode_view::iterator::load()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a1b7059cb25f52558df0a550b724aa01d',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::load()'],['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a6a7f6c85cbb04ad707f1ceb57be555ee',1,'beman::transcoding::whatwg_encode_view::iterator::load()'],['../classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a0ef3e6bad62088cf596ab64fa453daa9',1,'beman::transcoding::whatwg_encode_or_error_view::iterator::load()']]]
 ];

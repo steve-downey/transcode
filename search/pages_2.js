@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['step_2017_3a_20data_20tooling_20—_20whatwg_20index_20acquisition_20_26_20table_20generation_0',['Step 17: Data Tooling — WHATWG Index Acquisition &amp; Table Generation',['../md_docs_plans_step17_iso_8859_tables.html',1,'']]]
+  ['phase_202_20progress_20checklist_0',['Phase 2 Progress Checklist',['../md_docs_plans_phase2_checklist.html',1,'']]],
+  ['phase_202_3a_20full_20whatwg_20codec_20implementation_1',['Phase 2: Full WHATWG Codec Implementation',['../md_docs_plans_phase2_index.html',1,'']]]
 ];
