@@ -50,6 +50,17 @@ constexpr utf8_result utf8_decode_one(I& current, S end) {
         auto cont = static_cast<unsigned char>(*current);
         if ((cont & 0xC0) != 0x80)
             return {{}, whatwg_error::invalid_byte, true}; // do NOT advance
+        // WHATWG: validate first continuation byte ranges.
+        if (i == 0) {
+            if (byte == 0xE0 && cont < 0xA0)
+                return {{}, whatwg_error::overlong_encoding, true};
+            if (byte == 0xED && cont > 0x9F)
+                return {{}, whatwg_error::surrogate_code_point, true};
+            if (byte == 0xF0 && cont < 0x90)
+                return {{}, whatwg_error::overlong_encoding, true};
+            if (byte == 0xF4 && cont > 0x8F)
+                return {{}, whatwg_error::out_of_range, true};
+        }
         ++current;
         cp = (cp << 6) | (cont & 0x3F);
     }
@@ -58,12 +69,6 @@ constexpr utf8_result utf8_decode_one(I& current, S end) {
         return {{}, whatwg_error::surrogate_code_point, true};
     if (cp > 0x10FFFF)
         return {{}, whatwg_error::out_of_range, true};
-    if (extra == 1 && cp < 0x80)
-        return {{}, whatwg_error::overlong_encoding, true};
-    if (extra == 2 && cp < 0x800)
-        return {{}, whatwg_error::overlong_encoding, true};
-    if (extra == 3 && cp < 0x10000)
-        return {{}, whatwg_error::overlong_encoding, true};
 
     return {cp, {}, false};
 }

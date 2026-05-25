@@ -66,12 +66,15 @@ TEST_CASE("whatwg_decode_or_error truncated sequence", "[transcoding::whatwg_dec
 }
 
 TEST_CASE("whatwg_decode_or_error surrogate codepoint", "[transcoding::whatwg_decode_or_error]") {
-    // U+D800 = 0xED 0xA0 0x80
+    // WHATWG: ED requires first continuation byte in 80-9F; A0 is rejected
+    // early as surrogate_code_point without consuming it.  Then A0 and 80
+    // are bare continuations → invalid_byte each.  3 errors total.
     std::vector<char> bytes{'\xED', '\xA0', '\x80'};
     auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::utf_8>);
-    REQUIRE(result.size() == 1);
-    CHECK(!result[0].has_value());
+    REQUIRE(result.size() == 3);
     CHECK(result[0].error() == whatwg_error::surrogate_code_point);
+    CHECK(result[1].error() == whatwg_error::invalid_byte);
+    CHECK(result[2].error() == whatwg_error::invalid_byte);
 }
 
 TEST_CASE("whatwg_decode_or_error bad continuation re-processing", "[transcoding::whatwg_decode_or_error]") {
@@ -161,23 +164,27 @@ TEST_CASE("whatwg_decode_or_error iso_8859_6 unmapped byte yields error", "[tran
     CHECK(result[0].error() == whatwg_error::invalid_byte);
 }
 
-// Coverage gaps: overlong UTF-8 encodings (utf8.hpp lines 64 and 66).
-// A 3-byte sequence encoding a codepoint < U+0800 is overlong.
+// WHATWG: E0 requires first continuation byte in A0-BF; 80 is rejected early.
 TEST_CASE("whatwg_decode_or_error overlong 3-byte sequence", "[transcoding::whatwg_decode_or_error]") {
-    // 0xE0 0x80 0x80 encodes U+0000 in 3 bytes — always overlong.
+    // E0 80 80: E0 with cont 80 < A0 → overlong (not consumed), then
+    // two bare continuations → invalid_byte each.  3 errors total.
     std::vector<char> bytes{'\xE0', '\x80', '\x80'};
     auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::utf_8>);
-    REQUIRE(result.size() == 1);
-    CHECK(!result[0].has_value());
+    REQUIRE(result.size() == 3);
     CHECK(result[0].error() == whatwg_error::overlong_encoding);
+    CHECK(result[1].error() == whatwg_error::invalid_byte);
+    CHECK(result[2].error() == whatwg_error::invalid_byte);
 }
 
-// A 4-byte sequence encoding a codepoint < U+10000 is overlong.
+// WHATWG: F0 requires first continuation byte in 90-BF; 80 is rejected early.
 TEST_CASE("whatwg_decode_or_error overlong 4-byte sequence", "[transcoding::whatwg_decode_or_error]") {
-    // 0xF0 0x80 0x80 0x80 encodes U+0000 in 4 bytes — always overlong.
+    // F0 80 80 80: F0 with cont 80 < 90 → overlong (not consumed), then
+    // three bare continuations → invalid_byte each.  4 errors total.
     std::vector<char> bytes{'\xF0', '\x80', '\x80', '\x80'};
     auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::utf_8>);
-    REQUIRE(result.size() == 1);
-    CHECK(!result[0].has_value());
+    REQUIRE(result.size() == 4);
     CHECK(result[0].error() == whatwg_error::overlong_encoding);
+    CHECK(result[1].error() == whatwg_error::invalid_byte);
+    CHECK(result[2].error() == whatwg_error::invalid_byte);
+    CHECK(result[3].error() == whatwg_error::invalid_byte);
 }
