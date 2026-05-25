@@ -32,6 +32,8 @@ TEST_CASE("iconv_transcode_view destructor closes handle", "[transcoding::iconv_
 
         iconv_t open(const char*, const char*) const { return (iconv_t)1; }
         size_t  convert(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) const {
+            if (in == nullptr || *in == nullptr)
+                return 0;
             size_t n = std::min(*inleft, *outleft);
             std::memcpy(*out, *in, n);
             *in += n;
@@ -53,7 +55,7 @@ TEST_CASE("iconv_transcode_view destructor closes handle", "[transcoding::iconv_
             iconv_transcode_view<close_counting_fns, std::vector<char>>(input, fns, "ASCII", "ASCII", std::span(buf));
         for ([[maybe_unused]] char c : view) {
         }
-    } // iterator destroyed here
+    }
     CHECK(close_count == 1);
 }
 
@@ -128,6 +130,18 @@ TEST_CASE("iconv_transcode_view EILSEQ skips bad bytes and terminates", "[transc
     for (char c : view)
         output.push_back(c);
     CHECK(output.empty());
+}
+
+TEST_CASE("iconv_transcode_view stateful flush produces trailing bytes", "[transcoding::iconv_transcode]") {
+    std::vector<char>    input{'A', 'B'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_stateful, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    std::vector<char> output;
+    for (char c : view)
+        output.push_back(c);
+    std::vector<char> expected{'A', 'B', 0x0F};
+    CHECK(output == expected);
 }
 
 TEST_CASE("iconv_transcode_view partial staging consume shifts correctly", "[transcoding::iconv_transcode]") {

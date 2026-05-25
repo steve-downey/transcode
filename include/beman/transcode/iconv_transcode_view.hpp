@@ -58,6 +58,7 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         base_iter current_;
         base_sent end_;
         bool      done_;
+        bool      flushed_;
 
         iterator(const iterator&)            = delete;
         iterator& operator=(const iterator&) = delete;
@@ -134,7 +135,8 @@ iconv_transcode_view<IconvFns, R>::iterator::iterator(
       staging_len_(0),
       current_(std::move(current)),
       end_(std::move(end)),
-      done_(handle == (iconv_t)-1) {
+      done_(handle == (iconv_t)-1),
+      flushed_(false) {
     if (!done_)
         load();
 }
@@ -148,6 +150,16 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
             staging_[staging_len_++] = static_cast<char>(*current_);
             ++current_;
         } else if (staging_len_ == 0) {
+            if (!flushed_) {
+                flushed_       = true;
+                char*  out_ptr = buffer_.data();
+                size_t outleft = buffer_.size();
+                fns_.convert(handle_, nullptr, nullptr, &out_ptr, &outleft);
+                output_pos_ = buffer_.data();
+                output_end_ = out_ptr;
+                if (output_pos_ < output_end_)
+                    return;
+            }
             done_ = true;
             return;
         }
@@ -221,7 +233,8 @@ iconv_transcode_view<IconvFns, R>::iterator::iterator(iterator&& other) noexcept
       staging_len_(other.staging_len_),
       current_(std::move(other.current_)),
       end_(std::move(other.end_)),
-      done_(other.done_) {
+      done_(other.done_),
+      flushed_(other.flushed_) {
     for (size_t i = 0; i < other.staging_len_; ++i)
         staging_[i] = other.staging_[i];
     other.handle_      = (iconv_t)-1;
@@ -246,6 +259,7 @@ auto iconv_transcode_view<IconvFns, R>::iterator::operator=(iterator&& other) no
         current_           = std::move(other.current_);
         end_               = std::move(other.end_);
         done_              = other.done_;
+        flushed_           = other.flushed_;
         other.handle_      = (iconv_t)-1;
         other.done_        = true;
         other.staging_len_ = 0;
