@@ -162,13 +162,13 @@ Steps</h1>
 <h2><a class="anchor" id="autotoc_md219"></a>
 Completed</h2>
 <h3><a class="anchor" id="autotoc_md220"></a>
-@ref step14-replacement-codec.md "Step 14: `codec::replacement`"</h3>
+@ref /home/runner/work/transcode/transcode/docs/plans/step14-replacement-codec.md "Step 14: `codec::replacement`"</h3>
 <p>Introduced <code>if constexpr</code> dispatch in <code>load()</code>. Trivial codec: any non-empty input → one U+FFFD.</p>
 <h3><a class="anchor" id="autotoc_md221"></a>
-@ref step15-x-user-defined.md "Step 15: `codec::x_user_defined`"</h3>
+@ref /home/runner/work/transcode/transcode/docs/plans/step15-x-user-defined.md "Step 15: `codec::x_user_defined`"</h3>
 <p>Per-byte algorithmic codec. 0x00–0x7F identity, 0x80–0xFF → U+F780–U+F7FF. Never errors.</p>
 <h3><a class="anchor" id="autotoc_md222"></a>
-@ref step16-single-byte-infra.md "Step 16: Single-byte infrastructure + `windows_1252`"</h3>
+@ref /home/runner/work/transcode/transcode/docs/plans/step16-single-byte-infra.md "Step 16: Single-byte infrastructure + `windows_1252`"</h3>
 <p>Generic table-driven <code>single_byte_decode_one()</code> + 128-entry table pattern. First concrete table.</p>
 <h2><a class="anchor" id="autotoc_md223"></a>
 Data tooling</h2>
@@ -186,7 +186,7 @@ Step 19: Single-byte encoder infrastructure + all encoders (&lt;tt&gt;step19-sin
 <h2><a class="anchor" id="autotoc_md228"></a>
 UTF-8 encoder</h2>
 <h3><a class="anchor" id="autotoc_md229"></a>
-@ref step18-utf8-encoder.md "Step 20: UTF-8 encoder"</h3>
+@ref /home/runner/work/transcode/transcode/docs/plans/step18-utf8-encoder.md "Step 20: UTF-8 encoder"</h3>
 <p><code>whatwg_encode_view&lt;codec::utf_8&gt;</code>: takes <code>char32_t</code> range, yields <code>char</code> bytes. Adds <code>unicode_scalar_range</code> concept, encoder view, or_error variant, pipe closures, negative compile test.</p>
 <h2><a class="anchor" id="autotoc_md230"></a>
 UTF-16</h2>

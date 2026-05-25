@@ -8,5 +8,6 @@ var searchData=
   ['euc_5fjp_2ehpp_5',['euc_jp.hpp',['../euc__jp_8hpp.html',1,'']]],
   ['euc_5fjp_5fjis0212_2ehpp_6',['euc_jp_jis0212.hpp',['../euc__jp__jis0212_8hpp.html',1,'']]],
   ['euc_5fkr_7',['euc_kr',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa86c9996b17a77b9a0033b639a7018ebd',1,'beman::transcoding']]],
-  ['euc_5fkr_2ehpp_8',['euc_kr.hpp',['../tables_2euc__kr_8hpp.html',1,'(Global Namespace)'],['../euc__kr_8hpp.html',1,'(Global Namespace)']]]
+  ['euc_5fkr_2ehpp_8',['euc_kr.hpp',['../tables_2euc__kr_8hpp.html',1,'(Global Namespace)'],['../euc__kr_8hpp.html',1,'(Global Namespace)']]],
+  ['execution_20plan_3a_20c_2b_2b29_20transcoding_20architecture_20_28beman_20project_29_9',['Execution Plan: C++29 Transcoding Architecture (Beman Project)',['../md_docs_transcoding_plan_part2.html',1,'']]]
 ];
