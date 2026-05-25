@@ -1,5 +1,19 @@
 var searchData=
 [
-  ['phase_202_20progress_20checklist_0',['Phase 2 Progress Checklist',['../md_docs_plans_phase2_checklist.html',1,'']]],
-  ['phase_202_3a_20full_20whatwg_20codec_20implementation_1',['Phase 2: Full WHATWG Codec Implementation',['../md_docs_plans_phase2_index.html',1,'']]]
+  ['p3_2dstep_2010_3a_20chunked_2flazy_20boundary_20stress_20benchmarks_0',['P3-Step 10: Chunked/Lazy Boundary Stress Benchmarks',['../md_docs_plans_p3_step10_boundary_stress.html',1,'']]],
+  ['p3_2dstep_2011_3a_20toolchain_20matrix_20automation_1',['P3-Step 11: Toolchain Matrix Automation',['../md_docs_plans_p3_step11_toolchain_matrix.html',1,'']]],
+  ['p3_2dstep_2012_3a_20reporting_2c_20dashboard_2c_20and_20reproducibility_20pack_2',['P3-Step 12: Reporting, Dashboard, and Reproducibility Pack',['../md_docs_plans_p3_step12_reporting_and_repro.html',1,'']]],
+  ['p3_2dstep_201_3a_20benchmark_20harness_20scaffolding_3',['P3-Step 1: Benchmark Harness Scaffolding',['../md_docs_plans_p3_step1_benchmark_harness.html',1,'']]],
+  ['p3_2dstep_202_3a_20benchmark_20corpus_20acquisition_20and_20provenance_4',['P3-Step 2: Benchmark Corpus Acquisition and Provenance',['../md_docs_plans_p3_step2_benchmark_data.html',1,'']]],
+  ['p3_2dstep_203_3a_20benchmark_20fixture_20library_20and_20result_20schema_5',['P3-Step 3: Benchmark Fixture Library and Result Schema',['../md_docs_plans_p3_step3_benchmark_fixtures.html',1,'']]],
+  ['p3_2dstep_204_3a_20utf_2dfamily_20and_20ascii_20fast_2dpath_20benchmarks_6',['P3-Step 4: UTF-Family and ASCII Fast-Path Benchmarks',['../md_docs_plans_p3_step4_utf_benchmarks.html',1,'']]],
+  ['p3_2dstep_205_3a_20legacy_20whatwg_20codec_20benchmarks_7',['P3-Step 5: Legacy WHATWG Codec Benchmarks',['../md_docs_plans_p3_step5_legacy_whatwg_benchmarks.html',1,'']]],
+  ['p3_2dstep_206_3a_20_3ctt_3eiconv_3c_2ftt_3e_20baselines_8',['P3-Step 6: &lt;tt&gt;iconv&lt;/tt&gt; Baselines',['../md_docs_plans_p3_step6_iconv_baselines.html',1,'']]],
+  ['p3_2dstep_207_3a_20_3ctt_3estd_3a_3acodecvt_3c_2ftt_3e_20negative_20baseline_9',['P3-Step 7: &lt;tt&gt;std::codecvt&lt;/tt&gt; Negative Baseline',['../md_docs_plans_p3_step7_codecvt_baseline.html',1,'']]],
+  ['p3_2dstep_208_3a_20_3ctt_3eencoding_5frs_3c_2ftt_3e_20baseline_10',['P3-Step 8: &lt;tt&gt;encoding_rs&lt;/tt&gt; Baseline',['../md_docs_plans_p3_step8_encoding_rs_baseline.html',1,'']]],
+  ['p3_2dstep_209_3a_20_3ctt_3esimdutf_3c_2ftt_3e_20ceiling_20baseline_11',['P3-Step 9: &lt;tt&gt;simdutf&lt;/tt&gt; Ceiling Baseline',['../md_docs_plans_p3_step9_simdutf_baseline.html',1,'']]],
+  ['phase_202_20progress_20checklist_12',['Phase 2 Progress Checklist',['../md_docs_plans_phase2_checklist.html',1,'']]],
+  ['phase_202_3a_20full_20whatwg_20codec_20implementation_13',['Phase 2: Full WHATWG Codec Implementation',['../md_docs_plans_phase2_index.html',1,'']]],
+  ['phase_203_20progress_20checklist_14',['Phase 3 Progress Checklist',['../md_docs_plans_phase3_checklist.html',1,'']]],
+  ['phase_203_3a_20benchmarking_20and_20performance_20characterization_15',['Phase 3: Benchmarking and Performance Characterization',['../md_docs_plans_phase3_index.html',1,'']]]
 ];
