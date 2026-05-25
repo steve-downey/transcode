@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–36 complete. 490 C++ + 146 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–37 complete. 492 C++ + 151 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -365,6 +365,24 @@ Step 35: WPT BOM stripping conformance (&lt;tt&gt;step35-wpt-bom-vectors&lt;/tt&
 </ul>
 <hr  />
 <h1><a class="anchor" id="autotoc_md34"></a>
+Step 37: WPT EOF vectors + Big5 conformance fix (&lt;tt&gt;step37-wpt-eof-vectors&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step37-wpt-eof-vectors</code> from <code>main</code></li>
+<li>[x] Write failing tests (RED) referencing missing <code>wpt_eof_vectors.hpp</code></li>
+<li>[x] Push RED to both remotes</li>
+<li>[x] Download <code>textdecoder-eof.any.js</code> + <code>textdecoder-fatal-streaming.any.js</code> → <code>docs/wpt/</code></li>
+<li>[x] Update <code><a class="el" href="wpt_2SOURCE_8md.html">docs/wpt/SOURCE.md</a></code> with provenance + checksums</li>
+<li>[x] Add <code>parse_eof_vectors()</code> + <code>render_eof_vectors_hpp()</code> to <code>generate_wpt_vectors.py</code></li>
+<li>[x] Add 4 Python tests to <code>test_generate_wpt.py</code> (49 total)</li>
+<li>[x] Generate <code>wpt_eof_vectors.hpp</code> (10 vectors: 7 UTF-8 + 3 Big5)</li>
+<li>[x] Fix Big5 conformance bug: WHATWG step 3.6 requires prepending ASCII trail bytes back when pointer is null — set <code>code_point2</code> in <code>big5_decode_one</code> and propagate in both view <code>load()</code> functions</li>
+<li>[x] Update 2 existing Big5 tests (0x81,0x40 now correctly yields U+FFFD+U+0040)</li>
+<li>[x] <code>make test</code> (492 C++ + 151 Python all pass)</li>
+<li>[x] <code>make lint</code> — clean</li>
+<li>[x] Push GREEN to both remotes + merge to main</li>
+</ul>
+<hr  />
+<h1><a class="anchor" id="autotoc_md36"></a>
 Step 36: WPT fatal single-byte (&lt;tt&gt;step36-wpt-fatal-single-byte&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step36-wpt-fatal-single-byte</code> from <code>main</code></li>
@@ -380,7 +398,7 @@ Step 36: WPT fatal single-byte (&lt;tt&gt;step36-wpt-fatal-single-byte&lt;/tt&gt
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md36"></a>
+<h1><a class="anchor" id="autotoc_md38"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
