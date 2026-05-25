@@ -14,6 +14,9 @@ import beman.transcode;
     #include <beman/transcode/detail/null_term.hpp>
     #include <beman/transcode/whatwg_decode_view.hpp>
     #include <beman/transcode/whatwg_encode_view.hpp>
+    #include <beman/transcode/iconv_transcode_view.hpp>
+    #include <beman/transcode/iconv_transcode_or_error_view.hpp>
+    #include <beman/transcode/iconv_real.hpp>
     #include <beman/transcode/detail/labels.hpp>
     #include <beman/transcode/detail/sniff.hpp>
     #include <beman/transcode/detail/transcode_string.hpp>

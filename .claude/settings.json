@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh run *)",
+      "Read(//home/sdowney/.config/uv/**)",
+      "Read(//home/sdowney/**)",
+      "Bash(UV_INDEX_URL=https://pypi.org/simple/ UV_NATIVE_TLS=false uv lock)",
+      "Bash(clang-format -i include/beman/transcode/detail/concepts.hpp include/beman/transcode/detail/error.hpp include/beman/transcode/detail/null_term.hpp tests/beman/transcode/concepts.test.cpp tests/beman/transcode/error.test.cpp tests/beman/transcode/null_term.test.cpp)",
+      "Bash(gh api *)",
+      "Bash(git submodule *)",
+      "WebSearch",
+      "Bash(pip install *)",
+      "Bash(cmake --version)",
+      "WebFetch(domain:gitlab.kitware.com)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git fetch *)",
+      "Bash(git rebase *)",
+      "Bash(cp /home/sdowney/src/steve-downey/example/main/docs/doxygen-awesome.css /home/sdowney/src/steve-downey/transcode/transcode/docs/)",
+      "Bash(cp /home/sdowney/src/steve-downey/example/main/docs/header.html /home/sdowney/src/steve-downey/transcode/transcode/docs/)",
+      "Bash(cp /home/sdowney/src/steve-downey/example/main/docs/Doxyfile /home/sdowney/src/steve-downey/transcode/transcode/docs/Doxyfile)",
+      "Bash(doxygen docs/Doxyfile)",
+      "Bash(git check-ignore *)"
+    ],
+    "additionalDirectories": [
+      "/home/sdowney/src/steve-downey/example/main/docs"
+    ]
+  }
+}

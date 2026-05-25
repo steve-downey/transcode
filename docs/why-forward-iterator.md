@@ -1,0 +1,61 @@
+# The Story of Failing to Find a Way Out: Reverse-Parsing Legacy Encodings
+
+## Act I: The Overlapping Abyss
+If you are dropped into the middle of an arbitrary point in a string using a WHATWG legacy multibyte encoding (like Shift_JIS, Big5, or GB18030), you cannot find the beginning of a character just by reading backward.
+
+This happens because legacy encodings lack **self-synchronization**. Unlike UTF-8, where lead and trail byte ranges are strictly separated, legacy encodings share the same hexadecimal values for both. In Shift_JIS, the byte `0x81` is valid as *both* a lead byte and a trail byte.
+
+### The Specific Example
+Imagine you are handed a data buffer and dropped at index 3:
+`Buffer: [0x40, 0x81, 0x81, 0x81, 0x81]`
+`Index:             0     1     2     3     4`
+
+If you look locally at index 3 (which is `0x81`), is it the start of a character or the second half of one? You cannot know without scanning backward to the true beginning of the string:
+* **If the string actually started at index 1:** The parsing goes `[0x81 0x81]` (Char 1) and `[0x81 0x81]` (Char 2). Your byte at index 3 is a **lead byte**.
+* **If the string actually started at index 0:** The parsing goes `[0x40]` (Char 1), `[0x81 0x81]` (Char 2), and `[0x81 0x81]` (Char 3). Your byte at index 3 is a **trail byte**.
+
+Every single byte relies entirely on the even/odd parity established by the byte preceding it. If the string is malformed, the ambiguity is even worse, as dropped trail bytes leave no algorithmic breadcrumbs going backward.
+
+---
+
+## Act II: The Illusion of the Anchor
+Suppose your position is not random. You just parsed forward from the beginning of the string, so you know for an absolute fact you are sitting exactly at a valid character boundary.
+
+You still cannot reliably step backward. Knowing the *end* of the previous character does not tell you its *length*.
+
+### The Specific Example
+Imagine looking backward from your known, forward-parsed cursor and seeing this sequence in Shift_JIS:
+`... 0x81 0x81 0x81 0x40 | <CURSOR>`
+
+We know `0x40` is ASCII `@` (a valid 1-byte character) AND a valid trail byte. We know `0x81` is a lead byte AND a trail byte. Where does the character *before* your cursor begin?
+
+* **Scenario A (Odd number of preceding 0x81s):** The sequence from the start of the string was `[0x81 0x81]` (U+3001 Ideographic Comma) followed by `[0x81 0x40]` (U+3000 Ideographic Space).
+    *Result:* The character before your cursor is **2 bytes long**, and you just parsed a Japanese space.
+* **Scenario B (Even number of preceding 0x81s):** The sequence from the start of the string was `[0x81 0x81]` (U+3001), `[0x81 0x81]` (U+3001), followed by a standalone `[0x40]` (U+0040 '@').
+    *Result:* The character before your cursor is **1 byte long**, and you just parsed an English '@' symbol.
+
+Even though you are sitting at a known boundary, you are forced into the exact same backward dependency chain to resolve the parity of the preceding bytes just to know if you should step back 1 byte or 2 bytes.
+
+---
+
+## Act III: State Machine Amnesia
+Finally, you might think to capture the exact WHATWG parser state at your cursor position, rather than just the pointer.
+
+This is the final dead end. Having the parser state provides absolutely zero historical context because the WHATWG state machine suffers from "amnesia" at character boundaries. Decoders operate as forward-looking state machines. When you reach a valid character boundary, the decoder finishes emitting the Unicode code point and immediately resets its internal state to the "default" state (waiting for a new ASCII character or a new multibyte lead byte).
+
+### The Specific Example
+Let's track the exact parser state for the end of the two scenarios from Act II to see why it fails to help us read backwards.
+
+* **Trace A (The preceding character was '@'):**
+    1. Parser reads `0x81` $\rightarrow$ State changes to: *Shift_JIS lead*
+    2. Parser reads `0x81` (Emits U+3001) $\rightarrow$ State resets to: *Default*
+    3. Parser reads `0x40` (Emits U+0040) $\rightarrow$ State resets to: **Default**
+
+* **Trace B (The preceding character was Ideographic Space):**
+    1. Parser reads `0x81` $\rightarrow$ State changes to: *Shift_JIS lead*
+    2. Parser reads `0x40` (Emits U+3000) $\rightarrow$ State resets to: **Default**
+
+In both traces, you are left at the exact same byte position, looking at the exact same bytes behind you, and your parser state is completely identical: **Default**. The parser state only tells you what to do with the *next* byte you encounter.
+
+### The Final Verdict
+There is no escape and no algorithm that can reliably read backwards in a legacy multibyte encoding using only local context. To step backward successfully, a pointer and parser state are never enough; you must maintain an external cache of the byte-offsets for every single character boundary you crossed while reading forward.
