@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 54
+# Handoff: beman.transcode — Step 55
 
 ## Project
 
@@ -14,74 +14,82 @@ proposal.
 
 ## Current State
 
-**Step 53b (unreachable code annotations) complete and merged to main.**
+**Step 54 (module audit) complete and merged to main.**
 
-608 C++ tests + 171 Python tests pass (`make test`). `make lint` has
+611 C++ tests + 171 Python tests pass (`make test`). `make lint` has
 pre-existing failures only in docs (codespell: "implementor" in
 `docs/Rust Encoding for C++ Transcode.md`, "bu" in
-`papers/wg21/generated/TEST.html`). All C++, CMake, tools, and ruff
-lint passes cleanly (papers/wg21 now excluded from ruff via
-`extend-exclude` in pyproject.toml).
+`papers/wg21/generated/TEST.html`, etc.). All C++, CMake, tools, and ruff
+lint passes cleanly.
 
-### What Step 53b Added
+### What Step 54 Added
 
-Backfilled `std::unreachable()` annotations for proven dead code paths
-that had been identified in step 53 coverage analysis:
+Completed C++23 module support audit by adding three iconv public API headers
+to the umbrella header that were missing:
 
-**`gb18030.hpp`** — 4 locations marked unreachable:
-- Lines 70, 72: Pre-check on line 51 prevents pointer overflow conditions
-  (`pointer > 39419 && pointer < 189000` || `pointer > 1237575`)
-- Line 76: Binary search can't fail — range 0 starts at pointer 0
-- Line 96: gb18030 covers all Unicode — encode always finds a match in ranges table
-- Line 172: GBK table has no zero entries (WHATWG-normative)
+**`include/beman/transcode/transcode.hpp`** — added three iconv headers:
+- `iconv_transcode_view.hpp` (added in step 13, but missing from umbrella)
+- `iconv_transcode_or_error_view.hpp` (added in step 12, but missing from umbrella)
+- `iconv_real.hpp` (added in step 11, but missing from umbrella)
 
-**`whatwg_decode_view.hpp`** — 1 location marked unreachable:
-- Line 869: windows_1252 error branch — WHATWG normative table has no null entries
+These headers are public APIs at the top level of `include/beman/transcode/`
+(not in `detail/`), so they were never intended to be internal. They provide
+real OS iconv integration and should have been in the umbrella header since
+step 42 added it. The module file (`transcode.cppm`) re-exports the umbrella
+header, so all three are now properly exported by the C++23 module interface.
 
-Also added `#include <utility>` to gb18030.hpp to support `std::unreachable()`.
+**`tests/beman/transcode/transcode.test.cpp`** — added three new tests:
+- Verify `iconv_functions` is accessible from umbrella
+- Verify `iconv_transcode_view<iconv_functions, ...>` is accessible
+- Verify `iconv_transcode_or_error_view<iconv_functions, ...>` is accessible
+- Verify `make_real_iconv_fns()` is accessible and returns valid function pointers
 
 ### Coverage Summary
 
-Overall: 85.4% lines, 99.9% functions (unchanged from step 53).
+Overall unchanged from step 53b: 85.4% lines, 99.9% functions.
 
-Remaining meaningful coverage gaps (not dead code):
-- `whatwg_decode_view.hpp`: some paths in GBK/GB18030 replay logic
-  and ISO-2022-JP state machine
-- `iconv_transcode_view.hpp`: ~5% uncovered (error paths in iconv
-  interaction)
-- `iconv_transcode_or_error_view.hpp`: ~7% uncovered
+Remaining coverage gaps (opportunities for step 55+):
+- `whatwg_decode_view.hpp`: 97.1% covered; remaining gaps in GB18030/GBK replay
+  logic and ISO-2022-JP state machine transitions (~30 lines)
+- `iconv_transcode_view.hpp`: ~5% uncovered (error paths: EILSEQ, EINVAL, E2BIG)
+- `iconv_transcode_or_error_view.hpp`: ~7% uncovered (error path coverage)
 
-## What To Do Next — Step 54
+## What To Do Next — Step 55
 
 **Read the checklist first:**
 ```
 docs/plans/phase2-checklist.md
 ```
 
-Steps 0–53b are complete. The checklist does not yet have a step 54 entry.
+Steps 0–54 are complete. The checklist does not yet have a step 55 entry.
 
-### Recommended options for step 54
+### Recommended options for step 55
 
-**Option A: C++23 module support update** — ensure `transcode.cppm`
-exports all headers added since step 42 (umbrella header). Run:
-```bash
-grep '#include' include/beman/transcode/transcode.hpp
-```
-and compare with what's exported in `transcode.cppm`. Any missing
-includes = missing module exports. This is a quick audit with potentially
-one line of adds.
+**Option A: `whatwg_decode_view` final coverage push** — Target the remaining
+~3% of uncovered lines in `whatwg_decode_view.hpp`. Focus on:
+- GB18030/GBK replay logic edge cases (state machine in `load()`)
+- ISO-2022-JP state transitions not yet covered
 
-**Option B: `whatwg_decode_view.hpp` remaining coverage** — the replay
-logic for GB18030/GBK and some ISO-2022-JP state machine paths still
-have gaps. Requires understanding the view's iterator states and writing
-targeted edge-case tests. Run `make coverage` and inspect the JSON for
-details on uncovered lines.
+Run `make coverage` and inspect the JSON report at `.build/build-system/coverage.json`
+to find exact uncovered lines. This is a focused coverage-driven task (~30 lines to test).
 
-**Option C: Begin Phase 3 (benchmarking)** — plan docs exist in
-`docs/plans/phase3-*.md`. This is a multi-step track setting up
-benchmarking infrastructure (harness, corpora, baselines). First step
-is P3-step1 in `docs/plans/p3-step1-benchmark-harness.md`. Option C is
-recommended if the benchmarking report is a near-term priority.
+**Option B: iconv error path coverage** — Add targeted tests for iconv error
+conditions (`EILSEQ`, `EINVAL`, `E2BIG`) to improve `iconv_transcode_view.hpp`
+and `iconv_transcode_or_error_view.hpp` coverage from ~93% → ~100%. Requires
+understanding mock iconv interactions and edge cases. May require extending
+`iconv_mock.hpp` if needed.
+
+**Option C: Begin Phase 3 (benchmarking)** — Start benchmarking infrastructure
+(plan docs exist in `docs/plans/phase3-*.md`). This is a multi-step track
+setting up: (1) benchmark harness, (2) test corpus, (3) baseline collection.
+First step is P3-step1 in `docs/plans/p3-step1-benchmark-harness.md`. Option C
+is recommended if benchmarking is a near-term priority (e.g., for the WG21
+standard proposal review cycle).
+
+**Option D: Pop a defect or cleanup task** — Check `docs/plans/phase2-index.md`
+or the checklist for any deferred TODO items or known defects that may have
+been flagged during previous steps. These often become apparent after the
+umbrella/module audit.
 
 ## TDD Process
 
@@ -98,7 +106,7 @@ Each step is a separate branch: `step<N>-<slug>`, branched from `main`.
 make test      # build + run ALL tests: C++ (ctest) + Python (pytest)
 make lint      # clang-format + gersemi + ruff + codespell + mypy + gitleaks
 make compile   # build only
-make coverage  # gcovr coverage report
+make coverage  # gcovr coverage report (JSON at .build/build-system/coverage.json)
 ```
 
 ## Coding Rules (abbreviated)
@@ -110,11 +118,12 @@ make coverage  # gcovr coverage report
 - No `Co-Authored-By` trailers in commits
 - Full rules in `CLAUDE.md`
 
-## Key files for context
+## Key Files for Context
 
-- `include/beman/transcode/transcode.hpp` — umbrella header (added in step 42)
-- `include/beman/transcode/whatwg_decode_view.hpp` — decode view (97.1% covered, replay/state gaps)
-- `include/beman/transcode/whatwg_encode_view.hpp` — encode view (100% covered)
-- `include/beman/transcode/detail/gb18030.hpp` — GB18030 codec (now with unreachable markers)
-- `transcode.cppm` — C++23 module interface (optional, may need header audit)
+- `include/beman/transcode/transcode.hpp` — umbrella header (now includes all iconv headers)
+- `include/beman/transcode/transcode.cppm` — C++23 module interface (exports umbrella)
+- `include/beman/transcode/whatwg_decode_view.hpp` — decode view (97.1% covered)
+- `include/beman/transcode/iconv_transcode_view.hpp` — iconv view (~93% covered)
+- `include/beman/transcode/iconv_transcode_or_error_view.hpp` — iconv_or_error view (~93% covered)
+- `docs/plans/phase2-checklist.md` — progress tracker (0–54 complete)
 - `docs/plans/phase3-*.md` — Phase 3 benchmarking plans
