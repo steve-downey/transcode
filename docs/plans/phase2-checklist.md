@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–34 complete. 455 C++ + 135 Python tests pass. On `main`.
+**Current state:** Steps 0–35 complete. 462 C++ + 141 Python tests pass. On `main`.
 
 ---
 
@@ -241,6 +241,22 @@ Comprehensive round-trip tests for all implemented codecs.
 - [x] Add 4 new Python tests to `test_generate_wpt.py`
 - [x] Generate `wpt_fatal_vectors.hpp` (33 UTF-8 + 1 UTF-16LE vectors)
 - [x] `make test` (455 C++ + 135 Python all pass)
+- [x] `make lint` — clean
+- [x] Push GREEN to both remotes + merge to main
+
+## Step 35: WPT BOM stripping conformance (`step35-wpt-bom-vectors`)
+
+- [x] Create branch `step35-wpt-bom-vectors` from `main`
+- [x] Write failing test (RED) referencing missing vector header
+- [x] Push RED to both remotes
+- [x] Download `textdecoder-byte-order-marks.any.js` → `docs/wpt/`
+- [x] Update `docs/wpt/SOURCE.md` with provenance + checksum
+- [x] Fix `parse_js_string()` to combine surrogate pairs into supplementary codepoints
+- [x] Add `parse_bom_vectors()` + `render_bom_vectors_hpp()` to `generate_wpt_vectors.py`
+- [x] Add 4 new Python tests + 2 surrogate pair tests to `test_generate_wpt.py`
+- [x] Generate `wpt_bom_vectors.hpp` (3 cases: utf-8, utf-16le, utf-16be)
+- [x] Implement BOM stripping in `whatwg_decode_view` and `whatwg_decode_or_error_view` constructors
+- [x] `make test` (462 C++ + 141 Python all pass)
 - [x] `make lint` — clean
 - [x] Push GREEN to both remotes + merge to main
 

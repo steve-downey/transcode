@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 35 (next WPT coverage)
+# Handoff: beman.transcode — Step 36 (next WPT coverage)
 
 ## Project
 
@@ -14,33 +14,37 @@ proposal.
 
 ## Current State
 
-**Step 34 complete and merged to main.**
+**Step 35 complete and merged to main.**
 
-455 C++ tests + 135 Python tests pass (`make test`). `make lint` clean.
+462 C++ tests + 141 Python tests pass (`make test`). `make lint` clean.
 
-### What Step 34 Added
+### What Step 35 Added
 
-WPT fatal-mode conformance tests from `textdecoder-fatal.any.js`. The
-file has a `bad[]` array of input byte sequences that must produce an
-error (TypeError) in `TextDecoder({fatal: true})`. In our library this
-maps to `whatwg_decode_or_error<codec::X>` yielding at least one
-`std::unexpected` result.
+WPT conformance tests from `textdecoder-byte-order-marks.any.js`. The
+WHATWG spec requires BOM stripping: when a UTF-8, UTF-16LE, or UTF-16BE
+stream starts with its matching BOM prefix (`EF BB BF`, `FF FE`, or
+`FE FF`), the BOM is consumed and not emitted as a codepoint.
 
-34 vectors parsed from the WPT file:
-- 33 UTF-8 vectors (invalid bytes, overlong encodings, surrogates)
-- 1 UTF-16LE vector (`[0x00]` — truncated code unit)
-
-All 34 vectors pass: every invalid input yields at least one error.
+Key changes:
+- Fixed `parse_js_string()` in `tools/generate_wpt_vectors.py` to
+  combine `\uD800-\uDBFF` + `\uDC00-\uDFFF` surrogate pair escapes into
+  supplementary codepoints (e.g. `𝄞` → U+1D11E). This was
+  needed because the WPT BOM file's expected string contains supplementary
+  characters expressed as JS surrogate pairs.
+- Added `parse_bom_vectors()` + `render_bom_vectors_hpp()` to generator
+- Added 6 new Python tests (4 BOM + 2 surrogate pair combining)
+- Generated `wpt_bom_vectors.hpp` (3 cases: utf-8, utf-16le, utf-16be)
+- Implemented BOM stripping in both iterator constructors: after the first
+  `load()`, if the first codepoint is U+FEFF for `codec::utf_8`,
+  `codec::utf_16le`, or `codec::utf_16be`, call `load()` again to skip it.
+- 7 C++ test cases covering no-BOM, with-BOM, and mismatching-BOM for all
+  three encodings.
 
 New files:
-- `docs/wpt/textdecoder-fatal.any.js` — pristine WPT JS
-- `tests/beman/transcode/wpt_fatal_vectors.hpp` — 34 generated vectors
-  (struct `WptFatalVector` with `input` + `description`, two arrays:
-  `utf8_fatal_wpt_vectors[]` and `utf16le_fatal_wpt_vectors[]`)
-- `tests/beman/transcode/wpt_fatal.test.cpp` — 2 test cases
-- `tools/generate_wpt_vectors.py` — added `parse_fatal_vectors()` +
-  `render_fatal_vectors_hpp()`
-- `tools/tests/test_generate_wpt.py` — added 4 new Python tests
+- `docs/wpt/textdecoder-byte-order-marks.any.js` — pristine WPT JS
+- `tests/beman/transcode/wpt_bom_vectors.hpp` — 3 generated cases
+  (struct `WptBomCase` with `bytes`, `bom`, `expected`, `encoding`)
+- `tests/beman/transcode/wpt_bom.test.cpp` — 7 test cases
 
 ### WPT Files in `docs/wpt/`
 
@@ -52,51 +56,55 @@ New files:
 | `textdecoder-mistakes.any.js` | UTF-8 invalid sequences |
 | `textdecoder-utf16-surrogates.any.js` | UTF-16LE surrogate handling |
 | `textdecoder-fatal.any.js` | Fatal mode: all encodings, invalid inputs |
+| `textdecoder-byte-order-marks.any.js` | BOM stripping for UTF-8/16LE/16BE |
 
-## What To Do Next — Step 35
+## What To Do Next — Step 36
 
-**Branch:** `step35-<slug>`
+**Branch:** `step36-<slug>`
 
-### Option A: `textdecoder-utf16-bom-option.any.js` WPT vectors (recommended)
+### Option A: `textdecoder-fatal-single-byte.any.js` WPT vectors (recommended)
 
-Download and parse `textdecoder-utf16-bom-option.any.js` from WPT. It
-tests BOM-stripping behavior for UTF-16 streams.
+Download and parse `textdecoder-fatal-single-byte.any.js` from WPT. It
+tests fatal mode for single-byte encodings with invalid bytes. This would
+verify our `whatwg_decode_or_error` implementation for all 27+ single-byte
+codecs.
 
+Fetch:
+```bash
+gh api "repos/web-platform-tests/wpt/contents/encoding/textdecoder-fatal-single-byte.any.js" \
+  --jq '.content' | base64 -d
 ```
-WPT URL: https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-utf16-bom-option.any.js
+
+Parse the file structure (likely similar to `textdecoder-fatal.any.js`).
+Generate `wpt_fatal_single_byte_vectors.hpp`. Write a test that verifies
+every invalid byte for each single-byte encoding yields at least one
+`std::unexpected` from `whatwg_decode_or_error`.
+
+### Option B: `textdecoder-ignorebom.any.js` WPT vectors
+
+Tests the `ignoreBOM` option (which preserves the BOM in the output).
+Our library doesn't expose an `ignoreBOM` option — it always strips the
+leading BOM. This step would either implement `ignoreBOM` as a template
+parameter, or document the gap.
+
+The relevant WPT file exists in the WPT repo:
+```bash
+gh api "repos/web-platform-tests/wpt/contents/encoding/textdecoder-ignorebom.any.js" \
+  --jq '.content' | base64 -d
 ```
 
-The WHATWG spec strips a BOM at the start of a UTF-16 stream (U+FEFF as
-the first code unit) and uses it to determine byte order. Our current
-UTF-16 decoders (`codec::utf_16le`, `codec::utf_16be`) do not implement
-BOM detection/stripping — this WPT file will reveal exactly what the gap
-is.
+### Option C: `textdecoder-streaming.any.js` gap documentation
 
-Parse the file structure (likely `test()` calls or an array similar to
-previous WPT files). Determine what our decoder actually produces for
-BOM-prefixed inputs and write tests accordingly. If BOM stripping is
-needed, implement it; if not, document why.
-
-### Option B: `textdecoder-streaming.any.js` WPT vectors
-
-Tests streaming decode (multiple calls to `decode()` with `stream: true`).
-Our library doesn't currently expose a streaming API, so this would be
-mostly informational — documenting the gap.
-
-### Option C: Expand fatal mode test coverage to legacy encodings
-
-The WPT `textdecoder-fatal.any.js` has a `// FIXME: Add legacy encoding
-cases` comment. We could add our own tests covering fatal mode for
-single-byte codecs, GB18030, EUC-KR, etc. — verifying that invalid byte
-sequences produce errors in `_or_error` variants for every codec we
-implement.
+Tests streaming decode (`stream: true` option). Our library exposes a
+range/view API rather than a streaming API. This step would document the
+gap and add `// FIXME: streaming not yet supported` notes.
 
 ## TDD Process
 
-1. Branch: `git checkout -b step35-<slug>`
+1. Branch: `git checkout -b step36-<slug>`
 2. Write failing tests (RED) -> commit -> push both remotes
 3. Implement (GREEN) -> `make test` + `make lint` -> commit -> push both
-4. Merge to main: `git checkout main && git merge --no-ff step35-<slug>`
+4. Merge to main: `git checkout main && git merge --no-ff step36-<slug>`
 5. Push main to both remotes
 6. Update `docs/plans/phase2-checklist.md`
 
@@ -124,7 +132,11 @@ The generator `tools/generate_wpt_vectors.py` follows this pattern:
 2. Add `parse_foo_vectors(content: str) -> list[dict[str, object]]`
 3. Add `render_foo_vectors_hpp(vectors, out_path)`
 4. Add both to `main()` + the clang-format list
-5. Add 4 Python tests to `tools/tests/test_generate_wpt.py`
+5. Add Python tests to `tools/tests/test_generate_wpt.py`
+
+**Important:** `parse_js_string()` now correctly combines `\uHHHH\uLLLL`
+surrogate pairs into supplementary codepoints (fixed in step 35). Keep
+this in mind when writing new tests that involve supplementary characters.
 
 All WPT JS files go in `docs/wpt/` with provenance in `SOURCE.md`.
 All generated C++ headers go in `tests/beman/transcode/`.
