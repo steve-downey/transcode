@@ -11,7 +11,11 @@ import beman.transcode;
 
 #else
 
-    #include <beman/transcode/todo.hpp>
+    #include <beman/transcode/detail/null_term.hpp>
+    #include <beman/transcode/whatwg_decode_view.hpp>
+    #include <beman/transcode/whatwg_encode_view.hpp>
+    #include <beman/transcode/detail/labels.hpp>
+    #include <beman/transcode/detail/sniff.hpp>
 
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)
