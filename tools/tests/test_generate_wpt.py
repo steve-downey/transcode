@@ -15,6 +15,7 @@ from generate_wpt_vectors import (
     parse_iso2022jp_decode_vectors,
     parse_js_string,
     parse_single_byte_indexes,
+    parse_surrogates_utf8_vectors,
     parse_utf8_mistake_vectors,
     parse_utf16_surrogate_vectors,
     render_bom_vectors_hpp,
@@ -24,6 +25,7 @@ from generate_wpt_vectors import (
     render_gb18030_vectors_hpp,
     render_iso2022jp_vectors_hpp,
     render_single_byte_vectors_hpp,
+    render_surrogates_utf8_vectors_hpp,
     render_utf8_vectors_hpp,
     render_utf16_surrogates_vectors_hpp,
 )
@@ -500,3 +502,43 @@ def test_render_eof_vectors_hpp(tmp_path: Path) -> None:
     assert "Big5" in content
     assert "0xFFFD" in content
     assert "wpt_eof_vectors[]" in content
+
+
+_SURR_SAMPLE = """\
+var badStrings = [
+    { input: 'a', expected: [0x61], decoded: 'a', name: 'ASCII' },
+    { input: '\\uD800', expected: [0xef, 0xbf, 0xbd], decoded: '\\uFFFD',
+      name: 'Lone high surrogate' },
+];
+"""
+
+
+def test_parse_surrogates_utf8_count() -> None:
+    vectors = parse_surrogates_utf8_vectors(_SURR_SAMPLE)
+    assert len(vectors) == 2
+
+
+def test_parse_surrogates_utf8_ascii() -> None:
+    vectors = parse_surrogates_utf8_vectors(_SURR_SAMPLE)
+    assert vectors[0]["input"] == [0x61]
+    assert vectors[0]["expected"] == [0x61]
+    assert vectors[0]["decoded"] == [0x61]
+
+
+def test_parse_surrogates_utf8_surrogate() -> None:
+    vectors = parse_surrogates_utf8_vectors(_SURR_SAMPLE)
+    assert vectors[1]["input"] == [0xD800]
+    assert vectors[1]["expected"] == [0xEF, 0xBF, 0xBD]
+    assert vectors[1]["decoded"] == [0xFFFD]
+
+
+def test_render_surrogates_utf8_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {"input": [0x61], "expected": [0x61], "decoded": [0x61], "name": "a"},
+    ]
+    out = tmp_path / "wpt_surrogates_utf8_vectors.hpp"
+    render_surrogates_utf8_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_SURROGATES_UTF8_VECTORS_HPP" in content
+    assert "WptSurrogatesUtf8Vector" in content
+    assert "wpt_surrogates_utf8_vectors" in content
