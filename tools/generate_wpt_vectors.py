@@ -17,6 +17,7 @@ SINGLEBYTE_JS = WPT_DIR / "single-byte-decoder.window.js"
 UTF16SURROGATES_JS = WPT_DIR / "textdecoder-utf16-surrogates.any.js"
 FATAL_JS = WPT_DIR / "textdecoder-fatal.any.js"
 BOM_JS = WPT_DIR / "textdecoder-byte-order-marks.any.js"
+FATAL_SINGLE_BYTE_JS = WPT_DIR / "textdecoder-fatal-single-byte.any.js"
 
 
 def parse_js_string(s: str) -> list[int]:
@@ -678,6 +679,77 @@ def render_bom_vectors_hpp(vectors: list[dict[str, object]], out_path: Path) -> 
     out_path.write_text("\n".join(lines))
 
 
+_SBFATAL_RE = re.compile(
+    r"\{encoding:\s*'([^']+)'\s*,\s*bad:\s*\[([^\]]*)\]\s*\}",
+    re.MULTILINE,
+)
+
+
+def parse_fatal_single_byte_cases(content: str) -> list[dict[str, object]]:
+    """Parse singleByteEncodings from textdecoder-fatal-single-byte.any.js.
+
+    Returns list of {"encoding": str, "bad": list[int]}.
+    """
+    cases: list[dict[str, object]] = []
+    for m in _SBFATAL_RE.finditer(content):
+        encoding, bad_str = m.groups()
+        bad = [int(x.strip(), 0) for x in bad_str.split(",") if x.strip()]
+        cases.append({"encoding": encoding, "bad": bad})
+    return cases
+
+
+def render_fatal_single_byte_vectors_hpp(
+    cases: list[dict[str, object]], out_path: Path
+) -> None:
+    """Generate the C++ header for WPT fatal single-byte vectors."""
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/textdecoder-fatal-single-byte.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_FATAL_SINGLE_BYTE_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_FATAL_SINGLE_BYTE_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <cstdint>")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptFatalSingleByteCase {")
+    lines.append("    const char*          encoding;")
+    lines.append("    std::vector<uint8_t> bad;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append(
+        "inline const WptFatalSingleByteCase wpt_fatal_single_byte_cases[] = {"
+    )
+
+    for c in cases:
+        encoding: str = c["encoding"]  # type: ignore[assignment]
+        bad: list[int] = c["bad"]  # type: ignore[assignment]
+        bad_str = _format_bytes(bad)
+        lines.append(f'    {{"{encoding}", {{{bad_str}}}}},')
+
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_FATAL_SINGLE_BYTE_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
 def main() -> int:
     gb18030_content = GB18030_JS.read_text()
     gb18030_vectors = parse_gb18030_decode_vectors(gb18030_content)
@@ -727,6 +799,14 @@ def main() -> int:
     render_bom_vectors_hpp(bom_vectors, TEST_DIR / "wpt_bom_vectors.hpp")
     print(f"Generated {TEST_DIR / 'wpt_bom_vectors.hpp'}")
 
+    fatal_sb_content = FATAL_SINGLE_BYTE_JS.read_text()
+    fatal_sb_cases = parse_fatal_single_byte_cases(fatal_sb_content)
+    print(f"Parsed {len(fatal_sb_cases)} fatal single-byte cases")
+    render_fatal_single_byte_vectors_hpp(
+        fatal_sb_cases, TEST_DIR / "wpt_fatal_single_byte_vectors.hpp"
+    )
+    print(f"Generated {TEST_DIR / 'wpt_fatal_single_byte_vectors.hpp'}")
+
     run_cf = True
     try:
         subprocess.run(["clang-format", "--version"], capture_output=True, check=True)
@@ -742,6 +822,7 @@ def main() -> int:
             TEST_DIR / "wpt_utf16_surrogates_vectors.hpp",
             TEST_DIR / "wpt_fatal_vectors.hpp",
             TEST_DIR / "wpt_bom_vectors.hpp",
+            TEST_DIR / "wpt_fatal_single_byte_vectors.hpp",
         ]:
             subprocess.run(["clang-format", "-i", str(hpp)], check=True)
             print(f"Formatted {hpp}")
