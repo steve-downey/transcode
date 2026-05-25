@@ -230,3 +230,42 @@ TEST_CASE("euc_jp or_error: bad trail in JIS X 0208 yields error", "[transcoding
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::invalid_byte);
 }
+
+// ---------------------------------------------------------------------------
+// Coverage: SS3 (JIS X 0212) error paths
+// ---------------------------------------------------------------------------
+
+TEST_CASE("euc_jp decode truncated SS3: 0x8F only -> U+FFFD", "[transcoding::euc_jp]") {
+    std::vector<char> bytes{'\x8F'};
+    auto              result = collect(bytes | whatwg_decode<codec::euc_jp>);
+    REQUIRE(result.size() == 1);
+    CHECK(result[0] == U'\xFFFD');
+}
+
+TEST_CASE("euc_jp decode SS3 invalid first trail: 0x8F 0x00 -> U+FFFD", "[transcoding::euc_jp]") {
+    std::vector<char> bytes{'\x8F', '\x00'};
+    auto              result = collect(bytes | whatwg_decode<codec::euc_jp>);
+    REQUIRE(result.size() >= 1);
+    CHECK(result[0] == U'\xFFFD');
+}
+
+TEST_CASE("euc_jp decode SS3 invalid second trail: 0x8F 0xA1 0x00 -> U+FFFD", "[transcoding::euc_jp]") {
+    std::vector<char> bytes{'\x8F', '\xA1', '\x00'};
+    auto              result = collect(bytes | whatwg_decode<codec::euc_jp>);
+    REQUIRE(result.size() >= 1);
+    CHECK(result[0] == U'\xFFFD');
+}
+
+TEST_CASE("euc_jp decode SS3 unmapped JIS X 0212 pointer 0: 0x8F 0xA1 0xA1 -> U+FFFD", "[transcoding::euc_jp]") {
+    std::vector<char> bytes{'\x8F', '\xA1', '\xA1'};
+    auto              result = collect(bytes | whatwg_decode<codec::euc_jp>);
+    REQUIRE(result.size() == 1);
+    CHECK(result[0] == U'\xFFFD');
+}
+
+TEST_CASE("euc_jp decode unmapped JIS X 0208 pointer 108: 0xA2 0xAF -> U+FFFD", "[transcoding::euc_jp]") {
+    std::vector<char> bytes{'\xA2', '\xAF'};
+    auto              result = collect(bytes | whatwg_decode<codec::euc_jp>);
+    REQUIRE(result.size() == 1);
+    CHECK(result[0] == U'\xFFFD');
+}
