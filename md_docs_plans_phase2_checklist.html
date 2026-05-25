@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–35 complete. 462 C++ + 141 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–36 complete. 490 C++ + 146 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -365,6 +365,22 @@ Step 35: WPT BOM stripping conformance (&lt;tt&gt;step35-wpt-bom-vectors&lt;/tt&
 </ul>
 <hr  />
 <h1><a class="anchor" id="autotoc_md34"></a>
+Step 36: WPT fatal single-byte (&lt;tt&gt;step36-wpt-fatal-single-byte&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step36-wpt-fatal-single-byte</code> from <code>main</code></li>
+<li>[x] Write failing test (RED) referencing missing vector header</li>
+<li>[x] Push RED to both remotes</li>
+<li>[x] Download <code>textdecoder-fatal-single-byte.any.js</code> → <code>docs/wpt/</code></li>
+<li>[x] Update <code><a class="el" href="wpt_2SOURCE_8md.html">docs/wpt/SOURCE.md</a></code> with provenance + checksum</li>
+<li>[x] Add <code>parse_fatal_single_byte_cases()</code> + <code>render_fatal_single_byte_vectors_hpp()</code> to <code>generate_wpt_vectors.py</code></li>
+<li>[x] Add 5 new Python tests to <code>test_generate_wpt.py</code></li>
+<li>[x] Generate <code>wpt_fatal_single_byte_vectors.hpp</code> (28 cases)</li>
+<li>[x] <code>make test</code> (490 C++ + 146 Python all pass)</li>
+<li>[x] <code>make lint</code> — clean</li>
+<li>[x] Push GREEN to both remotes + merge to main</li>
+</ul>
+<hr  />
+<h1><a class="anchor" id="autotoc_md36"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
