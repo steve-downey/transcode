@@ -20,6 +20,8 @@ Pristine upstream test data. **Do not edit.**
 | `textdecoder-fatal.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-fatal.any.js | `083a058a10a2bdc7…` |
 | `textdecoder-byte-order-marks.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-byte-order-marks.any.js | `dd73fab542fe5d7f…` |
 | `textdecoder-fatal-single-byte.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-fatal-single-byte.any.js | `a4c8f7664ccf35a7…` |
+| `textdecoder-eof.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-eof.any.js | `cf01fd20aa0dc4ea…` |
+| `textdecoder-fatal-streaming.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-fatal-streaming.any.js | `f57d56e829f93ecf…` |
 
 ## Full Checksums
 
@@ -31,3 +33,5 @@ Pristine upstream test data. **Do not edit.**
 - `textdecoder-fatal.any.js`: `083a058a10a2bdc77e1da32d0acda791b568a6701c49db10cec2bfa1f7b9eab8`
 - `textdecoder-byte-order-marks.any.js`: `dd73fab542fe5d7fea58b5ca7bffc916c3535dd0069bc537ae5f41d4c3996361`
 - `textdecoder-fatal-single-byte.any.js`: `a4c8f7664ccf35a7192e813341f591216e46dad696d113252364df050038dd8e`
+- `textdecoder-eof.any.js`: `cf01fd20aa0dc4ea6f450e276aeaed7e477bd58811bb2b0c97897e7ddb204ed1`
+- `textdecoder-fatal-streaming.any.js`: `f57d56e829f93ecf33b96d0bb640e693b3ea54bb1baae1fcd3309867de58658b`

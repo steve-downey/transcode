@@ -18,6 +18,7 @@ UTF16SURROGATES_JS = WPT_DIR / "textdecoder-utf16-surrogates.any.js"
 FATAL_JS = WPT_DIR / "textdecoder-fatal.any.js"
 BOM_JS = WPT_DIR / "textdecoder-byte-order-marks.any.js"
 FATAL_SINGLE_BYTE_JS = WPT_DIR / "textdecoder-fatal-single-byte.any.js"
+EOF_JS = WPT_DIR / "textdecoder-eof.any.js"
 
 
 def parse_js_string(s: str) -> list[int]:
@@ -750,6 +751,94 @@ def render_fatal_single_byte_vectors_hpp(
     out_path.write_text("\n".join(lines))
 
 
+_EOF_RE = re.compile(
+    r"assert_equals\("
+    r'new TextDecoder\("?([^")\s]*)"?\)'
+    r"\.decode\(new Uint8Array\(\[([^\]]*)\]\)\)"
+    r',\s*"((?:[^"\\]|\\.)*)"\)',
+    re.MULTILINE,
+)
+
+_EOF_END_MARKER = '}, "TextDecoder end-of-queue handling");'
+
+
+def parse_eof_vectors(content: str) -> list[dict[str, object]]:
+    """Parse non-streaming assert_equals from textdecoder-eof.any.js.
+
+    Returns list of {"encoding": str, "input": list[int], "expected": list[int]}.
+    Only parses the first test() block (before the streaming block).
+    """
+    end = content.find(_EOF_END_MARKER)
+    if end == -1:
+        return []
+    section = content[:end]
+    vectors: list[dict[str, object]] = []
+    for m in _EOF_RE.finditer(section):
+        encoding, bytes_str, expected_str = m.groups()
+        if not encoding:
+            encoding = "utf-8"
+        input_bytes = [int(x.strip(), 0) for x in bytes_str.split(",") if x.strip()]
+        expected_cps = parse_js_string(expected_str)
+        vectors.append(
+            {"encoding": encoding, "input": input_bytes, "expected": expected_cps}
+        )
+    return vectors
+
+
+def render_eof_vectors_hpp(vectors: list[dict[str, object]], out_path: Path) -> None:
+    """Generate the C++ header for WPT EOF decode vectors."""
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/textdecoder-eof.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("// Note: only non-streaming cases are included; streaming")
+    lines.append("//       (stream:true) cases require stateful API not provided")
+    lines.append("//       by this library's range-view interface.")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_EOF_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_EOF_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <cstdint>")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptEofVector {")
+    lines.append("    const char*           encoding;")
+    lines.append("    std::vector<uint8_t>  input;")
+    lines.append("    std::vector<char32_t> expected;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append("inline const WptEofVector wpt_eof_vectors[] = {")
+
+    for v in vectors:
+        encoding: str = v["encoding"]  # type: ignore[assignment]
+        input_bytes: list[int] = v["input"]  # type: ignore[assignment]
+        expected: list[int] = v["expected"]  # type: ignore[assignment]
+        in_str = _format_bytes(input_bytes)
+        exp_str = _format_codepoints(expected)
+        lines.append(f'    {{"{encoding}", {{{in_str}}}, {{{exp_str}}}}},')
+
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_EOF_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
 def main() -> int:
     gb18030_content = GB18030_JS.read_text()
     gb18030_vectors = parse_gb18030_decode_vectors(gb18030_content)
@@ -807,6 +896,12 @@ def main() -> int:
     )
     print(f"Generated {TEST_DIR / 'wpt_fatal_single_byte_vectors.hpp'}")
 
+    eof_content = EOF_JS.read_text()
+    eof_vectors = parse_eof_vectors(eof_content)
+    print(f"Parsed {len(eof_vectors)} EOF vectors")
+    render_eof_vectors_hpp(eof_vectors, TEST_DIR / "wpt_eof_vectors.hpp")
+    print(f"Generated {TEST_DIR / 'wpt_eof_vectors.hpp'}")
+
     run_cf = True
     try:
         subprocess.run(["clang-format", "--version"], capture_output=True, check=True)
@@ -823,6 +918,7 @@ def main() -> int:
             TEST_DIR / "wpt_fatal_vectors.hpp",
             TEST_DIR / "wpt_bom_vectors.hpp",
             TEST_DIR / "wpt_fatal_single_byte_vectors.hpp",
+            TEST_DIR / "wpt_eof_vectors.hpp",
         ]:
             subprocess.run(["clang-format", "-i", str(hpp)], check=True)
             print(f"Formatted {hpp}")
