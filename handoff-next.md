@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Phase 3 (WPT Conformance)
+# Handoff: beman.transcode — Step 33 (next WPT coverage)
 
 ## Project
 
@@ -14,108 +14,74 @@ proposal.
 
 ## Current State
 
-**Phase 2 is complete.** 420 C++ tests + 102 Python tests pass (`make
-test`). Steps 0–29 done. On `main`.
+**Step 32 complete and merged to main.**
 
-### What Phase 2 Built (Steps 14–29)
+451 C++ tests + 127 Python tests pass (`make test`). `make lint` clean.
 
-All WHATWG codecs are implemented with full decode **and** encode support:
+### What Step 32 Fixed
 
-- **Single-byte** (28 codecs): windows-1252, KOI8-R, KOI8-U,
-  ISO-8859-2..16, IBM866, macintosh, windows-874, windows-1250..1258,
-  x-mac-cyrillic
-- **Multi-byte**: GBK, GB18030, Big5, Shift_JIS, EUC-JP (JIS X 0208 +
-  0212), ISO-2022-JP (stateful), EUC-KR
-- **Algorithmic**: UTF-8 (encode), UTF-16BE, UTF-16LE
-- **Special**: `replacement` (decode-only), `x_user_defined`
-- **Round-trip tests** (step 29): `encode_then_decode` and
-  `decode_then_encode` for all bidirectional codecs
+The ISO-2022-JP stateful decoder now fully conforms to the WHATWG spec.
+All 34 WPT vectors in `tests/beman/transcode/wpt_iso2022jp_vectors.hpp`
+pass (previously 12 of 34 passed).
 
-### Codec enum (in `whatwg_decode_view.hpp`)
+Key fixes:
+1. **Katakana byte range**: 0x21–0x5F → U+FF61–U+FF9F (was incorrectly
+   0xA1–0xDF, the 8-bit JIS range; ISO-2022-JP uses 7-bit encoding)
+2. **SO/SI handling**: 0x0E and 0x0F emit U+FFFD in all states
+3. **`iso2022jp_output_state_`**: tracks where to return after errors
+   (was always going to ASCII; now restores to last valid output state)
+4. **`iso2022jp_output_flag_`**: detects redundant (same-state) ESC
+   sequences and emits U+FFFD for them
+5. **Escape end-of-stream**: prepend lead byte to stream, emit U+FFFD
+6. **Invalid escape**: prepend lead + byte (2 bytes) to stream, emit U+FFFD
+7. **Lead_Byte at end-of-stream**: finished cleanly (no extra U+FFFD)
+8. **`pending_count_`**: replaces `has_pending_` (bool) with an int (0/1/2)
+   to support 2-byte replay for escape error recovery
 
-```cpp
-enum class codec {
-    utf_8, replacement, x_user_defined,
-    ibm866, iso_8859_2, ..., x_mac_cyrillic,
-    utf_16be, utf_16le,
-    gbk, gb18030, big5, shift_jis, euc_jp, iso_2022_jp, euc_kr,
-};
+### Decoder Location
+
+`include/beman/transcode/whatwg_decode_view.hpp` — two `load()` functions
+(one for `whatwg_decode_view`, one for `whatwg_decode_or_error_view`),
+both with `else if constexpr (C == codec::iso_2022_jp)` blocks using
+a unified `while (true)` loop with a get-byte step + switch-on-state.
+
+## What To Do Next — Step 33
+
+**Branch:** `step33-<slug>`
+
+### Option A: UTF-16 surrogates WPT vectors (recommended)
+
+Download `textdecoder-utf16-surrogates.any.js` from the WPT repo and add
+conformance tests for UTF-16LE/BE surrogate handling. The decoder handles
+surrogates in the `pending_count_`/`pending_[2]` mechanism already.
+
+```
+docs/wpt/                    ← store pristine WPT JS file here
+data/                        ← store generated C++ vectors here
+tests/beman/transcode/       ← add wpt_utf16_surrogates.test.cpp
 ```
 
----
+WPT URL: `https://github.com/web-platform-tests/wpt/blob/master/encoding/textdecoder-utf16-surrogates.any.js`
 
-## What To Do Next — Phase 3
+### Option B: Fatal mode WPT vectors
 
-**Phase 3: WPT Conformance Testing**
+Download `textdecoder-fatal.any.js` from WPT and verify the
+`whatwg_decode_or_error<codec::...>` variant correctly reports errors
+(instead of replacing with U+FFFD) for invalid sequences.
 
-The goal is to run the official W3C Web Platform Tests (WPT) encoding
-test vectors through the library to verify bug-for-bug browser
-compatibility.
+### Option C: Checklist step 30+ (WPT remaining encodings)
 
-### Existing Stubs (UNTRACKED — not in git yet)
+`docs/plans/phase2-checklist.md` shows Steps 14–29 complete but the
+checklist hasn't been updated for steps 30–32. Update the checklist
+and add entries for steps 30–33.
 
-`tests/whatwg/codec/tests/` contains aspirational drafts:
-- `test_cases.hpp` — `DecodeTestCase` / `EncodeTestCase` structs
-- `vectors.hpp` — a few hand-written test vectors
-- `verify.hpp` — a template `verify_decoder_vectors` using a mock
-  `TextDecoder` that doesn't exist yet
-- `CMakeLists.txt` — a draft build description (not wired into the main
-  CMakeLists.txt)
-- `whatwg_indices.hpp` — sketch of C++26 `#embed` approach
-- `generate_indices.py` — referenced but doesn't exist in `tools/`
-- `whatwg_wpt_testing_plan.md` — the planning document
+## TDD Process
 
-**These stubs are incomplete and unintegrated.** They describe an
-aspirational C++26 `consteval`/`#embed` architecture, but the immediate
-practical step is simpler: use the existing library APIs
-(`whatwg_decode_view`, `whatwg_encode_view`) with WPT JSON test vectors
-and Catch2, following the same patterns as Phase 2.
-
-### The WPT Encoding Tests
-
-The WPT encoding tests are at:
-```
-https://github.com/web-platform-tests/wpt/tree/master/encoding
-```
-
-Key files:
-- `idna.json`, `legacy-mb-*.json`, `utf-8.json` — JSON test vectors
-- Each vector: `{input: [...bytes...], output: [...codepoints...], encoding: "..."}`
-
-The WHATWG index data is already downloaded (from step 17) at:
-```
-docs/whatwg/   (SOURCE.md and source.bib describe provenance)
-data/tables/   (generated C++ tables)
-```
-
-### Recommended Next Step: Step 30 — WPT Test Vector Integration
-
-**Branch:** `step30-wpt-vectors`
-
-1. **Download WPT encoding test vectors** into `docs/wpt/` (pristine
-   upstream, with SOURCE.md + source.bib for provenance, matching the
-   pattern from step 17).
-
-2. **Write a Python tool** `tools/run_wpt_vectors.py` or extend
-   `tools/generate_tables.py` to extract WPT JSON decode/encode test
-   vectors and run them against the library.
-
-3. **Or**: Write a C++ test file `tests/beman/transcode/wpt.test.cpp`
-   that hard-codes a representative selection of WPT vectors (the
-   non-trivial ones that exercise error handling and edge cases), wired
-   into ctest the same way as all Phase 2 tests.
-
-4. **Wire into CMakeLists.txt** following the existing pattern.
-
-### Alternative Next Step: API Polish / Beman Integration
-
-If WPT conformance is not the priority, other candidates:
-- `beman.transcode` CMake install targets (for downstream use)
-- C++23 module interface (`transcode.cppm`) — already stubbed
-- Benchmarks
-- PR/issue cleanup for Beman project incubation review
-
----
+1. Branch: `git checkout -b step33-<slug>`
+2. Write failing tests (RED) → commit → push both remotes
+3. Implement (GREEN) → `make test` + `make lint` → commit → push both
+4. Merge to main: `git checkout main && git merge --no-ff step33-<slug>`
+5. Push main to both remotes
 
 ## Build Commands
 
@@ -127,25 +93,9 @@ make coverage  # gcovr coverage report
 make pytest    # Python tool tests only
 ```
 
-## TDD Process (unchanged from Phase 2)
-
-1. Branch: `git checkout -b step30-<slug>`
-2. Write failing tests (RED) → commit → push both remotes
-3. Implement (GREEN) → `make test` + `make lint` → commit → push both
-4. Merge to main: `git checkout main && git merge --no-ff step30-<slug>`
-5. Push main to both remotes
-6. Mark checklist `[x]`
-
 ## Coding Rules (abbreviated)
 
 - Include guards: `INCLUDE_BEMAN_TRANSCODE_*_HPP` (path-based, uppercase)
 - Test files: include the primary header **twice** (idempotent check)
 - No `Co-Authored-By` trailers in commits
 - Full rules in `CLAUDE.md`
-
-## Phase 2 History Summary (for context)
-
-Steps 14–29 added all WHATWG codecs. Each step followed: RED commit
-(failing tests) → GREEN commit (implementation) → `make lint` → merge
-to main. The checklist at `docs/plans/phase2-checklist.md` is fully
-marked `[x]`.
