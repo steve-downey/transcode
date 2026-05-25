@@ -50,22 +50,20 @@ TEST_CASE("iso_2022_jp decode ASCII NUL (0x00)", "[transcoding::iso_2022_jp]") {
 TEST_CASE("iso_2022_jp decode JIS X 0208 ESC $B 0x21 0x21 -> U+3000 (pointer 0)", "[transcoding::iso_2022_jp]") {
     // ESC $ B = 0x1B 0x24 0x42 switches to Lead_Byte (JIS X 0208) state
     // Lead=0x21, Trail=0x21: pointer = (0x21-0x21)*94 + (0x21-0x21) = 0 -> U+3000
-    // Per WHATWG: stream ending in Lead_Byte state yields extra U+FFFD
+    // Per WHATWG: stream ending in Lead_Byte state is finished (no extra U+FFFD)
     std::vector<char> bytes{'\x1B', '\x24', '\x42', '\x21', '\x21'};
     auto              result = collect(bytes | whatwg_decode<codec::iso_2022_jp>);
-    REQUIRE(result.size() == 2);
+    REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\x3000');
-    CHECK(result[1] == U'\xFFFD');
 }
 
 TEST_CASE("iso_2022_jp decode JIS X 0208 ESC $B -> U+4E00 (一)", "[transcoding::iso_2022_jp]") {
     // pointer 1485: lead_offset=15 -> 0x21+15=0x30, trail_offset=75 -> 0x21+75=0x6C
-    // Per WHATWG: stream ending in Lead_Byte state yields extra U+FFFD
+    // Per WHATWG: stream ending in Lead_Byte state is finished (no extra U+FFFD)
     std::vector<char> bytes{'\x1B', '\x24', '\x42', '\x30', '\x6C'};
     auto              result = collect(bytes | whatwg_decode<codec::iso_2022_jp>);
-    REQUIRE(result.size() == 2);
+    REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\x4E00');
-    CHECK(result[1] == U'\xFFFD');
 }
 
 TEST_CASE("iso_2022_jp decode ESC (J 0x5C -> U+00A5 (YEN SIGN)", "[transcoding::iso_2022_jp]") {
@@ -93,10 +91,11 @@ TEST_CASE("iso_2022_jp decode ESC (B 0x41 -> U+0041 (ASCII state)", "[transcodin
     CHECK(result[0] == U'A');
 }
 
-TEST_CASE("iso_2022_jp decode ESC (I 0xA1 -> U+FF61 (half-width katakana)", "[transcoding::iso_2022_jp]") {
+TEST_CASE("iso_2022_jp decode ESC (I 0x21 -> U+FF61 (half-width katakana)", "[transcoding::iso_2022_jp]") {
     // ESC ( I = 0x1B 0x28 0x49 switches to Katakana state
-    // In Katakana: 0xA1 -> U+FF61 + (0xA1 - 0xA1) = U+FF61
-    std::vector<char> bytes{'\x1B', '\x28', '\x49', '\xA1'};
+    // WHATWG Katakana: bytes 0x21-0x5F map to U+FF61-U+FF9F (7-bit range)
+    // 0x21 -> U+FF61 + (0x21 - 0x21) = U+FF61
+    std::vector<char> bytes{'\x1B', '\x28', '\x49', '\x21'};
     auto              result = collect(bytes | whatwg_decode<codec::iso_2022_jp>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFF61');
@@ -178,14 +177,12 @@ TEST_CASE("iso_2022_jp or_error: ASCII passthrough", "[transcoding::iso_2022_jp_
 }
 
 TEST_CASE("iso_2022_jp or_error: JIS X 0208 ESC $B 0x21 0x21 -> U+3000", "[transcoding::iso_2022_jp_or_error]") {
-    // Per WHATWG: stream ending in Lead_Byte state yields truncated_sequence error
+    // Per WHATWG: stream ending in Lead_Byte state is finished (no extra error)
     std::vector<char> bytes{'\x1B', '\x24', '\x42', '\x21', '\x21'};
     auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
-    REQUIRE(result.size() == 2);
+    REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == U'\x3000');
-    CHECK(!result[1].has_value());
-    CHECK(result[1].error() == whatwg_error::truncated_sequence);
 }
 
 TEST_CASE("iso_2022_jp or_error: invalid lead byte yields error", "[transcoding::iso_2022_jp_or_error]") {

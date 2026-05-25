@@ -109,11 +109,13 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         base_sent     end_;
         char32_t      value_{};
         bool          done_{false};
-        bool          has_pending_{false};
+        int           pending_count_{0};
         unsigned char pending_[2]{};
         char32_t      pending_cp_{};
         bool          has_pending_cp_{false};
         int           iso2022jp_state_{0};
+        int           iso2022jp_output_state_{0};
+        bool          iso2022jp_output_flag_{false};
         unsigned char iso2022jp_lead_{0};
         unsigned char gb_replay_[3]{};
         int           gb_replay_count_{0};
@@ -188,11 +190,13 @@ class whatwg_decode_or_error_view : public std::ranges::view_interface<whatwg_de
         base_sent     end_;
         result_t      value_{};
         bool          done_{false};
-        bool          has_pending_{false};
+        int           pending_count_{0};
         unsigned char pending_[2]{};
         char32_t      pending_cp_{};
         bool          has_pending_cp_{false};
         int           iso2022jp_state_{0};
+        int           iso2022jp_output_state_{0};
+        bool          iso2022jp_output_flag_{false};
         unsigned char iso2022jp_lead_{0};
         unsigned char gb_replay_[3]{};
         int           gb_replay_count_{0};
@@ -278,7 +282,7 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         return;
     }
     if (current_ == end_) {
-        if (!has_pending_ && iso2022jp_state_ < 2 && gb_replay_pos_ >= gb_replay_count_) {
+        if (pending_count_ == 0 && iso2022jp_state_ <= 3 && gb_replay_pos_ >= gb_replay_count_) {
             done_ = true;
             return;
         }
@@ -376,10 +380,10 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::utf_16be || C == codec::utf_16le) {
         // Read the first code unit (2 bytes), using pending buffer if available.
         unsigned char b0, b1;
-        if (has_pending_) {
-            b0           = pending_[0];
-            b1           = pending_[1];
-            has_pending_ = false;
+        if (pending_count_ > 0) {
+            b0             = pending_[0];
+            b1             = pending_[1];
+            pending_count_ = 0;
         } else {
             b0 = static_cast<unsigned char>(*current_);
             ++current_;
@@ -419,10 +423,10 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
                 value_ = 0x10000 + ((static_cast<char32_t>(unit - 0xD800) << 10) | (low - 0xDC00));
             } else {
                 // Not a valid low surrogate: emit U+FFFD and save b2/b3 for next call
-                value_       = U'\xFFFD';
-                pending_[0]  = b2;
-                pending_[1]  = b3;
-                has_pending_ = true;
+                value_         = U'\xFFFD';
+                pending_[0]    = b2;
+                pending_[1]    = b3;
+                pending_count_ = 2;
             }
         } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
             value_ = U'\xFFFD';
@@ -498,92 +502,97 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         auto r = detail::euc_jp_decode_one(current_, end_);
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
     } else if constexpr (C == codec::iso_2022_jp) {
-        // State values: 0=ASCII, 1=Roman, 2=Katakana, 3=Lead_Byte, 4=Trail_Byte,
-        //               5=Escape, 6=Escape_Middle
+        // States: 0=ASCII, 1=Roman, 2=Katakana, 3=Lead_Byte, 4=Trail_Byte,
+        //         5=Escape_Start, 6=Escape
+        // output_state tracks where to return after escape sequences / errors.
+        // output_flag detects redundant (same-state) ESC sequences → emit U+FFFD.
         while (true) {
-            if (iso2022jp_state_ == 4) {
-                if (current_ == end_) {
-                    value_           = U'\xFFFD';
-                    iso2022jp_state_ = 0;
+            unsigned char byte;
+            if (pending_count_ > 0) {
+                byte = pending_[0];
+                if (pending_count_ > 1)
+                    pending_[0] = pending_[1];
+                --pending_count_;
+            } else if (current_ != end_) {
+                byte = static_cast<unsigned char>(*current_++);
+            } else {
+                // End of stream
+                switch (iso2022jp_state_) {
+                default: // 0=ASCII, 1=Roman, 2=Katakana, 3=Lead_Byte
+                    done_ = true;
+                    return;
+                case 4: // Trail_Byte: truncated sequence
+                    iso2022jp_state_       = iso2022jp_output_state_;
+                    iso2022jp_output_flag_ = false;
+                    value_                 = U'\xFFFD';
+                    return;
+                case 5: // Escape_Start: truncated escape
+                    iso2022jp_state_       = iso2022jp_output_state_;
+                    iso2022jp_output_flag_ = false;
+                    value_                 = U'\xFFFD';
+                    return;
+                case 6: // Escape: prepend lead, restore state
+                    pending_[0]            = iso2022jp_lead_;
+                    pending_count_         = 1;
+                    iso2022jp_lead_        = 0;
+                    iso2022jp_state_       = iso2022jp_output_state_;
+                    iso2022jp_output_flag_ = false;
+                    value_                 = U'\xFFFD';
                     return;
                 }
-                auto byte        = static_cast<unsigned char>(*current_);
-                iso2022jp_state_ = 3;
-                ++current_;
-                if (byte >= 0x21 && byte <= 0x7E) {
-                    int  pointer = (static_cast<int>(iso2022jp_lead_) - 0x21) * 94 + (static_cast<int>(byte) - 0x21);
-                    auto cp      = detail::tables::shift_jis[pointer];
-                    value_       = (cp == 0) ? U'\xFFFD' : cp;
-                } else {
-                    value_           = U'\xFFFD';
-                    iso2022jp_state_ = 0;
-                }
-                return;
             }
-            if (iso2022jp_state_ == 5) {
-                if (current_ == end_) {
-                    value_           = U'\xFFFD';
-                    iso2022jp_state_ = 0;
-                    return;
-                }
-                auto byte = static_cast<unsigned char>(*current_);
-                ++current_;
+
+            switch (iso2022jp_state_) {
+            case 5: // Escape_Start
                 if (byte == 0x24 || byte == 0x28) {
                     iso2022jp_lead_  = byte;
                     iso2022jp_state_ = 6;
                     continue;
                 }
-                value_           = U'\xFFFD';
-                iso2022jp_state_ = 0;
-                pending_[0]      = byte;
-                has_pending_     = true;
+                pending_[0]            = byte;
+                pending_count_         = 1;
+                iso2022jp_state_       = iso2022jp_output_state_;
+                iso2022jp_output_flag_ = false;
+                value_                 = U'\xFFFD';
                 return;
-            }
-            if (iso2022jp_state_ == 6) {
-                if (current_ == end_) {
-                    value_           = U'\xFFFD';
-                    iso2022jp_state_ = 0;
+
+            case 6: { // Escape
+                auto lead       = iso2022jp_lead_;
+                iso2022jp_lead_ = 0;
+                int new_state   = -1;
+                if (lead == 0x28) {
+                    if (byte == 0x42)
+                        new_state = 0;
+                    else if (byte == 0x4A)
+                        new_state = 1;
+                    else if (byte == 0x49)
+                        new_state = 2;
+                } else { // lead == 0x24
+                    if (byte == 0x40 || byte == 0x42)
+                        new_state = 3;
+                }
+                if (new_state < 0) {
+                    pending_[0]            = lead;
+                    pending_[1]            = byte;
+                    pending_count_         = 2;
+                    iso2022jp_state_       = iso2022jp_output_state_;
+                    iso2022jp_output_flag_ = false;
+                    value_                 = U'\xFFFD';
                     return;
                 }
-                auto byte = static_cast<unsigned char>(*current_);
-                ++current_;
-                bool valid = false;
-                if (iso2022jp_lead_ == 0x28) {
-                    if (byte == 0x42) {
-                        iso2022jp_state_ = 0;
-                        valid            = true;
-                    } else if (byte == 0x4A) {
-                        iso2022jp_state_ = 1;
-                        valid            = true;
-                    } else if (byte == 0x49) {
-                        iso2022jp_state_ = 2;
-                        valid            = true;
-                    }
-                } else {
-                    if (byte == 0x40 || byte == 0x42) {
-                        iso2022jp_state_ = 3;
-                        valid            = true;
-                    }
-                }
-                if (valid) {
-                    continue;
-                }
-                value_           = U'\xFFFD';
-                iso2022jp_state_ = 0;
-                pending_[0]      = byte;
-                has_pending_     = true;
-                return;
-            }
-            if (iso2022jp_state_ == 3) {
-                if (current_ == end_) {
-                    value_           = U'\xFFFD';
-                    iso2022jp_state_ = 0;
+                iso2022jp_output_state_ = new_state;
+                iso2022jp_state_        = new_state;
+                if (iso2022jp_output_flag_) {
+                    iso2022jp_output_flag_ = false;
+                    value_                 = U'\xFFFD';
                     return;
                 }
-                auto byte = static_cast<unsigned char>(*current_);
-                ++current_;
+                iso2022jp_output_flag_ = true;
+                continue;
+            }
+
+            case 3: // Lead_Byte
                 if (byte == 0x1B) {
-                    // Per WHATWG: ESC in lead-byte state → silent transition to escape_start
                     iso2022jp_state_ = 5;
                     continue;
                 }
@@ -592,45 +601,61 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
                     iso2022jp_state_ = 4;
                     continue;
                 }
-                value_           = U'\xFFFD';
-                iso2022jp_state_ = 0;
+                iso2022jp_state_       = iso2022jp_output_state_;
+                iso2022jp_output_flag_ = false;
+                value_                 = U'\xFFFD';
+                return;
+
+            case 4: { // Trail_Byte
+                if (byte == 0x1B) {
+                    iso2022jp_state_ = 5;
+                    continue;
+                }
+                iso2022jp_state_       = iso2022jp_output_state_;
+                iso2022jp_output_flag_ = false;
+                if (byte >= 0x21 && byte <= 0x7E) {
+                    int  pointer = (static_cast<int>(iso2022jp_lead_) - 0x21) * 94 + (static_cast<int>(byte) - 0x21);
+                    auto cp      = detail::tables::shift_jis[pointer];
+                    if (cp != 0) {
+                        value_ = cp;
+                        return;
+                    }
+                }
+                value_ = U'\xFFFD';
                 return;
             }
-            // States 0 (ASCII), 1 (Roman), 2 (Katakana)
-            unsigned char byte;
-            if (has_pending_) {
-                byte         = pending_[0];
-                has_pending_ = false;
-            } else if (current_ == end_) {
-                done_ = true;
-                return;
-            } else {
-                byte = static_cast<unsigned char>(*current_);
-                ++current_;
-            }
-            if (byte == 0x1B) {
-                iso2022jp_state_ = 5;
-                continue;
-            }
-            if (iso2022jp_state_ == 0) {
-                value_ = (byte <= 0x7F) ? static_cast<char32_t>(byte) : U'\xFFFD';
-                return;
-            }
-            if (iso2022jp_state_ == 1) {
-                if (byte == 0x5C) {
-                    value_ = U'\x00A5';
+
+            default: // 0=ASCII, 1=Roman, 2=Katakana
+                if (byte == 0x1B) {
+                    iso2022jp_state_ = 5;
+                    continue;
+                }
+                if (byte == 0x0E || byte == 0x0F) {
+                    iso2022jp_output_flag_ = false;
+                    value_                 = U'\xFFFD';
                     return;
                 }
-                if (byte == 0x7E) {
-                    value_ = U'\x203E';
+                iso2022jp_output_flag_ = false;
+                if (iso2022jp_state_ == 0) { // ASCII
+                    value_ = (byte <= 0x7F) ? static_cast<char32_t>(byte) : U'\xFFFD';
                     return;
                 }
-                value_ = (byte <= 0x7F) ? static_cast<char32_t>(byte) : U'\xFFFD';
+                if (iso2022jp_state_ == 1) { // Roman
+                    if (byte == 0x5C) {
+                        value_ = U'\x00A5';
+                        return;
+                    }
+                    if (byte == 0x7E) {
+                        value_ = U'\x203E';
+                        return;
+                    }
+                    value_ = (byte <= 0x7F) ? static_cast<char32_t>(byte) : U'\xFFFD';
+                    return;
+                }
+                // Katakana: 0x21-0x5F → U+FF61-U+FF9F
+                value_ = (byte >= 0x21 && byte <= 0x5F) ? static_cast<char32_t>(0xFF61 + byte - 0x21) : U'\xFFFD';
                 return;
             }
-            // Katakana (state == 2)
-            value_ = (byte >= 0xA1 && byte <= 0xDF) ? static_cast<char32_t>(0xFF61 + byte - 0xA1) : U'\xFFFD';
-            return;
         }
     } else if constexpr (C == codec::euc_kr) {
         auto r = detail::euc_kr_decode_one(current_, end_);
@@ -707,7 +732,7 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         return;
     }
     if (current_ == end_) {
-        if (!has_pending_ && iso2022jp_state_ < 2 && gb_replay_pos_ >= gb_replay_count_) {
+        if (pending_count_ == 0 && iso2022jp_state_ <= 3 && gb_replay_pos_ >= gb_replay_count_) {
             done_ = true;
             return;
         }
@@ -889,10 +914,10 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
             value_ = r.code_point;
     } else if constexpr (C == codec::utf_16be || C == codec::utf_16le) {
         unsigned char b0, b1;
-        if (has_pending_) {
-            b0           = pending_[0];
-            b1           = pending_[1];
-            has_pending_ = false;
+        if (pending_count_ > 0) {
+            b0             = pending_[0];
+            b1             = pending_[1];
+            pending_count_ = 0;
         } else {
             b0 = static_cast<unsigned char>(*current_);
             ++current_;
@@ -930,10 +955,10 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
             if (low >= 0xDC00 && low <= 0xDFFF) {
                 value_ = 0x10000 + ((static_cast<char32_t>(unit - 0xD800) << 10) | (low - 0xDC00));
             } else {
-                value_       = std::unexpected(whatwg_error::surrogate_code_point);
-                pending_[0]  = b2;
-                pending_[1]  = b3;
-                has_pending_ = true;
+                value_         = std::unexpected(whatwg_error::surrogate_code_point);
+                pending_[0]    = b2;
+                pending_[1]    = b3;
+                pending_count_ = 2;
             }
         } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
             value_ = std::unexpected(whatwg_error::surrogate_code_point);
@@ -1010,93 +1035,94 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         else
             value_ = r.code_point;
     } else if constexpr (C == codec::iso_2022_jp) {
+        // States: 0=ASCII, 1=Roman, 2=Katakana, 3=Lead_Byte, 4=Trail_Byte,
+        //         5=Escape_Start, 6=Escape
         while (true) {
-            if (iso2022jp_state_ == 4) {
-                if (current_ == end_) {
-                    value_           = std::unexpected(whatwg_error::truncated_sequence);
-                    iso2022jp_state_ = 0;
+            unsigned char byte;
+            if (pending_count_ > 0) {
+                byte = pending_[0];
+                if (pending_count_ > 1)
+                    pending_[0] = pending_[1];
+                --pending_count_;
+            } else if (current_ != end_) {
+                byte = static_cast<unsigned char>(*current_++);
+            } else {
+                switch (iso2022jp_state_) {
+                default: // 0=ASCII, 1=Roman, 2=Katakana, 3=Lead_Byte
+                    done_ = true;
+                    return;
+                case 4:
+                    iso2022jp_state_       = iso2022jp_output_state_;
+                    iso2022jp_output_flag_ = false;
+                    value_                 = std::unexpected(whatwg_error::truncated_sequence);
+                    return;
+                case 5:
+                    iso2022jp_state_       = iso2022jp_output_state_;
+                    iso2022jp_output_flag_ = false;
+                    value_                 = std::unexpected(whatwg_error::truncated_sequence);
+                    return;
+                case 6:
+                    pending_[0]            = iso2022jp_lead_;
+                    pending_count_         = 1;
+                    iso2022jp_lead_        = 0;
+                    iso2022jp_state_       = iso2022jp_output_state_;
+                    iso2022jp_output_flag_ = false;
+                    value_                 = std::unexpected(whatwg_error::truncated_sequence);
                     return;
                 }
-                auto byte        = static_cast<unsigned char>(*current_);
-                iso2022jp_state_ = 3;
-                ++current_;
-                if (byte >= 0x21 && byte <= 0x7E) {
-                    int  pointer = (static_cast<int>(iso2022jp_lead_) - 0x21) * 94 + (static_cast<int>(byte) - 0x21);
-                    auto cp      = detail::tables::shift_jis[pointer];
-                    if (cp == 0)
-                        value_ = std::unexpected(whatwg_error::invalid_byte);
-                    else
-                        value_ = cp;
-                } else {
-                    value_           = std::unexpected(whatwg_error::invalid_byte);
-                    iso2022jp_state_ = 0;
-                }
-                return;
             }
-            if (iso2022jp_state_ == 5) {
-                if (current_ == end_) {
-                    value_           = std::unexpected(whatwg_error::truncated_sequence);
-                    iso2022jp_state_ = 0;
-                    return;
-                }
-                auto byte = static_cast<unsigned char>(*current_);
-                ++current_;
+
+            switch (iso2022jp_state_) {
+            case 5:
                 if (byte == 0x24 || byte == 0x28) {
                     iso2022jp_lead_  = byte;
                     iso2022jp_state_ = 6;
                     continue;
                 }
-                value_           = std::unexpected(whatwg_error::invalid_byte);
-                iso2022jp_state_ = 0;
-                pending_[0]      = byte;
-                has_pending_     = true;
+                pending_[0]            = byte;
+                pending_count_         = 1;
+                iso2022jp_state_       = iso2022jp_output_state_;
+                iso2022jp_output_flag_ = false;
+                value_                 = std::unexpected(whatwg_error::invalid_byte);
                 return;
-            }
-            if (iso2022jp_state_ == 6) {
-                if (current_ == end_) {
-                    value_           = std::unexpected(whatwg_error::truncated_sequence);
-                    iso2022jp_state_ = 0;
-                    return;
-                }
-                auto byte = static_cast<unsigned char>(*current_);
-                ++current_;
-                bool valid = false;
-                if (iso2022jp_lead_ == 0x28) {
-                    if (byte == 0x42) {
-                        iso2022jp_state_ = 0;
-                        valid            = true;
-                    } else if (byte == 0x4A) {
-                        iso2022jp_state_ = 1;
-                        valid            = true;
-                    } else if (byte == 0x49) {
-                        iso2022jp_state_ = 2;
-                        valid            = true;
-                    }
+
+            case 6: {
+                auto lead       = iso2022jp_lead_;
+                iso2022jp_lead_ = 0;
+                int new_state   = -1;
+                if (lead == 0x28) {
+                    if (byte == 0x42)
+                        new_state = 0;
+                    else if (byte == 0x4A)
+                        new_state = 1;
+                    else if (byte == 0x49)
+                        new_state = 2;
                 } else {
-                    if (byte == 0x40 || byte == 0x42) {
-                        iso2022jp_state_ = 3;
-                        valid            = true;
-                    }
+                    if (byte == 0x40 || byte == 0x42)
+                        new_state = 3;
                 }
-                if (valid) {
-                    continue;
-                }
-                value_           = std::unexpected(whatwg_error::invalid_byte);
-                iso2022jp_state_ = 0;
-                pending_[0]      = byte;
-                has_pending_     = true;
-                return;
-            }
-            if (iso2022jp_state_ == 3) {
-                if (current_ == end_) {
-                    value_           = std::unexpected(whatwg_error::truncated_sequence);
-                    iso2022jp_state_ = 0;
+                if (new_state < 0) {
+                    pending_[0]            = lead;
+                    pending_[1]            = byte;
+                    pending_count_         = 2;
+                    iso2022jp_state_       = iso2022jp_output_state_;
+                    iso2022jp_output_flag_ = false;
+                    value_                 = std::unexpected(whatwg_error::invalid_byte);
                     return;
                 }
-                auto byte = static_cast<unsigned char>(*current_);
-                ++current_;
+                iso2022jp_output_state_ = new_state;
+                iso2022jp_state_        = new_state;
+                if (iso2022jp_output_flag_) {
+                    iso2022jp_output_flag_ = false;
+                    value_                 = std::unexpected(whatwg_error::invalid_byte);
+                    return;
+                }
+                iso2022jp_output_flag_ = true;
+                continue;
+            }
+
+            case 3:
                 if (byte == 0x1B) {
-                    // Per WHATWG: ESC in lead-byte state → silent transition to escape_start
                     iso2022jp_state_ = 5;
                     continue;
                 }
@@ -1105,54 +1131,70 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
                     iso2022jp_state_ = 4;
                     continue;
                 }
-                value_           = std::unexpected(whatwg_error::invalid_byte);
-                iso2022jp_state_ = 0;
+                iso2022jp_state_       = iso2022jp_output_state_;
+                iso2022jp_output_flag_ = false;
+                value_                 = std::unexpected(whatwg_error::invalid_byte);
                 return;
-            }
-            // States 0 (ASCII), 1 (Roman), 2 (Katakana)
-            unsigned char byte;
-            if (has_pending_) {
-                byte         = pending_[0];
-                has_pending_ = false;
-            } else if (current_ == end_) {
-                done_ = true;
-                return;
-            } else {
-                byte = static_cast<unsigned char>(*current_);
-                ++current_;
-            }
-            if (byte == 0x1B) {
-                iso2022jp_state_ = 5;
-                continue;
-            }
-            if (iso2022jp_state_ == 0) {
-                if (byte <= 0x7F)
-                    value_ = static_cast<char32_t>(byte);
-                else
-                    value_ = std::unexpected(whatwg_error::invalid_byte);
-                return;
-            }
-            if (iso2022jp_state_ == 1) {
-                if (byte == 0x5C) {
-                    value_ = U'\x00A5';
-                    return;
+
+            case 4: {
+                if (byte == 0x1B) {
+                    iso2022jp_state_ = 5;
+                    continue;
                 }
-                if (byte == 0x7E) {
-                    value_ = U'\x203E';
-                    return;
+                iso2022jp_state_       = iso2022jp_output_state_;
+                iso2022jp_output_flag_ = false;
+                if (byte >= 0x21 && byte <= 0x7E) {
+                    int  pointer = (static_cast<int>(iso2022jp_lead_) - 0x21) * 94 + (static_cast<int>(byte) - 0x21);
+                    auto cp      = detail::tables::shift_jis[pointer];
+                    if (cp != 0) {
+                        value_ = cp;
+                        return;
+                    }
                 }
-                if (byte <= 0x7F)
-                    value_ = static_cast<char32_t>(byte);
-                else
-                    value_ = std::unexpected(whatwg_error::invalid_byte);
-                return;
-            }
-            // Katakana (state == 2)
-            if (byte >= 0xA1 && byte <= 0xDF)
-                value_ = static_cast<char32_t>(0xFF61 + byte - 0xA1);
-            else
                 value_ = std::unexpected(whatwg_error::invalid_byte);
-            return;
+                return;
+            }
+
+            default: // 0=ASCII, 1=Roman, 2=Katakana
+                if (byte == 0x1B) {
+                    iso2022jp_state_ = 5;
+                    continue;
+                }
+                if (byte == 0x0E || byte == 0x0F) {
+                    iso2022jp_output_flag_ = false;
+                    value_                 = std::unexpected(whatwg_error::invalid_byte);
+                    return;
+                }
+                iso2022jp_output_flag_ = false;
+                if (iso2022jp_state_ == 0) {
+                    if (byte <= 0x7F)
+                        value_ = static_cast<char32_t>(byte);
+                    else
+                        value_ = std::unexpected(whatwg_error::invalid_byte);
+                    return;
+                }
+                if (iso2022jp_state_ == 1) {
+                    if (byte == 0x5C) {
+                        value_ = U'\x00A5';
+                        return;
+                    }
+                    if (byte == 0x7E) {
+                        value_ = U'\x203E';
+                        return;
+                    }
+                    if (byte <= 0x7F)
+                        value_ = static_cast<char32_t>(byte);
+                    else
+                        value_ = std::unexpected(whatwg_error::invalid_byte);
+                    return;
+                }
+                // Katakana: 0x21-0x5F → U+FF61-U+FF9F
+                if (byte >= 0x21 && byte <= 0x5F)
+                    value_ = static_cast<char32_t>(0xFF61 + byte - 0x21);
+                else
+                    value_ = std::unexpected(whatwg_error::invalid_byte);
+                return;
+            }
         }
     } else if constexpr (C == codec::euc_kr) {
         auto r = detail::euc_kr_decode_one(current_, end_);
