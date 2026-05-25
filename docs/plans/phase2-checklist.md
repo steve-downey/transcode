@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–37 complete. 492 C++ + 151 Python tests pass. On `main`.
+**Current state:** Steps 0–38 complete. 494 C++ + 155 Python tests pass. On `main`.
 
 ---
 
@@ -295,6 +295,65 @@ Comprehensive round-trip tests for all implemented codecs.
 - [x] `make test` (490 C++ + 146 Python all pass)
 - [x] `make lint` — clean
 - [x] Push GREEN to both remotes + merge to main
+
+## Step 38: WPT UTF-8 surrogate encode vectors (`step38-wpt-surrogates-utf8`)
+
+- [x] Create branch `step38-wpt-surrogates-utf8` from `main`
+- [x] Write failing tests (RED) referencing missing `wpt_surrogates_utf8_vectors.hpp`
+- [x] Push RED to both remotes
+- [x] Download `api-surrogates-utf8.any.js` → `docs/wpt/`
+- [x] Update `docs/wpt/SOURCE.md` with provenance + checksum
+- [x] Add `_SURR_ENTRY_RE` + `parse_surrogates_utf8_vectors()` + `render_surrogates_utf8_vectors_hpp()` to `generate_wpt_vectors.py`
+- [x] Add 4 Python tests to `test_generate_wpt.py` (155 total)
+- [x] Generate `wpt_surrogates_utf8_vectors.hpp` (6 vectors)
+- [x] `make test` (494 C++ + 155 Python all pass)
+- [x] `make lint` — clean
+- [x] Push GREEN to both remotes + merge to main
+
+---
+
+## Upcoming
+
+### WPT TextEncoder UTF-16 surrogate round-trip (`step39-wpt-encoder-surrogates`)
+
+`textencoder-utf16-surrogates.any.js` tests that lone surrogates are
+replaced by U+FFFD when UTF-8 encoded then decoded. Format:
+```javascript
+{ input: '\uD800', expected: '�', name: 'lone surrogate lead' }
+```
+Struct: `{ input: vector<char32_t>, expected: vector<char32_t>, name }`.
+Test: encode input → UTF-8 bytes → decode → check matches expected.
+6 cases including properly encoded surrogate pair U+1D11E.
+
+### Label lookup API (`step39-label-lookup` or `step40-label-lookup`)
+
+WHATWG Encoding Standard §4.2 "Names and labels" defines ~200+ string labels
+that map to canonical encodings (e.g., `"sjis"`, `"x-sjis"`, `"shift_jis"` all
+→ Shift_JIS). This is essential for:
+
+- Parsing `charset` attributes in HTML `<meta>` tags
+- Parsing `Content-Type` headers
+- Web-compatible encoding sniffing
+
+API sketch:
+```cpp
+// Returns nullopt for unknown labels
+constexpr std::optional<codec> get_encoding(std::string_view label);
+
+// Case-insensitive, ASCII-whitespace-stripped per WHATWG
+static_assert(get_encoding("  UTF-8  ") == codec::utf_8);
+static_assert(get_encoding("shift_jis") == codec::shift_jis);
+static_assert(get_encoding("SJIS") == codec::shift_jis);
+static_assert(get_encoding("x-sjis") == codec::shift_jis);
+```
+
+- [ ] Create branch from `main`
+- [ ] Download `encodings.json` from WHATWG → `docs/whatwg/`
+- [ ] Write `tools/generate_labels.py` to produce label→codec map
+- [ ] Tests (RED → GREEN)
+- [ ] Implement `get_encoding()` in `detail/labels.hpp`
+- [ ] `make test` + `make lint`
+- [ ] Push both remotes + merge to main
 
 ---
 
