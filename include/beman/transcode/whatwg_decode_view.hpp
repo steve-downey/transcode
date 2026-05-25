@@ -668,6 +668,10 @@ template <codec C, std::ranges::input_range R>
 constexpr whatwg_decode_view<C, R>::iterator::iterator(base_iter current, base_sent end)
     : current_(std::move(current)), end_(std::move(end)) {
     load();
+    if constexpr (C == codec::utf_8 || C == codec::utf_16le || C == codec::utf_16be) {
+        if (!done_ && value_ == U'\xFEFF')
+            load();
+    }
 }
 
 template <codec C, std::ranges::input_range R>
@@ -1210,6 +1214,10 @@ template <codec C, std::ranges::input_range R>
 constexpr whatwg_decode_or_error_view<C, R>::iterator::iterator(base_iter current, base_sent end)
     : current_(std::move(current)), end_(std::move(end)) {
     load();
+    if constexpr (C == codec::utf_8 || C == codec::utf_16le || C == codec::utf_16be) {
+        if (!done_ && value_.has_value() && *value_ == U'\xFEFF')
+            load();
+    }
 }
 
 template <codec C, std::ranges::input_range R>

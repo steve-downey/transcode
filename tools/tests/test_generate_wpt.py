@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_wpt_vectors import (
+    parse_bom_vectors,
     parse_fatal_vectors,
     parse_gb18030_decode_vectors,
     parse_iso2022jp_decode_vectors,
@@ -14,6 +15,7 @@ from generate_wpt_vectors import (
     parse_single_byte_indexes,
     parse_utf8_mistake_vectors,
     parse_utf16_surrogate_vectors,
+    render_bom_vectors_hpp,
     render_fatal_vectors_hpp,
     render_gb18030_vectors_hpp,
     render_iso2022jp_vectors_hpp,
@@ -49,6 +51,14 @@ def test_parse_js_string_multi_surrogates() -> None:
 
 def test_parse_js_string_supplementary() -> None:
     assert parse_js_string("\\u{10FFFF}") == [0x10FFFF]
+
+
+def test_parse_js_string_surrogate_pair() -> None:
+    assert parse_js_string("\\uD834\\uDD1E") == [0x1D11E]
+
+
+def test_parse_js_string_surrogate_pair_private() -> None:
+    assert parse_js_string("\\uDBFF\\uDFFD") == [0x10FFFD]
 
 
 def test_parse_gb18030_decode_vectors_ascii() -> None:
@@ -312,6 +322,62 @@ def test_parse_fatal_vectors_utf16le() -> None:
     assert vectors[2]["encoding"] == "utf-16le"
     assert vectors[2]["input"] == [0x00]
     assert vectors[2]["description"] == "truncated code unit"
+
+
+_BOM_SAMPLE = """
+var testCases = [
+    {
+        encoding: 'utf-8',
+        bom: [0xEF, 0xBB, 0xBF],
+        bytes: [0x7A, 0xC2, 0xA2]
+    },
+    {
+        encoding: 'utf-16le',
+        bom: [0xff, 0xfe],
+        bytes: [0x7A, 0x00]
+    }
+];
+var string = 'z\\xA2\\uD834\\uDD1E';
+"""
+
+
+def test_parse_bom_vectors_count() -> None:
+    vectors = parse_bom_vectors(_BOM_SAMPLE)
+    assert len(vectors) == 2
+
+
+def test_parse_bom_vectors_first() -> None:
+    vectors = parse_bom_vectors(_BOM_SAMPLE)
+    assert vectors[0]["encoding"] == "utf-8"
+    assert vectors[0]["bom"] == [0xEF, 0xBB, 0xBF]
+    assert vectors[0]["bytes"] == [0x7A, 0xC2, 0xA2]
+    assert vectors[0]["expected"] == [0x7A, 0xA2, 0x1D11E]
+
+
+def test_parse_bom_vectors_second() -> None:
+    vectors = parse_bom_vectors(_BOM_SAMPLE)
+    assert vectors[1]["encoding"] == "utf-16le"
+    assert vectors[1]["bom"] == [0xFF, 0xFE]
+    assert vectors[1]["bytes"] == [0x7A, 0x00]
+    assert vectors[1]["expected"] == [0x7A, 0xA2, 0x1D11E]
+
+
+def test_render_bom_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {
+            "encoding": "utf-8",
+            "bom": [0xEF, 0xBB, 0xBF],
+            "bytes": [0x7A],
+            "expected": [0x7A],
+        },
+    ]
+    out = tmp_path / "wpt_bom_vectors.hpp"
+    render_bom_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_BOM_VECTORS_HPP" in content
+    assert "wpt_bom_cases" in content
+    assert "0xEF, 0xBB, 0xBF" in content
+    assert "utf-8" in content
 
 
 def test_render_fatal_vectors_hpp(tmp_path: Path) -> None:

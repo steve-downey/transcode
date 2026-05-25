@@ -16,12 +16,14 @@ ISO2022JP_JS = WPT_DIR / "iso-2022-jp-decoder.any.js"
 SINGLEBYTE_JS = WPT_DIR / "single-byte-decoder.window.js"
 UTF16SURROGATES_JS = WPT_DIR / "textdecoder-utf16-surrogates.any.js"
 FATAL_JS = WPT_DIR / "textdecoder-fatal.any.js"
+BOM_JS = WPT_DIR / "textdecoder-byte-order-marks.any.js"
 
 
 def parse_js_string(s: str) -> list[int]:
     """Parse a JavaScript string literal content to list of Unicode codepoints.
 
-    Handles \\uXXXX, \\u{XXXXX}, and literal characters.
+    Handles \\uXXXX (with surrogate-pair combining), \\u{XXXXX}, \\xNN,
+    and literal characters.
     """
     result: list[int] = []
     i = 0
@@ -35,8 +37,20 @@ def parse_js_string(s: str) -> list[int]:
                     i = j + 1
                 else:
                     cp = int(s[i + 2 : i + 6], 16)
-                    result.append(cp)
                     i += 6
+                    # Combine surrogate pairs (\uD800-\uDBFF followed by \uDC00-\uDFFF)
+                    if (
+                        0xD800 <= cp <= 0xDBFF
+                        and i + 5 <= len(s)
+                        and s[i] == "\\"
+                        and s[i + 1] == "u"
+                        and s[i + 2] != "{"
+                    ):
+                        low = int(s[i + 2 : i + 6], 16)
+                        if 0xDC00 <= low <= 0xDFFF:
+                            cp = 0x10000 + ((cp - 0xD800) << 10) + (low - 0xDC00)
+                            i += 6
+                    result.append(cp)
             elif s[i + 1] == "\\":
                 result.append(ord("\\"))
                 i += 2
@@ -572,6 +586,98 @@ def render_fatal_vectors_hpp(vectors: list[dict[str, object]], out_path: Path) -
     out_path.write_text("\n".join(lines))
 
 
+_BOM_CASE_RE = re.compile(
+    r"\{\s*encoding:\s*'([^']+)'\s*,\s*bom:\s*\[([^\]]*)\]\s*,"
+    r"\s*bytes:\s*\[([^\]]*)\]\s*\}",
+    re.MULTILINE | re.DOTALL,
+)
+
+_BOM_STRING_RE = re.compile(r"var string = '([^']*(?:\\.[^']*)*)'")
+
+
+def parse_bom_vectors(content: str) -> list[dict[str, object]]:
+    """Parse testCases from textdecoder-byte-order-marks.any.js.
+
+    Returns list of {"encoding": str, "bom": list[int], "bytes": list[int],
+    "expected": list[int]}.
+    """
+    string_match = _BOM_STRING_RE.search(content)
+    if not string_match:
+        return []
+    expected_cps = parse_js_string(string_match.group(1))
+
+    vectors: list[dict[str, object]] = []
+    for m in _BOM_CASE_RE.finditer(content):
+        encoding, bom_str, bytes_str = m.groups()
+        bom_bytes = [int(x.strip(), 0) for x in bom_str.split(",") if x.strip()]
+        input_bytes = [int(x.strip(), 0) for x in bytes_str.split(",") if x.strip()]
+        vectors.append(
+            {
+                "encoding": encoding,
+                "bom": bom_bytes,
+                "bytes": input_bytes,
+                "expected": expected_cps,
+            }
+        )
+    return vectors
+
+
+def render_bom_vectors_hpp(vectors: list[dict[str, object]], out_path: Path) -> None:
+    """Generate the C++ header for WPT BOM decode vectors."""
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/textdecoder-byte-order-marks.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_BOM_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_BOM_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <cstdint>")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptBomCase {")
+    lines.append("    std::vector<uint8_t>  bytes;")
+    lines.append("    std::vector<uint8_t>  bom;")
+    lines.append("    std::vector<char32_t> expected;")
+    lines.append("    const char*           encoding;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append("inline const WptBomCase wpt_bom_cases[] = {")
+
+    for v in vectors:
+        bom: list[int] = v["bom"]  # type: ignore[assignment]
+        input_bytes: list[int] = v["bytes"]  # type: ignore[assignment]
+        expected: list[int] = v["expected"]  # type: ignore[assignment]
+        encoding: str = v["encoding"]  # type: ignore[assignment]
+        bom_str = _format_bytes(bom)
+        in_str = _format_bytes(input_bytes)
+        exp_str = _format_codepoints(expected)
+        lines.append(
+            f'    {{{{{in_str}}}, {{{bom_str}}}, {{{exp_str}}}, "{encoding}"}},'
+        )
+
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_BOM_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
 def main() -> int:
     gb18030_content = GB18030_JS.read_text()
     gb18030_vectors = parse_gb18030_decode_vectors(gb18030_content)
@@ -615,6 +721,12 @@ def main() -> int:
     render_fatal_vectors_hpp(fatal_vectors, TEST_DIR / "wpt_fatal_vectors.hpp")
     print(f"Generated {TEST_DIR / 'wpt_fatal_vectors.hpp'}")
 
+    bom_content = BOM_JS.read_text()
+    bom_vectors = parse_bom_vectors(bom_content)
+    print(f"Parsed {len(bom_vectors)} BOM cases")
+    render_bom_vectors_hpp(bom_vectors, TEST_DIR / "wpt_bom_vectors.hpp")
+    print(f"Generated {TEST_DIR / 'wpt_bom_vectors.hpp'}")
+
     run_cf = True
     try:
         subprocess.run(["clang-format", "--version"], capture_output=True, check=True)
@@ -629,6 +741,7 @@ def main() -> int:
             TEST_DIR / "wpt_single_byte_vectors.hpp",
             TEST_DIR / "wpt_utf16_surrogates_vectors.hpp",
             TEST_DIR / "wpt_fatal_vectors.hpp",
+            TEST_DIR / "wpt_bom_vectors.hpp",
         ]:
             subprocess.run(["clang-format", "-i", str(hpp)], check=True)
             print(f"Formatted {hpp}")
