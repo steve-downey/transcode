@@ -1,14 +1,15 @@
 var NAVTREEINDEX3 =
 {
 "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html#ac0d760b539305c3bae52baf5cb2dbacc":[6,0,0,0,9,1],
+"structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html#ac0d760b539305c3bae52baf5cb2dbacc":[8,0,0,0,8,1],
 "structbeman_1_1transcoding_1_1whatwg__encode__closure.html":[8,0,0,0,11],
 "structbeman_1_1transcoding_1_1whatwg__encode__closure.html":[6,0,0,0,12],
-"structbeman_1_1transcoding_1_1whatwg__encode__closure.html#a088183f1ac2b764a5cd4b191f81b207e":[6,0,0,0,12,2],
 "structbeman_1_1transcoding_1_1whatwg__encode__closure.html#a088183f1ac2b764a5cd4b191f81b207e":[8,0,0,0,11,2],
-"structbeman_1_1transcoding_1_1whatwg__encode__closure.html#a25f025e0faaad693b6b31570092bd9bd":[6,0,0,0,12,0],
+"structbeman_1_1transcoding_1_1whatwg__encode__closure.html#a088183f1ac2b764a5cd4b191f81b207e":[6,0,0,0,12,2],
 "structbeman_1_1transcoding_1_1whatwg__encode__closure.html#a25f025e0faaad693b6b31570092bd9bd":[8,0,0,0,11,0],
-"structbeman_1_1transcoding_1_1whatwg__encode__closure.html#aa6313e19dd2b7cc9389b80a0189bddab":[6,0,0,0,12,1],
+"structbeman_1_1transcoding_1_1whatwg__encode__closure.html#a25f025e0faaad693b6b31570092bd9bd":[6,0,0,0,12,0],
 "structbeman_1_1transcoding_1_1whatwg__encode__closure.html#aa6313e19dd2b7cc9389b80a0189bddab":[8,0,0,0,11,1],
+"structbeman_1_1transcoding_1_1whatwg__encode__closure.html#aa6313e19dd2b7cc9389b80a0189bddab":[6,0,0,0,12,1],
 "structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html":[6,0,0,0,13],
 "structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html":[8,0,0,0,12],
 "structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html#a752e668ec36d43291be686ef1400a3f1":[8,0,0,0,12,1],
