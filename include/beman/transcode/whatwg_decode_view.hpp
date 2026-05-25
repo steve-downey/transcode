@@ -486,14 +486,10 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         }
     } else if constexpr (C == codec::big5) {
         auto r = detail::big5_decode_one(current_, end_);
-        if (r.is_error) {
-            value_ = U'\xFFFD';
-        } else {
-            value_ = r.code_point;
-            if (r.code_point2 != 0) {
-                pending_cp_     = r.code_point2;
-                has_pending_cp_ = true;
-            }
+        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+        if (r.code_point2 != 0) {
+            pending_cp_     = r.code_point2;
+            has_pending_cp_ = true;
         }
     } else if constexpr (C == codec::shift_jis) {
         auto r = detail::shift_jis_decode_one(current_, end_);
@@ -1017,14 +1013,13 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         }
     } else if constexpr (C == codec::big5) {
         auto r = detail::big5_decode_one(current_, end_);
-        if (r.is_error) {
+        if (r.is_error)
             value_ = std::unexpected(r.error);
-        } else {
+        else
             value_ = r.code_point;
-            if (r.code_point2 != 0) {
-                pending_cp_     = r.code_point2;
-                has_pending_cp_ = true;
-            }
+        if (r.code_point2 != 0) {
+            pending_cp_     = r.code_point2;
+            has_pending_cp_ = true;
         }
     } else if constexpr (C == codec::shift_jis) {
         auto r = detail::shift_jis_decode_one(current_, end_);

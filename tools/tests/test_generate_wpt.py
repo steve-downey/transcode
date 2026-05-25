@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_wpt_vectors import (
     parse_bom_vectors,
+    parse_eof_vectors,
     parse_fatal_single_byte_cases,
     parse_fatal_vectors,
     parse_gb18030_decode_vectors,
@@ -17,6 +18,7 @@ from generate_wpt_vectors import (
     parse_utf8_mistake_vectors,
     parse_utf16_surrogate_vectors,
     render_bom_vectors_hpp,
+    render_eof_vectors_hpp,
     render_fatal_single_byte_vectors_hpp,
     render_fatal_vectors_hpp,
     render_gb18030_vectors_hpp,
@@ -444,3 +446,57 @@ def test_render_fatal_single_byte_vectors_hpp(tmp_path: Path) -> None:
     assert "IBM866" in content
     assert "ISO-8859-3" in content
     assert "0xA5" in content
+
+
+_EOF_SAMPLE = """\
+test(() => {
+  assert_equals(new TextDecoder().decode(new Uint8Array([0xF0])), "\\uFFFD");
+  assert_equals(new TextDecoder("Big5").decode(new Uint8Array([0x81])), "\\uFFFD");
+}, "TextDecoder end-of-queue handling");
+
+test(() => {
+  assert_equals(new TextDecoder().decode(new Uint8Array([0x41])), "A");
+}, "TextDecoder end-of-queue handling using stream: true");
+"""
+
+
+def test_parse_eof_vectors_count() -> None:
+    vectors = parse_eof_vectors(_EOF_SAMPLE)
+    assert len(vectors) == 2
+
+
+def test_parse_eof_vectors_utf8_default_encoding() -> None:
+    vectors = parse_eof_vectors(_EOF_SAMPLE)
+    assert vectors[0]["encoding"] == "utf-8"
+    assert vectors[0]["input"] == [0xF0]
+    assert vectors[0]["expected"] == [0xFFFD]
+
+
+def test_parse_eof_vectors_big5() -> None:
+    vectors = parse_eof_vectors(_EOF_SAMPLE)
+    assert vectors[1]["encoding"] == "Big5"
+    assert vectors[1]["input"] == [0x81]
+    assert vectors[1]["expected"] == [0xFFFD]
+
+
+def test_parse_eof_vectors_skips_streaming() -> None:
+    vectors = parse_eof_vectors(_EOF_SAMPLE)
+    # streaming block is excluded; only 2 non-streaming cases in sample
+    assert len(vectors) == 2
+
+
+def test_render_eof_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {"encoding": "utf-8", "input": [0xF0], "expected": [0xFFFD]},
+        {"encoding": "Big5", "input": [0x81, 0x40], "expected": [0xFFFD, 0x0040]},
+    ]
+    out = tmp_path / "wpt_eof_vectors.hpp"
+    render_eof_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_EOF_VECTORS_HPP" in content
+    assert "WptEofVector" in content
+    assert "wpt_eof_vectors" in content
+    assert "utf-8" in content
+    assert "Big5" in content
+    assert "0xFFFD" in content
+    assert "wpt_eof_vectors[]" in content
