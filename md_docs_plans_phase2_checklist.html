@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–41 complete. 513 C++ + 171 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–42 complete. 521 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -466,8 +466,19 @@ Step 41: &lt;tt&gt;sniff_encoding&lt;/tt&gt; BOM detection (&lt;tt&gt;step41-sni
 <li>[x] <code>make test</code> (513 C++ + 171 Python all pass) + <code>make lint</code> (C++ clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
+<h1><a class="anchor" id="autotoc_md44"></a>
+Step 42: Umbrella header (&lt;tt&gt;step42-umbrella-header&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step42-umbrella-header</code> from <code>main</code></li>
+<li>[x] Write failing C++ tests (RED) — <code>transcode.test.cpp</code> using only <code>&lt;<a class="el" href="transcode_8hpp.html">beman/transcode/transcode.hpp</a>&gt;</code></li>
+<li>[x] Register <code>beman.transcode.tests.transcode</code> in <code>tests/beman/transcode/CMakeLists.txt</code></li>
+<li>[x] Push RED to both remotes</li>
+<li>[x] Update <code><a class="el" href="transcode_8hpp.html">include/beman/transcode/transcode.hpp</a></code> to include all public headers</li>
+<li>[x] <code>make test</code> (521 C++ + 171 Python all pass) + <code>make lint</code> (C++ clean)</li>
+<li>[x] Push GREEN to both remotes + merge to main</li>
+</ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md45"></a>
+<h1><a class="anchor" id="autotoc_md46"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
