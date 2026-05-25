@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–47 complete. 558 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–48 complete. 559 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -439,6 +439,17 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Replace stub `constify(true)` with real round-trip consteval test
 - [x] Add `constexpr` to four `operator==(iterator, default_sentinel_t)` friends in `whatwg_decode_view.hpp` and `whatwg_encode_view.hpp` (GREEN)
 - [x] `make test` (558 C++ + 171 Python all pass) + `make lint` (C++ clean)
+- [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 48: `sniff_encoding` negative compile test + Python lint fix (`step48-sniff-negative-lint-fix`)
+
+- [x] Create branch `step48-sniff-negative-lint-fix` from `main`
+- [x] Write `sniff_reject_char32_range_fail.cpp` (negative compile test for `sniff_encoding` rejecting `char32_t` ranges)
+- [x] Register in `tests/beman/transcode/CMakeLists.txt` (EXCLUDE_FROM_ALL + PASS_REGULAR_EXPRESSION "legacy_byte_range")
+- [x] Push RED to both remotes
+- [x] Fix ruff E501 + SIM105 violations in `tools/generate_labels.py`
+- [x] Fix ruff E501 in `tools/tests/test_generate_labels.py`
+- [x] `make test` (559 C++ + 171 Python all pass) + `make lint` (C++/tools clean; papers/wg21 pre-existing only)
 - [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---
