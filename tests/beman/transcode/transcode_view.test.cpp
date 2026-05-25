@@ -6,6 +6,7 @@
 #include <tests/beman/transcode/test_utilities.hpp>
 #include <catch2/catch_all.hpp>
 
+#include <array>
 #include <span>
 #include <string>
 
@@ -64,6 +65,18 @@ TEST_CASE("transcode_view: same codec is identity (UTF-8)", "[transcode_view]") 
     CHECK(result == src);
 }
 
-TEST_CASE("transcode_view: consteval — transcode_closure is default-constructible", "[transcode_view]") {
-    CHECK(constify(true));
+namespace {
+constexpr bool check_transcode_closure_constexpr() {
+    // ASCII 'A' (0x41) round-trips through UTF-8→UTF-8 unchanged.
+    std::array<char, 1> src{'\x41'};
+    auto                view = std::span<const char>(src) | transcode<codec::utf_8, codec::utf_8>;
+    auto                it   = view.begin();
+    if (it == std::default_sentinel)
+        return false;
+    return *it == '\x41';
+}
+} // namespace
+
+TEST_CASE("transcode_view: consteval — transcode closure round-trips ASCII", "[transcode_view]") {
+    CHECK(constify(check_transcode_closure_constexpr()));
 }

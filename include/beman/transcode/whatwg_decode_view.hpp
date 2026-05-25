@@ -135,7 +135,7 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         constexpr iterator& operator++();
         constexpr void      operator++(int);
 
-        friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
+        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
   public:
@@ -216,7 +216,7 @@ class whatwg_decode_or_error_view : public std::ranges::view_interface<whatwg_de
         constexpr iterator& operator++();
         constexpr void      operator++(int);
 
-        friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
+        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
   public:

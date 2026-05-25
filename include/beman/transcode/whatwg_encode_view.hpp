@@ -85,7 +85,7 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
         constexpr iterator& operator++();
         constexpr void      operator++(int);
 
-        friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
+        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
   public:
@@ -154,7 +154,7 @@ class whatwg_encode_or_error_view : public std::ranges::view_interface<whatwg_en
         constexpr iterator& operator++();
         constexpr void      operator++(int);
 
-        friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
+        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
   public:
