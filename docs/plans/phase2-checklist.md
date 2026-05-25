@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–36 complete. 490 C++ + 146 Python tests pass. On `main`.
+**Current state:** Steps 0–37 complete. 492 C++ + 151 Python tests pass. On `main`.
 
 ---
 
@@ -257,6 +257,26 @@ Comprehensive round-trip tests for all implemented codecs.
 - [x] Generate `wpt_bom_vectors.hpp` (3 cases: utf-8, utf-16le, utf-16be)
 - [x] Implement BOM stripping in `whatwg_decode_view` and `whatwg_decode_or_error_view` constructors
 - [x] `make test` (462 C++ + 141 Python all pass)
+- [x] `make lint` — clean
+- [x] Push GREEN to both remotes + merge to main
+
+---
+
+## Step 37: WPT EOF vectors + Big5 conformance fix (`step37-wpt-eof-vectors`)
+
+- [x] Create branch `step37-wpt-eof-vectors` from `main`
+- [x] Write failing tests (RED) referencing missing `wpt_eof_vectors.hpp`
+- [x] Push RED to both remotes
+- [x] Download `textdecoder-eof.any.js` + `textdecoder-fatal-streaming.any.js` → `docs/wpt/`
+- [x] Update `docs/wpt/SOURCE.md` with provenance + checksums
+- [x] Add `parse_eof_vectors()` + `render_eof_vectors_hpp()` to `generate_wpt_vectors.py`
+- [x] Add 4 Python tests to `test_generate_wpt.py` (49 total)
+- [x] Generate `wpt_eof_vectors.hpp` (10 vectors: 7 UTF-8 + 3 Big5)
+- [x] Fix Big5 conformance bug: WHATWG step 3.6 requires prepending ASCII trail
+      bytes back when pointer is null — set `code_point2` in `big5_decode_one`
+      and propagate in both view `load()` functions
+- [x] Update 2 existing Big5 tests (0x81,0x40 now correctly yields U+FFFD+U+0040)
+- [x] `make test` (492 C++ + 151 Python all pass)
 - [x] `make lint` — clean
 - [x] Push GREEN to both remotes + merge to main
 
