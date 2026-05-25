@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_wpt_vectors import (
     parse_bom_vectors,
+    parse_fatal_single_byte_cases,
     parse_fatal_vectors,
     parse_gb18030_decode_vectors,
     parse_iso2022jp_decode_vectors,
@@ -16,6 +17,7 @@ from generate_wpt_vectors import (
     parse_utf8_mistake_vectors,
     parse_utf16_surrogate_vectors,
     render_bom_vectors_hpp,
+    render_fatal_single_byte_vectors_hpp,
     render_fatal_vectors_hpp,
     render_gb18030_vectors_hpp,
     render_iso2022jp_vectors_hpp,
@@ -394,3 +396,51 @@ def test_render_fatal_vectors_hpp(tmp_path: Path) -> None:
     assert "0xFF" in content
     assert "invalid code" in content
     assert "truncated code unit" in content
+
+
+_SBFATAL_SAMPLE = """
+var singleByteEncodings = [
+     {encoding: 'IBM866', bad: []},
+     {encoding: 'ISO-8859-3', bad: [0xA5, 0xAE, 0xBE]},
+     {encoding: 'ISO-8859-8-I', bad: [0xA1, 0xBF, 0xFF]},
+];
+"""
+
+
+def test_parse_fatal_single_byte_cases_count() -> None:
+    cases = parse_fatal_single_byte_cases(_SBFATAL_SAMPLE)
+    assert len(cases) == 3
+
+
+def test_parse_fatal_single_byte_cases_empty_bad() -> None:
+    cases = parse_fatal_single_byte_cases(_SBFATAL_SAMPLE)
+    assert cases[0]["encoding"] == "IBM866"
+    assert cases[0]["bad"] == []
+
+
+def test_parse_fatal_single_byte_cases_with_bad() -> None:
+    cases = parse_fatal_single_byte_cases(_SBFATAL_SAMPLE)
+    assert cases[1]["encoding"] == "ISO-8859-3"
+    assert cases[1]["bad"] == [0xA5, 0xAE, 0xBE]
+
+
+def test_parse_fatal_single_byte_cases_hyphen_name() -> None:
+    cases = parse_fatal_single_byte_cases(_SBFATAL_SAMPLE)
+    assert cases[2]["encoding"] == "ISO-8859-8-I"
+    assert cases[2]["bad"] == [0xA1, 0xBF, 0xFF]
+
+
+def test_render_fatal_single_byte_vectors_hpp(tmp_path: Path) -> None:
+    cases: list[dict[str, object]] = [
+        {"encoding": "IBM866", "bad": []},
+        {"encoding": "ISO-8859-3", "bad": [0xA5, 0xAE]},
+    ]
+    out = tmp_path / "wpt_fatal_single_byte_vectors.hpp"
+    render_fatal_single_byte_vectors_hpp(cases, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_FATAL_SINGLE_BYTE_VECTORS_HPP" in content
+    assert "WptFatalSingleByteCase" in content
+    assert "wpt_fatal_single_byte_cases" in content
+    assert "IBM866" in content
+    assert "ISO-8859-3" in content
+    assert "0xA5" in content

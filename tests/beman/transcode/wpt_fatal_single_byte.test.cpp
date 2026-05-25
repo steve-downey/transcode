@@ -10,25 +10,24 @@
 #include <cstdint>
 
 using namespace beman::transcoding;
-using beman::transcoding::tests::wpt::WptFatalSingleByteCase;
 using beman::transcoding::tests::wpt::wpt_fatal_single_byte_cases;
+using beman::transcoding::tests::wpt::WptFatalSingleByteCase;
 
 namespace {
 
 template <codec C>
 void check_fatal_single_byte(const WptFatalSingleByteCase& c) {
     for (int b = 0; b < 256; ++b) {
-        char              ch = static_cast<char>(static_cast<uint8_t>(b));
+        char                ch = static_cast<char>(static_cast<uint8_t>(b));
         std::array<char, 1> input{ch};
-        bool              has_error = false;
+        bool                has_error = false;
         for (auto&& r : input | whatwg_decode_or_error<C>) {
             if (!r.has_value()) {
                 has_error = true;
                 break;
             }
         }
-        bool expect_error =
-            std::ranges::contains(c.bad, static_cast<uint8_t>(b));
+        bool expect_error = std::ranges::contains(c.bad, static_cast<uint8_t>(b));
         INFO("encoding=" << c.encoding << " byte=0x" << std::hex << b);
         CHECK(has_error == expect_error);
     }
