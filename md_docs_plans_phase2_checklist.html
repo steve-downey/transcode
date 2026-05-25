@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–48 complete. 559 C++ + 171 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–49 complete. 583 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -559,8 +559,20 @@ Step 48: &lt;tt&gt;sniff_encoding&lt;/tt&gt; negative compile test + Python lint
 <li>[x] <code>make test</code> (559 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean; papers/wg21 pre-existing only)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
+<h1><a class="anchor" id="autotoc_md51"></a>
+Step 49: &lt;tt&gt;whatwg_decode_view&lt;/tt&gt; coverage improvement (&lt;tt&gt;step49-decode-view-coverage&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step49-decode-view-coverage</code> from <code>main</code></li>
+<li>[x] Add UTF-16 truncated-surrogate tests (high surrogate + only 1 trailing byte)</li>
+<li>[x] Add GB18030 replay-with-high-lead-byte tests (error + success paths)</li>
+<li>[x] Add ISO-2022-JP <code>_or_error</code> coverage tests (all uncovered state transitions)</li>
+<li>[x] Add <code>_or_error</code> BOM stripping test for UTF-16BE</li>
+<li>[x] <code>make test</code> (583 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean)</li>
+<li>[x] <code>make coverage</code>: <code><a class="el" href="whatwg__decode__view_8hpp.html">whatwg_decode_view.hpp</a></code> 79.7% → 97.1%; overall lines 83.4% → 84.7%</li>
+<li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
+</ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md52"></a>
+<h1><a class="anchor" id="autotoc_md53"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
