@@ -150,7 +150,7 @@ class whatwg_encode_or_error_view : public std::ranges::view_interface<whatwg_en
 
         constexpr iterator(base_iter current, base_sent end);
 
-        constexpr result_t  operator*() const;
+        constexpr auto      operator*() const;
         constexpr iterator& operator++();
         constexpr void      operator++(int);
 
@@ -535,12 +535,14 @@ constexpr std::default_sentinel_t whatwg_encode_or_error_view<C, R>::end() const
 template <codec C, std::ranges::input_range R>
     requires unicode_scalar_range<R>
 constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
+    using result_value = std::remove_cvref_t<decltype(this->buf_[0])>;
+
     if (current_ == end_) {
         if constexpr (C == codec::iso_2022_jp) {
             if (iso2022jp_state_ != 0) {
-                buf_[0]          = result_t{'\x1B'};
-                buf_[1]          = result_t{'\x28'};
-                buf_[2]          = result_t{'\x42'};
+                this->buf_[0]    = result_value{'\x1B'};
+                this->buf_[1]    = result_value{'\x28'};
+                this->buf_[2]    = result_value{'\x42'};
                 len_             = 3;
                 pos_             = 0;
                 iso2022jp_state_ = 0;
@@ -553,9 +555,9 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
     auto encode_single = [&](const char32_t (&table)[128]) {
         auto r = detail::single_byte_encode_one(current_, end_, table);
         if (r.is_error)
-            buf_[0] = std::unexpected(whatwg_error::unmapped_codepoint);
+            this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
         else
-            buf_[0] = static_cast<char>(r.byte);
+            this->buf_[0] = result_value{static_cast<char>(r.byte)};
         len_ = 1;
         pos_ = 0;
     };
@@ -563,11 +565,11 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         auto r = detail::utf8_encode_one(static_cast<char32_t>(*current_));
         ++current_;
         if (r.is_error) {
-            buf_[0] = std::unexpected(r.error);
+            this->buf_[0] = result_value{std::unexpect, r.error};
             len_    = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                buf_[i] = static_cast<char>(r.bytes[i]);
+                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
             len_ = r.count;
         }
         pos_ = 0;
@@ -629,11 +631,11 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         auto r = detail::utf16be_encode_one(static_cast<char32_t>(*current_));
         ++current_;
         if (r.is_error) {
-            buf_[0] = std::unexpected(whatwg_error::surrogate_code_point);
+            this->buf_[0] = result_value{std::unexpect, whatwg_error::surrogate_code_point};
             len_    = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                buf_[i] = static_cast<char>(r.bytes[i]);
+                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
             len_ = r.count;
         }
         pos_ = 0;
@@ -641,11 +643,11 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         auto r = detail::utf16le_encode_one(static_cast<char32_t>(*current_));
         ++current_;
         if (r.is_error) {
-            buf_[0] = std::unexpected(whatwg_error::surrogate_code_point);
+            this->buf_[0] = result_value{std::unexpect, whatwg_error::surrogate_code_point};
             len_    = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                buf_[i] = static_cast<char>(r.bytes[i]);
+                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
             len_ = r.count;
         }
         pos_ = 0;
@@ -653,11 +655,11 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         auto r = detail::gbk_encode_one(static_cast<char32_t>(*current_));
         ++current_;
         if (r.is_error) {
-            buf_[0] = std::unexpected(whatwg_error::unmapped_codepoint);
+            this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
             len_    = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                buf_[i] = static_cast<char>(r.bytes[i]);
+                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
             len_ = r.count;
         }
         pos_ = 0;
@@ -665,18 +667,18 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         auto r = detail::gb18030_encode_one(static_cast<char32_t>(*current_));
         ++current_;
         for (int i = 0; i < r.count; ++i)
-            buf_[i] = static_cast<char>(r.bytes[i]);
+            this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
         len_ = r.count;
         pos_ = 0;
     } else if constexpr (C == codec::big5) {
         auto r = detail::big5_encode_one(static_cast<char32_t>(*current_));
         ++current_;
         if (r.is_error) {
-            buf_[0] = std::unexpected(whatwg_error::unmapped_codepoint);
+            this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
             len_    = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                buf_[i] = static_cast<char>(r.bytes[i]);
+                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
             len_ = r.count;
         }
         pos_ = 0;
@@ -684,11 +686,11 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         auto r = detail::shift_jis_encode_one(static_cast<char32_t>(*current_));
         ++current_;
         if (r.is_error) {
-            buf_[0] = std::unexpected(whatwg_error::unmapped_codepoint);
+            this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
             len_    = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                buf_[i] = static_cast<char>(r.bytes[i]);
+                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
             len_ = r.count;
         }
         pos_ = 0;
@@ -696,11 +698,11 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         auto r = detail::euc_jp_encode_one(static_cast<char32_t>(*current_));
         ++current_;
         if (r.is_error) {
-            buf_[0] = std::unexpected(whatwg_error::unmapped_codepoint);
+            this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
             len_    = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                buf_[i] = static_cast<char>(r.bytes[i]);
+                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
             len_ = r.count;
         }
         pos_ = 0;
@@ -711,14 +713,14 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         if (cp == 0x00A5 || cp == 0x203E) {
             char ascii_byte = (cp == 0x00A5) ? '\x5C' : '\x7E';
             if (iso2022jp_state_ != 1) {
-                buf_[0]          = result_t{'\x1B'};
-                buf_[1]          = result_t{'\x28'};
-                buf_[2]          = result_t{'\x4A'};
-                buf_[3]          = result_t{ascii_byte};
+                this->buf_[0]    = result_value{'\x1B'};
+                this->buf_[1]    = result_value{'\x28'};
+                this->buf_[2]    = result_value{'\x4A'};
+                this->buf_[3]    = result_value{ascii_byte};
                 len_             = 4;
                 iso2022jp_state_ = 1;
             } else {
-                buf_[0] = result_t{ascii_byte};
+                this->buf_[0] = result_value{ascii_byte};
                 len_    = 1;
             }
             pos_ = 0;
@@ -727,14 +729,14 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         if (cp < 0x80) {
             char ascii_byte = static_cast<char>(cp);
             if (iso2022jp_state_ != 0) {
-                buf_[0]          = result_t{'\x1B'};
-                buf_[1]          = result_t{'\x28'};
-                buf_[2]          = result_t{'\x42'};
-                buf_[3]          = result_t{ascii_byte};
+                this->buf_[0]    = result_value{'\x1B'};
+                this->buf_[1]    = result_value{'\x28'};
+                this->buf_[2]    = result_value{'\x42'};
+                this->buf_[3]    = result_value{ascii_byte};
                 len_             = 4;
                 iso2022jp_state_ = 0;
             } else {
-                buf_[0] = result_t{ascii_byte};
+                this->buf_[0] = result_value{ascii_byte};
                 len_    = 1;
             }
             pos_ = 0;
@@ -745,16 +747,16 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
                 int lead  = (i / 94) + 0x21;
                 int trail = (i % 94) + 0x21;
                 if (iso2022jp_state_ != 2) {
-                    buf_[0]          = result_t{'\x1B'};
-                    buf_[1]          = result_t{'\x24'};
-                    buf_[2]          = result_t{'\x42'};
-                    buf_[3]          = result_t{static_cast<char>(lead)};
-                    buf_[4]          = result_t{static_cast<char>(trail)};
+                    this->buf_[0]    = result_value{'\x1B'};
+                    this->buf_[1]    = result_value{'\x24'};
+                    this->buf_[2]    = result_value{'\x42'};
+                    this->buf_[3]    = result_value{static_cast<char>(lead)};
+                    this->buf_[4]    = result_value{static_cast<char>(trail)};
                     len_             = 5;
                     iso2022jp_state_ = 2;
                 } else {
-                    buf_[0] = result_t{static_cast<char>(lead)};
-                    buf_[1] = result_t{static_cast<char>(trail)};
+                    this->buf_[0] = result_value{static_cast<char>(lead)};
+                    this->buf_[1] = result_value{static_cast<char>(trail)};
                     len_    = 2;
                 }
                 pos_ = 0;
@@ -763,18 +765,18 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         }
         // Unmapped: reset to ASCII, emit error
         iso2022jp_state_ = 0;
-        buf_[0]          = std::unexpected(whatwg_error::unmapped_codepoint);
+        this->buf_[0]    = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
         len_             = 1;
         pos_             = 0;
     } else if constexpr (C == codec::euc_kr) {
         auto r = detail::euc_kr_encode_one(static_cast<char32_t>(*current_));
         ++current_;
         if (r.is_error) {
-            buf_[0] = std::unexpected(whatwg_error::unmapped_codepoint);
+            this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
             len_    = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                buf_[i] = static_cast<char>(r.bytes[i]);
+                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
             len_ = r.count;
         }
         pos_ = 0;
@@ -790,8 +792,8 @@ constexpr whatwg_encode_or_error_view<C, R>::iterator::iterator(base_iter curren
 
 template <codec C, std::ranges::input_range R>
     requires unicode_scalar_range<R>
-constexpr auto whatwg_encode_or_error_view<C, R>::iterator::operator*() const -> result_t {
-    return buf_[pos_];
+constexpr auto whatwg_encode_or_error_view<C, R>::iterator::operator*() const {
+    return this->buf_[this->pos_];
 }
 
 template <codec C, std::ranges::input_range R>

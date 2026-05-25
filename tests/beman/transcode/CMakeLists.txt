@@ -563,6 +563,20 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.bulk_transcode)
+target_sources(
+    beman.transcode.tests.bulk_transcode
+    PRIVATE bulk_transcode.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.bulk_transcode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.bulk_transcode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -609,6 +623,7 @@ catch_discover_tests(beman.transcode.tests.transcode)
 catch_discover_tests(beman.transcode.tests.transcode_string)
 catch_discover_tests(beman.transcode.tests.transcode_string_label)
 catch_discover_tests(beman.transcode.tests.transcode_view)
+catch_discover_tests(beman.transcode.tests.bulk_transcode)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(
