@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–43 complete. 531 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–44 complete. 541 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -387,6 +387,23 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Implement `include/beman/transcode/detail/transcode_string.hpp`
 - [x] Add `transcode_string.hpp` to umbrella header `transcode.hpp`
 - [x] `make test` (531 C++ + 171 Python all pass) + `make lint` (C++ clean)
+- [x] Push GREEN to both remotes + merge to main
+
+## Step 44: Coverage audit of `transcode_string` (`step44-coverage-audit`)
+
+- [x] Create branch `step44-coverage-audit` from `main`
+- [x] Add 10 new test cases targeting all previously uncovered switch arms
+  - ASCII identity through all 27 uncovered single-byte decode arms
+  - ASCII identity through all 27 uncovered single-byte encode arms
+  - UTF-16LE decode: "hi" in UTF-16LE bytes → UTF-8
+  - UTF-16BE decode: "hi" in UTF-16BE bytes → UTF-8
+  - UTF-16LE encode: UTF-8 "hi" → correct LE byte pairs
+  - UTF-16BE encode: UTF-8 "hi" → correct BE byte pairs
+  - ASCII identity through all 5 CJK decode arms (gb18030, big5, euc_jp, iso_2022_jp, euc_kr)
+  - ASCII identity through all 5 CJK encode arms
+  - Default encode arm: replacement and x_user_defined as `to` → empty string
+- [x] `make test` (541 C++ + 171 Python all pass) + `make lint` (C++ clean)
+- [x] `make coverage`: lines 58.9%→83.2%, functions 67.2%→99.9%
 - [x] Push GREEN to both remotes + merge to main
 
 ---

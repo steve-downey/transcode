@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 44
+# Handoff: beman.transcode — Step 45
 
 ## Project
 
@@ -14,96 +14,58 @@ proposal.
 
 ## Current State
 
-**Step 43 complete and merged to main.**
+**Step 44 complete and merged to main.**
 
-531 C++ tests + 171 Python tests pass (`make test`). `make lint` has
+541 C++ tests + 171 Python tests pass (`make test`). `make lint` has
 pre-existing failures in `papers/wg21/` and `tools/tests/test_generate_labels.py`
 (Python ruff/codespell issues unrelated to the transcode C++ library). The
 C++ and CMake portions of lint pass cleanly.
 
-### What Step 43 Added
+Coverage (after step 44): lines 83.2%, functions 99.9% (1961/1962).
 
-`transcode_string` — a one-shot runtime-dispatch transcoding function that
-decodes bytes from one codec and re-encodes them to another codec, returning
-a `std::string`.
+### What Step 44 Added
 
-Key changes:
-- `include/beman/transcode/detail/transcode_string.hpp` — the new header:
-  - `detail::transcode_decode_all<C>(std::span<const char>)` → `std::u32string`
-  - `detail::transcode_encode_all<C>(std::u32string_view)` → `std::string`
-  - `transcode_string(std::span<const char> src, codec from, codec to)` → `std::string`
-    - Runtime switch dispatch for `from` (all 40 codecs)
-    - Runtime switch dispatch for `to` (all encodeable codecs; `replacement`
-      and `x_user_defined` fall through to empty-string default)
-    - Decode errors produce U+FFFD; unmapped encode codepoints produce `?`
-    - Intermediate representation: `std::u32string` (O(N) template
-      instantiations instead of O(N²))
-- `include/beman/transcode/transcode.hpp` — umbrella header now also includes
-  `<beman/transcode/detail/transcode_string.hpp>`
-- `tests/beman/transcode/transcode_string.test.cpp` — 10 runtime tests:
-  empty input, UTF-8 identity, UTF-8 multibyte identity, windows-1252↔UTF-8
-  (euro sign), invalid UTF-8 → replacement, ASCII through shift_jis,
-  UTF-8↔GBK round-trip, unmapped codepoint → `?`, replacement-codec decode
+Coverage audit of `transcode_string.hpp`: 10 new test cases that exercise
+every previously uncovered `switch` arm in `transcode_string()`:
 
-Users can now:
-```cpp
-#include <beman/transcode/transcode.hpp>
-using namespace beman::transcoding;
+- ASCII identity through all 27 single-byte decode/encode codec arms not
+  previously exercised (ibm866, all iso_8859_*, koi8_r/u, macintosh,
+  windows_874–1258, x_mac_cyrillic, x_user_defined, shift_jis decode)
+- UTF-16LE and UTF-16BE decode and encode (byte-order verification)
+- All 5 CJK codec decode arms (gb18030, big5, euc_jp, iso_2022_jp, euc_kr)
+- All 5 CJK codec encode arms
+- Default encode arm: `to=codec::replacement` and `to=codec::x_user_defined`
+  both yield empty string (no encoder defined for those codecs)
 
-// Convert a legacy-encoded string to UTF-8:
-std::string utf8 = transcode_string(span_of_win1252_bytes, codec::windows_1252, codec::utf_8);
+Coverage went from 58.9% lines / 67.2% functions → 83.2% lines / 99.9%
+functions. Only 1 function remains uncovered (likely an unreachable
+template instantiation branch inside Catch2 or a constexpr-only path).
 
-// Or with runtime codec lookup:
-auto from = get_encoding("shift_jis");
-if (from) utf8 = transcode_string(src, *from, codec::utf_8);
-```
-
-## What To Do Next — Step 44
+## What To Do Next — Step 45
 
 **Read the checklist first:**
 ```
 docs/plans/phase2-checklist.md
 ```
 
-Steps 0–43 are complete. The checklist does not yet have a step 44 entry —
-look at `docs/plans/phase2-index.md` for the phase overview.
+Steps 0–44 are complete. The checklist does not yet have a step 45 entry.
 
-### Likely candidates for step 44
+### Recommended step 45: `transcode_view` pipe composition helper
 
-1. **`transcode_view` pipe composition helper** — a combined decode+encode
-   range adapter closure that composes `whatwg_decode` → `whatwg_encode`:
-   ```cpp
-   auto v = bytes | transcode<codec::shift_jis, codec::utf_8>;
-   // or with compile-time codecs:
-   auto v = bytes | transcode<codec::utf_8, codec::gbk>;
-   ```
-   This would be a range adapter closure wrapping two closures. Since both
-   `from` and `to` are compile-time NTTPs, the result type would be:
-   `whatwg_encode_view<To, whatwg_decode_view<From, std::views::all_t<R>>>`.
-   The design challenge: how does the combined closure handle the two NTTP
-   parameters while remaining pipeable?
-
-2. **`transcode_string` with runtime codec via `get_encoding`** — an
-   overload or variant that takes string label names directly:
-   ```cpp
-   std::optional<std::string> transcode_string(std::span<const char> src,
-       std::string_view from_label, std::string_view to_label);
-   ```
-   This is a thin wrapper around `get_encoding()` + `transcode_string()`.
-
-3. **Coverage audit** — run `make coverage` on the new `transcode_string`
-   header and check that the decode/encode dispatch is adequately covered.
-   The template instantiations for less-common codecs may not be covered
-   by the 10 existing tests. Add targeted tests if surprising gaps appear.
-
-4. **More WPT conformance tests** — check if any WPT test files in
-   `docs/wpt/` haven't been imported yet.
-
-### Architecture notes for step 44
-
-For the `transcode_view` closure (option 1), the cleanest design is:
+A combined decode+encode range adapter closure that wraps
+`whatwg_decode<From> | whatwg_encode<To>` into a single pipeable object:
 
 ```cpp
+// Usage:
+auto v = bytes | transcode<codec::shift_jis, codec::utf_8>;
+// or:
+auto v = bytes | transcode<codec::utf_8, codec::gbk>;
+```
+
+**Design sketch** (from handoff-next of step 43):
+
+```cpp
+// include/beman/transcode/detail/transcode_view.hpp
 template <codec From, codec To>
 struct transcode_closure {
     template <legacy_byte_range R>
@@ -117,15 +79,82 @@ struct transcode_closure {
 };
 
 template <codec From, codec To>
-inline constexpr transcode_closure<From, To> transcode_view{};
+inline constexpr transcode_closure<From, To> transcode{};
 ```
 
-This yields `whatwg_encode_view<To, whatwg_decode_view<From, all_t<R>>>` as
-the composed view — zero overhead, no intermediate allocation, lazily
-evaluated.
+Result type is `whatwg_encode_view<To, whatwg_decode_view<From, all_t<R>>>` —
+zero overhead, no intermediate allocation, lazily evaluated.
 
-The header would go in `include/beman/transcode/detail/transcode_view.hpp`
-and be added to the umbrella header.
+**Files to create/edit:**
+- `include/beman/transcode/detail/transcode_view.hpp` (new header)
+- `include/beman/transcode/transcode.hpp` (add `#include` for new header)
+- `tests/beman/transcode/transcode_view.test.cpp` (new test file)
+- `tests/beman/transcode/CMakeLists.txt` (register new test target)
+
+**TDD checklist for step 45:**
+1. Write failing tests in `transcode_view.test.cpp` (RED: `transcode_view.hpp`
+   doesn't exist yet)
+2. Register in CMakeLists.txt
+3. Commit RED + push both remotes
+4. Implement `transcode_view.hpp` + add to umbrella header
+5. `make test` (all pass) + `make lint` + `make coverage`
+6. Commit GREEN + push both remotes
+7. Merge to main + push both remotes
+8. Update checklist + write handoff-next.md
+
+**Tests to write (RED phase):**
+
+```cpp
+// transcode_view.test.cpp
+#include <beman/transcode/detail/transcode_view.hpp>
+#include <beman/transcode/detail/transcode_view.hpp>  // idempotent
+
+// Basic pipe syntax
+TEST_CASE("transcode: windows-1252 bytes → UTF-8 via pipe") {
+    std::string src{'\x80'};  // 0x80 in windows-1252 → U+20AC EURO SIGN
+    std::string expected{'\xE2', '\x82', '\xAC'};
+    std::string result;
+    for (char b : std::span<const char>(src) | transcode<codec::windows_1252, codec::utf_8>)
+        result.push_back(b);
+    CHECK(result == expected);
+}
+
+TEST_CASE("transcode: UTF-8 → windows-1252 via pipe") { ... }
+TEST_CASE("transcode: UTF-8 → GBK via pipe (中)") { ... }
+TEST_CASE("transcode: consteval — transcode_closure is trivially constructible") { ... }
+```
+
+**Design note — naming conflict:** The variable template `transcode` may
+conflict with the function `transcode_string` or existing names in the
+namespace. Using `transcode` as a variable template in namespace
+`beman::transcoding` should be fine since there's no free function with that
+name. The umbrella header brings `transcode_string` into scope; verify there
+is no ambiguity.
+
+### Alternative step 45: `transcode_string` label overload
+
+A thin overload accepting string labels instead of `codec` enum values:
+
+```cpp
+std::optional<std::string> transcode_string(
+    std::span<const char> src,
+    std::string_view from_label,
+    std::string_view to_label);
+```
+
+Implementation:
+```cpp
+inline std::optional<std::string> transcode_string(
+        std::span<const char> src,
+        std::string_view from_label, std::string_view to_label) {
+    auto from = get_encoding(from_label);
+    auto to   = get_encoding(to_label);
+    if (!from || !to) return std::nullopt;
+    return transcode_string(src, *from, *to);
+}
+```
+
+This is simpler but less architecturally interesting than `transcode_view`.
 
 ## TDD Process
 
@@ -148,7 +177,7 @@ make pytest    # Python tool tests only
 
 ## Coding Rules (abbreviated)
 
-- Include guard: mirrors file path, e.g. `INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_STRING_HPP`
+- Include guard: mirrors file path, e.g. `INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_VIEW_HPP`
 - Test file: include the primary header **twice** (idempotent check)
 - Functions: out-of-line in headers with full `ClassName::method_name` qualification
 - `constexpr` everything that can be; add `constify()` consteval test
@@ -157,12 +186,10 @@ make pytest    # Python tool tests only
 
 ## Key files for context
 
-- `include/beman/transcode/transcode.hpp` — umbrella header (step 42+43)
-- `include/beman/transcode/detail/transcode_string.hpp` — step 43 (new)
+- `include/beman/transcode/transcode.hpp` — umbrella header
+- `include/beman/transcode/detail/transcode_string.hpp` — step 43 one-shot function
 - `include/beman/transcode/detail/concepts.hpp` — `legacy_byte_range`, `unicode_scalar_range`
-- `include/beman/transcode/detail/sniff.hpp` — BOM detection (step 41)
-- `include/beman/transcode/detail/labels.hpp` — label→codec lookup (step 40)
-- `include/beman/transcode/whatwg_decode_view.hpp` — decode view + `codec` enum + `whatwg_decode` pipe adapter
-- `include/beman/transcode/whatwg_encode_view.hpp` — encode view + `whatwg_encode` pipe adapter
-- `tests/beman/transcode/transcode_string.test.cpp` — step 43 test style reference
-- `tests/beman/transcode/transcode.test.cpp` — step 42 test style reference (umbrella header usage)
+- `include/beman/transcode/whatwg_decode_view.hpp` — decode view + `whatwg_decode` closure + `codec` enum
+- `include/beman/transcode/whatwg_encode_view.hpp` — encode view + `whatwg_encode` closure
+- `tests/beman/transcode/transcode_string.test.cpp` — test style reference (step 43–44)
+- `tests/beman/transcode/CMakeLists.txt` — how to register a new test target
