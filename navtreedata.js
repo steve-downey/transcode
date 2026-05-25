@@ -127,6 +127,10 @@ var NAVTREE =
       [ "File Provenance", "md_docs_whatwg_SOURCE.html#autotoc_md87", null ],
       [ "Full Checksums", "md_docs_whatwg_SOURCE.html#autotoc_md88", null ]
     ] ],
+    [ "Web Platform Tests — Encoding Test Vectors", "md_docs_wpt_SOURCE.html", [
+      [ "File Provenance", "md_docs_wpt_SOURCE.html#autotoc_md90", null ],
+      [ "Full Checksums", "md_docs_wpt_SOURCE.html#autotoc_md91", null ]
+    ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
       [ "Namespace Members", "namespacemembers.html", [
@@ -162,9 +166,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a39142c5c4da5d5eca07c119ed2292c25",
-"macintosh_8hpp_source.html",
-"transcode_8hpp_source.html"
+"classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a1a857c52b9777fa68495ab1501b3116d",
+"iso__8859__4_8hpp_source.html",
+"structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html#a915a50819dcf57e4c15c79375e6c3bc7"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
