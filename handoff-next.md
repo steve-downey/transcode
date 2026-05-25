@@ -60,25 +60,136 @@ New files:
 
 ## What To Do Next — Step 36
 
-**Branch:** `step36-<slug>`
+**Branch:** `step36-wpt-fatal-single-byte`
 
-### Option A: `textdecoder-fatal-single-byte.any.js` WPT vectors (recommended)
+### WPT file structure
 
-Download and parse `textdecoder-fatal-single-byte.any.js` from WPT. It
-tests fatal mode for single-byte encodings with invalid bytes. This would
-verify our `whatwg_decode_or_error` implementation for all 27+ single-byte
-codecs.
+`textdecoder-fatal-single-byte.any.js` contains a `singleByteEncodings`
+array of `{encoding, bad}` objects. The `bad` array lists byte values
+(0x80–0xFF) that are null entries in the codec's table — they must throw
+`TypeError` in fatal mode. All 256 bytes are tested; bytes not in `bad`
+must decode without error.
 
-Fetch:
-```bash
-gh api "repos/web-platform-tests/wpt/contents/encoding/textdecoder-fatal-single-byte.any.js" \
-  --jq '.content' | base64 -d
+```javascript
+var singleByteEncodings = [
+    {encoding: 'IBM866',     bad: []},
+    {encoding: 'ISO-8859-2', bad: []},
+    {encoding: 'ISO-8859-3', bad: [0xA5, 0xAE, 0xBE, 0xC3, 0xD0, 0xE3, 0xF0]},
+    // ...
+    {encoding: 'ISO-8859-8', bad: [0xA1, 0xBF, 0xC0, ...]},
+    // ... 27 codecs total
+];
 ```
 
-Parse the file structure (likely similar to `textdecoder-fatal.any.js`).
-Generate `wpt_fatal_single_byte_vectors.hpp`. Write a test that verifies
-every invalid byte for each single-byte encoding yields at least one
-`std::unexpected` from `whatwg_decode_or_error`.
+Key observations:
+- Most codecs have an **empty** `bad` list (IBM866, ISO-8859-2/4/5,
+  ISO-8859-10/13/14/15/16, KOI8-R/U, macintosh, windows-1250/51/52/54/56/58,
+  x-mac-cyrillic). Every byte decodes successfully for these.
+- Bytes 0x00–0x7F are **never** in any `bad` list (ASCII passthrough).
+- ISO-8859-8 and ISO-8859-8-I have identical `bad` lists.
+
+Fetch the file via GitHub API:
+```bash
+gh api "repos/web-platform-tests/wpt/contents/encoding/textdecoder-fatal-single-byte.any.js" \
+  --jq '.content' | base64 -d > docs/wpt/textdecoder-fatal-single-byte.any.js
+```
+
+### WPT encoding name → `codec::` enum mapping
+
+| WPT name       | `codec::` value     |
+|----------------|---------------------|
+| IBM866         | ibm866              |
+| ISO-8859-2     | iso_8859_2          |
+| ISO-8859-3     | iso_8859_3          |
+| ISO-8859-4     | iso_8859_4          |
+| ISO-8859-5     | iso_8859_5          |
+| ISO-8859-6     | iso_8859_6          |
+| ISO-8859-7     | iso_8859_7          |
+| ISO-8859-8     | iso_8859_8          |
+| ISO-8859-8-I   | iso_8859_8_i        |
+| ISO-8859-10    | iso_8859_10         |
+| ISO-8859-13    | iso_8859_13         |
+| ISO-8859-14    | iso_8859_14         |
+| ISO-8859-15    | iso_8859_15         |
+| ISO-8859-16    | iso_8859_16         |
+| KOI8-R         | koi8_r              |
+| KOI8-U         | koi8_u              |
+| macintosh      | macintosh           |
+| windows-874    | windows_874         |
+| windows-1250   | windows_1250        |
+| windows-1251   | windows_1251        |
+| windows-1252   | windows_1252        |
+| windows-1253   | windows_1253        |
+| windows-1254   | windows_1254        |
+| windows-1255   | windows_1255        |
+| windows-1256   | windows_1256        |
+| windows-1257   | windows_1257        |
+| windows-1258   | windows_1258        |
+| x-mac-cyrillic | x_mac_cyrillic      |
+
+### Generator approach (`generate_wpt_vectors.py`)
+
+Add to the generator:
+
+```python
+_SBFATAL_RE = re.compile(
+    r"\{encoding:\s*'([^']+)'\s*,\s*bad:\s*\[([^\]]*)\]\s*\}",
+    re.MULTILINE,
+)
+
+def parse_fatal_single_byte_cases(content: str) -> list[dict[str, object]]:
+    cases: list[dict[str, object]] = []
+    for m in _SBFATAL_RE.finditer(content):
+        encoding, bad_str = m.groups()
+        bad = [int(x.strip(), 0) for x in bad_str.split(",") if x.strip()]
+        cases.append({"encoding": encoding, "bad": bad})
+    return cases
+```
+
+Generated header struct (`WptFatalSingleByteCase`):
+
+```cpp
+struct WptFatalSingleByteCase {
+    const char*          encoding;
+    std::vector<uint8_t> bad;  // bytes that must produce an error
+};
+inline const WptFatalSingleByteCase wpt_fatal_single_byte_cases[] = {
+    {"IBM866",     {}},
+    {"ISO-8859-2", {}},
+    {"ISO-8859-3", {0xA5, 0xAE, 0xBE, 0xC3, 0xD0, 0xE3, 0xF0}},
+    // ...
+};
+```
+
+### C++ test approach (`wpt_fatal_single_byte.test.cpp`)
+
+The test must dispatch at compile time to the right `codec::` value.
+The simplest pattern: write a templated helper, call it once per codec:
+
+```cpp
+template <codec C>
+void check_fatal_single_byte(const WptFatalSingleByteCase& c) {
+    for (int b = 0; b < 256; ++b) {
+        char ch = static_cast<char>(static_cast<uint8_t>(b));
+        std::array<char, 1> input{ch};
+        bool has_error = false;
+        for (auto r : input | whatwg_decode_or_error<C>)
+            if (!r.has_value()) { has_error = true; break; }
+        bool expect_error = std::ranges::contains(c.bad,
+                                                  static_cast<uint8_t>(b));
+        INFO("encoding=" << c.encoding << " byte=0x" << std::hex << b);
+        CHECK(has_error == expect_error);
+    }
+}
+
+TEST_CASE("WPT fatal single-byte: IBM866", "[wpt::fatal_single_byte]") {
+    check_fatal_single_byte<codec::ibm866>(
+        beman::transcoding::tests::wpt::wpt_fatal_single_byte_cases[0]);
+}
+// ... one TEST_CASE per codec (27 total)
+```
+
+This produces 27 test cases, each running 256 sub-checks.
 
 ### Option B: `textdecoder-ignorebom.any.js` WPT vectors
 
@@ -87,17 +198,11 @@ Our library doesn't expose an `ignoreBOM` option — it always strips the
 leading BOM. This step would either implement `ignoreBOM` as a template
 parameter, or document the gap.
 
-The relevant WPT file exists in the WPT repo:
+Fetch:
 ```bash
 gh api "repos/web-platform-tests/wpt/contents/encoding/textdecoder-ignorebom.any.js" \
   --jq '.content' | base64 -d
 ```
-
-### Option C: `textdecoder-streaming.any.js` gap documentation
-
-Tests streaming decode (`stream: true` option). Our library exposes a
-range/view API rather than a streaming API. This step would document the
-gap and add `// FIXME: streaming not yet supported` notes.
 
 ## TDD Process
 
