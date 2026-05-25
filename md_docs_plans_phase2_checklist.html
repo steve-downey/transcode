@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–46 complete. 557 C++ + 171 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–47 complete. 558 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -535,8 +535,20 @@ Step 46: &lt;tt&gt;transcode_view&lt;/tt&gt; pipe composition helper (&lt;tt&gt;
 <li>[x] <code>make coverage</code>: lines 83.4%, functions 99.9%</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
+<h1><a class="anchor" id="autotoc_md49"></a>
+Step 47: &lt;tt&gt;transcode_view&lt;/tt&gt; negative compile test + consteval test (&lt;tt&gt;step47-transcode-view-negative-consteval&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step47-transcode-view-negative-consteval</code> from <code>main</code></li>
+<li>[x] Write <code>transcode_view_reject_array_fail.cpp</code> (RED)</li>
+<li>[x] Register in <code>tests/beman/transcode/CMakeLists.txt</code> as negative compile test</li>
+<li>[x] Push RED to both remotes</li>
+<li>[x] Replace stub <code>constify(true)</code> with real round-trip consteval test</li>
+<li>[x] Add <code>constexpr</code> to four <code>operator==(iterator, default_sentinel_t)</code> friends in <code><a class="el" href="whatwg__decode__view_8hpp.html">whatwg_decode_view.hpp</a></code> and <code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code> (GREEN)</li>
+<li>[x] <code>make test</code> (558 C++ + 171 Python all pass) + <code>make lint</code> (C++ clean)</li>
+<li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
+</ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md50"></a>
+<h1><a class="anchor" id="autotoc_md51"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
