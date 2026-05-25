@@ -114,6 +114,40 @@ TEST_CASE("iso_2022_jp encode U+4E00 (一) after U+3000: 0x30 0x6C (already in J
     CHECK(result[9] == '\x42');
 }
 
+// Coverage: consecutive YEN signs — second one stays in Roman state (lines 402-403).
+TEST_CASE("iso_2022_jp encode consecutive YEN signs: ESC(J 0x5C 0x5C ESC(B", "[transcoding::iso_2022_jp_encode]") {
+    std::vector<char32_t> cps{U'\x00A5', U'\x00A5'};
+    auto                  result = collect(cps | whatwg_encode<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 8);
+    CHECK(result[0] == '\x1B'); // ESC ( J for first YEN
+    CHECK(result[1] == '\x28');
+    CHECK(result[2] == '\x4A');
+    CHECK(result[3] == '\x5C'); // first YEN byte
+    CHECK(result[4] == '\x5C'); // second YEN byte (already in Roman, no ESC)
+    CHECK(result[5] == '\x1B'); // ESC ( B (end-of-stream return to ASCII)
+    CHECK(result[6] == '\x28');
+    CHECK(result[7] == '\x42');
+}
+
+// Coverage: unmapped codepoint while in JIS state → ESC(B + '?' (lines 447-452).
+TEST_CASE("iso_2022_jp encode unmapped after JIS: ESC$B chars ESC(B '?'", "[transcoding::iso_2022_jp_encode]") {
+    std::vector<char32_t> cps{U'\x3000', U'\x1F600'};
+    auto                  result = collect(cps | whatwg_encode<codec::iso_2022_jp>);
+    // U+3000: ESC$B 0x21 0x21 (5 bytes, state=JIS)
+    // U+1F600 unmapped: ESC(B '?' (4 bytes, state=ASCII)
+    // No trailing ESC(B (already in ASCII)
+    REQUIRE(result.size() == 9);
+    CHECK(result[0] == '\x1B'); // ESC $ B
+    CHECK(result[1] == '\x24');
+    CHECK(result[2] == '\x42');
+    CHECK(result[3] == '\x21'); // U+3000
+    CHECK(result[4] == '\x21');
+    CHECK(result[5] == '\x1B'); // ESC ( B (switch back for unmapped)
+    CHECK(result[6] == '\x28');
+    CHECK(result[7] == '\x42');
+    CHECK(result[8] == '?');
+}
+
 TEST_CASE("iso_2022_jp encode unmapped codepoint U+1F600 -> '?'", "[transcoding::iso_2022_jp_encode]") {
     std::vector<char32_t> cps{U'\x1F600'};
     auto                  result = collect(cps | whatwg_encode<codec::iso_2022_jp>);
@@ -189,6 +223,66 @@ TEST_CASE("iso_2022_jp or_error encode U+3000 -> ESC $ B 0x21 0x21 [+ ESC ( B at
     CHECK(result[6].value() == '\x28');
     REQUIRE(result[7].has_value());
     CHECK(result[7].value() == '\x42');
+}
+
+// Coverage: or_error YEN sign (lines 712-719, state switch to Roman).
+TEST_CASE("iso_2022_jp or_error encode U+00A5 (YEN) -> ESC(J 0x5C + ESC(B",
+          "[transcoding::iso_2022_jp_encode_or_error]") {
+    std::vector<char32_t> cps{U'\x00A5'};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 7);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == '\x1B');
+    REQUIRE(result[3].has_value());
+    CHECK(result[3].value() == '\x5C');
+    REQUIRE(result[4].has_value());
+    CHECK(result[4].value() == '\x1B'); // ESC ( B end-of-stream
+}
+
+// Coverage: or_error consecutive YEN + OVERLINE (lines 721-725, already in Roman).
+TEST_CASE("iso_2022_jp or_error encode consecutive YEN + OVERLINE", "[transcoding::iso_2022_jp_encode_or_error]") {
+    std::vector<char32_t> cps{U'\x00A5', U'\x203E'};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::iso_2022_jp>);
+    // ESC(J 0x5C (4) + 0x7E (1, already Roman) + ESC(B (3) = 8
+    REQUIRE(result.size() == 8);
+    REQUIRE(result[3].has_value());
+    CHECK(result[3].value() == '\x5C'); // YEN
+    REQUIRE(result[4].has_value());
+    CHECK(result[4].value() == '\x7E'); // OVERLINE (no state switch)
+    REQUIRE(result[5].has_value());
+    CHECK(result[5].value() == '\x1B'); // ESC ( B end-of-stream
+}
+
+// Coverage: or_error ASCII after JIS state (lines 730-735).
+TEST_CASE("iso_2022_jp or_error encode ASCII after JIS: U+3000 then 'B'",
+          "[transcoding::iso_2022_jp_encode_or_error]") {
+    std::vector<char32_t> cps{U'\x3000', U'B'};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::iso_2022_jp>);
+    // U+3000: ESC$B 0x21 0x21 (5 bytes, state=JIS)
+    // 'B': ESC(B 0x42 (4 bytes, state=ASCII)
+    // No trailing ESC(B (already ASCII)
+    REQUIRE(result.size() == 9);
+    REQUIRE(result[5].has_value());
+    CHECK(result[5].value() == '\x1B'); // ESC ( B for 'B'
+    REQUIRE(result[8].has_value());
+    CHECK(result[8].value() == '\x42'); // 'B'
+}
+
+// Coverage: or_error JIS char when already in JIS state (lines 756-758).
+TEST_CASE("iso_2022_jp or_error encode consecutive JIS chars: U+3000 then U+4E00",
+          "[transcoding::iso_2022_jp_encode_or_error]") {
+    std::vector<char32_t> cps{U'\x3000', U'\x4E00'};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::iso_2022_jp>);
+    // U+3000: ESC$B 0x21 0x21 (5 bytes, state=JIS)
+    // U+4E00: 0x30 0x6C (2 bytes, already JIS, no ESC)
+    // ESC(B at end (3 bytes)
+    REQUIRE(result.size() == 10);
+    REQUIRE(result[5].has_value());
+    CHECK(result[5].value() == '\x30'); // U+4E00 lead (no ESC prefix)
+    REQUIRE(result[6].has_value());
+    CHECK(result[6].value() == '\x6C'); // U+4E00 trail
+    REQUIRE(result[7].has_value());
+    CHECK(result[7].value() == '\x1B'); // ESC ( B end-of-stream
 }
 
 TEST_CASE("iso_2022_jp or_error encode unmapped yields error", "[transcoding::iso_2022_jp_encode_or_error]") {

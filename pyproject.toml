@@ -24,6 +24,7 @@ dev = [
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+extend-exclude = ["papers/wg21"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
