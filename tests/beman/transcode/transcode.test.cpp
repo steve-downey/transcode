@@ -97,3 +97,22 @@ TEST_CASE("transcode.hpp: iconv_real accessible", "[transcoding::umbrella]") {
     CHECK(fns.convert != nullptr);
     CHECK(fns.close != nullptr);
 }
+
+TEST_CASE("transcode.hpp: iconv_transcode_view functional round-trip via umbrella", "[transcoding::umbrella]") {
+    // End-to-end test: UTF-8 → UTF-32LE via iconv_transcode_view from umbrella header
+    std::vector<char> utf8{'h', 'e', 'l', 'l', 'o'};
+    std::vector<char> buf(64);
+
+    std::vector<char> result;
+    for (char ch : utf8 | iconv_transcode("UTF-8", "UTF-32LE", buf)) {
+        result.push_back(ch);
+    }
+
+    // UTF-32LE encoding of "hello" (5 chars × 4 bytes/char = 20 bytes)
+    CHECK(result.size() == 20);
+    // First char 'h' = U+0068 = 0x68 0x00 0x00 0x00 in LE
+    CHECK(result[0] == 'h');
+    CHECK(result[1] == 0x00);
+    CHECK(result[2] == 0x00);
+    CHECK(result[3] == 0x00);
+}
