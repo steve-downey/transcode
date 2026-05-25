@@ -4,5 +4,7 @@ var searchData=
   ['todo_2ecpp_1',['todo.cpp',['../todo_8cpp.html',1,'']]],
   ['todo_2ehpp_2',['todo.hpp',['../todo_8hpp.html',1,'']]],
   ['transcode_2ehpp_3',['transcode.hpp',['../transcode_8hpp.html',1,'']]],
-  ['truncated_5fsequence_4',['truncated_sequence',['../namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba3c77c8fa3468fd7bfd6123cbcbc26a3e',1,'beman::transcoding']]]
+  ['transcode_5fstring_4',['transcode_string',['../namespacebeman_1_1transcoding.html#a56ed76d2fca064c209e690f3bfe595d6',1,'beman::transcoding']]],
+  ['transcode_5fstring_2ehpp_5',['transcode_string.hpp',['../transcode__string_8hpp.html',1,'']]],
+  ['truncated_5fsequence_6',['truncated_sequence',['../namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba3c77c8fa3468fd7bfd6123cbcbc26a3e',1,'beman::transcoding']]]
 ];
