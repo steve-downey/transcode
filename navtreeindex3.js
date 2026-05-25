@@ -1,5 +1,6 @@
 var NAVTREEINDEX3 =
 {
+"structbeman_1_1transcoding_1_1whatwg__decode__closure.html#a805a7412124448faf1ebbecfe3d10d2c":[8,0,0,0,7,2],
 "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html":[6,0,0,0,9],
 "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html":[8,0,0,0,8],
 "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html#ab63322e8dacc5d947c887c0fb7654083":[6,0,0,0,9,0],

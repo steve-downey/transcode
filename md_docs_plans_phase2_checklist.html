@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–38 complete. 494 C++ + 155 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–39 complete. 495 C++ + 159 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -415,11 +415,23 @@ Step 38: WPT UTF-8 surrogate encode vectors (&lt;tt&gt;step38-wpt-surrogates-utf
 <hr  />
 <h1><a class="anchor" id="autotoc_md39"></a>
 Upcoming</h1>
-<h2><a class="anchor" id="autotoc_md40"></a>
-WPT TextEncoder UTF-16 surrogate round-trip (&lt;tt&gt;step39-wpt-encoder-surrogates&lt;/tt&gt;)</h2>
-<p><code>textencoder-utf16-surrogates.any.js</code> tests that lone surrogates are replaced by U+FFFD when UTF-8 encoded then decoded. Format: </p><div class="fragment"><div class="line">{ input: &#39;\uD800&#39;, expected: &#39;�&#39;, name: &#39;lone surrogate lead&#39; }</div>
-</div><!-- fragment --><p> Struct: <code>{ input: vector&lt;char32_t&gt;, expected: vector&lt;char32_t&gt;, name }</code>. Test: encode input → UTF-8 bytes → decode → check matches expected. 6 cases including properly encoded surrogate pair U+1D11E.</p>
+<h1><a class="anchor" id="autotoc_md40"></a>
+Step 39: WPT TextEncoder UTF-16 surrogate round-trip (&lt;tt&gt;step39-wpt-encoder-surrogates&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch from <code>main</code></li>
+<li>[x] Write failing tests (RED) + push both remotes</li>
+<li>[x] Download <code>textencoder-utf16-surrogates.any.js</code> → <code>docs/wpt/</code></li>
+<li>[x] Update <code><a class="el" href="wpt_2SOURCE_8md.html">docs/wpt/SOURCE.md</a></code> with provenance + checksum</li>
+<li>[x] Add <code>parse_encoder_surrogates_vectors()</code> + <code>render_encoder_surrogates_vectors_hpp()</code> to <code>generate_wpt_vectors.py</code></li>
+<li>[x] Add 4 Python tests to <code>test_generate_wpt.py</code> (159 total)</li>
+<li>[x] Generate <code>wpt_encoder_surrogates_vectors.hpp</code> (6 vectors)</li>
+<li>[x] <code>make test</code> (495 C++ + 159 Python all pass)</li>
+<li>[x] <code>make lint</code> — clean</li>
+<li>[x] Push GREEN to both remotes + merge to main</li>
+</ul>
 <h2><a class="anchor" id="autotoc_md41"></a>
+WPT TextEncoder UTF-16 surrogate round-trip (&lt;tt&gt;step39-wpt-encoder-surrogates&lt;/tt&gt;) — DONE</h2>
+<h2><a class="anchor" id="autotoc_md42"></a>
 Label lookup API (&lt;tt&gt;step39-label-lookup&lt;/tt&gt; or &lt;tt&gt;step40-label-lookup&lt;/tt&gt;)</h2>
 <p>WHATWG Encoding Standard §4.2 "Names and labels" defines ~200+ string labels that map to canonical encodings (e.g., <code>"sjis"</code>, <code>"x-sjis"</code>, <code>"shift_jis"</code> all → Shift_JIS). This is essential for:</p>
 <ul>
@@ -445,7 +457,7 @@ Label lookup API (&lt;tt&gt;step39-label-lookup&lt;/tt&gt; or &lt;tt&gt;step40-l
 <li>[ ] Push both remotes + merge to main</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md43"></a>
+<h1><a class="anchor" id="autotoc_md44"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
