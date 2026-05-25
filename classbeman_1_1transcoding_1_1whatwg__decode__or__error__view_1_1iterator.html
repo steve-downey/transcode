@@ -154,8 +154,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a07c27c13517899ad02719b6119d06766"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4369741385d2b8285bfbd327dd99d3ca"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a4369741385d2b8285bfbd327dd99d3ca">done_</a> {false}</td></tr>
 <tr class="separator:a4369741385d2b8285bfbd327dd99d3ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a265bc78c4abd32cd05ec3b0d9ed677ee"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a265bc78c4abd32cd05ec3b0d9ed677ee">has_pending_</a> {false}</td></tr>
-<tr class="separator:a265bc78c4abd32cd05ec3b0d9ed677ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02f44e08f33d6ae2b4d143e0373d4101"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a02f44e08f33d6ae2b4d143e0373d4101">pending_count_</a> {0}</td></tr>
+<tr class="separator:a02f44e08f33d6ae2b4d143e0373d4101"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac4afabd054e7ef0c645a493b20562ca8"><td class="memItemLeft" align="right" valign="top">unsigned char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ac4afabd054e7ef0c645a493b20562ca8">pending_</a> [2] {}</td></tr>
 <tr class="separator:ac4afabd054e7ef0c645a493b20562ca8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98f3b2bfa5c691bc68cdf6f8a37a390c"><td class="memItemLeft" align="right" valign="top">char32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a98f3b2bfa5c691bc68cdf6f8a37a390c">pending_cp_</a> {}</td></tr>
@@ -164,6 +164,10 @@ Private Attributes</h2></td></tr>
 <tr class="separator:aafed159cb1718ba43ba21a8569b28870"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6f53fd546d0d67d8083a0ed503d518b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ac6f53fd546d0d67d8083a0ed503d518b">iso2022jp_state_</a> {0}</td></tr>
 <tr class="separator:ac6f53fd546d0d67d8083a0ed503d518b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7190dd0b83abbe4567b80ce66cf14b06"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a7190dd0b83abbe4567b80ce66cf14b06">iso2022jp_output_state_</a> {0}</td></tr>
+<tr class="separator:a7190dd0b83abbe4567b80ce66cf14b06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a601c20bfe7db1e65211bdf8e3beb8036"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a601c20bfe7db1e65211bdf8e3beb8036">iso2022jp_output_flag_</a> {false}</td></tr>
+<tr class="separator:a601c20bfe7db1e65211bdf8e3beb8036"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae14078a5ce631aadbc42b85d0fe0b88d"><td class="memItemLeft" align="right" valign="top">unsigned char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ae14078a5ce631aadbc42b85d0fe0b88d">iso2022jp_lead_</a> {0}</td></tr>
 <tr class="separator:ae14078a5ce631aadbc42b85d0fe0b88d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f1ac550383d628fd3e2a8b1919d063c"><td class="memItemLeft" align="right" valign="top">unsigned char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a1f1ac550383d628fd3e2a8b1919d063c">gb_replay_</a> [3] {}</td></tr>
@@ -644,30 +648,6 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a265bc78c4abd32cd05ec3b0d9ed677ee" name="a265bc78c4abd32cd05ec3b0d9ed677ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a265bc78c4abd32cd05ec3b0d9ed677ee">&#9670;&#160;</a></span>has_pending_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::has_pending_ {false}</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="aafed159cb1718ba43ba21a8569b28870" name="aafed159cb1718ba43ba21a8569b28870"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aafed159cb1718ba43ba21a8569b28870">&#9670;&#160;</a></span>has_pending_cp_</h2>
 
@@ -716,6 +696,54 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
+<a id="a601c20bfe7db1e65211bdf8e3beb8036" name="a601c20bfe7db1e65211bdf8e3beb8036"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a601c20bfe7db1e65211bdf8e3beb8036">&#9670;&#160;</a></span>iso2022jp_output_flag_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::iso2022jp_output_flag_ {false}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7190dd0b83abbe4567b80ce66cf14b06" name="a7190dd0b83abbe4567b80ce66cf14b06"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7190dd0b83abbe4567b80ce66cf14b06">&#9670;&#160;</a></span>iso2022jp_output_state_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::iso2022jp_output_state_ {0}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ac6f53fd546d0d67d8083a0ed503d518b" name="ac6f53fd546d0d67d8083a0ed503d518b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac6f53fd546d0d67d8083a0ed503d518b">&#9670;&#160;</a></span>iso2022jp_state_</h2>
 
@@ -753,6 +781,30 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
       <table class="memname">
         <tr>
           <td class="memname">unsigned char <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::pending_[2] {}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a02f44e08f33d6ae2b4d143e0373d4101" name="a02f44e08f33d6ae2b4d143e0373d4101"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02f44e08f33d6ae2b4d143e0373d4101">&#9670;&#160;</a></span>pending_count_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::pending_count_ {0}</td>
         </tr>
       </table>
   </td>

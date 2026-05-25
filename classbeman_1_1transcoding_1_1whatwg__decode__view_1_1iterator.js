@@ -18,11 +18,13 @@ var classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator =
     [ "gb_replay_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#af4503769d0e9242a09723e7b21d91300", null ],
     [ "gb_replay_count_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#aeb0535194dba428b79c5c74a1439e8bb", null ],
     [ "gb_replay_pos_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a4f954a7ef1c89f03cb4fe70f7f7719f3", null ],
-    [ "has_pending_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad2183a75cbac7b19cd4157a2a17847f3", null ],
     [ "has_pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ab7e2e6a4441d233dedcc9323a8bf9629", null ],
     [ "iso2022jp_lead_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad951367b1e0f51548f2477ac3ef39b0b", null ],
+    [ "iso2022jp_output_flag_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a41522756a68b88665caab298589ef80b", null ],
+    [ "iso2022jp_output_state_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#afb8b629c1c10945043d712bbf5108637", null ],
     [ "iso2022jp_state_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a609917d2f7086b2e885e6b002460e1a6", null ],
     [ "pending_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#abf9b012597542a2de9ab54744246e296", null ],
+    [ "pending_count_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a2c81820e0fbe20f775b9bb89b232012d", null ],
     [ "pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ad90f7c1463256a4888e7674069d75372", null ],
     [ "value_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a32bd825ca112aac1071ca77ed034f553", null ]
 ];
