@@ -18,7 +18,7 @@ proposal.
 
 612 C++ tests + 171 Python tests pass (`make test`). Installtest runs and
 passes with 7 functional tests. `make lint` has pre-existing failures only
-in docs (codespell: "implementor" in `docs/Rust Encoding...`, E501 line-too-long
+in docs (codespell misspelling in `docs/Rust Encoding...`, E501 line-too-long
 in `tests/whatwg/codec/tests/generate_indices.py`). All C++, CMake, tools,
 and ruff lint passes cleanly on project code.
 
