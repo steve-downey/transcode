@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-"""Generate include/beman/transcode/detail/labels.hpp from docs/whatwg/encodings.json."""
+"""Generate detail/labels.hpp from docs/whatwg/encodings.json."""
 
+import contextlib
 import json
 import re
 import subprocess
@@ -18,7 +19,10 @@ def name_to_codec_value(name: str) -> str:
 
 
 def parse_encodings_json(path: Path) -> list[tuple[str, str]]:
-    """Parse encodings.json; return sorted list of (lowercased_label, codec_value) pairs."""
+    """Parse encodings.json.
+
+    Return sorted list of (lowercased_label, codec_value) pairs.
+    """
     data = json.loads(path.read_text(encoding="utf-8"))
     entries: list[tuple[str, str]] = []
     for group in data:
@@ -110,10 +114,8 @@ def main() -> None:
 
     output_path.write_text(content, encoding="utf-8")
 
-    try:
+    with contextlib.suppress(FileNotFoundError):
         subprocess.run([CLANG_FORMAT, "-i", str(output_path)], check=True)
-    except FileNotFoundError:
-        pass
 
 
 if __name__ == "__main__":
