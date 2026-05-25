@@ -811,3 +811,32 @@ set_tests_properties(
     utf16_decode_reject_char32_range_fail
     PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
 )
+
+# transcode_closure rejects raw arrays (char[N]) via a constrained operator|
+# with a static_assert that fires when the input is an array type.
+add_library(beman.transcode.tests.transcode_view_reject_array_fail OBJECT)
+target_sources(
+    beman.transcode.tests.transcode_view_reject_array_fail
+    PRIVATE transcode_view_reject_array_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.transcode_view_reject_array_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.transcode_view_reject_array_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME transcode_view_reject_array_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.transcode_view_reject_array_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    transcode_view_reject_array_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "transcode: raw arrays are not valid input to transcode"
+)
