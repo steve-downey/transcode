@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–47 complete. 558 C++ + 171 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–48 complete. 559 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -547,8 +547,20 @@ Step 47: &lt;tt&gt;transcode_view&lt;/tt&gt; negative compile test + consteval t
 <li>[x] <code>make test</code> (558 C++ + 171 Python all pass) + <code>make lint</code> (C++ clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
+<h1><a class="anchor" id="autotoc_md50"></a>
+Step 48: &lt;tt&gt;sniff_encoding&lt;/tt&gt; negative compile test + Python lint fix (&lt;tt&gt;step48-sniff-negative-lint-fix&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step48-sniff-negative-lint-fix</code> from <code>main</code></li>
+<li>[x] Write <code>sniff_reject_char32_range_fail.cpp</code> (negative compile test for <code>sniff_encoding</code> rejecting <code>char32_t</code> ranges)</li>
+<li>[x] Register in <code>tests/beman/transcode/CMakeLists.txt</code> (EXCLUDE_FROM_ALL + PASS_REGULAR_EXPRESSION "legacy_byte_range")</li>
+<li>[x] Push RED to both remotes</li>
+<li>[x] Fix ruff E501 + SIM105 violations in <code>tools/generate_labels.py</code></li>
+<li>[x] Fix ruff E501 in <code>tools/tests/test_generate_labels.py</code></li>
+<li>[x] <code>make test</code> (559 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean; papers/wg21 pre-existing only)</li>
+<li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
+</ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md51"></a>
+<h1><a class="anchor" id="autotoc_md52"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
