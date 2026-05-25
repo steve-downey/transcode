@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–53 complete. 608 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–53b complete. 608 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -506,6 +506,19 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Exclude `papers/wg21` from ruff lint (pre-existing failures)
 - [x] `make test` (608 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
 - [x] `make coverage`: `whatwg_encode_view.hpp` 92.0% → 100.0%; `euc_jp.hpp` 92.9% → 98.8%; `gb18030.hpp` 93.3% → 95.0%; overall 85.1% → 85.4%
+- [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 53b: unreachable code annotations (`step53b-unreachable-annotations`)
+
+- [x] Create branch `step53b-unreachable-annotations` from `main`
+- [x] Add `#include <utility>` to gb18030.hpp for std::unreachable()
+- [x] Mark 4 unreachable locations in gb18030.hpp with std::unreachable()
+  - Lines 70, 72: Pre-check prevents pointer overflow
+  - Line 76: Binary search can't fail
+  - Line 96: gb18030 covers all Unicode
+  - Line 172: GBK table has no zeros
+- [x] Mark 1 unreachable location in whatwg_decode_view.hpp (line 869: windows_1252 no nulls)
+- [x] `make test` (608 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
 - [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---

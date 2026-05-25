@@ -14,7 +14,7 @@ proposal.
 
 ## Current State
 
-**Step 53 complete and merged to main.**
+**Step 53b (unreachable code annotations) complete and merged to main.**
 
 608 C++ tests + 171 Python tests pass (`make test`). `make lint` has
 pre-existing failures only in docs (codespell: "implementor" in
@@ -23,40 +23,26 @@ pre-existing failures only in docs (codespell: "implementor" in
 lint passes cleanly (papers/wg21 now excluded from ruff via
 `extend-exclude` in pyproject.toml).
 
-### What Step 53 Added
+### What Step 53b Added
 
-Coverage improvement tests targeting three files:
+Backfilled `std::unreachable()` annotations for proven dead code paths
+that had been identified in step 53 coverage analysis:
 
-**`whatwg_encode_view.hpp`**: 92.0% → 100.0%
-- ISO-2022-JP encoder: consecutive YEN/OVERLINE (already in Roman state
-  → no ESC sequence emitted, just the byte)
-- ISO-2022-JP encoder: unmapped codepoint while in JIS state (ESC(B
-  switch back + '?')
-- ISO-2022-JP `_or_error` variant: all the same transitions (YEN,
-  consecutive YEN+OVERLINE, ASCII-after-JIS, JIS-after-JIS)
+**`gb18030.hpp`** — 4 locations marked unreachable:
+- Lines 70, 72: Pre-check on line 51 prevents pointer overflow conditions
+  (`pointer > 39419 && pointer < 189000` || `pointer > 1237575`)
+- Line 76: Binary search can't fail — range 0 starts at pointer 0
+- Line 96: gb18030 covers all Unicode — encode always finds a match in ranges table
+- Line 172: GBK table has no zero entries (WHATWG-normative)
 
-**`euc_jp.hpp`**: 92.9% → 98.8%
-- SS3 (0x8F) alone → truncated_sequence
-- SS3 + invalid b1 / invalid b2 → invalid_byte
-- SS3 unmapped JIS X 0212 pointer 0 / unmapped JIS X 0208 pointer 108
-- Remaining 1 uncovered line (line 50): dead code — view checks
-  `current_ == end_` before calling `euc_jp_decode_one`
+**`whatwg_decode_view.hpp`** — 1 location marked unreachable:
+- Line 869: windows_1252 error branch — WHATWG normative table has no null entries
 
-**`gb18030.hpp`**: 93.3% → 95.0%
-- U+E7C7 encode: exercises `gb18030_ranges_encode` special case
-- U+0080 encode: exercises 4-byte range encoding binary search
-- Remaining 6 uncovered lines are all dead code:
-  - Lines 70, 72: pointer pre-check on line 51 prevents reaching these
-  - Line 76: binary search can't fail (range 0 starts at pointer 0)
-  - Line 97: gb18030 covers all Unicode (encode can't fall through)
-  - Line 103: view checks before calling decode
-  - Line 172: GBK table has no zero entries
+Also added `#include <utility>` to gb18030.hpp to support `std::unreachable()`.
 
-Also excluded `papers/wg21` from ruff lint in pyproject.toml.
+### Coverage Summary
 
-### Coverage summary
-
-Overall: 85.4% lines, 99.9% functions.
+Overall: 85.4% lines, 99.9% functions (unchanged from step 53).
 
 Remaining meaningful coverage gaps (not dead code):
 - `whatwg_decode_view.hpp`: some paths in GBK/GB18030 replay logic
@@ -72,7 +58,7 @@ Remaining meaningful coverage gaps (not dead code):
 docs/plans/phase2-checklist.md
 ```
 
-Steps 0–53 are complete. The checklist does not yet have a step 54 entry.
+Steps 0–53b are complete. The checklist does not yet have a step 54 entry.
 
 ### Recommended options for step 54
 
@@ -82,15 +68,20 @@ exports all headers added since step 42 (umbrella header). Run:
 grep '#include' include/beman/transcode/transcode.hpp
 ```
 and compare with what's exported in `transcode.cppm`. Any missing
-includes = missing module exports.
+includes = missing module exports. This is a quick audit with potentially
+one line of adds.
 
 **Option B: `whatwg_decode_view.hpp` remaining coverage** — the replay
 logic for GB18030/GBK and some ISO-2022-JP state machine paths still
-have gaps. Run `make coverage` and inspect the JSON for details.
+have gaps. Requires understanding the view's iterator states and writing
+targeted edge-case tests. Run `make coverage` and inspect the JSON for
+details on uncovered lines.
 
 **Option C: Begin Phase 3 (benchmarking)** — plan docs exist in
-`docs/plans/phase3-*.md`. Step p3-step1 sets up the benchmark harness
-using Google Benchmark.
+`docs/plans/phase3-*.md`. This is a multi-step track setting up
+benchmarking infrastructure (harness, corpora, baselines). First step
+is P3-step1 in `docs/plans/p3-step1-benchmark-harness.md`. Option C is
+recommended if the benchmarking report is a near-term priority.
 
 ## TDD Process
 
@@ -121,9 +112,9 @@ make coverage  # gcovr coverage report
 
 ## Key files for context
 
-- `include/beman/transcode/whatwg_encode_view.hpp` — encode view (now 100% covered)
-- `include/beman/transcode/whatwg_decode_view.hpp` — decode view (next coverage target)
-- `include/beman/transcode/detail/gb18030.hpp` — GB18030 codec (dead code noted)
-- `include/beman/transcode/detail/euc_jp.hpp` — EUC-JP codec (dead code noted)
-- `pyproject.toml` — ruff config (papers/wg21 now excluded)
-- `docs/plans/phase3-index.md` — Phase 3 benchmarking overview
+- `include/beman/transcode/transcode.hpp` — umbrella header (added in step 42)
+- `include/beman/transcode/whatwg_decode_view.hpp` — decode view (97.1% covered, replay/state gaps)
+- `include/beman/transcode/whatwg_encode_view.hpp` — encode view (100% covered)
+- `include/beman/transcode/detail/gb18030.hpp` — GB18030 codec (now with unreachable markers)
+- `transcode.cppm` — C++23 module interface (optional, may need header audit)
+- `docs/plans/phase3-*.md` — Phase 3 benchmarking plans
