@@ -177,8 +177,7 @@ TEST_CASE("iconv_transcode_or_error_view partial consume yields output then cont
     CHECK(result[0].value() == 0x41);
 }
 
-TEST_CASE("iconv_transcode_or_error_view output before EILSEQ error",
-          "[transcoding::iconv_transcode_or_error]") {
+TEST_CASE("iconv_transcode_or_error_view output before EILSEQ error", "[transcoding::iconv_transcode_or_error]") {
     // mock_iconv_output_then_eilseq writes 1 byte then returns EILSEQ.
     // Tests the path where output is yielded before EILSEQ error (line 202-203 return).
     // The mock advances input past the written byte, so next call sees next byte.
@@ -198,8 +197,7 @@ TEST_CASE("iconv_transcode_or_error_view output before EILSEQ error",
     CHECK(result[1].value() == 'B');
 }
 
-TEST_CASE("iconv_transcode_or_error_view output before E2BIG error",
-          "[transcoding::iconv_transcode_or_error]") {
+TEST_CASE("iconv_transcode_or_error_view output before E2BIG error", "[transcoding::iconv_transcode_or_error]") {
     // mock_iconv_output_then_e2big writes 1 byte then returns E2BIG.
     // Tests the path where output is yielded before E2BIG error (line 216-217 return).
     // The mock advances input past the written byte, so next call sees next byte.
@@ -219,13 +217,12 @@ TEST_CASE("iconv_transcode_or_error_view output before E2BIG error",
     CHECK(result[1].value() == 'Y');
 }
 
-TEST_CASE("iconv_transcode_or_error_view EILSEQ multi-byte shift",
-          "[transcoding::iconv_transcode_or_error]") {
-    // mock_iconv_eilseq_multi_byte always returns EILSEQ with no output.
+TEST_CASE("iconv_transcode_or_error_view EILSEQ multi-byte shift", "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_shift_loop_eilseq always returns EILSEQ with no output.
     // With 3+ staging bytes, triggers the byte-shifting loop (line 206-209).
     std::vector<char>    input{'A', 'B', 'C'};
     std::array<char, 16> buf{};
-    iconv_functions      fns{mock_iconv_open, mock_iconv_eilseq_multi_byte, mock_iconv_close};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_shift_loop_eilseq, mock_iconv_close};
     auto                 view =
         iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
     auto result = collect(view);
@@ -233,4 +230,33 @@ TEST_CASE("iconv_transcode_or_error_view EILSEQ multi-byte shift",
     REQUIRE(!result.empty());
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == iconv_error::invalid_sequence);
+}
+
+TEST_CASE("iconv_transcode_or_error_view success with no output at end of input",
+          "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_success_no_output returns success without producing output or consuming input.
+    // Tests the path where rc != -1 but staging_len_ == 0 && current_ == end_ (lines 178-180).
+    std::vector<char>    input{'A'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_success_no_output, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    // No output expected (mock never writes)
+    CHECK(result.empty());
+}
+
+TEST_CASE("iconv_transcode_or_error_view E2BIG multi-byte shift", "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_shift_loop_e2big always returns E2BIG with no output.
+    // With 3+ staging bytes, triggers the byte-shifting loop (line 221-223).
+    std::vector<char>    input{'A', 'B', 'C'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_shift_loop_e2big, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    // Should get output_full errors as staging bytes are shifted
+    REQUIRE(!result.empty());
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == iconv_error::output_full);
 }

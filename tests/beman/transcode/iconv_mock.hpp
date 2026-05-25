@@ -180,6 +180,38 @@ inline size_t mock_iconv_eilseq_multi_byte(iconv_t, char** in, size_t* inleft, c
     return (size_t)-1;
 }
 
+// Success-no-output mock: returns success while consuming input but producing no output.
+// Simulates a codec that buffers input without producing output immediately.
+// Tests the "success with nothing yielded" path (lines 188-190 in transcode, 178-180 in or_error).
+inline size_t mock_iconv_success_no_output(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+    if (in == nullptr || *in == nullptr)
+        return 0;
+    // Consume all input without producing any output (success)
+    *in += *inleft;
+    *inleft = 0;
+    return 0;
+}
+
+// Shift-loop-E2BIG mock: returns E2BIG without output for multi-byte staging.
+// Forces the byte-shifting loop for E2BIG error handling (line 222 in or_error, 215 in transcode).
+inline size_t mock_iconv_shift_loop_e2big(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+    if (in == nullptr || *in == nullptr)
+        return 0;
+    // Always return E2BIG with no output/consumption (forces shift loop)
+    errno = E2BIG;
+    return (size_t)-1;
+}
+
+// Shift-loop-EILSEQ mock: returns EILSEQ without output for multi-byte staging.
+// Forces the byte-shifting loop for EILSEQ error handling (line 207 in or_error).
+inline size_t mock_iconv_shift_loop_eilseq(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+    if (in == nullptr || *in == nullptr)
+        return 0;
+    // Always return EILSEQ with no output/consumption (forces shift loop)
+    errno = EILSEQ;
+    return (size_t)-1;
+}
+
 } // namespace beman::transcoding::tests
 
 #endif // TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP

@@ -198,3 +198,31 @@ TEST_CASE("iconv_transcode_view EILSEQ multi-byte shift", "[transcoding::iconv_t
     // EILSEQ should be silently skipped
     CHECK(output.empty());
 }
+
+TEST_CASE("iconv_transcode_view success with no output at end of input", "[transcoding::iconv_transcode]") {
+    // mock_iconv_success_no_output returns success without producing output or consuming input.
+    // Tests the path where rc != -1 but staging_len_ == 0 && current_ == end_ (lines 188-190).
+    std::vector<char>    input{'A'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_success_no_output, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    std::vector<char> output;
+    for (char c : view)
+        output.push_back(c);
+    // No output expected (mock never writes)
+    CHECK(output.empty());
+}
+
+TEST_CASE("iconv_transcode_view E2BIG multi-byte shift", "[transcoding::iconv_transcode]") {
+    // mock_iconv_shift_loop_e2big always returns E2BIG with no output.
+    // With 3+ staging bytes, triggers the byte-shifting loop (line 214-216).
+    std::vector<char>    input{'A', 'B', 'C'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_shift_loop_e2big, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    std::vector<char> output;
+    for (char c : view)
+        output.push_back(c);
+    // E2BIG should be silently handled; no output produced
+    CHECK(output.empty());
+}
