@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–35 complete. 462 C++ + 141 Python tests pass. On `main`.
+**Current state:** Steps 0–36 complete. 490 C++ + 146 Python tests pass. On `main`.
 
 ---
 
@@ -257,6 +257,22 @@ Comprehensive round-trip tests for all implemented codecs.
 - [x] Generate `wpt_bom_vectors.hpp` (3 cases: utf-8, utf-16le, utf-16be)
 - [x] Implement BOM stripping in `whatwg_decode_view` and `whatwg_decode_or_error_view` constructors
 - [x] `make test` (462 C++ + 141 Python all pass)
+- [x] `make lint` — clean
+- [x] Push GREEN to both remotes + merge to main
+
+---
+
+## Step 36: WPT fatal single-byte (`step36-wpt-fatal-single-byte`)
+
+- [x] Create branch `step36-wpt-fatal-single-byte` from `main`
+- [x] Write failing test (RED) referencing missing vector header
+- [x] Push RED to both remotes
+- [x] Download `textdecoder-fatal-single-byte.any.js` → `docs/wpt/`
+- [x] Update `docs/wpt/SOURCE.md` with provenance + checksum
+- [x] Add `parse_fatal_single_byte_cases()` + `render_fatal_single_byte_vectors_hpp()` to `generate_wpt_vectors.py`
+- [x] Add 5 new Python tests to `test_generate_wpt.py`
+- [x] Generate `wpt_fatal_single_byte_vectors.hpp` (28 cases)
+- [x] `make test` (490 C++ + 146 Python all pass)
 - [x] `make lint` — clean
 - [x] Push GREEN to both remotes + merge to main
 

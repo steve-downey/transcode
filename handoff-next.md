@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 36 (next WPT coverage)
+# Handoff: beman.transcode — Step 37 (WPT EOF/truncation vectors)
 
 ## Project
 
@@ -14,37 +14,31 @@ proposal.
 
 ## Current State
 
-**Step 35 complete and merged to main.**
+**Step 36 complete and merged to main.**
 
-462 C++ tests + 141 Python tests pass (`make test`). `make lint` clean.
+490 C++ tests + 146 Python tests pass (`make test`). `make lint` clean.
 
-### What Step 35 Added
+### What Step 36 Added
 
-WPT conformance tests from `textdecoder-byte-order-marks.any.js`. The
-WHATWG spec requires BOM stripping: when a UTF-8, UTF-16LE, or UTF-16BE
-stream starts with its matching BOM prefix (`EF BB BF`, `FF FE`, or
-`FE FF`), the BOM is consumed and not emitted as a codepoint.
+WPT conformance tests from `textdecoder-fatal-single-byte.any.js`. For
+each of the 28 single-byte codecs, bytes 0x80–0xFF that map to `null` in
+the WHATWG table must produce an error in fatal mode; all other bytes must
+decode successfully.
 
 Key changes:
-- Fixed `parse_js_string()` in `tools/generate_wpt_vectors.py` to
-  combine `\uD800-\uDBFF` + `\uDC00-\uDFFF` surrogate pair escapes into
-  supplementary codepoints (e.g. `𝄞` → U+1D11E). This was
-  needed because the WPT BOM file's expected string contains supplementary
-  characters expressed as JS surrogate pairs.
-- Added `parse_bom_vectors()` + `render_bom_vectors_hpp()` to generator
-- Added 6 new Python tests (4 BOM + 2 surrogate pair combining)
-- Generated `wpt_bom_vectors.hpp` (3 cases: utf-8, utf-16le, utf-16be)
-- Implemented BOM stripping in both iterator constructors: after the first
-  `load()`, if the first codepoint is U+FEFF for `codec::utf_8`,
-  `codec::utf_16le`, or `codec::utf_16be`, call `load()` again to skip it.
-- 7 C++ test cases covering no-BOM, with-BOM, and mismatching-BOM for all
-  three encodings.
+- Downloaded `docs/wpt/textdecoder-fatal-single-byte.any.js` (28 codecs)
+- Added `parse_fatal_single_byte_cases()` + `render_fatal_single_byte_vectors_hpp()`
+  to `tools/generate_wpt_vectors.py`
+- Added 5 Python tests to `tools/tests/test_generate_wpt.py` (146 total)
+- Generated `tests/beman/transcode/wpt_fatal_single_byte_vectors.hpp`
+  (struct `WptFatalSingleByteCase` with `encoding`, `bad`)
+- 28 `TEST_CASE`s in `wpt_fatal_single_byte.test.cpp` — one per codec,
+  each checking all 256 bytes via `whatwg_decode_or_error<C>`
 
 New files:
-- `docs/wpt/textdecoder-byte-order-marks.any.js` — pristine WPT JS
-- `tests/beman/transcode/wpt_bom_vectors.hpp` — 3 generated cases
-  (struct `WptBomCase` with `bytes`, `bom`, `expected`, `encoding`)
-- `tests/beman/transcode/wpt_bom.test.cpp` — 7 test cases
+- `docs/wpt/textdecoder-fatal-single-byte.any.js` — pristine WPT JS
+- `tests/beman/transcode/wpt_fatal_single_byte_vectors.hpp`
+- `tests/beman/transcode/wpt_fatal_single_byte.test.cpp`
 
 ### WPT Files in `docs/wpt/`
 
@@ -57,161 +51,164 @@ New files:
 | `textdecoder-utf16-surrogates.any.js` | UTF-16LE surrogate handling |
 | `textdecoder-fatal.any.js` | Fatal mode: all encodings, invalid inputs |
 | `textdecoder-byte-order-marks.any.js` | BOM stripping for UTF-8/16LE/16BE |
+| `textdecoder-fatal-single-byte.any.js` | Fatal mode: bad bytes per codec |
 
-## What To Do Next — Step 36
+## What To Do Next — Step 37
 
-**Branch:** `step36-wpt-fatal-single-byte`
+**Branch:** `step37-wpt-eof-vectors`
 
-### WPT file structure
+### WPT file: `textdecoder-eof.any.js`
 
-`textdecoder-fatal-single-byte.any.js` contains a `singleByteEncodings`
-array of `{encoding, bad}` objects. The `bad` array lists byte values
-(0x80–0xFF) that are null entries in the codec's table — they must throw
-`TypeError` in fatal mode. All 256 bytes are tested; bytes not in `bad`
-must decode without error.
+This file tests end-of-queue (EOF / truncated sequence) handling. Fetch:
 
-```javascript
-var singleByteEncodings = [
-    {encoding: 'IBM866',     bad: []},
-    {encoding: 'ISO-8859-2', bad: []},
-    {encoding: 'ISO-8859-3', bad: [0xA5, 0xAE, 0xBE, 0xC3, 0xD0, 0xE3, 0xF0]},
-    // ...
-    {encoding: 'ISO-8859-8', bad: [0xA1, 0xBF, 0xC0, ...]},
-    // ... 27 codecs total
-];
-```
-
-Key observations:
-- Most codecs have an **empty** `bad` list (IBM866, ISO-8859-2/4/5,
-  ISO-8859-10/13/14/15/16, KOI8-R/U, macintosh, windows-1250/51/52/54/56/58,
-  x-mac-cyrillic). Every byte decodes successfully for these.
-- Bytes 0x00–0x7F are **never** in any `bad` list (ASCII passthrough).
-- ISO-8859-8 and ISO-8859-8-I have identical `bad` lists.
-
-Fetch the file via GitHub API:
 ```bash
-gh api "repos/web-platform-tests/wpt/contents/encoding/textdecoder-fatal-single-byte.any.js" \
-  --jq '.content' | base64 -d > docs/wpt/textdecoder-fatal-single-byte.any.js
+gh api "repos/web-platform-tests/wpt/contents/encoding/textdecoder-eof.any.js" \
+  --jq '.content' | base64 -d > docs/wpt/textdecoder-eof.any.js
 ```
 
-### WPT encoding name → `codec::` enum mapping
+The file has two `test(...)` blocks:
+1. **Non-streaming** — uses `new TextDecoder(encoding).decode(new Uint8Array([...]))`.
+   Parse and integrate these.
+2. **Streaming** — uses `{ stream: true }`. Our library is a range view
+   with no stateful streaming API. **Skip these** and add a comment in
+   the test file noting the gap.
 
-| WPT name       | `codec::` value     |
-|----------------|---------------------|
-| IBM866         | ibm866              |
-| ISO-8859-2     | iso_8859_2          |
-| ISO-8859-3     | iso_8859_3          |
-| ISO-8859-4     | iso_8859_4          |
-| ISO-8859-5     | iso_8859_5          |
-| ISO-8859-6     | iso_8859_6          |
-| ISO-8859-7     | iso_8859_7          |
-| ISO-8859-8     | iso_8859_8          |
-| ISO-8859-8-I   | iso_8859_8_i        |
-| ISO-8859-10    | iso_8859_10         |
-| ISO-8859-13    | iso_8859_13         |
-| ISO-8859-14    | iso_8859_14         |
-| ISO-8859-15    | iso_8859_15         |
-| ISO-8859-16    | iso_8859_16         |
-| KOI8-R         | koi8_r              |
-| KOI8-U         | koi8_u              |
-| macintosh      | macintosh           |
-| windows-874    | windows_874         |
-| windows-1250   | windows_1250        |
-| windows-1251   | windows_1251        |
-| windows-1252   | windows_1252        |
-| windows-1253   | windows_1253        |
-| windows-1254   | windows_1254        |
-| windows-1255   | windows_1255        |
-| windows-1256   | windows_1256        |
-| windows-1257   | windows_1257        |
-| windows-1258   | windows_1258        |
-| x-mac-cyrillic | x_mac_cyrillic      |
+### Parser approach
 
-### Generator approach (`generate_wpt_vectors.py`)
+The non-streaming cases use this format:
+```javascript
+assert_equals(new TextDecoder().decode(new Uint8Array([0xF0])), "�");
+assert_equals(new TextDecoder("Big5").decode(new Uint8Array([0x81, 0x40])), "�@");
+```
 
-Add to the generator:
-
+Regex:
 ```python
-_SBFATAL_RE = re.compile(
-    r"\{encoding:\s*'([^']+)'\s*,\s*bad:\s*\[([^\]]*)\]\s*\}",
+_EOF_RE = re.compile(
+    r'assert_equals\('
+    r'new TextDecoder\("?([^")\s]*)"?\)'
+    r'\.decode\(new Uint8Array\(\[([^\]]*)\]\)\)'
+    r',\s*"((?:[^"\\]|\\.)*)"\)',
     re.MULTILINE,
 )
-
-def parse_fatal_single_byte_cases(content: str) -> list[dict[str, object]]:
-    cases: list[dict[str, object]] = []
-    for m in _SBFATAL_RE.finditer(content):
-        encoding, bad_str = m.groups()
-        bad = [int(x.strip(), 0) for x in bad_str.split(",") if x.strip()]
-        cases.append({"encoding": encoding, "bad": bad})
-    return cases
 ```
 
-Generated header struct (`WptFatalSingleByteCase`):
+When the encoding argument is absent (`new TextDecoder()`), default to
+`"utf-8"`. Only parse the first `test(...)` block (non-streaming).
+
+```python
+def parse_eof_vectors(content: str) -> list[dict[str, object]]:
+    vectors: list[dict[str, object]] = []
+    end_marker = '}, "TextDecoder end-of-queue handling");'
+    end = content.find(end_marker)
+    if end == -1:
+        return vectors
+    section = content[:end]
+    for m in _EOF_RE.finditer(section):
+        encoding, bytes_str, expected_str = m.groups()
+        if not encoding:
+            encoding = "utf-8"
+        input_bytes = [int(x.strip(), 0) for x in bytes_str.split(",") if x.strip()]
+        expected_cps = parse_js_string(expected_str)
+        vectors.append({
+            "encoding": encoding,
+            "input": input_bytes,
+            "expected": expected_cps,
+        })
+    return vectors
+```
+
+The file covers `utf-8` and `Big5` encodings. Expected non-streaming
+case count: 8 for UTF-8, 3 for Big5 (11 total). Verify with Python tests.
+
+### Generated header struct (`WptEofVector`)
 
 ```cpp
-struct WptFatalSingleByteCase {
-    const char*          encoding;
-    std::vector<uint8_t> bad;  // bytes that must produce an error
+struct WptEofVector {
+    const char*           encoding;
+    std::vector<uint8_t>  input;
+    std::vector<char32_t> expected;
 };
-inline const WptFatalSingleByteCase wpt_fatal_single_byte_cases[] = {
-    {"IBM866",     {}},
-    {"ISO-8859-2", {}},
-    {"ISO-8859-3", {0xA5, 0xAE, 0xBE, 0xC3, 0xD0, 0xE3, 0xF0}},
+inline const WptEofVector wpt_eof_vectors[] = {
+    {"utf-8", {0xF0},             {0xFFFD}},
+    {"utf-8", {0xF0, 0x9F},       {0xFFFD}},
+    {"utf-8", {0xF0, 0x9F, 0x92}, {0xFFFD}},
+    // ... more utf-8 cases ...
+    {"Big5",  {0x81, 0x40},       {0xFFFD, 0x0040}},
     // ...
 };
 ```
 
-### C++ test approach (`wpt_fatal_single_byte.test.cpp`)
+Guard: `TESTS_BEMAN_TRANSCODE_WPT_EOF_VECTORS_HPP`.
+Array name: `wpt_eof_vectors`.
 
-The test must dispatch at compile time to the right `codec::` value.
-The simplest pattern: write a templated helper, call it once per codec:
+### C++ test file (`wpt_eof.test.cpp`)
+
+Two `TEST_CASE`s — one per encoding:
 
 ```cpp
-template <codec C>
-void check_fatal_single_byte(const WptFatalSingleByteCase& c) {
-    for (int b = 0; b < 256; ++b) {
-        char ch = static_cast<char>(static_cast<uint8_t>(b));
-        std::array<char, 1> input{ch};
-        bool has_error = false;
-        for (auto r : input | whatwg_decode_or_error<C>)
-            if (!r.has_value()) { has_error = true; break; }
-        bool expect_error = std::ranges::contains(c.bad,
-                                                  static_cast<uint8_t>(b));
-        INFO("encoding=" << c.encoding << " byte=0x" << std::hex << b);
-        CHECK(has_error == expect_error);
+TEST_CASE("WPT EOF: UTF-8 truncated sequences", "[wpt::eof]") {
+    using namespace beman::transcoding::tests::wpt;
+    for (const auto& v : wpt_eof_vectors) {
+        if (std::string_view(v.encoding) != "utf-8") continue;
+        std::vector<char> bytes(v.input.begin(), v.input.end());
+        std::vector<char32_t> got;
+        for (char32_t cp : bytes | whatwg_decode<codec::utf_8>)
+            got.push_back(cp);
+        INFO("input bytes=" << v.input.size());
+        CHECK(got == v.expected);
     }
 }
 
-TEST_CASE("WPT fatal single-byte: IBM866", "[wpt::fatal_single_byte]") {
-    check_fatal_single_byte<codec::ibm866>(
-        beman::transcoding::tests::wpt::wpt_fatal_single_byte_cases[0]);
+TEST_CASE("WPT EOF: Big5 truncated sequences", "[wpt::eof]") {
+    using namespace beman::transcoding::tests::wpt;
+    for (const auto& v : wpt_eof_vectors) {
+        if (std::string_view(v.encoding) != "Big5") continue;
+        std::vector<char> bytes(v.input.begin(), v.input.end());
+        std::vector<char32_t> got;
+        for (char32_t cp : bytes | whatwg_decode<codec::big5>)
+            got.push_back(cp);
+        INFO("input bytes=" << v.input.size());
+        CHECK(got == v.expected);
+    }
 }
-// ... one TEST_CASE per codec (27 total)
 ```
 
-This produces 27 test cases, each running 256 sub-checks.
+Register in `tests/beman/transcode/CMakeLists.txt` the same way as
+`wpt_bom` (add_executable + target_sources + target_include_directories +
+target_link_libraries + catch_discover_tests).
 
-### Option B: `textdecoder-ignorebom.any.js` WPT vectors
+### Also consider: `textdecoder-fatal-streaming.any.js`
 
-Tests the `ignoreBOM` option (which preserves the BOM in the output).
-Our library doesn't expose an `ignoreBOM` option — it always strips the
-leading BOM. This step would either implement `ignoreBOM` as a template
-parameter, or document the gap.
+A very small file (3 non-streaming test cases) worth adding alongside the
+EOF step. Parse the non-streaming block:
 
-Fetch:
 ```bash
-gh api "repos/web-platform-tests/wpt/contents/encoding/textdecoder-ignorebom.any.js" \
-  --jq '.content' | base64 -d
+gh api "repos/web-platform-tests/wpt/contents/encoding/textdecoder-fatal-streaming.any.js" \
+  --jq '.content' | base64 -d > docs/wpt/textdecoder-fatal-streaming.any.js
 ```
+
+Format inside the file:
+```javascript
+{encoding: 'utf-8',    sequence: [0xC0]},
+{encoding: 'utf-16le', sequence: [0x00]},
+{encoding: 'utf-16be', sequence: [0x00]}
+```
+
+These must produce an error under `whatwg_decode_or_error`. Already
+covered by step 34, but including WPT-sourced confirmation is still
+worthwhile. Could be a separate sub-step or bundled with step 37.
 
 ## TDD Process
 
-1. Branch: `git checkout -b step36-<slug>`
-2. Write failing tests (RED) -> commit -> push both remotes
-3. Implement (GREEN) -> `make test` + `make lint` -> commit -> push both
-4. Merge to main: `git checkout main && git merge --no-ff step36-<slug>`
-5. Push main to both remotes
-6. Update `docs/plans/phase2-checklist.md`
+1. Branch: `git checkout -b step37-wpt-eof-vectors`
+2. Write failing tests (RED) referencing `wpt_eof_vectors.hpp`
+   → commit → push both remotes
+3. Download WPT file(s), add parser/renderer to generator, add Python
+   tests, generate header, fix any conformance gaps → (GREEN)
+4. `make test` (all pass) + `make lint` (clean) → commit → push both
+5. Merge: `git checkout main && git merge --no-ff step37-wpt-eof-vectors`
+6. Push main to both remotes
+7. Update `docs/plans/phase2-checklist.md`
 
 ## Build Commands
 
@@ -225,8 +222,8 @@ make pytest    # Python tool tests only
 
 ## Coding Rules (abbreviated)
 
-- Include guards: `INCLUDE_BEMAN_TRANSCODE_*_HPP` (path-based, uppercase)
-- Test files: include the primary header **twice** (idempotent check)
+- Include guards: `TESTS_BEMAN_TRANSCODE_*_HPP` for test headers
+- Test files: include primary header **twice** (idempotent check)
 - No `Co-Authored-By` trailers in commits
 - Full rules in `CLAUDE.md`
 
@@ -239,9 +236,9 @@ The generator `tools/generate_wpt_vectors.py` follows this pattern:
 4. Add both to `main()` + the clang-format list
 5. Add Python tests to `tools/tests/test_generate_wpt.py`
 
-**Important:** `parse_js_string()` now correctly combines `\uHHHH\uLLLL`
-surrogate pairs into supplementary codepoints (fixed in step 35). Keep
-this in mind when writing new tests that involve supplementary characters.
+**Important:** `parse_js_string()` handles `\uHHHH\uLLLL` surrogate
+pairs into supplementary codepoints, `\xNN` hex escapes, and literal
+multi-byte UTF-8 characters. Use it for all expected-string parsing.
 
 All WPT JS files go in `docs/wpt/` with provenance in `SOURCE.md`.
 All generated C++ headers go in `tests/beman/transcode/`.
