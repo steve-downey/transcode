@@ -103,6 +103,12 @@ constexpr void reserve_if_sized(Container& container, R&& range) {
         container.reserve(static_cast<std::size_t>(std::ranges::size(range)));
 }
 
+template <typename Container, typename Value>
+concept bulk_output_container = requires(Container container, Value value) {
+    Container{};
+    container.push_back(value);
+};
+
 constexpr char32_t decode_single_byte(unsigned char byte, const char32_t* table) {
     if (byte < 0x80)
         return static_cast<char32_t>(byte);
@@ -140,27 +146,10 @@ std::vector<char32_t> decode_to(R&& source) {
     return result;
 }
 
-template <codec C, unicode_scalar_range R>
-std::string encode_to(R&& source) {
-    std::string result;
-    detail::reserve_if_sized(result, source);
-
-    if constexpr (detail::bulk_single_byte_codec<C>) {
-        const auto* table = detail::get_single_byte_table<C>();
-        for (char32_t code_point : source)
-            result.push_back(detail::encode_single_byte(code_point, table));
-    }
-    else {
-        for (char byte : std::forward<R>(source) | whatwg_encode<C>)
-            result.push_back(byte);
-    }
-
-    return result;
-}
-
-template <codec C, unicode_scalar_range R>
-std::vector<char> encode_to_vector(R&& source) {
-    std::vector<char> result;
+template <codec C, typename Container = std::string, unicode_scalar_range R>
+    requires detail::bulk_output_container<Container, char>
+Container encode_to(R&& source) {
+    Container result;
     detail::reserve_if_sized(result, source);
 
     if constexpr (detail::bulk_single_byte_codec<C>) {

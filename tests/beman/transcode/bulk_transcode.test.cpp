@@ -17,7 +17,6 @@ using beman::transcoding::decode_into;
 using beman::transcoding::decode_to;
 using beman::transcoding::encode_into;
 using beman::transcoding::encode_to;
-using beman::transcoding::encode_to_vector;
 using beman::transcoding::tests::constify;
 
 namespace {
@@ -63,9 +62,9 @@ TEST_CASE("bulk_transcode: encode_to single-byte fast path", "[bulk]") {
     CHECK(encode_to<codec::iso_8859_15>(input) == expected);
 }
 
-TEST_CASE("bulk_transcode: encode_to_vector mirrors encode_to", "[bulk]") {
+TEST_CASE("bulk_transcode: encode_to supports alternate container", "[bulk]") {
     const std::u32string input = U"Hi";
-    auto                 bytes = encode_to_vector<codec::utf_8>(input);
+    auto                 bytes = encode_to<codec::utf_8, std::vector<char>>(input);
     REQUIRE(bytes == std::vector<char>{'H', 'i'});
 }
 
@@ -100,7 +99,7 @@ TEST_CASE("bulk_transcode: empty input yields empty output", "[bulk]") {
 
     CHECK(decode_to<codec::utf_8>(empty_bytes).empty());
     CHECK(encode_to<codec::utf_8>(empty_code_points).empty());
-    CHECK(encode_to_vector<codec::utf_8>(empty_code_points).empty());
+    CHECK((encode_to<codec::utf_8, std::vector<char>>(empty_code_points)).empty());
 }
 
 TEST_CASE("bulk_transcode: decode_into is constexpr for UTF-8 ASCII", "[bulk][constexpr]") {
