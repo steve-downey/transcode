@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–51 complete. 591 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–52 complete. 595 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -484,6 +484,16 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Add flush tests for both `iconv_transcode_view` and `_or_error` variants
 - [x] Fix inline `close_counting_fns` structs to handle null flush
 - [x] `make test` (591 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
+- [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 52: real-iconv ISO-2022-JP flush integration tests (`step52-iconv-iso2022jp-flush-test`)
+
+- [x] Create branch `step52-iconv-iso2022jp-flush-test` from `main`
+- [x] Add あ (U+3042) → ISO-2022-JP test (verifies ESC sequences + flush)
+- [x] Add mixed ASCII+Japanese → ISO-2022-JP test
+- [x] Add `_or_error` variant ISO-2022-JP test
+- [x] Add small-buffer (3 bytes) ISO-2022-JP test (E2BIG + flush)
+- [x] `make test` (595 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
 - [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---

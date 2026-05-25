@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 52
+# Handoff: beman.transcode — Step 53
 
 ## Project
 
@@ -14,67 +14,72 @@ proposal.
 
 ## Current State
 
-**Step 51 complete and merged to main.**
+**Step 52 complete and merged to main.**
 
-591 C++ tests + 171 Python tests pass (`make test`). `make lint` has
+595 C++ tests + 171 Python tests pass (`make test`). `make lint` has
 pre-existing failures only in `papers/wg21/` (Python ruff/codespell
 issues unrelated to the transcode C++ library). All C++, CMake, and
 `tools/` Python lint passes cleanly.
 
-### What Step 51 Added
+### What Step 52 Added
 
-**iconv stateful flush** — scenario D from `docs/iconv-testing.md`.
+Real-iconv integration tests for ISO-2022-JP stateful flush (validating
+the flush feature added in step 51).
 
-1. **Feature**: Both `iconv_transcode_view` and
-   `iconv_transcode_or_error_view` iterators now call
-   `iconv(cd, nullptr, nullptr, &outbuf, &outleft)` when input is
-   exhausted and staging is empty. This flushes any pending shift-state
-   bytes (e.g., ISO-2022-JP shift-in sequence). The flush is called
-   exactly once (tracked by a `flushed_` member). If the flush produces
-   output bytes, they are yielded before the iterator marks itself done.
+Tests in `tests/beman/transcode/iconv_real.test.cpp`:
+- **あ (U+3042) → ISO-2022-JP**: input `E3 81 82` produces
+  `1B 24 42 24 22 1B 28 42` — the ESC $B switch-to-JIS, encoded char,
+  and the flush-produced ESC (B switch-back-to-ASCII.
+- **Mixed "Aあ"**: verifies correct escape insertion between ASCII and
+  JIS segments.
+- **or_error variant**: same あ test through `iconv_transcode_or_error`,
+  confirming all bytes are `has_value()`.
+- **Small buffer (3 bytes)**: forces repeated E2BIG during the
+  conversion plus flush, verifying no bytes are lost.
 
-2. **Mock fixes**: All existing mock iconv functions now handle
-   `inbuf == nullptr` gracefully (return 0, no-op for stateless mocks).
-   The inline `close_counting_fns` structs in both test files were also
-   fixed.
+### iconv testing summary (steps 50–52)
 
-3. **New mock**: `mock_iconv_stateful` — identity conversion that writes
-   a 0x0F reset byte on flush, simulating a stateful encoding.
+All four scenarios from `docs/iconv-testing.md` are fully implemented
+and integration-tested:
+- A: E2BIG with real iconv (100 chars, 4-byte buffer)
+- B: EINVAL split multi-byte (U+1D11E, 4-byte buffer)
+- C: EILSEQ (mock: skip-byte + terminate)
+- D: Stateful flush (mock: shift-in byte; real: ISO-2022-JP ESC sequence)
 
-4. **Tests**: Flush tests for both view variants verify that input
-   `{'A', 'B'}` through the stateful mock produces `{'A', 'B', 0x0F}`.
-
-All four scenarios from `docs/iconv-testing.md` are now covered:
-- A: E2BIG (step 50)
-- B: EINVAL split multi-byte (step 50)
-- C: EILSEQ (step 50)
-- D: Stateful flush (step 51)
-
-## What To Do Next — Step 52
+## What To Do Next — Step 53
 
 **Read the checklist first:**
 ```
 docs/plans/phase2-checklist.md
 ```
 
-Steps 0–51 are complete. The checklist does not yet have a step 52 entry.
+Steps 0–52 are complete. The checklist does not yet have a step 53 entry.
 
-### Recommended options for step 52
+### Recommended options for step 53
 
 **Option A: `whatwg_encode_view.hpp` coverage** — the largest remaining
-coverage gap (29 uncovered lines at 92.0%). Run `make coverage` and
-inspect which lines are uncovered. Likely `_or_error` dispatch arms for
-codecs not tested in error mode, and specific encoder error paths.
+coverage gap (29 uncovered lines at 92.0%). Run:
+```python
+python3 -c "
+import json
+with open('.build/build-system/coverage.json') as f:
+    data = json.load(f)
+for sf in data['source_files']:
+    if 'whatwg_encode_view' in sf['name']:
+        cov = sf['coverage']
+        for i, c in enumerate(cov):
+            if c is not None and c == 0:
+                print(f'  line {i+1}')
+"
+```
+Then read those lines to understand what paths are untested and write
+targeted tests.
 
-**Option B: Real-iconv ISO-2022-JP flush test** — now that the flush
-feature exists, add a real-iconv integration test using ISO-2022-JP
-encoding to verify that flush actually works with the system iconv.
-Example: encode "あ" (U+3042) from UTF-8 to ISO-2022-JP, verify the
-output includes the ESC sequence to switch character sets and the
-shift-in escape at the end.
+**Option B: `gb18030.hpp` + `euc_jp.hpp` coverage** — smaller codec
+helper coverage improvements (8 + 6 uncovered lines).
 
-**Option C: `gb18030.hpp` + `euc_jp.hpp` coverage** — smaller but
-targeted coverage improvements.
+**Option C: module support** — ensure `transcode.cppm` exports all
+headers added since step 42.
 
 ## TDD Process
 
@@ -105,11 +110,9 @@ make coverage  # gcovr coverage report
 
 ## Key files for context
 
-- `include/beman/transcode/iconv_transcode_view.hpp` — iconv view (now with flush)
-- `include/beman/transcode/iconv_transcode_or_error_view.hpp` — or_error (now with flush)
-- `tests/beman/transcode/iconv_mock.hpp` — mock iconv functions (6 mocks)
-- `tests/beman/transcode/iconv_transcode.test.cpp` — iconv view tests
-- `tests/beman/transcode/iconv_transcode_or_error.test.cpp` — or_error tests
-- `tests/beman/transcode/iconv_real.test.cpp` — real iconv integration tests
-- `docs/iconv-testing.md` — boundary-condition test design document (all 4 scenarios done)
 - `include/beman/transcode/whatwg_encode_view.hpp` — encode view (next coverage target)
+- `include/beman/transcode/iconv_transcode_view.hpp` — iconv view (with flush)
+- `include/beman/transcode/iconv_transcode_or_error_view.hpp` — iconv or_error (with flush)
+- `tests/beman/transcode/iconv_real.test.cpp` — real iconv integration tests (10 tests)
+- `tests/beman/transcode/iconv_mock.hpp` — mock iconv functions (6 mocks)
+- `docs/iconv-testing.md` — boundary-condition test design document (all 4 scenarios done)
