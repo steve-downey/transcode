@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–52 complete. 595 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–53 complete. 608 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -494,6 +494,18 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Add `_or_error` variant ISO-2022-JP test
 - [x] Add small-buffer (3 bytes) ISO-2022-JP test (E2BIG + flush)
 - [x] `make test` (595 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
+- [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 53: coverage improvements (`step53-coverage-improvements`)
+
+- [x] Create branch `step53-coverage-improvements` from `main`
+- [x] Add ISO-2022-JP encoder coverage: consecutive YEN/OVERLINE (Roman state), unmapped-after-JIS
+- [x] Add ISO-2022-JP or_error coverage: YEN, consecutive YEN+OVERLINE, ASCII-after-JIS, JIS-after-JIS
+- [x] Add EUC-JP decode coverage: SS3 truncated, SS3 invalid trails, unmapped JIS X 0212/0208 pointers
+- [x] Add GB18030 encode coverage: U+E7C7 special case, U+0080 4-byte range encoding
+- [x] Exclude `papers/wg21` from ruff lint (pre-existing failures)
+- [x] `make test` (608 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
+- [x] `make coverage`: `whatwg_encode_view.hpp` 92.0% → 100.0%; `euc_jp.hpp` 92.9% → 98.8%; `gb18030.hpp` 93.3% → 95.0%; overall 85.1% → 85.4%
 - [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---

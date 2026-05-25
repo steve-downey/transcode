@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 53
+# Handoff: beman.transcode — Step 54
 
 ## Project
 
@@ -14,72 +14,83 @@ proposal.
 
 ## Current State
 
-**Step 52 complete and merged to main.**
+**Step 53 complete and merged to main.**
 
-595 C++ tests + 171 Python tests pass (`make test`). `make lint` has
-pre-existing failures only in `papers/wg21/` (Python ruff/codespell
-issues unrelated to the transcode C++ library). All C++, CMake, and
-`tools/` Python lint passes cleanly.
+608 C++ tests + 171 Python tests pass (`make test`). `make lint` has
+pre-existing failures only in docs (codespell: "implementor" in
+`docs/Rust Encoding for C++ Transcode.md`, "bu" in
+`papers/wg21/generated/TEST.html`). All C++, CMake, tools, and ruff
+lint passes cleanly (papers/wg21 now excluded from ruff via
+`extend-exclude` in pyproject.toml).
 
-### What Step 52 Added
+### What Step 53 Added
 
-Real-iconv integration tests for ISO-2022-JP stateful flush (validating
-the flush feature added in step 51).
+Coverage improvement tests targeting three files:
 
-Tests in `tests/beman/transcode/iconv_real.test.cpp`:
-- **あ (U+3042) → ISO-2022-JP**: input `E3 81 82` produces
-  `1B 24 42 24 22 1B 28 42` — the ESC $B switch-to-JIS, encoded char,
-  and the flush-produced ESC (B switch-back-to-ASCII.
-- **Mixed "Aあ"**: verifies correct escape insertion between ASCII and
-  JIS segments.
-- **or_error variant**: same あ test through `iconv_transcode_or_error`,
-  confirming all bytes are `has_value()`.
-- **Small buffer (3 bytes)**: forces repeated E2BIG during the
-  conversion plus flush, verifying no bytes are lost.
+**`whatwg_encode_view.hpp`**: 92.0% → 100.0%
+- ISO-2022-JP encoder: consecutive YEN/OVERLINE (already in Roman state
+  → no ESC sequence emitted, just the byte)
+- ISO-2022-JP encoder: unmapped codepoint while in JIS state (ESC(B
+  switch back + '?')
+- ISO-2022-JP `_or_error` variant: all the same transitions (YEN,
+  consecutive YEN+OVERLINE, ASCII-after-JIS, JIS-after-JIS)
 
-### iconv testing summary (steps 50–52)
+**`euc_jp.hpp`**: 92.9% → 98.8%
+- SS3 (0x8F) alone → truncated_sequence
+- SS3 + invalid b1 / invalid b2 → invalid_byte
+- SS3 unmapped JIS X 0212 pointer 0 / unmapped JIS X 0208 pointer 108
+- Remaining 1 uncovered line (line 50): dead code — view checks
+  `current_ == end_` before calling `euc_jp_decode_one`
 
-All four scenarios from `docs/iconv-testing.md` are fully implemented
-and integration-tested:
-- A: E2BIG with real iconv (100 chars, 4-byte buffer)
-- B: EINVAL split multi-byte (U+1D11E, 4-byte buffer)
-- C: EILSEQ (mock: skip-byte + terminate)
-- D: Stateful flush (mock: shift-in byte; real: ISO-2022-JP ESC sequence)
+**`gb18030.hpp`**: 93.3% → 95.0%
+- U+E7C7 encode: exercises `gb18030_ranges_encode` special case
+- U+0080 encode: exercises 4-byte range encoding binary search
+- Remaining 6 uncovered lines are all dead code:
+  - Lines 70, 72: pointer pre-check on line 51 prevents reaching these
+  - Line 76: binary search can't fail (range 0 starts at pointer 0)
+  - Line 97: gb18030 covers all Unicode (encode can't fall through)
+  - Line 103: view checks before calling decode
+  - Line 172: GBK table has no zero entries
 
-## What To Do Next — Step 53
+Also excluded `papers/wg21` from ruff lint in pyproject.toml.
+
+### Coverage summary
+
+Overall: 85.4% lines, 99.9% functions.
+
+Remaining meaningful coverage gaps (not dead code):
+- `whatwg_decode_view.hpp`: some paths in GBK/GB18030 replay logic
+  and ISO-2022-JP state machine
+- `iconv_transcode_view.hpp`: ~5% uncovered (error paths in iconv
+  interaction)
+- `iconv_transcode_or_error_view.hpp`: ~7% uncovered
+
+## What To Do Next — Step 54
 
 **Read the checklist first:**
 ```
 docs/plans/phase2-checklist.md
 ```
 
-Steps 0–52 are complete. The checklist does not yet have a step 53 entry.
+Steps 0–53 are complete. The checklist does not yet have a step 54 entry.
 
-### Recommended options for step 53
+### Recommended options for step 54
 
-**Option A: `whatwg_encode_view.hpp` coverage** — the largest remaining
-coverage gap (29 uncovered lines at 92.0%). Run:
-```python
-python3 -c "
-import json
-with open('.build/build-system/coverage.json') as f:
-    data = json.load(f)
-for sf in data['source_files']:
-    if 'whatwg_encode_view' in sf['name']:
-        cov = sf['coverage']
-        for i, c in enumerate(cov):
-            if c is not None and c == 0:
-                print(f'  line {i+1}')
-"
+**Option A: C++23 module support update** — ensure `transcode.cppm`
+exports all headers added since step 42 (umbrella header). Run:
+```bash
+grep '#include' include/beman/transcode/transcode.hpp
 ```
-Then read those lines to understand what paths are untested and write
-targeted tests.
+and compare with what's exported in `transcode.cppm`. Any missing
+includes = missing module exports.
 
-**Option B: `gb18030.hpp` + `euc_jp.hpp` coverage** — smaller codec
-helper coverage improvements (8 + 6 uncovered lines).
+**Option B: `whatwg_decode_view.hpp` remaining coverage** — the replay
+logic for GB18030/GBK and some ISO-2022-JP state machine paths still
+have gaps. Run `make coverage` and inspect the JSON for details.
 
-**Option C: module support** — ensure `transcode.cppm` exports all
-headers added since step 42.
+**Option C: Begin Phase 3 (benchmarking)** — plan docs exist in
+`docs/plans/phase3-*.md`. Step p3-step1 sets up the benchmark harness
+using Google Benchmark.
 
 ## TDD Process
 
@@ -110,9 +121,9 @@ make coverage  # gcovr coverage report
 
 ## Key files for context
 
-- `include/beman/transcode/whatwg_encode_view.hpp` — encode view (next coverage target)
-- `include/beman/transcode/iconv_transcode_view.hpp` — iconv view (with flush)
-- `include/beman/transcode/iconv_transcode_or_error_view.hpp` — iconv or_error (with flush)
-- `tests/beman/transcode/iconv_real.test.cpp` — real iconv integration tests (10 tests)
-- `tests/beman/transcode/iconv_mock.hpp` — mock iconv functions (6 mocks)
-- `docs/iconv-testing.md` — boundary-condition test design document (all 4 scenarios done)
+- `include/beman/transcode/whatwg_encode_view.hpp` — encode view (now 100% covered)
+- `include/beman/transcode/whatwg_decode_view.hpp` — decode view (next coverage target)
+- `include/beman/transcode/detail/gb18030.hpp` — GB18030 codec (dead code noted)
+- `include/beman/transcode/detail/euc_jp.hpp` — EUC-JP codec (dead code noted)
+- `pyproject.toml` — ruff config (papers/wg21 now excluded)
+- `docs/plans/phase3-index.md` — Phase 3 benchmarking overview
