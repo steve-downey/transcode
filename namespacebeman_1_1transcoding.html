@@ -231,6 +231,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a603156a9d20e68760ab8a23fb1e64f70"><td class="memTemplParams" colspan="2">template&lt;std::contiguous_iterator I&gt; </td></tr>
 <tr class="memitem:a603156a9d20e68760ab8a23fb1e64f70"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a603156a9d20e68760ab8a23fb1e64f70">null_term_view</a> (I) -&gt; <a class="el" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a>&lt; I &gt;</td></tr>
 <tr class="separator:a603156a9d20e68760ab8a23fb1e64f70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e96b2209ecc3472323642bbc8bc1322"><td class="memTemplParams" colspan="2">template&lt;legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:a9e96b2209ecc3472323642bbc8bc1322"><td class="memTemplItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a9e96b2209ecc3472323642bbc8bc1322">sniff_encoding</a> (R &amp;&amp;r) noexcept</td></tr>
+<tr class="separator:a9e96b2209ecc3472323642bbc8bc1322"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8052302218d5a4ad20fe0e26e198765b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structbeman_1_1transcoding_1_1iconv__functions.html">iconv_functions</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b">make_real_iconv_fns</a> () noexcept</td></tr>
 <tr class="separator:a8052302218d5a4ad20fe0e26e198765b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab66a3b96e24d01f79bc11a5b9731dcb"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#aab66a3b96e24d01f79bc11a5b9731dcb">iconv_transcode</a> (const char *from, const char *to, std::span&lt; char &gt; buf)</td></tr>
@@ -529,6 +532,34 @@ template&lt;std::contiguous_iterator I&gt; </div>
           <td> -&gt;  <a class="el" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a>&lt; I &gt;</td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9e96b2209ecc3472323642bbc8bc1322" name="a9e96b2209ecc3472323642bbc8bc1322"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e96b2209ecc3472323642bbc8bc1322">&#9670;&#160;</a></span>sniff_encoding()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;legacy_byte_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr std::optional&lt; <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> &gt; beman::transcoding::sniff_encoding </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>r</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

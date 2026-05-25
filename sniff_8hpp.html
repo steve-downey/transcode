@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>beman.transcode: Namespace Members</title>
+<title>beman.transcode: include/beman/transcode/detail/sniff.hpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('namespacemembers.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('sniff_8hpp.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -95,29 +95,41 @@ $(document).ready(function(){initNavTree('namespacemembers.html',''); initResiza
 </div>
 </div>
 
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle"><div class="title">sniff.hpp File Reference</div></div>
+</div><!--header-->
 <div class="contents">
-<div class="textblock">Here is a list of all namespace members with links to the namespace documentation for each member:</div><ul>
-<li>codec&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">beman::transcoding</a></li>
-<li>get_encoding()&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a66a54f73e921a9aa3ccdf21aa982e3ec">beman::transcoding</a></li>
-<li>iconv_error&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730">beman::transcoding</a></li>
-<li>iconv_transcode()&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#aab66a3b96e24d01f79bc11a5b9731dcb">beman::transcoding</a></li>
-<li>iconv_transcode_or_error()&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a0b9d1350ae333361ebeca4ed71a3d2cd">beman::transcoding</a></li>
-<li>make_real_iconv_fns()&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b">beman::transcoding</a></li>
-<li>null_sentinel&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311">beman::transcoding</a></li>
-<li>null_term&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">beman::transcoding::views</a></li>
-<li>null_term_view()&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a603156a9d20e68760ab8a23fb1e64f70">beman::transcoding</a></li>
-<li>sniff_encoding()&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a9e96b2209ecc3472323642bbc8bc1322">beman::transcoding</a></li>
-<li>whatwg_decode&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a73a91c92245e7a8b395fbf3e0334c063">beman::transcoding</a></li>
-<li>whatwg_decode_or_error&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#ad15ffa8f43ff243d79c92bf31e8aefc2">beman::transcoding</a></li>
-<li>whatwg_encode&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#ab1d7219d1a0e414363d643942b48024f">beman::transcoding</a></li>
-<li>whatwg_encode_or_error&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a62b7811f7a198b10e6372e16c5683b07">beman::transcoding</a></li>
-<li>whatwg_error&#160;:&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">beman::transcoding</a></li>
-</ul>
+<div class="textblock"><code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/detail/concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="null__term_8hpp_source.html">beman/transcode/detail/null_term.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="whatwg__decode__view_8hpp_source.html">beman/transcode/whatwg_decode_view.hpp</a>&gt;</code><br />
+<code>#include &lt;cstdint&gt;</code><br />
+<code>#include &lt;optional&gt;</code><br />
+<code>#include &lt;ranges&gt;</code><br />
+</div>
+<p><a href="sniff_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacebeman"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman.html">beman</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacebeman_1_1transcoding"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html">beman::transcoding</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a9e96b2209ecc3472323642bbc8bc1322"><td class="memTemplParams" colspan="2">template&lt;legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:a9e96b2209ecc3472323642bbc8bc1322"><td class="memTemplItemLeft" align="right" valign="top">constexpr std::optional&lt; codec &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a9e96b2209ecc3472323642bbc8bc1322">beman::transcoding::sniff_encoding</a> (R &amp;&amp;r) noexcept</td></tr>
+<tr class="separator:a9e96b2209ecc3472323642bbc8bc1322"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_94cf5e36d6dc57d8747f5a546f07158a.html">beman</a></li><li class="navelem"><a class="el" href="dir_19d3d3c6f4aef79816d3fd4a558f5e3d.html">transcode</a></li><li class="navelem"><a class="el" href="dir_9d798d0e78a5d20e3b6770198d219460.html">detail</a></li><li class="navelem"><a class="el" href="sniff_8hpp.html">sniff.hpp</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
   </ul>
 </div>
