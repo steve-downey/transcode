@@ -17,6 +17,7 @@ Pristine upstream test data. **Do not edit.**
 | `single-byte-decoder.window.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/single-byte-decoder.window.js | `bf6bf81bd813f6f4…` |
 | `textdecoder-mistakes.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-mistakes.any.js | `96ac44e18bc2368a…` |
 | `textdecoder-utf16-surrogates.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-utf16-surrogates.any.js | `f04fabfe9a6fe3f2…` |
+| `textdecoder-fatal.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-fatal.any.js | `083a058a10a2bdc7…` |
 
 ## Full Checksums
 
@@ -25,3 +26,4 @@ Pristine upstream test data. **Do not edit.**
 - `single-byte-decoder.window.js`: `bf6bf81bd813f6f42c3ef2c111d249aca18f48b3d040046aae156443ee7cb813`
 - `textdecoder-mistakes.any.js`: `96ac44e18bc2368a560ddce46c4d01875b54374723b930608398ec8d4722af43`
 - `textdecoder-utf16-surrogates.any.js`: `f04fabfe9a6fe3f24eb66e4967637cb73b6b874a33bd5214d27af1d38ed17f3f`
+- `textdecoder-fatal.any.js`: `083a058a10a2bdc77e1da32d0acda791b568a6701c49db10cec2bfa1f7b9eab8`

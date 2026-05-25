@@ -15,6 +15,7 @@ MISTAKES_JS = WPT_DIR / "textdecoder-mistakes.any.js"
 ISO2022JP_JS = WPT_DIR / "iso-2022-jp-decoder.any.js"
 SINGLEBYTE_JS = WPT_DIR / "single-byte-decoder.window.js"
 UTF16SURROGATES_JS = WPT_DIR / "textdecoder-utf16-surrogates.any.js"
+FATAL_JS = WPT_DIR / "textdecoder-fatal.any.js"
 
 
 def parse_js_string(s: str) -> list[int]:
@@ -487,6 +488,90 @@ def render_utf16_surrogates_vectors_hpp(
     out_path.write_text("\n".join(lines))
 
 
+_FATAL_RE = re.compile(
+    r"\{\s*encoding:\s*'([^']+)'\s*,\s*input:\s*\[([^\]]*)\]\s*,"
+    r"\s*name:\s*'([^']*)'\s*\}",
+    re.MULTILINE | re.DOTALL,
+)
+
+
+def parse_fatal_vectors(content: str) -> list[dict[str, object]]:
+    """Parse the bad[] array from textdecoder-fatal.any.js."""
+    vectors: list[dict[str, object]] = []
+    for m in _FATAL_RE.finditer(content):
+        encoding, bytes_str, name = m.groups()
+        input_bytes = [int(x.strip(), 0) for x in bytes_str.split(",") if x.strip()]
+        vectors.append(
+            {
+                "encoding": encoding,
+                "input": input_bytes,
+                "description": name,
+            }
+        )
+    return vectors
+
+
+def render_fatal_vectors_hpp(vectors: list[dict[str, object]], out_path: Path) -> None:
+    """Generate the C++ header for WPT fatal-mode decode vectors."""
+    utf8_vectors = [v for v in vectors if v["encoding"] == "utf-8"]
+    utf16le_vectors = [v for v in vectors if v["encoding"] == "utf-16le"]
+
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/textdecoder-fatal.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_FATAL_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_FATAL_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <cstdint>")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptFatalVector {")
+    lines.append("    std::vector<uint8_t> input;")
+    lines.append("    const char*          description;")
+    lines.append("};")
+    lines.append("")
+
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append("inline const WptFatalVector utf8_fatal_wpt_vectors[] = {")
+    for v in utf8_vectors:
+        input_bytes: list[int] = v["input"]  # type: ignore[assignment]
+        desc: str = v["description"]  # type: ignore[assignment]
+        in_str = _format_bytes(input_bytes)
+        desc_escaped = _escape_c_string(desc)
+        lines.append(f'    {{{{{in_str}}}, "{desc_escaped}"}},')
+    lines.append("};")
+    lines.append("")
+
+    lines.append("inline const WptFatalVector utf16le_fatal_wpt_vectors[] = {")
+    for v in utf16le_vectors:
+        input_bytes2: list[int] = v["input"]  # type: ignore[assignment]
+        desc2: str = v["description"]  # type: ignore[assignment]
+        in_str2 = _format_bytes(input_bytes2)
+        desc2_escaped = _escape_c_string(desc2)
+        lines.append(f'    {{{{{in_str2}}}, "{desc2_escaped}"}},')
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_FATAL_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
 def main() -> int:
     gb18030_content = GB18030_JS.read_text()
     gb18030_vectors = parse_gb18030_decode_vectors(gb18030_content)
@@ -524,6 +609,12 @@ def main() -> int:
     )
     print(f"Generated {TEST_DIR / 'wpt_utf16_surrogates_vectors.hpp'}")
 
+    fatal_content = FATAL_JS.read_text()
+    fatal_vectors = parse_fatal_vectors(fatal_content)
+    print(f"Parsed {len(fatal_vectors)} fatal mode vectors")
+    render_fatal_vectors_hpp(fatal_vectors, TEST_DIR / "wpt_fatal_vectors.hpp")
+    print(f"Generated {TEST_DIR / 'wpt_fatal_vectors.hpp'}")
+
     run_cf = True
     try:
         subprocess.run(["clang-format", "--version"], capture_output=True, check=True)
@@ -537,6 +628,7 @@ def main() -> int:
             TEST_DIR / "wpt_iso2022jp_vectors.hpp",
             TEST_DIR / "wpt_single_byte_vectors.hpp",
             TEST_DIR / "wpt_utf16_surrogates_vectors.hpp",
+            TEST_DIR / "wpt_fatal_vectors.hpp",
         ]:
             subprocess.run(["clang-format", "-i", str(hpp)], check=True)
             print(f"Formatted {hpp}")

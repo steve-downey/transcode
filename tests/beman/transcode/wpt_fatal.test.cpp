@@ -14,8 +14,7 @@ using namespace beman::transcoding;
 
 namespace {
 
-std::vector<std::expected<char32_t, whatwg_error>> decode_utf8_or_error(
-    const std::vector<uint8_t>& input) {
+std::vector<std::expected<char32_t, whatwg_error>> decode_utf8_or_error(const std::vector<uint8_t>& input) {
     std::vector<char>                                  bytes(input.begin(), input.end());
     std::vector<std::expected<char32_t, whatwg_error>> result;
     for (auto&& r : bytes | whatwg_decode_or_error<codec::utf_8>)
@@ -23,8 +22,7 @@ std::vector<std::expected<char32_t, whatwg_error>> decode_utf8_or_error(
     return result;
 }
 
-std::vector<std::expected<char32_t, whatwg_error>> decode_utf16le_or_error(
-    const std::vector<uint8_t>& input) {
+std::vector<std::expected<char32_t, whatwg_error>> decode_utf16le_or_error(const std::vector<uint8_t>& input) {
     std::vector<char>                                  bytes(input.begin(), input.end());
     std::vector<std::expected<char32_t, whatwg_error>> result;
     for (auto&& r : bytes | whatwg_decode_or_error<codec::utf_16le>)
@@ -50,9 +48,7 @@ TEST_CASE("WPT fatal UTF-8: all invalid sequences produce errors", "[wpt::fatal:
     }
 }
 
-TEST_CASE(
-    "WPT fatal UTF-16LE: all invalid sequences produce errors",
-    "[wpt::fatal::utf_16le]") {
+TEST_CASE("WPT fatal UTF-16LE: all invalid sequences produce errors", "[wpt::fatal::utf_16le]") {
     const auto& all = beman::transcoding::tests::wpt::utf16le_fatal_wpt_vectors;
     for (std::size_t idx = 0; idx < std::size(all); ++idx) {
         const auto& v = all[idx];
