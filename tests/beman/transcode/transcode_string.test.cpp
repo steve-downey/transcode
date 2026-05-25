@@ -56,7 +56,7 @@ TEST_CASE("transcode_string: ASCII preserved through shift_jis", "[transcode_str
 TEST_CASE("transcode_string: UTF-8 to GBK to UTF-8 round-trip (中)", "[transcode_string]") {
     // U+4E2D (中) in UTF-8: 0xE4 0xB8 0xAD; in GBK: 0xD6 0xD0
     std::string utf8{'\xE4', '\xB8', '\xAD'};
-    std::string gbk = transcode_string(std::span<const char>(utf8), codec::utf_8, codec::gbk);
+    std::string gbk  = transcode_string(std::span<const char>(utf8), codec::utf_8, codec::gbk);
     std::string back = transcode_string(std::span<const char>(gbk), codec::gbk, codec::utf_8);
     CHECK(back == utf8);
 }
