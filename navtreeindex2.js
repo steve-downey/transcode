@@ -1,5 +1,11 @@
 var NAVTREEINDEX2 =
 {
+"iconv__transcode__view_8hpp.html":[34,0,2,0,0,4],
+"iconv__transcode__view_8hpp_source.html":[34,0,2,0,0,4],
+"index.html":[],
+"iso__8859__10_8hpp.html":[34,0,2,0,0,0,0,6],
+"iso__8859__10_8hpp_source.html":[34,0,2,0,0,0,0,6],
+"iso__8859__13_8hpp.html":[34,0,2,0,0,0,0,7],
 "iso__8859__13_8hpp_source.html":[34,0,2,0,0,0,0,7],
 "iso__8859__14_8hpp.html":[34,0,2,0,0,0,0,8],
 "iso__8859__14_8hpp_source.html":[34,0,2,0,0,0,0,8],
@@ -25,9 +31,9 @@ var NAVTREEINDEX2 =
 "koi8__r_8hpp_source.html":[34,0,2,0,0,0,0,18],
 "koi8__u_8hpp.html":[34,0,2,0,0,0,0,19],
 "koi8__u_8hpp_source.html":[34,0,2,0,0,0,0,19],
-"labels_8hpp.html":[34,0,2,0,0,0,8],
-"labels_8hpp.html#a66a54f73e921a9aa3ccdf21aa982e3ec":[34,0,2,0,0,0,8,0],
-"labels_8hpp_source.html":[34,0,2,0,0,0,8],
+"labels_8hpp.html":[34,0,2,0,0,0,9],
+"labels_8hpp.html#a66a54f73e921a9aa3ccdf21aa982e3ec":[34,0,2,0,0,0,9,0],
+"labels_8hpp_source.html":[34,0,2,0,0,0,9],
 "macintosh_8hpp.html":[34,0,2,0,0,0,0,20],
 "macintosh_8hpp_source.html":[34,0,2,0,0,0,0,20],
 "md_docs_Benchmarking_Transcode_Implementation_Performance.html":[0],
@@ -243,11 +249,5 @@ var NAVTREEINDEX2 =
 "md_docs_plans_phase2_checklist.html#autotoc_md205":[15,39],
 "md_docs_plans_phase2_checklist.html#autotoc_md206":[15,40],
 "md_docs_plans_phase2_checklist.html#autotoc_md207":[15,41],
-"md_docs_plans_phase2_checklist.html#autotoc_md208":[15,42],
-"md_docs_plans_phase2_checklist.html#autotoc_md209":[15,43],
-"md_docs_plans_phase2_checklist.html#autotoc_md211":[15,44],
-"md_docs_plans_phase2_index.html":[16],
-"md_docs_plans_phase2_index.html#autotoc_md213":[16,0],
-"md_docs_plans_phase2_index.html#autotoc_md215":[16,1],
-"md_docs_plans_phase2_index.html#autotoc_md216":[16,1,0]
+"md_docs_plans_phase2_checklist.html#autotoc_md208":[15,42]
 };
