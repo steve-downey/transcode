@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–49 complete. 583 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–50 complete. 589 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -461,6 +461,17 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Add `_or_error` BOM stripping test for UTF-16BE
 - [x] `make test` (583 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
 - [x] `make coverage`: `whatwg_decode_view.hpp` 79.7% → 97.1%; overall lines 83.4% → 84.7%
+- [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 50: iconv view boundary-condition tests (`step50-iconv-boundary-tests`)
+
+- [x] Create branch `step50-iconv-boundary-tests` from `main`
+- [x] Add `mock_iconv_partial_consume` and `mock_iconv_e2big_zero_output` to `iconv_mock.hpp`
+- [x] Add EILSEQ and partial-staging-consume tests to `iconv_transcode.test.cpp`
+- [x] Add E2BIG-zero-output and partial-consume tests to `iconv_transcode_or_error.test.cpp`
+- [x] Add real-iconv E2BIG (100 chars, 4-byte buf) and split multi-byte U+1D11E tests to `iconv_real.test.cpp`
+- [x] `make test` (589 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
+- [x] `make coverage`: `iconv_transcode_view` 84.8% → 94.9%; `iconv_transcode_or_error_view` 83.7% → 92.9%
 - [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---

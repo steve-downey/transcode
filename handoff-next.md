@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 50
+# Handoff: beman.transcode — Step 51
 
 ## Project
 
@@ -14,97 +14,93 @@ proposal.
 
 ## Current State
 
-**Step 49 complete and merged to main.**
+**Step 50 complete and merged to main.**
 
-583 C++ tests + 171 Python tests pass (`make test`). `make lint` has
+589 C++ tests + 171 Python tests pass (`make test`). `make lint` has
 pre-existing failures only in `papers/wg21/` (Python ruff/codespell
 issues unrelated to the transcode C++ library). All C++, CMake, and
 `tools/` Python lint passes cleanly.
 
-### What Step 49 Added
+### What Step 50 Added
 
-Coverage improvement for `whatwg_decode_view.hpp`: **79.7% → 97.1%**.
-The remaining 19 uncovered lines are dead code (unreachable error
-branches for fully-populated single-byte codec tables).
+Iconv view boundary-condition tests derived from `docs/iconv-testing.md`.
 
-Added tests for:
-- UTF-16 truncated high surrogate (3-byte input: high surrogate + only 1
-  trailing byte) — both non-`_or_error` and `_or_error` variants
-- GB18030 replay with high lead byte — error path and success path where
-  the replayed lead byte forms a valid 2-byte GBK character
-- ISO-2022-JP `_or_error` comprehensive coverage: EOS in all states
-  (Escape_Start, Escape, Lead_Byte), invalid escape bytes with pending
-  re-processing, SO/SI bytes, Roman/Katakana states, output_flag error
-  on consecutive state transitions, BOM stripping
+1. **New mocks** in `tests/beman/transcode/iconv_mock.hpp`:
+   - `mock_iconv_partial_consume` — consumes 1 byte, writes 1, returns
+     EINVAL. Exercises the staging-shift loop when iconv partially
+     consumes the staging buffer.
+   - `mock_iconv_e2big_zero_output` — always returns E2BIG without
+     writing output. Exercises the skip-byte + output_full error path
+     in `_or_error`.
 
-Overall coverage: lines 83.4% → 84.7%, branches 56.9% → 58.8%.
+2. **Mock-based tests** in `iconv_transcode.test.cpp` and
+   `iconv_transcode_or_error.test.cpp`:
+   - EILSEQ with non-`_or_error` view (skip bad bytes + terminate)
+   - Partial staging consume (staging shift after partial iconv progress)
+   - E2BIG with zero output → `output_full` error in `_or_error`
+   - Partial consume with `_or_error` (yields output then continues)
 
-## What To Do Next — Step 50
+3. **Real-iconv tests** in `iconv_real.test.cpp`:
+   - Scenario A: 100 'A' chars → UTF-32LE with 4-byte buffer (forces
+     repeated E2BIG, verifies seamless resumption)
+   - Scenario B: U+1D11E (𝄞, 4-byte UTF-8) → UTF-32LE with 4-byte
+     buffer (split multi-byte, forces EINVAL accumulation)
+
+Coverage: `iconv_transcode_view.hpp` 84.8% → 94.9%;
+`iconv_transcode_or_error_view.hpp` 83.7% → 92.9%.
+
+### Feature gap noted
+
+Scenario D from `iconv-testing.md` (end-of-range stateful flush) is a
+**feature gap** — the current views do NOT call `iconv(cd, nullptr, ...)`
+at end-of-input to flush shift-state bytes. This is needed for stateful
+encodings like ISO-2022-JP through real iconv. A future step should:
+1. Add a flush call (inbuf=nullptr) when input is exhausted
+2. Add a `mock_iconv_flush` that produces output on flush
+3. Add a real-iconv test with ISO-2022-JP
+
+## What To Do Next — Step 51
 
 **Read the checklist first:**
 ```
 docs/plans/phase2-checklist.md
 ```
 
-Steps 0–49 are complete. The checklist does not yet have a step 50 entry.
+Steps 0–50 are complete. The checklist does not yet have a step 51 entry.
 
 ### Coverage status
 
 ```
-lines:     84.7% (7825/9236)
-functions: 99.9% (2025/2026)
-branches:  58.8% (2890/4917)
+lines:     84.9% (7919/9332)
+functions: 99.9% (2037/2038)
+branches:  59.0% (2927/4965)
 ```
 
-Remaining coverage gaps (library headers only):
+Remaining coverage gaps:
 
 | File | Coverage | Uncovered |
 |------|----------|-----------|
 | `whatwg_encode_view.hpp` | 92.0% (332/361) | 29 lines |
-| `iconv_transcode_or_error_view.hpp` | 83.7% (82/98) | 16 lines |
-| `iconv_transcode_view.hpp` | 84.8% (67/79) | 12 lines |
+| `iconv_transcode_or_error_view.hpp` | 92.9% (91/98) | 7 lines |
+| `iconv_transcode_view.hpp` | 94.9% (75/79) | 4 lines |
 | `gb18030.hpp` | 93.3% (111/119) | 8 lines |
 | `euc_jp.hpp` | 92.9% (78/84) | 6 lines |
 | `whatwg_decode_view.hpp` | 97.1% (631/650) | 19 lines (dead code) |
-| `transcode_string.hpp` | 99.2% (260/262) | 2 lines |
 
-### Recommended step 50: `whatwg_encode_view.hpp` coverage improvement
+### Recommended options for step 51
 
-`whatwg_encode_view.hpp` at 92.0% has 29 uncovered lines. These are
-likely in:
-- `_or_error` dispatch arms for codecs not tested in error mode
-- Specific encoder error paths (unmapped codepoints in CJK codecs)
-- State-machine paths in ISO-2022-JP encoder
+**Option A: iconv stateful flush** — implement the end-of-range flush
+described in `docs/iconv-testing.md` scenario D. This is new feature
+work: add a flush call (`iconv(cd, nullptr, ...)`) when the input is
+exhausted, to handle stateful encodings properly. Includes mock + real
+iconv tests.
 
-Steps:
-1. Run `make coverage` and inspect the JSON report to identify which
-   lines in `whatwg_encode_view.hpp` are uncovered:
-   ```python
-   python3 -c "
-   import json
-   with open('.build/build-system/coverage.json') as f:
-       data = json.load(f)
-   for sf in data['source_files']:
-       if 'whatwg_encode_view' in sf['name']:
-           cov = sf['coverage']
-           for i, c in enumerate(cov):
-               if c is not None and c == 0:
-                   print(f'  line {i+1}')
-   "
-   ```
-2. Read the code at those lines and determine what inputs trigger them.
-3. Write targeted test cases in existing test files (e.g.,
-   `whatwg_encode.test.cpp`, `whatwg_encode_or_error.test.cpp`,
-   codec-specific encode tests).
+**Option B: `whatwg_encode_view.hpp` coverage** — the largest remaining
+coverage gap (29 lines). Likely `_or_error` dispatch arms and specific
+encoder error paths for CJK codecs.
 
-### Alternative step 50 options
-
-- **`gb18030.hpp` + `euc_jp.hpp` coverage** — these codec helpers have
-  specific decode/encode error paths that might be reachable with
-  carefully crafted inputs.
-- **`iconv_transcode_view.hpp` coverage** — uses system iconv, may need
-  mocking or specific locale configuration.
-- **Module support** — ensure `transcode.cppm` exports all new headers.
+**Option C: `gb18030.hpp` + `euc_jp.hpp` coverage** — smaller but
+targeted coverage improvements for codec helper functions.
 
 ## TDD Process
 
@@ -115,10 +111,6 @@ Each step is a separate branch: `step<N>-<slug>`, branched from `main`.
 3. `git checkout main && git merge --no-ff step<N>-...` → push both remotes
 4. Update `docs/plans/phase2-checklist.md` — mark completed items `[x]`
 
-Note: For pure coverage-improvement steps (like step 49), there is no
-RED/GREEN distinction — the tests pass immediately since the code
-already exists. Just commit as GREEN directly.
-
 ## Build Commands
 
 ```bash
@@ -126,8 +118,6 @@ make test      # build + run ALL tests: C++ (ctest) + Python (pytest)
 make lint      # clang-format + gersemi + ruff + codespell + mypy + gitleaks
 make compile   # build only
 make coverage  # gcovr coverage report
-make pytest    # Python tool tests only
-make mypy      # mypy type checker only
 ```
 
 ## Coding Rules (abbreviated)
@@ -141,11 +131,11 @@ make mypy      # mypy type checker only
 
 ## Key files for context
 
+- `include/beman/transcode/iconv_transcode_view.hpp` — iconv view (94.9%)
+- `include/beman/transcode/iconv_transcode_or_error_view.hpp` — iconv or_error view (92.9%)
+- `tests/beman/transcode/iconv_mock.hpp` — mock iconv functions (4 mocks)
+- `tests/beman/transcode/iconv_transcode.test.cpp` — iconv view tests
+- `tests/beman/transcode/iconv_transcode_or_error.test.cpp` — or_error tests
+- `tests/beman/transcode/iconv_real.test.cpp` — real iconv integration tests
+- `docs/iconv-testing.md` — boundary-condition test design document
 - `include/beman/transcode/whatwg_encode_view.hpp` — encode view (next coverage target)
-- `include/beman/transcode/whatwg_decode_view.hpp` — decode view (97.1%, step 49 reference)
-- `include/beman/transcode/detail/gb18030.hpp` — GB18030 codec (93.3%)
-- `include/beman/transcode/detail/euc_jp.hpp` — EUC-JP codec (92.9%)
-- `tests/beman/transcode/whatwg_encode.test.cpp` — encode tests
-- `tests/beman/transcode/whatwg_encode_or_error.test.cpp` — encode or_error tests
-- `tests/beman/transcode/iso2022jp_encode.test.cpp` — ISO-2022-JP encode tests
-- `tests/beman/transcode/CMakeLists.txt` — test registration
