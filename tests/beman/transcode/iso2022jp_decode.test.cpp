@@ -210,3 +210,166 @@ TEST_CASE("iso_2022_jp or_error: truncated in Lead_Byte state yields error", "[t
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::truncated_sequence);
 }
+
+// Coverage: EOS while in Escape_Start state (state=5)
+TEST_CASE("iso_2022_jp or_error: EOS in Escape_Start state", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x1B'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::truncated_sequence);
+}
+
+// Coverage: EOS while in Escape state (state=6) — pending lead byte
+// After truncated escape, the pending byte (0x24='$') is re-processed as ASCII.
+TEST_CASE("iso_2022_jp or_error: EOS in Escape state", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x1B', '\x24'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 2);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::truncated_sequence);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'$');
+}
+
+// Coverage: EOS in Lead_Byte state via default case (just ESC $B, no character)
+TEST_CASE("iso_2022_jp or_error: EOS after entering Lead_Byte state", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x1B', '\x24', '\x42'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    CHECK(result.empty());
+}
+
+// Coverage: invalid byte in Escape_Start state (not 0x24 or 0x28)
+// The invalid byte is pushed to pending and re-processed as ASCII.
+TEST_CASE("iso_2022_jp or_error: invalid Escape_Start byte", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x1B', '\x30'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 2);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'0');
+}
+
+// Coverage: invalid second escape byte in Escape state (state=6, lead=0x28, byte=0x30)
+// Both bytes (lead=0x28 and byte=0x30) are pushed to pending and re-processed.
+TEST_CASE("iso_2022_jp or_error: invalid Escape byte", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x1B', '\x28', '\x30'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 3);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'(');
+    REQUIRE(result[2].has_value());
+    CHECK(result[2].value() == U'0');
+}
+
+// Coverage: SO (0x0E) in ASCII state
+TEST_CASE("iso_2022_jp or_error: SO byte yields error", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x0E'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+}
+
+// Coverage: Roman state (state=1) — 0x5C → U+00A5, 0x7E → U+203E, 'A' → U+0041
+TEST_CASE("iso_2022_jp or_error: Roman state special chars", "[transcoding::iso_2022_jp_or_error]") {
+    // ESC ( J → Roman state, then 0x5C, 0x7E, and 'A'
+    std::vector<char> bytes{'\x1B', '\x28', '\x4A', '\x5C', '\x7E', '\x41'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 3);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == U'\x00A5');
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'\x203E');
+    REQUIRE(result[2].has_value());
+    CHECK(result[2].value() == U'A');
+}
+
+// Coverage: Katakana state (state=2) — ESC ( I then 0x21 → U+FF61
+TEST_CASE("iso_2022_jp or_error: Katakana state", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x1B', '\x28', '\x49', '\x21'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 1);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == U'\xFF61');
+}
+
+// Coverage: high byte (>= 0x80) in ASCII state yields error
+TEST_CASE("iso_2022_jp or_error: high byte in ASCII state", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x80'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+}
+
+// Coverage: high byte in Roman state yields error
+TEST_CASE("iso_2022_jp or_error: high byte in Roman state", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x1B', '\x28', '\x4A', '\x80'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+}
+
+// Coverage: Katakana byte out of range yields error
+TEST_CASE("iso_2022_jp or_error: Katakana out-of-range byte", "[transcoding::iso_2022_jp_or_error]") {
+    // ESC ( I then 0x60 — outside [0x21, 0x5F]
+    std::vector<char> bytes{'\x1B', '\x28', '\x49', '\x60'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+}
+
+// Coverage: escape in Lead_Byte state (state=3, byte=0x1B → state=5)
+// The first ESC $B sets output_flag=true. The second ESC (B triggers
+// output_flag error before switching back to ASCII.
+TEST_CASE("iso_2022_jp or_error: escape in Lead_Byte state", "[transcoding::iso_2022_jp_or_error]") {
+    std::vector<char> bytes{'\x1B', '\x24', '\x42', '\x1B', '\x28', '\x42', '\x41'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 2);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'A');
+}
+
+// Coverage: escape in Trail_Byte state (state=4, byte=0x1B → state=5)
+TEST_CASE("iso_2022_jp or_error: escape in Trail_Byte state", "[transcoding::iso_2022_jp_or_error]") {
+    // ESC $B 0x21 → state=4 (trail byte), then ESC (B → back to ASCII, then 'A'
+    std::vector<char> bytes{'\x1B', '\x24', '\x42', '\x21', '\x1B', '\x28', '\x42', '\x41'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 2);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'A');
+}
+
+// Coverage: output_flag is reset after decoding a character, so a subsequent
+// escape does NOT trigger output_flag error.
+TEST_CASE("iso_2022_jp or_error: escape after decode has no output_flag error",
+          "[transcoding::iso_2022_jp_or_error]") {
+    // ESC $B 0x21 0x21 → U+3000 (trail byte resets output_flag=false)
+    // Then ESC (B → no error (output_flag was false), then 'A'
+    std::vector<char> bytes{'\x1B', '\x24', '\x42', '\x21', '\x21', '\x1B', '\x28', '\x42', '\x41'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::iso_2022_jp>);
+    REQUIRE(result.size() == 2);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == U'\x3000');
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'A');
+}
+
+// Coverage: _or_error BOM stripping for UTF-16BE
+TEST_CASE("utf16be or_error: BOM is stripped", "[transcoding::utf16be_or_error]") {
+    std::vector<char> bytes{'\xFE', '\xFF', '\x00', '\x41'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::utf_16be>);
+    REQUIRE(result.size() == 1);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == U'A');
+}

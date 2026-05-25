@@ -180,3 +180,81 @@ TEST_CASE("gb18030 or_error: truncated 4-byte yields error", "[transcoding::gb18
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::truncated_sequence);
 }
+
+// Coverage: 4-byte sequence with invalid 4th byte triggers replay of bytes 2+3.
+// Byte 3 (0x81) is a high lead byte, exercising the replay-with-lead-byte path.
+// Input: 81 30 81 FF 41
+//   First decode: 81,30,81,FF → error (FF invalid 4th), replay=[30,81], FF stays in stream
+//   Replay 30 → U'0' (ASCII)
+//   Replay 81 → high-byte: reads FF,41 from stream → 81,FF invalid trail → error, replay 41
+//   Replay 41 → U'A'
+TEST_CASE("gb18030 decode: replay with high lead byte", "[transcoding::gb18030]") {
+    std::vector<char> bytes{'\x81', '\x30', '\x81', '\xFF', '\x41'};
+    auto              result = collect(bytes | whatwg_decode<codec::gb18030>);
+    REQUIRE(result.size() == 4);
+    CHECK(result[0] == U'\xFFFD');
+    CHECK(result[1] == U'0');
+    CHECK(result[2] == U'\xFFFD');
+    CHECK(result[3] == U'A');
+}
+
+TEST_CASE("gb18030 or_error: replay with high lead byte", "[transcoding::gb18030_or_error]") {
+    std::vector<char> bytes{'\x81', '\x30', '\x81', '\xFF', '\x41'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::gb18030>);
+    REQUIRE(result.size() == 4);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'0');
+    CHECK(!result[2].has_value());
+    CHECK(result[2].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[3].has_value());
+    CHECK(result[3].value() == U'A');
+}
+
+// Coverage: replay high lead → error again, remaining bytes re-replayed.
+TEST_CASE("gb18030 or_error: replay high lead re-errors", "[transcoding::gb18030_or_error]") {
+    // 81 30 81 FF 40: error (FF invalid 4th), replay=[30,81], FF not consumed.
+    // Replay 30='0'. Replay 81: reads FF,40 → error (FF bad trail), replay 40='@'.
+    std::vector<char> bytes{'\x81', '\x30', '\x81', '\xFF', '\x40'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::gb18030>);
+    REQUIRE(result.size() == 4);
+    CHECK(!result[0].has_value());
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'0');
+    CHECK(!result[2].has_value());
+    REQUIRE(result[3].has_value());
+    CHECK(result[3].value() == U'@');
+}
+
+// Coverage: replay high lead successfully decodes as valid 2-byte GBK.
+TEST_CASE("gb18030 or_error: replay high lead valid 2-byte GBK", "[transcoding::gb18030_or_error]") {
+    // 81 30 81 40: invalid 4th (0x40 not 0x30-0x39), replay=[30,81], 0x40 not consumed.
+    // Replay 30='0'. Replay 81: reads 0x40 → valid GBK(81,40) = U+4E02.
+    std::vector<char> bytes{'\x81', '\x30', '\x81', '\x40'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::gb18030>);
+    REQUIRE(result.size() == 3);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'0');
+    REQUIRE(result[2].has_value());
+    CHECK(result[2].value() == U'\x4E02');
+}
+
+// Coverage: replay path with error + replay count > 0 in _or_error.
+TEST_CASE("gb18030 or_error: 4-byte invalid 3rd byte triggers replay", "[transcoding::gb18030_or_error]") {
+    // 81 30 FF 41 → third byte 0xFF invalid (not 0x81-0xFE), replay=[30], FF not consumed.
+    // Then replay 0x30='0', then 0xFF (invalid lead, consumed), then 0x41='A'.
+    std::vector<char> bytes{'\x81', '\x30', '\xFF', '\x41'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::gb18030>);
+    REQUIRE(result.size() == 4);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == U'0');
+    CHECK(!result[2].has_value());
+    CHECK(result[2].error() == whatwg_error::invalid_byte);
+    REQUIRE(result[3].has_value());
+    CHECK(result[3].value() == U'A');
+}

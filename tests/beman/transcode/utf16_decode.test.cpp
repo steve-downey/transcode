@@ -230,3 +230,34 @@ TEST_CASE("utf16le or_error: lone surrogate yields error", "[transcoding::utf16l
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::surrogate_code_point);
 }
+
+// Coverage: high surrogate + only 1 trailing byte (need 2 for low surrogate)
+TEST_CASE("utf16be decode high surrogate truncated after 1 trail byte", "[transcoding::utf16be]") {
+    std::vector<char> bytes{'\xD8', '\x00', '\xAA'};
+    auto              result = collect(bytes | whatwg_decode<codec::utf_16be>);
+    REQUIRE(result.size() == 1);
+    CHECK(result[0] == U'\xFFFD');
+}
+
+TEST_CASE("utf16be or_error: high surrogate truncated after 1 trail byte", "[transcoding::utf16be_or_error]") {
+    std::vector<char> bytes{'\xD8', '\x00', '\xAA'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::utf_16be>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::truncated_sequence);
+}
+
+TEST_CASE("utf16le decode high surrogate truncated after 1 trail byte", "[transcoding::utf16le]") {
+    std::vector<char> bytes{'\x00', '\xD8', '\xAA'};
+    auto              result = collect(bytes | whatwg_decode<codec::utf_16le>);
+    REQUIRE(result.size() == 1);
+    CHECK(result[0] == U'\xFFFD');
+}
+
+TEST_CASE("utf16le or_error: high surrogate truncated after 1 trail byte", "[transcoding::utf16le_or_error]") {
+    std::vector<char> bytes{'\x00', '\xD8', '\xAA'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::utf_16le>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::truncated_sequence);
+}
