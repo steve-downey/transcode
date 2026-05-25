@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–54 complete. 611 C++ + 171 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–55 complete. 612 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md160"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -650,8 +650,24 @@ Step 54: C++23 module support audit (&lt;tt&gt;step54-module-audit&lt;/tt&gt;)</
 <li>[x] Push main to both remotes</li>
 </ul>
 <p><b>Result</b>: Three iconv headers were found missing from the umbrella header (added in steps 11–13, predating the umbrella). Now all public APIs are properly exported by the C++23 module interface.</p>
+<h1><a class="anchor" id="autotoc_md208"></a>
+Step 55: Module integration and smoke tests (&lt;tt&gt;step55-module-tests&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step55-module-tests</code> from <code>main</code></li>
+<li>[x] Write module integration test: import beman.transcode; use whatwg + iconv APIs</li>
+<li>[x] Register module test in CMakeLists.txt (conditional on BEMAN_TRANSCODE_USE_MODULES=ON)</li>
+<li>[x] Enhanced installtest/test.cpp — now uses 7 functional tests instead of just returning 0</li>
+<li>[x] Created installtest/test_module.cpp — module-mode version of installtest</li>
+<li>[x] Enhanced installtest/CMakeLists.txt to test both header and module modes</li>
+<li>[x] Fixed missing headers in FILE_SET (labels, sniff, transcode_string, transcode_view, x_user_defined, iconv_real, iconv_transcode_or_error_view)</li>
+<li>[x] <code>make test</code> (612 C++ + 171 Python all pass) + installtest passes</li>
+<li>[x] <code>make lint</code> (C++/CMake clean; pre-existing failures in docs/papers only)</li>
+<li>[x] Commit GREEN + linter fixes</li>
+<li>[x] Push both remotes + merge to main</li>
+</ul>
+<p><b>Result</b>: Module tests framework in place (requires GCC-16+ for compilation). Installtest now validates all key APIs work correctly. Fixed pre-existing issue where many headers weren't included in the installed package's FILE_SET. All 612 C++ + 171 Python tests pass.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md209"></a>
+<h1><a class="anchor" id="autotoc_md210"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>

@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_step15_x_user_defined.ht
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>step15-x-user-defined</code> <b>Depends on:</b> Step 14 (dispatch pattern established)</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md302"></a>
+<h1><a class="anchor" id="autotoc_md303"></a>
 Goal</h1>
 <p>Add the <code>x_user_defined</code> codec — a simple algorithmic decoder that never errors. Validates that the <code>if constexpr</code> dispatch works with a codec that has real per-byte computation (unlike <code>replacement</code> which has trivial behavior).</p>
-<h1><a class="anchor" id="autotoc_md303"></a>
+<h1><a class="anchor" id="autotoc_md304"></a>
 WHATWG Specification</h1>
 <p>The x-user-defined decoder:</p><ol type="1">
 <li>If byte is end-of-queue → finished.</li>
@@ -112,9 +112,9 @@ WHATWG Specification</h1>
 <li>Return code point = 0xF780 + byte − 0x80.</li>
 </ol>
 <p><b>Key property:</b> This codec NEVER returns an error. Every byte maps to a valid codepoint.</p>
-<h1><a class="anchor" id="autotoc_md304"></a>
+<h1><a class="anchor" id="autotoc_md305"></a>
 Files Created</h1>
-<h2><a class="anchor" id="autotoc_md305"></a>
+<h2><a class="anchor" id="autotoc_md306"></a>
 &lt;tt&gt;include/beman/transcode/detail/x_user_defined.hpp&lt;/tt&gt;</h2>
 <div class="fragment"><div class="line"><span class="comment">// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span></div>
 <div class="line"> </div>
@@ -139,9 +139,9 @@ Files Created</h1>
 <div class="line">} <span class="comment">// namespace beman::transcoding::detail</span></div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_DETAIL_X_USER_DEFINED_HPP</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md306"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md307"></a>
 Files Modified</h1>
-<h2><a class="anchor" id="autotoc_md307"></a>
+<h2><a class="anchor" id="autotoc_md308"></a>
 &lt;tt&gt;include/beman/transcode/whatwg_decode_view.hpp&lt;/tt&gt;</h2>
 <ol type="1">
 <li>Add include (after the existing <code>#include &lt;<a class="el" href="utf8_8hpp.html">beman/transcode/detail/utf8.hpp</a>&gt;</code>): <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="x__user__defined_8hpp.html">beman/transcode/detail/x_user_defined.hpp</a>&gt;</span></div>
@@ -158,10 +158,10 @@ Files Modified</h1>
 <div class="line">}</div>
 </div><!-- fragment --> (Always a valid value — never <code>unexpected</code>.)</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md308"></a>
+<h2><a class="anchor" id="autotoc_md309"></a>
 &lt;tt&gt;include/beman/transcode/CMakeLists.txt&lt;/tt&gt;</h2>
 <p>Add to the HEADERS FILES list: </p><div class="fragment"><div class="line">detail/x_user_defined.hpp</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md309"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md310"></a>
 &lt;tt&gt;tests/beman/transcode/whatwg_decode.test.cpp&lt;/tt&gt;</h2>
 <div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_decode x_user_defined ASCII&quot;</span>, <span class="stringliteral">&quot;[transcoding::whatwg_decode]&quot;</span>) {</div>
 <div class="line">    std::vector&lt;char&gt; bytes{<span class="charliteral">&#39;A&#39;</span>, <span class="charliteral">&#39;z&#39;</span>};</div>
@@ -185,7 +185,7 @@ Files Modified</h1>
 <div class="line">    };</div>
 <div class="line">    CHECK(constify(decode_x()) == <span class="keywordtype">char32_t</span>(0xF780));</div>
 <div class="line">}</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md310"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md311"></a>
 &lt;tt&gt;tests/beman/transcode/whatwg_decode_or_error.test.cpp&lt;/tt&gt;</h2>
 <div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_decode_or_error x_user_defined never errors&quot;</span>, <span class="stringliteral">&quot;[transcoding::whatwg_decode_or_error]&quot;</span>) {</div>
 <div class="line">    std::vector&lt;char&gt; bytes{<span class="stringliteral">&#39;\x80&#39;</span>, <span class="stringliteral">&#39;\xFF&#39;</span>, <span class="charliteral">&#39;A&#39;</span>};</div>
@@ -197,7 +197,7 @@ Files Modified</h1>
 <div class="line">    CHECK(result[1].value() == <span class="keywordtype">char32_t</span>(0xF7FF));</div>
 <div class="line">    CHECK(result[2].value() == U<span class="charliteral">&#39;A&#39;</span>);</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md311"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md312"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test   # all previous + ~4 new tests pass</div>
 <div class="line">make lint   # clean</div>
