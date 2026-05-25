@@ -7,12 +7,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_wpt_vectors import (
+    parse_fatal_vectors,
     parse_gb18030_decode_vectors,
     parse_iso2022jp_decode_vectors,
     parse_js_string,
     parse_single_byte_indexes,
     parse_utf8_mistake_vectors,
     parse_utf16_surrogate_vectors,
+    render_fatal_vectors_hpp,
     render_gb18030_vectors_hpp,
     render_iso2022jp_vectors_hpp,
     render_single_byte_vectors_hpp,
@@ -282,3 +284,47 @@ def test_render_utf16_surrogates_vectors_hpp(tmp_path: Path) -> None:
     assert "0x00, 0xD8" in content
     assert "0xFFFD" in content
     assert "lone surrogate lead" in content
+
+
+_FATAL_SAMPLE = """
+var bad = [
+    { encoding: 'utf-8', input: [0xFF], name: 'invalid code' },
+    { encoding: 'utf-8', input: [0xC0], name: 'ends early' },
+    { encoding: 'utf-16le', input: [0x00], name: 'truncated code unit' },
+];
+"""
+
+
+def test_parse_fatal_vectors_count() -> None:
+    vectors = parse_fatal_vectors(_FATAL_SAMPLE)
+    assert len(vectors) == 3
+
+
+def test_parse_fatal_vectors_utf8() -> None:
+    vectors = parse_fatal_vectors(_FATAL_SAMPLE)
+    assert vectors[0]["encoding"] == "utf-8"
+    assert vectors[0]["input"] == [0xFF]
+    assert vectors[0]["description"] == "invalid code"
+
+
+def test_parse_fatal_vectors_utf16le() -> None:
+    vectors = parse_fatal_vectors(_FATAL_SAMPLE)
+    assert vectors[2]["encoding"] == "utf-16le"
+    assert vectors[2]["input"] == [0x00]
+    assert vectors[2]["description"] == "truncated code unit"
+
+
+def test_render_fatal_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {"encoding": "utf-8", "input": [0xFF], "description": "invalid code"},
+        {"encoding": "utf-16le", "input": [0x00], "description": "truncated code unit"},
+    ]
+    out = tmp_path / "wpt_fatal_vectors.hpp"
+    render_fatal_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_FATAL_VECTORS_HPP" in content
+    assert "utf8_fatal_wpt_vectors" in content
+    assert "utf16le_fatal_wpt_vectors" in content
+    assert "0xFF" in content
+    assert "invalid code" in content
+    assert "truncated code unit" in content
