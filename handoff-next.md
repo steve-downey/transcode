@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 33 (next WPT coverage)
+# Handoff: beman.transcode — Step 34 (next WPT coverage)
 
 ## Project
 
@@ -14,74 +14,94 @@ proposal.
 
 ## Current State
 
-**Step 32 complete and merged to main.**
+**Step 33 complete and merged to main.**
 
-451 C++ tests + 127 Python tests pass (`make test`). `make lint` clean.
+453 C++ tests + 131 Python tests pass (`make test`). `make lint` clean.
 
-### What Step 32 Fixed
+### What Step 33 Added
 
-The ISO-2022-JP stateful decoder now fully conforms to the WHATWG spec.
-All 34 WPT vectors in `tests/beman/transcode/wpt_iso2022jp_vectors.hpp`
-pass (previously 12 of 34 passed).
+WPT conformance tests for UTF-16LE surrogate handling from
+`textdecoder-utf16-surrogates.any.js`. All 5 vectors pass:
 
-Key fixes:
-1. **Katakana byte range**: 0x21–0x5F → U+FF61–U+FF9F (was incorrectly
-   0xA1–0xDF, the 8-bit JIS range; ISO-2022-JP uses 7-bit encoding)
-2. **SO/SI handling**: 0x0E and 0x0F emit U+FFFD in all states
-3. **`iso2022jp_output_state_`**: tracks where to return after errors
-   (was always going to ASCII; now restores to last valid output state)
-4. **`iso2022jp_output_flag_`**: detects redundant (same-state) ESC
-   sequences and emits U+FFFD for them
-5. **Escape end-of-stream**: prepend lead byte to stream, emit U+FFFD
-6. **Invalid escape**: prepend lead + byte (2 bytes) to stream, emit U+FFFD
-7. **Lead_Byte at end-of-stream**: finished cleanly (no extra U+FFFD)
-8. **`pending_count_`**: replaces `has_pending_` (bool) with an int (0/1/2)
-   to support 2-byte replay for escape error recovery
+1. `[0x00, 0xD8]` → `[U+FFFD]` — lone surrogate lead (high surrogate at EOS)
+2. `[0x00, 0xDC]` → `[U+FFFD]` — lone surrogate trail
+3. `[0x00, 0xD8, 0x00, 0x00]` → `[U+FFFD, U+0000]` — unmatched surrogate lead
+4. `[0x00, 0xDC, 0x00, 0x00]` → `[U+FFFD, U+0000]` — unmatched surrogate trail
+5. `[0x00, 0xDC, 0x00, 0xD8]` → `[U+FFFD, U+FFFD]` — swapped surrogate pair
 
-### Decoder Location
+Two test cases per vector: normal decode (U+FFFD replacement) and
+or_error decode (at least one error in output, verifying fatal mode).
 
-`include/beman/transcode/whatwg_decode_view.hpp` — two `load()` functions
-(one for `whatwg_decode_view`, one for `whatwg_decode_or_error_view`),
-both with `else if constexpr (C == codec::iso_2022_jp)` blocks using
-a unified `while (true)` loop with a get-byte step + switch-on-state.
+New files:
+- `docs/wpt/textdecoder-utf16-surrogates.any.js` — pristine WPT JS
+- `tests/beman/transcode/wpt_utf16_surrogates_vectors.hpp` — 5 generated vectors
+- `tests/beman/transcode/wpt_utf16_surrogates.test.cpp` — 2 test cases
+- `tools/generate_wpt_vectors.py` — added `parse_utf16_surrogate_vectors()` + renderer
+- `tools/tests/test_generate_wpt.py` — added 4 new Python tests
 
-## What To Do Next — Step 33
+### WPT Files in `docs/wpt/`
 
-**Branch:** `step33-<slug>`
+| File | What it covers |
+|------|---------------|
+| `gb18030-decoder.any.js` | GB18030 multi-byte decode |
+| `iso-2022-jp-decoder.any.js` | ISO-2022-JP stateful decode |
+| `single-byte-decoder.window.js` | All 27 single-byte codec tables |
+| `textdecoder-mistakes.any.js` | UTF-8 invalid sequences |
+| `textdecoder-utf16-surrogates.any.js` | UTF-16LE surrogate handling |
 
-### Option A: UTF-16 surrogates WPT vectors (recommended)
+## What To Do Next — Step 34
 
-Download `textdecoder-utf16-surrogates.any.js` from the WPT repo and add
-conformance tests for UTF-16LE/BE surrogate handling. The decoder handles
-surrogates in the `pending_count_`/`pending_[2]` mechanism already.
+**Branch:** `step34-<slug>`
+
+### Option A: `textdecoder-fatal.any.js` WPT vectors (recommended)
+
+Download and parse `textdecoder-fatal.any.js` from WPT. It tests
+that `TextDecoder` with `{fatal: true}` throws `TypeError` for
+invalid byte sequences in all major codecs.
+
+In our library, this maps to `whatwg_decode_or_error<codec::...>`
+returning an error (`std::unexpected`) at each invalid position.
 
 ```
-docs/wpt/                    ← store pristine WPT JS file here
-data/                        ← store generated C++ vectors here
-tests/beman/transcode/       ← add wpt_utf16_surrogates.test.cpp
+WPT URL: https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-fatal.any.js
 ```
 
-WPT URL: `https://github.com/web-platform-tests/wpt/blob/master/encoding/textdecoder-utf16-surrogates.any.js`
+The file contains `fatal_tests` array with entries like:
+```js
+{ encoding: "utf-8",  input: [0xC0], description: "..." }
+```
+Each entry is an input that should produce an error in fatal mode.
 
-### Option B: Fatal mode WPT vectors
+New vector struct needed (just input + description, no expected output):
+```hpp
+struct WptFatalVector {
+    std::vector<uint8_t> input;
+    const char*          description;
+};
+```
 
-Download `textdecoder-fatal.any.js` from WPT and verify the
-`whatwg_decode_or_error<codec::...>` variant correctly reports errors
-(instead of replacing with U+FFFD) for invalid sequences.
+Test: for each vector, `whatwg_decode_or_error<codec::X>` applied to
+`input` must yield at least one `std::unexpected` result.
 
-### Option C: Checklist step 30+ (WPT remaining encodings)
+### Option B: `textdecoder-utf16-bom-option.any.js` WPT vectors
 
-`docs/plans/phase2-checklist.md` shows Steps 14–29 complete but the
-checklist hasn't been updated for steps 30–32. Update the checklist
-and add entries for steps 30–33.
+Tests BOM-stripping behavior for UTF-16. The WHATWG spec strips a BOM
+at the start of a UTF-16 stream and uses it to determine byte order.
+We don't currently implement BOM detection — this would reveal any gap.
+
+### Option C: GB18030 2022 range update
+
+The WHATWG spec was updated (2022) for GB18030 to handle the full
+Unicode 13+ range. Check if our GB18030 decoder handles the new ranges.
 
 ## TDD Process
 
-1. Branch: `git checkout -b step33-<slug>`
+1. Branch: `git checkout -b step34-<slug>`
 2. Write failing tests (RED) → commit → push both remotes
 3. Implement (GREEN) → `make test` + `make lint` → commit → push both
-4. Merge to main: `git checkout main && git merge --no-ff step33-<slug>`
+4. Merge to main: `git checkout main && git merge --no-ff step34-<slug>`
 5. Push main to both remotes
+6. Update `docs/plans/phase2-checklist.md`
 
 ## Build Commands
 
@@ -99,3 +119,15 @@ make pytest    # Python tool tests only
 - Test files: include the primary header **twice** (idempotent check)
 - No `Co-Authored-By` trailers in commits
 - Full rules in `CLAUDE.md`
+
+## Python Tool Pattern
+
+The generator `tools/generate_wpt_vectors.py` follows this pattern:
+1. Add a `FOO_JS = WPT_DIR / "foo.any.js"` constant
+2. Add `parse_foo_vectors(content: str) -> list[dict[str, object]]`
+3. Add `render_foo_vectors_hpp(vectors, out_path)` 
+4. Add both to `main()` + the clang-format list
+5. Add 3-4 Python tests to `tools/tests/test_generate_wpt.py`
+
+All WPT JS files go in `docs/wpt/` with provenance in `SOURCE.md`.
+All generated C++ headers go in `tests/beman/transcode/`.
