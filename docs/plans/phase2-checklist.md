@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–54 complete. 611 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–55 complete. 612 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -536,6 +536,25 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 **Result**: Three iconv headers were found missing from the umbrella header
 (added in steps 11–13, predating the umbrella). Now all public APIs are
 properly exported by the C++23 module interface.
+
+## Step 55: Module integration and smoke tests (`step55-module-tests`)
+
+- [x] Create branch `step55-module-tests` from `main`
+- [x] Write module integration test: import beman.transcode; use whatwg + iconv APIs
+- [x] Register module test in CMakeLists.txt (conditional on BEMAN_TRANSCODE_USE_MODULES=ON)
+- [x] Enhanced installtest/test.cpp — now uses 7 functional tests instead of just returning 0
+- [x] Created installtest/test_module.cpp — module-mode version of installtest
+- [x] Enhanced installtest/CMakeLists.txt to test both header and module modes
+- [x] Fixed missing headers in FILE_SET (labels, sniff, transcode_string, transcode_view, x_user_defined, iconv_real, iconv_transcode_or_error_view)
+- [x] `make test` (612 C++ + 171 Python all pass) + installtest passes
+- [x] `make lint` (C++/CMake clean; pre-existing failures in docs/papers only)
+- [x] Commit GREEN + linter fixes
+- [x] Push both remotes + merge to main
+
+**Result**: Module tests framework in place (requires GCC-16+ for compilation).
+Installtest now validates all key APIs work correctly. Fixed pre-existing issue
+where many headers weren't included in the installed package's FILE_SET.
+All 612 C++ + 171 Python tests pass.
 
 ---
 
