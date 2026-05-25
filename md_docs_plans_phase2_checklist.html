@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–39 complete. 495 C++ + 159 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–40 complete. 502 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -448,13 +448,14 @@ Label lookup API (&lt;tt&gt;step39-label-lookup&lt;/tt&gt; or &lt;tt&gt;step40-l
 <div class="line"><span class="keyword">static_assert</span>(get_encoding(<span class="stringliteral">&quot;SJIS&quot;</span>) == codec::shift_jis);</div>
 <div class="line"><span class="keyword">static_assert</span>(get_encoding(<span class="stringliteral">&quot;x-sjis&quot;</span>) == codec::shift_jis);</div>
 </div><!-- fragment --><ul>
-<li>[ ] Create branch from <code>main</code></li>
-<li>[ ] Download <code>encodings.json</code> from WHATWG → <code>docs/whatwg/</code></li>
-<li>[ ] Write <code>tools/generate_labels.py</code> to produce label→codec map</li>
-<li>[ ] Tests (RED → GREEN)</li>
-<li>[ ] Implement <code>get_encoding()</code> in <code><a class="el" href="labels_8hpp.html">detail/labels.hpp</a></code></li>
-<li>[ ] <code>make test</code> + <code>make lint</code></li>
-<li>[ ] Push both remotes + merge to main</li>
+<li>[x] Create branch from <code>main</code></li>
+<li>[x] Download <code>encodings.json</code> from WHATWG → <code>docs/whatwg/</code> (already present)</li>
+<li>[x] Write <code>tools/generate_labels.py</code> to produce label→codec map</li>
+<li>[x] Write <code>tools/tests/test_generate_labels.py</code> (12 Python tests)</li>
+<li>[x] Write failing C++ tests (RED) + push both remotes</li>
+<li>[x] Implement <code>get_encoding()</code> in <code><a class="el" href="labels_8hpp.html">detail/labels.hpp</a></code> (generated)</li>
+<li>[x] <code>make test</code> (502 C++ + 171 Python) + <code>make lint</code></li>
+<li>[x] Push both remotes + merge to main</li>
 </ul>
 <hr  />
 <h1><a class="anchor" id="autotoc_md44"></a>
