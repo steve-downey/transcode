@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–45 complete. 550 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–46 complete. 557 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -416,6 +416,18 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Include `<beman/transcode/detail/labels.hpp>` and `<optional>` in `transcode_string.hpp`
 - [x] `make test` (550 C++ + 171 Python all pass) + `make lint` (C++ clean)
 - [x] `make coverage`: lines 83.2%, functions 99.9% (unchanged — thin delegate)
+- [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 46: `transcode_view` pipe composition helper (`step46-transcode-view`)
+
+- [x] Create branch `step46-transcode-view` from `main`
+- [x] Write failing tests (RED) — `transcode_view.test.cpp`
+- [x] Register `beman.transcode.tests.transcode_view` in CMakeLists.txt
+- [x] Push RED to both remotes
+- [x] Implement `include/beman/transcode/detail/transcode_view.hpp`
+- [x] Add `transcode_view.hpp` to umbrella header `transcode.hpp`
+- [x] `make test` (557 C++ + 171 Python all pass) + `make lint` (C++ clean)
+- [x] `make coverage`: lines 83.4%, functions 99.9%
 - [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---
