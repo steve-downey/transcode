@@ -12,8 +12,7 @@
 using namespace beman::transcoding;
 using beman::transcoding::tests::wpt::wpt_encoder_surrogates_vectors;
 
-TEST_CASE("WPT encoder surrogates: UTF-8 round-trip handles surrogates",
-          "[wpt::encoder_surrogates]") {
+TEST_CASE("WPT encoder surrogates: UTF-8 round-trip handles surrogates", "[wpt::encoder_surrogates]") {
     for (const auto& v : wpt_encoder_surrogates_vectors) {
         std::vector<char> bytes;
         for (char c : v.input | whatwg_encode<codec::utf_8>)

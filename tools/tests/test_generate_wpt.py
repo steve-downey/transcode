@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_wpt_vectors import (
     parse_bom_vectors,
+    parse_encoder_surrogates_vectors,
     parse_eof_vectors,
     parse_fatal_single_byte_cases,
     parse_fatal_vectors,
@@ -19,6 +20,7 @@ from generate_wpt_vectors import (
     parse_utf8_mistake_vectors,
     parse_utf16_surrogate_vectors,
     render_bom_vectors_hpp,
+    render_encoder_surrogates_vectors_hpp,
     render_eof_vectors_hpp,
     render_fatal_single_byte_vectors_hpp,
     render_fatal_vectors_hpp,
@@ -542,3 +544,41 @@ def test_render_surrogates_utf8_vectors_hpp(tmp_path: Path) -> None:
     assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_SURROGATES_UTF8_VECTORS_HPP" in content
     assert "WptSurrogatesUtf8Vector" in content
     assert "wpt_surrogates_utf8_vectors" in content
+
+
+_ENCODER_SURR_SAMPLE = """\
+var bad = [
+    { input: '\\uD800', expected: '\\uFFFD', name: 'lone surrogate lead' },
+    { input: '\\uD834\\uDD1E', expected: '\\uD834\\uDD1E',
+      name: 'proper pair' },
+];
+"""
+
+
+def test_parse_encoder_surrogates_count() -> None:
+    vectors = parse_encoder_surrogates_vectors(_ENCODER_SURR_SAMPLE)
+    assert len(vectors) == 2
+
+
+def test_parse_encoder_surrogates_lone() -> None:
+    vectors = parse_encoder_surrogates_vectors(_ENCODER_SURR_SAMPLE)
+    assert vectors[0]["input"] == [0xD800]
+    assert vectors[0]["expected"] == [0xFFFD]
+
+
+def test_parse_encoder_surrogates_pair() -> None:
+    vectors = parse_encoder_surrogates_vectors(_ENCODER_SURR_SAMPLE)
+    assert vectors[1]["input"] == [0x1D11E]
+    assert vectors[1]["expected"] == [0x1D11E]
+
+
+def test_render_encoder_surrogates_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {"input": [0xD800], "expected": [0xFFFD], "name": "lone"},
+    ]
+    out = tmp_path / "wpt_encoder_surrogates_vectors.hpp"
+    render_encoder_surrogates_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_ENCODER_SURROGATES_VECTORS_HPP" in content
+    assert "WptEncoderSurrogatesVector" in content
+    assert "wpt_encoder_surrogates_vectors" in content

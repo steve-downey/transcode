@@ -20,6 +20,7 @@ BOM_JS = WPT_DIR / "textdecoder-byte-order-marks.any.js"
 FATAL_SINGLE_BYTE_JS = WPT_DIR / "textdecoder-fatal-single-byte.any.js"
 EOF_JS = WPT_DIR / "textdecoder-eof.any.js"
 SURROGATES_UTF8_JS = WPT_DIR / "api-surrogates-utf8.any.js"
+ENCODER_SURROGATES_JS = WPT_DIR / "textencoder-utf16-surrogates.any.js"
 
 
 def parse_js_string(s: str) -> list[int]:
@@ -929,6 +930,88 @@ def render_surrogates_utf8_vectors_hpp(
     out_path.write_text("\n".join(lines))
 
 
+_ENCODER_SURR_RE = re.compile(
+    r"\{[^}]*?input:\s*'((?:[^'\\]|\\.)*)'.*?"
+    r"expected:\s*'((?:[^'\\]|\\.)*)'.*?"
+    r"name:\s*'((?:[^'\\]|\\.)*)'",
+    re.DOTALL,
+)
+
+
+def parse_encoder_surrogates_vectors(content: str) -> list[dict[str, object]]:
+    """Parse the bad[] array from textencoder-utf16-surrogates.any.js."""
+    vectors: list[dict[str, object]] = []
+    for m in _ENCODER_SURR_RE.finditer(content):
+        input_str, expected_str, name = m.groups()
+        input_cps = parse_js_string(input_str)
+        expected_cps = parse_js_string(expected_str)
+        vectors.append(
+            {
+                "input": input_cps,
+                "expected": expected_cps,
+                "name": name,
+            }
+        )
+    return vectors
+
+
+def render_encoder_surrogates_vectors_hpp(
+    vectors: list[dict[str, object]], out_path: Path
+) -> None:
+    """Generate the C++ header for WPT encoder surrogate round-trip vectors."""
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/textencoder-utf16-surrogates.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_ENCODER_SURROGATES_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_ENCODER_SURROGATES_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptEncoderSurrogatesVector {")
+    lines.append("    std::vector<char32_t> input;")
+    lines.append("    std::vector<char32_t> expected;")
+    lines.append("    const char*           name;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append(
+        "inline const WptEncoderSurrogatesVector wpt_encoder_surrogates_vectors[] = {"
+    )
+
+    for v in vectors:
+        input_cps: list[int] = v["input"]  # type: ignore[assignment]
+        expected_cps: list[int] = v["expected"]  # type: ignore[assignment]
+        name: str = v["name"]  # type: ignore[assignment]
+        in_str = _format_codepoints(input_cps)
+        exp_str = _format_codepoints(expected_cps)
+        name_escaped = _escape_c_string(name)
+        lines.append(
+            f'    {{{{{in_str}}}, {{{exp_str}}}, "{name_escaped}"}},',
+        )
+
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_ENCODER_SURROGATES_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
 def main() -> int:
     gb18030_content = GB18030_JS.read_text()
     gb18030_vectors = parse_gb18030_decode_vectors(gb18030_content)
@@ -1000,6 +1083,14 @@ def main() -> int:
     )
     print(f"Generated {TEST_DIR / 'wpt_surrogates_utf8_vectors.hpp'}")
 
+    enc_surr_content = ENCODER_SURROGATES_JS.read_text()
+    enc_surr_vectors = parse_encoder_surrogates_vectors(enc_surr_content)
+    print(f"Parsed {len(enc_surr_vectors)} encoder surrogate vectors")
+    render_encoder_surrogates_vectors_hpp(
+        enc_surr_vectors, TEST_DIR / "wpt_encoder_surrogates_vectors.hpp"
+    )
+    print(f"Generated {TEST_DIR / 'wpt_encoder_surrogates_vectors.hpp'}")
+
     run_cf = True
     try:
         subprocess.run(["clang-format", "--version"], capture_output=True, check=True)
@@ -1018,6 +1109,7 @@ def main() -> int:
             TEST_DIR / "wpt_fatal_single_byte_vectors.hpp",
             TEST_DIR / "wpt_eof_vectors.hpp",
             TEST_DIR / "wpt_surrogates_utf8_vectors.hpp",
+            TEST_DIR / "wpt_encoder_surrogates_vectors.hpp",
         ]:
             subprocess.run(["clang-format", "-i", str(hpp)], check=True)
             print(f"Formatted {hpp}")
