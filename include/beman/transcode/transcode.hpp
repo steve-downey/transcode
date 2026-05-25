@@ -16,6 +16,7 @@ import beman.transcode;
     #include <beman/transcode/whatwg_encode_view.hpp>
     #include <beman/transcode/detail/labels.hpp>
     #include <beman/transcode/detail/sniff.hpp>
+    #include <beman/transcode/detail/transcode_string.hpp>
 
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)
