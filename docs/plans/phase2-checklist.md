@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–41 complete. 513 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–42 complete. 521 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -366,6 +366,16 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Write failing C++ tests (RED) + push both remotes
 - [x] Implement `include/beman/transcode/detail/sniff.hpp`
 - [x] `make test` (513 C++ + 171 Python all pass) + `make lint` (C++ clean)
+- [x] Push GREEN to both remotes + merge to main
+
+## Step 42: Umbrella header (`step42-umbrella-header`)
+
+- [x] Create branch `step42-umbrella-header` from `main`
+- [x] Write failing C++ tests (RED) — `transcode.test.cpp` using only `<beman/transcode/transcode.hpp>`
+- [x] Register `beman.transcode.tests.transcode` in `tests/beman/transcode/CMakeLists.txt`
+- [x] Push RED to both remotes
+- [x] Update `include/beman/transcode/transcode.hpp` to include all public headers
+- [x] `make test` (521 C++ + 171 Python all pass) + `make lint` (C++ clean)
 - [x] Push GREEN to both remotes + merge to main
 
 ---
