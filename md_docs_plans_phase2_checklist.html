@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–37 complete. 492 C++ + 151 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–38 complete. 494 C++ + 155 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -397,8 +397,55 @@ Step 36: WPT fatal single-byte (&lt;tt&gt;step36-wpt-fatal-single-byte&lt;/tt&gt
 <li>[x] <code>make lint</code> — clean</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
+<h1><a class="anchor" id="autotoc_md37"></a>
+Step 38: WPT UTF-8 surrogate encode vectors (&lt;tt&gt;step38-wpt-surrogates-utf8&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step38-wpt-surrogates-utf8</code> from <code>main</code></li>
+<li>[x] Write failing tests (RED) referencing missing <code>wpt_surrogates_utf8_vectors.hpp</code></li>
+<li>[x] Push RED to both remotes</li>
+<li>[x] Download <code>api-surrogates-utf8.any.js</code> → <code>docs/wpt/</code></li>
+<li>[x] Update <code><a class="el" href="wpt_2SOURCE_8md.html">docs/wpt/SOURCE.md</a></code> with provenance + checksum</li>
+<li>[x] Add <code>_SURR_ENTRY_RE</code> + <code>parse_surrogates_utf8_vectors()</code> + <code>render_surrogates_utf8_vectors_hpp()</code> to <code>generate_wpt_vectors.py</code></li>
+<li>[x] Add 4 Python tests to <code>test_generate_wpt.py</code> (155 total)</li>
+<li>[x] Generate <code>wpt_surrogates_utf8_vectors.hpp</code> (6 vectors)</li>
+<li>[x] <code>make test</code> (494 C++ + 155 Python all pass)</li>
+<li>[x] <code>make lint</code> — clean</li>
+<li>[x] Push GREEN to both remotes + merge to main</li>
+</ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md38"></a>
+<h1><a class="anchor" id="autotoc_md39"></a>
+Upcoming</h1>
+<h2><a class="anchor" id="autotoc_md40"></a>
+WPT TextEncoder UTF-16 surrogate round-trip (&lt;tt&gt;step39-wpt-encoder-surrogates&lt;/tt&gt;)</h2>
+<p><code>textencoder-utf16-surrogates.any.js</code> tests that lone surrogates are replaced by U+FFFD when UTF-8 encoded then decoded. Format: </p><div class="fragment"><div class="line">{ input: &#39;\uD800&#39;, expected: &#39;�&#39;, name: &#39;lone surrogate lead&#39; }</div>
+</div><!-- fragment --><p> Struct: <code>{ input: vector&lt;char32_t&gt;, expected: vector&lt;char32_t&gt;, name }</code>. Test: encode input → UTF-8 bytes → decode → check matches expected. 6 cases including properly encoded surrogate pair U+1D11E.</p>
+<h2><a class="anchor" id="autotoc_md41"></a>
+Label lookup API (&lt;tt&gt;step39-label-lookup&lt;/tt&gt; or &lt;tt&gt;step40-label-lookup&lt;/tt&gt;)</h2>
+<p>WHATWG Encoding Standard §4.2 "Names and labels" defines ~200+ string labels that map to canonical encodings (e.g., <code>"sjis"</code>, <code>"x-sjis"</code>, <code>"shift_jis"</code> all → Shift_JIS). This is essential for:</p>
+<ul>
+<li>Parsing <code>charset</code> attributes in HTML <code>&lt;meta&gt;</code> tags</li>
+<li>Parsing <code>Content-Type</code> headers</li>
+<li>Web-compatible encoding sniffing</li>
+</ul>
+<p>API sketch: </p><div class="fragment"><div class="line"><span class="comment">// Returns nullopt for unknown labels</span></div>
+<div class="line"><span class="keyword">constexpr</span> std::optional&lt;codec&gt; get_encoding(std::string_view label);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Case-insensitive, ASCII-whitespace-stripped per WHATWG</span></div>
+<div class="line"><span class="keyword">static_assert</span>(get_encoding(<span class="stringliteral">&quot;  UTF-8  &quot;</span>) == codec::utf_8);</div>
+<div class="line"><span class="keyword">static_assert</span>(get_encoding(<span class="stringliteral">&quot;shift_jis&quot;</span>) == codec::shift_jis);</div>
+<div class="line"><span class="keyword">static_assert</span>(get_encoding(<span class="stringliteral">&quot;SJIS&quot;</span>) == codec::shift_jis);</div>
+<div class="line"><span class="keyword">static_assert</span>(get_encoding(<span class="stringliteral">&quot;x-sjis&quot;</span>) == codec::shift_jis);</div>
+</div><!-- fragment --><ul>
+<li>[ ] Create branch from <code>main</code></li>
+<li>[ ] Download <code>encodings.json</code> from WHATWG → <code>docs/whatwg/</code></li>
+<li>[ ] Write <code>tools/generate_labels.py</code> to produce label→codec map</li>
+<li>[ ] Tests (RED → GREEN)</li>
+<li>[ ] Implement <code>get_encoding()</code> in <code>detail/labels.hpp</code></li>
+<li>[ ] <code>make test</code> + <code>make lint</code></li>
+<li>[ ] Push both remotes + merge to main</li>
+</ul>
+<hr  />
+<h1><a class="anchor" id="autotoc_md43"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
