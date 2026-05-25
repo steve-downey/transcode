@@ -6,6 +6,8 @@
 #include <beman/transcode/iconv_transcode_view.hpp>
 #include <catch2/catch_all.hpp>
 
+#include <beman/transcode/iconv_transcode_or_error_view.hpp>
+
 #include <array>
 #include <span>
 #include <string>
@@ -106,4 +108,71 @@ TEST_CASE("real iconv split multi-byte: U+1D11E (4-byte UTF-8)", "[transcoding::
     CHECK(static_cast<unsigned char>(output[1]) == 0xD1);
     CHECK(static_cast<unsigned char>(output[2]) == 0x01);
     CHECK(static_cast<unsigned char>(output[3]) == 0x00);
+}
+
+TEST_CASE("real iconv ISO-2022-JP flush: stateful encoding produces trailing escape", "[transcoding::iconv_real]") {
+    // あ (U+3042) in UTF-8: E3 81 82
+    // Expected ISO-2022-JP output:
+    //   1B 24 42  — ESC $ B (switch to JIS X 0208)
+    //   24 22     — encoded あ
+    //   1B 28 42  — ESC ( B (flush: switch back to ASCII)
+    std::vector<char>    input{'\xE3', '\x81', '\x82'};
+    std::array<char, 64> buf{};
+    std::vector<char>    output;
+    for (char c : input | iconv_transcode("UTF-8", "ISO-2022-JP", std::span(buf)))
+        output.push_back(c);
+    std::vector<unsigned char> expected{0x1B, 0x24, 0x42, 0x24, 0x22, 0x1B, 0x28, 0x42};
+    REQUIRE(output.size() == expected.size());
+    for (size_t i = 0; i < expected.size(); ++i) {
+        INFO("byte " << i);
+        CHECK(static_cast<unsigned char>(output[i]) == expected[i]);
+    }
+}
+
+TEST_CASE("real iconv ISO-2022-JP flush: mixed ASCII and Japanese", "[transcoding::iconv_real]") {
+    // "Aあ" in UTF-8: 41 E3 81 82
+    // Expected ISO-2022-JP: 41 1B 24 42 24 22 1B 28 42
+    std::vector<char>    input{'\x41', '\xE3', '\x81', '\x82'};
+    std::array<char, 64> buf{};
+    std::vector<char>    output;
+    for (char c : input | iconv_transcode("UTF-8", "ISO-2022-JP", std::span(buf)))
+        output.push_back(c);
+    std::vector<unsigned char> expected{0x41, 0x1B, 0x24, 0x42, 0x24, 0x22, 0x1B, 0x28, 0x42};
+    REQUIRE(output.size() == expected.size());
+    for (size_t i = 0; i < expected.size(); ++i) {
+        INFO("byte " << i);
+        CHECK(static_cast<unsigned char>(output[i]) == expected[i]);
+    }
+}
+
+TEST_CASE("real iconv ISO-2022-JP flush with or_error view", "[transcoding::iconv_real]") {
+    // Same as above but via the or_error view — all values should succeed.
+    std::vector<char>    input{'\xE3', '\x81', '\x82'};
+    std::array<char, 64> buf{};
+    std::vector<char>    output;
+    for (auto r : input | iconv_transcode_or_error("UTF-8", "ISO-2022-JP", std::span(buf))) {
+        REQUIRE(r.has_value());
+        output.push_back(r.value());
+    }
+    std::vector<unsigned char> expected{0x1B, 0x24, 0x42, 0x24, 0x22, 0x1B, 0x28, 0x42};
+    REQUIRE(output.size() == expected.size());
+    for (size_t i = 0; i < expected.size(); ++i) {
+        INFO("byte " << i);
+        CHECK(static_cast<unsigned char>(output[i]) == expected[i]);
+    }
+}
+
+TEST_CASE("real iconv ISO-2022-JP flush with small buffer", "[transcoding::iconv_real]") {
+    // Force E2BIG by using a tiny buffer, verifying flush still works.
+    std::vector<char>   input{'\xE3', '\x81', '\x82'};
+    std::array<char, 3> buf{};
+    std::vector<char>   output;
+    for (char c : input | iconv_transcode("UTF-8", "ISO-2022-JP", std::span(buf)))
+        output.push_back(c);
+    std::vector<unsigned char> expected{0x1B, 0x24, 0x42, 0x24, 0x22, 0x1B, 0x28, 0x42};
+    REQUIRE(output.size() == expected.size());
+    for (size_t i = 0; i < expected.size(); ++i) {
+        INFO("byte " << i);
+        CHECK(static_cast<unsigned char>(output[i]) == expected[i]);
+    }
 }
