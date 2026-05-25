@@ -236,6 +236,8 @@ Functions</h2></td></tr>
 <tr class="separator:a9e96b2209ecc3472323642bbc8bc1322"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a56ed76d2fca064c209e690f3bfe595d6"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a56ed76d2fca064c209e690f3bfe595d6">transcode_string</a> (std::span&lt; const char &gt; src, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> from, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> to)</td></tr>
 <tr class="separator:a56ed76d2fca064c209e690f3bfe595d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae36baae686b27c6b6bc50333f2616678"><td class="memItemLeft" align="right" valign="top">std::optional&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#ae36baae686b27c6b6bc50333f2616678">transcode_string</a> (std::span&lt; const char &gt; src, std::string_view from_label, std::string_view to_label)</td></tr>
+<tr class="separator:ae36baae686b27c6b6bc50333f2616678"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8052302218d5a4ad20fe0e26e198765b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structbeman_1_1transcoding_1_1iconv__functions.html">iconv_functions</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b">make_real_iconv_fns</a> () noexcept</td></tr>
 <tr class="separator:a8052302218d5a4ad20fe0e26e198765b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab66a3b96e24d01f79bc11a5b9731dcb"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#aab66a3b96e24d01f79bc11a5b9731dcb">iconv_transcode</a> (const char *from, const char *to, std::span&lt; char &gt; buf)</td></tr>
@@ -567,7 +569,7 @@ template&lt;legacy_byte_range R&gt; </div>
 </div>
 </div>
 <a id="a56ed76d2fca064c209e690f3bfe595d6" name="a56ed76d2fca064c209e690f3bfe595d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56ed76d2fca064c209e690f3bfe595d6">&#9670;&#160;</a></span>transcode_string()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a56ed76d2fca064c209e690f3bfe595d6">&#9670;&#160;</a></span>transcode_string() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -592,6 +594,48 @@ template&lt;legacy_byte_range R&gt; </div>
           <td></td>
           <td class="paramtype"><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>&#160;</td>
           <td class="paramname"><em>to</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae36baae686b27c6b6bc50333f2616678" name="ae36baae686b27c6b6bc50333f2616678"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae36baae686b27c6b6bc50333f2616678">&#9670;&#160;</a></span>transcode_string() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; std::string &gt; beman::transcoding::transcode_string </td>
+          <td>(</td>
+          <td class="paramtype">std::span&lt; const char &gt;&#160;</td>
+          <td class="paramname"><em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>from_label</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>to_label</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

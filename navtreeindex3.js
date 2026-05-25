@@ -1,5 +1,6 @@
 var NAVTREEINDEX3 =
 {
+"structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html#ab40dad708389f0bcb69cf4c6aabf702d":[6,0,0,0,3,3],
 "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html#abb43cff6264bc669a077dcd4200f82b7":[8,0,0,0,2,5],
 "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html#abb43cff6264bc669a077dcd4200f82b7":[6,0,0,0,3,5],
 "structbeman_1_1transcoding_1_1null__sentinel__t.html":[8,0,0,0,5],
@@ -54,6 +55,7 @@ var NAVTREEINDEX3 =
 "transcode_8hpp_source.html":[9,0,2,0,0,6],
 "transcode__string_8hpp.html":[9,0,2,0,0,0,13],
 "transcode__string_8hpp.html#a56ed76d2fca064c209e690f3bfe595d6":[9,0,2,0,0,0,13,0],
+"transcode__string_8hpp.html#ae36baae686b27c6b6bc50333f2616678":[9,0,2,0,0,0,13,1],
 "transcode__string_8hpp_source.html":[9,0,2,0,0,0,13],
 "utf16_8hpp.html":[9,0,2,0,0,0,14],
 "utf16_8hpp_source.html":[9,0,2,0,0,0,14],
