@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–33 complete. 453 C++ + 131 Python tests pass. On `main`.
+**Current state:** Steps 0–34 complete. 455 C++ + 135 Python tests pass. On `main`.
 
 ---
 
@@ -227,6 +227,20 @@ Comprehensive round-trip tests for all implemented codecs.
 - [x] Add 4 new Python tests to `test_generate_wpt.py`
 - [x] Generate `wpt_utf16_surrogates_vectors.hpp` (5 vectors)
 - [x] `make test` (453 C++ + 131 Python all pass)
+- [x] `make lint` — clean
+- [x] Push GREEN to both remotes + merge to main
+
+## Step 34: WPT fatal mode vectors (`step34-wpt-fatal-vectors`)
+
+- [x] Create branch from `main`
+- [x] Write failing test (RED) referencing missing vector header
+- [x] Push RED to both remotes
+- [x] Download `textdecoder-fatal.any.js` → `docs/wpt/`
+- [x] Update `docs/wpt/SOURCE.md` with provenance + checksum
+- [x] Add `parse_fatal_vectors()` + `render_fatal_vectors_hpp()` to `generate_wpt_vectors.py`
+- [x] Add 4 new Python tests to `test_generate_wpt.py`
+- [x] Generate `wpt_fatal_vectors.hpp` (33 UTF-8 + 1 UTF-16LE vectors)
+- [x] `make test` (455 C++ + 135 Python all pass)
 - [x] `make lint` — clean
 - [x] Push GREEN to both remotes + merge to main
 
