@@ -17,7 +17,13 @@ override DEPSDIR := $(ROOTDIR)deps
 
 override PANDOC_VER := 2.18
 override PANDOC_DIR := $(DEPSDIR)/pandoc/$(PANDOC_VER)
-override PYTHON_DIR := $(DEPSDIR)/python
+override PYTHON_DIR := $(abspath $(DEPSDIR)/python)
+
+# Add this near your other exports in the Makefile
+# Use the correct path for your OS (this is the standard Ubuntu/Debian path)
+export REQUESTS_CA_BUNDLE := /etc/ssl/certs/ca-certificates.crt
+
+# Use the virtual environment's binary directly
 override PYTHON_BIN := $(PYTHON_DIR)/bin/python3
 
 export SHELL := bash
@@ -31,8 +37,8 @@ $(eval override CMD := pandoc $(FILE) -o $@ --mathjax -d $(DATADIR)/defaults.yam
 $(eval $(and $(DEFAULTS), override CMD += -d $(DEFAULTS)))
 $(eval $(and $(METADATA), override CMD += --metadata-file $(METADATA)))
 $(if $(filter %.html, $@),
-  $(eval override TOCDEPTH := $(shell $(PYTHON_BIN) $(DATADIR)/toc-depth.py < $(FILE)))
-  $(eval $(and $(TOCDEPTH), override CMD += --toc-depth $(TOCDEPTH))))
+$(eval override TOCDEPTH := $(shell $(PYTHON_BIN) $(DATADIR)/toc-depth.py < $(FILE)))
+$(eval $(and $(TOCDEPTH), override CMD += --toc-depth $(TOCDEPTH))))
 $(CMD)
 endef
 
@@ -73,11 +79,13 @@ $(OUTDIR):
 $(PANDOC_DIR):
 	PANDOC_VER=$(PANDOC_VER) PANDOC_DIR=$@ $(DEPSDIR)/install-pandoc.sh
 
+# Updated to use `uv venv` and `uv pip` instead of `python3 -m venv` and `pip3`
 $(PYTHON_DIR): $(DEPSDIR)/requirements.txt $(REQUIREMENTS)
-	python3 -m venv $(PYTHON_DIR)
-	$@/bin/pip3 install --upgrade pip -r $(DEPSDIR)/requirements.txt
-	if [ -n "$(REQUIREMENTS)" ]; then $@/bin/pip3 install --upgrade pip -r $(REQUIREMENTS); fi
-	touch $(PYTHON_DIR)
+	uv venv $@
+	uv pip install --python $@ -r $(DEPSDIR)/requirements.txt
+	uv pip install --python $@ truststore  # <-- Add this line
+	if [ -n "$(REQUIREMENTS)" ]; then uv pip install --python $@ -r $(REQUIREMENTS); fi
+	touch $@
 
 $(DATADIR)/defaults.yaml: $(DATADIR)/defaults.sh
 	DATADIR=$(abspath $(DATADIR)) $< > $@
