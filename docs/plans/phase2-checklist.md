@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–48 complete. 559 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–49 complete. 583 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -450,6 +450,17 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Fix ruff E501 + SIM105 violations in `tools/generate_labels.py`
 - [x] Fix ruff E501 in `tools/tests/test_generate_labels.py`
 - [x] `make test` (559 C++ + 171 Python all pass) + `make lint` (C++/tools clean; papers/wg21 pre-existing only)
+- [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 49: `whatwg_decode_view` coverage improvement (`step49-decode-view-coverage`)
+
+- [x] Create branch `step49-decode-view-coverage` from `main`
+- [x] Add UTF-16 truncated-surrogate tests (high surrogate + only 1 trailing byte)
+- [x] Add GB18030 replay-with-high-lead-byte tests (error + success paths)
+- [x] Add ISO-2022-JP `_or_error` coverage tests (all uncovered state transitions)
+- [x] Add `_or_error` BOM stripping test for UTF-16BE
+- [x] `make test` (583 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
+- [x] `make coverage`: `whatwg_decode_view.hpp` 79.7% → 97.1%; overall lines 83.4% → 84.7%
 - [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---
