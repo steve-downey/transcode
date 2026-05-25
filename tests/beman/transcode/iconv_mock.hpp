@@ -72,6 +72,34 @@ inline size_t mock_iconv_eilseq(iconv_t, char**, size_t*, char**, size_t*) {
     return (size_t)-1;
 }
 
+// Partial-consume mock: consumes 1 byte and writes 1 byte, then returns EINVAL.
+// Simulates a codec where partial progress is made before needing more input.
+// Triggers the staging-shift loop (consumed > 0 with inleft > 0).
+inline size_t mock_iconv_partial_consume(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+    if (*inleft < 2) {
+        errno = EINVAL;
+        return (size_t)-1;
+    }
+    if (*outleft == 0) {
+        errno = E2BIG;
+        return (size_t)-1;
+    }
+    **out = **in;
+    ++*in;
+    --*inleft;
+    ++*out;
+    --*outleft;
+    errno = EINVAL;
+    return (size_t)-1;
+}
+
+// E2BIG-zero-output mock: always returns E2BIG without writing any output.
+// Simulates an output buffer too small to hold even one conversion unit.
+inline size_t mock_iconv_e2big_zero_output(iconv_t, char**, size_t*, char**, size_t*) {
+    errno = E2BIG;
+    return (size_t)-1;
+}
+
 } // namespace beman::transcoding::tests
 
 #endif // TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP
