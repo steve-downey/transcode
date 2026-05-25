@@ -13,7 +13,7 @@ using namespace beman::transcoding;
 namespace {
 
 std::vector<char32_t> decode_utf8(const std::vector<uint8_t>& input) {
-    std::vector<char> bytes(input.begin(), input.end());
+    std::vector<char>     bytes(input.begin(), input.end());
     std::vector<char32_t> result;
     for (char32_t cp : bytes | whatwg_decode<codec::utf_8>)
         result.push_back(cp);

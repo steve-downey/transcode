@@ -49,6 +49,9 @@ constexpr gbk_decode_result gbk_decode_one(I& current, S end) {
     if (lead < 0x80)
         return {static_cast<char32_t>(lead), {}, false};
 
+    if (lead == 0x80)
+        return {char32_t(0x20AC), {}, false};
+
     if (lead < 0x81 || lead > 0xFE)
         return {{}, whatwg_error::invalid_byte, true};
 
@@ -56,10 +59,14 @@ constexpr gbk_decode_result gbk_decode_one(I& current, S end) {
         return {{}, whatwg_error::truncated_sequence, true};
 
     auto trail = static_cast<unsigned char>(*current);
-    ++current;
 
-    if (trail < 0x40 || trail > 0xFE || trail == 0x7F)
+    if (trail < 0x40 || trail > 0xFE || trail == 0x7F) {
+        if (trail >= 0x80)
+            ++current;
         return {{}, whatwg_error::invalid_byte, true};
+    }
+
+    ++current;
 
     int offset = trail > 0x7F ? 1 : 0;
     int index  = (lead - 0x81) * 190 + (trail - 0x40) - offset;

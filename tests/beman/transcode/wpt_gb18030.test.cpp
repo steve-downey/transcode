@@ -14,7 +14,7 @@ namespace {
 
 template <codec C>
 std::vector<char32_t> decode_bytes(const std::vector<uint8_t>& input) {
-    std::vector<char> bytes(input.begin(), input.end());
+    std::vector<char>     bytes(input.begin(), input.end());
     std::vector<char32_t> result;
     for (char32_t cp : bytes | whatwg_decode<C>)
         result.push_back(cp);

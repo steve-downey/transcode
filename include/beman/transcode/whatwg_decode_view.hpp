@@ -115,6 +115,9 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         bool          has_pending_cp_{false};
         int           iso2022jp_state_{0};
         unsigned char iso2022jp_lead_{0};
+        unsigned char gb_replay_[3]{};
+        int           gb_replay_count_{0};
+        int           gb_replay_pos_{0};
 
         constexpr void load();
 
@@ -191,6 +194,9 @@ class whatwg_decode_or_error_view : public std::ranges::view_interface<whatwg_de
         bool          has_pending_cp_{false};
         int           iso2022jp_state_{0};
         unsigned char iso2022jp_lead_{0};
+        unsigned char gb_replay_[3]{};
+        int           gb_replay_count_{0};
+        int           gb_replay_pos_{0};
 
         constexpr void load();
 
@@ -272,7 +278,7 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         return;
     }
     if (current_ == end_) {
-        if (!has_pending_ && iso2022jp_state_ < 2) {
+        if (!has_pending_ && iso2022jp_state_ < 2 && gb_replay_pos_ >= gb_replay_count_) {
             done_ = true;
             return;
         }
@@ -423,12 +429,57 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         } else {
             value_ = static_cast<char32_t>(unit);
         }
-    } else if constexpr (C == codec::gbk) {
-        auto r = detail::gbk_decode_one(current_, end_);
-        value_ = r.is_error ? U'\xFFFD' : r.code_point;
-    } else if constexpr (C == codec::gb18030) {
+    } else if constexpr (C == codec::gbk || C == codec::gb18030) {
+        if (gb_replay_pos_ < gb_replay_count_) {
+            auto byte = gb_replay_[gb_replay_pos_++];
+            if (gb_replay_pos_ == gb_replay_count_) {
+                gb_replay_count_ = 0;
+                gb_replay_pos_   = 0;
+            }
+            // Replay bytes: [0] is always 0x30-0x39 (ASCII digit).
+            // [1] if present is always 0x81-0xFE (GB lead byte) and must be
+            // re-decoded with its trail from the real stream.
+            if (byte < 0x80) {
+                value_ = static_cast<char32_t>(byte);
+            } else {
+                // Feed replay lead + remaining stream through the decoder.
+                // Wrap in a tiny array prepended to the real iterator.
+                // Since gb18030_decode_one can work with const unsigned char*,
+                // we copy up to 3 more bytes from the stream into a local buf.
+                unsigned char buf[4];
+                buf[0]    = byte;
+                int count = 1;
+                while (count < 4 && current_ != end_) {
+                    buf[count++] = static_cast<unsigned char>(*current_);
+                    ++current_;
+                }
+                const unsigned char* bp = buf;
+                const unsigned char* be = buf + count;
+                auto                 r  = detail::gb18030_decode_one(bp, be);
+                // Push un-consumed buf bytes back into replay.
+                int left = static_cast<int>(be - bp);
+                if (left > 0) {
+                    gb_replay_count_ = left;
+                    gb_replay_pos_   = 0;
+                    for (int i = 0; i < left; ++i)
+                        gb_replay_[i] = bp[i];
+                }
+                value_ = r.is_error ? U'\xFFFD' : r.code_point;
+            }
+            return;
+        }
         auto r = detail::gb18030_decode_one(current_, end_);
-        value_ = r.is_error ? U'\xFFFD' : r.code_point;
+        if (r.is_error) {
+            value_ = U'\xFFFD';
+            if (r.replay_count > 0) {
+                gb_replay_count_ = r.replay_count;
+                gb_replay_pos_   = 0;
+                for (int i = 0; i < r.replay_count; ++i)
+                    gb_replay_[i] = r.replay[i];
+            }
+        } else {
+            value_ = r.code_point;
+        }
     } else if constexpr (C == codec::big5) {
         auto r = detail::big5_decode_one(current_, end_);
         if (r.is_error) {
@@ -656,7 +707,7 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         return;
     }
     if (current_ == end_) {
-        if (!has_pending_ && iso2022jp_state_ < 2) {
+        if (!has_pending_ && iso2022jp_state_ < 2 && gb_replay_pos_ >= gb_replay_count_) {
             done_ = true;
             return;
         }
@@ -889,18 +940,52 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         } else {
             value_ = static_cast<char32_t>(unit);
         }
-    } else if constexpr (C == codec::gbk) {
-        auto r = detail::gbk_decode_one(current_, end_);
-        if (r.is_error)
-            value_ = std::unexpected(r.error);
-        else
-            value_ = r.code_point;
-    } else if constexpr (C == codec::gb18030) {
+    } else if constexpr (C == codec::gbk || C == codec::gb18030) {
+        if (gb_replay_pos_ < gb_replay_count_) {
+            auto byte = gb_replay_[gb_replay_pos_++];
+            if (gb_replay_pos_ == gb_replay_count_) {
+                gb_replay_count_ = 0;
+                gb_replay_pos_   = 0;
+            }
+            if (byte < 0x80) {
+                value_ = static_cast<char32_t>(byte);
+            } else {
+                unsigned char buf[4];
+                buf[0]    = byte;
+                int count = 1;
+                while (count < 4 && current_ != end_) {
+                    buf[count++] = static_cast<unsigned char>(*current_);
+                    ++current_;
+                }
+                const unsigned char* bp   = buf;
+                const unsigned char* be   = buf + count;
+                auto                 r    = detail::gb18030_decode_one(bp, be);
+                int                  left = static_cast<int>(be - bp);
+                if (left > 0) {
+                    gb_replay_count_ = left;
+                    gb_replay_pos_   = 0;
+                    for (int i = 0; i < left; ++i)
+                        gb_replay_[i] = bp[i];
+                }
+                if (r.is_error)
+                    value_ = std::unexpected(r.error);
+                else
+                    value_ = r.code_point;
+            }
+            return;
+        }
         auto r = detail::gb18030_decode_one(current_, end_);
-        if (r.is_error)
+        if (r.is_error) {
             value_ = std::unexpected(r.error);
-        else
+            if (r.replay_count > 0) {
+                gb_replay_count_ = r.replay_count;
+                gb_replay_pos_   = 0;
+                for (int i = 0; i < r.replay_count; ++i)
+                    gb_replay_[i] = r.replay[i];
+            }
+        } else {
             value_ = r.code_point;
+        }
     } else if constexpr (C == codec::big5) {
         auto r = detail::big5_decode_one(current_, end_);
         if (r.is_error) {

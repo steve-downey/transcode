@@ -84,10 +84,10 @@ TEST_CASE("whatwg_decode bad continuation causes re-processing", "[transcoding::
 }
 
 TEST_CASE("whatwg_decode surrogate codepoint rejected", "[transcoding::whatwg_decode]") {
-    // U+D800 encoded as UTF-8: 0xED 0xA0 0x80 — continuation bytes are valid,
-    // but the assembled codepoint is a surrogate.
+    // WHATWG: ED with continuation A0 > 9F → rejected early; A0 and 80 are
+    // bare continuations.  3 replacement characters total.
     std::vector<char> bytes{'\xED', '\xA0', '\x80'};
-    CHECK(collect(bytes | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'�'});
+    CHECK(collect(bytes | whatwg_decode<codec::utf_8>) == std::vector<char32_t>{U'�', U'�', U'�'});
 }
 
 TEST_CASE("whatwg_decode truncated sequence at end of input", "[transcoding::whatwg_decode]") {

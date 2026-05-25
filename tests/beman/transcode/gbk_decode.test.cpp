@@ -65,19 +65,20 @@ TEST_CASE("gbk decode multibyte lead 0x81 trail 0x41 -> U+4E04", "[transcoding::
 }
 
 TEST_CASE("gbk decode trail byte 0x7F is invalid", "[transcoding::gbk]") {
-    // Trail byte 0x7F is explicitly excluded -> U+FFFD
+    // Trail byte 0x7F is excluded; error emitted, 0x7F re-processed as ASCII.
     std::vector<char> bytes{'\x81', '\x7F'};
     auto              result = collect(bytes | whatwg_decode<codec::gbk>);
-    REQUIRE(result.size() == 1);
+    REQUIRE(result.size() == 2);
     CHECK(result[0] == U'\xFFFD');
+    CHECK(result[1] == U'\x7F');
 }
 
-TEST_CASE("gbk decode invalid lead byte 0x80 -> U+FFFD", "[transcoding::gbk]") {
-    // 0x80 is not a valid GBK lead byte (must be 0x81-0xFE)
+TEST_CASE("gbk decode byte 0x80 -> U+20AC (euro)", "[transcoding::gbk]") {
+    // WHATWG: byte 0x80 is a special case mapping to U+20AC.
     std::vector<char> bytes{'\x80'};
     auto              result = collect(bytes | whatwg_decode<codec::gbk>);
     REQUIRE(result.size() == 1);
-    CHECK(result[0] == U'\xFFFD');
+    CHECK(result[0] == U'\x20AC');
 }
 
 TEST_CASE("gbk decode truncated multibyte -> U+FFFD", "[transcoding::gbk]") {
@@ -145,13 +146,13 @@ TEST_CASE("gbk or_error: valid multibyte 0x81 0x40", "[transcoding::gbk_or_error
     CHECK(result[0].value() == U'\x4E02');
 }
 
-TEST_CASE("gbk or_error: invalid lead byte yields error", "[transcoding::gbk_or_error]") {
-    // 0x80 is invalid lead
+TEST_CASE("gbk or_error: byte 0x80 yields U+20AC (euro)", "[transcoding::gbk_or_error]") {
+    // WHATWG: 0x80 is a special case mapping to U+20AC.
     std::vector<char> bytes{'\x80'};
     auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::gbk>);
     REQUIRE(result.size() == 1);
-    CHECK(!result[0].has_value());
-    CHECK(result[0].error() == whatwg_error::invalid_byte);
+    CHECK(result[0].has_value());
+    CHECK(result[0].value() == char32_t(0x20AC));
 }
 
 TEST_CASE("gbk or_error: truncated multibyte yields error", "[transcoding::gbk_or_error]") {
@@ -162,10 +163,13 @@ TEST_CASE("gbk or_error: truncated multibyte yields error", "[transcoding::gbk_o
     CHECK(result[0].error() == whatwg_error::truncated_sequence);
 }
 
-TEST_CASE("gbk or_error: trail byte 0x7F yields error", "[transcoding::gbk_or_error]") {
+TEST_CASE("gbk or_error: trail byte 0x7F yields error then re-processes", "[transcoding::gbk_or_error]") {
+    // 0x7F is not a valid trail; error emitted, 0x7F re-processed as ASCII.
     std::vector<char> bytes{'\x81', '\x7F'};
     auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::gbk>);
-    REQUIRE(result.size() == 1);
+    REQUIRE(result.size() == 2);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::invalid_byte);
+    CHECK(result[1].has_value());
+    CHECK(result[1].value() == char32_t(0x7F));
 }
