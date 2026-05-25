@@ -33,7 +33,7 @@ TEST_CASE("transcode_view: UTF-8 to windows-1252 via pipe", "[transcode_view]") 
 }
 
 TEST_CASE("transcode_view: UTF-8 to GBK via pipe (ASCII passthrough)", "[transcode_view]") {
-    std::string src    = "hello";
+    std::string src = "hello";
     std::string result;
     for (char b : std::span<const char>(src) | transcode<codec::utf_8, codec::gbk>)
         result.push_back(b);
@@ -41,7 +41,7 @@ TEST_CASE("transcode_view: UTF-8 to GBK via pipe (ASCII passthrough)", "[transco
 }
 
 TEST_CASE("transcode_view: GBK to UTF-8 via pipe (ASCII passthrough)", "[transcode_view]") {
-    std::string src    = "abc";
+    std::string src = "abc";
     std::string result;
     for (char b : std::span<const char>(src) | transcode<codec::gbk, codec::utf_8>)
         result.push_back(b);
@@ -49,7 +49,7 @@ TEST_CASE("transcode_view: GBK to UTF-8 via pipe (ASCII passthrough)", "[transco
 }
 
 TEST_CASE("transcode_view: UTF-8 to Shift_JIS via pipe (ASCII passthrough)", "[transcode_view]") {
-    std::string src    = "abc";
+    std::string src = "abc";
     std::string result;
     for (char b : std::span<const char>(src) | transcode<codec::utf_8, codec::shift_jis>)
         result.push_back(b);
@@ -57,7 +57,7 @@ TEST_CASE("transcode_view: UTF-8 to Shift_JIS via pipe (ASCII passthrough)", "[t
 }
 
 TEST_CASE("transcode_view: same codec is identity (UTF-8)", "[transcode_view]") {
-    std::string src    = "hello world";
+    std::string src = "hello world";
     std::string result;
     for (char b : std::span<const char>(src) | transcode<codec::utf_8, codec::utf_8>)
         result.push_back(b);
