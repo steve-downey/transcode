@@ -8,7 +8,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_labels import name_to_codec_value, parse_encodings_json, render_labels_hpp
 
-ENCODINGS_JSON = Path(__file__).parent.parent.parent / "docs" / "whatwg" / "encodings.json"
+ENCODINGS_JSON = (
+    Path(__file__).parent.parent.parent / "docs" / "whatwg" / "encodings.json"
+)
 
 
 def test_name_to_codec_value_utf8() -> None:
