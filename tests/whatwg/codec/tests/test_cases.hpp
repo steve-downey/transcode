@@ -17,18 +17,18 @@ namespace whatwg::codec::tests {
 
 // Represents a compile-time test case for decoding a byte stream
 struct DecodeTestCase {
-    std::string_view encoding_label;
+    std::string_view         encoding_label;
     std::span<const uint8_t> input_bytes;
-    std::u32string_view expected_code_points;
-    bool fatal_flag;
+    std::u32string_view      expected_code_points;
+    bool                     fatal_flag;
 };
 
 // Represents a compile-time test case for encoding Unicode code points
 struct EncodeTestCase {
-    std::string_view encoding_label;
-    std::u32string_view input_code_points;
+    std::string_view         encoding_label;
+    std::u32string_view      input_code_points;
     std::span<const uint8_t> expected_bytes;
-    bool fatal_flag;
+    bool                     fatal_flag;
 };
 
 } // namespace whatwg::codec::tests
