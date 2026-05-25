@@ -13,9 +13,13 @@ Pristine upstream test data. **Do not edit.**
 | File | Source URL | SHA-256 |
 | ---- | ---------- | ------- |
 | `gb18030-decoder.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-schinese/gb18030/gb18030-decoder.any.js | `c7871d3d6fcf91b5…` |
+| `iso-2022-jp-decoder.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/iso-2022-jp-decoder.any.js | `e9d05ede7253463f…` |
+| `single-byte-decoder.window.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/single-byte-decoder.window.js | `bf6bf81bd813f6f4…` |
 | `textdecoder-mistakes.any.js` | https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/textdecoder-mistakes.any.js | `96ac44e18bc2368a…` |
 
 ## Full Checksums
 
 - `gb18030-decoder.any.js`: `c7871d3d6fcf91b59519ae299ca620d912760f4d47d4656026f73d4a207ec11d`
+- `iso-2022-jp-decoder.any.js`: `e9d05ede7253463f021107c2fd96f053739adb35011b61a59d5883b5238d0a31`
+- `single-byte-decoder.window.js`: `bf6bf81bd813f6f42c3ef2c111d249aca18f48b3d040046aae156443ee7cb813`
 - `textdecoder-mistakes.any.js`: `96ac44e18bc2368a560ddce46c4d01875b54374723b930608398ec8d4722af43`
