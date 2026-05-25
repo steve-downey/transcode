@@ -2,9 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> [!IMPORTANT]
+> There is overlapping work in progress.
+> Start every task on its own branch and separate git worktree rooted from `main`.
+> Before starting work, fetch and integrate any new commits from `main` into that worktree's branch.
+> Do not work in a shared or already-dirty worktree for a new task.
+
 ## Project
 
-`beman.transcode` is a C++20 header-only library for Unicode transcoding using ranges and views. It is part of the Beman C++ Standard Library incubation project targeting standardization.
+`beman.transcode` is a C++23 header-only library for Unicode transcoding using ranges and views. It is part of the Beman C++ Standard Library incubation project targeting standardization.
 
 ## Build and Test
 

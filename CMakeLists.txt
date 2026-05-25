@@ -73,7 +73,7 @@ else()
                     "${CMAKE_CURRENT_SOURCE_DIR}/include"
                     "${CMAKE_CURRENT_BINARY_DIR}/include"
     )
-    target_compile_features(beman.transcode INTERFACE cxx_std_20)
+    target_compile_features(beman.transcode INTERFACE cxx_std_23)
     set_target_properties(
         beman.transcode
         PROPERTIES VERIFY_INTERFACE_HEADER_SETS ${PROJECT_IS_TOP_LEVEL}
