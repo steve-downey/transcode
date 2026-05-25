@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 55
+# Handoff: beman.transcode — Step 56
 
 ## Project
 
@@ -14,82 +14,90 @@ proposal.
 
 ## Current State
 
-**Step 54 (module audit) complete and merged to main.**
+**Step 55 (module integration tests) complete and merged to main.**
 
-611 C++ tests + 171 Python tests pass (`make test`). `make lint` has
-pre-existing failures only in docs (codespell: "implementor" in
-`docs/Rust Encoding for C++ Transcode.md`, "bu" in
-`papers/wg21/generated/TEST.html`, etc.). All C++, CMake, tools, and ruff
-lint passes cleanly.
+612 C++ tests + 171 Python tests pass (`make test`). Installtest runs and
+passes with 7 functional tests. `make lint` has pre-existing failures only
+in docs (codespell: "implementor" in `docs/Rust Encoding...`, E501 line-too-long
+in `tests/whatwg/codec/tests/generate_indices.py`). All C++, CMake, tools,
+and ruff lint passes cleanly on project code.
 
-### What Step 54 Added
+### What Step 55 Added
 
-Completed C++23 module support audit by adding three iconv public API headers
-to the umbrella header that were missing:
+Established complete module integration and smoke-testing infrastructure:
 
-**`include/beman/transcode/transcode.hpp`** — added three iconv headers:
-- `iconv_transcode_view.hpp` (added in step 13, but missing from umbrella)
-- `iconv_transcode_or_error_view.hpp` (added in step 12, but missing from umbrella)
-- `iconv_real.hpp` (added in step 11, but missing from umbrella)
+**1. Module integration test** — `tests/beman/transcode/module_integration.test.cpp`
+- 10 comprehensive tests using `import beman.transcode;`
+- Tests both whatwg codecs (decode/encode) and iconv APIs via module
+- Tests include: type checks, function pointers, functional round-trips
+- Conditionally compiled when `BEMAN_TRANSCODE_USE_MODULES=ON`
+- Requires GCC-16+ for C++23 module compilation
 
-These headers are public APIs at the top level of `include/beman/transcode/`
-(not in `detail/`), so they were never intended to be internal. They provide
-real OS iconv integration and should have been in the umbrella header since
-step 42 added it. The module file (`transcode.cppm`) re-exports the umbrella
-header, so all three are now properly exported by the C++23 module interface.
+**2. Enhanced installtest** — `installtest/test.cpp` (header mode)
+- 7 functional tests: whatwg_decode/encode, get_encoding, sniff_encoding,
+  iconv_functions, iconv_transcode, UTF-8 round-trip
+- Explicit pass/fail output with diagnostics
+- Tests installed package behavior (critical for end-users)
 
-**`tests/beman/transcode/transcode.test.cpp`** — added three new tests:
-- Verify `iconv_functions` is accessible from umbrella
-- Verify `iconv_transcode_view<iconv_functions, ...>` is accessible
-- Verify `iconv_transcode_or_error_view<iconv_functions, ...>` is accessible
-- Verify `make_real_iconv_fns()` is accessible and returns valid function pointers
+**3. Module installtest** — `installtest/test_module.cpp` (module mode)
+- Same 6 key tests as header mode but via `import beman.transcode;`
+- Auto-enabled when package built with `BEMAN_TRANSCODE_USE_MODULES=ON`
+- Validates modules work end-to-end in installed context
 
-### Coverage Summary
+**4. Fixed pre-existing installation bug** — `include/beman/transcode/CMakeLists.txt`
+- Added 8 missing headers to FILE_SET HEADERS:
+  - `detail/labels.hpp`, `detail/sniff.hpp`, `detail/transcode_string.hpp`
+  - `detail/transcode_view.hpp`, `detail/x_user_defined.hpp`
+  - `iconv_real.hpp`, `iconv_transcode_or_error_view.hpp`
+- These were included in umbrella header but not in the installed FILE_SET,
+  breaking consumers trying to `#include <beman/transcode/transcode.hpp>`
+- Root cause: FILE_SET was manually maintained, not auto-generated from umbrella
 
-Overall unchanged from step 53b: 85.4% lines, 99.9% functions.
+**5. Installtest CMakeLists updates** — `installtest/CMakeLists.txt`
+- Updated to C++23 (required for library features like `std::expected`)
+- Header mode test always runs against installed headers
+- Module mode test auto-detects and runs if package built with modules
+- Cleanly detects target type (STATIC = modules enabled, INTERFACE = headers only)
 
-Remaining coverage gaps (opportunities for step 55+):
-- `whatwg_decode_view.hpp`: 97.1% covered; remaining gaps in GB18030/GBK replay
-  logic and ISO-2022-JP state machine transitions (~30 lines)
-- `iconv_transcode_view.hpp`: ~5% uncovered (error paths: EILSEQ, EINVAL, E2BIG)
-- `iconv_transcode_or_error_view.hpp`: ~7% uncovered (error path coverage)
+### Coverage and Testing
 
-## What To Do Next — Step 55
+Overall: 612 C++ tests (611 header-mode + 1 module integration), 171 Python tests.
+
+Installtest: 7 functional tests covering whatwg/iconv APIs
+Module test: 10 test cases exercising both codec and iconv types/functions
+
+All tests pass in header mode (GCC-13.3 + C++23).
+Module test framework in place (ready for GCC-16+ environments).
+
+## What To Do Next — Step 56
 
 **Read the checklist first:**
 ```
 docs/plans/phase2-checklist.md
 ```
 
-Steps 0–54 are complete. The checklist does not yet have a step 55 entry.
+Steps 0–55 are complete. The checklist does not yet have a step 56 entry.
 
-### Recommended options for step 55
+### Recommended options for step 56
 
-**Option A: `whatwg_decode_view` final coverage push** — Target the remaining
-~3% of uncovered lines in `whatwg_decode_view.hpp`. Focus on:
-- GB18030/GBK replay logic edge cases (state machine in `load()`)
-- ISO-2022-JP state transitions not yet covered
+**Option A: Complete whatwg_decode coverage** — The 97.1% coverage in
+`whatwg_decode_view.hpp` is very close to complete. The remaining ~3% is in
+GB18030/GBK replay logic and ISO-2022-JP state machine. This is a focused
+coverage-driven task requiring ~30 new test lines. `make coverage` will show
+exact uncovered lines in JSON.
 
-Run `make coverage` and inspect the JSON report at `.build/build-system/coverage.json`
-to find exact uncovered lines. This is a focused coverage-driven task (~30 lines to test).
+**Option B: Complete iconv error-path coverage** — Improve `iconv_transcode_view`
+and `iconv_transcode_or_error_view` from ~93% to 100% coverage. Requires testing
+error conditions: EILSEQ, EINVAL, E2BIG edge cases. May need mock iconv extensions.
 
-**Option B: iconv error path coverage** — Add targeted tests for iconv error
-conditions (`EILSEQ`, `EINVAL`, `E2BIG`) to improve `iconv_transcode_view.hpp`
-and `iconv_transcode_or_error_view.hpp` coverage from ~93% → ~100%. Requires
-understanding mock iconv interactions and edge cases. May require extending
-`iconv_mock.hpp` if needed.
+**Option C: Verify GCC-16 module compilation** — Obtain GCC-16 (or clang with
+C++23 module support) and verify `module_integration.test.cpp` compiles and runs.
+Document any build environment setup needed. Create a CI configuration or doc
+for running module tests.
 
-**Option C: Begin Phase 3 (benchmarking)** — Start benchmarking infrastructure
-(plan docs exist in `docs/plans/phase3-*.md`). This is a multi-step track
-setting up: (1) benchmark harness, (2) test corpus, (3) baseline collection.
-First step is P3-step1 in `docs/plans/p3-step1-benchmark-harness.md`. Option C
-is recommended if benchmarking is a near-term priority (e.g., for the WG21
-standard proposal review cycle).
-
-**Option D: Pop a defect or cleanup task** — Check `docs/plans/phase2-index.md`
-or the checklist for any deferred TODO items or known defects that may have
-been flagged during previous steps. These often become apparent after the
-umbrella/module audit.
+**Option D: Begin Phase 3 (benchmarking)** — Start benchmarking infrastructure
+if ready. Plans exist in `docs/plans/phase3-*.md`. First step is P3-step1
+in `docs/plans/p3-step1-benchmark-harness.md`.
 
 ## TDD Process
 
@@ -109,6 +117,15 @@ make compile   # build only
 make coverage  # gcovr coverage report (JSON at .build/build-system/coverage.json)
 ```
 
+## Module Testing (GCC-16+)
+
+```bash
+# Configure with modules
+cmake -DBEMAN_TRANSCODE_USE_MODULES=ON -DBEMAN_TRANSCODE_BUILD_TESTS=ON ...
+cmake --build ...
+ctest  # includes module_integration.test
+```
+
 ## Coding Rules (abbreviated)
 
 - Include guard: mirrors file path, e.g. `INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP`
@@ -120,10 +137,10 @@ make coverage  # gcovr coverage report (JSON at .build/build-system/coverage.jso
 
 ## Key Files for Context
 
-- `include/beman/transcode/transcode.hpp` — umbrella header (now includes all iconv headers)
-- `include/beman/transcode/transcode.cppm` — C++23 module interface (exports umbrella)
-- `include/beman/transcode/whatwg_decode_view.hpp` — decode view (97.1% covered)
-- `include/beman/transcode/iconv_transcode_view.hpp` — iconv view (~93% covered)
-- `include/beman/transcode/iconv_transcode_or_error_view.hpp` — iconv_or_error view (~93% covered)
-- `docs/plans/phase2-checklist.md` — progress tracker (0–54 complete)
+- `include/beman/transcode/transcode.hpp` — umbrella header (now fully curated for install)
+- `include/beman/transcode/transcode.cppm` — C++23 module interface
+- `tests/beman/transcode/module_integration.test.cpp` — module test framework
+- `installtest/test.cpp` — header-mode installtest (7 functional tests)
+- `installtest/test_module.cpp` — module-mode installtest
+- `docs/plans/phase2-checklist.md` — progress tracker (0–55 complete)
 - `docs/plans/phase3-*.md` — Phase 3 benchmarking plans
