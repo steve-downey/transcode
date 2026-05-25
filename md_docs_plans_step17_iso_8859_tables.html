@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_step17_iso_8859_tables.h
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>step17-data-tooling</code> <b>Depends on:</b> Step 16 (single-byte infrastructure exists, proves the table pattern)</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md288"></a>
+<h1><a class="anchor" id="autotoc_md289"></a>
 Goal</h1>
 <p>Build the offline tooling pipeline that acquires WHATWG encoding index data and generates <code>#embed</code>-able binary table files for all codecs. This step produces no runtime library code — only data files, provenance documentation, and the scripts to regenerate tables. It unblocks the loop over all remaining single-byte codecs (step 18) and later the multi-byte codecs.</p>
-<h1><a class="anchor" id="autotoc_md289"></a>
+<h1><a class="anchor" id="autotoc_md290"></a>
 Why This Step Exists</h1>
 <p>The WHATWG Encoding Standard defines <b>22 single-byte encodings</b> and <b>7 multi-byte encodings</b> (plus UTF-16). Each has an official index file — the normative source of truth for byte↔codepoint mappings. Hand-transcribing tables (as done for <code>windows_1252</code> in step 16) does not scale to 28+ codecs with tables ranging from 128 entries (single-byte) to ~23,000 entries (multi-byte). We need:</p>
 <ol type="1">
@@ -113,9 +113,9 @@ Why This Step Exists</h1>
 <li>A Python script to parse the raw indexes and emit binary data</li>
 <li>Binary files suitable for C++23 <code>#embed</code> (or constexpr array fallback)</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md290"></a>
+<h1><a class="anchor" id="autotoc_md291"></a>
 WHATWG Index Data Sources</h1>
-<h2><a class="anchor" id="autotoc_md291"></a>
+<h2><a class="anchor" id="autotoc_md292"></a>
 Single-byte indexes (one per codec)</h2>
 <p>URL pattern: <code><a href="https://encoding.spec.whatwg.org/index-">https://encoding.spec.whatwg.org/index-</a>&lt;name&gt;.txt</code></p>
 <p>Format: each line is <code>&lt;pointer&gt;\t&lt;codepoint&gt;\t# &lt;comment&gt;</code> where pointer is the byte offset (0–127, for bytes 0x80–0xFF) and codepoint is the Unicode scalar value in hex.</p>
@@ -130,7 +130,7 @@ Single-byte indexes (one per codec)</h2>
 <li><code>index-x-mac-cyrillic.txt</code></li>
 </ul>
 <p>Note: <code>iso-8859-8</code> and <code>iso-8859-8-i</code> share the same index (differ only in bidi handling).</p>
-<h2><a class="anchor" id="autotoc_md292"></a>
+<h2><a class="anchor" id="autotoc_md293"></a>
 Multi-byte indexes</h2>
 <ul>
 <li><code>index-big5.txt</code> (~20,000 pointer→codepoint pairs)</li>
@@ -141,14 +141,14 @@ Multi-byte indexes</h2>
 <li><code>index-jis0212.txt</code> (~6,000 pairs)</li>
 <li><code>index-iso-2022-jp-katakana.txt</code> (small)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md293"></a>
+<h2><a class="anchor" id="autotoc_md294"></a>
 Metadata</h2>
 <ul>
 <li><code>encodings.json</code> — codec names, labels, aliases</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md294"></a>
+<h1><a class="anchor" id="autotoc_md295"></a>
 Directory Layout</h1>
-<h2><a class="anchor" id="autotoc_md295"></a>
+<h2><a class="anchor" id="autotoc_md296"></a>
 &lt;tt&gt;docs/whatwg/&lt;/tt&gt; — pristine upstream data</h2>
 <p>Unmodified copies of downloaded WHATWG Encoding Standard files. Nothing in this directory is processed or edited. Includes:</p>
 <ul>
@@ -157,17 +157,17 @@ Directory Layout</h1>
 <li><code>SOURCE.md</code> — human-readable provenance (see below)</li>
 <li><code>source.bib</code> — BibTeX citation entry</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md296"></a>
+<h2><a class="anchor" id="autotoc_md297"></a>
 &lt;tt&gt;docs/wpt/&lt;/tt&gt; — Web Platform Tests (future)</h2>
 <p>Unmodified test vectors from the WPT encoding test suite, if/when needed for conformance validation. Same provenance discipline: pristine files + SOURCE.md + BibTeX.</p>
-<h2><a class="anchor" id="autotoc_md297"></a>
+<h2><a class="anchor" id="autotoc_md298"></a>
 &lt;tt&gt;data/&lt;/tt&gt; — our derived/processed artifacts</h2>
 <p>Generated tables, test vectors, processed binary data. Everything here is reproducible from the pristine upstream in <code>docs/</code> plus the scripts in <code>tools/</code>.</p>
 <ul>
 <li><code>data/tables/</code> — generated <code>.bin</code> and <code>.hpp</code> files for <code>#embed</code> and constexpr fallback</li>
 <li><code>data/test-vectors/</code> — derived test fixtures (future)</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md298"></a>
+<h1><a class="anchor" id="autotoc_md299"></a>
 Provenance: &lt;tt&gt;docs/whatwg/SOURCE.md&lt;/tt&gt;</h1>
 <p>Human-readable document recording:</p>
 <ul>
@@ -180,7 +180,7 @@ Provenance: &lt;tt&gt;docs/whatwg/SOURCE.md&lt;/tt&gt;</h1>
 <li><b>Conditions:</b> CC-BY 4.0 requires attribution. No additional restrictions. Data files are non-normative but are the canonical reference for implementors.</li>
 <li><b>How to refresh:</b> <code>uv run tools/download_indexes.py</code></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md299"></a>
+<h1><a class="anchor" id="autotoc_md300"></a>
 Provenance: &lt;tt&gt;docs/whatwg/source.bib&lt;/tt&gt;</h1>
 <div class="fragment"><div class="line">@misc{whatwg-encoding,</div>
 <div class="line">  title        = {Encoding Standard},</div>
@@ -191,7 +191,7 @@ Provenance: &lt;tt&gt;docs/whatwg/source.bib&lt;/tt&gt;</h1>
 <div class="line">  year         = {2024},</div>
 <div class="line">  license      = {CC-BY-4.0 and BSD-3-Clause}</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md300"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md301"></a>
 Python Quality Requirements</h1>
 <p>The <code>tools/</code> scripts are adjunct code but must be production quality.</p>
 <p><b>Type annotations:</b> Full type hints on all functions and module-level variables. No <code>Any</code> escape hatches unless genuinely needed.</p>
@@ -214,12 +214,12 @@ Python Quality Requirements</h1>
 <div class="line">    args: [--fix]</div>
 <div class="line">  - id: ruff-format</div>
 </div><!-- fragment --><p><b>Verification:</b> <code>make lint</code> must pass with the new hooks active. <code>uv run pytest tools/tests/</code> must pass. <code>uv run mypy tools/</code> must pass.</p>
-<h1><a class="anchor" id="autotoc_md301"></a>
+<h1><a class="anchor" id="autotoc_md302"></a>
 Deliverables</h1>
-<h2><a class="anchor" id="autotoc_md302"></a>
+<h2><a class="anchor" id="autotoc_md303"></a>
 Script: &lt;tt&gt;tools/download_indexes.py&lt;/tt&gt;</h2>
 <p>Typed Python script (stdlib only for runtime deps) that downloads all WHATWG index files into <code>docs/whatwg/</code>. Idempotent — checks SHA-256 before re-downloading. Generates/updates <code>SOURCE.md</code> and <code>source.bib</code> with checksums and download date.</p>
-<h2><a class="anchor" id="autotoc_md303"></a>
+<h2><a class="anchor" id="autotoc_md304"></a>
 Script: &lt;tt&gt;tools/generate_tables.py&lt;/tt&gt;</h2>
 <p>Typed Python script (stdlib only for runtime deps) that:</p>
 <ol type="1">
@@ -229,7 +229,7 @@ Script: &lt;tt&gt;tools/generate_tables.py&lt;/tt&gt;</h2>
 <li>Generates C++ header fallbacks (constexpr arrays) for compilers without <code>#embed</code></li>
 </ol>
 <p>Output directory: <code>data/tables/</code></p>
-<h2><a class="anchor" id="autotoc_md304"></a>
+<h2><a class="anchor" id="autotoc_md305"></a>
 Tests: &lt;tt&gt;tools/tests/&lt;/tt&gt;</h2>
 <p>Pytest tests for both scripts. At minimum:</p>
 <ul>
@@ -238,7 +238,7 @@ Tests: &lt;tt&gt;tools/tests/&lt;/tt&gt;</h2>
 <li>Generated .hpp content is syntactically valid</li>
 <li>SOURCE.md includes required provenance fields</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md305"></a>
+<h2><a class="anchor" id="autotoc_md306"></a>
 Generated files (single-byte, 22 total)</h2>
 <p>Each codec gets a <code>.bin</code> (for future <code>#embed</code>) and a <code>.hpp</code> (constexpr array fallback). The <code>.hpp</code> files are included from <code>include/beman/transcode/detail/tables/</code> which will contain thin wrappers or direct includes of the generated data.</p>
 <div class="fragment"><div class="line"><span class="comment">// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span></div>
@@ -255,7 +255,7 @@ Generated files (single-byte, 22 total)</h2>
 <div class="line">} <span class="comment">// namespace beman::transcoding::detail::tables</span></div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#endif</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md306"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md307"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>step17-data-tooling</code> from <code>main</code></li>
@@ -277,7 +277,7 @@ Procedure</h1>
 <li>Push both remotes</li>
 <li>Merge to main</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md307"></a>
+<h1><a class="anchor" id="autotoc_md308"></a>
 Verification</h1>
 <div class="fragment"><div class="line"># Python quality</div>
 <div class="line">uv run pytest tools/tests/</div>
@@ -296,7 +296,7 @@ Verification</h1>
 <div class="line"># Coverage — no regressions (no new C++ code in this step,</div>
 <div class="line"># but verify the report still generates cleanly)</div>
 <div class="line">make coverage</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md308"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md309"></a>
 Notes</h1>
 <ul>
 <li>The hand-written <code><a class="el" href="windows__1252_8hpp.html">detail/tables/windows_1252.hpp</a></code> from step 16 will be superseded by the generated version in step 18. Keep it for now; step 18 will replace it.</li>

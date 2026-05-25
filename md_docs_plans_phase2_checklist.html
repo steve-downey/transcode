@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–52 complete. 595 C++ + 171 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–53 complete. 608 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md160"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -607,8 +607,21 @@ Step 52: real-iconv ISO-2022-JP flush integration tests (&lt;tt&gt;step52-iconv-
 <li>[x] <code>make test</code> (595 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
+<h1><a class="anchor" id="autotoc_md205"></a>
+Step 53: coverage improvements (&lt;tt&gt;step53-coverage-improvements&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step53-coverage-improvements</code> from <code>main</code></li>
+<li>[x] Add ISO-2022-JP encoder coverage: consecutive YEN/OVERLINE (Roman state), unmapped-after-JIS</li>
+<li>[x] Add ISO-2022-JP or_error coverage: YEN, consecutive YEN+OVERLINE, ASCII-after-JIS, JIS-after-JIS</li>
+<li>[x] Add EUC-JP decode coverage: SS3 truncated, SS3 invalid trails, unmapped JIS X 0212/0208 pointers</li>
+<li>[x] Add GB18030 encode coverage: U+E7C7 special case, U+0080 4-byte range encoding</li>
+<li>[x] Exclude <code>papers/wg21</code> from ruff lint (pre-existing failures)</li>
+<li>[x] <code>make test</code> (608 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean)</li>
+<li>[x] <code>make coverage</code>: <code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code> 92.0% → 100.0%; <code><a class="el" href="euc__jp_8hpp.html">euc_jp.hpp</a></code> 92.9% → 98.8%; <code><a class="el" href="gb18030_8hpp.html">gb18030.hpp</a></code> 93.3% → 95.0%; overall 85.1% → 85.4%</li>
+<li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
+</ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md206"></a>
+<h1><a class="anchor" id="autotoc_md207"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
