@@ -424,6 +424,17 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.wpt_bom)
+target_sources(beman.transcode.tests.wpt_bom PRIVATE wpt_bom.test.cpp)
+target_include_directories(
+    beman.transcode.tests.wpt_bom
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.wpt_bom
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -459,6 +470,7 @@ catch_discover_tests(beman.transcode.tests.wpt_iso2022jp)
 catch_discover_tests(beman.transcode.tests.wpt_single_byte)
 catch_discover_tests(beman.transcode.tests.wpt_utf16_surrogates)
 catch_discover_tests(beman.transcode.tests.wpt_fatal)
+catch_discover_tests(beman.transcode.tests.wpt_bom)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(
