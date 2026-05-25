@@ -43,26 +43,26 @@ TEST_CASE("transcode_string label: case-insensitive label lookup", "[transcode_s
 }
 
 TEST_CASE("transcode_string label: whitespace-stripped label", "[transcode_string][label]") {
-    std::string src = "hello";
+    std::string src    = "hello";
     auto        result = transcode_string(std::span<const char>(src), "  utf-8  ", "  utf-8  ");
     REQUIRE(result.has_value());
     CHECK(*result == "hello");
 }
 
 TEST_CASE("transcode_string label: unknown from_label returns nullopt", "[transcode_string][label]") {
-    std::string src = "hello";
+    std::string src    = "hello";
     auto        result = transcode_string(std::span<const char>(src), "not-a-codec", "utf-8");
     CHECK(!result.has_value());
 }
 
 TEST_CASE("transcode_string label: unknown to_label returns nullopt", "[transcode_string][label]") {
-    std::string src = "hello";
+    std::string src    = "hello";
     auto        result = transcode_string(std::span<const char>(src), "utf-8", "not-a-codec");
     CHECK(!result.has_value());
 }
 
 TEST_CASE("transcode_string label: both labels unknown returns nullopt", "[transcode_string][label]") {
-    std::string src = "hello";
+    std::string src    = "hello";
     auto        result = transcode_string(std::span<const char>(src), "bogus", "garbage");
     CHECK(!result.has_value());
 }

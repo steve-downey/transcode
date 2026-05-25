@@ -3,8 +3,10 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_STRING_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_STRING_HPP
 
+#include <beman/transcode/detail/labels.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
 
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -15,6 +17,11 @@ namespace beman::transcoding {
 // Decode errors yield U+FFFD; unmapped encode codepoints yield '?'.
 // Returns empty string when `to` has no encoder (replacement, x_user_defined).
 std::string transcode_string(std::span<const char> src, codec from, codec to);
+
+// Label-based overload: looks up WHATWG labels for `from_label` and `to_label`.
+// Returns nullopt if either label is unknown.
+std::optional<std::string>
+transcode_string(std::span<const char> src, std::string_view from_label, std::string_view to_label);
 
 // ---------------------------------------------------------------------------
 // detail helpers
@@ -305,6 +312,15 @@ inline std::string transcode_string(std::span<const char> src, codec from, codec
     }
 
     return result;
+}
+
+inline std::optional<std::string>
+transcode_string(std::span<const char> src, std::string_view from_label, std::string_view to_label) {
+    auto from = get_encoding(from_label);
+    auto to   = get_encoding(to_label);
+    if (!from || !to)
+        return std::nullopt;
+    return transcode_string(src, *from, *to);
 }
 
 } // namespace beman::transcoding
