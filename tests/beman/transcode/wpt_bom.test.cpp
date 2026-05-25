@@ -50,8 +50,8 @@ TEST_CASE("WPT BOM: UTF-8 without BOM decodes correctly", "[wpt::bom]") {
 }
 
 TEST_CASE("WPT BOM: UTF-8 with BOM strips the BOM", "[wpt::bom]") {
-    const auto& c         = beman::transcoding::tests::wpt::wpt_bom_cases[0];
-    auto        with_bom  = concat(c.bom, c.bytes);
+    const auto& c        = beman::transcoding::tests::wpt::wpt_bom_cases[0];
+    auto        with_bom = concat(c.bom, c.bytes);
     CHECK(decode_utf8(with_bom) == c.expected);
 }
 
