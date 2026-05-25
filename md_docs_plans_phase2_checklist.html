@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–49 complete. 583 C++ + 171 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–50 complete. 589 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -571,8 +571,20 @@ Step 49: &lt;tt&gt;whatwg_decode_view&lt;/tt&gt; coverage improvement (&lt;tt&gt
 <li>[x] <code>make coverage</code>: <code><a class="el" href="whatwg__decode__view_8hpp.html">whatwg_decode_view.hpp</a></code> 79.7% → 97.1%; overall lines 83.4% → 84.7%</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
+<h1><a class="anchor" id="autotoc_md52"></a>
+Step 50: iconv view boundary-condition tests (&lt;tt&gt;step50-iconv-boundary-tests&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step50-iconv-boundary-tests</code> from <code>main</code></li>
+<li>[x] Add <code>mock_iconv_partial_consume</code> and <code>mock_iconv_e2big_zero_output</code> to <code>iconv_mock.hpp</code></li>
+<li>[x] Add EILSEQ and partial-staging-consume tests to <code>iconv_transcode.test.cpp</code></li>
+<li>[x] Add E2BIG-zero-output and partial-consume tests to <code>iconv_transcode_or_error.test.cpp</code></li>
+<li>[x] Add real-iconv E2BIG (100 chars, 4-byte buf) and split multi-byte U+1D11E tests to <code>iconv_real.test.cpp</code></li>
+<li>[x] <code>make test</code> (589 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean)</li>
+<li>[x] <code>make coverage</code>: <code>iconv_transcode_view</code> 84.8% → 94.9%; <code>iconv_transcode_or_error_view</code> 83.7% → 92.9%</li>
+<li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
+</ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md53"></a>
+<h1><a class="anchor" id="autotoc_md54"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>
