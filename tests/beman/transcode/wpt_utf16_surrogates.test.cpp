@@ -22,10 +22,9 @@ std::vector<char32_t> decode_utf16le(const std::vector<uint8_t>& input) {
     return result;
 }
 
-std::vector<std::expected<char32_t, whatwg_error>> decode_utf16le_or_error(
-    const std::vector<uint8_t>& input) {
-    std::vector<char>                                    bytes(input.begin(), input.end());
-    std::vector<std::expected<char32_t, whatwg_error>>  result;
+std::vector<std::expected<char32_t, whatwg_error>> decode_utf16le_or_error(const std::vector<uint8_t>& input) {
+    std::vector<char>                                  bytes(input.begin(), input.end());
+    std::vector<std::expected<char32_t, whatwg_error>> result;
     for (auto&& r : bytes | whatwg_decode_or_error<codec::utf_16le>)
         result.push_back(r);
     return result;
@@ -47,7 +46,7 @@ TEST_CASE("WPT UTF-16LE surrogate or_error: surrogates produce errors", "[wpt::u
     for (std::size_t idx = 0; idx < std::size(all); ++idx) {
         const auto& v = all[idx];
         INFO("Case [" << idx << "]: " << v.description);
-        auto result = decode_utf16le_or_error(v.input);
+        auto result    = decode_utf16le_or_error(v.input);
         bool has_error = false;
         for (const auto& r : result)
             if (!r.has_value())

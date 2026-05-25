@@ -12,10 +12,12 @@ from generate_wpt_vectors import (
     parse_js_string,
     parse_single_byte_indexes,
     parse_utf8_mistake_vectors,
+    parse_utf16_surrogate_vectors,
     render_gb18030_vectors_hpp,
     render_iso2022jp_vectors_hpp,
     render_single_byte_vectors_hpp,
     render_utf8_vectors_hpp,
+    render_utf16_surrogates_vectors_hpp,
 )
 
 
@@ -223,3 +225,60 @@ def test_render_single_byte_vectors_hpp(tmp_path: Path) -> None:
     content = out.read_text()
     assert "wpt_single_byte_indexes" in content
     assert "IBM866" in content
+
+
+_UTF16_SURR_SAMPLE = """
+var bad = [
+    {
+        encoding: 'utf-16le',
+        input: [0x00, 0xd8],
+        expected: '\\uFFFD',
+        name: 'lone surrogate lead'
+    },
+    {
+        encoding: 'utf-16le',
+        input: [0x00, 0xdc, 0x00, 0x00],
+        expected: '\\uFFFD\\u0000',
+        name: 'unmatched surrogate trail'
+    }
+];
+"""
+
+
+def test_parse_utf16_surrogate_vectors_count() -> None:
+    vectors = parse_utf16_surrogate_vectors(_UTF16_SURR_SAMPLE)
+    assert len(vectors) == 2
+
+
+def test_parse_utf16_surrogate_vectors_first() -> None:
+    vectors = parse_utf16_surrogate_vectors(_UTF16_SURR_SAMPLE)
+    assert vectors[0]["encoding"] == "utf-16le"
+    assert vectors[0]["input"] == [0x00, 0xD8]
+    assert vectors[0]["expected"] == [0xFFFD]
+    assert vectors[0]["description"] == "lone surrogate lead"
+
+
+def test_parse_utf16_surrogate_vectors_multi_expected() -> None:
+    vectors = parse_utf16_surrogate_vectors(_UTF16_SURR_SAMPLE)
+    assert vectors[1]["input"] == [0x00, 0xDC, 0x00, 0x00]
+    assert vectors[1]["expected"] == [0xFFFD, 0x0000]
+    assert vectors[1]["description"] == "unmatched surrogate trail"
+
+
+def test_render_utf16_surrogates_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {
+            "encoding": "utf-16le",
+            "input": [0x00, 0xD8],
+            "expected": [0xFFFD],
+            "description": "lone surrogate lead",
+        },
+    ]
+    out = tmp_path / "wpt_utf16_surrogates_vectors.hpp"
+    render_utf16_surrogates_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_UTF16_SURROGATES_VECTORS_HPP" in content
+    assert "utf16le_surrogate_wpt_decode_vectors" in content
+    assert "0x00, 0xD8" in content
+    assert "0xFFFD" in content
+    assert "lone surrogate lead" in content
