@@ -70,7 +70,7 @@ TEST_CASE("module: iconv_transcode pipe via import", "[transcoding::module]") {
 }
 
 TEST_CASE("module: round-trip UTF-8 decode/encode via import", "[transcoding::module]") {
-    std::vector<char> utf8{'\xE4', '\xB8', '\xAD'};  // 中 in UTF-8
+    std::vector<char> utf8{'\xE4', '\xB8', '\xAD'}; // 中 in UTF-8
 
     std::u32string codepoints;
     for (char32_t cp : utf8 | whatwg_decode<codec::utf_8>)

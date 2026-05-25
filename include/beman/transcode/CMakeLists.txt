@@ -26,11 +26,19 @@ else()
                     detail/error.hpp
                     detail/euc_jp.hpp
                     detail/euc_kr.hpp
+                    detail/labels.hpp
                     detail/null_term.hpp
                     detail/gb18030.hpp
                     detail/gbk.hpp
                     detail/shift_jis.hpp
                     detail/single_byte.hpp
+                    detail/sniff.hpp
+                    detail/transcode_string.hpp
+                    detail/transcode_view.hpp
+                    detail/utf8.hpp
+                    detail/utf8_encode.hpp
+                    detail/utf16.hpp
+                    detail/x_user_defined.hpp
                     detail/tables/big5.hpp
                     detail/tables/euc_jp_jis0212.hpp
                     detail/tables/euc_kr.hpp
@@ -64,10 +72,9 @@ else()
                     detail/tables/windows_1257.hpp
                     detail/tables/windows_1258.hpp
                     detail/tables/x_mac_cyrillic.hpp
-                    detail/utf8.hpp
-                    detail/utf8_encode.hpp
-                    detail/utf16.hpp
+                    iconv_real.hpp
                     iconv_transcode_view.hpp
+                    iconv_transcode_or_error_view.hpp
                     whatwg_decode_view.hpp
                     whatwg_encode_view.hpp
                     "${PROJECT_BINARY_DIR}/include/beman/transcode/config_generated.hpp"

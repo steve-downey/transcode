@@ -19,7 +19,9 @@ set(GENERATED_BIN_FILES
 # 5. The custom command that runs the Python generator
 add_custom_command(
     OUTPUT ${GENERATED_BIN_FILES}
-    COMMAND Python3::Interpreter "${PYTHON_GENERATOR}" "${WPT_INDEXES_JSON}" "${GENERATED_BIN_DIR}"
+    COMMAND
+        Python3::Interpreter "${PYTHON_GENERATOR}" "${WPT_INDEXES_JSON}"
+        "${GENERATED_BIN_DIR}"
     DEPENDS "${WPT_INDEXES_JSON}" "${PYTHON_GENERATOR}"
     COMMENT "Generating C++26 #embed binary indices from WPT JSON..."
     VERBATIM
@@ -33,7 +35,8 @@ add_custom_target(wpt_indices_data DEPENDS ${GENERATED_BIN_FILES})
 # ---------------------------------------------------------
 
 # Replace with your actual test source files
-add_executable(whatwg_codec_tests
+add_executable(
+    whatwg_codec_tests
     test_main.cpp
     # ... other test sources
 )
@@ -47,4 +50,7 @@ add_dependencies(whatwg_codec_tests wpt_indices_data)
 # Include directories so #embed can find the files.
 # Because we include CMAKE_CURRENT_BINARY_DIR, your C++ code can just do:
 # #embed "generated/big5.bin"
-target_include_directories(whatwg_codec_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+target_include_directories(
+    whatwg_codec_tests
+    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
+)

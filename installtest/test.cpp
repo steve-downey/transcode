@@ -73,7 +73,7 @@ int main() {
     std::cout << "PASS: iconv_transcode\n";
 
     // Test 7: Round-trip UTF-8 decode/encode
-    std::vector<char> roundtrip_input{'\xE4', '\xB8', '\xAD'};  // 中 in UTF-8
+    std::vector<char> roundtrip_input{'\xE4', '\xB8', '\xAD'}; // 中 in UTF-8
     std::u32string    rt_decoded;
     for (char32_t cp : roundtrip_input | whatwg_decode<codec::utf_8>) {
         rt_decoded.push_back(cp);

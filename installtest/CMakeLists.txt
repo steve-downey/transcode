@@ -14,8 +14,8 @@ find_package(
     NO_DEFAULT_PATH
 )
 
-# Test 1: Header mode (C++20)
-set(CMAKE_CXX_STANDARD 20)
+# Test 1: Header mode (C++23)
+set(CMAKE_CXX_STANDARD 23)
 add_executable(TestInstalledLibrary test.cpp)
 target_link_libraries(TestInstalledLibrary beman::transcode)
 add_test(NAME RunInstalledTest COMMAND TestInstalledLibrary)

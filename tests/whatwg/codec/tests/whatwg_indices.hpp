@@ -21,18 +21,16 @@ consteval auto bytes_to_uint16_array(const std::array<uint8_t, NumBytes>& bytes)
 
 // --- Big5 Index ---
 constexpr std::array<uint8_t, 24718> big5_bytes = {
-    // #embed requires a specific path. Your build system will set the include directories.
-    #embed "generated/big5.bin"
+// #embed requires a specific path. Your build system will set the include directories.
+#embed "generated/big5.bin"
 };
 constexpr auto big5_index = bytes_to_uint16_array(big5_bytes);
 
-
 // --- Shift_JIS Index ---
 constexpr std::array<uint8_t, 16954> sjis_bytes = {
-    #embed "generated/shift_jis.bin"
+#embed "generated/shift_jis.bin"
 };
 constexpr auto sjis_index = bytes_to_uint16_array(sjis_bytes);
-
 
 // Note: For actual implementation, the sizes (e.g., 24718) can be omitted if you use:
 // constexpr std::array big5_bytes = { #embed "generated/big5.bin" };
