@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–38 complete. 494 C++ + 155 Python tests pass. On `main`.
+**Current state:** Steps 0–39 complete. 495 C++ + 159 Python tests pass. On `main`.
 
 ---
 
@@ -314,16 +314,20 @@ Comprehensive round-trip tests for all implemented codecs.
 
 ## Upcoming
 
-### WPT TextEncoder UTF-16 surrogate round-trip (`step39-wpt-encoder-surrogates`)
+## Step 39: WPT TextEncoder UTF-16 surrogate round-trip (`step39-wpt-encoder-surrogates`)
 
-`textencoder-utf16-surrogates.any.js` tests that lone surrogates are
-replaced by U+FFFD when UTF-8 encoded then decoded. Format:
-```javascript
-{ input: '\uD800', expected: '�', name: 'lone surrogate lead' }
-```
-Struct: `{ input: vector<char32_t>, expected: vector<char32_t>, name }`.
-Test: encode input → UTF-8 bytes → decode → check matches expected.
-6 cases including properly encoded surrogate pair U+1D11E.
+- [x] Create branch from `main`
+- [x] Write failing tests (RED) + push both remotes
+- [x] Download `textencoder-utf16-surrogates.any.js` → `docs/wpt/`
+- [x] Update `docs/wpt/SOURCE.md` with provenance + checksum
+- [x] Add `parse_encoder_surrogates_vectors()` + `render_encoder_surrogates_vectors_hpp()` to `generate_wpt_vectors.py`
+- [x] Add 4 Python tests to `test_generate_wpt.py` (159 total)
+- [x] Generate `wpt_encoder_surrogates_vectors.hpp` (6 vectors)
+- [x] `make test` (495 C++ + 159 Python all pass)
+- [x] `make lint` — clean
+- [x] Push GREEN to both remotes + merge to main
+
+### WPT TextEncoder UTF-16 surrogate round-trip (`step39-wpt-encoder-surrogates`) — DONE
 
 ### Label lookup API (`step39-label-lookup` or `step40-label-lookup`)
 
