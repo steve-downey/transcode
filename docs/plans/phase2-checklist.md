@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–50 complete. 589 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–51 complete. 591 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -472,6 +472,18 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Add real-iconv E2BIG (100 chars, 4-byte buf) and split multi-byte U+1D11E tests to `iconv_real.test.cpp`
 - [x] `make test` (589 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
 - [x] `make coverage`: `iconv_transcode_view` 84.8% → 94.9%; `iconv_transcode_or_error_view` 83.7% → 92.9%
+- [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 51: iconv stateful flush (`step51-iconv-stateful-flush`)
+
+- [x] Create branch `step51-iconv-stateful-flush` from `main`
+- [x] Add `flushed_` member to both iconv view iterators
+- [x] Implement flush call (`iconv(cd, nullptr, ...)`) in both `load()` functions
+- [x] Fix all existing mocks to handle `inbuf=nullptr` (null flush = no-op)
+- [x] Add `mock_iconv_stateful` — writes 0x0F reset byte on flush
+- [x] Add flush tests for both `iconv_transcode_view` and `_or_error` variants
+- [x] Fix inline `close_counting_fns` structs to handle null flush
+- [x] `make test` (591 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
 - [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---
