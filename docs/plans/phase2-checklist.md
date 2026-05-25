@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–42 complete. 521 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–43 complete. 531 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -376,6 +376,17 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Push RED to both remotes
 - [x] Update `include/beman/transcode/transcode.hpp` to include all public headers
 - [x] `make test` (521 C++ + 171 Python all pass) + `make lint` (C++ clean)
+- [x] Push GREEN to both remotes + merge to main
+
+## Step 43: `transcode_string` one-shot function (`step43-transcode-string`)
+
+- [x] Create branch `step43-transcode-string` from `main`
+- [x] Write failing C++ tests (RED) — `transcode_string.test.cpp`
+- [x] Register `beman.transcode.tests.transcode_string` in `tests/beman/transcode/CMakeLists.txt`
+- [x] Push RED to both remotes
+- [x] Implement `include/beman/transcode/detail/transcode_string.hpp`
+- [x] Add `transcode_string.hpp` to umbrella header `transcode.hpp`
+- [x] `make test` (531 C++ + 171 Python all pass) + `make lint` (C++ clean)
 - [x] Push GREEN to both remotes + merge to main
 
 ---
