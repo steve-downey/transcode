@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 40 (Label Lookup API)
+# Handoff: beman.transcode — Step 41 (sniff_encoding / BOM Detection API)
 
 ## Project
 
@@ -14,171 +14,109 @@ proposal.
 
 ## Current State
 
-**Step 39 complete and merged to main.**
+**Step 40 complete and merged to main.**
 
-495 C++ tests + 159 Python tests pass (`make test`). `make lint` clean.
+502 C++ tests + 171 Python tests pass (`make test`). `make lint` clean
+(ignoring pre-existing failures in `papers/wg21/` which are unrelated to
+the transcode library).
 
-### What Step 39 Added
+### What Step 40 Added
 
-WPT vectors from `textencoder-utf16-surrogates.any.js` — tests that
-lone surrogates in the input of the UTF-8 encoder+decoder round-trip
-are replaced by U+FFFD, and that a proper surrogate pair (U+1D11E)
-round-trips correctly.
+WHATWG label lookup API — `get_encoding(std::string_view label)`.
 
 Key changes:
-- Downloaded `docs/wpt/textencoder-utf16-surrogates.any.js` (6 test entries)
-- Updated `docs/wpt/SOURCE.md` with provenance + checksum
-- Added `_ENCODER_SURR_RE` + `parse_encoder_surrogates_vectors()` +
-  `render_encoder_surrogates_vectors_hpp()` to `tools/generate_wpt_vectors.py`
-- Added 4 Python tests to `tools/tests/test_generate_wpt.py` (159 total)
-- Generated `tests/beman/transcode/wpt_encoder_surrogates_vectors.hpp` (6 vectors)
-- C++ test in `wpt_encoder_surrogates.test.cpp`: encode `input` to
-  UTF-8 bytes, decode bytes to codepoints, check matches `expected`
+- `tools/generate_labels.py` — reads `docs/whatwg/encodings.json`, builds
+  a sorted `label → codec` table, generates `include/beman/transcode/detail/labels.hpp`
+- `tools/tests/test_generate_labels.py` — 12 Python tests for the generator
+- `include/beman/transcode/detail/labels.hpp` — generated header with a
+  228-entry `constexpr` sorted table and a `constexpr get_encoding()` that
+  strips ASCII whitespace, lowercases, and binary-searches the table
+- `tests/beman/transcode/labels.test.cpp` — 7 C++ TEST_CASE blocks including
+  a `constify()` consteval test
 
-The `WptEncoderSurrogatesVector` struct has `input` (codepoints, may
-include surrogates), `expected` (codepoints after round-trip), and
-`name`.
+The `encodings.json` was already in `docs/whatwg/` (downloaded in an earlier step).
 
-### WPT Files in `docs/wpt/`
+API:
+```cpp
+// In namespace beman::transcoding
+constexpr std::optional<codec> get_encoding(std::string_view label) noexcept;
 
-| File | What it covers | Status |
-|------|----------------|--------|
-| `gb18030-decoder.any.js` | GB18030 multi-byte decode | integrated |
-| `iso-2022-jp-decoder.any.js` | ISO-2022-JP stateful decode | integrated |
-| `single-byte-decoder.window.js` | All 27 single-byte codec tables | integrated |
-| `textdecoder-mistakes.any.js` | UTF-8 invalid sequences | integrated |
-| `textdecoder-utf16-surrogates.any.js` | UTF-16LE surrogate handling | integrated |
-| `textdecoder-fatal.any.js` | Fatal mode: all encodings | integrated |
-| `textdecoder-byte-order-marks.any.js` | BOM stripping | integrated |
-| `textdecoder-fatal-single-byte.any.js` | Fatal mode: bad bytes per codec | integrated |
-| `textdecoder-eof.any.js` | EOF/truncation (non-streaming) | integrated |
-| `textdecoder-fatal-streaming.any.js` | Fatal streaming (skipped) | downloaded |
-| `api-surrogates-utf8.any.js` | UTF-8 encode: surrogate → FFFD | integrated |
-| `textencoder-utf16-surrogates.any.js` | UTF-8 encode+decode round-trip | integrated |
+static_assert(get_encoding("  UTF-8  ") == codec::utf_8);
+static_assert(get_encoding("sjis")      == codec::shift_jis);
+static_assert(get_encoding("unknown")   == std::nullopt);
+```
 
-## What To Do Next — Step 40 (Label Lookup API)
+## What To Do Next — Step 41 (sniff_encoding / BOM Detection)
 
-**Branch:** `step40-label-lookup`
+**Branch:** `step41-sniff-encoding`
 
 ### Goal
 
-Implement `get_encoding(std::string_view label)` — WHATWG Encoding
-Standard §4.2 "Names and labels". This maps ~200+ string aliases to
-the `codec` enum. It enables parsing `charset=` values from HTML meta
-tags and HTTP `Content-Type` headers.
+Implement `sniff_encoding(range)` — WHATWG Encoding Standard §8.2 "Determining
+the fallback encoding". This detects the encoding of a byte sequence by looking
+for a BOM at the start, returning:
 
-API (in `include/beman/transcode/detail/labels.hpp`):
+- `codec::utf_8` if the sequence starts with `EF BB BF`
+- `codec::utf_16be` if the sequence starts with `FE FF`
+- `codec::utf_16le` if the sequence starts with `FF FE`
+- `std::nullopt` if no BOM is found
+
+API (in `include/beman/transcode/detail/sniff.hpp`):
 
 ```cpp
 namespace beman::transcoding {
 
-// Returns the canonical codec for a label, or nullopt for unknown.
-// Case-insensitive, strips leading/trailing ASCII whitespace per WHATWG.
-constexpr std::optional<codec> get_encoding(std::string_view label);
+// Returns the codec if a BOM is detected, or nullopt.
+// Accepts any legacy_byte_range (same concept as whatwg_decode_view).
+template <legacy_byte_range R>
+constexpr std::optional<codec> sniff_encoding(R&& r) noexcept;
 
 } // namespace beman::transcoding
 ```
 
-Static assertions to verify (these should all compile):
-
+Example:
 ```cpp
-static_assert(get_encoding("  UTF-8  ") == codec::utf_8);
-static_assert(get_encoding("utf-8")     == codec::utf_8);
-static_assert(get_encoding("UTF-8")     == codec::utf_8);
-static_assert(get_encoding("shift_jis") == codec::shift_jis);
-static_assert(get_encoding("SJIS")      == codec::shift_jis);
-static_assert(get_encoding("x-sjis")    == codec::shift_jis);
-static_assert(get_encoding("unknown")   == std::nullopt);
+std::vector<unsigned char> utf8_bom = {0xEF, 0xBB, 0xBF, 'h', 'i'};
+assert(sniff_encoding(utf8_bom) == codec::utf_8);
+
+std::vector<unsigned char> no_bom = {'h', 'i'};
+assert(sniff_encoding(no_bom) == std::nullopt);
 ```
-
-### Data source
-
-WHATWG `encodings.json` — a machine-readable list of all encodings and
-their labels.
-
-Download:
-```bash
-gh api "repos/nicowillis/encoding/contents/spec/encodings.json" --jq '.content' | base64 -d > docs/whatwg/encodings.json
-```
-Or via `curl`:
-```bash
-curl -L https://encoding.spec.whatwg.org/encodings.json -o docs/whatwg/encodings.json
-```
-
-The JSON structure is an array of "group" objects:
-```json
-[
-  {
-    "heading": "The Unicode standard",
-    "encodings": [
-      { "name": "UTF-8", "labels": ["unicode-1-1-utf-8", "unicode11utf8", "unicode20utf8", "utf-8", "utf8", "x-unicode20utf8"] }
-    ]
-  },
-  ...
-]
-```
-
-Each `name` field maps directly to a value in the `codec` enum (with
-hyphens converted to underscores and some special cases like
-`x-user-defined` → `x_user_defined`).
-
-### Tooling approach
-
-Write `tools/generate_labels.py` to:
-1. Read `docs/whatwg/encodings.json`
-2. Build a `label → codec` map (lowercased labels)
-3. Generate `include/beman/transcode/detail/labels.hpp`
-
-The generated header contains a `constexpr` table of
-`{string_view label, codec value}` pairs sorted by label (for binary
-search), plus the `get_encoding()` function that strips whitespace,
-lowercases, and binary-searches the table.
 
 ### Implementation notes
 
-- The WHATWG spec requires ASCII case folding (lowercase) and stripping
-  ASCII whitespace (`\t \n \f \r \x20`) from both ends of the label.
-- `codec` enum values already exist for all supported encodings
-  (steps 14–28 added them all).
-- The lookup table can be a `constexpr` array of `{const char*, codec}`
-  pairs. `get_encoding()` does linear or binary search.
-- Keep it simple: a sorted array + `std::ranges::lower_bound` is fine.
-- Include `<optional>` and `<string_view>` — both available in C++20.
+- `sniff_encoding` is a range-based function: it consumes at most 3 bytes.
+- It should work on `input_range` (not just `random_access_range`).
+- The `legacy_byte_range` concept already exists in `detail/concepts.hpp`
+  and accepts `char`/`signed char`/`unsigned char`/`std::byte` ranges.
+- No new concept constraints needed — negative compile test not required.
+- Include `<optional>` and `<ranges>`.
+- The function should be `constexpr`.
 
 ### Files to create/modify
 
-1. `docs/whatwg/encodings.json` — pristine upstream data
-2. `docs/whatwg/SOURCE.md` — add provenance entry
-3. `tools/generate_labels.py` — new generator script
-4. `tools/tests/test_generate_labels.py` — Python tests
-5. `include/beman/transcode/detail/labels.hpp` — generated header
-6. `include/beman/transcode/transcode.hpp` — add `#include` for labels
-   (or expose via the main header)
-7. `tests/beman/transcode/labels.test.cpp` — C++ tests
-8. `tests/beman/transcode/CMakeLists.txt` — register new test
+1. `include/beman/transcode/detail/sniff.hpp` — new header with `sniff_encoding()`
+2. `tests/beman/transcode/sniff.test.cpp` — C++ tests
+3. `tests/beman/transcode/CMakeLists.txt` — register new test
 
-### Python tests for generator
-
-Test that `parse_encodings_json()` extracts labels correctly, and that
-`render_labels_hpp()` produces valid C++ with the guard, function name,
-and a few spot-check labels.
+No generator script is needed for this step — the logic is simple enough
+to write by hand. No new Python tests either.
 
 ### C++ tests
 
-1. Runtime tests: `get_encoding("utf-8") == codec::utf_8`, etc.
+1. Runtime tests: `sniff_encoding` on vectors with each BOM and without
 2. `consteval` test via `constify()` from `test_utilities.hpp`
-3. Negative compile test is not needed (function returns `optional`, no
-   concept constraint to verify)
+3. Test with `views::null_term` (a C string) — no BOM expected
 
 ### TDD Process
 
-1. Branch: `git checkout -b step40-label-lookup`
-2. Write failing C++ tests (RED) — `labels.hpp` doesn't exist yet
+1. Branch: `git checkout -b step41-sniff-encoding`
+2. Write failing C++ tests (RED) — `sniff.hpp` doesn't exist yet
 3. Commit RED → push both remotes
-4. Download `encodings.json`, write generator, generate header
+4. Implement `detail/sniff.hpp`
 5. `make test` (all pass) + `make lint` (clean)
 6. Commit GREEN → push both remotes
-7. Merge: `git checkout main && git merge --no-ff step40-label-lookup`
+7. Merge: `git checkout main && git merge --no-ff step41-sniff-encoding`
 8. Push main to both remotes
 9. Update `docs/plans/phase2-checklist.md`
 
@@ -194,20 +132,14 @@ make pytest    # Python tool tests only
 
 ## Coding Rules (abbreviated)
 
-- Include guards: `INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP`
-- Test files: include the primary header **twice** (idempotent check)
+- Include guard: `INCLUDE_BEMAN_TRANSCODE_DETAIL_SNIFF_HPP`
+- Test file: include the primary header **twice** (idempotent check)
 - No `Co-Authored-By` trailers in commits
 - Full rules in `CLAUDE.md`
 
-## Existing codec enum (all values present)
+## Key files to read for context
 
-The `codec` enum in `include/beman/transcode/detail/codec.hpp` (or
-wherever it lives) already has values for all WHATWG encodings. The
-label-to-codec mapping just needs to wire string aliases to these values.
-
-Check with:
-```bash
-grep -n "enum.*codec\|utf_8\|shift_jis\|windows_1252" include/beman/transcode/detail/codec.hpp | head -20
-```
-
-to confirm the enum value names.
+- `include/beman/transcode/detail/concepts.hpp` — `legacy_byte_range` concept
+- `include/beman/transcode/whatwg_decode_view.hpp` — codec enum + existing BOM
+  stripping logic (for reference on how BOMs are checked)
+- `tests/beman/transcode/labels.test.cpp` — recent test file for style reference

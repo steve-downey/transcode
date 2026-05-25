@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–39 complete. 495 C++ + 159 Python tests pass. On `main`.
+**Current state:** Steps 0–40 complete. 502 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -351,13 +351,14 @@ static_assert(get_encoding("SJIS") == codec::shift_jis);
 static_assert(get_encoding("x-sjis") == codec::shift_jis);
 ```
 
-- [ ] Create branch from `main`
-- [ ] Download `encodings.json` from WHATWG → `docs/whatwg/`
-- [ ] Write `tools/generate_labels.py` to produce label→codec map
-- [ ] Tests (RED → GREEN)
-- [ ] Implement `get_encoding()` in `detail/labels.hpp`
-- [ ] `make test` + `make lint`
-- [ ] Push both remotes + merge to main
+- [x] Create branch from `main`
+- [x] Download `encodings.json` from WHATWG → `docs/whatwg/` (already present)
+- [x] Write `tools/generate_labels.py` to produce label→codec map
+- [x] Write `tools/tests/test_generate_labels.py` (12 Python tests)
+- [x] Write failing C++ tests (RED) + push both remotes
+- [x] Implement `get_encoding()` in `detail/labels.hpp` (generated)
+- [x] `make test` (502 C++ + 171 Python) + `make lint`
+- [x] Push both remotes + merge to main
 
 ---
 
