@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–44 complete. 541 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–45 complete. 550 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -405,6 +405,18 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] `make test` (541 C++ + 171 Python all pass) + `make lint` (C++ clean)
 - [x] `make coverage`: lines 58.9%→83.2%, functions 67.2%→99.9%
 - [x] Push GREEN to both remotes + merge to main
+
+## Step 45: `transcode_string` label overload (`step45-transcode-string-label`)
+
+- [x] Create branch `step45-transcode-string-label` from `main`
+- [x] Write failing tests (RED) — `transcode_string_label.test.cpp`
+- [x] Register `beman.transcode.tests.transcode_string_label` in CMakeLists.txt
+- [x] Push RED to both remotes
+- [x] Add `std::optional<std::string> transcode_string(span, string_view, string_view)` to `transcode_string.hpp`
+- [x] Include `<beman/transcode/detail/labels.hpp>` and `<optional>` in `transcode_string.hpp`
+- [x] `make test` (550 C++ + 171 Python all pass) + `make lint` (C++ clean)
+- [x] `make coverage`: lines 83.2%, functions 99.9% (unchanged — thin delegate)
+- [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---
 
