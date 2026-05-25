@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–53b complete. 608 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–54 complete. 611 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -520,6 +520,22 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Mark 1 unreachable location in whatwg_decode_view.hpp (line 869: windows_1252 no nulls)
 - [x] `make test` (608 C++ + 171 Python all pass) + `make lint` (C++/tools clean)
 - [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 54: C++23 module support audit (`step54-module-audit`)
+
+- [x] Create branch `step54-module-audit` from `main`
+- [x] Audit umbrella header vs. public API headers: find missing ones
+- [x] Write failing tests (RED) — verify iconv headers accessible
+- [x] Add iconv_transcode_view.hpp, iconv_transcode_or_error_view.hpp, iconv_real.hpp to umbrella
+- [x] `make test` (611 C++ + 171 Python all pass) + `make lint` (C++/CMake clean)
+- [x] Commit: `"step54: C++23 module support audit — add missing iconv headers to umbrella (GREEN)"`
+- [x] Push GREEN to both remotes
+- [x] Merge to main: `git checkout main && git merge --no-ff step54-module-audit`
+- [x] Push main to both remotes
+
+**Result**: Three iconv headers were found missing from the umbrella header
+(added in steps 11–13, predating the umbrella). Now all public APIs are
+properly exported by the C++23 module interface.
 
 ---
 
