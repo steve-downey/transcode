@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <iterator>
+#include <utility>
 
 namespace beman::transcoding::detail {
 
@@ -64,16 +65,14 @@ constexpr char32_t gb18030_ranges_decode(std::uint32_t pointer) {
         } else {
             auto offset = pointer - table[mid].pointer;
             auto cp     = table[mid].codepoint + offset;
-            // Validate: the mapped codepoint must not reach into the next range's
-            // codepoint, and must be within Unicode.
             if (mid + 1 < n && cp >= table[mid + 1].codepoint)
-                return U'\xFFFD';
+                std::unreachable();
             if (cp > 0x10FFFF)
-                return U'\xFFFD';
+                std::unreachable();
             return static_cast<char32_t>(cp);
         }
     }
-    return U'\xFFFD';
+    std::unreachable();
 }
 
 // Binary search the ranges table to convert a codepoint to a linear 4-byte pointer.
@@ -94,7 +93,7 @@ constexpr std::uint32_t gb18030_ranges_encode(char32_t cp) {
             return table[mid].pointer + (cp - table[mid].codepoint);
         }
     }
-    return 0;
+    std::unreachable();
 }
 
 template <std::input_iterator I, std::sentinel_for<I> S>
@@ -169,7 +168,7 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
 
     char32_t cp = tables::gbk[index];
     if (cp == 0)
-        return {{}, whatwg_error::invalid_byte, true};
+        std::unreachable();
 
     return {cp, {}, false};
 }
