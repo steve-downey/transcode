@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
-<p><b>Current state:</b> Steps 0–53b complete. 608 C++ + 171 Python tests pass. On <code>main</code>.</p>
+<p><b>Current state:</b> Steps 0–54 complete. 611 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md160"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
@@ -636,8 +636,22 @@ Step 53b: unreachable code annotations (&lt;tt&gt;step53b-unreachable-annotation
 <li>[x] <code>make test</code> (608 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
+<h1><a class="anchor" id="autotoc_md207"></a>
+Step 54: C++23 module support audit (&lt;tt&gt;step54-module-audit&lt;/tt&gt;)</h1>
+<ul>
+<li>[x] Create branch <code>step54-module-audit</code> from <code>main</code></li>
+<li>[x] Audit umbrella header vs. public API headers: find missing ones</li>
+<li>[x] Write failing tests (RED) — verify iconv headers accessible</li>
+<li>[x] Add <a class="el" href="iconv__transcode__view_8hpp.html">iconv_transcode_view.hpp</a>, <a class="el" href="iconv__transcode__or__error__view_8hpp.html">iconv_transcode_or_error_view.hpp</a>, <a class="el" href="iconv__real_8hpp.html">iconv_real.hpp</a> to umbrella</li>
+<li>[x] <code>make test</code> (611 C++ + 171 Python all pass) + <code>make lint</code> (C++/CMake clean)</li>
+<li>[x] Commit: <code>"step54: C++23 module support audit — add missing iconv headers to umbrella (GREEN)"</code></li>
+<li>[x] Push GREEN to both remotes</li>
+<li>[x] Merge to main: <code>git checkout main &amp;&amp; git merge --no-ff step54-module-audit</code></li>
+<li>[x] Push main to both remotes</li>
+</ul>
+<p><b>Result</b>: Three iconv headers were found missing from the umbrella header (added in steps 11–13, predating the umbrella). Now all public APIs are properly exported by the C++23 module interface.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md208"></a>
+<h1><a class="anchor" id="autotoc_md209"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>

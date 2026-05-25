@@ -99,11 +99,11 @@ $(document).ready(function(){initNavTree('md_docs_why_forward_iterator.html','')
   <div class="headertitle"><div class="title">The Story of Failing to Find a Way Out: Reverse-Parsing Legacy Encodings </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md426"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md427"></a>
 Act I: The Overlapping Abyss</h1>
 <p>If you are dropped into the middle of an arbitrary point in a string using a WHATWG legacy multibyte encoding (like Shift_JIS, Big5, or GB18030), you cannot find the beginning of a character just by reading backward.</p>
 <p>This happens because legacy encodings lack <b>self-synchronization</b>. Unlike UTF-8, where lead and trail byte ranges are strictly separated, legacy encodings share the same hexadecimal values for both. In Shift_JIS, the byte <code>0x81</code> is valid as <em>both</em> a lead byte and a trail byte.</p>
-<h2><a class="anchor" id="autotoc_md427"></a>
+<h2><a class="anchor" id="autotoc_md428"></a>
 The Specific Example</h2>
 <p>Imagine you are handed a data buffer and dropped at index 3: <code>Buffer: [0x40, 0x81, 0x81, 0x81, 0x81]</code> <code>Index: 0 1 2 3 4</code></p>
 <p>If you look locally at index 3 (which is <code>0x81</code>), is it the start of a character or the second half of one? You cannot know without scanning backward to the true beginning of the string:</p><ul>
@@ -112,11 +112,11 @@ The Specific Example</h2>
 </ul>
 <p>Every single byte relies entirely on the even/odd parity established by the byte preceding it. If the string is malformed, the ambiguity is even worse, as dropped trail bytes leave no algorithmic breadcrumbs going backward.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md429"></a>
+<h1><a class="anchor" id="autotoc_md430"></a>
 Act II: The Illusion of the Anchor</h1>
 <p>Suppose your position is not random. You just parsed forward from the beginning of the string, so you know for an absolute fact you are sitting exactly at a valid character boundary.</p>
 <p>You still cannot reliably step backward. Knowing the <em>end</em> of the previous character does not tell you its <em>length</em>.</p>
-<h2><a class="anchor" id="autotoc_md430"></a>
+<h2><a class="anchor" id="autotoc_md431"></a>
 The Specific Example</h2>
 <p>Imagine looking backward from your known, forward-parsed cursor and seeing this sequence in Shift_JIS: <code>... 0x81 0x81 0x81 0x40 | &lt;CURSOR&gt;</code></p>
 <p>We know <code>0x40</code> is ASCII <code>@</code> (a valid 1-byte character) AND a valid trail byte. We know <code>0x81</code> is a lead byte AND a trail byte. Where does the character <em>before</em> your cursor begin?</p>
@@ -126,11 +126,11 @@ The Specific Example</h2>
 </ul>
 <p>Even though you are sitting at a known boundary, you are forced into the exact same backward dependency chain to resolve the parity of the preceding bytes just to know if you should step back 1 byte or 2 bytes.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md432"></a>
+<h1><a class="anchor" id="autotoc_md433"></a>
 Act III: State Machine Amnesia</h1>
 <p>Finally, you might think to capture the exact WHATWG parser state at your cursor position, rather than just the pointer.</p>
 <p>This is the final dead end. Having the parser state provides absolutely zero historical context because the WHATWG state machine suffers from "amnesia" at character boundaries. Decoders operate as forward-looking state machines. When you reach a valid character boundary, the decoder finishes emitting the Unicode code point and immediately resets its internal state to the "default" state (waiting for a new ASCII character or a new multibyte lead byte).</p>
-<h2><a class="anchor" id="autotoc_md433"></a>
+<h2><a class="anchor" id="autotoc_md434"></a>
 The Specific Example</h2>
 <p>Let's track the exact parser state for the end of the two scenarios from Act II to see why it fails to help us read backwards.</p>
 <ul>
@@ -147,7 +147,7 @@ The Specific Example</h2>
 </li>
 </ul>
 <p>In both traces, you are left at the exact same byte position, looking at the exact same bytes behind you, and your parser state is completely identical: <b>Default</b>. The parser state only tells you what to do with the <em>next</em> byte you encounter.</p>
-<h2><a class="anchor" id="autotoc_md434"></a>
+<h2><a class="anchor" id="autotoc_md435"></a>
 The Final Verdict</h2>
 <p>There is no escape and no algorithm that can reliably read backwards in a legacy multibyte encoding using only local context. To step backward successfully, a pointer and parser state are never enough; you must maintain an external cache of the byte-offsets for every single character boundary you crossed while reading forward. </p>
 </div></div><!-- contents -->
