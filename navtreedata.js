@@ -134,134 +134,135 @@ var NAVTREE =
       [ "Step 48: <tt>sniff_encoding</tt> negative compile test + Python lint fix (<tt>step48-sniff-negative-lint-fix</tt>)", "md_docs_plans_phase2_checklist.html#autotoc_md95", null ],
       [ "Step 49: <tt>whatwg_decode_view</tt> coverage improvement (<tt>step49-decode-view-coverage</tt>)", "md_docs_plans_phase2_checklist.html#autotoc_md96", null ],
       [ "Step 50: iconv view boundary-condition tests (<tt>step50-iconv-boundary-tests</tt>)", "md_docs_plans_phase2_checklist.html#autotoc_md97", null ],
-      [ "Notes", "md_docs_plans_phase2_checklist.html#autotoc_md99", null ]
+      [ "Step 51: iconv stateful flush (<tt>step51-iconv-stateful-flush</tt>)", "md_docs_plans_phase2_checklist.html#autotoc_md98", null ],
+      [ "Notes", "md_docs_plans_phase2_checklist.html#autotoc_md100", null ]
     ] ],
     [ "Phase 2: Full WHATWG Codec Implementation", "md_docs_plans_phase2_index.html", [
-      [ "Overview", "md_docs_plans_phase2_index.html#autotoc_md101", null ],
-      [ "WHATWG Encoding Inventory", "md_docs_plans_phase2_index.html#autotoc_md103", [
-        [ "Already implemented", "md_docs_plans_phase2_index.html#autotoc_md104", null ],
-        [ "Single-byte (22 total, 1 done)", "md_docs_plans_phase2_index.html#autotoc_md105", null ],
-        [ "Multi-byte (7 codecs, each with unique algorithm)", "md_docs_plans_phase2_index.html#autotoc_md106", null ],
-        [ "Other", "md_docs_plans_phase2_index.html#autotoc_md107", null ]
+      [ "Overview", "md_docs_plans_phase2_index.html#autotoc_md102", null ],
+      [ "WHATWG Encoding Inventory", "md_docs_plans_phase2_index.html#autotoc_md104", [
+        [ "Already implemented", "md_docs_plans_phase2_index.html#autotoc_md105", null ],
+        [ "Single-byte (22 total, 1 done)", "md_docs_plans_phase2_index.html#autotoc_md106", null ],
+        [ "Multi-byte (7 codecs, each with unique algorithm)", "md_docs_plans_phase2_index.html#autotoc_md107", null ],
+        [ "Other", "md_docs_plans_phase2_index.html#autotoc_md108", null ]
       ] ],
-      [ "Steps", "md_docs_plans_phase2_index.html#autotoc_md109", [
-        [ "Completed", "md_docs_plans_phase2_index.html#autotoc_md110", [
-          [ "@ref step14-replacement-codec.md \"Step 14: `codec::replacement`\"", "md_docs_plans_phase2_index.html#autotoc_md111", null ],
-          [ "@ref step15-x-user-defined.md \"Step 15: `codec::x_user_defined`\"", "md_docs_plans_phase2_index.html#autotoc_md112", null ],
-          [ "@ref step16-single-byte-infra.md \"Step 16: Single-byte infrastructure + `windows_1252`\"", "md_docs_plans_phase2_index.html#autotoc_md113", null ]
+      [ "Steps", "md_docs_plans_phase2_index.html#autotoc_md110", [
+        [ "Completed", "md_docs_plans_phase2_index.html#autotoc_md111", [
+          [ "@ref step14-replacement-codec.md \"Step 14: `codec::replacement`\"", "md_docs_plans_phase2_index.html#autotoc_md112", null ],
+          [ "@ref step15-x-user-defined.md \"Step 15: `codec::x_user_defined`\"", "md_docs_plans_phase2_index.html#autotoc_md113", null ],
+          [ "@ref step16-single-byte-infra.md \"Step 16: Single-byte infrastructure + `windows_1252`\"", "md_docs_plans_phase2_index.html#autotoc_md114", null ]
         ] ],
-        [ "Data tooling", "md_docs_plans_phase2_index.html#autotoc_md114", [
-          [ "@ref /home/runner/work/transcode/transcode/docs/plans/step17-iso-8859-tables.md \"Step 17: Data tooling — WHATWG index acquisition & table generation\"", "md_docs_plans_phase2_index.html#autotoc_md115", null ]
+        [ "Data tooling", "md_docs_plans_phase2_index.html#autotoc_md115", [
+          [ "@ref /home/runner/work/transcode/transcode/docs/plans/step17-iso-8859-tables.md \"Step 17: Data tooling — WHATWG index acquisition & table generation\"", "md_docs_plans_phase2_index.html#autotoc_md116", null ]
         ] ],
-        [ "Single-byte codec loop", "md_docs_plans_phase2_index.html#autotoc_md116", [
-          [ "Step 18: All single-byte decoders (<tt>step18-all-single-byte-decode</tt>)", "md_docs_plans_phase2_index.html#autotoc_md117", null ],
-          [ "Step 19: Single-byte encoder infrastructure + all encoders (<tt>step19-single-byte-encode</tt>)", "md_docs_plans_phase2_index.html#autotoc_md118", null ]
+        [ "Single-byte codec loop", "md_docs_plans_phase2_index.html#autotoc_md117", [
+          [ "Step 18: All single-byte decoders (<tt>step18-all-single-byte-decode</tt>)", "md_docs_plans_phase2_index.html#autotoc_md118", null ],
+          [ "Step 19: Single-byte encoder infrastructure + all encoders (<tt>step19-single-byte-encode</tt>)", "md_docs_plans_phase2_index.html#autotoc_md119", null ]
         ] ],
-        [ "UTF-8 encoder", "md_docs_plans_phase2_index.html#autotoc_md119", [
-          [ "@ref step18-utf8-encoder.md \"Step 20: UTF-8 encoder\"", "md_docs_plans_phase2_index.html#autotoc_md120", null ]
+        [ "UTF-8 encoder", "md_docs_plans_phase2_index.html#autotoc_md120", [
+          [ "@ref step18-utf8-encoder.md \"Step 20: UTF-8 encoder\"", "md_docs_plans_phase2_index.html#autotoc_md121", null ]
         ] ],
-        [ "UTF-16", "md_docs_plans_phase2_index.html#autotoc_md121", [
-          [ "Step 21: UTF-16 decoder + encoder (<tt>step21-utf16</tt>)", "md_docs_plans_phase2_index.html#autotoc_md122", null ]
+        [ "UTF-16", "md_docs_plans_phase2_index.html#autotoc_md122", [
+          [ "Step 21: UTF-16 decoder + encoder (<tt>step21-utf16</tt>)", "md_docs_plans_phase2_index.html#autotoc_md123", null ]
         ] ],
-        [ "Multi-byte codecs (decode + encode per codec)", "md_docs_plans_phase2_index.html#autotoc_md123", [
-          [ "Step 22: GBK decode + encode (<tt>step22-gbk</tt>)", "md_docs_plans_phase2_index.html#autotoc_md124", null ],
-          [ "Step 23: gb18030 decode + encode (<tt>step23-gb18030</tt>)", "md_docs_plans_phase2_index.html#autotoc_md125", null ],
-          [ "Step 24: Big5 decode + encode (<tt>step24-big5</tt>)", "md_docs_plans_phase2_index.html#autotoc_md126", null ],
-          [ "Step 25: Shift_JIS decode + encode (<tt>step25-shift-jis</tt>)", "md_docs_plans_phase2_index.html#autotoc_md127", null ],
-          [ "Step 26: EUC-JP decode + encode (<tt>step26-euc-jp</tt>)", "md_docs_plans_phase2_index.html#autotoc_md128", null ],
-          [ "Step 27: ISO-2022-JP decode + encode (<tt>step27-iso-2022-jp</tt>)", "md_docs_plans_phase2_index.html#autotoc_md129", null ],
-          [ "Step 28: EUC-KR decode + encode (<tt>step28-euc-kr</tt>)", "md_docs_plans_phase2_index.html#autotoc_md130", null ]
+        [ "Multi-byte codecs (decode + encode per codec)", "md_docs_plans_phase2_index.html#autotoc_md124", [
+          [ "Step 22: GBK decode + encode (<tt>step22-gbk</tt>)", "md_docs_plans_phase2_index.html#autotoc_md125", null ],
+          [ "Step 23: gb18030 decode + encode (<tt>step23-gb18030</tt>)", "md_docs_plans_phase2_index.html#autotoc_md126", null ],
+          [ "Step 24: Big5 decode + encode (<tt>step24-big5</tt>)", "md_docs_plans_phase2_index.html#autotoc_md127", null ],
+          [ "Step 25: Shift_JIS decode + encode (<tt>step25-shift-jis</tt>)", "md_docs_plans_phase2_index.html#autotoc_md128", null ],
+          [ "Step 26: EUC-JP decode + encode (<tt>step26-euc-jp</tt>)", "md_docs_plans_phase2_index.html#autotoc_md129", null ],
+          [ "Step 27: ISO-2022-JP decode + encode (<tt>step27-iso-2022-jp</tt>)", "md_docs_plans_phase2_index.html#autotoc_md130", null ],
+          [ "Step 28: EUC-KR decode + encode (<tt>step28-euc-kr</tt>)", "md_docs_plans_phase2_index.html#autotoc_md131", null ]
         ] ],
-        [ "Composition", "md_docs_plans_phase2_index.html#autotoc_md131", [
-          [ "Step 29: Round-trip composition (<tt>step29-roundtrip</tt>)", "md_docs_plans_phase2_index.html#autotoc_md132", null ]
+        [ "Composition", "md_docs_plans_phase2_index.html#autotoc_md132", [
+          [ "Step 29: Round-trip composition (<tt>step29-roundtrip</tt>)", "md_docs_plans_phase2_index.html#autotoc_md133", null ]
         ] ]
       ] ],
-      [ "Key Architecture Decisions", "md_docs_plans_phase2_index.html#autotoc_md134", null ]
+      [ "Key Architecture Decisions", "md_docs_plans_phase2_index.html#autotoc_md135", null ]
     ] ],
     [ "Step 17: Data Tooling — WHATWG Index Acquisition & Table Generation", "md_docs_plans_step17_iso_8859_tables.html", [
-      [ "Goal", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md137", null ],
-      [ "Why This Step Exists", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md138", null ],
-      [ "WHATWG Index Data Sources", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md139", [
-        [ "Single-byte indexes (one per codec)", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md140", null ],
-        [ "Multi-byte indexes", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md141", null ],
-        [ "Metadata", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md142", null ]
+      [ "Goal", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md138", null ],
+      [ "Why This Step Exists", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md139", null ],
+      [ "WHATWG Index Data Sources", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md140", [
+        [ "Single-byte indexes (one per codec)", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md141", null ],
+        [ "Multi-byte indexes", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md142", null ],
+        [ "Metadata", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md143", null ]
       ] ],
-      [ "Directory Layout", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md143", [
-        [ "<tt>docs/whatwg/</tt> — pristine upstream data", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md144", null ],
-        [ "<tt>docs/wpt/</tt> — Web Platform Tests (future)", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md145", null ],
-        [ "<tt>data/</tt> — our derived/processed artifacts", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md146", null ]
+      [ "Directory Layout", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md144", [
+        [ "<tt>docs/whatwg/</tt> — pristine upstream data", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md145", null ],
+        [ "<tt>docs/wpt/</tt> — Web Platform Tests (future)", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md146", null ],
+        [ "<tt>data/</tt> — our derived/processed artifacts", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md147", null ]
       ] ],
-      [ "Provenance: <tt>docs/whatwg/SOURCE.md</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md147", null ],
-      [ "Provenance: <tt>docs/whatwg/source.bib</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md148", null ],
-      [ "Python Quality Requirements", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md149", null ],
-      [ "Deliverables", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md150", [
-        [ "Script: <tt>tools/download_indexes.py</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md151", null ],
-        [ "Script: <tt>tools/generate_tables.py</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md152", null ],
-        [ "Tests: <tt>tools/tests/</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md153", null ],
-        [ "Generated files (single-byte, 22 total)", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md154", null ]
+      [ "Provenance: <tt>docs/whatwg/SOURCE.md</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md148", null ],
+      [ "Provenance: <tt>docs/whatwg/source.bib</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md149", null ],
+      [ "Python Quality Requirements", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md150", null ],
+      [ "Deliverables", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md151", [
+        [ "Script: <tt>tools/download_indexes.py</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md152", null ],
+        [ "Script: <tt>tools/generate_tables.py</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md153", null ],
+        [ "Tests: <tt>tools/tests/</tt>", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md154", null ],
+        [ "Generated files (single-byte, 22 total)", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md155", null ]
       ] ],
-      [ "Procedure", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md155", null ],
-      [ "Verification", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md156", null ],
-      [ "Notes", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md157", null ]
+      [ "Procedure", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md156", null ],
+      [ "Verification", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md157", null ],
+      [ "Notes", "md_docs_plans_step17_iso_8859_tables.html#autotoc_md158", null ]
     ] ],
     [ "<strong>System Architecture and Implementation Strategies for C++ Transcoding: Integrating encoding_rs as an Oracle for P1439-compliant Interfaces</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html", [
-      [ "<strong>The Standardization Landscape and the Crisis in Text Processing</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md159", null ],
-      [ "<strong>Deconstructing the P1439 Transcoding Model</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md160", [
-        [ "<strong>The Imperative of Range-Based Composability</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md161", null ]
+      [ "<strong>The Standardization Landscape and the Crisis in Text Processing</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md160", null ],
+      [ "<strong>Deconstructing the P1439 Transcoding Model</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md161", [
+        [ "<strong>The Imperative of Range-Based Composability</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md162", null ]
       ] ],
-      [ "<strong>The Internal Engine: Profiling encoding_rs and WHATWG Compliance</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md162", [
-        [ "<strong>WHATWG Encoding Standard Compliance</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md163", null ],
-        [ "<strong>Streaming versus Non-Streaming Execution Modes</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md164", null ]
+      [ "<strong>The Internal Engine: Profiling encoding_rs and WHATWG Compliance</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md163", [
+        [ "<strong>WHATWG Encoding Standard Compliance</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md164", null ],
+        [ "<strong>Streaming versus Non-Streaming Execution Modes</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md165", null ]
       ] ],
-      [ "<strong>Bridging the FFI Boundary: The Constraints of encoding_c</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md165", [
-        [ "<strong>The Panic=Abort Imperative and Exception Safety</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md166", null ],
-        [ "<strong>Type Impedance and the Guideline Support Library (GSL)</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md167", null ]
+      [ "<strong>Bridging the FFI Boundary: The Constraints of encoding_c</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md166", [
+        [ "<strong>The Panic=Abort Imperative and Exception Safety</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md167", null ],
+        [ "<strong>Type Impedance and the Guideline Support Library (GSL)</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md168", null ]
       ] ],
-      [ "<strong>Implementation Strategy: Mapping Ranges to Rust Decoders</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md168", [
-        [ "<strong>Bypassing Iterator Overhead via Contiguous Specialization</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md169", null ],
-        [ "<strong>Managing Non-Contiguous State and Pipeline Eagerness</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md170", null ]
+      [ "<strong>Implementation Strategy: Mapping Ranges to Rust Decoders</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md169", [
+        [ "<strong>Bypassing Iterator Overhead via Contiguous Specialization</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md170", null ],
+        [ "<strong>Managing Non-Contiguous State and Pipeline Eagerness</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md171", null ]
       ] ],
-      [ "<strong>Theoretical Foundations: Coinductive Types, Trees, and Traversables</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md171", null ],
-      [ "<strong>Monadic Error Handling: Integration with views::maybe and std::optional</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md172", [
-        [ "<strong>The Role of views::maybe in Transcoding Pipelines</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md173", null ],
-        [ "<strong>std::optional and Monadic Continuations</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md174", null ]
+      [ "<strong>Theoretical Foundations: Coinductive Types, Trees, and Traversables</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md172", null ],
+      [ "<strong>Monadic Error Handling: Integration with views::maybe and std::optional</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md173", [
+        [ "<strong>The Role of views::maybe in Transcoding Pipelines</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md174", null ],
+        [ "<strong>std::optional and Monadic Continuations</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md175", null ]
       ] ],
-      [ "<strong>The Oracle Paradigm: Fuzzing and Implementor Relief</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md175", [
-        [ "<strong>Defining the Testing Oracle</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md176", null ],
-        [ "<strong>Differential Fuzzing Strategy</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md177", null ]
+      [ "<strong>The Oracle Paradigm: Fuzzing and Implementor Relief</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md176", [
+        [ "<strong>Defining the Testing Oracle</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md177", null ],
+        [ "<strong>Differential Fuzzing Strategy</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md178", null ]
       ] ],
-      [ "<strong>Managing Mojibake, Identifier Normalization, and Security</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md178", null ],
-      [ "<strong>Navigating Build Systems and Ecosystem Integration</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md179", null ],
-      [ "<strong>Conclusion</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md180", null ]
+      [ "<strong>Managing Mojibake, Identifier Normalization, and Security</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md179", null ],
+      [ "<strong>Navigating Build Systems and Ecosystem Integration</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md180", null ],
+      [ "<strong>Conclusion</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md181", null ]
     ] ],
     [ "Review of transcode as a C++29 Library Candidate and Beman Inclusion Candidate", "md_docs_transcode_as_a_C__29_Library_Candidate.html", [
-      [ "Executive summary", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md183", [
-        [ "Audit summary", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md184", null ]
+      [ "Executive summary", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md184", [
+        [ "Audit summary", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md185", null ]
       ] ],
-      [ "Repository status and engineering quality", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md185", null ],
-      [ "API design and code-level behavior", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md186", [
-        [ "Design issues and concrete defects", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md187", null ],
-        [ "Targeted code suggestions", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md188", null ]
+      [ "Repository status and engineering quality", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md186", null ],
+      [ "API design and code-level behavior", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md187", [
+        [ "Design issues and concrete defects", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md188", null ],
+        [ "Targeted code suggestions", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md189", null ]
       ] ],
-      [ "Single-byte support and the feasibility of random-access iteration or indexing", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md189", [
-        [ "Feasibility matrix for random access", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md190", null ]
+      [ "Single-byte support and the feasibility of random-access iteration or indexing", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md190", [
+        [ "Feasibility matrix for random access", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md191", null ]
       ] ],
-      [ "Relationship to P2728", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md191", [
-        [ "Current behavior versus P2728-like expectations", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md192", null ],
-        [ "Suggested architectural split", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md193", null ]
+      [ "Relationship to P2728", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md192", [
+        [ "Current behavior versus P2728-like expectations", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md193", null ],
+        [ "Suggested architectural split", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md194", null ]
       ] ],
-      [ "Concrete changes, tests to add, and documentation fixes", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md194", null ],
-      [ "Acceptance checklist for Beman inclusion and proposal readiness", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md195", [
-        [ "Bottom-line recommendation", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md196", null ]
+      [ "Concrete changes, tests to add, and documentation fixes", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md195", null ],
+      [ "Acceptance checklist for Beman inclusion and proposal readiness", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md196", [
+        [ "Bottom-line recommendation", "md_docs_transcode_as_a_C__29_Library_Candidate.html#autotoc_md197", null ]
       ] ]
     ] ],
     [ "WHATWG Encoding Standard — Index Data", "md_docs_whatwg_SOURCE.html", [
-      [ "File Provenance", "md_docs_whatwg_SOURCE.html#autotoc_md198", null ],
-      [ "Full Checksums", "md_docs_whatwg_SOURCE.html#autotoc_md199", null ]
+      [ "File Provenance", "md_docs_whatwg_SOURCE.html#autotoc_md199", null ],
+      [ "Full Checksums", "md_docs_whatwg_SOURCE.html#autotoc_md200", null ]
     ] ],
     [ "Web Platform Tests — Encoding Test Vectors", "md_docs_wpt_SOURCE.html", [
-      [ "File Provenance", "md_docs_wpt_SOURCE.html#autotoc_md201", null ],
-      [ "Full Checksums", "md_docs_wpt_SOURCE.html#autotoc_md202", null ]
+      [ "File Provenance", "md_docs_wpt_SOURCE.html#autotoc_md202", null ],
+      [ "Full Checksums", "md_docs_wpt_SOURCE.html#autotoc_md203", null ]
     ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
@@ -300,7 +301,7 @@ var NAVTREEINDEX =
 "annotated.html",
 "classbeman_1_1transcoding_1_1whatwg__decode__view.html#a76921f5693fdc33d9aa18b0362343715",
 "iso__8859__13_8hpp_source.html",
-"namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa88b12deabfb301d0d62b6fb5fa8f2565"
+"namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa870b1c8d709ae13c6f3125309e99e10a"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
