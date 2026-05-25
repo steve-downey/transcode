@@ -1,4 +1,4 @@
-# Handoff: beman.transcode — Step 47
+# Handoff: beman.transcode — Step 48
 
 ## Project
 
@@ -14,95 +14,71 @@ proposal.
 
 ## Current State
 
-**Step 46 complete and merged to main.**
+**Step 47 complete and merged to main.**
 
-557 C++ tests + 171 Python tests pass (`make test`). `make lint` has
+558 C++ tests + 171 Python tests pass (`make test`). `make lint` has
 pre-existing failures in `papers/wg21/` and `tools/tests/test_generate_labels.py`
 (Python ruff/codespell issues unrelated to the transcode C++ library). The
 C++ and CMake portions of lint pass cleanly.
 
-Coverage (after step 46): lines 83.4%, functions 99.9% (2026/2027).
+### What Step 47 Added
 
-### What Step 46 Added
+1. **Negative compile test** for `transcode_closure` raw array rejection:
+   - `tests/beman/transcode/transcode_view_reject_array_fail.cpp` — tries
+     to pipe a `char[]` into `transcode<>`, expects the `static_assert`
+     diagnostic `"transcode: raw arrays are not valid input to transcode"`.
+   - Registered in `tests/beman/transcode/CMakeLists.txt` as
+     `transcode_view_reject_array_fail` (EXCLUDE_FROM_ALL + PASS_REGULAR_EXPRESSION).
 
-A `transcode_closure<From, To>` variable template in
-`include/beman/transcode/detail/transcode_view.hpp`:
+2. **Consteval test** replacing the stub `constify(true)` in
+   `tests/beman/transcode/transcode_view.test.cpp`:
+   - A real round-trip check: ASCII `'A'` through
+     `transcode<codec::utf_8, codec::utf_8>` returns `'\x41'` in consteval
+     context.
 
-```cpp
-// Usage:
-auto v = bytes | transcode<codec::windows_1252, codec::utf_8>;
-auto v = bytes | transcode<codec::utf_8, codec::gbk>;
-```
+3. **Bug fix** — added `constexpr` to four `operator==(iterator, default_sentinel_t)`
+   hidden friend functions:
+   - `whatwg_decode_view::iterator::operator==` (line ~138)
+   - `whatwg_decode_or_error_view::iterator::operator==` (line ~219)
+   - `whatwg_encode_view::iterator::operator==` (line ~88)
+   - `whatwg_encode_or_error_view::iterator::operator==` (line ~157)
+   These were the only non-`constexpr` members in both views.
 
-The closure wraps `whatwg_decode<From> | whatwg_encode<To>` into a single
-pipeable range adapter. Result type is
-`whatwg_encode_view<To, whatwg_decode_view<From, all_t<R>>>` — zero
-overhead, no intermediate allocation, lazily evaluated.
-
-7 new tests in `tests/beman/transcode/transcode_view.test.cpp`.
-
-The header is included in the umbrella `include/beman/transcode/transcode.hpp`.
-
-## What To Do Next — Step 47
+## What To Do Next — Step 48
 
 **Read the checklist first:**
 ```
 docs/plans/phase2-checklist.md
 ```
 
-Steps 0–46 are complete. The checklist does not yet have a step 47 entry.
+Steps 0–47 are complete. The checklist does not yet have a step 48 entry.
 
-### Recommended step 47: `transcode_view` negative compile test + consteval test
+### Recommended step 48: `labels.hpp` and `sniff.hpp` consteval tests
 
-**Part A — negative compile test** for raw arrays:
+**Part A — `get_encoding()` consteval tests** in
+`tests/beman/transcode/labels.test.cpp` (file already exists):
 
-Add a `.cpp` file that tries to pipe a raw `char[]` array into `transcode<>`:
-```cpp
-// transcode_view_reject_array_fail.cpp
-#include <beman/transcode/detail/transcode_view.hpp>
-char arr[] = "hello";
-auto v = arr | beman::transcoding::transcode<beman::transcoding::codec::utf_8,
-                                             beman::transcoding::codec::utf_8>;
-```
-This should trigger the `static_assert` with message:
-```
-"transcode: raw arrays are not valid input to transcode"
-```
-Register in `tests/beman/transcode/CMakeLists.txt` as an `OBJECT` library
-with `EXCLUDE_FROM_ALL` and `PASS_REGULAR_EXPRESSION` on the build command.
-See existing patterns at the bottom of CMakeLists.txt (e.g.,
-`concepts_reject_arrays_fail`).
-
-**Part B — consteval test** that actually exercises the closure:
-
-The current step 46 consteval test is a stub (`constify(true)`). Replace or
-augment it with a real test. Note: `whatwg_decode`/`whatwg_encode` closures
-are `constexpr` but the underlying iterators may not be fully consteval
-because they call `static` lookup tables. Verify first:
+`get_encoding(string_view)` in `include/beman/transcode/detail/labels.hpp`
+is declared `constexpr`. Add a new `TEST_CASE` with `constify()` checks:
 
 ```cpp
-// In transcode_view.test.cpp — attempt a real consteval round-trip
-// If the view is truly constexpr-usable, something like:
-constexpr bool check_transcode_closure_constexpr() {
-    // ... iterate over a span and check bytes
+#include <tests/beman/transcode/test_utilities.hpp>
+using beman::transcoding::tests::constify;
+
+TEST_CASE("labels: get_encoding consteval", "[labels]") {
+    CHECK(constify(get_encoding("utf-8") == codec::utf_8));
+    CHECK(constify(!get_encoding("bogus").has_value()));
+    CHECK(constify(get_encoding("  UTF-8  ") == codec::utf_8));  // whitespace strip
+    CHECK(constify(get_encoding("shift_jis") == codec::shift_jis));
+    CHECK(constify(get_encoding("UTF-8") == codec::utf_8));      // case-insensitive
 }
-static_assert(check_transcode_closure_constexpr());
 ```
 
-If the views are not consteval-compatible (likely due to `static` tables or
-non-constexpr iconv internals), document it in a comment and keep `constify(true)`.
+**Part B — `sniff_encoding()` consteval tests** in
+`tests/beman/transcode/sniff.test.cpp` (file already exists):
 
-### Alternative step 47: `transcode_string` consteval tests
-
-`get_encoding(string_view)` in `detail/labels.hpp` is `constexpr`. Add
-`constify()` tests in `labels.test.cpp` that verify compile-time evaluation:
-```cpp
-CHECK(constify(get_encoding("utf-8") == codec::utf_8));
-CHECK(constify(!get_encoding("bogus").has_value()));
-```
-
-`sniff_encoding()` in `detail/sniff.hpp` is also likely `constexpr`. Add
-similar tests in `sniff.test.cpp`.
+`sniff_encoding()` in `include/beman/transcode/detail/sniff.hpp` is
+`constexpr`. Add constify() checks for BOM detection at compile time.
 
 ## TDD Process
 
@@ -126,7 +102,7 @@ make mypy      # mypy type checker only
 
 ## Coding Rules (abbreviated)
 
-- Include guard: mirrors file path, e.g. `INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_VIEW_HPP`
+- Include guard: mirrors file path, e.g. `INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP`
 - Test file: include the primary header **twice** (idempotent check)
 - Functions: out-of-line in headers with full `ClassName::method_name` qualification
 - `constexpr` everything that can be; add `constify()` consteval test
@@ -135,14 +111,13 @@ make mypy      # mypy type checker only
 
 ## Key files for context
 
-- `include/beman/transcode/transcode.hpp` — umbrella header (includes transcode_view.hpp)
-- `include/beman/transcode/detail/transcode_view.hpp` — step 46: `transcode_closure<From,To>` + `transcode<From,To>` variable template
-- `include/beman/transcode/detail/transcode_string.hpp` — step 43+45 one-shot function (codec + label overloads)
 - `include/beman/transcode/detail/labels.hpp` — `get_encoding(string_view)` constexpr lookup
 - `include/beman/transcode/detail/sniff.hpp` — `sniff_encoding()` constexpr BOM detection
-- `include/beman/transcode/detail/concepts.hpp` — `legacy_byte_range`, `unicode_scalar_range`
-- `include/beman/transcode/whatwg_decode_view.hpp` — decode view + `whatwg_decode` closure + `codec` enum
-- `include/beman/transcode/whatwg_encode_view.hpp` — encode view + `whatwg_encode` closure
-- `tests/beman/transcode/transcode_view.test.cpp` — step 46 tests (style reference)
-- `tests/beman/transcode/transcode_string_label.test.cpp` — step 45 tests (style reference)
+- `include/beman/transcode/detail/transcode_view.hpp` — step 46: `transcode_closure<From,To>` + `transcode<From,To>` variable template
+- `include/beman/transcode/detail/transcode_string.hpp` — one-shot function (codec + label overloads)
+- `include/beman/transcode/whatwg_decode_view.hpp` — decode view (all `constexpr` including `operator==`)
+- `include/beman/transcode/whatwg_encode_view.hpp` — encode view (all `constexpr` including `operator==`)
+- `tests/beman/transcode/labels.test.cpp` — existing labels tests (add constify tests here)
+- `tests/beman/transcode/sniff.test.cpp` — existing sniff tests (add constify tests here)
+- `tests/beman/transcode/transcode_view.test.cpp` — step 47 consteval test (style reference)
 - `tests/beman/transcode/CMakeLists.txt` — how to register test targets and negative compile tests

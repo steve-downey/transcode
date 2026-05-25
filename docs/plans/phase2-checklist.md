@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–46 complete. 557 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–47 complete. 558 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -428,6 +428,17 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Add `transcode_view.hpp` to umbrella header `transcode.hpp`
 - [x] `make test` (557 C++ + 171 Python all pass) + `make lint` (C++ clean)
 - [x] `make coverage`: lines 83.4%, functions 99.9%
+- [x] Push GREEN to both remotes + merge to main + push both remotes
+
+## Step 47: `transcode_view` negative compile test + consteval test (`step47-transcode-view-negative-consteval`)
+
+- [x] Create branch `step47-transcode-view-negative-consteval` from `main`
+- [x] Write `transcode_view_reject_array_fail.cpp` (RED)
+- [x] Register in `tests/beman/transcode/CMakeLists.txt` as negative compile test
+- [x] Push RED to both remotes
+- [x] Replace stub `constify(true)` with real round-trip consteval test
+- [x] Add `constexpr` to four `operator==(iterator, default_sentinel_t)` friends in `whatwg_decode_view.hpp` and `whatwg_encode_view.hpp` (GREEN)
+- [x] `make test` (558 C++ + 171 Python all pass) + `make lint` (C++ clean)
 - [x] Push GREEN to both remotes + merge to main + push both remotes
 
 ---
