@@ -8,9 +8,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_wpt_vectors import (
     parse_gb18030_decode_vectors,
+    parse_iso2022jp_decode_vectors,
     parse_js_string,
+    parse_single_byte_indexes,
     parse_utf8_mistake_vectors,
     render_gb18030_vectors_hpp,
+    render_iso2022jp_vectors_hpp,
+    render_single_byte_vectors_hpp,
     render_utf8_vectors_hpp,
 )
 
@@ -157,3 +161,63 @@ def test_render_utf8_vectors_hpp(tmp_path: Path) -> None:
     assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_UTF8_VECTORS_HPP" in content
     assert "utf8_wpt_decode_vectors" in content
     assert "0xFFFD" in content
+
+
+def test_parse_js_string_hex_escape() -> None:
+    assert parse_js_string("\\x0D") == [0x0D]
+
+
+def test_parse_js_string_literal_multibyte() -> None:
+    assert parse_js_string("¥") == [0xA5]
+
+
+def test_parse_iso2022jp_decode_vectors() -> None:
+    content = 'decode([0x1b, 0x24], "\\ufffd$", "Error ESC")'
+    vectors = parse_iso2022jp_decode_vectors(content)
+    assert len(vectors) == 1
+    assert vectors[0]["input"] == [0x1B, 0x24]
+    assert vectors[0]["expected"] == [0xFFFD, 0x24]
+    assert vectors[0]["description"] == "Error ESC"
+
+
+def test_parse_iso2022jp_literal_utf8() -> None:
+    content = 'decode([0x1b, 0x28, 0x4A, 0x5C, 0x5D, 0x7E], "¥]‾", "Roman ESC, characters")'
+    vectors = parse_iso2022jp_decode_vectors(content)
+    assert vectors[0]["expected"] == [0xA5, 0x5D, 0x203E]
+
+
+def test_parse_single_byte_indexes() -> None:
+    content = """
+    singleByteIndexes = {
+  "IBM866":[1040,1041,null,1043],
+  "ISO-8859-2":[128,129,130,131]
+}
+"""
+    indexes = parse_single_byte_indexes(content)
+    assert len(indexes) == 2
+    assert indexes[0]["name"] == "IBM866"
+    assert indexes[0]["codepoints"] == [1040, 1041, 0xFFFD, 1043]
+    assert indexes[1]["name"] == "ISO-8859-2"
+    assert indexes[1]["codepoints"] == [128, 129, 130, 131]
+
+
+def test_render_iso2022jp_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {"input": [0x1B, 0x24], "expected": [0xFFFD, 0x24], "description": "test"},
+    ]
+    out = tmp_path / "wpt_iso2022jp_vectors.hpp"
+    render_iso2022jp_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "iso2022jp_wpt_decode_vectors" in content
+    assert "0x1B" in content
+
+
+def test_render_single_byte_vectors_hpp(tmp_path: Path) -> None:
+    indexes: list[dict[str, object]] = [
+        {"name": "IBM866", "codepoints": [1040, 1041, 0xFFFD, 1043]},
+    ]
+    out = tmp_path / "wpt_single_byte_vectors.hpp"
+    render_single_byte_vectors_hpp(indexes, out)
+    content = out.read_text()
+    assert "wpt_single_byte_indexes" in content
+    assert "IBM866" in content
