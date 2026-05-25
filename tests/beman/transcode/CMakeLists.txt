@@ -490,7 +490,10 @@ target_link_libraries(
 
 add_executable(beman.transcode.tests.labels)
 target_sources(beman.transcode.tests.labels PRIVATE labels.test.cpp)
-target_include_directories(beman.transcode.tests.labels PRIVATE ${TEST_INCLUDE_DIR})
+target_include_directories(
+    beman.transcode.tests.labels
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
 target_link_libraries(
     beman.transcode.tests.labels
     PRIVATE beman::transcode Catch2::Catch2WithMain
