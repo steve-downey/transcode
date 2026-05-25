@@ -866,3 +866,18 @@ set_tests_properties(
     sniff_reject_char32_range_fail
     PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
 )
+
+# Module integration test (only when modules are enabled)
+if(BEMAN_TRANSCODE_USE_MODULES)
+    add_executable(beman.transcode.tests.module_integration)
+    target_sources(beman.transcode.tests.module_integration PRIVATE module_integration.test.cpp)
+    target_include_directories(
+        beman.transcode.tests.module_integration
+        PRIVATE ${TEST_INCLUDE_DIR}
+    )
+    target_link_libraries(
+        beman.transcode.tests.module_integration
+        PRIVATE beman::transcode Catch2::Catch2WithMain
+    )
+    add_test(NAME beman.transcode.tests.module_integration COMMAND beman.transcode.tests.module_integration)
+endif()
