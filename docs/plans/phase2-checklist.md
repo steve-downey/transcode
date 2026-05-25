@@ -2,7 +2,7 @@
 
 Mark items `[x]` as they complete. Read this file first when resuming work.
 
-**Current state:** Steps 0–40 complete. 502 C++ + 171 Python tests pass. On `main`.
+**Current state:** Steps 0–41 complete. 513 C++ + 171 Python tests pass. On `main`.
 
 ---
 
@@ -359,6 +359,14 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 - [x] Implement `get_encoding()` in `detail/labels.hpp` (generated)
 - [x] `make test` (502 C++ + 171 Python) + `make lint`
 - [x] Push both remotes + merge to main
+
+## Step 41: `sniff_encoding` BOM detection (`step41-sniff-encoding`)
+
+- [x] Create branch `step41-sniff-encoding` from `main`
+- [x] Write failing C++ tests (RED) + push both remotes
+- [x] Implement `include/beman/transcode/detail/sniff.hpp`
+- [x] `make test` (513 C++ + 171 Python all pass) + `make lint` (C++ clean)
+- [x] Push GREEN to both remotes + merge to main
 
 ---
 
