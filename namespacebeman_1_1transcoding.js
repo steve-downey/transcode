@@ -75,6 +75,7 @@ var namespacebeman_1_1transcoding =
       [ "out_of_range", "namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0", null ],
       [ "unmapped_codepoint", "namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba41a389ed570cf4bd17e392adceb1bf31", null ]
     ] ],
+    [ "get_encoding", "namespacebeman_1_1transcoding.html#a66a54f73e921a9aa3ccdf21aa982e3ec", null ],
     [ "iconv_transcode", "namespacebeman_1_1transcoding.html#aab66a3b96e24d01f79bc11a5b9731dcb", null ],
     [ "iconv_transcode_or_error", "namespacebeman_1_1transcoding.html#a0b9d1350ae333361ebeca4ed71a3d2cd", null ],
     [ "make_real_iconv_fns", "namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b", null ],

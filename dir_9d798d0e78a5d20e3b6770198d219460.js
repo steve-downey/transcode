@@ -8,6 +8,7 @@ var dir_9d798d0e78a5d20e3b6770198d219460 =
     [ "euc_kr.hpp", "euc__kr_8hpp.html", null ],
     [ "gb18030.hpp", "gb18030_8hpp.html", null ],
     [ "gbk.hpp", "gbk_8hpp.html", null ],
+    [ "labels.hpp", "labels_8hpp.html", "labels_8hpp" ],
     [ "null_term.hpp", "null__term_8hpp.html", "null__term_8hpp" ],
     [ "shift_jis.hpp", "shift__jis_8hpp.html", null ],
     [ "single_byte.hpp", "single__byte_8hpp.html", null ],
