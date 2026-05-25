@@ -181,7 +181,9 @@ def test_parse_iso2022jp_decode_vectors() -> None:
 
 
 def test_parse_iso2022jp_literal_utf8() -> None:
-    content = 'decode([0x1b, 0x28, 0x4A, 0x5C, 0x5D, 0x7E], "¥]‾", "Roman ESC, characters")'
+    content = (
+        'decode([0x1b, 0x28, 0x4A, 0x5C, 0x5D, 0x7E], "¥]‾", "Roman ESC, characters")'
+    )
     vectors = parse_iso2022jp_decode_vectors(content)
     assert vectors[0]["expected"] == [0xA5, 0x5D, 0x203E]
 

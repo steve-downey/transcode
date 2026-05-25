@@ -42,7 +42,8 @@ repos:
       - id: codespell
         # docs/whatwg/ contains pristine WHATWG data with Unicode char names
         # (e.g. "LAMDA", "TEH") that are correct Unicode terminology, not typos.
-        exclude: ^docs/whatwg/
+        # docs/wpt/ contains pristine WPT test files (upstream typos).
+        exclude: ^(docs/whatwg/|docs/wpt/)
         args:
           - --ignore-words-list=implementors
 
