@@ -77,3 +77,23 @@ TEST_CASE("transcode.hpp: null_term + decode round-trip", "[transcoding::umbrell
         result.push_back(cp);
     CHECK(result == U"hi");
 }
+
+TEST_CASE("transcode.hpp: iconv_transcode_view accessible", "[transcoding::umbrella]") {
+    // Verify iconv types are available from umbrella header
+    static_assert(std::is_class_v<iconv_functions>);
+    static_assert(std::is_class_v<iconv_transcode_view<iconv_functions, std::vector<char>>>);
+}
+
+TEST_CASE("transcode.hpp: iconv_transcode_or_error_view accessible", "[transcoding::umbrella]") {
+    // Verify iconv_or_error types are available from umbrella header
+    static_assert(std::is_class_v<iconv_transcode_or_error_view<iconv_functions, std::vector<char>>>);
+}
+
+TEST_CASE("transcode.hpp: iconv_real accessible", "[transcoding::umbrella]") {
+    // Verify iconv_real is accessible from umbrella header
+    // Create an iconv_functions struct from iconv_real factory
+    auto fns = make_real_iconv_fns();
+    CHECK(fns.open != nullptr);
+    CHECK(fns.convert != nullptr);
+    CHECK(fns.close != nullptr);
+}

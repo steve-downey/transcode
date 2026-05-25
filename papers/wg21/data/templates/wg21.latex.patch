@@ -8,7 +8,7 @@ index 7d539fe..723e93e 100644
  $endif$
 -  pdfcreator={LaTeX via pandoc}}
 +  pdfcreator={mpark/wg21}}
- 
+
 +\makeatletter
 +\def\@maketitle{
 +  \newpage \null \vskip 2em

@@ -12,7 +12,6 @@ void test() {
     char arr[] = "hello";
     // char[N] is not a valid input — should fail to compile with the message:
     // "transcode: raw arrays are not valid input to transcode"
-    auto v = arr | beman::transcoding::transcode<beman::transcoding::codec::utf_8,
-                                                 beman::transcoding::codec::utf_8>;
+    auto v = arr | beman::transcoding::transcode<beman::transcoding::codec::utf_8, beman::transcoding::codec::utf_8>;
     (void)v;
 }
