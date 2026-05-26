@@ -153,6 +153,8 @@ class random_access_whatwg_encode_view : public std::ranges::view_interface<rand
         constexpr iterator() = default;
         constexpr explicit iterator(base_iter current) : current_(current) {}
 
+        constexpr const base_iter& base() const noexcept { return current_; }
+
         constexpr char operator*() const {
             return detail::encode_random_access_code_point(static_cast<char32_t>(*current_),
                                                            detail::random_access_encode_table<C>());
@@ -215,6 +217,9 @@ class random_access_whatwg_encode_view : public std::ranges::view_interface<rand
   public:
     constexpr explicit random_access_whatwg_encode_view(R base) : base_(std::move(base)) {}
 
+    constexpr const R& base() const& noexcept { return base_; }
+    constexpr R        base() && { return std::move(base_); }
+
     constexpr iterator begin() { return iterator(std::ranges::begin(base_)); }
 
     constexpr iterator begin() const
@@ -258,6 +263,8 @@ class random_access_whatwg_encode_or_error_view
 
         constexpr iterator() = default;
         constexpr explicit iterator(base_iter current) : current_(current) {}
+
+        constexpr const base_iter& base() const noexcept { return current_; }
 
         constexpr value_type operator*() const {
             const auto cp = static_cast<char32_t>(*current_);
@@ -324,6 +331,9 @@ class random_access_whatwg_encode_or_error_view
 
   public:
     constexpr explicit random_access_whatwg_encode_or_error_view(R base) : base_(std::move(base)) {}
+
+    constexpr const R& base() const& noexcept { return base_; }
+    constexpr R        base() && { return std::move(base_); }
 
     constexpr iterator begin() { return iterator(std::ranges::begin(base_)); }
 
@@ -392,6 +402,8 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
 
         constexpr iterator(base_iter current, base_sent end);
 
+        constexpr const base_iter& base() const noexcept { return current_; }
+
         constexpr char      operator*() const;
         constexpr iterator& operator++();
         constexpr iterator  operator++(int)
@@ -414,6 +426,9 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
 
   public:
     constexpr explicit whatwg_encode_view(R base);
+
+    constexpr const R& base() const& noexcept { return base_; }
+    constexpr R        base() && { return std::move(base_); }
 
     constexpr iterator begin();
     constexpr iterator begin() const
@@ -493,6 +508,8 @@ class whatwg_encode_or_error_view : public std::ranges::view_interface<whatwg_en
 
         constexpr iterator(base_iter current, base_sent end);
 
+        constexpr const base_iter& base() const noexcept { return current_; }
+
         constexpr auto      operator*() const;
         constexpr iterator& operator++();
         constexpr iterator  operator++(int)
@@ -515,6 +532,9 @@ class whatwg_encode_or_error_view : public std::ranges::view_interface<whatwg_en
 
   public:
     constexpr explicit whatwg_encode_or_error_view(R base);
+
+    constexpr const R& base() const& noexcept { return base_; }
+    constexpr R        base() && { return std::move(base_); }
 
     constexpr iterator begin();
     constexpr iterator begin() const
