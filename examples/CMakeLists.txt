@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-set(
-    ALL_EXAMPLES
+set(ALL_EXAMPLES
     todo
     custom_single_byte_decoder
     paper_decode_utf8

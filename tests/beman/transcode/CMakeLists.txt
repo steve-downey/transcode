@@ -902,3 +902,104 @@ if(BEMAN_TRANSCODE_USE_MODULES)
         COMMAND beman.transcode.tests.module_integration
     )
 endif()
+
+# ---------------------------------------------------------------------------
+# Pluggable codec protocol tests
+# ---------------------------------------------------------------------------
+
+add_executable(beman.transcode.tests.codec_concepts)
+target_sources(
+    beman.transcode.tests.codec_concepts
+    PRIVATE codec_concepts.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.codec_concepts
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.codec_concepts
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.codec_concepts
+    COMMAND beman.transcode.tests.codec_concepts
+)
+
+add_executable(beman.transcode.tests.decode_view)
+target_sources(beman.transcode.tests.decode_view PRIVATE decode_view.test.cpp)
+target_include_directories(
+    beman.transcode.tests.decode_view
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.decode_view
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.decode_view
+    COMMAND beman.transcode.tests.decode_view
+)
+
+# Negative compile test: decode rejects raw arrays
+add_library(beman.transcode.tests.decode_view_reject_arrays_fail OBJECT)
+target_sources(
+    beman.transcode.tests.decode_view_reject_arrays_fail
+    PRIVATE decode_view_reject_arrays_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.decode_view_reject_arrays_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.decode_view_reject_arrays_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME decode_view_reject_arrays_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.decode_view_reject_arrays_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    decode_view_reject_arrays_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "transcode: raw arrays are not valid input to decode"
+)
+
+add_executable(beman.transcode.tests.blp59001)
+target_sources(
+    beman.transcode.tests.blp59001
+    PRIVATE blp59001.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.blp59001
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.blp59001
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.blp59001
+    COMMAND beman.transcode.tests.blp59001
+)
+
+add_executable(beman.transcode.tests.ebcdic037)
+target_sources(
+    beman.transcode.tests.ebcdic037
+    PRIVATE ebcdic037.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.ebcdic037
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.ebcdic037
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.ebcdic037
+    COMMAND beman.transcode.tests.ebcdic037
+)

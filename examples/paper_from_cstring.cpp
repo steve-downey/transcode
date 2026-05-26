@@ -22,12 +22,12 @@ std::wstring before(const char* text) {
 }
 
 auto after(const char* text) {
-    return beman::transcoding::views::null_term(text)
-         | beman::transcoding::whatwg_decode<beman::transcoding::codec::utf_8>;
+    return beman::transcoding::views::null_term(text) |
+           beman::transcoding::whatwg_decode<beman::transcoding::codec::utf_8>;
 }
 
 int main() {
-    constexpr const char* input = "Hello";
+    constexpr const char* input  = "Hello";
     auto                  legacy = before(input);
     std::vector<char32_t> decoded;
     for (char32_t code_point : after(input)) {
