@@ -522,6 +522,7 @@ var NAVTREE =
         [ "All", "namespacemembers.html", null ],
         [ "Functions", "namespacemembers_func.html", null ],
         [ "Variables", "namespacemembers_vars.html", null ],
+        [ "Typedefs", "namespacemembers_type.html", null ],
         [ "Enumerations", "namespacemembers_enum.html", null ]
       ] ]
     ] ],
@@ -551,12 +552,14 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html#a39551258b98f3aea6aee7ca660f2f839",
-"classbeman_1_1transcoding_1_1single__byte__encode__view.html#a6f76fae2623ad0aee325c24b8c284806",
-"classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a6b0a4aef0bd488475ec91d744879370c",
-"md_docs_Benchmarking_Transcode_Implementation_Performance.html#autotoc_md22",
-"md_docs_plans_phase3_index.html#autotoc_md268",
-"paper__shift__jis__to__utf8_8cpp.html#a81aa5fbd5343f5218d45c1f696e29c15"
+"classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a1cc91127886fdbcd747a008a2212dc7a",
+"classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view_1_1iterator.html#a8f337b7c726e2d6c6317262be547a4d2",
+"classbeman_1_1transcoding_1_1single__byte__decode__view_1_1iterator.html#af1158e0cddc1da960f2333e63d40d9af",
+"classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html",
+"iso__8859__4_8hpp.html",
+"md_docs_plans_phase2_index.html#autotoc_md229",
+"namespacebeman_1_1transcoding.html#aef322db207ff0a4583061027a96a7475",
+"whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa638ac6a64991d6773e1b71560f9c6ab2"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
