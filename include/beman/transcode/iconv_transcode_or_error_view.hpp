@@ -73,6 +73,8 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
         iterator& operator=(iterator&&) noexcept;
         ~iterator();
 
+        const base_iter& base() const noexcept { return current_; }
+
         result_t  operator*() const;
         iterator& operator++();
         void      operator++(int);
@@ -83,6 +85,9 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
   public:
     explicit iconv_transcode_or_error_view(
         R base, IconvFns fns, const char* from, const char* to, std::span<char> buf);
+
+    const R& base() const& noexcept { return base_; }
+    R        base() && { return std::move(base_); }
 
     iterator                begin();
     std::default_sentinel_t end() const;

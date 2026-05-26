@@ -39,6 +39,8 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
         constexpr iterator() = default;
         constexpr iterator(base_iter current, Codec codec);
 
+        constexpr const base_iter& base() const noexcept { return current_; }
+
         constexpr char32_t operator*() const;
         constexpr char32_t operator[](difference_type n) const;
 
@@ -65,6 +67,9 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 
   public:
     constexpr random_access_decode_view(R base, Codec codec);
+
+    constexpr const R& base() const& noexcept { return base_; }
+    constexpr R        base() && { return std::move(base_); }
 
     constexpr iterator begin();
     constexpr iterator begin() const
@@ -103,6 +108,8 @@ class random_access_decode_or_error_view
         constexpr iterator() = default;
         constexpr iterator(base_iter current, Codec codec);
 
+        constexpr const base_iter& base() const noexcept { return current_; }
+
         constexpr value_type operator*() const;
         constexpr value_type operator[](difference_type n) const;
 
@@ -129,6 +136,9 @@ class random_access_decode_or_error_view
 
   public:
     constexpr random_access_decode_or_error_view(R base, Codec codec);
+
+    constexpr const R& base() const& noexcept { return base_; }
+    constexpr R        base() && { return std::move(base_); }
 
     constexpr iterator begin();
     constexpr iterator begin() const
@@ -177,6 +187,8 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R>> {
 
         constexpr iterator(base_iter current, base_sent end, Codec codec);
 
+        constexpr const base_iter& base() const noexcept { return current_; }
+
         constexpr char32_t  operator*() const;
         constexpr iterator& operator++();
         constexpr iterator  operator++(int)
@@ -197,6 +209,9 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R>> {
 
   public:
     constexpr explicit decode_view(R base, Codec codec = {});
+
+    constexpr const R& base() const& noexcept { return base_; }
+    constexpr R        base() && { return std::move(base_); }
 
     constexpr iterator begin();
     constexpr iterator begin() const
@@ -247,6 +262,8 @@ class decode_or_error_view : public std::ranges::view_interface<decode_or_error_
 
         constexpr iterator(base_iter current, base_sent end, Codec codec);
 
+        constexpr const base_iter& base() const noexcept { return current_; }
+
         constexpr result_t  operator*() const;
         constexpr iterator& operator++();
         constexpr iterator  operator++(int)
@@ -267,6 +284,9 @@ class decode_or_error_view : public std::ranges::view_interface<decode_or_error_
 
   public:
     constexpr explicit decode_or_error_view(R base, Codec codec = {});
+
+    constexpr const R& base() const& noexcept { return base_; }
+    constexpr R        base() && { return std::move(base_); }
 
     constexpr iterator begin();
     constexpr iterator begin() const
