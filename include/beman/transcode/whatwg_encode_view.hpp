@@ -205,13 +205,9 @@ class random_access_whatwg_encode_view : public std::ranges::view_interface<rand
             return tmp -= n;
         }
 
-        constexpr difference_type operator-(const iterator& other) const {
-            return current_ - other.current_;
-        }
+        constexpr difference_type operator-(const iterator& other) const { return current_ - other.current_; }
 
-        constexpr friend iterator operator+(difference_type n, iterator it) {
-            return it += n;
-        }
+        constexpr friend iterator operator+(difference_type n, iterator it) { return it += n; }
 
         constexpr auto operator<=>(const iterator&) const = default;
     };
@@ -219,9 +215,7 @@ class random_access_whatwg_encode_view : public std::ranges::view_interface<rand
   public:
     constexpr explicit random_access_whatwg_encode_view(R base) : base_(std::move(base)) {}
 
-    constexpr iterator begin() {
-        return iterator(std::ranges::begin(base_));
-    }
+    constexpr iterator begin() { return iterator(std::ranges::begin(base_)); }
 
     constexpr iterator begin() const
         requires detail::const_iterator_compatible_range<R>
@@ -229,9 +223,7 @@ class random_access_whatwg_encode_view : public std::ranges::view_interface<rand
         return iterator(std::ranges::begin(base_));
     }
 
-    constexpr iterator end() {
-        return iterator(std::ranges::end(base_));
-    }
+    constexpr iterator end() { return iterator(std::ranges::end(base_)); }
 
     constexpr iterator end() const
         requires detail::const_iterator_compatible_range<R> && std::ranges::range<const R>
@@ -279,9 +271,7 @@ class random_access_whatwg_encode_or_error_view
             return std::unexpected(whatwg_error::unmapped_codepoint);
         }
 
-        constexpr value_type operator[](difference_type n) const {
-            return *(*this + n);
-        }
+        constexpr value_type operator[](difference_type n) const { return *(*this + n); }
 
         constexpr iterator& operator++() {
             ++current_;
@@ -325,13 +315,9 @@ class random_access_whatwg_encode_or_error_view
             return tmp -= n;
         }
 
-        constexpr difference_type operator-(const iterator& other) const {
-            return current_ - other.current_;
-        }
+        constexpr difference_type operator-(const iterator& other) const { return current_ - other.current_; }
 
-        constexpr friend iterator operator+(difference_type n, iterator it) {
-            return it += n;
-        }
+        constexpr friend iterator operator+(difference_type n, iterator it) { return it += n; }
 
         constexpr auto operator<=>(const iterator&) const = default;
     };
@@ -339,9 +325,7 @@ class random_access_whatwg_encode_or_error_view
   public:
     constexpr explicit random_access_whatwg_encode_or_error_view(R base) : base_(std::move(base)) {}
 
-    constexpr iterator begin() {
-        return iterator(std::ranges::begin(base_));
-    }
+    constexpr iterator begin() { return iterator(std::ranges::begin(base_)); }
 
     constexpr iterator begin() const
         requires detail::const_iterator_compatible_range<R>
@@ -349,9 +333,7 @@ class random_access_whatwg_encode_or_error_view
         return iterator(std::ranges::begin(base_));
     }
 
-    constexpr iterator end() {
-        return iterator(std::ranges::end(base_));
-    }
+    constexpr iterator end() { return iterator(std::ranges::end(base_)); }
 
     constexpr iterator end() const
         requires detail::const_iterator_compatible_range<R> && std::ranges::range<const R>
@@ -391,22 +373,22 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
         constexpr void load();
 
       public:
-                constexpr iterator() = default;
+        constexpr iterator() = default;
 
-                static constexpr iterator terminal()
-                requires std::ranges::forward_range<R>
-                {
-                    iterator it;
-                    it.done_ = true;
-                    return it;
-                }
+        static constexpr iterator terminal()
+            requires std::ranges::forward_range<R>
+        {
+            iterator it;
+            it.done_ = true;
+            return it;
+        }
 
-                using iterator_concept =
-                        std::conditional_t<std::ranges::forward_range<R>, std::forward_iterator_tag, std::input_iterator_tag>;
-                using iterator_category = iterator_concept;
-                using value_type        = char;
-                using difference_type   = std::ptrdiff_t;
-                using reference         = char;
+        using iterator_concept =
+            std::conditional_t<std::ranges::forward_range<R>, std::forward_iterator_tag, std::input_iterator_tag>;
+        using iterator_category = iterator_concept;
+        using value_type        = char;
+        using difference_type   = std::ptrdiff_t;
+        using reference         = char;
 
         constexpr iterator(base_iter current, base_sent end);
 
@@ -433,12 +415,12 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
   public:
     constexpr explicit whatwg_encode_view(R base);
 
-    constexpr iterator                begin();
-    constexpr iterator                begin() const
+    constexpr iterator begin();
+    constexpr iterator begin() const
         requires detail::const_iterator_compatible_range<R> && detail::const_sentinel_compatible_range<R>;
-    constexpr iterator                end()
+    constexpr iterator end()
         requires std::ranges::forward_range<R> && std::ranges::common_range<R>;
-    constexpr iterator                end() const
+    constexpr iterator end() const
         requires std::ranges::forward_range<const R> && std::ranges::common_range<const R> &&
                  detail::const_iterator_compatible_range<R> && detail::const_sentinel_compatible_range<R>;
     constexpr std::default_sentinel_t end() const;
@@ -492,22 +474,22 @@ class whatwg_encode_or_error_view : public std::ranges::view_interface<whatwg_en
         constexpr void load();
 
       public:
-                constexpr iterator() = default;
+        constexpr iterator() = default;
 
-                static constexpr iterator terminal()
-                requires std::ranges::forward_range<R>
-                {
-                    iterator it;
-                    it.done_ = true;
-                    return it;
-                }
+        static constexpr iterator terminal()
+            requires std::ranges::forward_range<R>
+        {
+            iterator it;
+            it.done_ = true;
+            return it;
+        }
 
-                using iterator_concept =
-                        std::conditional_t<std::ranges::forward_range<R>, std::forward_iterator_tag, std::input_iterator_tag>;
-                using iterator_category = iterator_concept;
-                using value_type        = result_t;
-                using difference_type   = std::ptrdiff_t;
-                using reference         = result_t;
+        using iterator_concept =
+            std::conditional_t<std::ranges::forward_range<R>, std::forward_iterator_tag, std::input_iterator_tag>;
+        using iterator_category = iterator_concept;
+        using value_type        = result_t;
+        using difference_type   = std::ptrdiff_t;
+        using reference         = result_t;
 
         constexpr iterator(base_iter current, base_sent end);
 
@@ -534,12 +516,12 @@ class whatwg_encode_or_error_view : public std::ranges::view_interface<whatwg_en
   public:
     constexpr explicit whatwg_encode_or_error_view(R base);
 
-    constexpr iterator                begin();
-    constexpr iterator                begin() const
+    constexpr iterator begin();
+    constexpr iterator begin() const
         requires detail::const_iterator_compatible_range<R> && detail::const_sentinel_compatible_range<R>;
-    constexpr iterator                end()
+    constexpr iterator end()
         requires std::ranges::forward_range<R> && std::ranges::common_range<R>;
-    constexpr iterator                end() const
+    constexpr iterator end() const
         requires std::ranges::forward_range<const R> && std::ranges::common_range<const R> &&
                  detail::const_iterator_compatible_range<R> && detail::const_sentinel_compatible_range<R>;
     constexpr std::default_sentinel_t end() const;
@@ -573,7 +555,8 @@ namespace std::ranges {
 
 template <beman::transcoding::codec C, random_access_range R>
     requires beman::transcoding::unicode_scalar_range<R> && beman::transcoding::detail::random_access_encode_codec<C>
-inline constexpr bool enable_borrowed_range<beman::transcoding::random_access_whatwg_encode_view<C, R>> = borrowed_range<R>;
+inline constexpr bool enable_borrowed_range<beman::transcoding::random_access_whatwg_encode_view<C, R>> =
+    borrowed_range<R>;
 
 template <beman::transcoding::codec C, random_access_range R>
     requires beman::transcoding::unicode_scalar_range<R> && beman::transcoding::detail::random_access_encode_codec<C>
@@ -949,7 +932,7 @@ template <codec C>
 template <unicode_scalar_range R>
 constexpr auto whatwg_encode_closure<C>::operator()(R&& r) const {
     using view_t = std::views::all_t<R>;
-    auto all = std::views::all(std::forward<R>(r));
+    auto all     = std::views::all(std::forward<R>(r));
     if constexpr (detail::random_access_encode_codec<C> && std::ranges::random_access_range<view_t>)
         return random_access_whatwg_encode_view<C, view_t>(std::move(all));
     else
@@ -1039,7 +1022,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         ++current_;
         if (r.is_error) {
             this->buf_[0] = result_value{std::unexpect, r.error};
-            len_    = 1;
+            len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
                 this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
@@ -1105,7 +1088,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         ++current_;
         if (r.is_error) {
             this->buf_[0] = result_value{std::unexpect, whatwg_error::surrogate_code_point};
-            len_    = 1;
+            len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
                 this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
@@ -1117,7 +1100,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         ++current_;
         if (r.is_error) {
             this->buf_[0] = result_value{std::unexpect, whatwg_error::surrogate_code_point};
-            len_    = 1;
+            len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
                 this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
@@ -1129,7 +1112,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         ++current_;
         if (r.is_error) {
             this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
-            len_    = 1;
+            len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
                 this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
@@ -1148,7 +1131,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         ++current_;
         if (r.is_error) {
             this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
-            len_    = 1;
+            len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
                 this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
@@ -1160,7 +1143,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         ++current_;
         if (r.is_error) {
             this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
-            len_    = 1;
+            len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
                 this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
@@ -1172,7 +1155,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         ++current_;
         if (r.is_error) {
             this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
-            len_    = 1;
+            len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
                 this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
@@ -1194,7 +1177,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
                 iso2022jp_state_ = 1;
             } else {
                 this->buf_[0] = result_value{ascii_byte};
-                len_    = 1;
+                len_          = 1;
             }
             pos_ = 0;
             return;
@@ -1210,7 +1193,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
                 iso2022jp_state_ = 0;
             } else {
                 this->buf_[0] = result_value{ascii_byte};
-                len_    = 1;
+                len_          = 1;
             }
             pos_ = 0;
             return;
@@ -1230,7 +1213,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
                 } else {
                     this->buf_[0] = result_value{static_cast<char>(lead)};
                     this->buf_[1] = result_value{static_cast<char>(trail)};
-                    len_    = 2;
+                    len_          = 2;
                 }
                 pos_ = 0;
                 return;
@@ -1246,7 +1229,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
         ++current_;
         if (r.is_error) {
             this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
-            len_    = 1;
+            len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
                 this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
@@ -1304,7 +1287,7 @@ template <codec C>
 template <unicode_scalar_range R>
 constexpr auto whatwg_encode_or_error_closure<C>::operator()(R&& r) const {
     using view_t = std::views::all_t<R>;
-    auto all = std::views::all(std::forward<R>(r));
+    auto all     = std::views::all(std::forward<R>(r));
     if constexpr (detail::random_access_encode_codec<C> && std::ranges::random_access_range<view_t>)
         return random_access_whatwg_encode_or_error_view<C, view_t>(std::move(all));
     else

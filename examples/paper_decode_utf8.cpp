@@ -14,20 +14,16 @@ std::vector<char32_t> before(std::string_view input) {
         int           extra = 0;
         if (byte < 0x80) {
             code_point = byte;
-        }
-        else if ((byte & 0xE0) == 0xC0) {
+        } else if ((byte & 0xE0) == 0xC0) {
             code_point = byte & 0x1F;
             extra      = 1;
-        }
-        else if ((byte & 0xF0) == 0xE0) {
+        } else if ((byte & 0xF0) == 0xE0) {
             code_point = byte & 0x0F;
             extra      = 2;
-        }
-        else if ((byte & 0xF8) == 0xF0) {
+        } else if ((byte & 0xF8) == 0xF0) {
             code_point = byte & 0x07;
             extra      = 3;
-        }
-        else {
+        } else {
             result.push_back(U'\xFFFD');
             ++index;
             continue;
@@ -59,7 +55,7 @@ std::vector<char32_t> after(std::string_view input) {
 }
 
 int main() {
-    constexpr std::string_view input = "Hello";
+    constexpr std::string_view input  = "Hello";
     auto                       manual = before(input);
     auto                       view   = after(input);
     return manual == view ? 0 : 1;

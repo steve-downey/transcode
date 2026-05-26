@@ -62,9 +62,9 @@ TEST_CASE("whatwg_encode_view keeps UTF-8 as non-random-access", "[transcoding::
 
 TEST_CASE("whatwg_encode_view forward iterators are multipass for UTF-8", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'\x20AC'};
-    auto                  view = cps | whatwg_encode<codec::utf_8>;
-    auto first = view.begin();
-    auto copy = first;
+    auto                  view  = cps | whatwg_encode<codec::utf_8>;
+    auto                  first = view.begin();
+    auto                  copy  = first;
     CHECK(*first == '\xE2');
     CHECK(*copy == '\xE2');
     ++first;
@@ -90,7 +90,7 @@ TEST_CASE("whatwg_encode iterators outlive borrowed views", "[transcoding::whatw
     std::ranges::iterator_t<view_t> it;
     {
         auto view = cps | whatwg_encode<codec::utf_8>;
-        it = view.begin();
+        it        = view.begin();
     }
     CHECK(*it == '\xE2');
     ++it;

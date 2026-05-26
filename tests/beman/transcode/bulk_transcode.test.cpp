@@ -22,7 +22,7 @@ namespace {
 
 constexpr auto decode_ascii_constexpr() {
     constexpr std::array<char, 2> source{'A', 'B'};
-    std::array<char32_t, 2>        output{};
+    std::array<char32_t, 2>       output{};
     decode_into<codec::utf_8>(source, output.begin());
     return output;
 }
@@ -37,7 +37,7 @@ constexpr auto encode_ascii_constexpr() {
 } // namespace
 
 TEST_CASE("bulk_transcode: decode_to UTF-8", "[bulk]") {
-    const std::string input = "Hello";
+    const std::string input  = "Hello";
     auto              result = decode_to<codec::utf_8>(input);
     REQUIRE(result == std::vector<char32_t>{U'H', U'e', U'l', U'l', U'o'});
 }
@@ -66,8 +66,8 @@ TEST_CASE("bulk_transcode: encode_to supports alternate container", "[bulk]") {
 }
 
 TEST_CASE("bulk_transcode: decode_into appends to output iterator", "[bulk]") {
-    const std::string      input{'A', static_cast<char>(0xA4)};
-    std::vector<char32_t>  output;
+    const std::string     input{'A', static_cast<char>(0xA4)};
+    std::vector<char32_t> output;
     decode_into<codec::iso_8859_15>(input, std::back_inserter(output));
     REQUIRE(output == std::vector<char32_t>{U'A', U'\u20AC'});
 }

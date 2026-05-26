@@ -25,7 +25,7 @@ class single_byte_decode_view : public std::ranges::view_interface<single_byte_d
     class iterator {
         using base_iter = std::ranges::iterator_t<R>;
 
-        base_iter     current_;
+        base_iter       current_;
         const char32_t* table_;
 
       public:
@@ -104,13 +104,9 @@ class single_byte_decode_view : public std::ranges::view_interface<single_byte_d
   public:
     constexpr explicit single_byte_decode_view(R base) : base_(std::move(base)) {}
 
-    constexpr iterator begin() const {
-        return iterator(std::ranges::begin(base_), detail::get_decode_table<C>());
-    }
+    constexpr iterator begin() const { return iterator(std::ranges::begin(base_), detail::get_decode_table<C>()); }
 
-    constexpr iterator end() const {
-        return iterator(std::ranges::end(base_), detail::get_decode_table<C>());
-    }
+    constexpr iterator end() const { return iterator(std::ranges::end(base_), detail::get_decode_table<C>()); }
 
     constexpr auto size() const
         requires std::ranges::sized_range<R>
@@ -146,7 +142,6 @@ struct single_byte_decode_closure {
 
 template <codec C>
 inline constexpr single_byte_decode_closure<C> single_byte_decode{};
-
 
 } // namespace beman::transcoding
 

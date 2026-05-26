@@ -33,7 +33,8 @@ TEST_CASE("whatwg_encode_or_error satisfies input_range", "[transcoding::whatwg_
     static_assert(std::ranges::forward_range<const decltype(view)>);
     static_assert(std::ranges::common_range<const decltype(view)>);
     static_assert(std::ranges::borrowed_range<decltype(view)>);
-    static_assert(!std::ranges::borrowed_range<decltype(std::vector<char32_t>{U'A'} | whatwg_encode_or_error<codec::utf_8>)>);
+    static_assert(
+        !std::ranges::borrowed_range<decltype(std::vector<char32_t>{U'A'} | whatwg_encode_or_error<codec::utf_8>)>);
     static_assert(std::copyable<std::ranges::iterator_t<decltype(view)>>);
     static_assert(std::ranges::random_access_range<decltype(view)>);
     static_assert(std::ranges::random_access_range<const decltype(view)>);
@@ -41,12 +42,14 @@ TEST_CASE("whatwg_encode_or_error satisfies input_range", "[transcoding::whatwg_
     static_assert(std::same_as<val_t, std::expected<char, whatwg_error>>);
 }
 
-TEST_CASE("whatwg_encode_or_error const iteration also works for owning views", "[transcoding::whatwg_encode_or_error]") {
+TEST_CASE("whatwg_encode_or_error const iteration also works for owning views",
+          "[transcoding::whatwg_encode_or_error]") {
     auto view = std::vector<char32_t>{U'A'} | whatwg_encode_or_error<codec::utf_8>;
     static_assert(std::ranges::range<const decltype(view)>);
 }
 
-TEST_CASE("whatwg_encode_or_error iso_2022_jp is common when base is common", "[transcoding::whatwg_encode_or_error]") {
+TEST_CASE("whatwg_encode_or_error iso_2022_jp is common when base is common",
+          "[transcoding::whatwg_encode_or_error]") {
     std::vector<char32_t> cps{U'A'};
     auto                  view = cps | whatwg_encode_or_error<codec::iso_2022_jp>;
     static_assert(std::ranges::common_range<decltype(view)>);
@@ -63,11 +66,12 @@ TEST_CASE("whatwg_encode_or_error keeps UTF-8 as non-random-access", "[transcodi
     REQUIRE(result.size() == 3);
 }
 
-TEST_CASE("whatwg_encode_or_error forward iterators are multipass for UTF-8", "[transcoding::whatwg_encode_or_error]") {
+TEST_CASE("whatwg_encode_or_error forward iterators are multipass for UTF-8",
+          "[transcoding::whatwg_encode_or_error]") {
     std::vector<char32_t> cps{U'\x20AC'};
-    auto                  view = cps | whatwg_encode_or_error<codec::utf_8>;
-    auto first = view.begin();
-    auto copy = first;
+    auto                  view  = cps | whatwg_encode_or_error<codec::utf_8>;
+    auto                  first = view.begin();
+    auto                  copy  = first;
     REQUIRE((*first).has_value());
     REQUIRE((*copy).has_value());
     CHECK((*first).value() == '\xE2');

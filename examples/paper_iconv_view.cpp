@@ -29,8 +29,7 @@ std::vector<char> before(std::string_view input) {
                 result.resize(result.size() * 2);
                 outbuf  = result.data() + used;
                 outleft = result.size() - used;
-            }
-            else {
+            } else {
                 iconv_close(conversion);
                 throw std::runtime_error("iconv");
             }
@@ -54,7 +53,7 @@ std::vector<char> after(std::string_view input) {
 }
 
 int main() {
-    constexpr std::string_view input = "Hello, world!";
+    constexpr std::string_view input  = "Hello, world!";
     auto                       manual = before(input);
     auto                       view   = after(input);
     return manual == view ? 0 : 1;

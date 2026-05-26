@@ -31,16 +31,14 @@ std::string before(std::string_view input) {
                 result.resize(result.size() * 2);
                 outbuf  = result.data() + used;
                 outleft = result.size() - used;
-            }
-            else if (errno == EILSEQ) {
+            } else if (errno == EILSEQ) {
                 ++inbuf;
                 --inleft;
                 *outbuf++ = '\xEF';
                 *outbuf++ = '\xBF';
                 *outbuf++ = '\xBD';
                 outleft -= 3;
-            }
-            else {
+            } else {
                 iconv_close(conversion);
                 throw std::runtime_error("iconv");
             }
@@ -54,15 +52,16 @@ std::string before(std::string_view input) {
 
 std::string after(std::string_view input) {
     std::string result;
-    for (char byte : input | beman::transcoding::transcode<beman::transcoding::codec::shift_jis,
-                                                           beman::transcoding::codec::utf_8>) {
+    for (char byte :
+         input |
+             beman::transcoding::transcode<beman::transcoding::codec::shift_jis, beman::transcoding::codec::utf_8>) {
         result.push_back(byte);
     }
     return result;
 }
 
 int main() {
-    constexpr std::string_view input = "Hello";
+    constexpr std::string_view input  = "Hello";
     auto                       manual = before(input);
     auto                       view   = after(input);
     return manual == view ? 0 : 1;

@@ -52,9 +52,9 @@ TEST_CASE("whatwg_decode iso_2022_jp is common when base is common", "[transcodi
 
 TEST_CASE("whatwg_decode_view forward iterators are multipass for UTF-8", "[transcoding::whatwg_decode]") {
     std::vector<char> bytes{'A', '\xC3', '\xA9'};
-    auto              view = bytes | whatwg_decode<codec::utf_8>;
-    auto first = view.begin();
-    auto copy = first;
+    auto              view  = bytes | whatwg_decode<codec::utf_8>;
+    auto              first = view.begin();
+    auto              copy  = first;
     CHECK(*first == U'A');
     CHECK(*copy == U'A');
     ++first;
@@ -84,7 +84,7 @@ TEST_CASE("whatwg_decode iterators outlive borrowed views", "[transcoding::whatw
     std::ranges::iterator_t<view_t> it;
     {
         auto view = bytes | whatwg_decode<codec::utf_8>;
-        it = view.begin();
+        it        = view.begin();
     }
     CHECK(*it == U'A');
     ++it;
