@@ -20,6 +20,9 @@ uv.lock
 *.deps
 *.html
 
+# WG21 paper build output
+/papers/generated/
+
 # Doxygen
 /docs/html/
 !docs/header.html
