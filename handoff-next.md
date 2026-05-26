@@ -1,8 +1,18 @@
 # Handoff: beman.transcode — Step 57
 
+## IMPORTANT: Use a separate branch and separate worktree for every task
+
+There is overlapping work in progress in this repository.
+
+- Do not start new work in a shared or already-dirty worktree.
+- Create a fresh branch from `main` and attach it to a separate worktree before editing.
+- Before beginning work in any task worktree, fetch and integrate any new commits from `main`.
+- Keep `worktree == branch` for normal development so concurrent tasks stay isolated.
+- Example: `git worktree add ../transcode-<task> -b stepNN-<slug> main`
+
 ## Project
 
-`beman.transcode` — C++20 header-only library for Unicode transcoding
+`beman.transcode` — C++23 header-only library for Unicode transcoding
 using ranges and views. Beman Project incubation for a C++29 standard
 proposal.
 
