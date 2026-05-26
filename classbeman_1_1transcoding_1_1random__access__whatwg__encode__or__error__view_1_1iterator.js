@@ -8,6 +8,7 @@ var classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view
     [ "value_type", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view_1_1iterator.html#a4ab92b1685daf685c1257f1fcfec6da0", null ],
     [ "iterator", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view_1_1iterator.html#a53e4a2c20f0c4d0ac892dc75ad969e69", null ],
     [ "iterator", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view_1_1iterator.html#a45d5dba3b2d7dbaa02a00b25a5165e40", null ],
+    [ "base", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view_1_1iterator.html#a56a50cf99e007fe581d24c1a76e3647c", null ],
     [ "operator*", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view_1_1iterator.html#a64dac789deee241a5d627bb12245f99d", null ],
     [ "operator+", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view_1_1iterator.html#a57ca1a41a9adb06387dc9f8c6810b325", null ],
     [ "operator++", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view_1_1iterator.html#adbd387755960e52b800eda1efadfbc17", null ],

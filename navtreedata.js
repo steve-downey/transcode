@@ -552,14 +552,14 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a1cc91127886fdbcd747a008a2212dc7a",
-"classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view_1_1iterator.html#a8f337b7c726e2d6c6317262be547a4d2",
-"classbeman_1_1transcoding_1_1single__byte__decode__view_1_1iterator.html#af1158e0cddc1da960f2333e63d40d9af",
-"classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html",
-"iso__8859__4_8hpp.html",
-"md_docs_plans_phase2_index.html#autotoc_md229",
-"namespacebeman_1_1transcoding.html#aef322db207ff0a4583061027a96a7475",
-"whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa638ac6a64991d6773e1b71560f9c6ab2"
+"classbeman_1_1transcoding_1_1iconv__transcode__view.html#a4a0e580a320a3aa781a7e8e9030f2b91",
+"classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view.html#acfec19dcbe2fb5f8974b5412c63587bc",
+"classbeman_1_1transcoding_1_1random__access__whatwg__encode__view_1_1iterator.html#adc1c339ec2a3b592fd1cc186a8fc8fd5",
+"classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a32bd825ca112aac1071ca77ed034f553",
+"error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0",
+"md_docs_plans_p3_step7_codecvt_baseline.html",
+"md_docs_why_forward_iterator.html#autotoc_md435",
+"structbeman_1_1transcoding_1_1transcode__closure.html#a558336e5c6111b32a10a7b4e79101221"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

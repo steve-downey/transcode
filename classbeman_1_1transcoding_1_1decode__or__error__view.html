@@ -120,8 +120,12 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1ba83c15353ba3048143ae4d65f9b341"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view.html#a1ba83c15353ba3048143ae4d65f9b341">decode_or_error_view</a> (R base, Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>={})</td></tr>
+<tr class="memitem:a1ba83c15353ba3048143ae4d65f9b341"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view.html#a1ba83c15353ba3048143ae4d65f9b341">decode_or_error_view</a> (R <a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view.html#a9033d8df8d58b9b8502dfee826d56f46">base</a>, Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>={})</td></tr>
 <tr class="separator:a1ba83c15353ba3048143ae4d65f9b341"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9033d8df8d58b9b8502dfee826d56f46"><td class="memItemLeft" align="right" valign="top">constexpr const R &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view.html#a9033d8df8d58b9b8502dfee826d56f46">base</a> () const &amp;noexcept</td></tr>
+<tr class="separator:a9033d8df8d58b9b8502dfee826d56f46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abeadfe208caed4d09e655eb8f61ef994"><td class="memItemLeft" align="right" valign="top">constexpr R&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view.html#abeadfe208caed4d09e655eb8f61ef994">base</a> () &amp;&amp;</td></tr>
+<tr class="separator:abeadfe208caed4d09e655eb8f61ef994"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15c72521164a49f66608fddafb4ab4aa"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view.html#a15c72521164a49f66608fddafb4ab4aa">begin</a> ()</td></tr>
 <tr class="separator:a15c72521164a49f66608fddafb4ab4aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16635e18118c87ff1e51d3a71b83c022"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view.html#a16635e18118c87ff1e51d3a71b83c022">begin</a> () const</td></tr>
@@ -180,6 +184,60 @@ template&lt;decode_codec Codec, std::ranges::input_range R&gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="abeadfe208caed4d09e655eb8f61ef994" name="abeadfe208caed4d09e655eb8f61ef994"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abeadfe208caed4d09e655eb8f61ef994">&#9670;&#160;</a></span>base() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;decode_codec Codec, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr R <a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view.html">beman::transcoding::decode_or_error_view</a>&lt; Codec, R &gt;::base </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> &amp;&amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9033d8df8d58b9b8502dfee826d56f46" name="a9033d8df8d58b9b8502dfee826d56f46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9033d8df8d58b9b8502dfee826d56f46">&#9670;&#160;</a></span>base() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;decode_codec Codec, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const R &amp; <a class="el" href="classbeman_1_1transcoding_1_1decode__or__error__view.html">beman::transcoding::decode_or_error_view</a>&lt; Codec, R &gt;::base </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const &amp;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a15c72521164a49f66608fddafb4ab4aa" name="a15c72521164a49f66608fddafb4ab4aa"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a15c72521164a49f66608fddafb4ab4aa">&#9670;&#160;</a></span>begin() <span class="overload">[1/2]</span></h2>
 

@@ -10,6 +10,7 @@ var classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator =
     [ "value_type", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a7e320893a09072b054e0567c6f332874", null ],
     [ "iterator", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#afad84deff7c91ae6684418e6daceb0bf", null ],
     [ "iterator", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a89f8453a8f7edc9b61717078b35542c1", null ],
+    [ "base", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#aec059e5a8997750f83be12befdac00ea", null ],
     [ "load", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#aa2f0b09bb1d84d7a9dfc02b604a3ff82", null ],
     [ "operator*", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a5755262526c963b7f471fff6ee41a2b5", null ],
     [ "operator++", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#ac84a7c2fec9b468a4051d596bdc7c6a2", null ],
