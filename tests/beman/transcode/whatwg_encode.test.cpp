@@ -25,7 +25,76 @@ TEST_CASE("whatwg_encode_view satisfies input_range", "[transcoding::whatwg_enco
     std::vector<char32_t> cps{U'A'};
     auto                  view = cps | whatwg_encode<codec::windows_1252>;
     static_assert(std::ranges::input_range<decltype(view)>);
+    static_assert(std::ranges::forward_range<decltype(view)>);
+    static_assert(std::ranges::common_range<decltype(view)>);
+    static_assert(std::ranges::range<const decltype(view)>);
+    static_assert(std::ranges::input_range<const decltype(view)>);
+    static_assert(std::ranges::forward_range<const decltype(view)>);
+    static_assert(std::ranges::common_range<const decltype(view)>);
+    static_assert(std::ranges::borrowed_range<decltype(view)>);
+    static_assert(!std::ranges::borrowed_range<decltype(std::vector<char32_t>{U'A'} | whatwg_encode<codec::utf_8>)>);
+    static_assert(std::copyable<std::ranges::iterator_t<decltype(view)>>);
+    static_assert(std::ranges::random_access_range<decltype(view)>);
+    static_assert(std::ranges::random_access_range<const decltype(view)>);
     static_assert(std::same_as<std::ranges::range_value_t<decltype(view)>, char>);
+}
+
+TEST_CASE("whatwg_encode_view const iteration also works for owning views", "[transcoding::whatwg_encode]") {
+    auto view = std::vector<char32_t>{U'A'} | whatwg_encode<codec::utf_8>;
+    static_assert(std::ranges::range<const decltype(view)>);
+}
+
+TEST_CASE("whatwg_encode iso_2022_jp is common when base is common", "[transcoding::whatwg_encode]") {
+    std::vector<char32_t> cps{U'A'};
+    auto                  view = cps | whatwg_encode<codec::iso_2022_jp>;
+    static_assert(std::ranges::common_range<decltype(view)>);
+}
+
+TEST_CASE("whatwg_encode_view keeps UTF-8 as non-random-access", "[transcoding::whatwg_encode]") {
+    std::vector<char32_t> cps{U'\x20AC'};
+    auto                  view = cps | whatwg_encode<codec::utf_8>;
+    static_assert(std::ranges::forward_range<decltype(view)>);
+    static_assert(std::ranges::borrowed_range<decltype(view)>);
+    static_assert(std::copyable<std::ranges::iterator_t<decltype(view)>>);
+    static_assert(!std::ranges::random_access_range<decltype(view)>);
+    CHECK(collect(view) == std::vector<char>{'\xE2', '\x82', '\xAC'});
+}
+
+TEST_CASE("whatwg_encode_view forward iterators are multipass for UTF-8", "[transcoding::whatwg_encode]") {
+    std::vector<char32_t> cps{U'\x20AC'};
+    auto                  view = cps | whatwg_encode<codec::utf_8>;
+    auto first = view.begin();
+    auto copy = first;
+    CHECK(*first == '\xE2');
+    CHECK(*copy == '\xE2');
+    ++first;
+    CHECK(*copy == '\xE2');
+    CHECK(*first == '\x82');
+}
+
+TEST_CASE("whatwg_encode_view supports indexing for indexed codecs", "[transcoding::whatwg_encode]") {
+    std::vector<char32_t> cps{U'A', U'\x20AC', U'B'};
+    auto                  view = cps | whatwg_encode<codec::windows_1252>;
+    REQUIRE(view.size() == 3);
+    auto it = view.begin();
+    CHECK(it[0] == 'A');
+    CHECK(it[1] == '\x80');
+    CHECK(it[2] == 'B');
+    it += 1;
+    CHECK(*it == '\x80');
+}
+
+TEST_CASE("whatwg_encode iterators outlive borrowed views", "[transcoding::whatwg_encode]") {
+    std::vector<char32_t> cps{U'\x20AC'};
+    using view_t = decltype(cps | whatwg_encode<codec::utf_8>);
+    std::ranges::iterator_t<view_t> it;
+    {
+        auto view = cps | whatwg_encode<codec::utf_8>;
+        it = view.begin();
+    }
+    CHECK(*it == '\xE2');
+    ++it;
+    CHECK(*it == '\x82');
 }
 
 TEST_CASE("whatwg_encode windows_1252 ASCII passthrough", "[transcoding::whatwg_encode]") {

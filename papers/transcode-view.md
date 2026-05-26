@@ -16,21 +16,29 @@ toc: true
 toc-depth: 2
 ---
 
-# Abstract
+<!-- markdownlint-disable MD013 -->
 
-We propose a set of range adaptor views for transcoding text between character encodings, providing both WHATWG-compliant codecs for web interoperability and an `iconv`-based adaptor for broader encoding support.
+## Abstract
 
-Character encoding conversion is a fundamental operation when processing text from external sources — network protocols, file formats, legacy databases, and user input. The current standard library offers no direct support for this operation. Existing solutions require manual buffer management, explicit error handling at every step, and careful attention to encoding-specific edge cases. This proposal provides lazy, composable range views that decode byte sequences to Unicode scalar values and encode Unicode back to bytes, with well-defined error handling semantics.
+We propose a set of transcoding facilities for text between character encodings, centered on separate WHATWG decode and encode adaptors, eager bulk decode and encode helpers, a convenience composed transcoder, and an `iconv`-based adaptor for broader encoding support.
 
-The design follows the WHATWG Encoding Standard for codec semantics, ensuring compatibility with web platform behavior. For encodings not covered by WHATWG, an optional `iconv`-based adaptor provides access to the platform's native transcoding capabilities.
+Character encoding conversion is a fundamental operation when processing text from external sources — network protocols, file formats, legacy databases, and user input.
+The current standard library offers no direct support for this operation.
+Existing solutions require manual buffer management, explicit error handling at every step, and careful attention to encoding-specific edge cases.
+This proposal provides lazy, composable range views that decode byte sequences to Unicode scalar values, encode Unicode back to bytes, and compose naturally in pipelines, with well-defined error handling semantics.
+It also provides eager bulk operations that collect into containers or write into output iterators when a concrete result is more convenient than a view pipeline.
 
-# Comparison Table
+The design follows the WHATWG Encoding Standard for codec semantics, ensuring compatibility with web platform behavior.
+For encodings not covered by WHATWG, an optional `iconv`-based adaptor provides access to the platform's native transcoding capabilities.
 
-## Decoding UTF-8 to Unicode code points
+## Comparison Table
+
+### Decoding UTF-8 to Unicode code points
 
 ::: cmptable
 
-### Before (manual loop)
+#### Before: manual loop
+
 ```cpp
 std::vector<char32_t> decode_utf8(
     std::string_view input) {
@@ -66,23 +74,25 @@ std::vector<char32_t> decode_utf8(
 }
 ```
 
-### After
+#### After: `whatwg_decode`
+
 ```cpp
 std::vector<char32_t> decode_utf8(
     std::string_view input) {
   return input
-    | std::views::transcode<codec::utf_8>
+    | whatwg_decode<codec::utf_8>
     | std::ranges::to<std::vector>();
 }
 ```
 
 :::
 
-## Transcoding Shift_JIS to UTF-8
+### Transcoding Shift_JIS to UTF-8
 
 ::: cmptable
 
-### Before (iconv)
+#### Before: `iconv`
+
 ```cpp
 std::string shift_jis_to_utf8(
     std::string_view input) {
@@ -129,24 +139,26 @@ std::string shift_jis_to_utf8(
 }
 ```
 
-### After
+#### After: decode then encode
+
 ```cpp
 std::string shift_jis_to_utf8(
     std::string_view input) {
   return input
-    | std::views::transcode<codec::shift_jis>
-    | std::views::transcode<codec::utf_8>
+    | whatwg_decode<codec::shift_jis>
+    | whatwg_encode<codec::utf_8>
     | std::ranges::to<std::string>();
 }
 ```
 
 :::
 
-## Converting a null-terminated C string
+### Converting a null-terminated C string
 
 ::: cmptable
 
-### Before (mbstowcs)
+#### Before: `mbstowcs`
+
 ```cpp
 std::wstring from_cstring(const char* s) {
   // Assumes locale is set correctly
@@ -165,11 +177,12 @@ std::wstring from_cstring(const char* s) {
 }
 ```
 
-### After
+#### After: `views::null_term`
+
 ```cpp
 auto from_cstring(const char* s) {
-  return std::views::null_term(s)
-    | std::views::transcode<codec::utf_8>;
+  return views::null_term(s)
+    | whatwg_decode<codec::utf_8>;
   // Returns lazy view of char32_t
   // No global state
   // Portable Unicode scalars
@@ -179,11 +192,12 @@ auto from_cstring(const char* s) {
 
 :::
 
-## Processing with error visibility
+### Processing with error visibility
 
 ::: cmptable
 
-### Before
+#### Before: manual tracking
+
 ```cpp
 // No standard way to detect errors
 // during transcoding. Either:
@@ -200,11 +214,11 @@ if (has_errors) {
 }
 ```
 
-### After
+#### After: `_or_error`
+
 ```cpp
 for (auto r : input
-    | std::views::transcode_or_error<
-        codec::utf_8>) {
+    | whatwg_decode_or_error<codec::utf_8>) {
   if (r.has_value()) {
     process(*r);
   } else {
@@ -216,25 +230,58 @@ for (auto r : input
 
 :::
 
-# Motivation
+### Bulk conversion to owned storage
 
-## The Status Quo
+::: cmptable
+
+#### Before: manual collection loop
+
+```cpp
+std::vector<char32_t> decode_utf8(
+    std::string_view input) {
+  std::vector<char32_t> result;
+  for (char32_t cp : input
+      | whatwg_decode<codec::utf_8>) {
+    result.push_back(cp);
+  }
+  return result;
+}
+```
+
+#### After: `decode_to`
+
+```cpp
+std::vector<char32_t> decode_utf8(
+    std::string_view input) {
+  return decode_to<codec::utf_8>(input);
+}
+```
+
+:::
+
+## Motivation
+
+### The Status Quo
 
 C++ has no standard facility for character encoding conversion. Programs must choose between:
 
 - **`mbstowcs`/`wcstombs`**: Depends on global locale state, uses non-portable `wchar_t`, provides no error recovery, and supports only the locale's encoding.
 
-- **`iconv`**: POSIX-only, requires manual buffer management, handle cleanup, and retry loops. Error handling requires checking `errno` and manually advancing past invalid bytes.
+- **`iconv`**: POSIX-only, requires manual buffer management, handle cleanup, and retry loops.
+  Error handling requires checking `errno` and manually advancing past invalid bytes.
 
-- **`std::codecvt`**: Deprecated in C++17, removed in C++26. Was never widely used due to its complexity and poor integration with streams.
+- **`std::codecvt`**: Deprecated in C++17, removed in C++26.
+  Was never widely used due to its complexity and poor integration with streams.
 
 - **ICU, Boost.Text, or other libraries**: Capable but heavyweight dependencies that may not be appropriate for all projects.
 
-None of these integrate with the ranges library. Converting between encodings requires extracting data from one container, passing it through a conversion API, and collecting into another container — losing the composability that makes ranges effective.
+None of these integrate with the ranges library.
+Converting between encodings requires extracting data from one container, passing it through a conversion API, and collecting into another container — losing the composability that makes ranges effective.
 
-## Why WHATWG?
+### Why WHATWG?
 
-The WHATWG Encoding Standard defines precise behavior for every legacy encoding encountered on the web. Its specifications are:
+The WHATWG Encoding Standard defines precise behavior for every legacy encoding encountered on the web.
+Its specifications are:
 
 - **Complete**: Defines exact mappings for all byte values, including error cases.
 - **Tested**: The Web Platform Tests provide thousands of test vectors.
@@ -243,33 +290,62 @@ The WHATWG Encoding Standard defines precise behavior for every legacy encoding 
 
 Using WHATWG semantics means C++ programs can process web content identically to browsers, parse HTML and JSON files with the same error handling, and benefit from years of specification refinement.
 
-## Why Forward-Only Iterators?
+### Why Forward-Only Iterators?
 
-Legacy multibyte encodings like Shift_JIS, Big5, and GB18030 are fundamentally forward-only. Unlike UTF-8, where lead and continuation bytes occupy disjoint ranges, legacy encodings have overlapping byte values that can serve as either lead or trail bytes depending on context.
+Legacy multibyte encodings like Shift_JIS, Big5, and GB18030 are fundamentally forward-only.
+Unlike UTF-8, where lead and continuation bytes occupy disjoint ranges, legacy encodings have overlapping byte values that can serve as either lead or trail bytes depending on context.
 
-Consider Shift_JIS: the byte `0x81` is valid both as a lead byte starting a two-byte sequence and as a trail byte completing one. Given only a pointer into the middle of a byte stream, it is impossible to determine whether you are at a character boundary without scanning from the beginning.
+Consider Shift_JIS: the byte `0x81` is valid both as a lead byte starting a two-byte sequence and as a trail byte completing one.
+Given only a pointer into the middle of a byte stream, it is impossible to determine whether you are at a character boundary without scanning from the beginning.
 
-Even with a known character boundary, stepping backward is impossible without external state. The byte sequence `0x81 0x81 0x81 0x40` could decode as either two ideographic commas followed by '@', or one comma followed by an ideographic space — depending on how many `0x81` bytes preceded it from the string's start.
+Even with a known character boundary, stepping backward is impossible without external state.
+The byte sequence `0x81 0x81 0x81 0x40` could decode as either two ideographic commas followed by '@', or one comma followed by an ideographic space — depending on how many `0x81` bytes preceded it from the string's start.
 
-This is not a limitation of the implementation but an inherent property of these encodings. The WHATWG state machines are designed as forward-only decoders, resetting their state at each character boundary. Bidirectional iteration would require caching all byte offsets during forward traversal.
+This is not a limitation of the implementation but an inherent property of these encodings.
+The WHATWG state machines are designed as forward-only decoders, resetting their state at each character boundary.
+Bidirectional iteration would require caching all byte offsets during forward traversal.
 
-Therefore, `transcode_view` provides only `input_range` — the strongest category that can be implemented correctly for all supported encodings.
+Therefore, the proposed decode, encode, and `iconv` transcode views provide only `input_range` — the strongest category that can be implemented correctly for all supported encodings.
+The eager bulk helpers are layered on top of those forward-only pipelines when callers want collected results.
 
-# Design
+## Design
 
-## Overview
+### Overview
 
-The proposal adds two primary view adaptors:
+The proposal adds four user-facing adaptor families:
 
-- **`transcode_view<C>`**: Decodes a byte range to `char32_t` (Unicode scalar values), or encodes a `char32_t` range to bytes. Errors are replaced with U+FFFD (decode) or '?' (encode).
+- **`whatwg_decode_view<C>` / `whatwg_decode<C>`**: Decodes a byte range to `char32_t` (Unicode scalar values).
+  Decode errors are replaced with U+FFFD.
 
-- **`transcode_or_error_view<C>`**: Same transformation, but yields `expected<T, transcode_error>` so callers can inspect errors.
+- **`whatwg_encode_view<C>` / `whatwg_encode<C>`**: Encodes a `char32_t` range to bytes.
+  Encode failures are replaced with `'?'`.
 
-And one utility view:
+- **`whatwg_decode_or_error_view<C>` / `whatwg_decode_or_error<C>`** and **`whatwg_encode_or_error_view<C>` / `whatwg_encode_or_error<C>`**:
+  Error-reporting variants yielding `expected<T, whatwg_error>`.
 
-- **`null_term_view`**: Adapts a pointer to a null-terminated string into a range, enabling `views::null_term(cstr) | views::transcode<codec::utf_8>`.
+- **`iconv_transcode_view` / `iconv_transcode(from, to, buf)`** and **`iconv_transcode_or_error_view` / `iconv_transcode_or_error(from, to, buf)`**:
+  Runtime-selected transcoding through the platform `iconv` implementation, using caller-provided staging storage.
 
-## Codec Enumeration
+It also adds five eager bulk helpers:
+
+- **`decode_to<C>(source)`**: Decodes a byte range and collects the result into `std::vector<char32_t>`.
+
+- **`encode_to<C>(source)`**: Encodes a `char32_t` range and collects the result into `std::string`.
+
+- **`encode_to<Container, C>(source)`**: Encodes a `char32_t` range and collects the result into a caller-selected container such as `std::string` or `std::vector<char>`.
+
+- **`decode_into<C>(source, sink)`**: Decodes a byte range into an output iterator of `char32_t`.
+
+- **`encode_into<C>(source, sink)`**: Encodes a `char32_t` range into an output iterator of `char`.
+
+And two utility entry points:
+
+- **`transcode<From, To>`**: Convenience composition of `whatwg_decode<From>` followed by `whatwg_encode<To>`.
+
+- **`null_term_view` / `views::null_term`**: Adapts a pointer to a null-terminated string into a range.
+  This enables `views::null_term(cstr) | whatwg_decode<codec::utf_8>`.
+
+### Codec Enumeration
 
 ```cpp
 enum class codec {
@@ -304,9 +380,11 @@ enum class codec {
 
 The codec is a template parameter, not a runtime value, enabling complete elimination of dispatch overhead and allowing `constexpr` transcoding at compile time.
 
-## Label Lookup for Runtime Codec Selection
+### Label Lookup for Runtime Codec Selection
 
-The WHATWG Encoding Standard §4.2 defines over 200 string labels that map to canonical encodings. For example, `"shift_jis"`, `"sjis"`, `"x-sjis"`, `"ms_kanji"`, and `"csshiftjis"` all refer to the same Shift_JIS codec. This mapping is essential for:
+The WHATWG Encoding Standard §4.2 defines over 200 string labels that map to canonical encodings.
+For example, `"shift_jis"`, `"sjis"`, `"x-sjis"`, `"ms_kanji"`, and `"csshiftjis"` all refer to the same Shift_JIS codec.
+This mapping is essential for:
 
 - Parsing `charset` attributes in HTML `<meta>` tags
 - Parsing `charset` parameters in `Content-Type` headers
@@ -339,18 +417,20 @@ if (auto c = get_encoding(charset)) {
 }
 ```
 
-## Error Handling
+### Error Handling
 
-Two error handling strategies are provided:
+Two WHATWG error handling strategies are provided:
 
-1. **Replacement mode** (`transcode_view`): Invalid input sequences are replaced with U+FFFD (decode) or '?' (encode). This follows the WHATWG "replacement" error mode and is appropriate for most text processing where halting on errors is undesirable.
+1. **Replacement mode** (`whatwg_decode`, `whatwg_encode`, and `transcode`): Invalid input sequences are replaced with U+FFFD on decode or `'?'` on encode.
+  This follows the WHATWG replacement model and is appropriate for most text processing where halting on errors is undesirable.
 
-2. **Inspection mode** (`transcode_or_error_view`): Each output element is `expected<T, transcode_error>`, allowing callers to log errors, apply custom replacement, or abort processing.
+2. **Inspection mode** (`whatwg_decode_or_error`, `whatwg_encode_or_error`): Each output element is `expected<T, whatwg_error>`.
+  This allows callers to log errors, apply custom replacement, or abort processing.
 
-The error enumeration provides specific failure reasons:
+For WHATWG codecs, the error enumeration provides specific failure reasons:
 
 ```cpp
-enum class transcode_error {
+enum class whatwg_error {
   invalid_byte,        // Byte not valid in this position
   truncated_sequence,  // End of input mid-character
   overlong_encoding,   // UTF-8 overlong sequence
@@ -360,7 +440,17 @@ enum class transcode_error {
 };
 ```
 
-## Concepts
+The `iconv` adaptors use a separate `iconv_error` enumeration:
+
+```cpp
+enum class iconv_error {
+  invalid_sequence,
+  incomplete_sequence,
+  output_full,
+};
+```
+
+### Concepts
 
 Two concepts constrain the input ranges:
 
@@ -381,53 +471,138 @@ concept unicode_scalar_range =
     same_as<range_value_t<R>, char32_t>;
 ```
 
-Raw arrays are explicitly rejected to prevent silent inclusion of null terminators. Use `views::null_term` or wrap in `span`.
+Raw arrays are explicitly rejected to prevent silent inclusion of null terminators.
+Use `views::null_term` for null-terminated strings or wrap counted byte buffers in `span`.
 
-The `char8_t` type is not accepted because it implies UTF-8 encoding, conflicting with the codec parameter. Similarly, `wchar_t` is rejected due to its platform-dependent size.
+The `char8_t` type is not accepted because it implies UTF-8 encoding, conflicting with the codec parameter.
+Similarly, `wchar_t` is rejected due to its platform-dependent size.
 
-## Constexpr Support
+### Constexpr Support
 
-All views are `constexpr`-enabled. Decoding and encoding tables are compile-time constants. This enables:
+All views are `constexpr`-enabled.
+Decoding and encoding tables are compile-time constants.
+This enables:
 
 ```cpp
 constexpr auto decoded = []() consteval {
     constexpr char bytes[] = {'\xC3', '\xA9'};
     std::span<const char> sp(bytes, 2);
-    return *(sp | transcode<codec::utf_8>).begin();
+    return *(sp | whatwg_decode<codec::utf_8>).begin();
 }();
 static_assert(decoded == U'é');
 ```
 
-## Pipe Syntax
+### Pipe Syntax
 
 The views support both function call and pipe syntax:
 
 ```cpp
 // Function call
-auto v1 = transcode_view<codec::utf_8>(bytes);
+auto v1 = whatwg_decode<codec::utf_8>(bytes);
 
 // Pipe
-auto v2 = bytes | views::transcode<codec::utf_8>;
+auto v2 = bytes | whatwg_decode<codec::utf_8>;
 
 // Composition
 auto v3 = bytes
-    | views::transcode<codec::shift_jis>  // decode to char32_t
-    | views::transcode<codec::utf_8>;     // encode to UTF-8 bytes
+  | whatwg_decode<codec::shift_jis>
+  | whatwg_encode<codec::utf_8>;
+
+// Convenience closure
+auto v4 = bytes | transcode<codec::shift_jis, codec::utf_8>;
 ```
 
-# Design Decisions
+### User-Facing Examples
 
-## Byte-Like Types, Not Character Types
+The separate decode and encode entry points make the pipeline direction explicit:
 
-The `legacy_byte_range` concept accepts `char`, `signed char`, `unsigned char`, and `std::byte` — the types that represent raw octets in C++. It explicitly rejects:
+```cpp
+std::vector<char> utf8 = {'H', 'i', '\xE2', '\x82', '\xAC'};
 
-- **`char8_t`**: Implies UTF-8 encoding, which conflicts with explicit codec selection. If you have `char8_t` data, you already know it's UTF-8 — wrapping it in `transcode<codec::shift_jis>` would be a logic error.
+auto code_points = utf8 | whatwg_decode<codec::utf_8>;
+auto round_trip  = code_points | whatwg_encode<codec::utf_8>;
+```
 
-- **`wchar_t`**: Platform-dependent width (16-bit on Windows, 32-bit on POSIX) makes it unsuitable as an interchange format. It also implies "already decoded" rather than "raw bytes."
+The eager helpers cover the common case where the destination storage is part of the call site:
 
-- **`char16_t` / `char32_t`**: These are Unicode code unit types, not byte types. A range of `char16_t` is not a byte stream to be decoded — it's already decoded data that might need re-encoding.
+```cpp
+std::string bytes = "caf\xE9";
+std::vector<char32_t> scalars =
+  decode_to<codec::windows_1252>(bytes);
 
-This design reflects the reality of where encoded text comes from: network sockets (`recv` returns bytes), file I/O (`read` returns bytes), legacy APIs (return `char*`), and modern buffer types (`std::byte`). The transcoding views meet data where it lives rather than requiring conversion to a specific character type first.
+std::string utf8 =
+  encode_to<codec::utf_8>(scalars);
+
+std::vector<char> utf8_bytes =
+  encode_to<std::vector<char>, codec::utf_8>(scalars);
+```
+
+When output storage is supplied by the caller, the sink-oriented forms avoid an extra container handoff:
+
+```cpp
+std::vector<char32_t> scalars;
+decode_into<codec::utf_8>(bytes,
+                          std::back_inserter(scalars));
+
+std::string encoded;
+encode_into<codec::utf_8>(scalars,
+                          std::back_inserter(encoded));
+```
+
+The convenience `transcode<From, To>` adaptor is useful when the intermediate Unicode range is not otherwise needed:
+
+```cpp
+std::string latin1 = "caf\xE9";
+auto utf8 = latin1
+  | transcode<codec::windows_1252, codec::utf_8>
+  | std::ranges::to<std::string>();
+```
+
+Null-terminated inputs compose through `views::null_term`:
+
+```cpp
+const char* cstr = "hello";
+std::u32string scalars = views::null_term(cstr)
+  | whatwg_decode<codec::utf_8>
+  | std::ranges::to<std::u32string>();
+```
+
+Runtime labels can be resolved through WHATWG's alias table before dispatch:
+
+```cpp
+if (auto utf8 = transcode_string(bytes, "shift_jis", "utf-8")) {
+  consume(*utf8);
+}
+```
+
+For encodings outside the WHATWG set, the `iconv` adaptor provides a runtime-selected escape hatch:
+
+```cpp
+std::array<char, 256> buffer{};
+
+std::vector<char> utf32le = input
+  | iconv_transcode("UTF-8", "UTF-32LE", std::span(buffer))
+  | std::ranges::to<std::vector>();
+```
+
+## Design Decisions
+
+### Byte-Like Types, Not Character Types
+
+The `legacy_byte_range` concept accepts `char`, `signed char`, `unsigned char`, and `std::byte` — the types that represent raw octets in C++.
+It explicitly rejects:
+
+- **`char8_t`**: Implies UTF-8 encoding, which conflicts with explicit codec selection.
+  If you have `char8_t` data, you already know it's UTF-8 — passing it to `whatwg_decode<codec::shift_jis>` would be a logic error.
+
+- **`wchar_t`**: Platform-dependent width (16-bit on Windows, 32-bit on POSIX) makes it unsuitable as an interchange format.
+  It also implies "already decoded" rather than "raw bytes."
+
+- **`char16_t` / `char32_t`**: These are Unicode code unit types, not byte types.
+  A range of `char16_t` is not a byte stream to be decoded — it's already decoded data that might need re-encoding.
+
+This design reflects the reality of where encoded text comes from: network sockets (`recv` returns bytes), file I/O (`read` returns bytes), legacy APIs (return `char*`), and modern buffer types (`std::byte`).
+The transcoding views meet data where it lives rather than requiring conversion to a specific character type first.
 
 ```cpp
 // All of these work:
@@ -436,19 +611,20 @@ std::vector<unsigned char> v2;
 std::vector<std::byte> v3;
 std::span<const signed char> s;
 
-v1 | transcode<codec::utf_8>;  // OK
-v2 | transcode<codec::utf_8>;  // OK
-v3 | transcode<codec::utf_8>;  // OK
-s  | transcode<codec::utf_8>;  // OK
+v1 | whatwg_decode<codec::utf_8>;  // OK
+v2 | whatwg_decode<codec::utf_8>;  // OK
+v3 | whatwg_decode<codec::utf_8>;  // OK
+s  | whatwg_decode<codec::utf_8>;  // OK
 
 // These are rejected at compile time:
 std::u8string u8s;
-u8s | transcode<codec::utf_8>;  // Error: char8_t implies UTF-8
+u8s | whatwg_decode<codec::utf_8>;  // Error: char8_t implies UTF-8
 ```
 
-## Template Parameter vs Runtime Selection
+### Template Parameter vs Runtime Selection
 
-The codec is a template parameter rather than a constructor argument. This was chosen because:
+The codec is a template parameter rather than a constructor argument.
+This was chosen because:
 
 1. **Performance**: The compiler can inline codec-specific logic and eliminate dispatch overhead.
 2. **Constexpr**: Runtime codec selection would prevent compile-time transcoding.
@@ -456,51 +632,72 @@ The codec is a template parameter rather than a constructor argument. This was c
 
 Runtime selection can be layered on top via `variant` or `any` if needed.
 
-## char32_t as the Interchange Type
+### char32_t as the Interchange Type
 
-Unicode scalar values are represented as `char32_t`, not `char8_t[]` sequences. This simplifies composition — a `char32_t` stream can be fed to any encoder without reparsing — and makes individual code point inspection trivial.
+Unicode scalar values are represented as `char32_t`, not `char8_t[]` sequences.
+This simplifies composition — a `char32_t` stream can be fed to any encoder without reparsing — and makes individual code point inspection trivial.
 
 The tradeoff is that UTF-32 is space-inefficient, but since these are lazy views, no intermediate storage is created unless explicitly collected.
 
-## Separation of Decode and Encode
+### Separation of Decode and Encode
 
-Rather than a single "transcode from A to B" adaptor, decode and encode are separate operations composed via pipes. This enables:
+Rather than a single primary "transcode from A to B" adaptor, decode and
+encode are separate operations composed via pipes. This enables:
 
-- Processing Unicode without re-encoding: `bytes | decode<utf_8> | filter(...)`
-- Encoding to multiple targets: `codepoints | tee(encode<utf_8>(...), encode<shift_jis>(...))`
+- Processing Unicode without re-encoding: `bytes | whatwg_decode<codec::utf_8> | filter(...)`
+- Encoding to multiple targets: `codepoints | tee(whatwg_encode<codec::utf_8>(...), whatwg_encode<codec::shift_jis>(...))`
 - Clear mental model: decode produces `char32_t`, encode consumes `char32_t`
 
-## No BOM Handling
+The `transcode<From, To>` convenience closure is layered on top of this composition model for the common case where the intermediate `char32_t` stream is not observed.
+The eager bulk helpers are layered on the same decode and encode semantics, but package the common collection patterns directly.
 
-BOM (Byte Order Mark) detection and handling is explicitly out of scope for these views. BOMs are a framing concern, not a transcoding concern. A separate `bom_filter` view or preprocessing step should handle BOM detection if needed.
+### Leading BOM Stripping for UTF Decoders
 
-## No Normalization
+The WHATWG UTF decoders strip a leading BOM when it matches the selected codec.
+This matches browser behavior and the Web Platform Tests for UTF-8, UTF-16LE, and UTF-16BE.
 
-Unicode normalization (NFC, NFD, NFKC, NFKD) is orthogonal to encoding. A `normalize_view<form>` is a natural future addition but not part of this proposal.
+When the codec is not yet known, a separate `sniff_encoding` helper can examine the byte stream for a BOM before dispatch:
 
-# Testing
+```cpp
+if (auto codec = sniff_encoding(bytes)) {
+  // Dispatch according to the detected BOM.
+}
+```
 
-## Web Platform Tests
+Non-matching BOMs are not stripped.
+For example, a UTF-8 decoder does not remove a UTF-16LE BOM prefix.
 
-The implementation is validated against the WHATWG Web Platform Tests (WPT) for text encoding. These tests provide:
+### No Normalization
+
+Unicode normalization (NFC, NFD, NFKC, NFKD) is orthogonal to encoding.
+A `normalize_view<form>` is a natural future addition but not part of this proposal.
+
+## Testing
+
+### Web Platform Tests
+
+The implementation is validated against the WHATWG Web Platform Tests (WPT) for text encoding.
+These tests provide:
 
 - Decode tests for each codec with representative byte sequences
 - Error handling tests verifying U+FFFD replacement behavior
 - Edge cases for truncated sequences, overlong UTF-8, surrogate encoding
 - BOM handling (tested but BOM is stripped before our views)
 
-Test vectors are extracted from WPT and converted to C++ data structures, enabling automated verification that the implementation matches browser behavior.
+Test vectors are extracted from WPT and converted to C++ data structures.
+This enables automated verification that the implementation matches browser behavior.
 
-## Negative Compile Tests
+### Negative Compile Tests
 
-Every concept constraint has a corresponding negative compile test — a `.cpp` file that must fail to compile with a specific diagnostic. This ensures:
+Every concept constraint has a corresponding negative compile test — a `.cpp` file that must fail to compile with a specific diagnostic.
+This ensures:
 
 - Raw arrays are rejected with a clear error message
 - `char8_t` ranges are rejected (wrong for explicit codec selection)
 - `wchar_t` ranges are rejected (non-portable width)
 - Non-input ranges are rejected
 
-## Consteval Tests
+### Consteval Tests
 
 Every operation that should be `constexpr` has a `consteval` test verifying compile-time evaluation:
 
@@ -508,56 +705,62 @@ Every operation that should be `constexpr` has a `consteval` test verifying comp
 constexpr auto result = []() consteval {
     constexpr char bytes[] = {'\xE2', '\x82', '\xAC'};
     std::span<const char> sp(bytes, 3);
-    return *(sp | transcode<codec::utf_8>).begin();
+    return *(sp | whatwg_decode<codec::utf_8>).begin();
 }();
 static_assert(result == U'€');
 ```
 
-## Roundtrip Tests
+### Roundtrip Tests
 
 For codecs where encode is defined, roundtrip tests verify that `encode(decode(bytes)) == bytes` for all valid inputs, and that `decode(encode(codepoints)) == codepoints` for all mapped code points.
 
-# Impact on the Standard
+The bulk helpers are covered separately to verify their container and output-iterator behavior, including the single-byte fast paths used by `decode_to` and the `encode_to` overloads.
 
-This proposal adds new headers and does not modify existing standard library components. It is a pure extension.
+## Impact on the Standard
 
-## Feature Test Macro
+This proposal adds new headers and does not modify existing standard library components.
+It is a pure extension.
+
+### Feature Test Macro
 
 ```cpp
 #define __cpp_lib_transcode_view 202XXXL
 ```
 
-## Headers
+### Headers
 
 ```cpp
-#include <transcode>   // transcode_view, transcode_or_error_view
+#include <transcode>   // whatwg_decode, whatwg_encode, decode_to, encode_to, transcode, iconv_transcode
 #include <null_term>   // null_term_view
 ```
 
 Or combined into `<ranges>` additions.
 
-# Acknowledgements
+## Acknowledgements
 
 - Zach Laine for `Boost.Text` and extensive work on Unicode in C++.
 - Tom Honermann and SG16 for guidance on text encoding issues.
 - The WHATWG for the Encoding Standard.
 - The Web Platform Tests project for comprehensive test vectors.
 
-# Relationship to Other Proposals
+## Relationship to Other Proposals
 
-## P2728 Unicode in the Library
+### P2728 Unicode in the Library
 
-[@P2728R6] proposes transcoding views for UTF-8, UTF-16, and UTF-32 that operate on the strict Unicode character types (`char8_t`, `char16_t`, `char32_t`). This proposal overlaps in the UTF portions but differs in scope and philosophy:
+[@P2728R6] proposes transcoding views for UTF-8, UTF-16, and UTF-32 that operate on the strict Unicode character types (`char8_t`, `char16_t`, `char32_t`).
+This proposal overlaps in the UTF portions but differs in scope and philosophy:
 
 | Aspect | P2728 | This Proposal |
-|--------|-------|---------------|
+| -------- | ------- | --------------- |
 | **Input types** | `char8_t`, `char16_t`, `char32_t` | `char`, `signed char`, `unsigned char`, `std::byte` |
 | **UTF-16 model** | `char16_t` code units (native order) | Byte stream with explicit BE/LE |
 | **Encodings** | UTF-8, UTF-16, UTF-32 only | 39 WHATWG encodings including legacy CJK |
 | **Focus** | Strict Unicode processing | Web/legacy interoperability |
 | **Use case** | Internal Unicode manipulation | External data ingestion |
 
-The UTF-16 distinction is particularly important. P2728 operates on `char16_t`, which represents UTF-16 code units already in the platform's native byte order. This is appropriate for in-memory Unicode processing where the data originated from C++ code.
+The UTF-16 distinction is particularly important.
+P2728 operates on `char16_t`, which represents UTF-16 code units already in the platform's native byte order.
+This is appropriate for in-memory Unicode processing where the data originated from C++ code.
 
 This proposal instead decodes UTF-16 from raw byte streams:
 
@@ -568,22 +771,26 @@ auto codepoints = s | std::uc::to_utf32;
 
 // This proposal: byte input with explicit byte order
 std::vector<std::byte> network_data = read_socket();
-auto codepoints = network_data | transcode<codec::utf_16be>;
+auto codepoints = network_data | whatwg_decode<codec::utf_16be>;
 ```
 
-When UTF-16 data arrives from external sources — network protocols, file formats, binary blobs — it arrives as bytes with a specific byte order determined by the protocol or BOM, not by the platform. The `codec::utf_16be` and `codec::utf_16le` variants decode these byte streams correctly regardless of the host's native endianness.
+When UTF-16 data arrives from external sources — network protocols, file formats, binary blobs — it arrives as bytes with a specific byte order determined by the protocol or BOM, not by the platform.
+The `codec::utf_16be` and `codec::utf_16le` variants decode these byte streams correctly regardless of the host's native endianness.
 
 The proposals are complementary:
 
-- **P2728** is ideal when working with well-typed Unicode data within an application. Its strict typing catches encoding mismatches at compile time.
+- **P2728** is ideal when working with well-typed Unicode data within an application.
+  Its strict typing catches encoding mismatches at compile time.
 
-- **This proposal** is necessary when ingesting data from external sources — network protocols, file formats, databases — where bytes arrive as `char*` or `std::byte*` and the encoding is determined by metadata or heuristics, not the C++ type system.
+- **This proposal** is necessary when ingesting data from external sources — network protocols, file formats, databases — where bytes arrive as `char*` or `std::byte*`.
+  The encoding is determined by metadata or heuristics, not the C++ type system.
 
 A typical workflow might use this proposal to decode legacy-encoded input to `char32_t`, process it, then use P2728's facilities for UTF-to-UTF conversions within the application, and finally use this proposal again to encode output for a legacy system.
 
-The UTF-8 decode/encode in this proposal follows WHATWG semantics (replacement character on error), which may differ slightly from P2728's error handling. Applications requiring strict UTF validation should prefer P2728 for that portion of the pipeline.
+The UTF-8 decode/encode in this proposal follows WHATWG semantics (replacement character on error), which may differ slightly from P2728's error handling.
+Applications requiring strict UTF validation should prefer P2728 for that portion of the pipeline.
 
-# References
+## References
 
 - WHATWG Encoding Standard: <https://encoding.spec.whatwg.org/>
 - Web Platform Tests: <https://github.com/nickvidal/nickvidal/web-platform-tests>
