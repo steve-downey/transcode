@@ -104,9 +104,9 @@ $(document).ready(function(){initNavTree('conceptbeman_1_1transcoding_1_1encode_
 <h2 class="groupheader">Concept definition</h2>
 <div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> C&gt;</div>
 <div class="line"><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1encode__codec.html">beman::transcoding::encode_codec</a> =  std::semiregular&lt;C&gt; &amp;&amp; <span class="keyword">requires</span>(C&amp; c, <span class="keywordtype">char32_t</span> cp) {</div>
-<div class="line">                                                  { c.encode_one(cp) } -&gt; std::same_as&lt;encode_result&gt;;</div>
-<div class="line">                                              }</div>
-<div class="ttc" id="aconceptbeman_1_1transcoding_1_1encode__codec_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1encode__codec.html">beman::transcoding::encode_codec</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:26</div></div>
+<div class="line">    { c.encode_one(cp) } -&gt; std::same_as&lt;encode_result&gt;;</div>
+<div class="line">}</div>
+<div class="ttc" id="aconceptbeman_1_1transcoding_1_1encode__codec_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1encode__codec.html">beman::transcoding::encode_codec</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:25</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

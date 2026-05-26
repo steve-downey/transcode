@@ -103,10 +103,10 @@ $(document).ready(function(){initNavTree('conceptbeman_1_1transcoding_1_1decode_
 <p><code>#include &lt;<a class="el" href="codec__concepts_8hpp_source.html">codec_concepts.hpp</a>&gt;</code></p>
 <h2 class="groupheader">Concept definition</h2>
 <div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> C&gt;</div>
-<div class="line"><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1decode__codec.html">beman::transcoding::decode_codec</a> =  std::semiregular&lt;C&gt; &amp;&amp;</div>
-<div class="line">                       <span class="keyword">requires</span>(C&amp; c, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>*&amp; iter, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* sentinel) {</div>
-<div class="line">                           { c.decode_one(iter, sentinel) } -&gt; std::same_as&lt;decode_result&gt;;</div>
-<div class="line">                       }</div>
+<div class="line"><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1decode__codec.html">beman::transcoding::decode_codec</a> = </div>
+<div class="line">    std::semiregular&lt;C&gt; &amp;&amp; <span class="keyword">requires</span>(C&amp; c, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>*&amp; iter, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* sentinel) {</div>
+<div class="line">        { c.decode_one(iter, sentinel) } -&gt; std::same_as&lt;decode_result&gt;;</div>
+<div class="line">    }</div>
 <div class="ttc" id="aconceptbeman_1_1transcoding_1_1decode__codec_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1decode__codec.html">beman::transcoding::decode_codec</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:14</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
