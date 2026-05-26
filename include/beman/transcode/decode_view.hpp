@@ -42,14 +42,14 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
         constexpr char32_t operator*() const;
         constexpr char32_t operator[](difference_type n) const;
 
-        constexpr iterator& operator++();
-        constexpr iterator  operator++(int);
-        constexpr iterator& operator--();
-        constexpr iterator  operator--(int);
-        constexpr iterator& operator+=(difference_type n);
-        constexpr iterator& operator-=(difference_type n);
-        constexpr iterator  operator+(difference_type n) const;
-        constexpr iterator  operator-(difference_type n) const;
+        constexpr iterator&       operator++();
+        constexpr iterator        operator++(int);
+        constexpr iterator&       operator--();
+        constexpr iterator        operator--(int);
+        constexpr iterator&       operator+=(difference_type n);
+        constexpr iterator&       operator-=(difference_type n);
+        constexpr iterator        operator+(difference_type n) const;
+        constexpr iterator        operator-(difference_type n) const;
         constexpr difference_type operator-(const iterator& other) const;
 
         constexpr friend iterator operator+(difference_type n, iterator it) { return it += n; }
@@ -106,14 +106,14 @@ class random_access_decode_or_error_view
         constexpr value_type operator*() const;
         constexpr value_type operator[](difference_type n) const;
 
-        constexpr iterator& operator++();
-        constexpr iterator  operator++(int);
-        constexpr iterator& operator--();
-        constexpr iterator  operator--(int);
-        constexpr iterator& operator+=(difference_type n);
-        constexpr iterator& operator-=(difference_type n);
-        constexpr iterator  operator+(difference_type n) const;
-        constexpr iterator  operator-(difference_type n) const;
+        constexpr iterator&       operator++();
+        constexpr iterator        operator++(int);
+        constexpr iterator&       operator--();
+        constexpr iterator        operator--(int);
+        constexpr iterator&       operator+=(difference_type n);
+        constexpr iterator&       operator-=(difference_type n);
+        constexpr iterator        operator+(difference_type n) const;
+        constexpr iterator        operator-(difference_type n) const;
         constexpr difference_type operator-(const iterator& other) const;
 
         constexpr friend iterator operator+(difference_type n, iterator it) { return it += n; }
@@ -636,7 +636,7 @@ constexpr void decode_view<Codec, R>::iterator::load() {
         return;
     }
     auto r = codec_.decode_one(current_, end_);
-    value_  = r.is_error ? U'\xFFFD' : r.code_point;
+    value_ = r.is_error ? U'\xFFFD' : r.code_point;
 }
 
 template <decode_codec Codec, std::ranges::input_range R>

@@ -58,7 +58,7 @@ static_assert(!random_access_decode_codec_type<xor_codec>);
 // ---------------------------------------------------------------------------
 
 TEST_CASE("decode_view: table_codec pipe decode ASCII", "[decode_view]") {
-    std::string src = "Hello";
+    std::string    src = "Hello";
     std::u32string result;
     for (char32_t cp : std::span<const char>(src) | decode(latin1_codec{}))
         result.push_back(cp);
@@ -66,7 +66,7 @@ TEST_CASE("decode_view: table_codec pipe decode ASCII", "[decode_view]") {
 }
 
 TEST_CASE("decode_view: table_codec pipe decode upper-half", "[decode_view]") {
-    std::string src{'\xC0', '\xC1'}; // Latin-1: U+00C0, U+00C1
+    std::string    src{'\xC0', '\xC1'}; // Latin-1: U+00C0, U+00C1
     std::u32string result;
     for (char32_t cp : std::span<const char>(src) | decode(latin1_codec{}))
         result.push_back(cp);
@@ -76,7 +76,7 @@ TEST_CASE("decode_view: table_codec pipe decode upper-half", "[decode_view]") {
 }
 
 TEST_CASE("decode_view: sparse table replaces unmapped with U+FFFD", "[decode_view]") {
-    std::string src{'\x80'}; // index 0 is unmapped in sparse_table
+    std::string    src{'\x80'}; // index 0 is unmapped in sparse_table
     std::u32string result;
     for (char32_t cp : std::span<const char>(src) | decode(sparse_codec{}))
         result.push_back(cp);
@@ -85,7 +85,7 @@ TEST_CASE("decode_view: sparse table replaces unmapped with U+FFFD", "[decode_vi
 }
 
 TEST_CASE("decode_view: empty input produces empty output", "[decode_view]") {
-    std::string src;
+    std::string    src;
     std::u32string result;
     for (char32_t cp : std::span<const char>(src) | decode(latin1_codec{}))
         result.push_back(cp);
@@ -98,9 +98,9 @@ TEST_CASE("decode_view: empty input produces empty output", "[decode_view]") {
 
 TEST_CASE("decode_or_error_view: table_codec success", "[decode_view]") {
     std::string src{'\x41', '\xC0'}; // A, then Latin-1 0xC0
-    auto view = std::span<const char>(src) | decode_or_error(latin1_codec{});
-    auto it   = view.begin();
-    auto end  = view.end();
+    auto        view = std::span<const char>(src) | decode_or_error(latin1_codec{});
+    auto        it   = view.begin();
+    auto        end  = view.end();
 
     auto r1 = *it;
     CHECK(r1.has_value());
@@ -117,8 +117,8 @@ TEST_CASE("decode_or_error_view: table_codec success", "[decode_view]") {
 
 TEST_CASE("decode_or_error_view: reports errors", "[decode_view]") {
     std::string src{'\x80'}; // unmapped in sparse
-    auto view = std::span<const char>(src) | decode_or_error(sparse_codec{});
-    auto it   = view.begin();
+    auto        view = std::span<const char>(src) | decode_or_error(sparse_codec{});
+    auto        it   = view.begin();
 
     auto r = *it;
     CHECK(!r.has_value());
@@ -130,7 +130,7 @@ TEST_CASE("decode_or_error_view: reports errors", "[decode_view]") {
 // ---------------------------------------------------------------------------
 
 TEST_CASE("decode_view: stateful codec via pipe", "[decode_view]") {
-    std::string src{'\x10', '\x10', '\x10'};
+    std::string           src{'\x10', '\x10', '\x10'};
     std::vector<char32_t> result;
     for (char32_t cp : std::span<const char>(src) | decode(xor_codec{}))
         result.push_back(cp);
@@ -146,7 +146,7 @@ TEST_CASE("decode_view: stateful codec via pipe", "[decode_view]") {
 
 TEST_CASE("decode_view: random-access path for table_codec", "[decode_view]") {
     std::vector<unsigned char> src{0x41, 0x42, 0xC0};
-    auto view = src | decode(latin1_codec{});
+    auto                       view = src | decode(latin1_codec{});
 
     CHECK(view.size() == 3);
     auto it = view.begin();
@@ -157,8 +157,8 @@ TEST_CASE("decode_view: random-access path for table_codec", "[decode_view]") {
 
 TEST_CASE("decode_view: random-access iterator arithmetic", "[decode_view]") {
     std::vector<unsigned char> src{0x41, 0x42, 0x43, 0x44};
-    auto view = src | decode(latin1_codec{});
-    auto it   = view.begin();
+    auto                       view = src | decode(latin1_codec{});
+    auto                       it   = view.begin();
 
     CHECK(*(it + 2) == U'C');
     CHECK(*(view.end() - 1) == U'D');
@@ -203,7 +203,7 @@ TEST_CASE("decode_view: constexpr random-access indexing", "[decode_view]") {
 
 TEST_CASE("decode_view: std::byte input range", "[decode_view]") {
     std::array<std::byte, 2> src{std::byte{0x41}, std::byte{0xC0}};
-    std::u32string result;
+    std::u32string           result;
     for (char32_t cp : src | decode(latin1_codec{}))
         result.push_back(cp);
     CHECK(result[0] == U'A');

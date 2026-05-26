@@ -74,7 +74,7 @@ struct full_table_codec {
 template <std::array<char32_t, 256> Table>
 template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr decode_result full_table_codec<Table>::decode_one(I& current, [[maybe_unused]] S end) const {
-    auto     byte = static_cast<unsigned char>(*current);
+    auto byte = static_cast<unsigned char>(*current);
     ++current;
     char32_t cp = Table[byte];
     if (cp == 0)

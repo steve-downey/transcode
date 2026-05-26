@@ -744,7 +744,8 @@ add_test(
 set_tests_properties(
     concepts_reject_unicode_chars_fail
     PROPERTIES
-        PASS_REGULAR_EXPRESSION "no operand of the disjunction is satisfied|constraints not satisfied"
+        PASS_REGULAR_EXPRESSION
+            "no operand of the disjunction is satisfied|constraints not satisfied"
 )
 
 # unicode_scalar_range rejects non-char32_t ranges (e.g. vector<char>)
@@ -969,10 +970,7 @@ set_tests_properties(
 )
 
 add_executable(beman.transcode.tests.blp59001)
-target_sources(
-    beman.transcode.tests.blp59001
-    PRIVATE blp59001.test.cpp
-)
+target_sources(beman.transcode.tests.blp59001 PRIVATE blp59001.test.cpp)
 target_include_directories(
     beman.transcode.tests.blp59001
     PRIVATE ${TEST_INCLUDE_DIR}
@@ -987,10 +985,7 @@ add_test(
 )
 
 add_executable(beman.transcode.tests.ebcdic037)
-target_sources(
-    beman.transcode.tests.ebcdic037
-    PRIVATE ebcdic037.test.cpp
-)
+target_sources(beman.transcode.tests.ebcdic037 PRIVATE ebcdic037.test.cpp)
 target_include_directories(
     beman.transcode.tests.ebcdic037
     PRIVATE ${TEST_INCLUDE_DIR}

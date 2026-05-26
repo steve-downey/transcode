@@ -56,12 +56,12 @@ static_assert(encode_codec<blp_59001>);
 
 TEST_CASE("blp59001: byte 0x00 is C-cedilla, not NUL", "[blp59001]") {
     std::array<unsigned char, 1> src{0x00};
-    auto view = src | decode(blp_59001{});
+    auto                         view = src | decode(blp_59001{});
     CHECK(*view.begin() == U'\x00C7'); // Ç
 }
 
 TEST_CASE("blp59001: ASCII range 0x20-0x7E is standard", "[blp59001]") {
-    std::string src = "Hello, World!";
+    std::string    src = "Hello, World!";
     std::u32string result;
     for (char32_t cp : std::span<const char>(src) | decode(blp_59001{}))
         result.push_back(cp);
@@ -70,13 +70,13 @@ TEST_CASE("blp59001: ASCII range 0x20-0x7E is standard", "[blp59001]") {
 
 TEST_CASE("blp59001: byte 0x7F is Euro sign", "[blp59001]") {
     std::array<unsigned char, 1> src{0x7F};
-    auto view = src | decode(blp_59001{});
+    auto                         view = src | decode(blp_59001{});
     CHECK(*view.begin() == U'\x20AC'); // €
 }
 
 TEST_CASE("blp59001: fraction 1/8 at 0x87", "[blp59001]") {
     std::array<unsigned char, 1> src{0x87};
-    auto view = src | decode(blp_59001{});
+    auto                         view = src | decode(blp_59001{});
     CHECK(*view.begin() == U'\x215B'); // ⅛
 }
 
@@ -176,10 +176,11 @@ TEST_CASE("blp59001: encode unmapped codepoint fails", "[blp59001]") {
 TEST_CASE("blp59001: decode mixed message via pipe", "[blp59001]") {
     // "IBM" then 0xD4 (↑) then "3.5" then 0x8F (¼)
     std::array<unsigned char, 8> src{0x49, 0x42, 0x4D, 0xD4, 0x33, 0x2E, 0x35, 0x8F};
-    std::u32string result;
+    std::u32string               result;
     for (char32_t cp : src | decode(blp_59001{}))
         result.push_back(cp);
-    CHECK(result == U"IBM\x2191""3.5\x00BC");
+    CHECK(result == U"IBM\x2191"
+                    "3.5\x00BC");
 }
 
 // ---------------------------------------------------------------------------
