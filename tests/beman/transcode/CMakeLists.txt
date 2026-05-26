@@ -744,7 +744,7 @@ add_test(
 set_tests_properties(
     concepts_reject_unicode_chars_fail
     PROPERTIES
-        PASS_REGULAR_EXPRESSION "no operand of the disjunction is satisfied"
+        PASS_REGULAR_EXPRESSION "no operand of the disjunction is satisfied|constraints not satisfied"
 )
 
 # unicode_scalar_range rejects non-char32_t ranges (e.g. vector<char>)

@@ -417,8 +417,8 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         using base_iter = detail::compatible_iterator_t<R>;
         using base_sent = detail::compatible_sentinel_t<R>;
 
-        base_iter     current_;
-        base_sent     end_;
+        base_iter     current_{};
+        base_sent     end_{};
         char32_t      value_{};
         bool          done_{false};
         int           pending_count_{0};
@@ -536,8 +536,8 @@ class whatwg_decode_or_error_view : public std::ranges::view_interface<whatwg_de
         using base_sent = detail::compatible_sentinel_t<R>;
         using result_t  = std::expected<char32_t, whatwg_error>;
 
-        base_iter     current_;
-        base_sent     end_;
+        base_iter     current_{};
+        base_sent     end_{};
         result_t      value_{};
         bool          done_{false};
         int           pending_count_{0};

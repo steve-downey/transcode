@@ -362,8 +362,8 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
         using base_iter = detail::compatible_iterator_t<R>;
         using base_sent = detail::compatible_sentinel_t<R>;
 
-        base_iter current_;
-        base_sent end_;
+        base_iter current_{};
+        base_sent end_{};
         char      buf_[8]{};
         int       len_{0};
         int       pos_{0};
@@ -463,8 +463,8 @@ class whatwg_encode_or_error_view : public std::ranges::view_interface<whatwg_en
         using base_sent = detail::compatible_sentinel_t<R>;
         using result_t  = std::expected<char, whatwg_error>;
 
-        base_iter current_;
-        base_sent end_;
+        base_iter current_{};
+        base_sent end_{};
         result_t  buf_[8]{};
         int       len_{0};
         int       pos_{0};
