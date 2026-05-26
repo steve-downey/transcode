@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <beman/transcode/detail/bulk_transcode.hpp>
-#include <beman/transcode/detail/bulk_transcode.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
 
@@ -17,7 +16,6 @@ using beman::transcoding::decode_into;
 using beman::transcoding::decode_to;
 using beman::transcoding::encode_into;
 using beman::transcoding::encode_to;
-using beman::transcoding::encode_to_vector;
 using beman::transcoding::tests::constify;
 
 namespace {
@@ -47,9 +45,7 @@ TEST_CASE("bulk_transcode: decode_to UTF-8", "[bulk]") {
 TEST_CASE("bulk_transcode: decode_to single-byte fast path", "[bulk]") {
     const std::string input{'A', static_cast<char>(0xA4)};
     auto              result = decode_to<codec::iso_8859_15>(input);
-    REQUIRE(result.size() == 2);
-    CHECK(result[0] == U'A');
-    CHECK(result[1] == U'\u20AC');
+    REQUIRE(result == std::vector<char32_t>{U'A', U'\u20AC'});
 }
 
 TEST_CASE("bulk_transcode: encode_to UTF-8", "[bulk]") {
@@ -63,15 +59,15 @@ TEST_CASE("bulk_transcode: encode_to single-byte fast path", "[bulk]") {
     CHECK(encode_to<codec::iso_8859_15>(input) == expected);
 }
 
-TEST_CASE("bulk_transcode: encode_to_vector mirrors encode_to", "[bulk]") {
+TEST_CASE("bulk_transcode: encode_to supports alternate container", "[bulk]") {
     const std::u32string input = U"Hi";
-    auto                 bytes = encode_to_vector<codec::utf_8>(input);
+    auto                 bytes = encode_to<codec::utf_8, std::vector<char>>(input);
     REQUIRE(bytes == std::vector<char>{'H', 'i'});
 }
 
 TEST_CASE("bulk_transcode: decode_into appends to output iterator", "[bulk]") {
-    const std::string         input{'A', static_cast<char>(0xA4)};
-    std::vector<char32_t> output;
+    const std::string      input{'A', static_cast<char>(0xA4)};
+    std::vector<char32_t>  output;
     decode_into<codec::iso_8859_15>(input, std::back_inserter(output));
     REQUIRE(output == std::vector<char32_t>{U'A', U'\u20AC'});
 }
@@ -88,6 +84,11 @@ TEST_CASE("bulk_transcode: round-trip UTF-8", "[bulk]") {
     CHECK(encode_to<codec::utf_8>(decode_to<codec::utf_8>(original)) == original);
 }
 
+TEST_CASE("bulk_transcode: round-trip ISO-8859-15 fast path", "[bulk]") {
+    const std::string original{'A', static_cast<char>(0xA4)};
+    CHECK(encode_to<codec::iso_8859_15>(decode_to<codec::iso_8859_15>(original)) == original);
+}
+
 TEST_CASE("bulk_transcode: std::byte input is accepted", "[bulk]") {
     constexpr std::array<std::byte, 2> input{std::byte{0x41}, std::byte{0xA4}};
     auto                               result = decode_to<codec::iso_8859_15>(input);
@@ -100,7 +101,7 @@ TEST_CASE("bulk_transcode: empty input yields empty output", "[bulk]") {
 
     CHECK(decode_to<codec::utf_8>(empty_bytes).empty());
     CHECK(encode_to<codec::utf_8>(empty_code_points).empty());
-    CHECK(encode_to_vector<codec::utf_8>(empty_code_points).empty());
+    CHECK((encode_to<codec::utf_8, std::vector<char>>(empty_code_points)).empty());
 }
 
 TEST_CASE("bulk_transcode: decode_into is constexpr for UTF-8 ASCII", "[bulk][constexpr]") {

@@ -15,6 +15,9 @@ import beman.transcode;
     #include <beman/transcode/detail/bulk_transcode.hpp>
     #include <beman/transcode/whatwg_decode_view.hpp>
     #include <beman/transcode/whatwg_encode_view.hpp>
+    #include <beman/transcode/detail/single_byte_decode_view.hpp>
+    #include <beman/transcode/detail/single_byte_encode_view.hpp>
+    #include <beman/transcode/detail/bulk_transcode.hpp>
     #include <beman/transcode/iconv_transcode_view.hpp>
     #include <beman/transcode/iconv_transcode_or_error_view.hpp>
     #include <beman/transcode/iconv_real.hpp>

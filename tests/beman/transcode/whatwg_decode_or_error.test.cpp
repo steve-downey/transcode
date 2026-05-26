@@ -26,8 +26,59 @@ TEST_CASE("whatwg_decode_or_error satisfies input_range", "[transcoding::whatwg_
     std::vector<char> bytes{'A'};
     auto              view = bytes | whatwg_decode_or_error<codec::utf_8>;
     static_assert(std::ranges::input_range<decltype(view)>);
+    static_assert(std::ranges::forward_range<decltype(view)>);
+    static_assert(std::ranges::common_range<decltype(view)>);
+    static_assert(std::ranges::range<const decltype(view)>);
+    static_assert(std::ranges::input_range<const decltype(view)>);
+    static_assert(std::ranges::forward_range<const decltype(view)>);
+    static_assert(std::ranges::common_range<const decltype(view)>);
+    static_assert(std::ranges::borrowed_range<decltype(view)>);
+    static_assert(!std::ranges::borrowed_range<decltype(std::vector<char>{'A'} | whatwg_decode_or_error<codec::utf_8>)>);
+    static_assert(std::copyable<std::ranges::iterator_t<decltype(view)>>);
+    static_assert(!std::ranges::random_access_range<decltype(view)>);
     using val_t = std::ranges::range_value_t<decltype(view)>;
     static_assert(std::same_as<val_t, std::expected<char32_t, whatwg_error>>);
+}
+
+TEST_CASE("whatwg_decode_or_error const iteration also works for owning views", "[transcoding::whatwg_decode_or_error]") {
+    auto view = std::vector<char>{'A'} | whatwg_decode_or_error<codec::utf_8>;
+    static_assert(std::ranges::range<const decltype(view)>);
+}
+
+TEST_CASE("whatwg_decode_or_error iso_2022_jp is common when base is common", "[transcoding::whatwg_decode_or_error]") {
+    std::vector<char> bytes{'A'};
+    auto              view = bytes | whatwg_decode_or_error<codec::iso_2022_jp>;
+    static_assert(std::ranges::common_range<decltype(view)>);
+}
+
+TEST_CASE("whatwg_decode_or_error forward iterators are multipass for UTF-8", "[transcoding::whatwg_decode_or_error]") {
+    std::vector<char> bytes{'A', '\xFF'};
+    auto              view = bytes | whatwg_decode_or_error<codec::utf_8>;
+    auto first = view.begin();
+    auto copy = first;
+    REQUIRE((*first).has_value());
+    REQUIRE((*copy).has_value());
+    CHECK((*first).value() == U'A');
+    ++first;
+    CHECK((*copy).value() == U'A');
+    CHECK(!(*first).has_value());
+    CHECK((*first).error() == whatwg_error::invalid_byte);
+}
+
+TEST_CASE("whatwg_decode_or_error lifts to random_access_range for indexed codecs", "[transcoding::whatwg_decode_or_error]") {
+    std::vector<char> bytes{'A', '\xA1', 'B'};
+    auto              view = bytes | whatwg_decode_or_error<codec::iso_8859_6>;
+    static_assert(std::ranges::random_access_range<decltype(view)>);
+    static_assert(std::ranges::random_access_range<const decltype(view)>);
+    static_assert(std::ranges::borrowed_range<decltype(view)>);
+    REQUIRE(view.size() == 3);
+    auto it = view.begin();
+    CHECK(it[0].has_value());
+    CHECK(it[0].value() == U'A');
+    CHECK(!it[1].has_value());
+    CHECK(it[1].error() == whatwg_error::invalid_byte);
+    CHECK(it[2].has_value());
+    CHECK(it[2].value() == U'B');
 }
 
 TEST_CASE("whatwg_decode_or_error valid ASCII", "[transcoding::whatwg_decode_or_error]") {
