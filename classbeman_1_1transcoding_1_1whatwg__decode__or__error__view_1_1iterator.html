@@ -99,6 +99,7 @@ $(document).ready(function(){initNavTree('classbeman_1_1transcoding_1_1whatwg__d
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pri-types">Private Types</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
@@ -110,8 +111,10 @@ $(document).ready(function(){initNavTree('classbeman_1_1transcoding_1_1whatwg__d
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a89f74408d717b6bba5e83a5d24afd405"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a89f74408d717b6bba5e83a5d24afd405">iterator_concept</a> = std::input_iterator_tag</td></tr>
-<tr class="separator:a89f74408d717b6bba5e83a5d24afd405"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1f08d74d4b3a8a057bcfaf5df728d64"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ab1f08d74d4b3a8a057bcfaf5df728d64">iterator_concept</a> = std::conditional_t&lt; std::ranges::forward_range&lt; R &gt;, std::forward_iterator_tag, std::input_iterator_tag &gt;</td></tr>
+<tr class="separator:ab1f08d74d4b3a8a057bcfaf5df728d64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc517ef4efa13870e296c5d1d6a7f745"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#acc517ef4efa13870e296c5d1d6a7f745">iterator_category</a> = <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ab1f08d74d4b3a8a057bcfaf5df728d64">iterator_concept</a></td></tr>
+<tr class="separator:acc517ef4efa13870e296c5d1d6a7f745"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae14ae9ac99d47bc61bebe27976285485"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ae14ae9ac99d47bc61bebe27976285485">value_type</a> = <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#af2c271e382fde4f7addbd69e40878950">result_t</a></td></tr>
 <tr class="separator:ae14ae9ac99d47bc61bebe27976285485"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b1cef327fe99d9a8ae33b234e751306"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a0b1cef327fe99d9a8ae33b234e751306">difference_type</a> = std::ptrdiff_t</td></tr>
@@ -121,34 +124,43 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa09d1aaea7bbd0db1a676f59d2fa8042"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#aa09d1aaea7bbd0db1a676f59d2fa8042">iterator</a> (<a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a94b81379ee8fb68aeceb2abadca59ebd">base_iter</a> current, <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a209838f7d9db9e71afba8788eb313cdd">base_sent</a> <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html#aed7ba9bc17915b816177b11ea75480a2">end</a>)</td></tr>
+<tr class="memitem:a973b9ffd445b16f934f250bd321ec700"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a973b9ffd445b16f934f250bd321ec700">iterator</a> ()=default</td></tr>
+<tr class="separator:a973b9ffd445b16f934f250bd321ec700"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa09d1aaea7bbd0db1a676f59d2fa8042"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#aa09d1aaea7bbd0db1a676f59d2fa8042">iterator</a> (<a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a829dbfdc05f05d6c7c17a250eb6585fc">base_iter</a> current, <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a449366bd9429b244869e324fcaa69a5c">base_sent</a> <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html#a7a7e4a428cdc50b88545041a1ba22753">end</a>)</td></tr>
 <tr class="separator:aa09d1aaea7bbd0db1a676f59d2fa8042"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a873bbbcf8166f473183781cecad7df5c"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#af2c271e382fde4f7addbd69e40878950">result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a873bbbcf8166f473183781cecad7df5c">operator*</a> () const</td></tr>
 <tr class="separator:a873bbbcf8166f473183781cecad7df5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ad953be72f306c7b078e15ab0e0fcdf"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a3ad953be72f306c7b078e15ab0e0fcdf">operator++</a> ()</td></tr>
 <tr class="separator:a3ad953be72f306c7b078e15ab0e0fcdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff3925281b972a074df358ee71aae0ab"><td class="memItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#aff3925281b972a074df358ee71aae0ab">operator++</a> (int)</td></tr>
-<tr class="separator:aff3925281b972a074df358ee71aae0ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6931e5ead9d92a85ddc13ad6e3a6fd33"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a6931e5ead9d92a85ddc13ad6e3a6fd33">operator++</a> (int)</td></tr>
+<tr class="separator:a6931e5ead9d92a85ddc13ad6e3a6fd33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab70debf819ed3bc2b39dc106fd3e76e7"><td class="memItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ab70debf819ed3bc2b39dc106fd3e76e7">operator++</a> (int)</td></tr>
+<tr class="separator:ab70debf819ed3bc2b39dc106fd3e76e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a9208baaf66508ff2bd0b0ca5e7beecd6"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a9208baaf66508ff2bd0b0ca5e7beecd6">terminal</a> ()</td></tr>
+<tr class="separator:a9208baaf66508ff2bd0b0ca5e7beecd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-types" name="pri-types"></a>
 Private Types</h2></td></tr>
-<tr class="memitem:a94b81379ee8fb68aeceb2abadca59ebd"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a94b81379ee8fb68aeceb2abadca59ebd">base_iter</a> = std::ranges::iterator_t&lt; R &gt;</td></tr>
-<tr class="separator:a94b81379ee8fb68aeceb2abadca59ebd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a209838f7d9db9e71afba8788eb313cdd"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a209838f7d9db9e71afba8788eb313cdd">base_sent</a> = std::ranges::sentinel_t&lt; R &gt;</td></tr>
-<tr class="separator:a209838f7d9db9e71afba8788eb313cdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a829dbfdc05f05d6c7c17a250eb6585fc"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a829dbfdc05f05d6c7c17a250eb6585fc">base_iter</a> = detail::compatible_iterator_t&lt; R &gt;</td></tr>
+<tr class="separator:a829dbfdc05f05d6c7c17a250eb6585fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a449366bd9429b244869e324fcaa69a5c"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a449366bd9429b244869e324fcaa69a5c">base_sent</a> = detail::compatible_sentinel_t&lt; R &gt;</td></tr>
+<tr class="separator:a449366bd9429b244869e324fcaa69a5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2c271e382fde4f7addbd69e40878950"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#af2c271e382fde4f7addbd69e40878950">result_t</a> = std::expected&lt; char32_t, <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a> &gt;</td></tr>
 <tr class="separator:af2c271e382fde4f7addbd69e40878950"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
-<tr class="memitem:a1b7059cb25f52558df0a550b724aa01d"><td class="memItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a1b7059cb25f52558df0a550b724aa01d">load</a> ()</td></tr>
-<tr class="separator:a1b7059cb25f52558df0a550b724aa01d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc3e77081f49fba3e855cfaf5d93d838"><td class="memItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#acc3e77081f49fba3e855cfaf5d93d838">load</a> ()</td></tr>
+<tr class="separator:acc3e77081f49fba3e855cfaf5d93d838"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:a337b6665585ecda0af92fb2c09698d58"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a94b81379ee8fb68aeceb2abadca59ebd">base_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a337b6665585ecda0af92fb2c09698d58">current_</a></td></tr>
+<tr class="memitem:a337b6665585ecda0af92fb2c09698d58"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a829dbfdc05f05d6c7c17a250eb6585fc">base_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a337b6665585ecda0af92fb2c09698d58">current_</a></td></tr>
 <tr class="separator:a337b6665585ecda0af92fb2c09698d58"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8f9eef1e9430688c4a3648ee2ea8f67"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a209838f7d9db9e71afba8788eb313cdd">base_sent</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ac8f9eef1e9430688c4a3648ee2ea8f67">end_</a></td></tr>
+<tr class="memitem:ac8f9eef1e9430688c4a3648ee2ea8f67"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a449366bd9429b244869e324fcaa69a5c">base_sent</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ac8f9eef1e9430688c4a3648ee2ea8f67">end_</a></td></tr>
 <tr class="separator:ac8f9eef1e9430688c4a3648ee2ea8f67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07c27c13517899ad02719b6119d06766"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#af2c271e382fde4f7addbd69e40878950">result_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a07c27c13517899ad02719b6119d06766">value_</a> {}</td></tr>
 <tr class="separator:a07c27c13517899ad02719b6119d06766"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -179,12 +191,14 @@ Private Attributes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
+<tr class="memitem:a7c620e9fc44b9af2b88f54439db76fa7"><td class="memItemLeft" align="right" valign="top">constexpr friend bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a7c620e9fc44b9af2b88f54439db76fa7">operator==</a> (const <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">iterator</a> &amp;lhs, const <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">iterator</a> &amp;rhs)</td></tr>
+<tr class="separator:a7c620e9fc44b9af2b88f54439db76fa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91ea895c81f92bd9b36f824488572292"><td class="memItemLeft" align="right" valign="top">constexpr friend bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a91ea895c81f92bd9b36f824488572292">operator==</a> (const <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">iterator</a> &amp;it, std::default_sentinel_t)</td></tr>
 <tr class="separator:a91ea895c81f92bd9b36f824488572292"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="a94b81379ee8fb68aeceb2abadca59ebd" name="a94b81379ee8fb68aeceb2abadca59ebd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a94b81379ee8fb68aeceb2abadca59ebd">&#9670;&#160;</a></span>base_iter</h2>
+<a id="a829dbfdc05f05d6c7c17a250eb6585fc" name="a829dbfdc05f05d6c7c17a250eb6585fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a829dbfdc05f05d6c7c17a250eb6585fc">&#9670;&#160;</a></span>base_iter</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -195,7 +209,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::base_iter =  std::ranges::iterator_t&lt;R&gt;</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::base_iter =  detail::compatible_iterator_t&lt;R&gt;</td>
         </tr>
       </table>
   </td>
@@ -207,8 +221,8 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a209838f7d9db9e71afba8788eb313cdd" name="a209838f7d9db9e71afba8788eb313cdd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a209838f7d9db9e71afba8788eb313cdd">&#9670;&#160;</a></span>base_sent</h2>
+<a id="a449366bd9429b244869e324fcaa69a5c" name="a449366bd9429b244869e324fcaa69a5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a449366bd9429b244869e324fcaa69a5c">&#9670;&#160;</a></span>base_sent</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -219,7 +233,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::base_sent =  std::ranges::sentinel_t&lt;R&gt;</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::base_sent =  detail::compatible_sentinel_t&lt;R&gt;</td>
         </tr>
       </table>
   </td>
@@ -247,8 +261,8 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a89f74408d717b6bba5e83a5d24afd405" name="a89f74408d717b6bba5e83a5d24afd405"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a89f74408d717b6bba5e83a5d24afd405">&#9670;&#160;</a></span>iterator_concept</h2>
+<a id="acc517ef4efa13870e296c5d1d6a7f745" name="acc517ef4efa13870e296c5d1d6a7f745"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc517ef4efa13870e296c5d1d6a7f745">&#9670;&#160;</a></span>iterator_category</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -256,7 +270,23 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::iterator_concept =  std::input_iterator_tag</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::iterator_category =  <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ab1f08d74d4b3a8a057bcfaf5df728d64">iterator_concept</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab1f08d74d4b3a8a057bcfaf5df728d64" name="ab1f08d74d4b3a8a057bcfaf5df728d64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1f08d74d4b3a8a057bcfaf5df728d64">&#9670;&#160;</a></span>iterator_concept</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::iterator_concept =  std::conditional_t&lt;std::ranges::forward_range&lt;R&gt;, std::forward_iterator_tag, std::input_iterator_tag&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -320,8 +350,35 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a973b9ffd445b16f934f250bd321ec700" name="a973b9ffd445b16f934f250bd321ec700"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a973b9ffd445b16f934f250bd321ec700">&#9670;&#160;</a></span>iterator() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::iterator </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">default</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="aa09d1aaea7bbd0db1a676f59d2fa8042" name="aa09d1aaea7bbd0db1a676f59d2fa8042"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa09d1aaea7bbd0db1a676f59d2fa8042">&#9670;&#160;</a></span>iterator()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa09d1aaea7bbd0db1a676f59d2fa8042">&#9670;&#160;</a></span>iterator() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -335,13 +392,13 @@ requires legacy_byte_range&lt;R&gt;</div>
         <tr>
           <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::iterator </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a94b81379ee8fb68aeceb2abadca59ebd">base_iter</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a829dbfdc05f05d6c7c17a250eb6585fc">base_iter</a>&#160;</td>
           <td class="paramname"><em>current</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a209838f7d9db9e71afba8788eb313cdd">base_sent</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a449366bd9429b244869e324fcaa69a5c">base_sent</a>&#160;</td>
           <td class="paramname"><em>end</em>&#160;</td>
         </tr>
         <tr>
@@ -360,20 +417,22 @@ requires legacy_byte_range&lt;R&gt;</div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a1b7059cb25f52558df0a550b724aa01d" name="a1b7059cb25f52558df0a550b724aa01d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1b7059cb25f52558df0a550b724aa01d">&#9670;&#160;</a></span>load()</h2>
+<a id="acc3e77081f49fba3e855cfaf5d93d838" name="acc3e77081f49fba3e855cfaf5d93d838"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc3e77081f49fba3e855cfaf5d93d838">&#9670;&#160;</a></span>load()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; <br />
-requires legacy_byte_range&lt;R&gt;</div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr void <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::load</td>
+          <td class="memname">constexpr void <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::load </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>
@@ -411,7 +470,7 @@ requires legacy_byte_range&lt;R&gt;</div>
 </div>
 </div>
 <a id="a3ad953be72f306c7b078e15ab0e0fcdf" name="a3ad953be72f306c7b078e15ab0e0fcdf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3ad953be72f306c7b078e15ab0e0fcdf">&#9670;&#160;</a></span>operator++() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ad953be72f306c7b078e15ab0e0fcdf">&#9670;&#160;</a></span>operator++() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -435,14 +494,42 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="aff3925281b972a074df358ee71aae0ab" name="aff3925281b972a074df358ee71aae0ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aff3925281b972a074df358ee71aae0ab">&#9670;&#160;</a></span>operator++() <span class="overload">[2/2]</span></h2>
+<a id="a6931e5ead9d92a85ddc13ad6e3a6fd33" name="a6931e5ead9d92a85ddc13ad6e3a6fd33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6931e5ead9d92a85ddc13ad6e3a6fd33">&#9670;&#160;</a></span>operator++() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; <br />
-requires legacy_byte_range&lt;R&gt;</div>
+requires std::ranges::forward_range&lt;R&gt;</div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::operator++ </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab70debf819ed3bc2b39dc106fd3e76e7" name="ab70debf819ed3bc2b39dc106fd3e76e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab70debf819ed3bc2b39dc106fd3e76e7">&#9670;&#160;</a></span>operator++() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -464,9 +551,36 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
+<a id="a9208baaf66508ff2bd0b0ca5e7beecd6" name="a9208baaf66508ff2bd0b0ca5e7beecd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9208baaf66508ff2bd0b0ca5e7beecd6">&#9670;&#160;</a></span>terminal()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">iterator</a> <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::terminal </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Friends And Related Function Documentation</h2>
 <a id="a91ea895c81f92bd9b36f824488572292" name="a91ea895c81f92bd9b36f824488572292"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a91ea895c81f92bd9b36f824488572292">&#9670;&#160;</a></span>operator==</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a91ea895c81f92bd9b36f824488572292">&#9670;&#160;</a></span>operator== <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -503,6 +617,44 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
+<a id="a7c620e9fc44b9af2b88f54439db76fa7" name="a7c620e9fc44b9af2b88f54439db76fa7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c620e9fc44b9af2b88f54439db76fa7">&#9670;&#160;</a></span>operator== <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr friend bool operator== </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">iterator</a> &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">iterator</a> &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a337b6665585ecda0af92fb2c09698d58" name="a337b6665585ecda0af92fb2c09698d58"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a337b6665585ecda0af92fb2c09698d58">&#9670;&#160;</a></span>current_</h2>
@@ -516,7 +668,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a94b81379ee8fb68aeceb2abadca59ebd">base_iter</a> <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::current_</td>
+          <td class="memname"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a829dbfdc05f05d6c7c17a250eb6585fc">base_iter</a> <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::current_</td>
         </tr>
       </table>
   </td>
@@ -564,7 +716,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a209838f7d9db9e71afba8788eb313cdd">base_sent</a> <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::end_</td>
+          <td class="memname"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a449366bd9429b244869e324fcaa69a5c">base_sent</a> <a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view</a>&lt; C, R &gt;::iterator::end_</td>
         </tr>
       </table>
   </td>

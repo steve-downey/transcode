@@ -2,7 +2,7 @@ var dir_9d798d0e78a5d20e3b6770198d219460 =
 [
     [ "tables", "dir_56330be2367402bf2c78bcc1a3c20fc7.html", "dir_56330be2367402bf2c78bcc1a3c20fc7" ],
     [ "big5.hpp", "big5_8hpp.html", null ],
-    [ "bulk_transcode.hpp", "bulk__transcode_8hpp.html", "bulk__transcode_8hpp" ],
+    [ "bulk_transcode.hpp", "bulk__transcode_8hpp.html", null ],
     [ "concepts.hpp", "concepts_8hpp.html", "concepts_8hpp" ],
     [ "error.hpp", "error_8hpp.html", "error_8hpp" ],
     [ "euc_jp.hpp", "euc__jp_8hpp.html", null ],
@@ -13,6 +13,9 @@ var dir_9d798d0e78a5d20e3b6770198d219460 =
     [ "null_term.hpp", "null__term_8hpp.html", "null__term_8hpp" ],
     [ "shift_jis.hpp", "shift__jis_8hpp.html", null ],
     [ "single_byte.hpp", "single__byte_8hpp.html", null ],
+    [ "single_byte_decode_view.hpp", "single__byte__decode__view_8hpp.html", "single__byte__decode__view_8hpp" ],
+    [ "single_byte_encode_view.hpp", "single__byte__encode__view_8hpp.html", "single__byte__encode__view_8hpp" ],
+    [ "single_byte_tables.hpp", "single__byte__tables_8hpp.html", null ],
     [ "sniff.hpp", "sniff_8hpp.html", "sniff_8hpp" ],
     [ "transcode_string.hpp", "transcode__string_8hpp.html", "transcode__string_8hpp" ],
     [ "transcode_view.hpp", "transcode__view_8hpp.html", "transcode__view_8hpp" ],

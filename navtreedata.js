@@ -532,7 +532,7 @@ var NAVTREE =
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
       [ "Class Members", "functions.html", [
         [ "All", "functions.html", "functions_dup" ],
-        [ "Functions", "functions_func.html", null ],
+        [ "Functions", "functions_func.html", "functions_func" ],
         [ "Variables", "functions_vars.html", null ],
         [ "Typedefs", "functions_type.html", null ],
         [ "Related Functions", "functions_rela.html", null ]
@@ -551,10 +551,12 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#aff3925281b972a074df358ee71aae0ab",
-"iconv__transcode__view_8hpp.html",
-"md_docs_plans_phase2_checklist.html#autotoc_md209",
-"namespacebeman_1_1transcoding.html#a9e96b2209ecc3472323642bbc8bc1322"
+"classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html#ae6d9c7bd0d777f58e5b1e5e1097a1394",
+"classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html",
+"classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a7e320893a09072b054e0567c6f332874",
+"md_docs_Benchmarking_Transcode_Implementation_Performance.html#autotoc_md31",
+"md_docs_plans_phase3_index.html#autotoc_md279",
+"structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

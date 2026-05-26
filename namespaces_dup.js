@@ -1,4 +1,5 @@
 var namespaces_dup =
 [
-    [ "beman", "namespacebeman.html", "namespacebeman" ]
+    [ "beman", "namespacebeman.html", "namespacebeman" ],
+    [ "std", "namespacestd.html", "namespacestd" ]
 ];

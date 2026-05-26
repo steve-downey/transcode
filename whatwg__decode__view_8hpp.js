@@ -1,5 +1,9 @@
 var whatwg__decode__view_8hpp =
 [
+    [ "beman::transcoding::random_access_whatwg_decode_view< C, R >", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view" ],
+    [ "beman::transcoding::random_access_whatwg_decode_view< C, R >::iterator", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator" ],
+    [ "beman::transcoding::random_access_whatwg_decode_or_error_view< C, R >", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view" ],
+    [ "beman::transcoding::random_access_whatwg_decode_or_error_view< C, R >::iterator", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view_1_1iterator.html", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view_1_1iterator" ],
     [ "beman::transcoding::whatwg_decode_view< C, R >", "classbeman_1_1transcoding_1_1whatwg__decode__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__view" ],
     [ "beman::transcoding::whatwg_decode_view< C, R >::iterator", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator" ],
     [ "beman::transcoding::whatwg_decode_closure< C >", "structbeman_1_1transcoding_1_1whatwg__decode__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__closure" ],
