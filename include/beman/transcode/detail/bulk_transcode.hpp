@@ -3,20 +3,6 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
 
-<<<<<<< HEAD
-#include <beman/transcode/detail/single_byte_tables.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_encode_view.hpp>
-
-#include <algorithm>
-#include <iterator>
-#include <ranges>
-#include <string>
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-
-#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
-#define INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
-
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/single_byte_tables.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
@@ -133,4 +119,3 @@ constexpr void encode_into(R&& source, Output output) {
 } // namespace beman::transcoding
 
 #endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
-                                               C == codec::iso_8859_10 || C == codec::iso_8859_13 || C == codec::iso_8859_14 ||
