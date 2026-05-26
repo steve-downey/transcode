@@ -17,7 +17,8 @@ def generate_binary_indices(json_path: Path, output_dir: Path):
 
         # WPT indexes generally map integers to code points or nulls.
         # We must decide on a byte width. Most WHATWG indices fit in 16-bit (uint16_t)
-        # Some, like gb18030, might require 32-bit depending on how you structure the offset.
+        # Some, like gb18030, might require 32-bit depending on
+        # how you structure the offset.
         # Let's assume uint16_t (H) for standard indices. Use 0xFFFF for null/None.
 
         with open(out_file, "wb") as bin_out:

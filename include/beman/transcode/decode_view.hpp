@@ -154,8 +154,8 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R>> {
         using base_iter = detail::compatible_iterator_t<R>;
         using base_sent = detail::compatible_sentinel_t<R>;
 
-        base_iter current_;
-        base_sent end_;
+        base_iter current_{};
+        base_sent end_{};
         Codec     codec_;
         char32_t  value_{};
         bool      done_{false};
@@ -224,8 +224,8 @@ class decode_or_error_view : public std::ranges::view_interface<decode_or_error_
         using base_sent = detail::compatible_sentinel_t<R>;
         using result_t  = std::expected<char32_t, decode_error>;
 
-        base_iter current_;
-        base_sent end_;
+        base_iter current_{};
+        base_sent end_{};
         Codec     codec_;
         result_t  value_{};
         bool      done_{false};
