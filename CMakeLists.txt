@@ -11,10 +11,22 @@ project(
     VERSION 0.1.0
 )
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "13")
-    message(FATAL_ERROR "GCC >= 13 is required. Found: ${CMAKE_CXX_COMPILER_VERSION}")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19")
-    message(FATAL_ERROR "Clang >= 19 is required (18 lacks __cpp_concepts >= 202002L needed by libstdc++ std::expected). Found: ${CMAKE_CXX_COMPILER_VERSION}")
+if(
+    CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "13"
+)
+    message(
+        FATAL_ERROR
+        "GCC >= 13 is required. Found: ${CMAKE_CXX_COMPILER_VERSION}"
+    )
+elseif(
+    CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19"
+)
+    message(
+        FATAL_ERROR
+        "Clang >= 19 is required (18 lacks __cpp_concepts >= 202002L needed by libstdc++ std::expected). Found: ${CMAKE_CXX_COMPILER_VERSION}"
+    )
 endif()
 
 # [CMAKE.SKIP_TESTS]

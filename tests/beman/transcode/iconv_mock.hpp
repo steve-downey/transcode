@@ -171,7 +171,11 @@ inline size_t mock_iconv_output_then_e2big(iconv_t, char** in, size_t* inleft, c
 // No-output-EILSEQ-multi-staging mock: consumes multiple staging bytes
 // on EILSEQ with no output, forcing the shift loop.
 // Needs 3+ staging bytes to trigger the loop iteration.
-inline size_t mock_iconv_eilseq_multi_byte(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+inline size_t mock_iconv_eilseq_multi_byte(iconv_t,
+                                           char**                   in,
+                                           [[maybe_unused]] size_t* inleft,
+                                           [[maybe_unused]] char**  out,
+                                           [[maybe_unused]] size_t* outleft) {
     if (in == nullptr || *in == nullptr)
         return 0;
     // If we have 3+ bytes in staging, signal EILSEQ with no output
@@ -183,7 +187,8 @@ inline size_t mock_iconv_eilseq_multi_byte(iconv_t, char** in, size_t* inleft, c
 // Success-no-output mock: returns success while consuming input but producing no output.
 // Simulates a codec that buffers input without producing output immediately.
 // Tests the "success with nothing yielded" path (lines 188-190 in transcode, 178-180 in or_error).
-inline size_t mock_iconv_success_no_output(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+inline size_t mock_iconv_success_no_output(
+    iconv_t, char** in, size_t* inleft, [[maybe_unused]] char** out, [[maybe_unused]] size_t* outleft) {
     if (in == nullptr || *in == nullptr)
         return 0;
     // Consume all input without producing any output (success)
@@ -194,7 +199,11 @@ inline size_t mock_iconv_success_no_output(iconv_t, char** in, size_t* inleft, c
 
 // Shift-loop-E2BIG mock: returns E2BIG without output for multi-byte staging.
 // Forces the byte-shifting loop for E2BIG error handling (line 222 in or_error, 215 in transcode).
-inline size_t mock_iconv_shift_loop_e2big(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+inline size_t mock_iconv_shift_loop_e2big(iconv_t,
+                                          char**                   in,
+                                          [[maybe_unused]] size_t* inleft,
+                                          [[maybe_unused]] char**  out,
+                                          [[maybe_unused]] size_t* outleft) {
     if (in == nullptr || *in == nullptr)
         return 0;
     // Always return E2BIG with no output/consumption (forces shift loop)
@@ -204,7 +213,11 @@ inline size_t mock_iconv_shift_loop_e2big(iconv_t, char** in, size_t* inleft, ch
 
 // Shift-loop-EILSEQ mock: returns EILSEQ without output for multi-byte staging.
 // Forces the byte-shifting loop for EILSEQ error handling (line 207 in or_error).
-inline size_t mock_iconv_shift_loop_eilseq(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+inline size_t mock_iconv_shift_loop_eilseq(iconv_t,
+                                           char**                   in,
+                                           [[maybe_unused]] size_t* inleft,
+                                           [[maybe_unused]] char**  out,
+                                           [[maybe_unused]] size_t* outleft) {
     if (in == nullptr || *in == nullptr)
         return 0;
     // Always return EILSEQ with no output/consumption (forces shift loop)

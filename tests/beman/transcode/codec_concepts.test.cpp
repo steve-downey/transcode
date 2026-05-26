@@ -88,7 +88,7 @@ static_assert(!decode_codec<int>);
 // ---------------------------------------------------------------------------
 
 TEST_CASE("table_codec: ASCII passthrough", "[codec_concepts]") {
-    latin1_codec codec;
+    latin1_codec                 codec;
     std::array<unsigned char, 3> input{0x41, 0x42, 0x43}; // ABC
     auto                         it  = input.begin();
     auto                         end = input.end();
@@ -107,7 +107,7 @@ TEST_CASE("table_codec: ASCII passthrough", "[codec_concepts]") {
 }
 
 TEST_CASE("table_codec: upper-half decode", "[codec_concepts]") {
-    latin1_codec codec;
+    latin1_codec                 codec;
     std::array<unsigned char, 2> input{0x80, 0xFF};
     auto                         it  = input.begin();
     auto                         end = input.end();

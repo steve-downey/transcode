@@ -54,7 +54,7 @@ static_assert(encode_codec<ebcdic_037>);
 
 TEST_CASE("ebcdic037: lowercase letters a-i at 0x81-0x89", "[ebcdic037]") {
     std::array<unsigned char, 9> src{0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89};
-    std::u32string result;
+    std::u32string               result;
     for (char32_t cp : src | decode(ebcdic_037{}))
         result.push_back(cp);
     CHECK(result == U"abcdefghi");
@@ -62,7 +62,7 @@ TEST_CASE("ebcdic037: lowercase letters a-i at 0x81-0x89", "[ebcdic037]") {
 
 TEST_CASE("ebcdic037: lowercase letters j-r at 0x91-0x99", "[ebcdic037]") {
     std::array<unsigned char, 9> src{0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99};
-    std::u32string result;
+    std::u32string               result;
     for (char32_t cp : src | decode(ebcdic_037{}))
         result.push_back(cp);
     CHECK(result == U"jklmnopqr");
@@ -70,7 +70,7 @@ TEST_CASE("ebcdic037: lowercase letters j-r at 0x91-0x99", "[ebcdic037]") {
 
 TEST_CASE("ebcdic037: lowercase letters s-z at 0xA2-0xA9", "[ebcdic037]") {
     std::array<unsigned char, 8> src{0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9};
-    std::u32string result;
+    std::u32string               result;
     for (char32_t cp : src | decode(ebcdic_037{}))
         result.push_back(cp);
     CHECK(result == U"stuvwxyz");
@@ -78,7 +78,7 @@ TEST_CASE("ebcdic037: lowercase letters s-z at 0xA2-0xA9", "[ebcdic037]") {
 
 TEST_CASE("ebcdic037: uppercase letters A-I at 0xC1-0xC9", "[ebcdic037]") {
     std::array<unsigned char, 9> src{0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9};
-    std::u32string result;
+    std::u32string               result;
     for (char32_t cp : src | decode(ebcdic_037{}))
         result.push_back(cp);
     CHECK(result == U"ABCDEFGHI");
@@ -86,15 +86,13 @@ TEST_CASE("ebcdic037: uppercase letters A-I at 0xC1-0xC9", "[ebcdic037]") {
 
 TEST_CASE("ebcdic037: digits 0-9 at 0xF0-0xF9", "[ebcdic037]") {
     std::array<unsigned char, 10> src{0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9};
-    std::u32string result;
+    std::u32string                result;
     for (char32_t cp : src | decode(ebcdic_037{}))
         result.push_back(cp);
     CHECK(result == U"0123456789");
 }
 
-TEST_CASE("ebcdic037: space at 0x40", "[ebcdic037]") {
-    CHECK(constify(ebcdic_037{}.decode_byte(0x40)) == U' ');
-}
+TEST_CASE("ebcdic037: space at 0x40", "[ebcdic037]") { CHECK(constify(ebcdic_037{}.decode_byte(0x40)) == U' '); }
 
 TEST_CASE("ebcdic037: punctuation positions", "[ebcdic037]") {
     CHECK(constify(ebcdic_037{}.decode_byte(0x4B)) == U'.');
@@ -112,7 +110,7 @@ TEST_CASE("ebcdic037: decode HELLO WORLD", "[ebcdic037]") {
     // H=0xC8, E=0xC5, L=0xD3, L=0xD3, O=0xD6, SP=0x40,
     // W=0xE6, O=0xD6, R=0xD9, L=0xD3, D=0xC4
     std::array<unsigned char, 11> src{0xC8, 0xC5, 0xD3, 0xD3, 0xD6, 0x40, 0xE6, 0xD6, 0xD9, 0xD3, 0xC4};
-    std::u32string result;
+    std::u32string                result;
     for (char32_t cp : src | decode(ebcdic_037{}))
         result.push_back(cp);
     CHECK(result == U"HELLO WORLD");
