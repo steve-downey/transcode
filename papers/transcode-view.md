@@ -595,6 +595,66 @@ std::vector<char> utf32le = input
   | std::ranges::to<std::vector>();
 ```
 
+::: cmptable
+
+#### Before: manual `iconv`
+
+```cpp
+std::vector<char> utf32le_from_utf8(
+    std::string_view input) {
+  iconv_t cd = iconv_open("UTF-32LE",
+                          "UTF-8");
+  if (cd == (iconv_t)-1)
+    throw std::runtime_error("iconv_open");
+
+  std::vector<char> result(input.size() * 4);
+  char* inbuf = const_cast<char*>(
+                  input.data());
+  size_t inleft = input.size();
+  char* outbuf = result.data();
+  size_t outleft = result.size();
+
+  while (inleft > 0) {
+    size_t r = iconv(cd, &inbuf, &inleft,
+                     &outbuf, &outleft);
+    if (r == (size_t)-1) {
+      if (errno == E2BIG) {
+        size_t used = outbuf - result.data();
+        result.resize(result.size() * 2);
+        outbuf = result.data() + used;
+        outleft = result.size() - used;
+      } else {
+        iconv_close(cd);
+        throw std::runtime_error("iconv");
+      }
+    }
+  }
+
+  result.resize(outbuf - result.data());
+  iconv_close(cd);
+  return result;
+}
+```
+
+#### After: `iconv_transcode` view
+
+```cpp
+std::vector<char> utf32le_from_utf8(
+    std::string_view input) {
+  std::array<char, 256> buffer{};
+  std::vector<char> result;
+  for (char byte : input
+      | beman::transcoding::iconv_transcode(
+          "UTF-8", "UTF-32LE",
+          std::span(buffer))) {
+    result.push_back(byte);
+  }
+  return result;
+}
+```
+
+:::
+
 ## Design Decisions
 
 ### Byte-Like Types, Not Character Types
