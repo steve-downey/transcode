@@ -452,7 +452,7 @@ var NAVTREE =
         [ "<strong>The Role of views::maybe in Transcoding Pipelines</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md390", null ],
         [ "<strong>std::optional and Monadic Continuations</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md391", null ]
       ] ],
-      [ "<strong>The Oracle Paradigm: Fuzzing and Implementor Relief</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md392", [
+      [ "<strong>The Oracle Paradigm: Fuzzing and Implementer Relief</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md392", [
         [ "<strong>Defining the Testing Oracle</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md393", null ],
         [ "<strong>Differential Fuzzing Strategy</strong>", "md_docs_Rust_Encoding_for_C___Transcode.html#autotoc_md394", null ]
       ] ],
