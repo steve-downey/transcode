@@ -201,6 +201,42 @@ TEST_CASE("decode_view: constexpr random-access indexing", "[decode_view]") {
 // Mixed: std::byte input
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// base() protocol
+// ---------------------------------------------------------------------------
+
+TEST_CASE("decode_view: view base() returns underlying range", "[decode_view]") {
+    std::vector<unsigned char> src{0x41, 0x42};
+    auto                       view = src | decode(latin1_codec{});
+    CHECK(view.base().size() == 2);
+    CHECK(view.base()[0] == 0x41);
+}
+
+TEST_CASE("decode_view: iterator base() returns underlying position", "[decode_view]") {
+    std::vector<unsigned char> src{0x41, 0x42, 0x43};
+    auto                       view = src | decode(latin1_codec{});
+    auto                       it   = view.begin();
+    CHECK(*it.base() == 0x41);
+    ++it;
+    CHECK(*it.base() == 0x42);
+}
+
+TEST_CASE("decode_or_error_view: iterator base() tracks position", "[decode_view]") {
+    std::vector<unsigned char> src{0x41, 0x80}; // A, then unmapped in sparse
+    auto                       view = src | decode_or_error(sparse_codec{});
+    auto                       it   = view.begin();
+    CHECK(*it.base() == 0x41);
+    ++it;
+    CHECK(*it.base() == 0x80);
+    auto r = *it;
+    CHECK(!r.has_value());
+    CHECK(r.error() == decode_error::invalid_byte);
+}
+
+// ---------------------------------------------------------------------------
+// Mixed: std::byte input
+// ---------------------------------------------------------------------------
+
 TEST_CASE("decode_view: std::byte input range", "[decode_view]") {
     std::array<std::byte, 2> src{std::byte{0x41}, std::byte{0xC0}};
     std::u32string           result;

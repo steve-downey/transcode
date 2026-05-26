@@ -430,3 +430,21 @@ TEST_CASE("whatwg_decode iso_8859_6 unmapped byte yields U+FFFD", "[transcoding:
     std::vector<char> bytes{'\xA1'};
     CHECK(collect(bytes | whatwg_decode<codec::iso_8859_6>) == std::vector<char32_t>{U'\xFFFD'});
 }
+
+TEST_CASE("whatwg_decode: view base() returns underlying range", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A', 'B'};
+    auto              view = bytes | whatwg_decode<codec::utf_8>;
+    CHECK(view.base().size() == 2);
+    CHECK(view.base()[0] == 'A');
+}
+
+TEST_CASE("whatwg_decode: iterator base() points past consumed bytes", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A', 'B', 'C'};
+    auto              view = bytes | whatwg_decode<codec::utf_8>;
+    auto              it   = view.begin();
+    CHECK(*it == U'A');
+    CHECK(*it.base() == 'B');
+    ++it;
+    CHECK(*it == U'B');
+    CHECK(*it.base() == 'C');
+}
