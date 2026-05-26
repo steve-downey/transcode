@@ -79,9 +79,13 @@ std::vector<char32_t> decode_utf8(
 ```cpp
 std::vector<char32_t> decode_utf8(
     std::string_view input) {
-  return input
-    | whatwg_decode<codec::utf_8>
-    | std::ranges::to<std::vector>();
+  std::vector<char32_t> result;
+  for (char32_t cp : input
+      | beman::transcoding::whatwg_decode<
+          beman::transcoding::codec::utf_8>) {
+    result.push_back(cp);
+  }
+  return result;
 }
 ```
 
@@ -144,10 +148,14 @@ std::string shift_jis_to_utf8(
 ```cpp
 std::string shift_jis_to_utf8(
     std::string_view input) {
-  return input
-    | whatwg_decode<codec::shift_jis>
-    | whatwg_encode<codec::utf_8>
-    | std::ranges::to<std::string>();
+  std::string result;
+  for (char byte : input
+      | beman::transcoding::transcode<
+          beman::transcoding::codec::shift_jis,
+          beman::transcoding::codec::utf_8>) {
+    result.push_back(byte);
+  }
+  return result;
 }
 ```
 
@@ -181,8 +189,9 @@ std::wstring from_cstring(const char* s) {
 
 ```cpp
 auto from_cstring(const char* s) {
-  return views::null_term(s)
-    | whatwg_decode<codec::utf_8>;
+  return beman::transcoding::views::null_term(s)
+    | beman::transcoding::whatwg_decode<
+        beman::transcoding::codec::utf_8>;
   // Returns lazy view of char32_t
   // No global state
   // Portable Unicode scalars
@@ -218,7 +227,8 @@ if (has_errors) {
 
 ```cpp
 for (auto r : input
-    | whatwg_decode_or_error<codec::utf_8>) {
+    | beman::transcoding::whatwg_decode_or_error<
+        beman::transcoding::codec::utf_8>) {
   if (r.has_value()) {
     process(*r);
   } else {
