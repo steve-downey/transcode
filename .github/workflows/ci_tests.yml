@@ -67,17 +67,33 @@ jobs:
                   "tests": [
                     { "stdlibs": ["libstdc++"],
                       "tests": [
-                        "Release.Default", "Debug.-DBEMAN_TRANSCODE_USE_MODULES=On"
+                        "Debug.Default", "Release.Default",
+                        "Debug.-DBEMAN_TRANSCODE_USE_MODULES=On"
                       ]
                     }
                   ]
                 }
               ]
             },
-            { "versions": ["14", "13"],
+            { "versions": ["14"],
               "tests": [
                 { "cxxversions": ["c++26", "c++23"],
-                  "tests": [{ "stdlibs": ["libstdc++"], "tests": ["Release.Default"]}]
+                  "tests": [
+                    { "stdlibs": ["libstdc++"],
+                      "tests": ["Debug.Default", "Release.Default"]
+                    }
+                  ]
+                }
+              ]
+            },
+            { "versions": ["13"],
+              "tests": [
+                { "cxxversions": ["c++26", "c++23"],
+                  "tests": [
+                    { "stdlibs": ["libstdc++"],
+                      "tests": ["Debug.Default", "Release.Default"]
+                    }
+                  ]
                 }
               ]
             }
