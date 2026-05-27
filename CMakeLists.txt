@@ -43,6 +43,13 @@ option(
     ${PROJECT_IS_TOP_LEVEL}
 )
 
+# [CMAKE.SKIP_BENCHMARKS]
+option(
+    BEMAN_TRANSCODE_BUILD_BENCHMARKS
+    "Enable building benchmarks. Default: ${PROJECT_IS_TOP_LEVEL}. Values: { ON, OFF }."
+    ${PROJECT_IS_TOP_LEVEL}
+)
+
 option(
     BEMAN_TRANSCODE_USE_MODULES
     "Provide beman.transcode as a C++ module"
@@ -121,6 +128,10 @@ endif()
 
 if(BEMAN_TRANSCODE_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if(BEMAN_TRANSCODE_BUILD_BENCHMARKS)
+    add_subdirectory(benchmark)
 endif()
 
 # Coverage

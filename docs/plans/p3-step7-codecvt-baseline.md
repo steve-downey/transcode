@@ -2,6 +2,7 @@
 
 **Branch:** `p3-step7-codecvt-baseline`
 **Depends on:** [p3-step6-iconv-baselines.md](p3-step6-iconv-baselines.md)
+**Read first:** docs/plans/phase3-handoff.md and docs/plans/handoff-next.md
 
 ---
 
@@ -9,6 +10,22 @@
 
 Add the deprecated `std::codecvt` comparison path as a negative baseline while
 keeping unsupported or broken library environments green.
+
+## Context for Executing Agent
+
+The `<codecvt>` header was deprecated in C++17. Its availability and behavior
+varies by platform (libc++, libstdc++, MSVC). The benchmark should gracefully
+skip on platforms where it doesn't work.
+
+Use `__has_include(<codecvt>)` and feature test macros to guard.
+
+Example usage (when available):
+```cpp
+std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+std::u32string result = converter.from_bytes(input);
+```
+
+Corpora: use `corpus_span()` from `benchmark_fixture.hpp`.
 
 ## Deliverables
 
@@ -46,3 +63,8 @@ make lint
 
 The benchmark report treats `codecvt` as a historical negative baseline, not a
 first-class portability requirement.
+
+## Handoff to Step 8
+
+Step 7 done, next read p3-step8-encoding-rs-baseline.md. Note whether codecvt
+was available or skipped on this platform.

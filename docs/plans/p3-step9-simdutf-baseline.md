@@ -2,6 +2,7 @@
 
 **Branch:** `p3-step9-simdutf-baseline`
 **Depends on:** [p3-step8-encoding-rs-baseline.md](p3-step8-encoding-rs-baseline.md)
+**Read first:** docs/plans/phase3-handoff.md and docs/plans/handoff-next.md
 
 ---
 
@@ -9,6 +10,17 @@
 
 Add the `simdutf` performance ceiling baseline so the project can quantify the
 gap between composable standard C++ ranges and hardware-specific SIMD code.
+
+## Context for Executing Agent
+
+simdutf is a C++ library available via FetchContent or vcpkg. API:
+```cpp
+#include <simdutf.h>
+simdutf::convert_utf8_to_utf32(data, length, output);
+simdutf::validate_utf8(data, length);
+```
+Guard with CMake option `BEMAN_TRANSCODE_BENCHMARK_SIMDUTF`. Use `#ifdef` in
+source. Match workloads against Step 4 UTF cases for fair comparison.
 
 ## Deliverables
 
@@ -45,3 +57,7 @@ make lint
 ## Notes
 
 This step should make the mechanical-sympathy gap measurable, not erase it.
+
+## Handoff to Step 10
+
+Step 9 done, next read p3-step10-boundary-stress.md.

@@ -2,6 +2,7 @@
 
 **Branch:** `p3-step8-encoding-rs-baseline`
 **Depends on:** [p3-step7-codecvt-baseline.md](p3-step7-codecvt-baseline.md)
+**Read first:** docs/plans/phase3-handoff.md and docs/plans/handoff-next.md
 
 ---
 
@@ -9,6 +10,14 @@
 
 Integrate an `encoding_rs` baseline that can be compared against matched
 `beman::transcode` cases without contaminating the core C++ build surface.
+
+## Context for Executing Agent
+
+encoding_rs is a Rust library. Integration options: Rust FFI via cbindgen, or a
+separate helper binary that reads stdin and writes stdout. The project's `docs/`
+directory has oracle direction for encoding_rs integration. This step should keep
+the Rust dependency completely optional and isolated. Corpora: same files from
+fixture layer.
 
 ## Deliverables
 
@@ -47,3 +56,7 @@ make lint
 
 This step should align with the repository's existing oracle direction rather
 than inventing a new integration story.
+
+## Handoff to Step 9
+
+Step 8 done, next read p3-step9-simdutf-baseline.md.
