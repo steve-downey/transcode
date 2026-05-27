@@ -2,59 +2,75 @@
 
 ## Completed
 
-- **P3-Step 6: iconv baselines** — done on `p3-step6-iconv-baselines` branch
+- **P3-Step 7: `std::codecvt` negative baseline** — done on `p3-step7-codecvt-baseline` branch
 
 ## What was done
 
-- Created `benchmark/iconv_benchmarks.bench.cpp` — four benchmark cases:
-  - `Raw iconv: UTF-8 to UTF-32LE English` — `en_mars_utf8.txt`, handle pre-opened, reset per iteration
-  - `iconv_transcode_view: UTF-8 to UTF-32LE English` — same corpus, view opened per iteration
-  - `Raw iconv: Shift-JIS to UTF-8 Japanese` — `ja_mars_shiftjis.bin`, handle pre-opened
-  - `iconv_transcode_view: Shift-JIS to UTF-8 Japanese` — same corpus via view
-- Registered `beman.transcode.benchmarks.iconv` in `benchmark/CMakeLists.txt`, linked `Iconv::Iconv`
-- Added `bench-iconv` Makefile target
+- Created `benchmark/codecvt_benchmarks.bench.cpp` — two benchmark cases:
+  - `codecvt UTF-8→char32_t: English (ASCII-heavy)` — English Mars corpus
+  - `codecvt UTF-8→char32_t: Japanese (CJK-heavy)` — Japanese Mars corpus
+- Both cases guarded by `#if __has_include(<codecvt>)`.  Where absent,
+  a `TEST_CASE` calls `SKIP()` with an explanatory message.
+- Deprecation warnings suppressed inside the `#if` block via per-compiler
+  diagnostic pragmas (`#pragma GCC diagnostic` / `#pragma clang diagnostic`).
+- Registered `beman.transcode.benchmarks.codecvt` in `benchmark/CMakeLists.txt`
+  (no extra `find_package` needed — standard library feature).
+- Added `bench-codecvt` Makefile target.
+- Added `docs/benchmarks/PLATFORM_NOTES.md` documenting per-platform availability.
+- clang-format also reformatted two lines in `benchmark/iconv_benchmarks.bench.cpp`
+  that were slightly over the line limit (included in the commit).
 
 671 C++ + 189 Python tests pass; mypy + ruff + clang-format + gersemi all clean.
 
+## Platform result (this machine: libstdc++/GCC)
+
+`<codecvt>` is **present**.  Both benchmarks ran.  Observed timings (Asan
+build — indicative only):
+
+- English (ASCII-heavy corpus ~435 bytes): ~11.8 µs — dominated by
+  `std::u32string` heap allocation per call.
+- Japanese (CJK-heavy corpus ~340 bytes): ~4.0 µs.
+
+Contrast with `whatwg_decode<utf_8>` on the same corpora: ≪ 1 µs (no
+allocation).  This confirms the "negative baseline" characterization.
+
 ## Files created
 
-- `benchmark/iconv_benchmarks.bench.cpp`
+- `benchmark/codecvt_benchmarks.bench.cpp`
+- `docs/benchmarks/PLATFORM_NOTES.md`
 
 ## Files modified
 
-- `benchmark/CMakeLists.txt` — added iconv benchmark executable and `find_package(Iconv REQUIRED)`
-- `Makefile` — added `bench-iconv` target
+- `benchmark/CMakeLists.txt` — added codecvt benchmark executable
+- `Makefile` — added `bench-codecvt` target
+- `benchmark/iconv_benchmarks.bench.cpp` — clang-format reformatting only
 
 ## Next Step
 
-Read `docs/plans/p3-step7-codecvt-baseline.md`
+Read `docs/plans/p3-step8-encoding-rs-baseline.md`
 
 Also read `docs/plans/phase3-handoff.md` for project conventions.
 
-## Benchmark Results (Asan config — indicative only, high overhead from sanitizer)
+## Key context for step 8 (encoding_rs)
 
-Observed on fallback corpus (tiny files, Asan build):
+Step 8 integrates encoding_rs as an optional baseline.  The architecture
+document at `docs/Rust Encoding for C++ Transcode.md` covers the FFI
+strategy in depth.  Key points:
 
-**Raw iconv (handle pre-opened, reset per iteration):**
-- UTF-8 to UTF-32LE English (~435-byte corpus): ~696 ns
-- Shift-JIS to UTF-8 Japanese (~340-byte corpus): ~784 ns
-
-**iconv_transcode_view (handle opened/closed each iteration via begin()):**
-- UTF-8 to UTF-32LE English: ~51 µs
-- Shift-JIS to UTF-8 Japanese: ~21 µs
-
-The large gap between raw and view is primarily:
-1. Handle open/close per iteration in the view (raw reuses the handle)
-2. Asan overhead magnifies absolute times
-3. Small corpus sizes amplify fixed costs
-
-For meaningful throughput comparisons, build in Release config and use
-the full downloaded corpus (`uv run python tools/download_benchmark_corpora.py`).
-
-The key structural insight: the view's `begin()` calls `iconv_open()` every
-time, while raw iconv can reuse a single handle across many calls.  Any
-optimization of the view would need to either cache the handle or separate
-open from traversal.
+- encoding_rs is a Rust crate with a C FFI layer (`encoding_c`) and a
+  C++ header (`encoding_rs_cpp.h`).
+- The step should keep the Rust dependency **completely optional** —
+  don't touch the main CMakeLists or library build surface.
+- encoding_rs has a non-streaming mode (contiguous buffers, zero allocation)
+  and a streaming mode (stateful Decoder/Encoder).  For benchmarking, the
+  non-streaming path on contiguous corpus spans is the right starting point.
+- The corpora (`en_mars_utf8.txt`, `ja_mars_utf8.txt`, `ru_mars_windows1251.bin`)
+  are loaded via `corpus_span()` from `benchmark_fixture.hpp`, giving
+  contiguous `std::span<const char>` inputs — ideal for encoding_rs's
+  non-streaming mode.
+- The step plan says to align with "existing oracle direction" — that means
+  the approach described in `docs/Rust Encoding for C++ Transcode.md` and
+  any in-repo tooling under `tools/` or `infra/`.
 
 ## Current State
 
@@ -65,9 +81,11 @@ open from traversal.
 - `make bench-whatwg` runs WHATWG legacy codec benchmarks (`[benchmark][whatwg]` tag)
 - `make bench-pluggable` runs pluggable codec benchmarks (`[benchmark][pluggable]` tag)
 - `make bench-iconv` runs iconv baseline benchmarks (`[benchmark][iconv]` tag)
+- `make bench-codecvt` runs std::codecvt negative baseline (`[benchmark][codecvt]` tag)
 
 ## Branch State
 
-Steps 3–6 are on top of `worktree-pluggable-codec-protocol` (steps 3–5) and
-`p3-step6-iconv-baselines` (step 6).  The user will merge to `main`.
-After merging, the next step should branch from `main`.
+Steps 3–7 are on top of `worktree-pluggable-codec-protocol` (steps 3–5),
+`p3-step6-iconv-baselines` (step 6), and `p3-step7-codecvt-baseline` (step 7).
+The user will merge to `main`.  After merging, the next step should branch
+from `main`.
