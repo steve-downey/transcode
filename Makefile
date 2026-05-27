@@ -262,6 +262,10 @@ bench-whatwg: compile ## Run WHATWG legacy codec benchmarks
 bench-pluggable: compile ## Run pluggable codec benchmarks
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
 
+.PHONY: bench-iconv
+bench-iconv: compile ## Run iconv baseline benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile

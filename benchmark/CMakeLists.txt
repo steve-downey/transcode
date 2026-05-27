@@ -68,3 +68,19 @@ target_link_libraries(
         beman.transcode.benchmark_fixture
         Catch2::Catch2WithMain
 )
+
+find_package(Iconv REQUIRED)
+
+add_executable(beman.transcode.benchmarks.iconv)
+target_sources(
+    beman.transcode.benchmarks.iconv
+    PRIVATE iconv_benchmarks.bench.cpp
+)
+target_link_libraries(
+    beman.transcode.benchmarks.iconv
+    PRIVATE
+        beman::transcode
+        beman.transcode.benchmark_fixture
+        Catch2::Catch2WithMain
+        Iconv::Iconv
+)
