@@ -20,8 +20,10 @@ You can disable building tests by setting CMake option `BEMAN_TRANSCODE_BUILD_TE
 | Compiler   | Version | C++ Standards | Standard Library  |
 |------------|---------|---------------|-------------------|
 | GCC        | 16-13   | C++26-C++23   | libstdc++         |
-| Clang      | 22-19   | C++26-C++23   | libstdc++, libc++ |
+| Clang      | 22-19   | C++26-C++23   | libstdc++, libc++*|
 | Clang      | 18      | C++26-C++23   | libc++            |
+
+* `libc++` on Clang 20+ is currently temporarily excluded from the CI matrix due to an upstream compiler bug causing a constraint recursion crash (`depends on itself`) when `std::expected` is used within `std::vector` combined with our iterators. We are tracking this upstream.
 | Clang      | 18      | C++23         | libstdc++         |
 | Clang      | 17      | C++26-C++23   | libc++            |
 | AppleClang | latest  | C++26-C++23   | libc++            |
