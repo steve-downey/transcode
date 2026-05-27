@@ -84,3 +84,18 @@ target_link_libraries(
         Catch2::Catch2WithMain
         Iconv::Iconv
 )
+
+# std::codecvt negative baseline.  No extra library needed — it is a standard
+# library feature (deprecated in C++17, guarded by __has_include in source).
+add_executable(beman.transcode.benchmarks.codecvt)
+target_sources(
+    beman.transcode.benchmarks.codecvt
+    PRIVATE codecvt_benchmarks.bench.cpp
+)
+target_link_libraries(
+    beman.transcode.benchmarks.codecvt
+    PRIVATE
+        beman::transcode
+        beman.transcode.benchmark_fixture
+        Catch2::Catch2WithMain
+)

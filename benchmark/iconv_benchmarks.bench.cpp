@@ -48,9 +48,7 @@ TEST_CASE("iconv baselines", "[benchmark][iconv]") {
     BENCHMARK_ADVANCED("iconv_transcode_view: UTF-8 to UTF-32LE English")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("en_mars_utf8.txt");
-        meter.measure([&] {
-            return count_elements(data | iconv_transcode("UTF-8", "UTF-32LE", std::span(out_buf)));
-        });
+        meter.measure([&] { return count_elements(data | iconv_transcode("UTF-8", "UTF-32LE", std::span(out_buf))); });
     };
 
     BENCHMARK_ADVANCED("Raw iconv: Shift-JIS to UTF-8 Japanese")
@@ -64,8 +62,7 @@ TEST_CASE("iconv baselines", "[benchmark][iconv]") {
     BENCHMARK_ADVANCED("iconv_transcode_view: Shift-JIS to UTF-8 Japanese")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ja_mars_shiftjis.bin");
-        meter.measure([&] {
-            return count_elements(data | iconv_transcode("SHIFT_JIS", "UTF-8", std::span(out_buf)));
-        });
+        meter.measure(
+            [&] { return count_elements(data | iconv_transcode("SHIFT_JIS", "UTF-8", std::span(out_buf))); });
     };
 }
