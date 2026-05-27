@@ -99,3 +99,64 @@ target_link_libraries(
         beman.transcode.benchmark_fixture
         Catch2::Catch2WithMain
 )
+
+# encoding_rs baseline — optional, requires Rust/Cargo.
+# The Rust crate at benchmark/encoding_rs_bench/ wraps encoding_rs behind a
+# plain C FFI and is compiled as a static library.  Cargo must be on PATH.
+find_package(Threads REQUIRED)
+find_program(CARGO_EXECUTABLE cargo)
+if(CARGO_EXECUTABLE)
+    message(
+        STATUS
+        "cargo found: ${CARGO_EXECUTABLE} — enabling encoding_rs benchmarks"
+    )
+
+    set(_enc_rs_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/encoding_rs_bench")
+    set(_enc_rs_tgt_dir "${CMAKE_CURRENT_BINARY_DIR}/encoding_rs_bench_target")
+    set(_enc_rs_lib "${_enc_rs_tgt_dir}/release/libencoding_rs_bench.a")
+
+    add_custom_command(
+        OUTPUT "${_enc_rs_lib}"
+        COMMAND
+            "${CARGO_EXECUTABLE}" build --release --target-dir
+            "${_enc_rs_tgt_dir}" --manifest-path "${_enc_rs_src_dir}/Cargo.toml"
+        DEPENDS "${_enc_rs_src_dir}/Cargo.toml" "${_enc_rs_src_dir}/src/lib.rs"
+        COMMENT "Building encoding_rs_bench Rust crate"
+        VERBATIM
+    )
+    add_custom_target(encoding_rs_bench_build DEPENDS "${_enc_rs_lib}")
+
+    add_library(encoding_rs_bench_imported STATIC IMPORTED)
+    set_target_properties(
+        encoding_rs_bench_imported
+        PROPERTIES IMPORTED_LOCATION "${_enc_rs_lib}"
+    )
+    add_dependencies(encoding_rs_bench_imported encoding_rs_bench_build)
+
+    add_executable(beman.transcode.benchmarks.encoding_rs)
+    target_sources(
+        beman.transcode.benchmarks.encoding_rs
+        PRIVATE encoding_rs_benchmarks.bench.cpp
+    )
+    target_include_directories(
+        beman.transcode.benchmarks.encoding_rs
+        PRIVATE "${_enc_rs_src_dir}/include"
+    )
+    target_link_libraries(
+        beman.transcode.benchmarks.encoding_rs
+        PRIVATE
+            beman::transcode
+            beman.transcode.benchmark_fixture
+            Catch2::Catch2WithMain
+            encoding_rs_bench_imported
+            # Rust static libs on Linux require these system libraries.
+            ${CMAKE_DL_LIBS}
+            Threads::Threads
+    )
+    add_dependencies(
+        beman.transcode.benchmarks.encoding_rs
+        encoding_rs_bench_build
+    )
+else()
+    message(STATUS "cargo not found — skipping encoding_rs benchmarks")
+endif()

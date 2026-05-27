@@ -270,6 +270,10 @@ bench-iconv: compile ## Run iconv baseline benchmarks
 bench-codecvt: compile ## Run std::codecvt negative baseline benchmarks (skips if <codecvt> absent)
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.codecvt "[benchmark][codecvt]"
 
+.PHONY: bench-encoding-rs
+bench-encoding-rs: compile ## Run encoding_rs baseline benchmarks (requires cargo; skips build if absent)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.encoding_rs "[benchmark][encoding_rs]"
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile

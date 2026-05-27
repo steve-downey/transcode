@@ -2,75 +2,77 @@
 
 ## Completed
 
-- **P3-Step 7: `std::codecvt` negative baseline** — done on `p3-step7-codecvt-baseline` branch
+- **P3-Step 8: `encoding_rs` baseline** — done on `p3-step8-encoding-rs-baseline` branch
 
 ## What was done
 
-- Created `benchmark/codecvt_benchmarks.bench.cpp` — two benchmark cases:
-  - `codecvt UTF-8→char32_t: English (ASCII-heavy)` — English Mars corpus
-  - `codecvt UTF-8→char32_t: Japanese (CJK-heavy)` — Japanese Mars corpus
-- Both cases guarded by `#if __has_include(<codecvt>)`.  Where absent,
-  a `TEST_CASE` calls `SKIP()` with an explanatory message.
-- Deprecation warnings suppressed inside the `#if` block via per-compiler
-  diagnostic pragmas (`#pragma GCC diagnostic` / `#pragma clang diagnostic`).
-- Registered `beman.transcode.benchmarks.codecvt` in `benchmark/CMakeLists.txt`
-  (no extra `find_package` needed — standard library feature).
-- Added `bench-codecvt` Makefile target.
-- Added `docs/benchmarks/PLATFORM_NOTES.md` documenting per-platform availability.
-- clang-format also reformatted two lines in `benchmark/iconv_benchmarks.bench.cpp`
-  that were slightly over the line limit (included in the commit).
+- Created `benchmark/encoding_rs_bench/` — a Rust crate (staticlib) wrapping
+  encoding_rs via three plain `extern "C"` functions:
+  - `enc_rs_utf8_to_utf8` — WHATWG UTF-8 decode (BOM strip + U+FFFD substitution)
+  - `enc_rs_windows1251_to_utf8` — Windows-1251 → UTF-8
+  - `enc_rs_shift_jis_to_utf8` — Shift-JIS → UTF-8
+- Created `benchmark/encoding_rs_bench/include/encoding_rs_bench/encoding_rs_bench.h`
+  — C header for the shim.
+- Created `benchmark/encoding_rs_benchmarks.bench.cpp` — four Catch2
+  `BENCHMARK_ADVANCED` cases tagged `[benchmark][encoding_rs]`.
+- Modified `benchmark/CMakeLists.txt` — `find_program(CARGO_EXECUTABLE cargo)`;
+  if found, builds the crate via `add_custom_command` (target-dir into CMake
+  binary dir) and links `beman.transcode.benchmarks.encoding_rs`.  If not
+  found, silently skipped.
+- Added `make bench-encoding-rs` Makefile target.
+- Updated `docs/benchmarks/PLATFORM_NOTES.md` with an `encoding_rs` section.
 
 671 C++ + 189 Python tests pass; mypy + ruff + clang-format + gersemi all clean.
 
-## Platform result (this machine: libstdc++/GCC)
+## Platform result (this machine: WSL2/Linux, cargo 1.94.0)
 
-`<codecvt>` is **present**.  Both benchmarks ran.  Observed timings (Asan
-build — indicative only):
+All four benchmarks ran (Asan build — indicative only):
 
-- English (ASCII-heavy corpus ~435 bytes): ~11.8 µs — dominated by
-  `std::u32string` heap allocation per call.
-- Japanese (CJK-heavy corpus ~340 bytes): ~4.0 µs.
-
-Contrast with `whatwg_decode<utf_8>` on the same corpora: ≪ 1 µs (no
-allocation).  This confirms the "negative baseline" characterization.
+- English ASCII UTF-8→UTF-8: ~75 ns (corpus ~435 bytes) — near-zero work
+- Japanese CJK UTF-8→UTF-8: ~350 ns (corpus ~340 bytes)
+- Russian Windows-1251→UTF-8: ~810 ns (corpus ~340 bytes)
+- Japanese Shift-JIS→UTF-8: ~693 ns (corpus ~340 bytes)
 
 ## Files created
 
-- `benchmark/codecvt_benchmarks.bench.cpp`
-- `docs/benchmarks/PLATFORM_NOTES.md`
+- `benchmark/encoding_rs_bench/Cargo.toml`
+- `benchmark/encoding_rs_bench/Cargo.lock`
+- `benchmark/encoding_rs_bench/src/lib.rs`
+- `benchmark/encoding_rs_bench/include/encoding_rs_bench/encoding_rs_bench.h`
+- `benchmark/encoding_rs_benchmarks.bench.cpp`
 
 ## Files modified
 
-- `benchmark/CMakeLists.txt` — added codecvt benchmark executable
-- `Makefile` — added `bench-codecvt` target
-- `benchmark/iconv_benchmarks.bench.cpp` — clang-format reformatting only
+- `benchmark/CMakeLists.txt` — optional Rust build and benchmark target
+- `Makefile` — added `bench-encoding-rs` target
+- `docs/benchmarks/PLATFORM_NOTES.md` — added encoding_rs section
+
+## Implementation notes
+
+- The Rust crate uses `panic = "abort"` (in both release and dev profiles) so
+  no unwinding can cross the FFI boundary.
+- `--target-dir` redirects cargo output to the CMake binary directory so the
+  source tree stays clean.  The `Cargo.lock` lives in the source tree and is
+  committed for reproducibility.
+- `target/` is already covered by the global `.gitignore` `target/` pattern.
+- On Linux, Rust static libs require `-ldl -lpthread`; CMake passes
+  `${CMAKE_DL_LIBS}` and `Threads::Threads` accordingly.
 
 ## Next Step
 
-Read `docs/plans/p3-step8-encoding-rs-baseline.md`
+Read `docs/plans/p3-step9-simdutf-baseline.md`
 
 Also read `docs/plans/phase3-handoff.md` for project conventions.
 
-## Key context for step 8 (encoding_rs)
+## Key context for step 9 (simdutf)
 
-Step 8 integrates encoding_rs as an optional baseline.  The architecture
-document at `docs/Rust Encoding for C++ Transcode.md` covers the FFI
-strategy in depth.  Key points:
-
-- encoding_rs is a Rust crate with a C FFI layer (`encoding_c`) and a
-  C++ header (`encoding_rs_cpp.h`).
-- The step should keep the Rust dependency **completely optional** —
-  don't touch the main CMakeLists or library build surface.
-- encoding_rs has a non-streaming mode (contiguous buffers, zero allocation)
-  and a streaming mode (stateful Decoder/Encoder).  For benchmarking, the
-  non-streaming path on contiguous corpus spans is the right starting point.
-- The corpora (`en_mars_utf8.txt`, `ja_mars_utf8.txt`, `ru_mars_windows1251.bin`)
-  are loaded via `corpus_span()` from `benchmark_fixture.hpp`, giving
-  contiguous `std::span<const char>` inputs — ideal for encoding_rs's
-  non-streaming mode.
-- The step plan says to align with "existing oracle direction" — that means
-  the approach described in `docs/Rust Encoding for C++ Transcode.md` and
-  any in-repo tooling under `tools/` or `infra/`.
+- simdutf is a C++ library with a straightforward `find_package` or
+  FetchContent path (no Rust involved).
+- The step plan says to guard with a CMake option
+  `BEMAN_TRANSCODE_BENCHMARK_SIMDUTF` and `#ifdef` in source.
+- Benchmark workloads should align with Step 4 UTF cases for fair comparison.
+- The step plan mentions `simdutf::convert_utf8_to_utf32` and
+  `simdutf::validate_utf8` as primary entry points.
 
 ## Current State
 
@@ -82,10 +84,10 @@ strategy in depth.  Key points:
 - `make bench-pluggable` runs pluggable codec benchmarks (`[benchmark][pluggable]` tag)
 - `make bench-iconv` runs iconv baseline benchmarks (`[benchmark][iconv]` tag)
 - `make bench-codecvt` runs std::codecvt negative baseline (`[benchmark][codecvt]` tag)
+- `make bench-encoding-rs` runs encoding_rs baseline (`[benchmark][encoding_rs]` tag, requires cargo)
 
 ## Branch State
 
-Steps 3–7 are on top of `worktree-pluggable-codec-protocol` (steps 3–5),
-`p3-step6-iconv-baselines` (step 6), and `p3-step7-codecvt-baseline` (step 7).
-The user will merge to `main`.  After merging, the next step should branch
-from `main`.
+Steps 3–8 are on top of each other and merged into `main`.
+The user will merge `p3-step8-encoding-rs-baseline` to `main`.
+After merging, step 9 should branch from `main`.
