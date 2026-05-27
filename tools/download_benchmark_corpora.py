@@ -23,9 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 MEDIAWIKI_API = "https://{lang}.wikipedia.org/w/api.php"
-ARTICLE_PARAMS = (
-    "?action=query&titles=Mars&prop=extracts&explaintext=true&format=json"
-)
+ARTICLE_PARAMS = "?action=query&titles=Mars&prop=extracts&explaintext=true&format=json"
 
 CORPORA: list[tuple[str, str]] = [
     ("en", "en_mars_utf8.txt"),
@@ -115,9 +113,7 @@ def write_manifest_json(out_dir: Path, entries: list[CorpusEntry]) -> None:
     )
 
 
-def download_corpus(
-    out_dir: Path, lang: str, filename: str
-) -> tuple[bytes, str]:
+def download_corpus(out_dir: Path, lang: str, filename: str) -> tuple[bytes, str]:
     """Download one Wikipedia Mars article. Returns (data, source_url)."""
     url = MEDIAWIKI_API.format(lang=lang) + ARTICLE_PARAMS
     dest = out_dir / filename
@@ -169,9 +165,9 @@ def write_source_md(out_dir: Path, entries: list[CorpusEntry]) -> None:
         "",
         "**Attribution:**",
         "- English: Wikipedia contributors, 'Mars', Wikipedia, The Free Encyclopedia",
-        "- Arabic: Wikipedia contributors, 'Mars (المريخ)', Wikipedia (ar.wikipedia.org)",
-        "- Russian: Wikipedia contributors, 'Mars (Марс)', Wikipedia (ru.wikipedia.org)",
-        "- Japanese: Wikipedia contributors, 'Mars (火星)', Wikipedia (ja.wikipedia.org)",
+        "- Arabic: Wikipedia contributors, 'Mars (المريخ)', Wikipedia (ar.wikipedia.org)",  # noqa: E501
+        "- Russian: Wikipedia contributors, 'Mars (Марс)', Wikipedia (ru.wikipedia.org)",  # noqa: E501
+        "- Japanese: Wikipedia contributors, 'Mars (火星)', Wikipedia (ja.wikipedia.org)",  # noqa: E501
         "",
         "## Corpus Files",
         "",
@@ -180,8 +176,7 @@ def write_source_md(out_dir: Path, entries: list[CorpusEntry]) -> None:
     ]
     for e in entries:
         lines.append(
-            f"| `{e.file}` | {e.lang} | {e.encoding}"
-            f" | {e.bytes} | `{e.sha256[:16]}…` |"
+            f"| `{e.file}` | {e.lang} | {e.encoding} | {e.bytes} | `{e.sha256[:16]}…` |"
         )
     lines += [
         "",
@@ -226,21 +221,16 @@ def main(argv: list[str] | None = None) -> int:
                 dest.unlink()
 
     for lang, filename in CORPORA:
-        url = MEDIAWIKI_API.format(lang=lang) + ARTICLE_PARAMS
         data, source_url = download_corpus(out_dir, lang, filename)
         utf8_data[filename] = data
-        entries.append(
-            build_manifest_entry(filename, lang, "utf-8", source_url, data)
-        )
+        entries.append(build_manifest_entry(filename, lang, "utf-8", source_url, data))
 
     for src_filename, dest_filename, encoding in CONVERSIONS:
         lang = src_filename[:2]
         data = derive_conversion(out_dir, src_filename, dest_filename, encoding)
         source_url = MEDIAWIKI_API.format(lang=lang) + ARTICLE_PARAMS
         entries.append(
-            build_manifest_entry(
-                dest_filename, lang, encoding, source_url, data
-            )
+            build_manifest_entry(dest_filename, lang, encoding, source_url, data)
         )
 
     write_manifest_json(out_dir, entries)
