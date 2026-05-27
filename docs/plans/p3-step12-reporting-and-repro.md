@@ -2,6 +2,7 @@
 
 **Branch:** `p3-step12-reporting-and-repro`
 **Depends on:** [p3-step11-toolchain-matrix.md](p3-step11-toolchain-matrix.md)
+**Read first:** docs/plans/phase3-handoff.md and docs/plans/handoff-next.md
 
 ---
 
@@ -9,6 +10,19 @@
 
 Convert raw benchmark timings and metadata into proposal-ready comparative
 tables, GiB/s summaries, and reproducible reporting documentation.
+
+## Context for Executing Agent
+
+Catch2 can emit XML output via `--reporter xml --out file.xml`. The benchmark
+report tool should parse this XML, cross-reference with corpus_manifest.json for
+byte sizes, compute GiB/s throughput, and output markdown tables.
+
+Create `tools/benchmark_report.py` and `tools/tests/test_benchmark_report.py`.
+Add `make bench-report` target. Create `docs/benchmarks/README.md` with full
+instructions.
+
+This is the final step -- the handoff-next.md should say "Phase 3 complete" and
+describe how to rerun the full benchmark suite.
 
 ## Deliverables
 
@@ -53,3 +67,9 @@ make lint
 
 This step closes the phase by making the benchmark program communicable and
 repeatable for future proposal work, regressions, and follow-up analysis.
+
+## Handoff (Phase 3 Complete)
+
+Phase 3 complete. To rerun the full benchmark suite: execute `make bench-matrix`
+for all toolchain slices, then `make bench-report` to regenerate tables and
+charts. See `docs/benchmarks/README.md` for detailed instructions.

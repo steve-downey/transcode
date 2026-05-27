@@ -2,89 +2,116 @@
 
 **Branch:** `p3-step1-benchmark-harness`
 **Depends on:** Phase 2 stability on `main`
+**Read first:** `docs/plans/phase3-handoff.md` and `docs/plans/handoff-next.md`
 
 ---
 
 ## Goal
 
 Create the dedicated top-level `benchmark/` build surface for the project:
-CMake wiring, Catch2 benchmark executable pattern, benchmark labels/tags, and
+CMake wiring, Catch2 benchmark executable pattern, Makefile target, and
 one trivial smoke benchmark proving the harness works.
 
 This step is intentionally about structure, not real benchmark coverage.
 
-## Why This Step Exists
+## Context for Executing Agent
 
-Benchmarking needs a different execution model than ordinary tests:
+The project is `beman.transcode`, a C++23 header-only Unicode transcoding
+library. It uses CMake + Ninja Multi-Config. Tests use Catch2 3.x (already
+a dependency via FetchContent). The Makefile exposes `make compile`,
+`make test`, `make lint`.
 
-1. benchmark binaries must compile in normal CI/dev workflows
-2. default `make test` must stay fast and deterministic
-3. step work still needs a narrow, reproducible smoke benchmark
-4. later steps need a stable place to add benchmark cases without redesigning
-   build plumbing each time
-5. reusable benchmark support code still needs normal unit tests
+No `benchmark/` directory exists yet. No `make bench` target exists.
+
+The build uses Ninja Multi-Config, so executables land under a config
+subdirectory (e.g., `.build/build-system/benchmark/Asan/`).
+
+### Key files to reference
+
+- `CMakeLists.txt` — top-level; add option + `add_subdirectory` here
+- `Makefile` — add `bench` target here
+- `examples/CMakeLists.txt` — pattern for adding executables
+- `tests/beman/transcode/CMakeLists.txt` — pattern for Catch2 linking
+
+### Build conventions
+
+```cmake
+# Examples pattern (follow this for benchmarks):
+add_executable(beman.transcode.benchmarks.smoke)
+target_sources(beman.transcode.benchmarks.smoke PRIVATE smoke.bench.cpp)
+target_link_libraries(
+    beman.transcode.benchmarks.smoke
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+```
+
+### Library usage in benchmark code
+
+```cpp
+#include <beman/transcode/transcode.hpp>
+#include <catch2/catch_all.hpp>
+
+using namespace beman::transcoding;
+
+// Decode bytes to Unicode:
+std::span<const char>(input) | whatwg_decode<codec::utf_8>
+```
 
 ## Deliverables
 
-- New top-level `benchmark/` directory at the repo root, alongside `tests/`
-- A dedicated benchmark executable or small set of executables using Catch2 v3
-  benchmark support
-- Build wiring that compiles benchmark code in ordinary project builds without
-  executing the benchmarks from `make test`
-- At least one Makefile target for benchmark execution so the workflow is
-  accessible without manual binary discovery
-- A unit-test strategy for any reusable benchmark support code
-- A smoke command documented in the step and in `handoff-next.md`
-- One trivial benchmark that measures a tiny fixed transcoding kernel and proves
-  output generation works
-
-## Files Expected
-
-- top-level `CMakeLists.txt`
-- `Makefile`
-- new `benchmark/CMakeLists.txt`
-- new benchmark source file under `benchmark/`
-- test registration for benchmark-support helpers if any support code is added
-- one initial benchmark source file
-- optional README for benchmark commands
-
-## Constraints
-
-- Do not add benchmark cases to the default `make test` path
-- Ensure benchmark sources are still compiled in ordinary project builds
-- Expose the smoke benchmark through a `make` target rather than only a raw
-  executable path
-- If this step introduces reusable helper code, add ordinary unit tests for it
-- Do not require external dependencies yet
-- Prefer one executable validation command such as a dedicated benchmark smoke
-  target exposed through the Makefile workflow
+1. `benchmark/CMakeLists.txt` — registers smoke benchmark executable
+2. `benchmark/smoke.bench.cpp` — one `BENCHMARK` case over a tiny UTF-8 kernel
+3. Top-level `CMakeLists.txt` — option `BEMAN_TRANSCODE_BUILD_BENCHMARKS` +
+   conditional `add_subdirectory(benchmark)`
+4. `Makefile` — `make bench` target that runs the smoke executable
 
 ## Procedure
 
-1. Create branch `p3-step1-benchmark-harness` from `main`
-2. Add a benchmark-only CMake subtree
-3. Wire Catch2 benchmark support into a dedicated executable that is compiled in normal builds
-4. Add a Makefile target for the benchmark smoke run
-5. If any reusable support code is needed, add ordinary unit tests for it
-6. Add one tiny benchmark kernel over an already-supported conversion path
-7. Document the smoke `make` target
-8. Run `make test`
-9. Run `make lint`
-10. Run the benchmark smoke Makefile target
-11. Update `handoff-next.md` with the next step and the verified `make` target
+1. Create worktree branch `p3-step1-benchmark-harness` from `main`
+2. Add `BEMAN_TRANSCODE_BUILD_BENCHMARKS` option to `CMakeLists.txt`
+   (after `BEMAN_TRANSCODE_BUILD_EXAMPLES` option, default `${PROJECT_IS_TOP_LEVEL}`)
+3. Add `add_subdirectory(benchmark)` guarded by that option (after the
+   examples block, around line 115)
+4. Create `benchmark/CMakeLists.txt` with smoke executable
+5. Create `benchmark/smoke.bench.cpp` with one `BENCHMARK` macro:
+   - Create a 4096-byte ASCII string
+   - Benchmark iterating `whatwg_decode<codec::utf_8>` over it
+   - Return `output.size()` to prevent dead-code elimination
+6. Add `make bench` target to `Makefile`
+7. Run `make compile` — verify benchmark compiles
+8. Run `make test` — verify existing tests still pass
+9. Run `make lint` — verify formatting
+10. Run `make bench` — verify benchmark executes and prints timing
+11. Commit, merge to main (non-ff), push both remotes
+12. Update `docs/plans/handoff-next.md`
+
+## Makefile Target Pattern
+
+Look at existing targets in `Makefile` (e.g., `compile`, `ctest_`).
+The benchmark target should:
+- Depend on `compile` (ensures build is current)
+- Execute the smoke binary directly
+- Pass `"[smoke]"` tag filter if using Catch2 tags
+
+Determine the actual executable path from the build directory layout.
+For Ninja Multi-Config with Asan config, it will be something like:
+`.build/build-system/benchmark/Asan/beman.transcode.benchmarks.smoke`
 
 ## Verification
 
 ```bash
-make test
-make lint
-# plus the dedicated benchmark smoke Makefile target introduced in this step
+make compile   # benchmark code compiles
+make test      # existing 662+ tests still pass
+make lint      # clean
+make bench     # runs smoke benchmark, prints timing output
 ```
 
-## Notes
+## Handoff to Step 2
 
-Use this step to settle naming and directory layout. Every later P3 step should
-extend the top-level `benchmark/` tree without revisiting global build
-structure. The key outcome is: benchmark code builds all the time, benchmark
-support code can be unit-tested, and benchmark execution remains a separate
-operation reachable through the Makefile workflow.
+After completing, write to `docs/plans/handoff-next.md`:
+- Step 1 is done
+- Next: read `p3-step2-benchmark-data.md`
+- Files created: `benchmark/CMakeLists.txt`, `benchmark/smoke.bench.cpp`
+- Make targets added: `make bench`
+- Note the actual executable path discovered during the step
+- Note any Makefile pattern decisions made
