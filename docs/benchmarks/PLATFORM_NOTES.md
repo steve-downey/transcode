@@ -1,5 +1,60 @@
 # Benchmark Platform Notes
 
+## `simdutf` ceiling baseline (optional — requires explicit CMake opt-in)
+
+`simdutf` uses SIMD intrinsics (SSE4, AVX2, AVX-512, NEON, etc.) to achieve
+maximum throughput for UTF-8 decode, validate, and transcode operations.  It
+represents the performance ceiling against which the composable
+`beman::transcode` range-based approach is compared.
+
+### Enabling
+
+`simdutf` is **off by default** because it requires network access on the
+first configure (FetchContent downloads the repo).  To enable:
+
+```bash
+# Re-configure with simdutf enabled (downloads on first run)
+cd .build/build-system
+uv run cmake -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON .
+
+# Then run
+make bench-simdutf
+```
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `benchmark/simdutf_benchmarks.bench.cpp` | Catch2 benchmark file |
+| `benchmark/CMakeLists.txt` | FetchContent wiring under `BEMAN_TRANSCODE_BENCHMARK_SIMDUTF` option |
+
+### Platform availability
+
+| Platform | Notes |
+|----------|-------|
+| Any platform with CMake + network access | Downloads simdutf v5.6.4 on first configure |
+| CI (without `-DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON`) | Silently skipped; `bench-simdutf` target absent |
+| WSL2/Linux | AVX2 available; SIMD fast-paths active |
+| macOS / arm64 | NEON fast-paths active |
+
+### Benchmarks provided
+
+- `simdutf UTF-8→UTF-32: English (ASCII-heavy)` — aligned with Step 4 `whatwg_decode<utf_8>` English case
+- `simdutf UTF-8→UTF-32: Arabic (multibyte-heavy)` — aligned with Step 4 `whatwg_decode<utf_8>` Arabic case
+- `simdutf UTF-8 validate: English` — pure validation pass (fastest simdutf path)
+- `simdutf UTF-8 validate: Arabic` — multibyte validation
+- `simdutf UTF-8→UTF-16: English` — common runtime output format
+- `simdutf UTF-8→UTF-16: Arabic` — common runtime output format
+
+### Expected comparison
+
+`simdutf` routinely achieves 3–20× the throughput of scalar implementations on
+multibyte-heavy text, and often saturates memory bandwidth on ASCII-heavy text.
+The gap measured here quantifies the "mechanical sympathy cost" of using
+standard C++ range composition instead of hand-tuned SIMD intrinsics.
+
+---
+
 ## `encoding_rs` baseline (optional — requires Rust/Cargo)
 
 `encoding_rs` is a Rust library providing WHATWG Encoding Standard compliant

@@ -274,6 +274,10 @@ bench-codecvt: compile ## Run std::codecvt negative baseline benchmarks (skips i
 bench-encoding-rs: compile ## Run encoding_rs baseline benchmarks (requires cargo; skips build if absent)
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.encoding_rs "[benchmark][encoding_rs]"
 
+.PHONY: bench-simdutf
+bench-simdutf: compile ## Run simdutf ceiling baseline benchmarks (requires cmake -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.simdutf "[benchmark][simdutf]"
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile
