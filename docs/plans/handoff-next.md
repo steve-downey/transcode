@@ -2,71 +2,59 @@
 
 ## Completed
 
-- **P3-Step 5: Legacy WHATWG codec and pluggable codec benchmarks** — done on `worktree-pluggable-codec-protocol` branch
+- **P3-Step 6: iconv baselines** — done on `p3-step6-iconv-baselines` branch
 
 ## What was done
 
-- Created `benchmark/whatwg_benchmarks.bench.cpp` — three benchmark cases:
-  - `Single-byte decode: windows-1251 Russian` — `ru_mars_windows1251.bin`
-  - `Multi-byte decode: Shift-JIS Japanese` — `ja_mars_shiftjis.bin`
-  - `UTF-8 decode: Japanese (3-byte heavy)` — `ja_mars_utf8.txt`
-- Created `benchmark/pluggable_codec_benchmarks.bench.cpp` — two benchmark cases:
-  - `pluggable table_codec: 4K upper-half` — synthetic 4096-byte buffer of `\xC0`,
-    decoded via `table_codec<latin1_upper>` (pluggable protocol)
-  - `whatwg iso-8859-15: 4K upper-half` — same data via `whatwg_decode<codec::iso_8859_15>`
-    (built-in WHATWG path, used as parity baseline)
-- Added fallback corpus files (checked in, ~350–435 bytes each):
-  - `benchmark/corpus/ru_mars_windows1251.bin` — Russian mars text in Windows-1251
-  - `benchmark/corpus/ja_mars_shiftjis.bin` — Japanese mars text in Shift-JIS
-- Updated `benchmark/CMakeLists.txt` — added `beman.transcode.benchmarks.whatwg` and
-  `beman.transcode.benchmarks.pluggable` executables
-- Updated `Makefile` — added `bench-whatwg` and `bench-pluggable` targets
+- Created `benchmark/iconv_benchmarks.bench.cpp` — four benchmark cases:
+  - `Raw iconv: UTF-8 to UTF-32LE English` — `en_mars_utf8.txt`, handle pre-opened, reset per iteration
+  - `iconv_transcode_view: UTF-8 to UTF-32LE English` — same corpus, view opened per iteration
+  - `Raw iconv: Shift-JIS to UTF-8 Japanese` — `ja_mars_shiftjis.bin`, handle pre-opened
+  - `iconv_transcode_view: Shift-JIS to UTF-8 Japanese` — same corpus via view
+- Registered `beman.transcode.benchmarks.iconv` in `benchmark/CMakeLists.txt`, linked `Iconv::Iconv`
+- Added `bench-iconv` Makefile target
 
-671 C++ + 189 Python tests pass; mypy + ruff + clang-format + gersemi all clean
+671 C++ + 189 Python tests pass; mypy + ruff + clang-format + gersemi all clean.
 
 ## Files created
 
-- `benchmark/whatwg_benchmarks.bench.cpp`
-- `benchmark/pluggable_codec_benchmarks.bench.cpp`
-- `benchmark/corpus/ru_mars_windows1251.bin`
-- `benchmark/corpus/ja_mars_shiftjis.bin`
+- `benchmark/iconv_benchmarks.bench.cpp`
 
 ## Files modified
 
-- `benchmark/CMakeLists.txt` — added two new benchmark executables
-- `Makefile` — added `bench-whatwg` and `bench-pluggable` targets
+- `benchmark/CMakeLists.txt` — added iconv benchmark executable and `find_package(Iconv REQUIRED)`
+- `Makefile` — added `bench-iconv` target
 
 ## Next Step
 
-Read `docs/plans/p3-step6-iconv-baselines.md`
+Read `docs/plans/p3-step7-codecvt-baseline.md`
 
 Also read `docs/plans/phase3-handoff.md` for project conventions.
 
-## Benchmark Results (fallback corpus — sub-KB files)
+## Benchmark Results (Asan config — indicative only, high overhead from sanitizer)
 
-Observed on fallback corpus (indicative only, high variance due to tiny files):
+Observed on fallback corpus (tiny files, Asan build):
 
-**WHATWG legacy codecs:**
-- windows-1251 Russian decode: ~762 ns (435-byte file, single-byte O(1) table)
-- Shift-JIS Japanese decode: ~1.55 µs (340-byte file, multi-byte stateless)
-- UTF-8 Japanese (3-byte heavy): ~1.47 µs (comparable to Shift-JIS)
+**Raw iconv (handle pre-opened, reset per iteration):**
+- UTF-8 to UTF-32LE English (~435-byte corpus): ~696 ns
+- Shift-JIS to UTF-8 Japanese (~340-byte corpus): ~784 ns
 
-**Pluggable vs WhatWG parity (4K synthetic `\xC0` buffer):**
-- `table_codec<latin1_upper>`: ~9.3 µs
-- `whatwg_decode<codec::iso_8859_15>`: ~10.1 µs
-- Conclusion: pluggable protocol has zero measurable overhead vs built-in codecs
+**iconv_transcode_view (handle opened/closed each iteration via begin()):**
+- UTF-8 to UTF-32LE English: ~51 µs
+- Shift-JIS to UTF-8 Japanese: ~21 µs
 
-Key observations:
-- Single-byte (windows-1251) is faster per-byte than multi-byte (Shift-JIS), as expected
-- The pluggable `decode(codec{})` path matches the built-in `whatwg_decode<C>` path in throughput
+The large gap between raw and view is primarily:
+1. Handle open/close per iteration in the view (raw reuses the handle)
+2. Asan overhead magnifies absolute times
+3. Small corpus sizes amplify fixed costs
 
-For meaningful throughput numbers, download the full corpus first:
+For meaningful throughput comparisons, build in Release config and use
+the full downloaded corpus (`uv run python tools/download_benchmark_corpora.py`).
 
-```bash
-uv run python tools/download_benchmark_corpora.py
-make bench-whatwg
-make bench-pluggable
-```
+The key structural insight: the view's `begin()` calls `iconv_open()` every
+time, while raw iconv can reuse a single handle across many calls.  Any
+optimization of the view would need to either cache the handle or separate
+open from traversal.
 
 ## Current State
 
@@ -76,31 +64,10 @@ make bench-pluggable
 - `make bench-utf` runs UTF benchmarks (`[benchmark][utf]` tag)
 - `make bench-whatwg` runs WHATWG legacy codec benchmarks (`[benchmark][whatwg]` tag)
 - `make bench-pluggable` runs pluggable codec benchmarks (`[benchmark][pluggable]` tag)
+- `make bench-iconv` runs iconv baseline benchmarks (`[benchmark][iconv]` tag)
 
-## Include and Linking Pattern (for future benchmark files)
+## Branch State
 
-```cpp
-#include <benchmark/benchmark_fixture.hpp>
-#include <benchmark/benchmark_sink.hpp>
-#include <beman/transcode/transcode.hpp>
-#include <beman/transcode/transcode.hpp>   // double-include for idempotency check
-
-#include <catch2/catch_all.hpp>
-```
-
-Link in `benchmark/CMakeLists.txt`:
-```cmake
-target_link_libraries(
-    beman.transcode.benchmarks.<name>
-    PRIVATE
-        beman::transcode
-        beman.transcode.benchmark_fixture
-        Catch2::Catch2WithMain
-)
-```
-
-## Branch Discipline
-
-Steps 3, 4, and 5 are on `worktree-pluggable-codec-protocol` awaiting merge to main.
-After merging to main, the next step should follow the same pattern (work in this
-worktree, rebase from origin/main first).
+Steps 3–6 are on top of `worktree-pluggable-codec-protocol` (steps 3–5) and
+`p3-step6-iconv-baselines` (step 6).  The user will merge to `main`.
+After merging, the next step should branch from `main`.
