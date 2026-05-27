@@ -101,7 +101,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase3_handoff.html','')
 <div class="contents">
 <div class="textblock"><p>This document provides the standing context every Phase 3 agent needs. Read this, then read the specific <code>p3-step&lt;N&gt;</code> document, then read <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code> for step-specific notes from the previous agent.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md293"></a>
+<h1><a class="anchor" id="autotoc_md295"></a>
 Project Identity</h1>
 <ul>
 <li><b>Library:</b> <code>beman.transcode</code> — C++23 header-only Unicode transcoding via ranges/views</li>
@@ -111,7 +111,7 @@ Project Identity</h1>
 <li><b>Test framework:</b> Catch2 3.x (includes benchmark macros)</li>
 <li><b>Python tooling:</b> <code>uv run</code> prefix for all Python commands</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md294"></a>
+<h1><a class="anchor" id="autotoc_md296"></a>
 Directory Layout</h1>
 <div class="fragment"><div class="line">include/beman/transcode/       — public headers (the library)</div>
 <div class="line">include/beman/transcode/detail/ — implementation detail headers</div>
@@ -122,7 +122,7 @@ Directory Layout</h1>
 <div class="line">tools/tests/                    — pytest tests for Python tools</div>
 <div class="line">data/                           — generated data (tables, corpora)</div>
 <div class="line">docs/plans/                     — step plans (you are reading one)</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md295"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md297"></a>
 Key Make Targets</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -142,7 +142,7 @@ Key Make Targets</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>make bench</code>   </td><td class="markdownTableBodyNone">Run benchmark smoke (added in P3-Step 1)   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md296"></a>
+<h1><a class="anchor" id="autotoc_md298"></a>
 Coding Rules (Enforced)</h1>
 <ul>
 <li>Include guards (<code>#ifndef</code>/<code>#define</code>/<code>#endif</code>), never <code>#pragma once</code></li>
@@ -153,9 +153,9 @@ Coding Rules (Enforced)</h1>
 <li>Every constraint/static_assert needs a negative compile test</li>
 <li><code>constexpr</code> everything that can be; test with <code>constify()</code> from test_utilities.hpp</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md297"></a>
+<h1><a class="anchor" id="autotoc_md299"></a>
 Library API Surface (Current)</h1>
-<h2><a class="anchor" id="autotoc_md298"></a>
+<h2><a class="anchor" id="autotoc_md300"></a>
 WhatWG codec views (enum-based, closed set)</h2>
 <div class="fragment"><div class="line"><span class="comment">// Decode bytes to char32_t:</span></div>
 <div class="line">bytes | whatwg_decode&lt;codec::utf_8&gt;           <span class="comment">// -&gt; char32_t range</span></div>
@@ -165,28 +165,28 @@ WhatWG codec views (enum-based, closed set)</h2>
 <div class="line">codepoints | whatwg_encode&lt;codec::utf_8&gt;      <span class="comment">// -&gt; char range</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// All views support .base() on view and iterator</span></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md299"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md301"></a>
 Pluggable codec protocol (type-based, open for extension)</h2>
 <div class="fragment"><div class="line"><span class="comment">// Concepts: decode_codec, encode_codec, random_access_decode_codec_type, flushable_decode_codec</span></div>
 <div class="line"><span class="comment">// Templates: table_codec&lt;std::array&lt;char32_t,128&gt;&gt;, full_table_codec&lt;std::array&lt;char32_t,256&gt;&gt;</span></div>
 <div class="line"><span class="comment">// Views:</span></div>
 <div class="line">bytes | decode(my_codec{})           <span class="comment">// -&gt; char32_t range</span></div>
 <div class="line">bytes | decode_or_error(my_codec{})  <span class="comment">// -&gt; expected&lt;char32_t, decode_error&gt;</span></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md300"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md302"></a>
 iconv views</h2>
 <div class="fragment"><div class="line">iconv_transcode_view&lt;IconvFns, R&gt;(range, fns, from, to, buffer)</div>
 <div class="line">iconv_transcode_or_error_view&lt;IconvFns, R&gt;(range, fns, from, to, buffer)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md301"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md303"></a>
 Bulk operations</h2>
 <div class="fragment"><div class="line">decode_to&lt;codec::utf_8&gt;(range)       <span class="comment">// -&gt; vector&lt;char32_t&gt;</span></div>
 <div class="line">encode_to&lt;codec::utf_8&gt;(range)       <span class="comment">// -&gt; string</span></div>
 <div class="line">decode_into&lt;codec::utf_8&gt;(range, output_iter)</div>
 <div class="line">encode_into&lt;codec::utf_8&gt;(range, output_iter)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md302"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md304"></a>
 Runtime dispatch</h2>
 <div class="fragment"><div class="line">transcode_string(src_span, codec::from, codec::to)  <span class="comment">// -&gt; string</span></div>
 <div class="line">get_encoding(<span class="stringliteral">&quot;utf-8&quot;</span>)                                <span class="comment">// -&gt; optional&lt;codec&gt;</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md303"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md305"></a>
 Catch2 Benchmark Macros</h1>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;catch2/catch_all.hpp&gt;</span></div>
 <div class="line"> </div>
@@ -201,13 +201,13 @@ Catch2 Benchmark Macros</h1>
 <div class="line">        <span class="keywordflow">return</span> result;  <span class="comment">// prevents DCE</span></div>
 <div class="line">    });</div>
 <div class="line">};</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md304"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md306"></a>
 iconv Mock Library</h1>
 <p>Located at <code>tests/beman/transcode/iconv_mock.hpp</code>. Provides:</p><ul>
 <li><code>mock_iconv</code> (identity), <code>mock_iconv_e2big</code>, <code>mock_iconv_eilseq</code>, <code>mock_iconv_partial_consume</code>, <code>mock_iconv_stateful</code>, etc.</li>
 <li>Injected via template parameter on iconv views.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md305"></a>
+<h1><a class="anchor" id="autotoc_md307"></a>
 Branch and Commit Discipline</h1>
 <ul>
 <li>Branch from <code>main</code> for each step: <code>p3-step&lt;N&gt;-&lt;slug&gt;</code></li>
@@ -216,7 +216,7 @@ Branch and Commit Discipline</h1>
 <li>Push to both remotes: <code>git push origin main &amp;&amp; git push bbgithub main</code></li>
 <li>No Co-Author trailer</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md306"></a>
+<h1><a class="anchor" id="autotoc_md308"></a>
 What to Write in handoff-next.md</h1>
 <p>After completing your step, overwrite <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code> with:</p><ol type="1">
 <li>Which step you just completed</li>

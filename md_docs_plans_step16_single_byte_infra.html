@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_step16_single_byte_infra
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>step16-single-byte-infra</code> <b>Depends on:</b> Step 14 (dispatch pattern). Step 15 is independent but should be done first for ordering.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md363"></a>
+<h1><a class="anchor" id="autotoc_md365"></a>
 Goal</h1>
 <p>Introduce the generic table-driven single-byte decoder. All WHATWG single-byte codecs (windows-1252, ISO-8859-x, KOI8-x, etc.) share one algorithm with a different 128-entry lookup table for bytes 0x80–0xFF. <code>windows_1252</code> is the most commonly used legacy web encoding and the first concrete table, exercising both valid mappings and null (error) slots.</p>
-<h1><a class="anchor" id="autotoc_md364"></a>
+<h1><a class="anchor" id="autotoc_md366"></a>
 WHATWG Specification — Single-Byte Decoder Algorithm</h1>
 <ol type="1">
 <li>If byte is end-of-queue → finished.</li>
@@ -114,9 +114,9 @@ WHATWG Specification — Single-Byte Decoder Algorithm</h1>
 <li>Return code point.</li>
 </ol>
 <p><b>Table source:</b> WHATWG <code>index-windows-1252.txt</code> — 128 entries for bytes 0x80–0xFF. Five slots are null/unmapped: 0x81, 0x8D, 0x8F, 0x90, 0x9D.</p>
-<h1><a class="anchor" id="autotoc_md365"></a>
+<h1><a class="anchor" id="autotoc_md367"></a>
 Files Created</h1>
-<h2><a class="anchor" id="autotoc_md366"></a>
+<h2><a class="anchor" id="autotoc_md368"></a>
 &lt;tt&gt;include/beman/transcode/detail/single_byte.hpp&lt;/tt&gt;</h2>
 <p>Generic decode function shared by all single-byte codecs:</p>
 <div class="fragment"><div class="line"><span class="comment">// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span></div>
@@ -157,7 +157,7 @@ Files Created</h1>
 <div class="ttc" id="aerror_8hpp_html"><div class="ttname"><a href="error_8hpp.html">error.hpp</a></div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30bab"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">beman::transcoding::whatwg_error</a></div><div class="ttdeci">whatwg_error</div><div class="ttdef"><b>Definition:</b> error.hpp:8</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0">beman::transcoding::whatwg_error::invalid_byte</a></div><div class="ttdeci">@ invalid_byte</div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md367"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md369"></a>
 &lt;tt&gt;include/beman/transcode/detail/tables/windows_1252.hpp&lt;/tt&gt;</h2>
 <p>The WHATWG-defined mapping for bytes 0x80–0xFF. The table has 128 entries; 0 = unmapped.</p>
 <div class="fragment"><div class="line"><span class="comment">// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span></div>
@@ -192,9 +192,9 @@ Files Created</h1>
 <div class="line">} <span class="comment">// namespace beman::transcoding::detail::tables</span></div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_WINDOWS_1252_HPP</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md368"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md370"></a>
 Files Modified</h1>
-<h2><a class="anchor" id="autotoc_md369"></a>
+<h2><a class="anchor" id="autotoc_md371"></a>
 &lt;tt&gt;include/beman/transcode/whatwg_decode_view.hpp&lt;/tt&gt;</h2>
 <ol type="1">
 <li>Add includes: <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="single__byte_8hpp.html">beman/transcode/detail/single_byte.hpp</a>&gt;</span></div>
@@ -218,11 +218,11 @@ Files Modified</h1>
 <div class="line">}</div>
 </div><!-- fragment --></li>
 </ol>
-<h2><a class="anchor" id="autotoc_md370"></a>
+<h2><a class="anchor" id="autotoc_md372"></a>
 &lt;tt&gt;include/beman/transcode/CMakeLists.txt&lt;/tt&gt;</h2>
 <p>Add to HEADERS FILES list: </p><div class="fragment"><div class="line">detail/single_byte.hpp</div>
 <div class="line">detail/tables/windows_1252.hpp</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md371"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md373"></a>
 &lt;tt&gt;tests/beman/transcode/whatwg_decode.test.cpp&lt;/tt&gt;</h2>
 <div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_decode windows_1252 ASCII&quot;</span>, <span class="stringliteral">&quot;[transcoding::whatwg_decode]&quot;</span>) {</div>
 <div class="line">    std::vector&lt;char&gt; bytes{<span class="charliteral">&#39;A&#39;</span>};</div>
@@ -256,7 +256,7 @@ Files Modified</h1>
 <div class="line">    };</div>
 <div class="line">    CHECK(constify(decode_euro()) == <span class="keywordtype">char32_t</span>(0x20AC));</div>
 <div class="line">}</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md372"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md374"></a>
 &lt;tt&gt;tests/beman/transcode/whatwg_decode_or_error.test.cpp&lt;/tt&gt;</h2>
 <div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_decode_or_error windows_1252 undefined byte&quot;</span>, <span class="stringliteral">&quot;[transcoding::whatwg_decode_or_error]&quot;</span>) {</div>
 <div class="line">    std::vector&lt;char&gt; bytes{<span class="stringliteral">&#39;\x81&#39;</span>};</div>
@@ -273,7 +273,7 @@ Files Modified</h1>
 <div class="line">    REQUIRE(result[0].has_value());</div>
 <div class="line">    CHECK(result[0].value() == <span class="keywordtype">char32_t</span>(0x20AC));</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md373"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md375"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test   # all previous + ~7 new tests pass</div>
 <div class="line">make lint   # clean</div>

@@ -101,13 +101,13 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step8_encoding_rs_bas
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step8-encoding-rs-baseline</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step7_codecvt_baseline.html">p3-step7-codecvt-baseline.md</a> <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md168"></a>
+<h1><a class="anchor" id="autotoc_md170"></a>
 Goal</h1>
 <p>Integrate an <code>encoding_rs</code> baseline that can be compared against matched <code>beman::transcode</code> cases without contaminating the core C++ build surface.</p>
-<h1><a class="anchor" id="autotoc_md169"></a>
+<h1><a class="anchor" id="autotoc_md171"></a>
 Context for Executing Agent</h1>
 <p>encoding_rs is a Rust library. Integration options: Rust FFI via cbindgen, or a separate helper binary that reads stdin and writes stdout. The project's <code>docs/</code> directory has oracle direction for encoding_rs integration. This step should keep the Rust dependency completely optional and isolated. Corpora: same files from fixture layer.</p>
-<h1><a class="anchor" id="autotoc_md170"></a>
+<h1><a class="anchor" id="autotoc_md172"></a>
 Deliverables</h1>
 <ul>
 <li>optional build or helper-binary path for <code>encoding_rs</code></li>
@@ -115,14 +115,14 @@ Deliverables</h1>
 <li>matched benchmark cases against at least UTF and one legacy WHATWG encoding</li>
 <li>documentation for how to enable and run the baseline locally</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md171"></a>
+<h1><a class="anchor" id="autotoc_md173"></a>
 Constraints</h1>
 <ul>
 <li>keep the Rust/FFI dependency optional</li>
 <li>isolate the dependency from the public library build</li>
 <li>benchmark the real implementation, not a character-by-character FFI anti-pattern</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md172"></a>
+<h1><a class="anchor" id="autotoc_md174"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p3-step8-encoding-rs-baseline</code> from <code>main</code></li>
@@ -135,15 +135,15 @@ Procedure</h1>
 <li>Run the <code>encoding_rs</code> smoke command</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md173"></a>
+<h1><a class="anchor" id="autotoc_md175"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line"># plus the encoding_rs smoke command on an enabled environment</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md174"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md176"></a>
 Notes</h1>
 <p>This step should align with the repository's existing oracle direction rather than inventing a new integration story.</p>
-<h1><a class="anchor" id="autotoc_md175"></a>
+<h1><a class="anchor" id="autotoc_md177"></a>
 Handoff to Step 9</h1>
 <p>Step 8 done, next read <a class="el" href="p3-step9-simdutf-baseline_8md.html">p3-step9-simdutf-baseline.md</a>. </p>
 </div></div><!-- contents -->

@@ -101,36 +101,47 @@ $(document).ready(function(){initNavTree('md_docs_plans_handoff_next.html',''); 
 <div class="contents">
 <div class="textblock"><h1><a class="anchor" id="autotoc_md54"></a>
 Completed</h1>
-<p>No Phase 3 steps have been completed yet.</p>
-<h1><a class="anchor" id="autotoc_md55"></a>
-Next Step</h1>
-<p>Read <code><a class="el" href="p3-step1-benchmark-harness_8md.html">docs/plans/p3-step1-benchmark-harness.md</a></code></p>
-<p>Also read <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> for project conventions.</p>
-<h1><a class="anchor" id="autotoc_md56"></a>
-Current State</h1>
 <ul>
-<li><code>make test</code> passes (662 tests)</li>
-<li><code>make lint</code> passes</li>
-<li>No <code>benchmark/</code> directory exists yet</li>
-<li>No <code>make bench</code> target exists yet</li>
-<li>Catch2 3.x is available via FetchContent (already a dependency)</li>
+<li><b>P3-Step 1: Benchmark harness scaffolding</b> — done on <code>worktree-pluggable-codec-protocol</code> branch</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md55"></a>
+What was done</h1>
+<ul>
+<li>Added <code>BEMAN_TRANSCODE_BUILD_BENCHMARKS</code> option to <code>CMakeLists.txt</code> (default <code>${PROJECT_IS_TOP_LEVEL}</code>)</li>
+<li>Added <code>add_subdirectory(benchmark)</code> guarded by that option (after the examples block)</li>
+<li>Created <code>benchmark/CMakeLists.txt</code> — registers <code>beman.transcode.benchmarks.smoke</code> linked to <code>beman::transcode</code> and <code>Catch2::Catch2WithMain</code></li>
+<li>Created <code>benchmark/smoke.bench.cpp</code> — one <code>BENCHMARK</code> case decoding a 4096-byte ASCII string via <code>whatwg_decode&lt;codec::utf_8&gt;</code></li>
+<li>Added <code>make bench</code> target to <code>Makefile</code> — depends on <code>compile</code>, runs the smoke binary with <code>"[smoke]"</code> tag filter</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md56"></a>
+Files created</h1>
+<ul>
+<li><code>benchmark/CMakeLists.txt</code></li>
+<li><code>benchmark/smoke.bench.cpp</code></li>
 </ul>
 <h1><a class="anchor" id="autotoc_md57"></a>
+Next Step</h1>
+<p>Read <code><a class="el" href="p3-step2-benchmark-data_8md.html">docs/plans/p3-step2-benchmark-data.md</a></code></p>
+<p>Also read <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> for project conventions.</p>
+<h1><a class="anchor" id="autotoc_md58"></a>
+Current State</h1>
+<ul>
+<li><code>make test</code> passes (662 C++ + 171 Python tests)</li>
+<li><code>make lint</code> passes</li>
+<li><code>make bench</code> works: executable at <code>.build/build-system/benchmark/Asan/beman.transcode.benchmarks.smoke</code></li>
+<li>Smoke benchmark reports ~127 µs/iter for 4096-byte ASCII UTF-8 decode (measured under Asan)</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md59"></a>
 Branch Discipline</h1>
-<p>Each step works in its own git worktree: </p><div class="fragment"><div class="line"># Create worktree for the step:</div>
-<div class="line">git worktree add .claude/worktrees/p3-step1 -b p3-step1-benchmark-harness main</div>
-<div class="line">cd .claude/worktrees/p3-step1</div>
-<div class="line"> </div>
-<div class="line"># After completing work:</div>
-<div class="line">git add &lt;files&gt; &amp;&amp; git commit -m &quot;...&quot;</div>
-<div class="line"># Return to main repo and merge:</div>
-<div class="line">cd &lt;main-repo&gt;</div>
-<div class="line">git merge --no-ff p3-step1-benchmark-harness -m &quot;Merge p3-step1-benchmark-harness&quot;</div>
-<div class="line">git push origin main &amp;&amp; git push bbgithub main</div>
-<div class="line">git worktree remove .claude/worktrees/p3-step1</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md58"></a>
+<p>This step was done on <code>worktree-pluggable-codec-protocol</code>. After merging to main, the next step should follow the same pattern (work in this worktree, update from main first).</p>
+<h1><a class="anchor" id="autotoc_md60"></a>
 Notes</h1>
-<p>None yet. </p>
+<ul>
+<li>Benchmark executable path: <code>.build/build-system/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke</code></li>
+<li>The <code>[smoke]</code> tag filter in <code>make bench</code> means only tests tagged <code>[smoke]</code> run; add this tag to any benchmark TEST_CASE you want included in the smoke run</li>
+<li>Catch2 benchmark macros are in <code>&lt;catch2/catch_all.hpp&gt;</code> (already available via FetchContent)</li>
+<li>Asan config is the default (<code>CONFIG ?= Asan</code> in Makefile); Release/RelWithDebInfo give more realistic perf numbers </li>
+</ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
