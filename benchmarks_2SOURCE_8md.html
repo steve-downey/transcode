@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>beman.transcode: P3-Step 11: Toolchain Matrix Automation</title>
+<title>beman.transcode: docs/benchmarks/SOURCE.md File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('md_docs_plans_p3_step11_toolchain_matrix.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('benchmarks_2SOURCE_8md.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -95,71 +95,16 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step11_toolchain_matr
 </div>
 </div>
 
-<div><div class="header">
-  <div class="headertitle"><div class="title">P3-Step 11: Toolchain Matrix Automation </div></div>
+<div class="header">
+  <div class="headertitle"><div class="title">docs/benchmarks/SOURCE.md File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><b>Branch:</b> <code>p3-step11-toolchain-matrix</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step10_boundary_stress.html">p3-step10-boundary-stress.md</a> <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
-<hr  />
-<h1><a class="anchor" id="autotoc_md93"></a>
-Goal</h1>
-<p>Automate the compiler and optimization matrix from the benchmarking report so full runs can be reproduced without manual shell choreography and are accessible from the Makefile workflow.</p>
-<h1><a class="anchor" id="autotoc_md94"></a>
-Context for Executing Agent</h1>
-<p>The project uses CMakePresets.json for build configurations. Current presets include <code>gcc-debug</code>, <code>gcc-release</code>, <code>llvm-debug</code>, <code>llvm-release</code>. The toolchain files are in <code>infra/cmake/gnu-toolchain.cmake</code> and <code>infra/cmake/llvm-toolchain.cmake</code>.</p>
-<p>Add a <code>gcc-release-lto</code> preset inheriting from <code>gcc-release</code> with <code>-flto</code> added. Create <code>docs/benchmarks/RUNNING.md</code> with instructions. Add <code>make bench-lto</code> target.</p>
-<h1><a class="anchor" id="autotoc_md95"></a>
-Matrix To Support</h1>
-<ul>
-<li>GCC latest available: <code>-O3</code></li>
-<li>GCC latest available: <code>-O3 -flto</code></li>
-<li>Clang latest available: <code>-O3 -flto</code></li>
-</ul>
-<h1><a class="anchor" id="autotoc_md96"></a>
-Deliverables</h1>
-<ul>
-<li>scripts, presets, and Makefile targets for matrix execution</li>
-<li>captured environment metadata: compiler version, CPU model, OS, build flags, dependency toggles</li>
-<li>documentation describing smoke versus full-matrix usage</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md97"></a>
-Constraints</h1>
-<ul>
-<li>do not require every machine to support every compiler</li>
-<li>unsupported slices should skip cleanly and visibly</li>
-<li>matrix execution should write machine-readable metadata beside results</li>
-<li>the common entry points for smoke and full matrix runs should be discoverable as <code>make</code> targets</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md98"></a>
-Procedure</h1>
-<ol type="1">
-<li>Create branch <code>p3-step11-toolchain-matrix</code> from <code>main</code></li>
-<li>Add matrix runner scripts or presets</li>
-<li>Add Makefile targets that front the supported matrix slices</li>
-<li>Capture environment metadata alongside benchmark results</li>
-<li>Document smoke and full-matrix <code>make</code> targets</li>
-<li>Run <code>make test</code></li>
-<li>Run <code>make lint</code></li>
-<li>Run at least one automated matrix smoke slice via the Makefile workflow</li>
-<li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
-</ol>
-<h1><a class="anchor" id="autotoc_md99"></a>
-Verification</h1>
-<div class="fragment"><div class="line">make test</div>
-<div class="line">make lint</div>
-<div class="line"># plus one automated matrix smoke run via a documented Makefile target</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md100"></a>
-Notes</h1>
-<p>This step turns benchmarking from an experiment into a repeatable process.</p>
-<h1><a class="anchor" id="autotoc_md101"></a>
-Handoff to Step 12</h1>
-<p>Step 11 done, next read <a class="el" href="p3-step12-reporting-and-repro_8md.html">p3-step12-reporting-and-repro.md</a>. </p>
-</div></div><!-- contents -->
-</div><!-- PageDoc -->
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a class="el" href="benchmarks_2SOURCE_8md.html">SOURCE.md</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
   </ul>
 </div>

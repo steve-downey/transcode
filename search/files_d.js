@@ -6,7 +6,7 @@ var searchData=
   ['single_5fbyte_5fencode_5fview_2ehpp_3',['single_byte_encode_view.hpp',['../single__byte__encode__view_8hpp.html',1,'']]],
   ['single_5fbyte_5ftables_2ehpp_4',['single_byte_tables.hpp',['../single__byte__tables_8hpp.html',1,'']]],
   ['sniff_2ehpp_5',['sniff.hpp',['../sniff_8hpp.html',1,'']]],
-  ['source_2emd_6',['SOURCE.md',['../whatwg_2SOURCE_8md.html',1,'(Global Namespace)'],['../wpt_2SOURCE_8md.html',1,'(Global Namespace)']]],
+  ['source_2emd_6',['SOURCE.md',['../benchmarks_2SOURCE_8md.html',1,'(Global Namespace)'],['../whatwg_2SOURCE_8md.html',1,'(Global Namespace)'],['../wpt_2SOURCE_8md.html',1,'(Global Namespace)']]],
   ['step14_2dreplacement_2dcodec_2emd_7',['step14-replacement-codec.md',['../step14-replacement-codec_8md.html',1,'']]],
   ['step15_2dx_2duser_2ddefined_2emd_8',['step15-x-user-defined.md',['../step15-x-user-defined_8md.html',1,'']]],
   ['step16_2dsingle_2dbyte_2dinfra_2emd_9',['step16-single-byte-infra.md',['../step16-single-byte-infra_8md.html',1,'']]],

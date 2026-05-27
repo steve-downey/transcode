@@ -101,31 +101,31 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step7_codecvt_baselin
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step7-codecvt-baseline</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step6_iconv_baselines.html">p3-step6-iconv-baselines.md</a> <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md160"></a>
+<h1><a class="anchor" id="autotoc_md168"></a>
 Goal</h1>
 <p>Add the deprecated <code>std::codecvt</code> comparison path as a negative baseline while keeping unsupported or broken library environments green.</p>
-<h1><a class="anchor" id="autotoc_md161"></a>
+<h1><a class="anchor" id="autotoc_md169"></a>
 Context for Executing Agent</h1>
 <p>The <code>&lt;codecvt&gt;</code> header was deprecated in C++17. Its availability and behavior varies by platform (libc++, libstdc++, MSVC). The benchmark should gracefully skip on platforms where it doesn't work.</p>
 <p>Use <code>__has_include(&lt;codecvt&gt;)</code> and feature test macros to guard.</p>
 <p>Example usage (when available): </p><div class="fragment"><div class="line">std::wstring_convert&lt;std::codecvt_utf8&lt;char32_t&gt;, <span class="keywordtype">char32_t</span>&gt; converter;</div>
 <div class="line">std::u32string result = converter.from_bytes(input);</div>
 </div><!-- fragment --><p>Corpora: use <code>corpus_span()</code> from <code>benchmark_fixture.hpp</code>.</p>
-<h1><a class="anchor" id="autotoc_md162"></a>
+<h1><a class="anchor" id="autotoc_md170"></a>
 Deliverables</h1>
 <ul>
 <li>conditional benchmark support for <code>std::codecvt</code></li>
 <li>explicit skip behavior where the implementation is absent or unusable</li>
 <li>a short benchmark README note documenting known limitations by platform or STL</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md163"></a>
+<h1><a class="anchor" id="autotoc_md171"></a>
 Constraints</h1>
 <ul>
 <li>portability matters more than broad <code>codecvt</code> coverage</li>
 <li>if the environment cannot support a meaningful benchmark, the step should produce a documented skip rather than fragile emulation</li>
 <li>avoid treating <code>codecvt</code> failures as project regressions</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md164"></a>
+<h1><a class="anchor" id="autotoc_md172"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p3-step7-codecvt-baseline</code> from <code>main</code></li>
@@ -137,15 +137,15 @@ Procedure</h1>
 <li>Run the <code>codecvt</code> smoke command or verify the documented skip behavior</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md165"></a>
+<h1><a class="anchor" id="autotoc_md173"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line"># plus the codecvt smoke command, or an explicit documented skip on this platform</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md166"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md174"></a>
 Notes</h1>
 <p>The benchmark report treats <code>codecvt</code> as a historical negative baseline, not a first-class portability requirement.</p>
-<h1><a class="anchor" id="autotoc_md167"></a>
+<h1><a class="anchor" id="autotoc_md175"></a>
 Handoff to Step 8</h1>
 <p>Step 7 done, next read <a class="el" href="p3-step8-encoding-rs-baseline_8md.html">p3-step8-encoding-rs-baseline.md</a>. Note whether codecvt was available or skipped on this platform. </p>
 </div></div><!-- contents -->

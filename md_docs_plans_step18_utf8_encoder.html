@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_step18_utf8_encoder.html
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>step18-utf8-encoder</code> <b>Depends on:</b> Step 14 (established dispatch), but conceptually independent of steps 15–17</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md401"></a>
+<h1><a class="anchor" id="autotoc_md409"></a>
 Goal</h1>
 <p>Add the encoding direction: <code>whatwg_encode_view&lt;codec::utf_8, R&gt;</code> takes a <code>char32_t</code> input range and yields <code>char</code> output bytes. This is the symmetric counterpart to the existing <code>whatwg_decode_view</code>. Includes an or_error variant, pipe closures, and a new <code>unicode_scalar_range</code> concept.</p>
-<h1><a class="anchor" id="autotoc_md402"></a>
+<h1><a class="anchor" id="autotoc_md410"></a>
 WHATWG Specification — UTF-8 Encoder</h1>
 <ol type="1">
 <li>If code point is end-of-queue → finished.</li>
@@ -115,9 +115,9 @@ WHATWG Specification — UTF-8 Encoder</h1>
 <li>If code point is a surrogate or &gt; U+10FFFF → error.</li>
 </ol>
 <p><b>Error handling (non-error variant):</b> Surrogates/out-of-range → emit U+FFFD encoded as UTF-8: {0xEF, 0xBF, 0xBD}. <b>Error handling (or_error variant):</b> Surrogates → <code>unexpected(whatwg_error::surrogate_code_point)</code>. Out-of-range → <code>unexpected(whatwg_error::out_of_range)</code>.</p>
-<h1><a class="anchor" id="autotoc_md403"></a>
+<h1><a class="anchor" id="autotoc_md411"></a>
 Files Created</h1>
-<h2><a class="anchor" id="autotoc_md404"></a>
+<h2><a class="anchor" id="autotoc_md412"></a>
 &lt;tt&gt;include/beman/transcode/detail/utf8_encode.hpp&lt;/tt&gt;</h2>
 <div class="fragment"><div class="line"><span class="comment">// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span></div>
 <div class="line"> </div>
@@ -177,7 +177,7 @@ Files Created</h1>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30bab"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">beman::transcoding::whatwg_error</a></div><div class="ttdeci">whatwg_error</div><div class="ttdef"><b>Definition:</b> error.hpp:8</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d">beman::transcoding::whatwg_error::surrogate_code_point</a></div><div class="ttdeci">@ surrogate_code_point</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0">beman::transcoding::whatwg_error::out_of_range</a></div><div class="ttdeci">@ out_of_range</div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md405"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md413"></a>
 &lt;tt&gt;include/beman/transcode/whatwg_encode_view.hpp&lt;/tt&gt;</h2>
 <p>New header with:</p><ul>
 <li><code>whatwg_encode_view&lt;C, R&gt;</code> — view yielding <code>char</code>, constexpr</li>
@@ -201,7 +201,7 @@ Files Created</h1>
 <p><b>Input concept:</b> Requires <code>unicode_scalar_range&lt;R&gt;</code> (see below).</p>
 <p><b>Include guard:</b> <code>INCLUDE_BEMAN_TRANSCODE_WHATWG_ENCODE_VIEW_HPP</code></p>
 <p><b>Array rejection:</b> Add a <code>static_assert</code> overload of <code>operator|</code> that rejects <code>char32_t[N]</code> arrays with message <code>"transcode: raw arrays are not valid input to whatwg_encode"</code>.</p>
-<h2><a class="anchor" id="autotoc_md406"></a>
+<h2><a class="anchor" id="autotoc_md414"></a>
 &lt;tt&gt;tests/beman/transcode/whatwg_encode.test.cpp&lt;/tt&gt;</h2>
 <p>New test executable. Include <code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code> twice. Tests:</p>
 <div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_encode_view satisfies input_range&quot;</span>) { <span class="comment">/* static_asserts */</span> }</div>
@@ -212,13 +212,13 @@ Files Created</h1>
 <div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_encode UTF-8 surrogate replaced&quot;</span>) { <span class="comment">/* U+D800 -&gt; {0xEF, 0xBF, 0xBD} */</span> }</div>
 <div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_encode UTF-8 pipe syntax&quot;</span>) { <span class="comment">/* codepoints | whatwg_encode&lt;codec::utf_8&gt; */</span> }</div>
 <div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_encode UTF-8 consteval&quot;</span>) { <span class="comment">/* compile-time encode check */</span> }</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md407"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md415"></a>
 &lt;tt&gt;tests/beman/transcode/whatwg_encode_or_error.test.cpp&lt;/tt&gt;</h2>
 <p>New test executable. Tests:</p>
 <div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_encode_or_error surrogate&quot;</span>) { <span class="comment">/* unexpected(surrogate_code_point) */</span> }</div>
 <div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_encode_or_error out_of_range&quot;</span>) { <span class="comment">/* unexpected(out_of_range) */</span> }</div>
 <div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_encode_or_error valid codepoint&quot;</span>) { <span class="comment">/* has_value(), correct bytes */</span> }</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md408"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md416"></a>
 Negative compile test: &lt;tt&gt;whatwg_encode_reject_char_range_fail.cpp&lt;/tt&gt;</h2>
 <div class="fragment"><div class="line"><span class="comment">// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span></div>
 <div class="line"><span class="preprocessor">#include &lt;<a class="code" href="whatwg__encode__view_8hpp.html">beman/transcode/whatwg_encode_view.hpp</a>&gt;</span></div>
@@ -231,22 +231,22 @@ Negative compile test: &lt;tt&gt;whatwg_encode_reject_char_range_fail.cpp&lt;/tt
 <div class="ttc" id="aclassbeman_1_1transcoding_1_1whatwg__encode__view_html"><div class="ttname"><a href="classbeman_1_1transcoding_1_1whatwg__encode__view.html">beman::transcoding::whatwg_encode_view</a></div><div class="ttdef"><b>Definition:</b> whatwg_encode_view.hpp:368</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html"><div class="ttname"><a href="namespacebeman_1_1transcoding.html">beman::transcoding</a></div><div class="ttdef"><b>Definition:</b> decode_view.hpp:14</div></div>
 <div class="ttc" id="awhatwg__encode__view_8hpp_html"><div class="ttname"><a href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md409"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md417"></a>
 Files Modified</h1>
-<h2><a class="anchor" id="autotoc_md410"></a>
+<h2><a class="anchor" id="autotoc_md418"></a>
 &lt;tt&gt;include/beman/transcode/detail/concepts.hpp&lt;/tt&gt;</h2>
 <p>Add after <code>legacy_byte_range</code>:</p>
 <div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> R&gt;</div>
 <div class="line"><span class="keyword">concept </span>unicode_scalar_range = std::ranges::input_range&lt;R&gt; &amp;&amp;</div>
 <div class="line">    std::same_as&lt;std::remove_cv_t&lt;std::ranges::range_value_t&lt;R&gt;&gt;, <span class="keywordtype">char32_t</span>&gt;;</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md411"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md419"></a>
 &lt;tt&gt;include/beman/transcode/CMakeLists.txt&lt;/tt&gt;</h2>
 <p>Add to HEADERS FILES list: </p><div class="fragment"><div class="line">detail/utf8_encode.hpp</div>
 <div class="line">whatwg_encode_view.hpp</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md412"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md420"></a>
 &lt;tt&gt;tests/beman/transcode/CMakeLists.txt&lt;/tt&gt;</h2>
 <p>Add two new test executables (whatwg_encode, whatwg_encode_or_error) + catch_discover_tests. Add negative compile test target + PASS_REGULAR_EXPRESSION.</p>
-<h1><a class="anchor" id="autotoc_md413"></a>
+<h1><a class="anchor" id="autotoc_md421"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test   # all previous + ~11 new tests + 1 negative compile test pass</div>
 <div class="line">make lint   # clean</div>
