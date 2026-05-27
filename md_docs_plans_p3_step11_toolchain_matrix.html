@@ -101,28 +101,28 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step11_toolchain_matr
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step11-toolchain-matrix</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step10_boundary_stress.html">p3-step10-boundary-stress.md</a> <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md94"></a>
+<h1><a class="anchor" id="autotoc_md144"></a>
 Goal</h1>
 <p>Automate the compiler and optimization matrix from the benchmarking report so full runs can be reproduced without manual shell choreography and are accessible from the Makefile workflow.</p>
-<h1><a class="anchor" id="autotoc_md95"></a>
+<h1><a class="anchor" id="autotoc_md145"></a>
 Context for Executing Agent</h1>
 <p>The project uses CMakePresets.json for build configurations. Current presets include <code>gcc-debug</code>, <code>gcc-release</code>, <code>llvm-debug</code>, <code>llvm-release</code>. The toolchain files are in <code>infra/cmake/gnu-toolchain.cmake</code> and <code>infra/cmake/llvm-toolchain.cmake</code>.</p>
-<p>Add a <code>gcc-release-lto</code> preset inheriting from <code>gcc-release</code> with <code>-flto</code> added. Create <code>docs/benchmarks/RUNNING.md</code> with instructions. Add <code>make bench-lto</code> target.</p>
-<h1><a class="anchor" id="autotoc_md96"></a>
+<p>Add a <code>gcc-release-lto</code> preset inheriting from <code>gcc-release</code> with <code>-flto</code> added. Create <code><a class="el" href="RUNNING_8md.html">docs/benchmarks/RUNNING.md</a></code> with instructions. Add <code>make bench-lto</code> target.</p>
+<h1><a class="anchor" id="autotoc_md146"></a>
 Matrix To Support</h1>
 <ul>
 <li>GCC latest available: <code>-O3</code></li>
 <li>GCC latest available: <code>-O3 -flto</code></li>
 <li>Clang latest available: <code>-O3 -flto</code></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md97"></a>
+<h1><a class="anchor" id="autotoc_md147"></a>
 Deliverables</h1>
 <ul>
 <li>scripts, presets, and Makefile targets for matrix execution</li>
 <li>captured environment metadata: compiler version, CPU model, OS, build flags, dependency toggles</li>
 <li>documentation describing smoke versus full-matrix usage</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md98"></a>
+<h1><a class="anchor" id="autotoc_md148"></a>
 Constraints</h1>
 <ul>
 <li>do not require every machine to support every compiler</li>
@@ -130,7 +130,7 @@ Constraints</h1>
 <li>matrix execution should write machine-readable metadata beside results</li>
 <li>the common entry points for smoke and full matrix runs should be discoverable as <code>make</code> targets</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md99"></a>
+<h1><a class="anchor" id="autotoc_md149"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p3-step11-toolchain-matrix</code> from <code>main</code></li>
@@ -143,15 +143,15 @@ Procedure</h1>
 <li>Run at least one automated matrix smoke slice via the Makefile workflow</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md100"></a>
+<h1><a class="anchor" id="autotoc_md150"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line"># plus one automated matrix smoke run via a documented Makefile target</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md101"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md151"></a>
 Notes</h1>
 <p>This step turns benchmarking from an experiment into a repeatable process.</p>
-<h1><a class="anchor" id="autotoc_md102"></a>
+<h1><a class="anchor" id="autotoc_md152"></a>
 Handoff to Step 12</h1>
 <p>Step 11 done, next read <a class="el" href="p3-step12-reporting-and-repro_8md.html">p3-step12-reporting-and-repro.md</a>. </p>
 </div></div><!-- contents -->

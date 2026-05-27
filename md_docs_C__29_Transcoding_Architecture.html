@@ -100,13 +100,13 @@ $(document).ready(function(){initNavTree('md_docs_C__29_Transcoding_Architecture
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>Here is the comprehensive execution plan for the C++29 Transcoding Architecture project, synthesizing the architectural blueprint, Beman project guidelines, and the robust, clean-room testing strategy we have developed.</p>
-<h1><a class="anchor" id="autotoc_md43"></a>
+<h1><a class="anchor" id="autotoc_md92"></a>
 —</h1>
 <p><b>Execution Plan: C++29 Transcoding Architecture (Beman Project)</b></p>
-<h2><a class="anchor" id="autotoc_md44"></a>
+<h2><a class="anchor" id="autotoc_md93"></a>
 &lt;strong&gt;Executive Summary&lt;/strong&gt;</h2>
 <p>This project will deliver a C++29 standard proposal and reference implementation for pipeline-oriented string transcoding, extending P2728R12 patterns to support the WHATWG Encoding Standard and POSIX iconv. The implementation will strictly adhere to Beman Project standards. To guarantee adoption viability by conservative C++ standard library vendors, the project will structurally eliminate undefined behavior at compile-time and enforce a strict "clean room" out-of-tree testing architecture for POSIX conformance to avoid GPL/IP contamination.</p>
-<h2><a class="anchor" id="autotoc_md45"></a>
+<h2><a class="anchor" id="autotoc_md94"></a>
 —</h2>
 <p><b>Phase 1: Project Scaffolding &amp; Beman Conformance</b></p>
 <p>Initialize the repository according to the exact specifications of the bemanproject/exemplar template.</p>
@@ -117,7 +117,7 @@ $(document).ready(function(){initNavTree('md_docs_C__29_Transcoding_Architecture
 <li><b>Build System Setup:</b> Configure CMakeLists.txt to expose <a class="el" href="namespacebeman_1_1transcoding.html">beman::transcoding</a> as the primary library target, with toggleable BEMAN_TRANSCODING_BUILD_TESTS and BEMAN_TRANSCODING_BUILD_EXAMPLES.</li>
 <li><b>Directory Strictness:</b> Enforce the split between include/beman/transcoding/ (public interface), include/beman/transcoding/detail/ (private traits/concepts), tests/, examples/, and papers/.</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md46"></a>
+<h2><a class="anchor" id="autotoc_md95"></a>
 —</h2>
 <p><b>Phase 2: Core Library Implementation &amp; Safety Constraints</b></p>
 <p>Implement the views using modern C++20/C++23 concepts to make incorrect API usage unrepresentable at compile-time.</p>
@@ -141,7 +141,7 @@ $(document).ready(function(){initNavTree('md_docs_C__29_Transcoding_Architecture
 </ul>
 </li>
 </ol>
-<h2><a class="anchor" id="autotoc_md47"></a>
+<h2><a class="anchor" id="autotoc_md96"></a>
 —</h2>
 <p><b>Phase 3: In-Tree Unit Testing &amp; Structural Validation</b></p>
 <p>Write unit tests within tests/beman/transcoding/ to validate C++ semantics and boundary resilience without relying on external system state.</p>
@@ -160,7 +160,7 @@ $(document).ready(function(){initNavTree('md_docs_C__29_Transcoding_Architecture
 </ul>
 </li>
 </ol>
-<h2><a class="anchor" id="autotoc_md48"></a>
+<h2><a class="anchor" id="autotoc_md97"></a>
 —</h2>
 <p><b>Phase 4: WHATWG Conformance (Data-Driven)</b></p>
 <p>Integrate standard web conformance tests into the main repository using permissively licensed data.</p>
@@ -169,7 +169,7 @@ $(document).ready(function(){initNavTree('md_docs_C__29_Transcoding_Architecture
 <li><b>Test Generation:</b> Create a Python or CMake script in tests/data/ that parses the WPT JSON and generates C++ constexpr arrays.</li>
 <li><b>Parameterization:</b> Use the Beman testing framework to feed these arrays through whatwg_decode_view to prove 100% adherence to the WHATWG specification, validating BOM sniffing, replacement character insertion, and complex shift-state legacy web encodings.</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md49"></a>
+<h2><a class="anchor" id="autotoc_md98"></a>
 —</h2>
 <p><b>Phase 5: Out-of-Tree POSIX Conformance Suite (Clean Room)</b></p>
 <p>To avoid GPL/LGPL contamination from GNU libiconv and ensure major library vendors (LLVM, MSVC) can validate the architecture safely, build a physically separated black-box testing harness.</p>
@@ -179,7 +179,7 @@ $(document).ready(function(){initNavTree('md_docs_C__29_Transcoding_Architecture
 <li><b>Black-Box Test Harness:</b> Write an Apache 2.0-licensed harness that reads the JSON data and feeds it into whatever iconv_transcode_view implementation the user points it to.</li>
 <li><b>Vendor Workflow:</b> Standard library maintainers run the harness against their native OS libc to validate state-machine boundaries without ever viewing the encumbered test data.</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md50"></a>
+<h2><a class="anchor" id="autotoc_md99"></a>
 —</h2>
 <p><b>Phase 6: Standardization Packaging</b></p>
 <p>Package the architecture and findings into a formal WG21 standard proposal.</p>

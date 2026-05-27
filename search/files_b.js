@@ -21,5 +21,6 @@ var searchData=
   ['phase2_2dindex_2emd_18',['phase2-index.md',['../phase2-index_8md.html',1,'']]],
   ['phase3_2dchecklist_2emd_19',['phase3-checklist.md',['../phase3-checklist_8md.html',1,'']]],
   ['phase3_2dhandoff_2emd_20',['phase3-handoff.md',['../phase3-handoff_8md.html',1,'']]],
-  ['phase3_2dindex_2emd_21',['phase3-index.md',['../phase3-index_8md.html',1,'']]]
+  ['phase3_2dindex_2emd_21',['phase3-index.md',['../phase3-index_8md.html',1,'']]],
+  ['platform_5fnotes_2emd_22',['PLATFORM_NOTES.md',['../PLATFORM__NOTES_8md.html',1,'']]]
 ];

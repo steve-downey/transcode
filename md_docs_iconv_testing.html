@@ -101,36 +101,36 @@ $(document).ready(function(){initNavTree('md_docs_iconv_testing.html',''); initR
 <div class="contents">
 <div class="textblock"><p>If the goal is purely to test the C++ range adapter (the view) that wraps the <code>iconv</code> C API, you don't need megabytes of WPT JSON data. You only need a tiny, surgical set of test vectors designed specifically to trigger the boundary conditions of your <code>iconv</code> state machine.</p>
 <p>Because a C++ view (especially a lazy or chunked one) must translate range iteration into <code>char**</code> buffer manipulations, your tests must verify that the view correctly interprets <code>iconv</code>'s return values and manages its internal buffers across iterations.</p>
-<h1><a class="anchor" id="autotoc_md52"></a>
+<h1><a class="anchor" id="autotoc_md101"></a>
 1. The &lt;tt&gt;iconv&lt;/tt&gt; View Boundary Conditions</h1>
 <p>The POSIX <code>iconv</code> function communicates state via its return value (returning <code>(size_t)-1</code>) and <code>errno</code>. Your C++ view iterator must handle these precisely. We will use simple UTF-8 to UTF-16 (or UTF-32) conversions to trigger these states.</p>
-<h2><a class="anchor" id="autotoc_md53"></a>
+<h2><a class="anchor" id="autotoc_md102"></a>
 A. Buffer Exhaustion (&lt;tt&gt;E2BIG&lt;/tt&gt;)</h2>
 <p>If your view processes data in chunks, <code>iconv</code> will return <code>E2BIG</code> when the output buffer fills up before the input is consumed.</p><ul>
 <li><b>Test Vector:</b> A long, valid string (e.g., 100 repetitions of <code>A</code>).</li>
 <li><b>View Expectation:</b> The iterator must yield the converted characters from the filled buffer, and upon the next increment, seamlessly resume passing the <em>unconsumed</em> input pointer back into <code>iconv</code> without dropping characters.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md54"></a>
+<h2><a class="anchor" id="autotoc_md103"></a>
 B. The Split Multi-byte Sequence (&lt;tt&gt;EINVAL&lt;/tt&gt;)</h2>
 <p>This is the most critical test for a range adapter. If the underlying data source provides bytes in chunks (e.g., reading from a socket or file), a multi-byte character might be sliced exactly in half at the chunk boundary. <code>iconv</code> will stop and return <code>EINVAL</code>.</p><ul>
 <li><b>Test Vector:</b> The UTF-8 sequence for "𝄞" (U+1D11E): <code>0xF0 0x9D 0x84 0x9E</code>.</li>
 <li><b>Procedure:</b> Feed the view an input range that yields <code>0xF0 0x9D</code> on the first iteration, and <code>0x84 0x9E</code> on the second.</li>
 <li><b>View Expectation:</b> The view must cache the leftover bytes, prepend them to the next chunk it pulls from the underlying range, and successfully yield the code point without throwing an error.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md55"></a>
+<h2><a class="anchor" id="autotoc_md104"></a>
 C. Invalid Byte Sequences (&lt;tt&gt;EILSEQ&lt;/tt&gt;)</h2>
 <p>The view must handle strictly malformed data gracefully, according to your C++ API design (either throwing, returning a <code>std::expected</code> error state, or yielding a replacement character).</p><ul>
 <li><b>Test Vector:</b> <code>0xFF 0xFF</code>.</li>
 <li><b>View Expectation:</b> The view evaluates <code>errno == EILSEQ</code>. It must not infinite-loop. It should advance the input pointer past the bad bytes (usually by 1) if it is designed to emit replacement characters, or immediately halt the range and bubble up the error.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md56"></a>
+<h2><a class="anchor" id="autotoc_md105"></a>
 D. End-of-Range Stateful Flush</h2>
 <p>Legacy encodings use shift states. When a sequence ends, <code>iconv</code> requires a final call with <code>inbuf == nullptr</code> to flush any reset bytes (like switching back to ASCII) into the output buffer.</p><ul>
 <li><b>Test Vector:</b> ISO-2022-JP encoding of "あ" (<code>0x1B 0x24 0x42 0x24 0x22</code>).</li>
 <li><b>View Expectation:</b> When the underlying input range reaches <code>std::ranges::end</code>, the view's iterator must make the flush call to <code>iconv</code>. If the flush produces additional bytes, the iterator must yield them before finally marking itself as equal to the sentinel/end iterator.</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md58"></a>
+<h1><a class="anchor" id="autotoc_md107"></a>
 2. Mocking &lt;tt&gt;iconv&lt;/tt&gt; for Deterministic View Testing</h1>
 <p>Relying on the system's <code>iconv</code> for unit testing the <em>view logic</em> can be risky because system implementations vary in how strictly they handle <code>EILSEQ</code> or undocumented encodings.</p>
 <p>The standard C++ approach for this is to inject a mock <code>iconv</code> wrapper into the view during testing. This guarantees your view is handling the API contract, completely independent of the underlying C library.</p>
@@ -179,7 +179,7 @@ D. End-of-Range Stateful Flush</h2>
 <div class="line"> </div>
 <div class="line">} <span class="comment">// namespace whatwg::codec::tests</span></div>
 </div><!-- fragment --><hr  />
-<h1><a class="anchor" id="autotoc_md60"></a>
+<h1><a class="anchor" id="autotoc_md109"></a>
 3. Testing Execution Plan</h1>
 <p>To test the view, you will:</p><ol type="1">
 <li><b>Define your C++26 View:</b> E.g., <code>auto transcoded = input_bytes | views::iconv_transcode("UTF-8", "UTF-16");</code></li>

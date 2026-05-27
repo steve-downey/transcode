@@ -99,16 +99,16 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_index.html',''); 
   <div class="headertitle"><div class="title">Phase 2: Full WHATWG Codec Implementation </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md252"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md302"></a>
 Overview</h1>
 <p>Implements the complete WHATWG Encoding Standard codec set: all single-byte decoders and encoders, the UTF-8 encoder, UTF-16 codecs, and all legacy multi-byte codecs (CJK + miscellaneous). The success condition is that every encoding listed in the WHATWG spec has both decode and encode support.</p>
 <p><b>Preconditions:</b> Steps 0–16 complete, 70 tests pass on <code>main</code>. The <code>codec</code> enum has <code>utf_8</code>, <code>replacement</code>, <code>x_user_defined</code>, <code>windows_1252</code>. The single-byte decode infrastructure (<code>detail::single_byte_decode_one</code> + 128-entry table pattern) is proven.</p>
 <p><b>TDD workflow per step:</b> Branch <code>step&lt;N&gt;-&lt;slug&gt;</code> from main → RED commit (failing tests) → GREEN commit (implementation passing) → <code>make lint</code> → merge <code>--no-ff</code> → push both remotes.</p>
 <p><b>Progress:</b> See <a class="el" href="md_docs_plans_phase2_checklist.html">phase2-checklist.md</a> for current status.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md254"></a>
+<h1><a class="anchor" id="autotoc_md304"></a>
 WHATWG Encoding Inventory</h1>
-<h2><a class="anchor" id="autotoc_md255"></a>
+<h2><a class="anchor" id="autotoc_md305"></a>
 Already implemented</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -122,11 +122,11 @@ Already implemented</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">windows-1252   </td><td class="markdownTableBodyNone">16   </td><td class="markdownTableBodyNone">decode   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md256"></a>
+<h2><a class="anchor" id="autotoc_md306"></a>
 Single-byte (22 total, 1 done)</h2>
 <p>All share one algorithm with a different 128-entry lookup table. Decode: <code>table[byte - 0x80]</code>. Encode: reverse lookup (find pointer for codepoint in table, return <code>pointer + 0x80</code>).</p>
 <p>IBM866, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-5, ISO-8859-6, ISO-8859-7, ISO-8859-8, ISO-8859-8-I, ISO-8859-10, ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, KOI8-R, KOI8-U, macintosh, windows-874, windows-1250, windows-1251, windows-1252 ✓, windows-1253, windows-1254, windows-1255, windows-1256, windows-1257, windows-1258, x-mac-cyrillic.</p>
-<h2><a class="anchor" id="autotoc_md257"></a>
+<h2><a class="anchor" id="autotoc_md307"></a>
 Multi-byte (7 codecs, each with unique algorithm)</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -146,7 +146,7 @@ Multi-byte (7 codecs, each with unique algorithm)</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">EUC-KR   </td><td class="markdownTableBodyNone">~17,000   </td><td class="markdownTableBodyNone">Korean   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md258"></a>
+<h2><a class="anchor" id="autotoc_md308"></a>
 Other</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -157,73 +157,73 @@ Other</h2>
 <td class="markdownTableBodyNone">UTF-16LE   </td><td class="markdownTableBodyNone">Algorithmic, no index table   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md260"></a>
+<h1><a class="anchor" id="autotoc_md310"></a>
 Steps</h1>
-<h2><a class="anchor" id="autotoc_md261"></a>
+<h2><a class="anchor" id="autotoc_md311"></a>
 Completed</h2>
-<h3><a class="anchor" id="autotoc_md262"></a>
+<h3><a class="anchor" id="autotoc_md312"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/step14-replacement-codec.md "Step 14: `codec::replacement`"</h3>
 <p>Introduced <code>if constexpr</code> dispatch in <code>load()</code>. Trivial codec: any non-empty input → one U+FFFD.</p>
-<h3><a class="anchor" id="autotoc_md263"></a>
+<h3><a class="anchor" id="autotoc_md313"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/step15-x-user-defined.md "Step 15: `codec::x_user_defined`"</h3>
 <p>Per-byte algorithmic codec. 0x00–0x7F identity, 0x80–0xFF → U+F780–U+F7FF. Never errors.</p>
-<h3><a class="anchor" id="autotoc_md264"></a>
+<h3><a class="anchor" id="autotoc_md314"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/step16-single-byte-infra.md "Step 16: Single-byte infrastructure + `windows_1252`"</h3>
 <p>Generic table-driven <code>single_byte_decode_one()</code> + 128-entry table pattern. First concrete table.</p>
-<h2><a class="anchor" id="autotoc_md265"></a>
+<h2><a class="anchor" id="autotoc_md315"></a>
 Data tooling</h2>
-<h3><a class="anchor" id="autotoc_md266"></a>
+<h3><a class="anchor" id="autotoc_md316"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/step17-iso-8859-tables.md "Step 17: Data tooling — WHATWG index acquisition &amp; table generation"</h3>
 <p>Acquire all WHATWG index-*.txt files, write Python parser, generate <code>#embed</code>-able binary data and constexpr header fallbacks for all single-byte tables. No runtime library code.</p>
-<h2><a class="anchor" id="autotoc_md267"></a>
+<h2><a class="anchor" id="autotoc_md317"></a>
 Single-byte codec loop</h2>
-<h3><a class="anchor" id="autotoc_md268"></a>
+<h3><a class="anchor" id="autotoc_md318"></a>
 Step 18: All single-byte decoders (&lt;tt&gt;step18-all-single-byte-decode&lt;/tt&gt;)</h3>
 <p>Using the generated tables from step 17, add all 21 remaining single-byte decoders. Each codec needs: a <code>codec</code> enum value, an <code>#include</code> for its table, and dispatch branches in both <code>load()</code> functions. The hand-written <code><a class="el" href="windows__1252_8hpp.html">windows_1252.hpp</a></code> is replaced by the generated version. <b>This is a loop over 21 codecs</b>, not 2.</p>
-<h3><a class="anchor" id="autotoc_md269"></a>
+<h3><a class="anchor" id="autotoc_md319"></a>
 Step 19: Single-byte encoder infrastructure + all encoders (&lt;tt&gt;step19-single-byte-encode&lt;/tt&gt;)</h3>
 <p>The WHATWG single-byte encoder is a reverse lookup: for a codepoint, find the table pointer that maps to it, return <code>pointer + 0x80</code>. Needs a <code>single_byte_encode_one()</code> function (possibly with a compile-time-generated reverse map), <code>whatwg_encode_view</code> dispatch for all 22 single-byte codecs, and tests for representative codecs.</p>
-<h2><a class="anchor" id="autotoc_md270"></a>
+<h2><a class="anchor" id="autotoc_md320"></a>
 UTF-8 encoder</h2>
-<h3><a class="anchor" id="autotoc_md271"></a>
+<h3><a class="anchor" id="autotoc_md321"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/step18-utf8-encoder.md "Step 20: UTF-8 encoder"</h3>
 <p><code>whatwg_encode_view&lt;codec::utf_8&gt;</code>: takes <code>char32_t</code> range, yields <code>char</code> bytes. Adds <code>unicode_scalar_range</code> concept, encoder view, or_error variant, pipe closures, negative compile test.</p>
-<h2><a class="anchor" id="autotoc_md272"></a>
+<h2><a class="anchor" id="autotoc_md322"></a>
 UTF-16</h2>
-<h3><a class="anchor" id="autotoc_md273"></a>
+<h3><a class="anchor" id="autotoc_md323"></a>
 Step 21: UTF-16 decoder + encoder (&lt;tt&gt;step21-utf16&lt;/tt&gt;)</h3>
 <p>Algorithmic (no table). UTF-16BE and UTF-16LE decode and encode. Handles surrogate pairs, BOM, and byte order.</p>
-<h2><a class="anchor" id="autotoc_md274"></a>
+<h2><a class="anchor" id="autotoc_md324"></a>
 Multi-byte codecs (decode + encode per codec)</h2>
 <p>Each multi-byte codec has a unique algorithm defined in the WHATWG spec. Both decode and encode directions use the same index data. Steps are one per codec.</p>
-<h3><a class="anchor" id="autotoc_md275"></a>
+<h3><a class="anchor" id="autotoc_md325"></a>
 Step 22: GBK decode + encode (&lt;tt&gt;step22-gbk&lt;/tt&gt;)</h3>
 <p>Chinese simplified. Superset of GB2312. Two-byte encoding with lead byte 0x81–0xFE.</p>
-<h3><a class="anchor" id="autotoc_md276"></a>
+<h3><a class="anchor" id="autotoc_md326"></a>
 Step 23: gb18030 decode + encode (&lt;tt&gt;step23-gb18030&lt;/tt&gt;)</h3>
 <p>Chinese. Four-byte extension of GBK. Mandatory in PRC. Uses index + range mapping.</p>
-<h3><a class="anchor" id="autotoc_md277"></a>
+<h3><a class="anchor" id="autotoc_md327"></a>
 Step 24: Big5 decode + encode (&lt;tt&gt;step24-big5&lt;/tt&gt;)</h3>
 <p>Chinese traditional. Two-byte encoding.</p>
-<h3><a class="anchor" id="autotoc_md278"></a>
+<h3><a class="anchor" id="autotoc_md328"></a>
 Step 25: Shift_JIS decode + encode (&lt;tt&gt;step25-shift-jis&lt;/tt&gt;)</h3>
 <p>Japanese. Microsoft variant of JIS X 0208.</p>
-<h3><a class="anchor" id="autotoc_md279"></a>
+<h3><a class="anchor" id="autotoc_md329"></a>
 Step 26: EUC-JP decode + encode (&lt;tt&gt;step26-euc-jp&lt;/tt&gt;)</h3>
 <p>Japanese. Uses JIS X 0208 + JIS X 0212 indexes.</p>
-<h3><a class="anchor" id="autotoc_md280"></a>
+<h3><a class="anchor" id="autotoc_md330"></a>
 Step 27: ISO-2022-JP decode + encode (&lt;tt&gt;step27-iso-2022-jp&lt;/tt&gt;)</h3>
 <p>Japanese. Stateful encoding using escape sequences to switch character sets.</p>
-<h3><a class="anchor" id="autotoc_md281"></a>
+<h3><a class="anchor" id="autotoc_md331"></a>
 Step 28: EUC-KR decode + encode (&lt;tt&gt;step28-euc-kr&lt;/tt&gt;)</h3>
 <p>Korean. Two-byte encoding.</p>
-<h2><a class="anchor" id="autotoc_md282"></a>
+<h2><a class="anchor" id="autotoc_md332"></a>
 Composition</h2>
-<h3><a class="anchor" id="autotoc_md283"></a>
+<h3><a class="anchor" id="autotoc_md333"></a>
 Step 29: Round-trip composition (&lt;tt&gt;step29-roundtrip&lt;/tt&gt;)</h3>
 <p>Comprehensive round-trip tests for all implemented codecs. Validates that decode→encode is identity for valid input. First test of view composition across the full codec set.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md285"></a>
+<h1><a class="anchor" id="autotoc_md335"></a>
 Key Architecture Decisions</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">

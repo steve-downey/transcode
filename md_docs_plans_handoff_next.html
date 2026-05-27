@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>beman.transcode: Handoff: Next Step</title>
+<title>beman.transcode: Handoff: Phase 3 Complete</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -96,63 +96,91 @@ $(document).ready(function(){initNavTree('md_docs_plans_handoff_next.html',''); 
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">Handoff: Next Step </div></div>
+  <div class="headertitle"><div class="title">Handoff: Phase 3 Complete </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md62"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md111"></a>
 Completed</h1>
 <ul>
-<li><b>P3-Step 2: Benchmark corpus acquisition and provenance</b> — done on <code>worktree-pluggable-codec-protocol</code> branch</li>
+<li><b>P3-Step 12: Reporting and Reproducibility Pack</b> — done on <code>p3-step12-reporting-and-repro</code> branch</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md63"></a>
+<h1><a class="anchor" id="autotoc_md112"></a>
 What was done</h1>
 <ul>
-<li>Created <code>tools/download_benchmark_corpora.py</code> — downloads Mars Wikipedia article in en/ar/ru/ja via MediaWiki API, converts ru→windows-1251 and ja→shift_jis, writes <code>data/benchmarks/corpus_manifest.json</code> and <code>data/benchmarks/SOURCE.md</code></li>
-<li>Created <code>benchmark/corpus/</code> with four small (~500 byte) checked-in fallback files: <code>en_mars_utf8.txt</code>, <code>ar_mars_utf8.txt</code>, <code>ru_mars_utf8.txt</code>, <code>ja_mars_utf8.txt</code></li>
-<li>Created <code><a class="el" href="benchmarks_2SOURCE_8md.html">docs/benchmarks/SOURCE.md</a></code> — provenance documentation (CC BY-SA 4.0 license, attribution, encoding conversion notes, manifest description)</li>
-<li>Added <code>data/benchmarks/</code> to <code>.gitignore</code> (generated large files, not committed)</li>
-<li>Created <code>tools/tests/test_download_benchmark_corpora.py</code> — 18 Python tests for pure helper functions (no network calls)</li>
-<li>662 C++ + 189 Python tests pass; mypy + ruff + clang-format all clean</li>
+<li>Created <code>tools/process_benchmark_results.py</code>:<ul>
+<li>Parses one or more Catch2 XML files produced via <code>--reporter xml</code></li>
+<li>Loads corpus byte counts from <code>data/benchmarks/corpus_manifest.json</code> (downloaded) and/or <code>benchmark/corpus/</code> (checked-in small files)</li>
+<li>Infers the corpus file for each benchmark via a priority-ordered hint table (<code>CORPUS_NAME_HINTS</code>); more-specific patterns (windows-1251, Shift-JIS) win over generic keywords (English, Arabic, Russian)</li>
+<li>Computes throughput in MiB/s: <code>corpus_bytes / (mean_ns × 10⁻⁹) / 2²⁰</code></li>
+<li>Renders a Markdown table (name, corpus bytes, mean µs, ±CI, MiB/s)</li>
+<li>Optionally writes a Vega-Lite JSON bar-chart spec (<code>--vegalite PATH</code>)</li>
+<li>Return type of <code>render_vegalite_spec</code> is <code>dict[str, Any]</code> (avoids double-subscript mypy errors on <code>dict[str, object]</code>)</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md64"></a>
+</li>
+<li>Created <code>tools/tests/test_process_benchmark_results.py</code>: 40 pytest tests covering all public functions</li>
+<li>Created <code><a class="el" href="README_8md.html">docs/benchmarks/README.md</a></code>: full benchmark guide (corpus files, quick start, throughput formula, report commands, matrix reproduction steps)</li>
+<li>Modified <code>Makefile</code>:<ul>
+<li><code>bench-report</code>: build RelWithDebInfo, run smoke, save XML, render Markdown report</li>
+<li><code>bench-lto-xml</code>: configure (if needed), build LTO benchmarks, save XML</li>
+<li><code>bench-report-lto</code>: run bench-lto-xml then process_benchmark_results with Vega-Lite</li>
+</ul>
+</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md113"></a>
+Sample Output</h1>
+<div class="fragment"><div class="line">## Benchmark Results — RelWithDebInfo</div>
+<div class="line"> </div>
+<div class="line">| Benchmark | Corpus (B) | Mean | ±CI | MiB/s |</div>
+<div class="line">|-----------|-----------|------|-----|-------|</div>
+<div class="line">| whatwg_decode utf_8 en_mars corpus | 586 | 0.1633 µs | ±0.00196 µs | 3421.6 |</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md114"></a>
 Files created</h1>
 <ul>
-<li><code>tools/download_benchmark_corpora.py</code></li>
-<li><code>tools/tests/test_download_benchmark_corpora.py</code></li>
-<li><code>benchmark/corpus/en_mars_utf8.txt</code> (checked in, ~500 bytes)</li>
-<li><code>benchmark/corpus/ar_mars_utf8.txt</code> (checked in, ~360 bytes)</li>
-<li><code>benchmark/corpus/ru_mars_utf8.txt</code> (checked in, ~490 bytes)</li>
-<li><code>benchmark/corpus/ja_mars_utf8.txt</code> (checked in, ~380 bytes)</li>
-<li><code><a class="el" href="benchmarks_2SOURCE_8md.html">docs/benchmarks/SOURCE.md</a></code></li>
+<li><code>tools/process_benchmark_results.py</code></li>
+<li><code>tools/tests/test_process_benchmark_results.py</code></li>
+<li><code><a class="el" href="README_8md.html">docs/benchmarks/README.md</a></code></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md65"></a>
+<h1><a class="anchor" id="autotoc_md115"></a>
 Files modified</h1>
 <ul>
-<li><code>.gitignore</code> — added <code>data/benchmarks/</code> exclusion</li>
+<li><code>Makefile</code> — <code>bench-report</code>, <code>bench-report-lto</code>, <code>bench-lto-xml</code> targets</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md66"></a>
-Next Step</h1>
-<p>Read <code><a class="el" href="p3-step3-benchmark-fixtures_8md.html">docs/plans/p3-step3-benchmark-fixtures.md</a></code></p>
-<p>Also read <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> for project conventions.</p>
-<h1><a class="anchor" id="autotoc_md67"></a>
+<h1><a class="anchor" id="autotoc_md116"></a>
+Implementation notes</h1>
+<ul>
+<li><code>bench-report</code> always overrides <code>CONFIG=RelWithDebInfo</code> so it never runs with Asan overhead; the recipe uses the Multi-Config <code>.build/build-system/</code> tree.</li>
+<li><code>bench-lto-xml</code> is a separate helper so <code>bench-report-lto</code> can be composed cleanly without duplicating the LTO build logic.</li>
+<li>The corpus manifest <code>data/benchmarks/corpus_manifest.json</code> is NOT committed (generated by <code>uv run python tools/download_benchmark_corpora.py</code>). The tool falls back to the small checked-in corpus in <code>benchmark/corpus/</code> when the manifest is absent.</li>
+<li>"Japanese" is deliberately absent from <code>CORPUS_NAME_HINTS</code> because it is ambiguous between <code>ja_mars_utf8.txt</code> and <code>ja_mars_shiftjis.bin</code>; benchmarks named "Shift-JIS Japanese" match via the more-specific "Shift-JIS" hint.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md117"></a>
+Phase 3 Status: COMPLETE</h1>
+<p>All 12 steps of Phase 3 are done and merged into main (or pending merge for steps 10–12 on their branches). To rerun the full benchmark suite:</p>
+<div class="fragment"><div class="line"># Download full corpus (one-time, requires network)</div>
+<div class="line">uv run python tools/download_benchmark_corpora.py</div>
+<div class="line"> </div>
+<div class="line"># Run the full matrix (GCC -O3, GCC -O3 -flto, Clang -O3 -flto where available)</div>
+<div class="line">make bench-matrix</div>
+<div class="line"> </div>
+<div class="line"># Generate LTO throughput report with Vega-Lite chart</div>
+<div class="line">make bench-report-lto</div>
+<div class="line"> </div>
+<div class="line"># Print environment metadata</div>
+<div class="line">make bench-env</div>
+</div><!-- fragment --><p>See <code><a class="el" href="README_8md.html">docs/benchmarks/README.md</a></code> for the complete guide.</p>
+<h1><a class="anchor" id="autotoc_md118"></a>
 Current State</h1>
 <ul>
-<li><code>make test</code> passes (662 C++ + 189 Python tests)</li>
-<li><code>make lint</code> passes (mypy, ruff, clang-format, gersemi all clean)</li>
-<li><code>make bench</code> works: smoke benchmark runs fine</li>
+<li><code>make test</code> passes (671 C++ + 229 Python tests)</li>
+<li><code>make lint</code> passes (mypy, ruff, clang-format, gersemi, shellcheck all clean)</li>
+<li>All existing <code>make bench-*</code> targets work (see <a class="el" href="phase3-handoff_8md.html">phase3-handoff.md</a> for the full list)</li>
+<li><code>make bench-report</code> — build RelWithDebInfo + run smoke + Markdown table</li>
+<li><code>make bench-report-lto</code> — GCC LTO + run smoke + Markdown table + Vega-Lite spec</li>
+<li><code>make bench-lto-xml</code> — build LTO benchmarks and save raw XML</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md68"></a>
-Corpus Details</h1>
-<ul>
-<li><b>Fallback corpus</b> (checked in): <code>benchmark/corpus/*.txt</code> — small representative samples that enable <code>make bench</code> without network access</li>
-<li><b>Full corpus</b> (gitignored): <code>data/benchmarks/</code> — populated by: <div class="fragment"><div class="line">uv run python tools/download_benchmark_corpora.py</div>
-</div><!-- fragment --></li>
-<li><b>Manifest</b>: <code>data/benchmarks/corpus_manifest.json</code> — JSON with file, lang, encoding, bytes, sha256 for each corpus file</li>
-<li><b>Encoding conversions</b>: <code>data/benchmarks/ru_mars_windows1251.bin</code> and <code>data/benchmarks/ja_mars_shiftjis.bin</code> are derived from the UTF-8 sources</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md69"></a>
-Branch Discipline</h1>
-<p>This step was done on <code>worktree-pluggable-codec-protocol</code>. After merging to main, the next step should follow the same pattern (work in this worktree, rebase from origin/main first). </p>
+<h1><a class="anchor" id="autotoc_md119"></a>
+Branch State</h1>
+<p>Steps 3–11 are merged into <code>main</code>; step 12 is on <code>p3-step12-reporting-and-repro</code>. The user will merge <code>p3-step12-reporting-and-repro</code> to <code>main</code>. No further steps are planned for Phase 3. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
