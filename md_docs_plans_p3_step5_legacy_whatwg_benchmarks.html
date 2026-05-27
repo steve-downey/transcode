@@ -160,7 +160,7 @@ pluggable_codec_benchmarks.bench.cpp</h2>
 <div class="line">BENCHMARK(<span class="stringliteral">&quot;pluggable table_codec: 4K upper-half&quot;</span>) {</div>
 <div class="line">    <span class="keywordflow">return</span> count_elements(std::span&lt;const char&gt;(synthetic) | <a class="code hl_function" href="namespacebeman_1_1transcoding.html#a89135d782fa6c59a4fabb26ab8fdc8a8">decode</a>(latin1_codec{}));</div>
 <div class="line">};</div>
-<div class="ttc" id="anamespacebeman_1_1transcoding_html_a89135d782fa6c59a4fabb26ab8fdc8a8"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a89135d782fa6c59a4fabb26ab8fdc8a8">beman::transcoding::decode</a></div><div class="ttdeci">constexpr decode_closure&lt; Codec &gt; decode(Codec codec={})</div><div class="ttdef"><b>Definition:</b> decode_view.hpp:351</div></div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_html_a89135d782fa6c59a4fabb26ab8fdc8a8"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a89135d782fa6c59a4fabb26ab8fdc8a8">beman::transcoding::decode</a></div><div class="ttdeci">constexpr decode_closure&lt; Codec &gt; decode(Codec codec={})</div><div class="ttdef"><b>Definition:</b> decode_view.hpp:355</div></div>
 </div><!-- fragment --><p>Compare against equivalent WhatWG codec to prove zero overhead: </p><div class="fragment"><div class="line">BENCHMARK(<span class="stringliteral">&quot;whatwg iso-8859-15: 4K upper-half&quot;</span>) {</div>
 <div class="line">    <span class="keywordflow">return</span> count_elements(std::span&lt;const char&gt;(synthetic) | whatwg_decode&lt;codec::iso_8859_15&gt;);</div>
 <div class="line">};</div>

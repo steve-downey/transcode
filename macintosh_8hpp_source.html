@@ -106,30 +106,33 @@ $(document).ready(function(){initNavTree('macintosh_8hpp_source.html',''); initR
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_MACINTOSH_HPP</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_MACINTOSH_HPP</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="keyword">namespace </span>beman::transcoding::detail::tables {</div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;<a class="code" href="config_8hpp.html">beman/transcode/config.hpp</a>&gt;</span></div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <span class="keywordtype">char32_t</span> macintosh[128] = {</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    0x00C4, 0x00C5, 0x00C7, 0x00C9, 0x00D1, 0x00D6, 0x00DC, 0x00E1, <span class="comment">// 80–87</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    0x00E0, 0x00E2, 0x00E4, 0x00E3, 0x00E5, 0x00E7, 0x00E9, 0x00E8, <span class="comment">// 88–8F</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    0x00EA, 0x00EB, 0x00ED, 0x00EC, 0x00EE, 0x00EF, 0x00F1, 0x00F3, <span class="comment">// 90–97</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    0x00F2, 0x00F4, 0x00F6, 0x00F5, 0x00FA, 0x00F9, 0x00FB, 0x00FC, <span class="comment">// 98–9F</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    0x2020, 0x00B0, 0x00A2, 0x00A3, 0x00A7, 0x2022, 0x00B6, 0x00DF, <span class="comment">// A0–A7</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    0x00AE, 0x00A9, 0x2122, 0x00B4, 0x00A8, 0x2260, 0x00C6, 0x00D8, <span class="comment">// A8–AF</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    0x221E, 0x00B1, 0x2264, 0x2265, 0x00A5, 0x00B5, 0x2202, 0x2211, <span class="comment">// B0–B7</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    0x220F, 0x03C0, 0x222B, 0x00AA, 0x00BA, 0x03A9, 0x00E6, 0x00F8, <span class="comment">// B8–BF</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    0x00BF, 0x00A1, 0x00AC, 0x221A, 0x0192, 0x2248, 0x2206, 0x00AB, <span class="comment">// C0–C7</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    0x00BB, 0x2026, 0x00A0, 0x00C0, 0x00C3, 0x00D5, 0x0152, 0x0153, <span class="comment">// C8–CF</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    0x2013, 0x2014, 0x201C, 0x201D, 0x2018, 0x2019, 0x00F7, 0x25CA, <span class="comment">// D0–D7</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    0x00FF, 0x0178, 0x2044, 0x20AC, 0x2039, 0x203A, 0xFB01, 0xFB02, <span class="comment">// D8–DF</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    0x2021, 0x00B7, 0x201A, 0x201E, 0x2030, 0x00C2, 0x00CA, 0x00C1, <span class="comment">// E0–E7</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    0x00CB, 0x00C8, 0x00CD, 0x00CE, 0x00CF, 0x00CC, 0x00D3, 0x00D4, <span class="comment">// E8–EF</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    0xF8FF, 0x00D2, 0x00DA, 0x00DB, 0x00D9, 0x0131, 0x02C6, 0x02DC, <span class="comment">// F0–F7</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    0x00AF, 0x02D8, 0x02D9, 0x02DA, 0x00B8, 0x02DD, 0x02DB, 0x02C7, <span class="comment">// F8–FF</span></div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>};</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>} <span class="comment">// namespace beman::transcoding::detail::tables</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>beman::transcoding::detail::tables {</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <span class="keywordtype">char32_t</span> macintosh[128] = {</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    0x00C4, 0x00C5, 0x00C7, 0x00C9, 0x00D1, 0x00D6, 0x00DC, 0x00E1, <span class="comment">// 80–87</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    0x00E0, 0x00E2, 0x00E4, 0x00E3, 0x00E5, 0x00E7, 0x00E9, 0x00E8, <span class="comment">// 88–8F</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    0x00EA, 0x00EB, 0x00ED, 0x00EC, 0x00EE, 0x00EF, 0x00F1, 0x00F3, <span class="comment">// 90–97</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    0x00F2, 0x00F4, 0x00F6, 0x00F5, 0x00FA, 0x00F9, 0x00FB, 0x00FC, <span class="comment">// 98–9F</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    0x2020, 0x00B0, 0x00A2, 0x00A3, 0x00A7, 0x2022, 0x00B6, 0x00DF, <span class="comment">// A0–A7</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    0x00AE, 0x00A9, 0x2122, 0x00B4, 0x00A8, 0x2260, 0x00C6, 0x00D8, <span class="comment">// A8–AF</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    0x221E, 0x00B1, 0x2264, 0x2265, 0x00A5, 0x00B5, 0x2202, 0x2211, <span class="comment">// B0–B7</span></div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    0x220F, 0x03C0, 0x222B, 0x00AA, 0x00BA, 0x03A9, 0x00E6, 0x00F8, <span class="comment">// B8–BF</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    0x00BF, 0x00A1, 0x00AC, 0x221A, 0x0192, 0x2248, 0x2206, 0x00AB, <span class="comment">// C0–C7</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    0x00BB, 0x2026, 0x00A0, 0x00C0, 0x00C3, 0x00D5, 0x0152, 0x0153, <span class="comment">// C8–CF</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    0x2013, 0x2014, 0x201C, 0x201D, 0x2018, 0x2019, 0x00F7, 0x25CA, <span class="comment">// D0–D7</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    0x00FF, 0x0178, 0x2044, 0x20AC, 0x2039, 0x203A, 0xFB01, 0xFB02, <span class="comment">// D8–DF</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    0x2021, 0x00B7, 0x201A, 0x201E, 0x2030, 0x00C2, 0x00CA, 0x00C1, <span class="comment">// E0–E7</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    0x00CB, 0x00C8, 0x00CD, 0x00CE, 0x00CF, 0x00CC, 0x00D3, 0x00D4, <span class="comment">// E8–EF</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    0xF8FF, 0x00D2, 0x00DA, 0x00DB, 0x00D9, 0x0131, 0x02C6, 0x02DC, <span class="comment">// F0–F7</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    0x00AF, 0x02D8, 0x02D9, 0x02DA, 0x00B8, 0x02DD, 0x02DB, 0x02C7, <span class="comment">// F8–FF</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>};</div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_MACINTOSH_HPP</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>} <span class="comment">// namespace beman::transcoding::detail::tables</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_MACINTOSH_HPP</span></div>
+<div class="ttc" id="aconfig_8hpp_html"><div class="ttname"><a href="config_8hpp.html">config.hpp</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

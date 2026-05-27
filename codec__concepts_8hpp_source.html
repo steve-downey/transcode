@@ -104,43 +104,48 @@ $(document).ready(function(){initNavTree('codec__concepts_8hpp_source.html','');
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_CONCEPTS_HPP</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#define INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_CONCEPTS_HPP</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;<a class="code" href="codec__result_8hpp.html">beman/transcode/detail/codec_result.hpp</a>&gt;</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;<a class="code" href="config_8hpp.html">beman/transcode/config.hpp</a>&gt;</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;concepts&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;optional&gt;</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacebeman_1_1transcoding.html">beman::transcoding</a> {</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="conceptbeman_1_1transcoding_1_1decode__codec.html">   14</a></span><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1decode__codec.html">decode_codec</a> =</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    std::semiregular&lt;C&gt; &amp;&amp; <span class="keyword">requires</span>(C&amp; c, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>*&amp; iter, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* sentinel) {</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>        { c.decode_one(iter, sentinel) } -&gt; std::same_as&lt;decode_result&gt;;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    };</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="conceptbeman_1_1transcoding_1_1random__access__decode__codec__type.html">   20</a></span><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1random__access__decode__codec__type.html">random_access_decode_codec_type</a> = <a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1decode__codec.html">decode_codec&lt;C&gt;</a> &amp;&amp; <span class="keyword">requires</span>(<span class="keyword">const</span> C&amp; c, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> byte) {</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    { c.decode_byte(<span class="keywordtype">byte</span>) } -&gt; std::same_as&lt;char32_t&gt;;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>};</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="conceptbeman_1_1transcoding_1_1encode__codec.html">   25</a></span><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1encode__codec.html">encode_codec</a> = std::semiregular&lt;C&gt; &amp;&amp; <span class="keyword">requires</span>(C&amp; c, <span class="keywordtype">char32_t</span> cp) {</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    { c.encode_one(cp) } -&gt; std::same_as&lt;encode_result&gt;;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>};</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="conceptbeman_1_1transcoding_1_1flushable__decode__codec.html">   30</a></span><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1flushable__decode__codec.html">flushable_decode_codec</a> = <a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1decode__codec.html">decode_codec&lt;C&gt;</a> &amp;&amp; <span class="keyword">requires</span>(C&amp; c) {</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    { c.flush() } -&gt; std::same_as&lt;std::optional&lt;decode_result&gt;&gt;;</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>};</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>} <span class="comment">// namespace beman::transcoding</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_CONCEPTS_HPP</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;<a class="code" href="codec__result_8hpp.html">beman/transcode/detail/codec_result.hpp</a>&gt;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#if !BEMAN_TRANSCODE_USE_MODULES()</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">    #include &lt;concepts&gt;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">    #include &lt;optional&gt;</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacebeman_1_1transcoding.html">beman::transcoding</a> {</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="conceptbeman_1_1transcoding_1_1decode__codec.html">   18</a></span><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1decode__codec.html">decode_codec</a> =</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    std::semiregular&lt;C&gt; &amp;&amp; <span class="keyword">requires</span>(C&amp; c, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>*&amp; iter, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* sentinel) {</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>        { c.decode_one(iter, sentinel) } -&gt; std::same_as&lt;decode_result&gt;;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    };</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="conceptbeman_1_1transcoding_1_1random__access__decode__codec__type.html">   24</a></span><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1random__access__decode__codec__type.html">random_access_decode_codec_type</a> = <a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1decode__codec.html">decode_codec&lt;C&gt;</a> &amp;&amp; <span class="keyword">requires</span>(<span class="keyword">const</span> C&amp; c, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> byte) {</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    { c.decode_byte(<span class="keywordtype">byte</span>) } -&gt; std::same_as&lt;char32_t&gt;;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>};</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="conceptbeman_1_1transcoding_1_1encode__codec.html">   29</a></span><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1encode__codec.html">encode_codec</a> = std::semiregular&lt;C&gt; &amp;&amp; <span class="keyword">requires</span>(C&amp; c, <span class="keywordtype">char32_t</span> cp) {</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    { c.encode_one(cp) } -&gt; std::same_as&lt;encode_result&gt;;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>};</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="conceptbeman_1_1transcoding_1_1flushable__decode__codec.html">   34</a></span><span class="keyword">concept </span><a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1flushable__decode__codec.html">flushable_decode_codec</a> = <a class="code hl_concept" href="conceptbeman_1_1transcoding_1_1decode__codec.html">decode_codec&lt;C&gt;</a> &amp;&amp; <span class="keyword">requires</span>(C&amp; c) {</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    { c.flush() } -&gt; std::same_as&lt;std::optional&lt;decode_result&gt;&gt;;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>};</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>} <span class="comment">// namespace beman::transcoding</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_CONCEPTS_HPP</span></div>
 <div class="ttc" id="acodec__result_8hpp_html"><div class="ttname"><a href="codec__result_8hpp.html">codec_result.hpp</a></div></div>
-<div class="ttc" id="aconceptbeman_1_1transcoding_1_1decode__codec_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1decode__codec.html">beman::transcoding::decode_codec</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:14</div></div>
-<div class="ttc" id="aconceptbeman_1_1transcoding_1_1encode__codec_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1encode__codec.html">beman::transcoding::encode_codec</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:25</div></div>
-<div class="ttc" id="aconceptbeman_1_1transcoding_1_1flushable__decode__codec_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1flushable__decode__codec.html">beman::transcoding::flushable_decode_codec</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:30</div></div>
-<div class="ttc" id="aconceptbeman_1_1transcoding_1_1random__access__decode__codec__type_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1random__access__decode__codec__type.html">beman::transcoding::random_access_decode_codec_type</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:20</div></div>
-<div class="ttc" id="anamespacebeman_1_1transcoding_html"><div class="ttname"><a href="namespacebeman_1_1transcoding.html">beman::transcoding</a></div><div class="ttdef"><b>Definition:</b> decode_view.hpp:14</div></div>
+<div class="ttc" id="aconceptbeman_1_1transcoding_1_1decode__codec_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1decode__codec.html">beman::transcoding::decode_codec</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:18</div></div>
+<div class="ttc" id="aconceptbeman_1_1transcoding_1_1encode__codec_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1encode__codec.html">beman::transcoding::encode_codec</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:29</div></div>
+<div class="ttc" id="aconceptbeman_1_1transcoding_1_1flushable__decode__codec_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1flushable__decode__codec.html">beman::transcoding::flushable_decode_codec</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:34</div></div>
+<div class="ttc" id="aconceptbeman_1_1transcoding_1_1random__access__decode__codec__type_html"><div class="ttname"><a href="conceptbeman_1_1transcoding_1_1random__access__decode__codec__type.html">beman::transcoding::random_access_decode_codec_type</a></div><div class="ttdef"><b>Definition:</b> codec_concepts.hpp:24</div></div>
+<div class="ttc" id="aconfig_8hpp_html"><div class="ttname"><a href="config_8hpp.html">config.hpp</a></div></div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_html"><div class="ttname"><a href="namespacebeman_1_1transcoding.html">beman::transcoding</a></div><div class="ttdef"><b>Definition:</b> decode_view.hpp:18</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

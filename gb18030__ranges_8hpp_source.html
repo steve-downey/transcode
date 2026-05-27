@@ -106,57 +106,62 @@ $(document).ready(function(){initNavTree('gb18030__ranges_8hpp_source.html','');
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_GB18030_RANGES_HPP</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_GB18030_RANGES_HPP</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;<a class="code" href="config_8hpp.html">beman/transcode/config.hpp</a>&gt;</span></div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>beman::transcoding::detail::tables {</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">struct </span>gb18030_range {</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    std::uint32_t pointer;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    <span class="keywordtype">char32_t</span>      codepoint;</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>};</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> gb18030_range gb18030_ranges[207] = {</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    {0u, 0x0080u},     {36u, 0x00A5u},    {38u, 0x00A9u},     {45u, 0x00B2u},    {50u, 0x00B8u},    {81u, 0x00D8u},</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    {89u, 0x00E2u},    {95u, 0x00EBu},    {96u, 0x00EEu},     {100u, 0x00F4u},   {103u, 0x00F8u},   {104u, 0x00FBu},</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    {105u, 0x00FDu},   {109u, 0x0102u},   {126u, 0x0114u},    {133u, 0x011Cu},   {148u, 0x012Cu},   {172u, 0x0145u},</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    {175u, 0x0149u},   {179u, 0x014Eu},   {208u, 0x016Cu},    {306u, 0x01CFu},   {307u, 0x01D1u},   {308u, 0x01D3u},</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    {309u, 0x01D5u},   {310u, 0x01D7u},   {311u, 0x01D9u},    {312u, 0x01DBu},   {313u, 0x01DDu},   {341u, 0x01FAu},</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    {428u, 0x0252u},   {443u, 0x0262u},   {544u, 0x02C8u},    {545u, 0x02CCu},   {558u, 0x02DAu},   {741u, 0x03A2u},</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    {742u, 0x03AAu},   {749u, 0x03C2u},   {750u, 0x03CAu},    {805u, 0x0402u},   {819u, 0x0450u},   {820u, 0x0452u},</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    {7922u, 0x2011u},  {7924u, 0x2017u},  {7925u, 0x201Au},   {7927u, 0x201Eu},  {7934u, 0x2027u},  {7943u, 0x2031u},</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    {7944u, 0x2034u},  {7945u, 0x2036u},  {7950u, 0x203Cu},   {8062u, 0x20ADu},  {8148u, 0x2104u},  {8149u, 0x2106u},</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    {8152u, 0x210Au},  {8164u, 0x2117u},  {8174u, 0x2122u},   {8236u, 0x216Cu},  {8240u, 0x217Au},  {8262u, 0x2194u},</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    {8264u, 0x219Au},  {8374u, 0x2209u},  {8380u, 0x2210u},   {8381u, 0x2212u},  {8384u, 0x2216u},  {8388u, 0x221Bu},</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    {8390u, 0x2221u},  {8392u, 0x2224u},  {8393u, 0x2226u},   {8394u, 0x222Cu},  {8396u, 0x222Fu},  {8401u, 0x2238u},</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    {8406u, 0x223Eu},  {8416u, 0x2249u},  {8419u, 0x224Du},   {8424u, 0x2253u},  {8437u, 0x2262u},  {8439u, 0x2268u},</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    {8445u, 0x2270u},  {8482u, 0x2296u},  {8485u, 0x229Au},   {8496u, 0x22A6u},  {8521u, 0x22C0u},  {8603u, 0x2313u},</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    {8936u, 0x246Au},  {8946u, 0x249Cu},  {9046u, 0x254Cu},   {9050u, 0x2574u},  {9063u, 0x2590u},  {9066u, 0x2596u},</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    {9076u, 0x25A2u},  {9092u, 0x25B4u},  {9100u, 0x25BEu},   {9108u, 0x25C8u},  {9111u, 0x25CCu},  {9113u, 0x25D0u},</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    {9131u, 0x25E6u},  {9162u, 0x2607u},  {9164u, 0x260Au},   {9218u, 0x2641u},  {9219u, 0x2643u},  {11329u, 0x2E82u},</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    {11331u, 0x2E85u}, {11334u, 0x2E89u}, {11336u, 0x2E8Du},  {11346u, 0x2E98u}, {11361u, 0x2EA8u}, {11363u, 0x2EABu},</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    {11366u, 0x2EAFu}, {11370u, 0x2EB4u}, {11372u, 0x2EB8u},  {11375u, 0x2EBCu}, {11389u, 0x2ECBu}, {11682u, 0x2FFCu},</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    {11686u, 0x3004u}, {11687u, 0x3018u}, {11692u, 0x301Fu},  {11694u, 0x302Au}, {11714u, 0x303Fu}, {11716u, 0x3094u},</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    {11723u, 0x309Fu}, {11725u, 0x30F7u}, {11730u, 0x30FFu},  {11736u, 0x312Au}, {11982u, 0x322Au}, {11989u, 0x3232u},</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    {12102u, 0x32A4u}, {12336u, 0x3390u}, {12348u, 0x339Fu},  {12350u, 0x33A2u}, {12384u, 0x33C5u}, {12393u, 0x33CFu},</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    {12395u, 0x33D3u}, {12397u, 0x33D6u}, {12510u, 0x3448u},  {12553u, 0x3474u}, {12851u, 0x359Fu}, {12962u, 0x360Fu},</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    {12973u, 0x361Bu}, {13738u, 0x3919u}, {13823u, 0x396Fu},  {13919u, 0x39D1u}, {13933u, 0x39E0u}, {14080u, 0x3A74u},</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    {14298u, 0x3B4Fu}, {14585u, 0x3C6Fu}, {14698u, 0x3CE1u},  {15583u, 0x4057u}, {15847u, 0x4160u}, {16318u, 0x4338u},</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    {16434u, 0x43ADu}, {16438u, 0x43B2u}, {16481u, 0x43DEu},  {16729u, 0x44D7u}, {17102u, 0x464Du}, {17122u, 0x4662u},</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    {17315u, 0x4724u}, {17320u, 0x472Au}, {17402u, 0x477Du},  {17418u, 0x478Eu}, {17859u, 0x4948u}, {17909u, 0x497Bu},</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    {17911u, 0x497Eu}, {17915u, 0x4984u}, {17916u, 0x4987u},  {17936u, 0x499Cu}, {17939u, 0x49A0u}, {17961u, 0x49B8u},</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    {18664u, 0x4C78u}, {18703u, 0x4CA4u}, {18814u, 0x4D1Au},  {18962u, 0x4DAFu}, {19043u, 0x9FA6u}, {33469u, 0xE76Cu},</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    {33470u, 0xE7C8u}, {33471u, 0xE7E7u}, {33484u, 0xE815u},  {33485u, 0xE819u}, {33490u, 0xE81Fu}, {33497u, 0xE827u},</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    {33501u, 0xE82Du}, {33505u, 0xE833u}, {33513u, 0xE83Cu},  {33520u, 0xE844u}, {33536u, 0xE856u}, {33550u, 0xE865u},</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    {37845u, 0xF92Du}, {37921u, 0xF97Au}, {37948u, 0xF996u},  {38029u, 0xF9E8u}, {38038u, 0xF9F2u}, {38064u, 0xFA10u},</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    {38065u, 0xFA12u}, {38066u, 0xFA15u}, {38069u, 0xFA19u},  {38075u, 0xFA22u}, {38076u, 0xFA25u}, {38078u, 0xFA2Au},</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    {39108u, 0xFE32u}, {39109u, 0xFE45u}, {39113u, 0xFE53u},  {39114u, 0xFE58u}, {39115u, 0xFE67u}, {39116u, 0xFE6Cu},</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    {39265u, 0xFF5Fu}, {39394u, 0xFFE6u}, {189000u, 0x10000u}};</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <span class="keywordtype">int</span> gb18030_ranges_count = 207;</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>} <span class="comment">// namespace beman::transcoding::detail::tables</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#if !BEMAN_TRANSCODE_USE_MODULES()</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">    #include &lt;cstdint&gt;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">namespace </span>beman::transcoding::detail::tables {</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">struct </span>gb18030_range {</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    std::uint32_t pointer;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <span class="keywordtype">char32_t</span>      codepoint;</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>};</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> gb18030_range gb18030_ranges[207] = {</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    {0u, 0x0080u},     {36u, 0x00A5u},    {38u, 0x00A9u},     {45u, 0x00B2u},    {50u, 0x00B8u},    {81u, 0x00D8u},</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    {89u, 0x00E2u},    {95u, 0x00EBu},    {96u, 0x00EEu},     {100u, 0x00F4u},   {103u, 0x00F8u},   {104u, 0x00FBu},</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    {105u, 0x00FDu},   {109u, 0x0102u},   {126u, 0x0114u},    {133u, 0x011Cu},   {148u, 0x012Cu},   {172u, 0x0145u},</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    {175u, 0x0149u},   {179u, 0x014Eu},   {208u, 0x016Cu},    {306u, 0x01CFu},   {307u, 0x01D1u},   {308u, 0x01D3u},</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    {309u, 0x01D5u},   {310u, 0x01D7u},   {311u, 0x01D9u},    {312u, 0x01DBu},   {313u, 0x01DDu},   {341u, 0x01FAu},</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    {428u, 0x0252u},   {443u, 0x0262u},   {544u, 0x02C8u},    {545u, 0x02CCu},   {558u, 0x02DAu},   {741u, 0x03A2u},</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    {742u, 0x03AAu},   {749u, 0x03C2u},   {750u, 0x03CAu},    {805u, 0x0402u},   {819u, 0x0450u},   {820u, 0x0452u},</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    {7922u, 0x2011u},  {7924u, 0x2017u},  {7925u, 0x201Au},   {7927u, 0x201Eu},  {7934u, 0x2027u},  {7943u, 0x2031u},</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    {7944u, 0x2034u},  {7945u, 0x2036u},  {7950u, 0x203Cu},   {8062u, 0x20ADu},  {8148u, 0x2104u},  {8149u, 0x2106u},</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    {8152u, 0x210Au},  {8164u, 0x2117u},  {8174u, 0x2122u},   {8236u, 0x216Cu},  {8240u, 0x217Au},  {8262u, 0x2194u},</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    {8264u, 0x219Au},  {8374u, 0x2209u},  {8380u, 0x2210u},   {8381u, 0x2212u},  {8384u, 0x2216u},  {8388u, 0x221Bu},</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    {8390u, 0x2221u},  {8392u, 0x2224u},  {8393u, 0x2226u},   {8394u, 0x222Cu},  {8396u, 0x222Fu},  {8401u, 0x2238u},</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    {8406u, 0x223Eu},  {8416u, 0x2249u},  {8419u, 0x224Du},   {8424u, 0x2253u},  {8437u, 0x2262u},  {8439u, 0x2268u},</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    {8445u, 0x2270u},  {8482u, 0x2296u},  {8485u, 0x229Au},   {8496u, 0x22A6u},  {8521u, 0x22C0u},  {8603u, 0x2313u},</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    {8936u, 0x246Au},  {8946u, 0x249Cu},  {9046u, 0x254Cu},   {9050u, 0x2574u},  {9063u, 0x2590u},  {9066u, 0x2596u},</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    {9076u, 0x25A2u},  {9092u, 0x25B4u},  {9100u, 0x25BEu},   {9108u, 0x25C8u},  {9111u, 0x25CCu},  {9113u, 0x25D0u},</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    {9131u, 0x25E6u},  {9162u, 0x2607u},  {9164u, 0x260Au},   {9218u, 0x2641u},  {9219u, 0x2643u},  {11329u, 0x2E82u},</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    {11331u, 0x2E85u}, {11334u, 0x2E89u}, {11336u, 0x2E8Du},  {11346u, 0x2E98u}, {11361u, 0x2EA8u}, {11363u, 0x2EABu},</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    {11366u, 0x2EAFu}, {11370u, 0x2EB4u}, {11372u, 0x2EB8u},  {11375u, 0x2EBCu}, {11389u, 0x2ECBu}, {11682u, 0x2FFCu},</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    {11686u, 0x3004u}, {11687u, 0x3018u}, {11692u, 0x301Fu},  {11694u, 0x302Au}, {11714u, 0x303Fu}, {11716u, 0x3094u},</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    {11723u, 0x309Fu}, {11725u, 0x30F7u}, {11730u, 0x30FFu},  {11736u, 0x312Au}, {11982u, 0x322Au}, {11989u, 0x3232u},</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    {12102u, 0x32A4u}, {12336u, 0x3390u}, {12348u, 0x339Fu},  {12350u, 0x33A2u}, {12384u, 0x33C5u}, {12393u, 0x33CFu},</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    {12395u, 0x33D3u}, {12397u, 0x33D6u}, {12510u, 0x3448u},  {12553u, 0x3474u}, {12851u, 0x359Fu}, {12962u, 0x360Fu},</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    {12973u, 0x361Bu}, {13738u, 0x3919u}, {13823u, 0x396Fu},  {13919u, 0x39D1u}, {13933u, 0x39E0u}, {14080u, 0x3A74u},</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    {14298u, 0x3B4Fu}, {14585u, 0x3C6Fu}, {14698u, 0x3CE1u},  {15583u, 0x4057u}, {15847u, 0x4160u}, {16318u, 0x4338u},</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    {16434u, 0x43ADu}, {16438u, 0x43B2u}, {16481u, 0x43DEu},  {16729u, 0x44D7u}, {17102u, 0x464Du}, {17122u, 0x4662u},</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    {17315u, 0x4724u}, {17320u, 0x472Au}, {17402u, 0x477Du},  {17418u, 0x478Eu}, {17859u, 0x4948u}, {17909u, 0x497Bu},</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    {17911u, 0x497Eu}, {17915u, 0x4984u}, {17916u, 0x4987u},  {17936u, 0x499Cu}, {17939u, 0x49A0u}, {17961u, 0x49B8u},</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    {18664u, 0x4C78u}, {18703u, 0x4CA4u}, {18814u, 0x4D1Au},  {18962u, 0x4DAFu}, {19043u, 0x9FA6u}, {33469u, 0xE76Cu},</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    {33470u, 0xE7C8u}, {33471u, 0xE7E7u}, {33484u, 0xE815u},  {33485u, 0xE819u}, {33490u, 0xE81Fu}, {33497u, 0xE827u},</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    {33501u, 0xE82Du}, {33505u, 0xE833u}, {33513u, 0xE83Cu},  {33520u, 0xE844u}, {33536u, 0xE856u}, {33550u, 0xE865u},</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    {37845u, 0xF92Du}, {37921u, 0xF97Au}, {37948u, 0xF996u},  {38029u, 0xF9E8u}, {38038u, 0xF9F2u}, {38064u, 0xFA10u},</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    {38065u, 0xFA12u}, {38066u, 0xFA15u}, {38069u, 0xFA19u},  {38075u, 0xFA22u}, {38076u, 0xFA25u}, {38078u, 0xFA2Au},</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    {39108u, 0xFE32u}, {39109u, 0xFE45u}, {39113u, 0xFE53u},  {39114u, 0xFE58u}, {39115u, 0xFE67u}, {39116u, 0xFE6Cu},</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    {39265u, 0xFF5Fu}, {39394u, 0xFFE6u}, {189000u, 0x10000u}};</div>
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_GB18030_RANGES_HPP</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> <span class="keywordtype">int</span> gb18030_ranges_count = 207;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>} <span class="comment">// namespace beman::transcoding::detail::tables</span></div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_GB18030_RANGES_HPP</span></div>
+<div class="ttc" id="aconfig_8hpp_html"><div class="ttname"><a href="config_8hpp.html">config.hpp</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
