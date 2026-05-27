@@ -44,7 +44,7 @@ else
 	_local_toolchain?=$(CURDIR)/etc/$(TOOLCHAIN)-toolchain.cmake
 endif
 
-_configuration_types ?= "RelWithDebInfo;Debug;Tsan;Asan;Gcov"
+_configuration_types ?= "RelWithDebInfo;Debug;Tsan;Asan;Gcov;Perf"
 
 _build_path ?= $(_build_dir)/$(_build_name)
 _build_path := $(subst //,/,$(_build_path))
@@ -235,6 +235,17 @@ coverage: venv $(_build_path)/CMakeCache.txt
 	$(ACTIVATE) ctest --build-config Gcov --output-on-failure --test-dir $(_build_path)
 	$(CMAKE) --build $(_build_path) --config Gcov --target process_coverage
 
+.PHONY: bench-coverage
+bench-coverage: venv $(_build_path)/CMakeCache.txt ## Run benchmarks under Gcov and generate coverage report
+	$(CMAKE) --build $(_build_path) --config Gcov
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.smoke "[smoke]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.utf "[benchmark][utf]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
+	$(CMAKE) --build $(_build_path) --config Gcov --target process_coverage
+
 .PHONY: clean-coverage
 clean-coverage: ## Delete generated coverage reports
 	-rm -rf $(_build_path)/coverage
@@ -367,6 +378,65 @@ bench-lto-xml: ## Configure (if needed), build GCC LTO benchmarks, save XML resu
 	@mkdir -p $(BENCH_RESULTS_DIR)
 	build/gcc-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]" \
 		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-lto.xml
+
+_PERF_BUILD = .build/build-perf
+_PERF_BENCH = $(_PERF_BUILD)/benchmark/Perf
+
+$(_PERF_BUILD)/CMakeCache.txt: | .gitmodules $(VENV)
+	mkdir -p $(_PERF_BUILD)
+	cd $(_PERF_BUILD) && $(CMAKE) \
+		-G "Ninja Multi-Config" \
+		-DCMAKE_CONFIGURATION_TYPES=$(_configuration_types) \
+		-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
+		-DCMAKE_PREFIX_PATH=$(CURDIR)/infra/cmake \
+		-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(_cmake_top_level) \
+		-DCMAKE_C_COMPILER_LAUNCHER=ccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+		-DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/etc/perf-toolchain.cmake \
+		$(CURDIR)
+
+.PHONY: bench-perf
+bench-perf: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf config and run smoke benchmark
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf --target beman.transcode.benchmarks.smoke -- -k 0
+	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-perf-all
+bench-perf-all: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf config and run all core benchmarks
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
+	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.utf "[benchmark][utf]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
+
+.PHONY: bench-perf-report
+bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core benchmarks, generate report
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
+	@mkdir -p $(BENCH_RESULTS_DIR)
+	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.utf "[benchmark][utf]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/utf-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/whatwg-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/pluggable-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.iconv "[benchmark][iconv]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/iconv-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/boundary-Perf.xml
+	$(UV) run python tools/process_benchmark_results.py \
+		--corpus-dir benchmark/corpus \
+		--manifest data/benchmarks/corpus_manifest.json \
+		--label "GCC-16 Perf (native)" \
+		--vegalite $(BENCH_RESULTS_DIR)/perf.vl.json \
+		$(BENCH_RESULTS_DIR)/smoke-Perf.xml \
+		$(BENCH_RESULTS_DIR)/utf-Perf.xml \
+		$(BENCH_RESULTS_DIR)/whatwg-Perf.xml \
+		$(BENCH_RESULTS_DIR)/pluggable-Perf.xml \
+		$(BENCH_RESULTS_DIR)/iconv-Perf.xml \
+		$(BENCH_RESULTS_DIR)/boundary-Perf.xml
 
 .PHONY: docs
 docs: ## Build the docs with Doxygen

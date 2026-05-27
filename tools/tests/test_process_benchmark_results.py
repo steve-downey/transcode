@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+# ruff: noqa: E501
 """Tests for tools/process_benchmark_results.py."""
 
 import json
@@ -11,7 +12,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from process_benchmark_results import (
     CORPUS_NAME_HINTS,
-    BenchmarkResult,
     infer_corpus_file,
     load_corpus_sizes,
     parse_catch2_xml,
@@ -166,11 +166,16 @@ def test_infer_ja_mars_stem() -> None:
 
 
 def test_infer_english_keyword() -> None:
-    assert infer_corpus_file("UTF-8 decode: English (ASCII-heavy)") == "en_mars_utf8.txt"
+    assert (
+        infer_corpus_file("UTF-8 decode: English (ASCII-heavy)") == "en_mars_utf8.txt"
+    )
 
 
 def test_infer_arabic_keyword() -> None:
-    assert infer_corpus_file("UTF-8 decode: Arabic (multibyte-heavy)") == "ar_mars_utf8.txt"
+    assert (
+        infer_corpus_file("UTF-8 decode: Arabic (multibyte-heavy)")
+        == "ar_mars_utf8.txt"
+    )
 
 
 def test_infer_russian_keyword() -> None:
@@ -184,7 +189,10 @@ def test_infer_windows_1251_takes_priority_over_russian() -> None:
 
 
 def test_infer_shift_jis() -> None:
-    assert infer_corpus_file("Multi-byte decode: Shift-JIS Japanese") == "ja_mars_shiftjis.bin"
+    assert (
+        infer_corpus_file("Multi-byte decode: Shift-JIS Japanese")
+        == "ja_mars_shiftjis.bin"
+    )
 
 
 def test_infer_unknown_returns_none() -> None:
@@ -237,8 +245,18 @@ def test_load_from_corpus_dir(tmp_path: Path) -> None:
 def test_load_from_manifest(tmp_path: Path) -> None:
     manifest = tmp_path / "corpus_manifest.json"
     manifest.write_text(
-        json.dumps([{"file": "en_mars_utf8.txt", "lang": "en", "encoding": "utf-8",
-                     "source_url": "https://example.com", "bytes": 999, "sha256": "abc"}]),
+        json.dumps(
+            [
+                {
+                    "file": "en_mars_utf8.txt",
+                    "lang": "en",
+                    "encoding": "utf-8",
+                    "source_url": "https://example.com",
+                    "bytes": 999,
+                    "sha256": "abc",
+                }
+            ]
+        ),
         encoding="utf-8",
     )
     sizes = load_corpus_sizes(manifest_path=manifest)
@@ -251,8 +269,18 @@ def test_manifest_overrides_corpus_dir(tmp_path: Path) -> None:
     (corpus_dir / "en_mars_utf8.txt").write_bytes(b"x" * 100)
     manifest = tmp_path / "corpus_manifest.json"
     manifest.write_text(
-        json.dumps([{"file": "en_mars_utf8.txt", "lang": "en", "encoding": "utf-8",
-                     "source_url": "https://example.com", "bytes": 9999, "sha256": "abc"}]),
+        json.dumps(
+            [
+                {
+                    "file": "en_mars_utf8.txt",
+                    "lang": "en",
+                    "encoding": "utf-8",
+                    "source_url": "https://example.com",
+                    "bytes": 9999,
+                    "sha256": "abc",
+                }
+            ]
+        ),
         encoding="utf-8",
     )
     sizes = load_corpus_sizes(manifest_path=manifest, corpus_dir=corpus_dir)
@@ -286,12 +314,14 @@ def test_render_markdown_contains_benchmark_name(sample_xml_path: Path) -> None:
     assert "en_mars corpus" in table
 
 
-def test_render_markdown_shows_throughput_when_size_known(sample_xml_path: Path) -> None:
+def test_render_markdown_shows_throughput_when_size_known(
+    sample_xml_path: Path,
+) -> None:
     results = parse_catch2_xml(sample_xml_path)
     sizes = {"en_mars_utf8.txt": 586}
     table = render_markdown_table(results, sizes)
     # should contain a non-? throughput value for en_mars
-    lines = [l for l in table.splitlines() if "en_mars corpus" in l]
+    lines = [ln for ln in table.splitlines() if "en_mars corpus" in ln]
     assert lines
     # the throughput column should not be "?" for a known corpus
     assert "| ? |" not in lines[0]
@@ -324,8 +354,11 @@ def test_render_markdown_contains_formula_note(sample_xml_path: Path) -> None:
 
 def test_vegalite_spec_schema(sample_xml_path: Path) -> None:
     results = parse_catch2_xml(sample_xml_path)
-    sizes = {"en_mars_utf8.txt": 586, "ar_mars_utf8.txt": 640,
-             "ru_mars_windows1251.bin": 435}
+    sizes = {
+        "en_mars_utf8.txt": 586,
+        "ar_mars_utf8.txt": 640,
+        "ru_mars_windows1251.bin": 435,
+    }
     spec = render_vegalite_spec(results, sizes)
     assert "$schema" in spec
     assert "vega-lite" in str(spec["$schema"])
@@ -348,12 +381,16 @@ def test_vegalite_omits_unknown_corpus(unknown_xml_path: Path) -> None:
 
 def test_vegalite_throughput_values_are_positive(sample_xml_path: Path) -> None:
     results = parse_catch2_xml(sample_xml_path)
-    sizes = {"en_mars_utf8.txt": 586, "ar_mars_utf8.txt": 640,
-             "ru_mars_windows1251.bin": 435}
+    sizes = {
+        "en_mars_utf8.txt": 586,
+        "ar_mars_utf8.txt": 640,
+        "ru_mars_windows1251.bin": 435,
+    }
     spec = render_vegalite_spec(results, sizes)
     values = spec["data"]["values"]
     for entry in values:
         assert entry["throughput_MiBs"] > 0
+
 
 def test_vegalite_spec_has_mark_bar(sample_xml_path: Path) -> None:
     results = parse_catch2_xml(sample_xml_path)

@@ -245,7 +245,7 @@ def main(argv: list[str] | None = None) -> int:
         metavar="DIR",
         type=Path,
         default=DEFAULT_CORPUS_DIR,
-        help=f"Directory of corpus files for size lookup (default: {DEFAULT_CORPUS_DIR})",
+        help=f"Corpus file dir for size lookup (default: {DEFAULT_CORPUS_DIR})",
     )
     parser.add_argument(
         "--vegalite",
@@ -279,7 +279,9 @@ def main(argv: list[str] | None = None) -> int:
     print(render_markdown_table(all_results, corpus_sizes, label=label))
 
     if args.vegalite is not None:
-        spec = render_vegalite_spec(all_results, corpus_sizes, title=f"Throughput — {label}")
+        spec = render_vegalite_spec(
+            all_results, corpus_sizes, title=f"Throughput — {label}"
+        )
         args.vegalite.parent.mkdir(parents=True, exist_ok=True)
         args.vegalite.write_text(
             json.dumps(spec, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
