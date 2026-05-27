@@ -250,6 +250,10 @@ view-coverage: ## View the coverage report
 bench: compile ## Run benchmark smoke
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]"
 
+.PHONY: bench-utf
+bench-utf: compile ## Run UTF-family benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.utf "[benchmark][utf]"
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile

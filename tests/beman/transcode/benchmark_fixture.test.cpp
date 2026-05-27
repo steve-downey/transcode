@@ -22,8 +22,7 @@ using beman::transcoding::bench::load_corpus;
 using beman::transcoding::bench::volatile_sink;
 using beman::transcoding::tests::constify;
 
-TEST_CASE("chunk_corpus splits data into fixed-size chunks",
-          "[bench][fixture]") {
+TEST_CASE("chunk_corpus splits data into fixed-size chunks", "[bench][fixture]") {
     SECTION("exact multiple") {
         auto chunks = chunk_corpus("abcd", 2);
         REQUIRE(chunks.size() == 2u);
@@ -53,13 +52,9 @@ TEST_CASE("chunk_corpus splits data into fixed-size chunks",
         CHECK(chunks[2] == "c");
     }
 
-    SECTION("empty data returns empty result") {
-        CHECK(chunk_corpus("", 2).empty());
-    }
+    SECTION("empty data returns empty result") { CHECK(chunk_corpus("", 2).empty()); }
 
-    SECTION("zero chunk_size returns empty result") {
-        CHECK(chunk_corpus("abc", 0).empty());
-    }
+    SECTION("zero chunk_size returns empty result") { CHECK(chunk_corpus("abc", 0).empty()); }
 }
 
 TEST_CASE("load_corpus loads checked-in fallback corpus", "[bench][fixture]") {
@@ -67,21 +62,18 @@ TEST_CASE("load_corpus loads checked-in fallback corpus", "[bench][fixture]") {
     CHECK(!data.empty());
 }
 
-TEST_CASE("load_corpus returns empty for nonexistent file",
-          "[bench][fixture]") {
+TEST_CASE("load_corpus returns empty for nonexistent file", "[bench][fixture]") {
     auto data = load_corpus("nonexistent_corpus_file_xyz.txt");
     CHECK(data.empty());
 }
 
-TEST_CASE("load_corpus is cached — same pointer on repeated calls",
-          "[bench][fixture]") {
+TEST_CASE("load_corpus is cached — same pointer on repeated calls", "[bench][fixture]") {
     auto sv1 = load_corpus("en_mars_utf8.txt");
     auto sv2 = load_corpus("en_mars_utf8.txt");
     CHECK(sv1.data() == sv2.data());
 }
 
-TEST_CASE("corpus_span returns span over same data as load_corpus",
-          "[bench][fixture]") {
+TEST_CASE("corpus_span returns span over same data as load_corpus", "[bench][fixture]") {
     auto sv = load_corpus("en_mars_utf8.txt");
     auto sp = corpus_span("en_mars_utf8.txt");
     CHECK(sp.size() == sv.size());

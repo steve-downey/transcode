@@ -20,8 +20,7 @@ std::span<const char> corpus_span(const char* filename);
 
 // Split data into fixed-size chunks. The last chunk may be smaller.
 // Returns empty if data is empty or chunk_size is zero.
-std::vector<std::string_view> chunk_corpus(std::string_view data,
-                                           std::size_t      chunk_size);
+std::vector<std::string_view> chunk_corpus(std::string_view data, std::size_t chunk_size);
 
 } // namespace beman::transcoding::bench
 

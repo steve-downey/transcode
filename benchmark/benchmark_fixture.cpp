@@ -16,9 +16,9 @@ namespace beman::transcoding::bench {
 namespace {
 
 std::string& cached_load(const char* filename) {
-    static std::mutex              mtx;
+    static std::mutex                         mtx;
     static std::map<std::string, std::string> cache;
-    std::lock_guard                lock(mtx);
+    std::lock_guard                           lock(mtx);
 
     auto it = cache.find(filename);
     if (it != cache.end())
@@ -32,8 +32,7 @@ std::string& cached_load(const char* filename) {
     };
 
     // Try generated data dir first, then fall back to checked-in corpus.
-    std::string content =
-        try_read(std::string(BENCHMARK_DATA_DIR) + "/" + filename);
+    std::string content = try_read(std::string(BENCHMARK_DATA_DIR) + "/" + filename);
     if (content.empty())
         content = try_read(std::string(BENCHMARK_CORPUS_DIR) + "/" + filename);
 
@@ -50,8 +49,7 @@ std::span<const char> corpus_span(const char* filename) {
     return {s.data(), s.size()};
 }
 
-std::vector<std::string_view> chunk_corpus(std::string_view data,
-                                           std::size_t      chunk_size) {
+std::vector<std::string_view> chunk_corpus(std::string_view data, std::size_t chunk_size) {
     if (chunk_size == 0 || data.empty())
         return {};
     std::vector<std::string_view> chunks;
