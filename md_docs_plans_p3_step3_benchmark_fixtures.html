@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step3_benchmark_fixtu
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step3-benchmark-fixtures</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step2_benchmark_data.html">p3-step2-benchmark-data.md</a> <b>Read first:</b> <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> and <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md127"></a>
+<h1><a class="anchor" id="autotoc_md128"></a>
 Goal</h1>
 <p>Build the reusable support layer that later benchmarks share: corpus loading, chunking helpers, sink utilities that prevent dead-code elimination, and metadata capture. Unit-test all reusable helpers.</p>
-<h1><a class="anchor" id="autotoc_md128"></a>
+<h1><a class="anchor" id="autotoc_md129"></a>
 Context for Executing Agent</h1>
 <p>The project has <code>benchmark/smoke.bench.cpp</code> and corpus data:</p><ul>
 <li>Checked-in fallback: <code>benchmark/corpus/*.txt</code> (small, ~100 bytes each)</li>
@@ -117,7 +117,7 @@ Context for Executing Agent</h1>
 <div class="line">    });</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>Project convention: reusable helpers get unit tests in <code>tests/beman/transcode/</code> and are registered in <code>tests/beman/transcode/CMakeLists.txt</code>.</p>
-<h1><a class="anchor" id="autotoc_md129"></a>
+<h1><a class="anchor" id="autotoc_md130"></a>
 Deliverables</h1>
 <ol type="1">
 <li><code>benchmark/benchmark_fixture.hpp</code> — corpus loading and chunking</li>
@@ -126,9 +126,9 @@ Deliverables</h1>
 <li>Updated <code>benchmark/smoke.bench.cpp</code> — uses fixtures</li>
 <li>Registration in <code>tests/beman/transcode/CMakeLists.txt</code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md130"></a>
+<h1><a class="anchor" id="autotoc_md131"></a>
 API Design</h1>
-<h2><a class="anchor" id="autotoc_md131"></a>
+<h2><a class="anchor" id="autotoc_md132"></a>
 benchmark_fixture.hpp</h2>
 <div class="fragment"><div class="line"><span class="preprocessor">#ifndef BENCHMARK_BENCHMARK_FIXTURE_HPP</span></div>
 <div class="line"><span class="preprocessor">#define BENCHMARK_BENCHMARK_FIXTURE_HPP</span></div>
@@ -153,7 +153,7 @@ benchmark_fixture.hpp</h2>
 <div class="line">} <span class="comment">// namespace beman::transcoding::bench</span></div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#endif</span></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md132"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md133"></a>
 benchmark_sink.hpp</h2>
 <div class="fragment"><div class="line"><span class="preprocessor">#ifndef BENCHMARK_BENCHMARK_SINK_HPP</span></div>
 <div class="line"><span class="preprocessor">#define BENCHMARK_BENCHMARK_SINK_HPP</span></div>
@@ -181,7 +181,7 @@ benchmark_sink.hpp</h2>
 <div class="line">} <span class="comment">// namespace beman::transcoding::bench</span></div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#endif</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md133"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md134"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create worktree branch <code>p3-step3-benchmark-fixtures</code> from <code>main</code></li>
@@ -197,12 +197,12 @@ Procedure</h1>
 <li>Commit, merge to main (non-ff), push both remotes</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md134"></a>
+<h1><a class="anchor" id="autotoc_md135"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test      # fixture unit tests pass (among all others)</div>
 <div class="line">make lint</div>
 <div class="line">make bench     # smoke benchmark uses fixtures</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md135"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md136"></a>
 Handoff to Step 4</h1>
 <p>Write to <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>:</p><ul>
 <li>Step 3 is done</li>

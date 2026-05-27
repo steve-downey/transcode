@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step2_benchmark_data.
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step2-benchmark-data</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step1_benchmark_harness.html">p3-step1-benchmark-harness.md</a> <b>Read first:</b> <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> and <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md115"></a>
+<h1><a class="anchor" id="autotoc_md116"></a>
 Goal</h1>
 <p>Acquire and document the benchmark corpora called for in the benchmarking report, with the same provenance discipline used for WHATWG and WPT inputs.</p>
-<h1><a class="anchor" id="autotoc_md116"></a>
+<h1><a class="anchor" id="autotoc_md117"></a>
 Context for Executing Agent</h1>
 <p>The project has a <code>benchmark/</code> directory with a smoke benchmark (from Step 1). Python tooling uses <code>uv run</code> and lives in <code>tools/</code>. Python tests are in <code>tools/tests/</code> and run via <code>make pytest</code>. The <code>data/</code> directory contains generated codec lookup tables under <code>data/tables/</code>.</p>
 <p>The benchmarking methodology requires Wikipedia "Mars" article extracts as real-world corpora. Each language targets a specific encoding stress path:</p>
@@ -120,15 +120,15 @@ Context for Executing Agent</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">Japanese   </td><td class="markdownTableBodyNone">CJK / Shift-JIS   </td><td class="markdownTableBodyNone"><code>ja_mars_utf8.txt</code>, <code>ja_mars_shiftjis.bin</code>   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md117"></a>
+<h2><a class="anchor" id="autotoc_md118"></a>
 MediaWiki API for extraction</h2>
 <div class="fragment"><div class="line">https://en.wikipedia.org/w/api.php?action=query&amp;titles=Mars&amp;prop=extracts&amp;explaintext=true&amp;format=json</div>
 </div><!-- fragment --><p> Replace <code>en.wikipedia.org</code> with <code>ar.</code>, <code>ru.</code>, <code>ja.</code> for other languages.</p>
-<h2><a class="anchor" id="autotoc_md118"></a>
+<h2><a class="anchor" id="autotoc_md119"></a>
 Python encoding conversion</h2>
 <div class="fragment"><div class="line">text.encode(<span class="stringliteral">&#39;windows-1251&#39;</span>, errors=<span class="stringliteral">&#39;replace&#39;</span>)  <span class="comment"># UTF-8 -&gt; windows-1251 bytes</span></div>
 <div class="line">text.encode(<span class="stringliteral">&#39;shift_jis&#39;</span>, errors=<span class="stringliteral">&#39;replace&#39;</span>)      <span class="comment"># UTF-8 -&gt; Shift-JIS bytes</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md119"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md120"></a>
 Deliverables</h1>
 <ol type="1">
 <li><code>tools/download_benchmark_corpora.py</code> — download + convert + manifest</li>
@@ -138,7 +138,7 @@ Deliverables</h1>
 <li><code>benchmark/corpus/</code> — small checked-in fallback files (~100-200 bytes each)</li>
 <li>Update <code>.gitignore</code> to exclude <code>data/benchmarks/</code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md120"></a>
+<h1><a class="anchor" id="autotoc_md121"></a>
 Corpus Manifest Schema</h1>
 <div class="fragment"><div class="line">[</div>
 <div class="line">  {</div>
@@ -149,7 +149,7 @@ Corpus Manifest Schema</h1>
 <div class="line">    &quot;sha256&quot;: &quot;abc123...&quot;</div>
 <div class="line">  }</div>
 <div class="line">]</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md121"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md122"></a>
 Fallback Corpus (checked in)</h1>
 <p>Create <code>benchmark/corpus/</code> with small representative samples:</p><ul>
 <li><code>en_mars_utf8.txt</code> — "Mars is the fourth planet from the Sun..."</li>
@@ -158,7 +158,7 @@ Fallback Corpus (checked in)</h1>
 <li><code>ja_mars_utf8.txt</code> — Japanese equivalent</li>
 </ul>
 <p>These enable <code>make bench</code> to work without network access.</p>
-<h1><a class="anchor" id="autotoc_md122"></a>
+<h1><a class="anchor" id="autotoc_md123"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create worktree branch <code>p3-step2-benchmark-data</code> from <code>main</code></li>
@@ -174,13 +174,13 @@ Procedure</h1>
 <li>Commit, merge to main (non-ff), push both remotes</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md123"></a>
+<h1><a class="anchor" id="autotoc_md124"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line">make pytest</div>
 <div class="line"># Optionally: uv run python tools/download_benchmark_corpora.py</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md124"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md125"></a>
 Handoff to Step 3</h1>
 <p>Write to <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>:</p><ul>
 <li>Step 2 is done</li>
