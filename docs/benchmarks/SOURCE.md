@@ -17,7 +17,7 @@ Each corpus targets a specific encoding stress pattern:
 
 ## Source
 
-**Wikipedia**, <https://www.wikipedia.org/>  
+**Wikipedia**, <https://www.wikipedia.org/>
 Article: "Mars" (planet), retrieved via the MediaWiki API:
 ```
 https://{lang}.wikipedia.org/w/api.php?action=query&titles=Mars&prop=extracts&explaintext=true&format=json
@@ -28,10 +28,10 @@ Languages: `en`, `ar`, `ru`, `ja`
 ## License
 
 Content is available under the **Creative Commons Attribution-ShareAlike 4.0
-International License** (CC BY-SA 4.0).  
+International License** (CC BY-SA 4.0).
 See <https://creativecommons.org/licenses/by-sa/4.0/>
 
-**Attribution required (CC BY-SA 4.0):**  
+**Attribution required (CC BY-SA 4.0):**
 Wikipedia contributors, "Mars", Wikipedia, The Free Encyclopedia.
 
 ### BibTeX

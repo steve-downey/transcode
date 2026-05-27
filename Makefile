@@ -250,6 +250,26 @@ view-coverage: ## View the coverage report
 bench: compile ## Run benchmark smoke
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]"
 
+.PHONY: bench-utf
+bench-utf: compile ## Run UTF-family benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.utf "[benchmark][utf]"
+
+.PHONY: bench-whatwg
+bench-whatwg: compile ## Run WHATWG legacy codec benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
+
+.PHONY: bench-pluggable
+bench-pluggable: compile ## Run pluggable codec benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+
+.PHONY: bench-iconv
+bench-iconv: compile ## Run iconv baseline benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
+
+.PHONY: bench-codecvt
+bench-codecvt: compile ## Run std::codecvt negative baseline benchmarks (skips if <codecvt> absent)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.codecvt "[benchmark][codecvt]"
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile

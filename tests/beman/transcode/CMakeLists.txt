@@ -998,3 +998,25 @@ add_test(
     NAME beman.transcode.tests.ebcdic037
     COMMAND beman.transcode.tests.ebcdic037
 )
+
+# ---------------------------------------------------------------------------
+# Benchmark fixture unit tests
+# ---------------------------------------------------------------------------
+
+add_executable(beman.transcode.tests.benchmark_fixture)
+target_sources(
+    beman.transcode.tests.benchmark_fixture
+    PRIVATE benchmark_fixture.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.benchmark_fixture
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.benchmark_fixture
+    PRIVATE
+        beman::transcode
+        beman.transcode.benchmark_fixture
+        Catch2::Catch2WithMain
+)
+catch_discover_tests(beman.transcode.tests.benchmark_fixture)
