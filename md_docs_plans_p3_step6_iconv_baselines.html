@@ -99,46 +99,72 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step6_iconv_baselines
   <div class="headertitle"><div class="title">P3-Step 6: <code>iconv</code> Baselines </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><b>Branch:</b> <code>p3-step6-iconv-baselines</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step5_legacy_whatwg_benchmarks.html">p3-step5-legacy-whatwg-benchmarks.md</a></p>
+<div class="textblock"><p><b>Branch:</b> <code>p3-step6-iconv-baselines</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step5_legacy_whatwg_benchmarks.html">p3-step5-legacy-whatwg-benchmarks.md</a> <b>Read first:</b> <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> and <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md128"></a>
+<h1><a class="anchor" id="autotoc_md148"></a>
 Goal</h1>
 <p>Benchmark raw <code>iconv</code> and <code>iconv_transcode_view</code> on matching workloads so the project can quantify whether the C++ wrapper adds measurable cost on top of the system C API.</p>
-<h1><a class="anchor" id="autotoc_md129"></a>
-Deliverables</h1>
-<ul>
-<li>raw <code>iconv</code> benchmark kernels using comparable buffers and output handling</li>
-<li><code>iconv_transcode_view</code> benchmark kernels using the same corpora/codecs</li>
-<li>smoke comparisons for at least one UTF path and one legacy encoding path</li>
-<li>clear metadata separating <code>raw_iconv</code> from <code>iconv_view</code></li>
+<h1><a class="anchor" id="autotoc_md149"></a>
+Context for Executing Agent</h1>
+<p>The library provides two iconv-related views:</p><ul>
+<li><code>iconv_transcode_view&lt;IconvFns, R&gt;</code> — yields <code>char</code></li>
+<li><code>iconv_transcode_or_error_view&lt;IconvFns, R&gt;</code> — yields <code>expected&lt;char, iconv_error&gt;</code></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md130"></a>
+<p>Real iconv function pointers: </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="iconv__real_8hpp.html">beman/transcode/iconv_real.hpp</a>&gt;</span></div>
+<div class="line"><span class="comment">// beman::transcoding::iconv_real_functions has .open, .convert, .close</span></div>
+<div class="ttc" id="aiconv__real_8hpp_html"><div class="ttname"><a href="iconv__real_8hpp.html">iconv_real.hpp</a></div></div>
+</div><!-- fragment --><p>View usage: </p><div class="fragment"><div class="line"><span class="keywordtype">char</span> buffer[4096];</div>
+<div class="line">iconv_transcode_view view(range, iconv_real_functions{}, <span class="stringliteral">&quot;UTF-8&quot;</span>, <span class="stringliteral">&quot;UTF-32LE&quot;</span>,</div>
+<div class="line">                          std::span&lt;char&gt;(buffer));</div>
+<div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">char</span> c : view) { <span class="comment">/* ... */</span> }</div>
+</div><!-- fragment --><p>For raw iconv comparison, write a direct C-style loop calling <code>iconv()</code>.</p>
+<p>Corpora: use <code>corpus_span("en_mars_utf8.txt")</code> etc. from <code>benchmark_fixture.hpp</code>. Link <code>Iconv::Iconv</code> (already found by top-level CMake via <code>find_package(Iconv REQUIRED)</code>).</p>
+<h1><a class="anchor" id="autotoc_md150"></a>
+Deliverables</h1>
+<ol type="1">
+<li><code>benchmark/iconv_benchmarks.bench.cpp</code></li>
+<li>Registration in <code>benchmark/CMakeLists.txt</code> with <code>Iconv::Iconv</code> link</li>
+</ol>
+<h1><a class="anchor" id="autotoc_md151"></a>
+Benchmark Cases</h1>
+<ul>
+<li>"Raw iconv: UTF-8 to UTF-32 English"</li>
+<li>"iconv_transcode_view: UTF-8 to UTF-32 English"</li>
+<li>"Raw iconv: Shift-JIS to UTF-8 Japanese"</li>
+<li>"iconv_transcode_view: Shift-JIS to UTF-8 Japanese"</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md152"></a>
 Constraints</h1>
 <ul>
-<li>compare like with like: same corpus, same output shape, same chunking mode</li>
-<li>keep setup outside the timed region where possible</li>
-<li>do not yet introduce synthetic <code>EINVAL</code>/<code>E2BIG</code> stress; that belongs in P3-Step 10</li>
+<li>Compare like with like: same corpus, same output shape</li>
+<li>Keep handle open/close and buffer allocation outside timed region</li>
+<li>Do NOT introduce synthetic EINVAL/E2BIG stress; that belongs in Step 10</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md131"></a>
+<h1><a class="anchor" id="autotoc_md153"></a>
 Procedure</h1>
 <ol type="1">
-<li>Create branch <code>p3-step6-iconv-baselines</code> from <code>main</code></li>
-<li>Add raw <code>iconv</code> kernels for matched cases</li>
-<li>Add <code>iconv_transcode_view</code> kernels for the same cases</li>
-<li>Add smoke filters for direct comparison</li>
-<li>Run <code>make test</code></li>
-<li>Run <code>make lint</code></li>
-<li>Run the <code>iconv</code> benchmark smoke command</li>
-<li>Update <code>handoff-next.md</code></li>
+<li>Create worktree branch <code>p3-step6-iconv-baselines</code> from <code>main</code></li>
+<li>Create <code>benchmark/iconv_benchmarks.bench.cpp</code></li>
+<li>Register in <code>benchmark/CMakeLists.txt</code>, link <code>Iconv::Iconv</code></li>
+<li>Run <code>make compile</code>, <code>make test</code>, <code>make lint</code></li>
+<li>Run <code>make bench</code></li>
+<li>Commit, merge to main (non-ff), push both remotes</li>
+<li>Update <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md132"></a>
+<h1><a class="anchor" id="autotoc_md154"></a>
 Verification</h1>
-<div class="fragment"><div class="line">make test</div>
+<div class="fragment"><div class="line">make compile</div>
+<div class="line">make test</div>
 <div class="line">make lint</div>
-<div class="line"># plus the iconv benchmark smoke command</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md133"></a>
-Notes</h1>
-<p>If system <code>iconv</code> behavior is platform-variant, document the variant and keep the benchmark surface honest rather than papering over it. </p>
+<div class="line">make bench</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md155"></a>
+Handoff to Step 7</h1>
+<p>Write to <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>:</p><ul>
+<li>Step 6 is done</li>
+<li>Next: read <code><a class="el" href="p3-step7-codecvt-baseline_8md.html">p3-step7-codecvt-baseline.md</a></code></li>
+<li>Note whether iconv_transcode_view matches raw iconv performance</li>
+<li>Note any platform-specific iconv quirks observed </li>
+</ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

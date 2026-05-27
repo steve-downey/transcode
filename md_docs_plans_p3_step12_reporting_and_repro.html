@@ -99,12 +99,17 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step12_reporting_and_
   <div class="headertitle"><div class="title">P3-Step 12: Reporting, Dashboard, and Reproducibility Pack </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><b>Branch:</b> <code>p3-step12-reporting-and-repro</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step11_toolchain_matrix.html">p3-step11-toolchain-matrix.md</a></p>
+<div class="textblock"><p><b>Branch:</b> <code>p3-step12-reporting-and-repro</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step11_toolchain_matrix.html">p3-step11-toolchain-matrix.md</a> <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md82"></a>
+<h1><a class="anchor" id="autotoc_md94"></a>
 Goal</h1>
 <p>Convert raw benchmark timings and metadata into proposal-ready comparative tables, GiB/s summaries, and reproducible reporting documentation.</p>
-<h1><a class="anchor" id="autotoc_md83"></a>
+<h1><a class="anchor" id="autotoc_md95"></a>
+Context for Executing Agent</h1>
+<p>Catch2 can emit XML output via <code>--reporter xml --out file.xml</code>. The benchmark report tool should parse this XML, cross-reference with corpus_manifest.json for byte sizes, compute GiB/s throughput, and output markdown tables.</p>
+<p>Create <code>tools/benchmark_report.py</code> and <code>tools/tests/test_benchmark_report.py</code>. Add <code>make bench-report</code> target. Create <code>docs/benchmarks/README.md</code> with full instructions.</p>
+<p>This is the final step &ndash; the <a class="el" href="handoff-next_8md.html">handoff-next.md</a> should say "Phase 3 complete" and describe how to rerun the full benchmark suite.</p>
+<h1><a class="anchor" id="autotoc_md96"></a>
 Deliverables</h1>
 <ul>
 <li>post-processing scripts that translate Catch2 timing to throughput metrics</li>
@@ -112,7 +117,7 @@ Deliverables</h1>
 <li>chart generation (Vega-Lite or equivalent)</li>
 <li>documentation describing exactly how to regenerate the published outputs</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md84"></a>
+<h1><a class="anchor" id="autotoc_md97"></a>
 Files Expected</h1>
 <ul>
 <li><code>tools/process_benchmark_results.py</code></li>
@@ -120,14 +125,14 @@ Files Expected</h1>
 <li><code>docs/benchmarks/README.md</code> or equivalent report guide</li>
 <li>generated chart/table directory under <code>data/benchmarks/results/</code> or equivalent</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md85"></a>
+<h1><a class="anchor" id="autotoc_md98"></a>
 Constraints</h1>
 <ul>
 <li>keep raw results separate from derived charts/tables</li>
 <li>document formulas for throughput conversion explicitly</li>
 <li>report both smoke-scale and full-matrix usage clearly</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md86"></a>
+<h1><a class="anchor" id="autotoc_md99"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p3-step12-reporting-and-repro</code> from <code>main</code></li>
@@ -137,16 +142,19 @@ Procedure</h1>
 <li>Run <code>make test</code></li>
 <li>Run <code>make lint</code></li>
 <li>Run the reporting smoke command</li>
-<li>Update <code>handoff-next.md</code> with future rerun guidance rather than another planned P3 step</li>
+<li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code> with future rerun guidance rather than another planned P3 step</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md87"></a>
+<h1><a class="anchor" id="autotoc_md100"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line"># plus the reporting smoke command on a small benchmark result set</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md88"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md101"></a>
 Notes</h1>
-<p>This step closes the phase by making the benchmark program communicable and repeatable for future proposal work, regressions, and follow-up analysis. </p>
+<p>This step closes the phase by making the benchmark program communicable and repeatable for future proposal work, regressions, and follow-up analysis.</p>
+<h1><a class="anchor" id="autotoc_md102"></a>
+Handoff (Phase 3 Complete)</h1>
+<p>Phase 3 complete. To rerun the full benchmark suite: execute <code>make bench-matrix</code> for all toolchain slices, then <code>make bench-report</code> to regenerate tables and charts. See <code>docs/benchmarks/README.md</code> for detailed instructions. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

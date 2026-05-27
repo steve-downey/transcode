@@ -99,65 +99,96 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step2_benchmark_data.
   <div class="headertitle"><div class="title">P3-Step 2: Benchmark Corpus Acquisition and Provenance </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><b>Branch:</b> <code>p3-step2-benchmark-data</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step1_benchmark_harness.html">p3-step1-benchmark-harness.md</a></p>
+<div class="textblock"><p><b>Branch:</b> <code>p3-step2-benchmark-data</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step1_benchmark_harness.html">p3-step1-benchmark-harness.md</a> <b>Read first:</b> <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> and <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md91"></a>
+<h1><a class="anchor" id="autotoc_md105"></a>
 Goal</h1>
-<p>Acquire and document the benchmark corpora called for in the benchmarking report, with the same provenance discipline already used for WHATWG and WPT inputs.</p>
-<h1><a class="anchor" id="autotoc_md92"></a>
-Data To Cover</h1>
-<ul>
-<li>Wikipedia Mars extracts for English/French, Arabic, Czech/Russian, and Japanese/Chinese targets</li>
-<li>WPT-derived synthetic vectors relevant to fallback, BOM, and error behavior</li>
-<li>small fuzz/error corpora for malformed input paths</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md93"></a>
+<p>Acquire and document the benchmark corpora called for in the benchmarking report, with the same provenance discipline used for WHATWG and WPT inputs.</p>
+<h1><a class="anchor" id="autotoc_md106"></a>
+Context for Executing Agent</h1>
+<p>The project has a <code>benchmark/</code> directory with a smoke benchmark (from Step 1). Python tooling uses <code>uv run</code> and lives in <code>tools/</code>. Python tests are in <code>tools/tests/</code> and run via <code>make pytest</code>. The <code>data/</code> directory contains generated codec lookup tables under <code>data/tables/</code>.</p>
+<p>The benchmarking methodology requires Wikipedia "Mars" article extracts as real-world corpora. Each language targets a specific encoding stress path:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Language   </th><th class="markdownTableHeadNone">Encoding Stress   </th><th class="markdownTableHeadNone">File to produce    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">English   </td><td class="markdownTableBodyNone">ASCII-heavy UTF-8   </td><td class="markdownTableBodyNone"><code>en_mars_utf8.txt</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Arabic   </td><td class="markdownTableBodyNone">Mixed 1/2-byte UTF-8   </td><td class="markdownTableBodyNone"><code>ar_mars_utf8.txt</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Russian   </td><td class="markdownTableBodyNone">Cyrillic / windows-1251   </td><td class="markdownTableBodyNone"><code>ru_mars_utf8.txt</code>, <code>ru_mars_windows1251.bin</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Japanese   </td><td class="markdownTableBodyNone">CJK / Shift-JIS   </td><td class="markdownTableBodyNone"><code>ja_mars_utf8.txt</code>, <code>ja_mars_shiftjis.bin</code>   </td></tr>
+</table>
+<h2><a class="anchor" id="autotoc_md107"></a>
+MediaWiki API for extraction</h2>
+<div class="fragment"><div class="line">https://en.wikipedia.org/w/api.php?action=query&amp;titles=Mars&amp;prop=extracts&amp;explaintext=true&amp;format=json</div>
+</div><!-- fragment --><p> Replace <code>en.wikipedia.org</code> with <code>ar.</code>, <code>ru.</code>, <code>ja.</code> for other languages.</p>
+<h2><a class="anchor" id="autotoc_md108"></a>
+Python encoding conversion</h2>
+<div class="fragment"><div class="line">text.encode(<span class="stringliteral">&#39;windows-1251&#39;</span>, errors=<span class="stringliteral">&#39;replace&#39;</span>)  <span class="comment"># UTF-8 -&gt; windows-1251 bytes</span></div>
+<div class="line">text.encode(<span class="stringliteral">&#39;shift_jis&#39;</span>, errors=<span class="stringliteral">&#39;replace&#39;</span>)      <span class="comment"># UTF-8 -&gt; Shift-JIS bytes</span></div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md109"></a>
 Deliverables</h1>
-<ul>
-<li>typed tooling to fetch or materialize benchmark corpora</li>
-<li>pristine upstream/source artifacts under <code>docs/</code></li>
-<li>provenance docs (<code>SOURCE.md</code> and <code>source.bib</code>)</li>
-<li>derived corpus manifest under <code>data/</code> with size, language, encoding, and benchmark tags</li>
-<li>Python tests for the tooling</li>
+<ol type="1">
+<li><code>tools/download_benchmark_corpora.py</code> — download + convert + manifest</li>
+<li><code>tools/tests/test_download_benchmark_corpora.py</code> — unit tests</li>
+<li><code>docs/benchmarks/SOURCE.md</code> — provenance documentation</li>
+<li><code>data/benchmarks/corpus_manifest.json</code> — generated manifest (gitignored)</li>
+<li><code>benchmark/corpus/</code> — small checked-in fallback files (~100-200 bytes each)</li>
+<li>Update <code>.gitignore</code> to exclude <code>data/benchmarks/</code></li>
+</ol>
+<h1><a class="anchor" id="autotoc_md110"></a>
+Corpus Manifest Schema</h1>
+<div class="fragment"><div class="line">[</div>
+<div class="line">  {</div>
+<div class="line">    &quot;file&quot;: &quot;en_mars_utf8.txt&quot;,</div>
+<div class="line">    &quot;lang&quot;: &quot;en&quot;,</div>
+<div class="line">    &quot;encoding&quot;: &quot;utf-8&quot;,</div>
+<div class="line">    &quot;bytes&quot;: 123456,</div>
+<div class="line">    &quot;sha256&quot;: &quot;abc123...&quot;</div>
+<div class="line">  }</div>
+<div class="line">]</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md111"></a>
+Fallback Corpus (checked in)</h1>
+<p>Create <code>benchmark/corpus/</code> with small representative samples:</p><ul>
+<li><code>en_mars_utf8.txt</code> — "Mars is the fourth planet from the Sun..."</li>
+<li><code>ar_mars_utf8.txt</code> — Arabic equivalent (~100 bytes)</li>
+<li><code>ru_mars_utf8.txt</code> — Russian equivalent</li>
+<li><code>ja_mars_utf8.txt</code> — Japanese equivalent</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md94"></a>
-Files Expected</h1>
-<ul>
-<li><code>tools/download_benchmark_corpora.py</code></li>
-<li><code>tools/tests/test_download_benchmark_corpora.py</code></li>
-<li><code>docs/benchmarks/</code> or equivalent pristine source directory</li>
-<li><code>docs/benchmarks/SOURCE.md</code></li>
-<li><code>docs/benchmarks/source.bib</code></li>
-<li><code>data/benchmarks/corpus_manifest.json</code></li>
-</ul>
-<h1><a class="anchor" id="autotoc_md95"></a>
-Constraints</h1>
-<ul>
-<li>Keep raw upstream/source files distinct from derived benchmark fixtures</li>
-<li>Record exact retrieval date and checksums</li>
-<li>Avoid overfitting to synthetic ASCII-only data</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md96"></a>
+<p>These enable <code>make bench</code> to work without network access.</p>
+<h1><a class="anchor" id="autotoc_md112"></a>
 Procedure</h1>
 <ol type="1">
-<li>Create branch <code>p3-step2-benchmark-data</code> from <code>main</code></li>
-<li>Add the download/materialization tool with full typing</li>
-<li>Materialize the first corpus set plus provenance docs</li>
-<li>Generate the manifest consumed by later benchmark fixtures</li>
-<li>Add Python tests for parsing, checksums, and manifest generation</li>
-<li>Run <code>make test</code></li>
+<li>Create worktree branch <code>p3-step2-benchmark-data</code> from <code>main</code></li>
+<li>Create <code>tools/download_benchmark_corpora.py</code></li>
+<li>Create fallback corpus files in <code>benchmark/corpus/</code></li>
+<li>Create <code>docs/benchmarks/SOURCE.md</code></li>
+<li>Add <code>data/benchmarks/</code> to <code>.gitignore</code></li>
+<li>Create <code>tools/tests/test_download_benchmark_corpora.py</code></li>
+<li>Run <code>make pytest</code> — Python tests pass</li>
+<li>Run <code>make test</code> — existing tests pass</li>
 <li>Run <code>make lint</code></li>
-<li>Run the tooling smoke command and confirm the manifest is reproducible</li>
-<li>Update <code>handoff-next.md</code></li>
+<li>Optionally run the download tool to verify it works</li>
+<li>Commit, merge to main (non-ff), push both remotes</li>
+<li>Update <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md97"></a>
+<h1><a class="anchor" id="autotoc_md113"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
-<div class="line"># plus the corpus-tool smoke command introduced in this step</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md98"></a>
-Notes</h1>
-<p>Do not add benchmark kernels here. The outcome should be trustworthy benchmark inputs, not measurement logic. </p>
+<div class="line">make pytest</div>
+<div class="line"># Optionally: uv run python tools/download_benchmark_corpora.py</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md114"></a>
+Handoff to Step 3</h1>
+<p>Write to <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>:</p><ul>
+<li>Step 2 is done</li>
+<li>Next: read <code><a class="el" href="p3-step3-benchmark-fixtures_8md.html">p3-step3-benchmark-fixtures.md</a></code></li>
+<li>Fallback corpus files: <code>benchmark/corpus/*.txt</code></li>
+<li>Generated corpus: <code>data/benchmarks/</code> (run download tool to populate)</li>
+<li>Manifest: <code>data/benchmarks/corpus_manifest.json</code> </li>
+</ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

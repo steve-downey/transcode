@@ -99,55 +99,92 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step4_utf_benchmarks.
   <div class="headertitle"><div class="title">P3-Step 4: UTF-Family and ASCII Fast-Path Benchmarks </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><b>Branch:</b> <code>p3-step4-utf-benchmarks</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step3_benchmark_fixtures.html">p3-step3-benchmark-fixtures.md</a></p>
+<div class="textblock"><p><b>Branch:</b> <code>p3-step4-utf-benchmarks</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step3_benchmark_fixtures.html">p3-step3-benchmark-fixtures.md</a> <b>Read first:</b> <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> and <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md110"></a>
+<h1><a class="anchor" id="autotoc_md128"></a>
 Goal</h1>
-<p>Measure the algorithmic UTF paths in <code>beman::transcode</code>, starting with the highest-value core conversions and the ASCII-dominant best-case path discussed in the benchmarking report.</p>
-<h1><a class="anchor" id="autotoc_md111"></a>
-Cases To Cover</h1>
-<ul>
-<li>UTF-8 decode on mostly ASCII corpora</li>
-<li>UTF-8 encode from scalar input where applicable</li>
-<li>UTF-8 &lt;-&gt; UTF-16LE</li>
-<li>UTF-8 &lt;-&gt; UTF-16BE</li>
-<li>eager/monolithic path first</li>
+<p>Measure the algorithmic UTF paths in <code>beman::transcode</code>, focusing on the highest-value core conversions and the ASCII-dominant best-case path.</p>
+<h1><a class="anchor" id="autotoc_md129"></a>
+Context for Executing Agent</h1>
+<p>Benchmark fixtures are available (from Step 3): </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;benchmark_fixture.hpp&quot;</span></div>
+<div class="line"><span class="preprocessor">#include &quot;benchmark_sink.hpp&quot;</span></div>
+<div class="line"><span class="keyword">using namespace </span>beman::transcoding::bench;</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">auto</span> data = corpus_span(<span class="stringliteral">&quot;en_mars_utf8.txt&quot;</span>);</div>
+<div class="line">std::size_t n = count_elements(data | whatwg_decode&lt;codec::utf_8&gt;);</div>
+</div><!-- fragment --><p>Library API for UTF paths: </p><div class="fragment"><div class="line"><span class="comment">// Decode:</span></div>
+<div class="line">bytes | whatwg_decode&lt;codec::utf_8&gt;      <span class="comment">// -&gt; char32_t</span></div>
+<div class="line">bytes | whatwg_decode&lt;codec::utf_16le&gt;   <span class="comment">// -&gt; char32_t</span></div>
+<div class="line">bytes | whatwg_decode&lt;codec::utf_16be&gt;   <span class="comment">// -&gt; char32_t</span></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Encode:</span></div>
+<div class="line">char32_t_range | whatwg_encode&lt;codec::utf_8&gt;   <span class="comment">// -&gt; char</span></div>
+</div><!-- fragment --><p>Corpora (fallback checked-in, or full from download tool):</p><ul>
+<li><code>en_mars_utf8.txt</code> — English, ASCII-heavy</li>
+<li><code>ar_mars_utf8.txt</code> — Arabic, mixed 1/2-byte UTF-8 sequences</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md112"></a>
+<h1><a class="anchor" id="autotoc_md130"></a>
 Deliverables</h1>
-<ul>
-<li>benchmark cases for the UTF-family conversion paths</li>
-<li>corpus labels separating ASCII-heavy and multibyte-heavy inputs</li>
-<li>smoke filters that run quickly during step work</li>
-<li>metadata that clearly identifies the fast-path cases</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md113"></a>
-Constraints</h1>
-<ul>
-<li>keep chunked/lazy stress out of this step</li>
-<li>use preallocated sinks where possible</li>
-<li>avoid adding external baselines yet; this step establishes the native numbers</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md114"></a>
+<ol type="1">
+<li><code>benchmark/utf_benchmarks.bench.cpp</code> — UTF-8 decode and encode cases</li>
+<li>Registration in <code>benchmark/CMakeLists.txt</code></li>
+<li>Updated <code>make bench</code> or tag-based execution</li>
+</ol>
+<h1><a class="anchor" id="autotoc_md131"></a>
+Benchmark Cases</h1>
+<div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;UTF benchmarks&quot;</span>, <span class="stringliteral">&quot;[benchmark][utf]&quot;</span>) {</div>
+<div class="line">    BENCHMARK_ADVANCED(<span class="stringliteral">&quot;UTF-8 decode: English (ASCII-heavy)&quot;</span>)</div>
+<div class="line">        (Catch::Benchmark::Chronometer meter) {</div>
+<div class="line">        <span class="keyword">auto</span> data = corpus_span(<span class="stringliteral">&quot;en_mars_utf8.txt&quot;</span>);</div>
+<div class="line">        meter.measure([&amp;] { <span class="keywordflow">return</span> count_elements(data | whatwg_decode&lt;codec::utf_8&gt;); });</div>
+<div class="line">    };</div>
+<div class="line"> </div>
+<div class="line">    BENCHMARK_ADVANCED(<span class="stringliteral">&quot;UTF-8 decode: Arabic (multibyte-heavy)&quot;</span>)</div>
+<div class="line">        (Catch::Benchmark::Chronometer meter) {</div>
+<div class="line">        <span class="keyword">auto</span> data = corpus_span(<span class="stringliteral">&quot;ar_mars_utf8.txt&quot;</span>);</div>
+<div class="line">        meter.measure([&amp;] { <span class="keywordflow">return</span> count_elements(data | whatwg_decode&lt;codec::utf_8&gt;); });</div>
+<div class="line">    };</div>
+<div class="line"> </div>
+<div class="line">    BENCHMARK_ADVANCED(<span class="stringliteral">&quot;UTF-8 encode round-trip: English&quot;</span>)</div>
+<div class="line">        (Catch::Benchmark::Chronometer meter) {</div>
+<div class="line">        <span class="keyword">auto</span> data = corpus_span(<span class="stringliteral">&quot;en_mars_utf8.txt&quot;</span>);</div>
+<div class="line">        <span class="comment">// Decode then re-encode</span></div>
+<div class="line">        meter.measure([&amp;] {</div>
+<div class="line">            std::size_t n = 0;</div>
+<div class="line">            <span class="keywordflow">for</span> (<span class="keywordtype">char</span> c : data | whatwg_decode&lt;codec::utf_8&gt; | whatwg_encode&lt;codec::utf_8&gt;)</div>
+<div class="line">                ++n;</div>
+<div class="line">            <span class="keywordflow">return</span> n;</div>
+<div class="line">        });</div>
+<div class="line">    };</div>
+<div class="line">}</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md132"></a>
 Procedure</h1>
 <ol type="1">
-<li>Create branch <code>p3-step4-utf-benchmarks</code> from <code>main</code></li>
-<li>Add eager UTF benchmark kernels using the fixture library</li>
-<li>Add ASCII-heavy and multibyte-heavy corpus mappings</li>
-<li>Define smoke filters for a small UTF subset</li>
+<li>Create worktree branch <code>p3-step4-utf-benchmarks</code> from <code>main</code></li>
+<li>Create <code>benchmark/utf_benchmarks.bench.cpp</code> with the cases above</li>
+<li>Add executable to <code>benchmark/CMakeLists.txt</code></li>
+<li>Run <code>make compile</code></li>
 <li>Run <code>make test</code></li>
 <li>Run <code>make lint</code></li>
-<li>Run the UTF benchmark smoke command</li>
-<li>Update <code>handoff-next.md</code></li>
+<li>Run <code>make bench</code> or the utf executable directly</li>
+<li>Commit, merge to main (non-ff), push both remotes</li>
+<li>Update <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md115"></a>
+<h1><a class="anchor" id="autotoc_md133"></a>
 Verification</h1>
-<div class="fragment"><div class="line">make test</div>
+<div class="fragment"><div class="line">make compile</div>
+<div class="line">make test</div>
 <div class="line">make lint</div>
-<div class="line"># plus the UTF benchmark smoke command for the newly added cases</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md116"></a>
-Notes</h1>
-<p>This step should make it easy to answer the report's first practical question: how close the scalar C++ pipeline gets to memory-bandwidth-limited behavior on favorable UTF inputs. </p>
+<div class="line">make bench     # shows UTF timing numbers</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md134"></a>
+Handoff to Step 5</h1>
+<p>Write to <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>:</p><ul>
+<li>Step 4 is done</li>
+<li>Next: read <code><a class="el" href="p3-step5-legacy-whatwg-benchmarks_8md.html">p3-step5-legacy-whatwg-benchmarks.md</a></code></li>
+<li>New file: <code>benchmark/utf_benchmarks.bench.cpp</code></li>
+<li>Benchmark results show ASCII-heavy vs multibyte-heavy decode delta</li>
+<li>Note whether <code>whatwg_encode</code> compose with <code>whatwg_decode</code> smoothly in pipe </li>
+</ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

@@ -1,24 +1,4 @@
 var searchData=
 [
-  ['p3_2dstep1_2dbenchmark_2dharness_2emd_0',['p3-step1-benchmark-harness.md',['../p3-step1-benchmark-harness_8md.html',1,'']]],
-  ['p3_2dstep10_2dboundary_2dstress_2emd_1',['p3-step10-boundary-stress.md',['../p3-step10-boundary-stress_8md.html',1,'']]],
-  ['p3_2dstep11_2dtoolchain_2dmatrix_2emd_2',['p3-step11-toolchain-matrix.md',['../p3-step11-toolchain-matrix_8md.html',1,'']]],
-  ['p3_2dstep12_2dreporting_2dand_2drepro_2emd_3',['p3-step12-reporting-and-repro.md',['../p3-step12-reporting-and-repro_8md.html',1,'']]],
-  ['p3_2dstep2_2dbenchmark_2ddata_2emd_4',['p3-step2-benchmark-data.md',['../p3-step2-benchmark-data_8md.html',1,'']]],
-  ['p3_2dstep3_2dbenchmark_2dfixtures_2emd_5',['p3-step3-benchmark-fixtures.md',['../p3-step3-benchmark-fixtures_8md.html',1,'']]],
-  ['p3_2dstep4_2dutf_2dbenchmarks_2emd_6',['p3-step4-utf-benchmarks.md',['../p3-step4-utf-benchmarks_8md.html',1,'']]],
-  ['p3_2dstep5_2dlegacy_2dwhatwg_2dbenchmarks_2emd_7',['p3-step5-legacy-whatwg-benchmarks.md',['../p3-step5-legacy-whatwg-benchmarks_8md.html',1,'']]],
-  ['p3_2dstep6_2diconv_2dbaselines_2emd_8',['p3-step6-iconv-baselines.md',['../p3-step6-iconv-baselines_8md.html',1,'']]],
-  ['p3_2dstep7_2dcodecvt_2dbaseline_2emd_9',['p3-step7-codecvt-baseline.md',['../p3-step7-codecvt-baseline_8md.html',1,'']]],
-  ['p3_2dstep8_2dencoding_2drs_2dbaseline_2emd_10',['p3-step8-encoding-rs-baseline.md',['../p3-step8-encoding-rs-baseline_8md.html',1,'']]],
-  ['p3_2dstep9_2dsimdutf_2dbaseline_2emd_11',['p3-step9-simdutf-baseline.md',['../p3-step9-simdutf-baseline_8md.html',1,'']]],
-  ['paper_5fdecode_5futf8_2ecpp_12',['paper_decode_utf8.cpp',['../paper__decode__utf8_8cpp.html',1,'']]],
-  ['paper_5ferror_5fvisibility_2ecpp_13',['paper_error_visibility.cpp',['../paper__error__visibility_8cpp.html',1,'']]],
-  ['paper_5ffrom_5fcstring_2ecpp_14',['paper_from_cstring.cpp',['../paper__from__cstring_8cpp.html',1,'']]],
-  ['paper_5ficonv_5fview_2ecpp_15',['paper_iconv_view.cpp',['../paper__iconv__view_8cpp.html',1,'']]],
-  ['paper_5fshift_5fjis_5fto_5futf8_2ecpp_16',['paper_shift_jis_to_utf8.cpp',['../paper__shift__jis__to__utf8_8cpp.html',1,'']]],
-  ['phase2_2dchecklist_2emd_17',['phase2-checklist.md',['../phase2-checklist_8md.html',1,'']]],
-  ['phase2_2dindex_2emd_18',['phase2-index.md',['../phase2-index_8md.html',1,'']]],
-  ['phase3_2dchecklist_2emd_19',['phase3-checklist.md',['../phase3-checklist_8md.html',1,'']]],
-  ['phase3_2dindex_2emd_20',['phase3-index.md',['../phase3-index_8md.html',1,'']]]
+  ['null_5fterm_2ehpp_0',['null_term.hpp',['../null__term_8hpp.html',1,'']]]
 ];

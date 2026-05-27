@@ -99,53 +99,100 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step5_legacy_whatwg_b
   <div class="headertitle"><div class="title">P3-Step 5: Legacy WHATWG Codec Benchmarks </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><b>Branch:</b> <code>p3-step5-legacy-whatwg-benchmarks</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step4_utf_benchmarks.html">p3-step4-utf-benchmarks.md</a></p>
+<div class="textblock"><p><b>Branch:</b> <code>p3-step5-legacy-whatwg-benchmarks</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step4_utf_benchmarks.html">p3-step4-utf-benchmarks.md</a> <b>Read first:</b> <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> and <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md119"></a>
+<h1><a class="anchor" id="autotoc_md137"></a>
 Goal</h1>
-<p>Extend native <code>beman::transcode</code> measurement beyond UTF into representative single-byte and multi-byte WHATWG codecs so the benchmark suite covers the architectural extremes described in the report.</p>
-<h1><a class="anchor" id="autotoc_md120"></a>
-Representative Coverage</h1>
-<ul>
-<li>single-byte table path: <code>windows-1251</code>, <code>iso-8859-2</code>, or equivalent</li>
-<li>mixed branch UTF text like Arabic for predictor pressure</li>
-<li>CJK/stateful path: <code>shift_jis</code>, <code>gb18030</code>, <code>iso_2022_jp</code>, or equivalent</li>
+<p>Extend native <code>beman::transcode</code> measurement beyond UTF into representative single-byte and multi-byte WHATWG codecs, plus the pluggable codec protocol.</p>
+<h1><a class="anchor" id="autotoc_md138"></a>
+Context for Executing Agent</h1>
+<p>Library API for legacy codecs: </p><div class="fragment"><div class="line"><span class="comment">// WhatWG enum-based (closed set):</span></div>
+<div class="line">bytes | whatwg_decode&lt;codec::windows_1251&gt;  <span class="comment">// single-byte table O(1)</span></div>
+<div class="line">bytes | whatwg_decode&lt;codec::shift_jis&gt;     <span class="comment">// multi-byte stateless</span></div>
+<div class="line">bytes | whatwg_decode&lt;codec::gb18030&gt;       <span class="comment">// multi-byte stateful</span></div>
+<div class="line">bytes | whatwg_decode&lt;codec::iso_2022_jp&gt;   <span class="comment">// stateful with escape sequences</span></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Pluggable codec protocol (open extension):</span></div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="table__codec_8hpp.html">beman/transcode/detail/table_codec.hpp</a>&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="decode__view_8hpp.html">beman/transcode/decode_view.hpp</a>&gt;</span></div>
+<div class="line"><span class="comment">// table_codec&lt;std::array&lt;char32_t,128&gt;&gt; — ASCII-compatible single-byte</span></div>
+<div class="line"><span class="comment">// full_table_codec&lt;std::array&lt;char32_t,256&gt;&gt; — non-ASCII-compatible</span></div>
+<div class="line">bytes | decode(my_table_codec{})</div>
+<div class="ttc" id="adecode__view_8hpp_html"><div class="ttname"><a href="decode__view_8hpp.html">decode_view.hpp</a></div></div>
+<div class="ttc" id="atable__codec_8hpp_html"><div class="ttname"><a href="table__codec_8hpp.html">table_codec.hpp</a></div></div>
+</div><!-- fragment --><p>Corpora:</p><ul>
+<li><code>ru_mars_windows1251.bin</code> — Russian in windows-1251 (single-byte)</li>
+<li><code>ja_mars_shiftjis.bin</code> — Japanese in Shift-JIS (multi-byte)</li>
+<li><code>ja_mars_utf8.txt</code> — Japanese UTF-8 (3-byte sequences)</li>
+<li>Fallback versions in <code>benchmark/corpus/</code></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md121"></a>
+<p>Fixture API: <code>corpus_span("filename")</code>, <code>count_elements(range)</code></p>
+<h1><a class="anchor" id="autotoc_md139"></a>
 Deliverables</h1>
+<ol type="1">
+<li><code>benchmark/whatwg_benchmarks.bench.cpp</code> — WhatWG legacy codec cases</li>
+<li><code>benchmark/pluggable_codec_benchmarks.bench.cpp</code> — pluggable protocol cases</li>
+<li>Registration in <code>benchmark/CMakeLists.txt</code></li>
+</ol>
+<h1><a class="anchor" id="autotoc_md140"></a>
+Benchmark Cases</h1>
+<h2><a class="anchor" id="autotoc_md141"></a>
+whatwg_benchmarks.bench.cpp</h2>
 <ul>
-<li>benchmark cases for representative single-byte codecs</li>
-<li>benchmark cases for representative multi-byte codecs</li>
-<li>corpus-to-codec mapping encoded in case metadata</li>
-<li>smoke subset for one single-byte and one multi-byte path</li>
+<li>"Single-byte decode: windows-1251 Russian" — <code>ru_mars_windows1251.bin</code></li>
+<li>"Multi-byte decode: Shift-JIS Japanese" — <code>ja_mars_shiftjis.bin</code></li>
+<li>"UTF-8 decode: Japanese (3-byte heavy)" — <code>ja_mars_utf8.txt</code></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md122"></a>
-Constraints</h1>
-<ul>
-<li>benchmark representative codecs, not every codec in the standard yet</li>
-<li>keep the suite small enough that smoke runs remain practical</li>
-<li>record whether each case is expected best-case or pathological</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md123"></a>
+<h2><a class="anchor" id="autotoc_md142"></a>
+pluggable_codec_benchmarks.bench.cpp</h2>
+<p>For the pluggable protocol, use synthetic data since BLP-59001 and EBCDIC don't have real-world corpora in the repo:</p>
+<div class="fragment"><div class="line"><span class="comment">// 4K buffer of bytes 0x80-0xBF (exercises the table lookup path)</span></div>
+<div class="line">std::string synthetic(4096, <span class="stringliteral">&#39;\xC0&#39;</span>);</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> std::array&lt;char32_t, 128&gt; latin1_upper = [] {</div>
+<div class="line">    std::array&lt;char32_t, 128&gt; t{};</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 128; ++i)</div>
+<div class="line">        t[<span class="keyword">static_cast&lt;</span>std::size_t<span class="keyword">&gt;</span>(i)] = <span class="keyword">static_cast&lt;</span><span class="keywordtype">char32_t</span><span class="keyword">&gt;</span>(0x80 + i);</div>
+<div class="line">    <span class="keywordflow">return</span> t;</div>
+<div class="line">}();</div>
+<div class="line"><span class="keyword">using </span>latin1_codec = table_codec&lt;latin1_upper&gt;;</div>
+<div class="line"> </div>
+<div class="line">BENCHMARK(<span class="stringliteral">&quot;pluggable table_codec: 4K upper-half&quot;</span>) {</div>
+<div class="line">    <span class="keywordflow">return</span> count_elements(std::span&lt;const char&gt;(synthetic) | <a class="code hl_function" href="namespacebeman_1_1transcoding.html#a89135d782fa6c59a4fabb26ab8fdc8a8">decode</a>(latin1_codec{}));</div>
+<div class="line">};</div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_html_a89135d782fa6c59a4fabb26ab8fdc8a8"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a89135d782fa6c59a4fabb26ab8fdc8a8">beman::transcoding::decode</a></div><div class="ttdeci">constexpr decode_closure&lt; Codec &gt; decode(Codec codec={})</div><div class="ttdef"><b>Definition:</b> decode_view.hpp:351</div></div>
+</div><!-- fragment --><p>Compare against equivalent WhatWG codec to prove zero overhead: </p><div class="fragment"><div class="line">BENCHMARK(<span class="stringliteral">&quot;whatwg iso-8859-15: 4K upper-half&quot;</span>) {</div>
+<div class="line">    <span class="keywordflow">return</span> count_elements(std::span&lt;const char&gt;(synthetic) | whatwg_decode&lt;codec::iso_8859_15&gt;);</div>
+<div class="line">};</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md143"></a>
 Procedure</h1>
 <ol type="1">
-<li>Create branch <code>p3-step5-legacy-whatwg-benchmarks</code> from <code>main</code></li>
-<li>Add single-byte representative kernels</li>
-<li>Add multi-byte/stateful representative kernels</li>
-<li>Tag the cases with category metadata</li>
+<li>Create worktree branch <code>p3-step5-legacy-whatwg-benchmarks</code> from <code>main</code></li>
+<li>Create <code>benchmark/whatwg_benchmarks.bench.cpp</code></li>
+<li>Create <code>benchmark/pluggable_codec_benchmarks.bench.cpp</code></li>
+<li>Register in <code>benchmark/CMakeLists.txt</code></li>
+<li>Run <code>make compile</code></li>
 <li>Run <code>make test</code></li>
 <li>Run <code>make lint</code></li>
-<li>Run the legacy benchmark smoke command</li>
-<li>Update <code>handoff-next.md</code></li>
+<li>Run <code>make bench</code></li>
+<li>Commit, merge to main (non-ff), push both remotes</li>
+<li>Update <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md124"></a>
+<h1><a class="anchor" id="autotoc_md144"></a>
 Verification</h1>
-<div class="fragment"><div class="line">make test</div>
+<div class="fragment"><div class="line">make compile</div>
+<div class="line">make test</div>
 <div class="line">make lint</div>
-<div class="line"># plus the legacy benchmark smoke command for representative codecs</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md125"></a>
-Notes</h1>
-<p>The goal here is not exhaustive per-codec reporting. It is to establish the native performance envelope across the key algorithm families. </p>
+<div class="line">make bench</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md145"></a>
+Handoff to Step 6</h1>
+<p>Write to <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>:</p><ul>
+<li>Step 5 is done</li>
+<li>Next: read <code><a class="el" href="p3-step6-iconv-baselines_8md.html">p3-step6-iconv-baselines.md</a></code></li>
+<li>New files: <code>benchmark/whatwg_benchmarks.bench.cpp</code>, <code>benchmark/pluggable_codec_benchmarks.bench.cpp</code></li>
+<li>Note the observed single-byte vs multi-byte performance delta</li>
+<li>Note whether pluggable codec matches built-in WhatWG performance </li>
+</ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
