@@ -160,3 +160,63 @@ if(CARGO_EXECUTABLE)
 else()
     message(STATUS "cargo not found — skipping encoding_rs benchmarks")
 endif()
+
+# simdutf ceiling baseline — optional, off by default.
+# simdutf uses SIMD intrinsics to achieve the maximum possible throughput for
+# UTF-8 decode/validate operations.  Enabling this benchmark requires network
+# access on the first configure (FetchContent downloads the repo).
+#
+# To enable: cmake -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON ...
+option(
+    BEMAN_TRANSCODE_BENCHMARK_SIMDUTF
+    "Enable simdutf ceiling baseline benchmarks (requires network on first configure)"
+    OFF
+)
+if(BEMAN_TRANSCODE_BENCHMARK_SIMDUTF)
+    message(
+        STATUS
+        "simdutf ceiling baseline benchmarks enabled — fetching via FetchContent"
+    )
+
+    include(FetchContent)
+    # Disable simdutf's own test and benchmark builds to keep build times short.
+    set(SIMDUTF_BUILD_TESTS
+        OFF
+        CACHE BOOL
+        "Disable simdutf internal tests"
+        FORCE
+    )
+    set(SIMDUTF_BUILD_BENCHMARKS
+        OFF
+        CACHE BOOL
+        "Disable simdutf internal benchmarks"
+        FORCE
+    )
+    FetchContent_Declare(
+        simdutf
+        GIT_REPOSITORY https://github.com/simdutf/simdutf.git
+        GIT_TAG v5.6.4
+        EXCLUDE_FROM_ALL
+    )
+    FetchContent_MakeAvailable(simdutf)
+
+    add_executable(beman.transcode.benchmarks.simdutf)
+    target_sources(
+        beman.transcode.benchmarks.simdutf
+        PRIVATE simdutf_benchmarks.bench.cpp
+    )
+    target_link_libraries(
+        beman.transcode.benchmarks.simdutf
+        PRIVATE
+            beman::transcode
+            beman.transcode.benchmark_fixture
+            Catch2::Catch2WithMain
+            simdutf
+    )
+else()
+    message(
+        STATUS
+        "simdutf ceiling baseline benchmarks disabled"
+        " (set -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON to enable)"
+    )
+endif()
