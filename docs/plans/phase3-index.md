@@ -146,22 +146,46 @@ GiB/s summaries, and reproducible documentation for future reruns.
 
 ---
 
-## Handoff Notes For This Phase
+## Agent Execution Model
 
-Your Phase 2 kickoff style still works, but benchmarking needs two extra rules:
+Each step is executed by a **stateless agent** that has no memory of prior
+steps. Before starting any step, the agent reads exactly three documents:
 
-1. The prompt should name the active `P3-stepN` file explicitly, because the
-   checklist alone no longer determines the numeric next step globally.
-2. The prompt should ask for the step's **smoke benchmark** only, unless the
-   step explicitly says to run the full matrix.
-3. The prompt should preserve the rule that `make test` covers benchmark-support
-   unit tests but does not execute benchmark workloads.
-4. The prompt should prefer the documented `make` benchmark targets over raw
-   benchmark-binary commands.
+1. **`docs/plans/phase3-handoff.md`** — standing project conventions, API
+   surface, build commands, coding rules. Read this first every time.
+2. **`docs/plans/p3-step<N>-<slug>.md`** — the step-specific plan with full
+   context, deliverables, procedure, and verification.
+3. **`docs/plans/handoff-next.md`** — step-specific notes left by the previous
+   agent: what was done, what files exist, any surprises.
 
-`handoff-next.md` should always record:
+### Worktree Discipline
 
-- active `P3-stepN` file
-- exact `make` targets expected to be green
-- whether any optional baseline dependency is required for that step
-- whether a follow-up should stay in P3 or be kicked back to P2
+Each step works in its own git worktree so nothing steps on anything else:
+```bash
+git worktree add .claude/worktrees/p3-step<N> -b p3-step<N>-<slug> main
+cd .claude/worktrees/p3-step<N>
+# ... do the work ...
+# merge back to main:
+cd <main-repo>
+git merge --no-ff p3-step<N>-<slug> -m "Merge p3-step<N>-<slug>"
+git push origin main && git push bbgithub main
+```
+
+### What to write in handoff-next.md
+
+After completing a step, **overwrite** `docs/plans/handoff-next.md` with:
+- Which step was just completed
+- The next step file to read
+- Files created that the next step depends on
+- Any surprises, deviations, or decisions not in the step doc
+- The exact `make` targets now expected to work
+- Whether any optional dependency is required for the next step
+
+### Rules
+
+1. Name the active `P3-stepN` file explicitly in prompts.
+2. Run the step's **smoke benchmark** only, not the full matrix.
+3. `make test` covers benchmark-support unit tests but does not execute
+   benchmark workloads.
+4. Prefer documented `make` targets over raw binary invocation.
+5. No Co-Author trailer in commits.

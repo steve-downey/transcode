@@ -2,6 +2,7 @@
 
 **Branch:** `p3-step10-boundary-stress`
 **Depends on:** [p3-step9-simdutf-baseline.md](p3-step9-simdutf-baseline.md)
+**Read first:** docs/plans/phase3-handoff.md and docs/plans/handoff-next.md
 
 ---
 
@@ -10,6 +11,20 @@
 Measure the real lazy-pipeline penalty of chunked text processing and boundary
 recovery using deterministic stress cases, including mock-iconv `EINVAL` and
 `E2BIG` conditions.
+
+## Context for Executing Agent
+
+The iconv mock library at `tests/beman/transcode/iconv_mock.hpp` provides
+deterministic mocks. Key mocks for benchmarking:
+- `mock_iconv_e2big` -- returns E2BIG after writing 1 byte
+- `mock_iconv_eilseq` -- always returns EILSEQ
+- `mock_iconv_partial_consume` -- partial progress then EINVAL
+
+The fixture library's `chunk_corpus(data, chunk_size)` splits data for chunked
+benchmarks. The iconv views accept mock function structs via template parameter.
+
+Also benchmark the native whatwg_decode views with chunked input (iterating each
+chunk separately to measure restart cost).
 
 ## Deliverables
 
@@ -48,3 +63,7 @@ make lint
 
 If this step reveals correctness defects rather than performance cliffs, stop
 and write a P2 follow-up instead of folding the fix invisibly into P3.
+
+## Handoff to Step 11
+
+Step 10 done, next read p3-step11-toolchain-matrix.md.

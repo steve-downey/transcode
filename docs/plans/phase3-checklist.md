@@ -135,9 +135,13 @@ is the benchmarking track and uses `P3-stepN` identifiers.
 
 ## Notes
 
+- **Agent docs:** Read `phase3-handoff.md` + step doc + `handoff-next.md` before each step
 - Each step's detailed plan: `docs/plans/p3-step<N>-<slug>.md`
 - Phase 3 overview: `docs/plans/phase3-index.md`
-- Branch naming convention: `p3-step<N>-<slug>`
+- General handoff: `docs/plans/phase3-handoff.md`
+- Per-step handoff: `docs/plans/handoff-next.md` (overwritten each step)
+- **Worktree per step:** `git worktree add .claude/worktrees/p3-step<N> -b p3-step<N>-<slug> main`
+- **Non-ff merges:** `git merge --no-ff p3-step<N>-<slug> -m "Merge ..."`
 - Keep full matrix runs out of routine step validation unless the step says otherwise
 - `make test` should include unit tests for benchmark-support code but should not execute benchmark workloads
 - Benchmark smoke and matrix runs should be exposed via documented `make` targets
