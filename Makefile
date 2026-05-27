@@ -282,6 +282,58 @@ bench-simdutf: compile ## Run simdutf ceiling baseline benchmarks (requires cmak
 bench-boundary: compile ## Run boundary stress benchmarks (chunked + mock-iconv EINVAL/E2BIG)
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
 
+.PHONY: bench-env
+bench-env: ## Print environment metadata (compiler versions, CPU, OS)
+	@echo "# TIMESTAMP: $$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+	@echo "# HOSTNAME: $$(hostname)"
+	@echo "# OS: $$(uname -srm)"
+	@if [ -r /etc/os-release ]; then . /etc/os-release; echo "# DISTRO: $${PRETTY_NAME:-unknown}"; fi
+	@if [ -r /proc/cpuinfo ]; then echo "# CPU: $$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | xargs)"; echo "# CPU_CORES: $$(nproc)"; fi
+	@if command -v gcc >/dev/null 2>&1; then echo "# GCC: $$(gcc --version | head -1)"; else echo "# GCC: not found"; fi
+	@if command -v clang >/dev/null 2>&1; then echo "# CLANG: $$(clang --version | head -1)"; else echo "# CLANG: not found"; fi
+
+.PHONY: bench-lto
+bench-lto: ## Configure (if needed), build, and run GCC LTO benchmark smoke
+	@if ! [ -f build/gcc-release-lto/CMakeCache.txt ]; then \
+		echo "Configuring gcc-release-lto preset..."; \
+		$(CMAKE) --preset gcc-release-lto; \
+	fi
+	$(CMAKE) --build build/gcc-release-lto --target beman.transcode.benchmarks.smoke
+	build/gcc-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-matrix-gcc
+bench-matrix-gcc: ## Configure (if needed), build, and run GCC -O3 benchmark smoke
+	@if ! [ -f build/gcc-release/CMakeCache.txt ]; then \
+		echo "Configuring gcc-release preset..."; \
+		$(CMAKE) --preset gcc-release; \
+	fi
+	$(CMAKE) --build build/gcc-release --target beman.transcode.benchmarks.smoke
+	build/gcc-release/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-matrix-gcc-lto
+bench-matrix-gcc-lto: bench-lto ## Alias for bench-lto (GCC -O3 -flto smoke)
+
+.PHONY: bench-matrix-llvm-lto
+bench-matrix-llvm-lto: ## Configure (if needed), build, and run Clang LTO benchmark smoke (skips if clang absent)
+	@if ! command -v clang >/dev/null 2>&1; then \
+		echo "SKIP: clang not found"; \
+		exit 0; \
+	fi
+	@if ! [ -f build/llvm-release-lto/CMakeCache.txt ]; then \
+		echo "Configuring llvm-release-lto preset..."; \
+		$(CMAKE) --preset llvm-release-lto; \
+	fi
+	$(CMAKE) --build build/llvm-release-lto --target beman.transcode.benchmarks.smoke
+	build/llvm-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-matrix
+bench-matrix: ## Run the full compiler/optimization matrix (skips unavailable slices)
+	infra/scripts/bench-matrix.sh "[smoke]"
+
+.PHONY: bench-matrix-full
+bench-matrix-full: ## Run the full compiler/optimization matrix with all benchmarks
+	infra/scripts/bench-matrix.sh "[benchmark]"
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile

@@ -93,9 +93,9 @@ TEST_CASE("Mock-iconv EINVAL stress: pairwise staging", "[benchmark][boundary][s
 
     BENCHMARK_ADVANCED("Mock-iconv pairwise EINVAL: 64-byte corpus")
     (Catch::Benchmark::Chronometer meter) {
-        iconv_functions          fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
-        std::span<const char>    data{einval_corpus.data(), einval_corpus.size()};
-        std::span<char>          out{mock_out_buf};
+        iconv_functions       fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
+        std::span<const char> data{einval_corpus.data(), einval_corpus.size()};
+        std::span<char>       out{mock_out_buf};
         meter.measure([&] {
             return count_elements(
                 iconv_transcode_view<iconv_functions, std::span<const char>>(data, fns, "X", "X", out));
@@ -118,9 +118,9 @@ TEST_CASE("Mock-iconv E2BIG stress: buffer exhaustion recovery", "[benchmark][bo
 
     BENCHMARK_ADVANCED("Mock-iconv E2BIG: 1 byte/call, 48-byte corpus")
     (Catch::Benchmark::Chronometer meter) {
-        iconv_functions          fns{mock_iconv_open, mock_iconv_e2big, mock_iconv_close};
-        std::span<const char>    data{e2big_corpus.data(), e2big_corpus.size()};
-        std::span<char>          out{mock_out_buf};
+        iconv_functions       fns{mock_iconv_open, mock_iconv_e2big, mock_iconv_close};
+        std::span<const char> data{e2big_corpus.data(), e2big_corpus.size()};
+        std::span<char>       out{mock_out_buf};
         meter.measure([&] {
             return count_elements(
                 iconv_transcode_view<iconv_functions, std::span<const char>>(data, fns, "X", "X", out));
