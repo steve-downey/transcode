@@ -83,8 +83,7 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
         iterator& operator++();
         void      operator++(int);
 
-        // WORKAROUND: Prevent ADL issues with expected.
-        bool operator==(std::default_sentinel_t) const { return this->done_; }
+        friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
   public:

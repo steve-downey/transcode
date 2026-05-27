@@ -415,21 +415,17 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
         constexpr void operator++(int)
             requires(!std::ranges::forward_range<R>);
 
-        // WORKAROUND: Clang 19+ libc++ triggers a constraint recursion bug
-        // with `std::expected` when iterators use inline hidden friends.
-        // We use member functions to prevent ADL from finding it.
-        constexpr bool operator==(const iterator& rhs) const
+        constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
             requires std::ranges::forward_range<R>
         {
-            if (this->done_ || rhs.done_)
-                return this->done_ == rhs.done_;
-            return this->current_ == rhs.current_ && this->len_ == rhs.len_ && this->pos_ == rhs.pos_ &&
-                   this->done_ == rhs.done_ && this->iso2022jp_state_ == rhs.iso2022jp_state_ &&
-                   std::equal(std::begin(this->buf_), std::end(this->buf_), std::begin(rhs.buf_));
+            if (lhs.done_ || rhs.done_)
+                return lhs.done_ == rhs.done_;
+            return lhs.current_ == rhs.current_ && lhs.len_ == rhs.len_ && lhs.pos_ == rhs.pos_ &&
+                   lhs.done_ == rhs.done_ && lhs.iso2022jp_state_ == rhs.iso2022jp_state_ &&
+                   std::equal(std::begin(lhs.buf_), std::end(lhs.buf_), std::begin(rhs.buf_));
         }
 
-        // WORKAROUND: Prevent ADL issues with expected.
-        constexpr bool operator==(std::default_sentinel_t) const { return this->done_; }
+        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
   public:
@@ -525,21 +521,17 @@ class whatwg_encode_or_error_view : public std::ranges::view_interface<whatwg_en
         constexpr void operator++(int)
             requires(!std::ranges::forward_range<R>);
 
-        // WORKAROUND: Clang 19+ libc++ triggers a constraint recursion bug
-        // with `std::expected` when iterators use inline hidden friends.
-        // We use member functions to prevent ADL from finding it.
-        constexpr bool operator==(const iterator& rhs) const
+        constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
             requires std::ranges::forward_range<R>
         {
-            if (this->done_ || rhs.done_)
-                return this->done_ == rhs.done_;
-            return this->current_ == rhs.current_ && this->len_ == rhs.len_ && this->pos_ == rhs.pos_ &&
-                   this->done_ == rhs.done_ && this->iso2022jp_state_ == rhs.iso2022jp_state_ &&
-                   std::equal(std::begin(this->buf_), std::end(this->buf_), std::begin(rhs.buf_));
+            if (lhs.done_ || rhs.done_)
+                return lhs.done_ == rhs.done_;
+            return lhs.current_ == rhs.current_ && lhs.len_ == rhs.len_ && lhs.pos_ == rhs.pos_ &&
+                   lhs.done_ == rhs.done_ && lhs.iso2022jp_state_ == rhs.iso2022jp_state_ &&
+                   std::equal(std::begin(lhs.buf_), std::end(lhs.buf_), std::begin(rhs.buf_));
         }
 
-        // WORKAROUND: Prevent ADL issues with expected.
-        constexpr bool operator==(std::default_sentinel_t) const { return this->done_; }
+        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
   public:

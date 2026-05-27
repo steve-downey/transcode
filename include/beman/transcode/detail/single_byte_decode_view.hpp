@@ -96,13 +96,12 @@ class single_byte_decode_view : public std::ranges::view_interface<single_byte_d
 
         constexpr difference_type operator-(const iterator& other) const { return current_ - other.current_; }
 
-        // WORKAROUND: Clang 19+ libc++ triggers a constraint recursion bug
-        // with `std::expected` when iterators use inline hidden friends.
-        // We use member functions to prevent ADL from finding it.
-        constexpr bool operator==(const iterator& rhs) const { return this->current_ == rhs.current_; }
+        constexpr friend bool operator==(const iterator& lhs, const iterator& rhs) {
+            return lhs.current_ == rhs.current_;
+        }
 
-        constexpr std::strong_ordering operator<=>(const iterator& rhs) const {
-            return this->current_ <=> rhs.current_;
+        constexpr friend std::strong_ordering operator<=>(const iterator& lhs, const iterator& rhs) {
+            return lhs.current_ <=> rhs.current_;
         }
     };
 
