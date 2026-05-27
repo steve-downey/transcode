@@ -71,6 +71,27 @@ target_link_libraries(
 
 find_package(Iconv REQUIRED)
 
+# Boundary stress benchmarks: chunked whatwg_decode restart overhead and
+# mock-iconv EINVAL/E2BIG recovery kernels.  Requires Iconv for the view
+# header; uses the mock library from tests/ (no extra external dependency).
+add_executable(beman.transcode.benchmarks.boundary)
+target_sources(
+    beman.transcode.benchmarks.boundary
+    PRIVATE boundary_stress_benchmarks.bench.cpp
+)
+target_include_directories(
+    beman.transcode.benchmarks.boundary
+    PRIVATE "${PROJECT_SOURCE_DIR}"
+)
+target_link_libraries(
+    beman.transcode.benchmarks.boundary
+    PRIVATE
+        beman::transcode
+        beman.transcode.benchmark_fixture
+        Catch2::Catch2WithMain
+        Iconv::Iconv
+)
+
 add_executable(beman.transcode.benchmarks.iconv)
 target_sources(
     beman.transcode.benchmarks.iconv

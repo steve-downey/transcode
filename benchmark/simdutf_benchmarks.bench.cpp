@@ -45,18 +45,14 @@ TEST_CASE("simdutf ceiling baselines", "[benchmark][simdutf]") {
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("en_mars_utf8.txt");
         REQUIRE(src.size() <= kMaxCodepoints);
-        meter.measure([&] {
-            return simdutf::convert_utf8_to_utf32(src.data(), src.size(), g_out_utf32);
-        });
+        meter.measure([&] { return simdutf::convert_utf8_to_utf32(src.data(), src.size(), g_out_utf32); });
     };
 
     BENCHMARK_ADVANCED("simdutf UTF-8→UTF-32: Arabic (multibyte-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ar_mars_utf8.txt");
         REQUIRE(src.size() <= kMaxCodepoints);
-        meter.measure([&] {
-            return simdutf::convert_utf8_to_utf32(src.data(), src.size(), g_out_utf32);
-        });
+        meter.measure([&] { return simdutf::convert_utf8_to_utf32(src.data(), src.size(), g_out_utf32); });
     };
 
     // --- UTF-8 validation (sub-operation of decode; fastest simdutf path) ---
@@ -79,17 +75,13 @@ TEST_CASE("simdutf ceiling baselines", "[benchmark][simdutf]") {
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("en_mars_utf8.txt");
         REQUIRE(src.size() <= kMaxCodepoints);
-        meter.measure([&] {
-            return simdutf::convert_utf8_to_utf16le(src.data(), src.size(), g_out_utf16);
-        });
+        meter.measure([&] { return simdutf::convert_utf8_to_utf16le(src.data(), src.size(), g_out_utf16); });
     };
 
     BENCHMARK_ADVANCED("simdutf UTF-8→UTF-16: Arabic (multibyte-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ar_mars_utf8.txt");
         REQUIRE(src.size() <= kMaxCodepoints);
-        meter.measure([&] {
-            return simdutf::convert_utf8_to_utf16le(src.data(), src.size(), g_out_utf16);
-        });
+        meter.measure([&] { return simdutf::convert_utf8_to_utf16le(src.data(), src.size(), g_out_utf16); });
     };
 }

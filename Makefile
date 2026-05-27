@@ -278,6 +278,10 @@ bench-encoding-rs: compile ## Run encoding_rs baseline benchmarks (requires carg
 bench-simdutf: compile ## Run simdutf ceiling baseline benchmarks (requires cmake -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON)
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.simdutf "[benchmark][simdutf]"
 
+.PHONY: bench-boundary
+bench-boundary: compile ## Run boundary stress benchmarks (chunked + mock-iconv EINVAL/E2BIG)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile
