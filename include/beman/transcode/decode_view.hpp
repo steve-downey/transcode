@@ -60,13 +60,13 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 
         constexpr friend iterator operator+(difference_type n, iterator it) { return it += n; }
 
-        constexpr friend bool operator==(const iterator& lhs, const iterator& rhs) {
-            return lhs.current_ == rhs.current_;
-        }
+        // WORKAROUND: Clang 19+ libc++ triggers a constraint recursion bug
+        // with `std::expected` when iterators use inline hidden friends.
+        // We use member functions to prevent ADL from finding it.
+        constexpr bool operator==(const iterator& rhs) const { return this->current_ == rhs.current_; }
 
-        constexpr friend auto operator<=>(const iterator& lhs, const iterator& rhs) {
-            return lhs.current_ <=> rhs.current_;
-        }
+        // WORKAROUND: ADL issue in libc++ expected with hidden friends.
+        constexpr auto operator<=>(const iterator& rhs) const { return this->current_ <=> rhs.current_; }
     };
 
   public:
@@ -129,13 +129,13 @@ class random_access_decode_or_error_view
 
         constexpr friend iterator operator+(difference_type n, iterator it) { return it += n; }
 
-        constexpr friend bool operator==(const iterator& lhs, const iterator& rhs) {
-            return lhs.current_ == rhs.current_;
-        }
+        // WORKAROUND: Clang 19+ libc++ triggers a constraint recursion bug
+        // with `std::expected` when iterators use inline hidden friends.
+        // We use member functions to prevent ADL from finding it.
+        constexpr bool operator==(const iterator& rhs) const { return this->current_ == rhs.current_; }
 
-        constexpr friend auto operator<=>(const iterator& lhs, const iterator& rhs) {
-            return lhs.current_ <=> rhs.current_;
-        }
+        // WORKAROUND: ADL issue in libc++ expected with hidden friends.
+        constexpr auto operator<=>(const iterator& rhs) const { return this->current_ <=> rhs.current_; }
     };
 
   public:
@@ -200,15 +200,19 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R>> {
         constexpr void operator++(int)
             requires(!std::ranges::forward_range<R>);
 
-        constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
+        // WORKAROUND: Clang 19+ libc++ triggers a constraint recursion bug
+        // with `std::expected` when iterators use inline hidden friends.
+        // We use member functions to prevent ADL from finding it.
+        constexpr bool operator==(const iterator& rhs) const
             requires std::ranges::forward_range<R>
         {
-            if (lhs.done_ || rhs.done_)
-                return lhs.done_ == rhs.done_;
-            return lhs.current_ == rhs.current_ && lhs.value_ == rhs.value_ && lhs.done_ == rhs.done_;
+            if (this->done_ || rhs.done_)
+                return this->done_ == rhs.done_;
+            return this->current_ == rhs.current_ && this->value_ == rhs.value_ && this->done_ == rhs.done_;
         }
 
-        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
+        // WORKAROUND: Prevent ADL issues with expected.
+        constexpr bool operator==(std::default_sentinel_t) const { return this->done_; }
     };
 
   public:
@@ -275,15 +279,19 @@ class decode_or_error_view : public std::ranges::view_interface<decode_or_error_
         constexpr void operator++(int)
             requires(!std::ranges::forward_range<R>);
 
-        constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
+        // WORKAROUND: Clang 19+ libc++ triggers a constraint recursion bug
+        // with `std::expected` when iterators use inline hidden friends.
+        // We use member functions to prevent ADL from finding it.
+        constexpr bool operator==(const iterator& rhs) const
             requires std::ranges::forward_range<R>
         {
-            if (lhs.done_ || rhs.done_)
-                return lhs.done_ == rhs.done_;
-            return lhs.current_ == rhs.current_ && lhs.done_ == rhs.done_;
+            if (this->done_ || rhs.done_)
+                return this->done_ == rhs.done_;
+            return this->current_ == rhs.current_ && this->done_ == rhs.done_;
         }
 
-        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
+        // WORKAROUND: Prevent ADL issues with expected.
+        constexpr bool operator==(std::default_sentinel_t) const { return this->done_; }
     };
 
   public:

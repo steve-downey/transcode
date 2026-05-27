@@ -478,23 +478,27 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
         constexpr void operator++(int)
             requires(!std::ranges::forward_range<R>);
 
-        constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
+        // WORKAROUND: Clang 19+ libc++ triggers a constraint recursion bug
+        // with `std::expected` when iterators use inline hidden friends.
+        // We use member functions to prevent ADL from finding it.
+        constexpr bool operator==(const iterator& rhs) const
             requires std::ranges::forward_range<R>
         {
-            if (lhs.done_ || rhs.done_)
-                return lhs.done_ == rhs.done_;
-            return lhs.current_ == rhs.current_ && lhs.value_ == rhs.value_ && lhs.done_ == rhs.done_ &&
-                   lhs.pending_count_ == rhs.pending_count_ && lhs.pending_cp_ == rhs.pending_cp_ &&
-                   lhs.has_pending_cp_ == rhs.has_pending_cp_ && lhs.iso2022jp_state_ == rhs.iso2022jp_state_ &&
-                   lhs.iso2022jp_output_state_ == rhs.iso2022jp_output_state_ &&
-                   lhs.iso2022jp_output_flag_ == rhs.iso2022jp_output_flag_ &&
-                   lhs.iso2022jp_lead_ == rhs.iso2022jp_lead_ && lhs.gb_replay_count_ == rhs.gb_replay_count_ &&
-                   lhs.gb_replay_pos_ == rhs.gb_replay_pos_ &&
-                   std::equal(std::begin(lhs.pending_), std::end(lhs.pending_), std::begin(rhs.pending_)) &&
-                   std::equal(std::begin(lhs.gb_replay_), std::end(lhs.gb_replay_), std::begin(rhs.gb_replay_));
+            if (this->done_ || rhs.done_)
+                return this->done_ == rhs.done_;
+            return this->current_ == rhs.current_ && this->value_ == rhs.value_ && this->done_ == rhs.done_ &&
+                   this->pending_count_ == rhs.pending_count_ && this->pending_cp_ == rhs.pending_cp_ &&
+                   this->has_pending_cp_ == rhs.has_pending_cp_ && this->iso2022jp_state_ == rhs.iso2022jp_state_ &&
+                   this->iso2022jp_output_state_ == rhs.iso2022jp_output_state_ &&
+                   this->iso2022jp_output_flag_ == rhs.iso2022jp_output_flag_ &&
+                   this->iso2022jp_lead_ == rhs.iso2022jp_lead_ && this->gb_replay_count_ == rhs.gb_replay_count_ &&
+                   this->gb_replay_pos_ == rhs.gb_replay_pos_ &&
+                   std::equal(std::begin(this->pending_), std::end(this->pending_), std::begin(rhs.pending_)) &&
+                   std::equal(std::begin(this->gb_replay_), std::end(this->gb_replay_), std::begin(rhs.gb_replay_));
         }
 
-        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
+        // WORKAROUND: Prevent ADL issues with expected.
+        constexpr bool operator==(std::default_sentinel_t) const { return this->done_; }
     };
 
   public:
@@ -602,23 +606,27 @@ class whatwg_decode_or_error_view : public std::ranges::view_interface<whatwg_de
         constexpr void operator++(int)
             requires(!std::ranges::forward_range<R>);
 
-        constexpr friend bool operator==(const iterator& lhs, const iterator& rhs)
+        // WORKAROUND: Clang 19+ libc++ triggers a constraint recursion bug
+        // with `std::expected` when iterators use inline hidden friends.
+        // We use member functions to prevent ADL from finding it.
+        constexpr bool operator==(const iterator& rhs) const
             requires std::ranges::forward_range<R>
         {
-            if (lhs.done_ || rhs.done_)
-                return lhs.done_ == rhs.done_;
-            return lhs.current_ == rhs.current_ && lhs.value_ == rhs.value_ && lhs.done_ == rhs.done_ &&
-                   lhs.pending_count_ == rhs.pending_count_ && lhs.pending_cp_ == rhs.pending_cp_ &&
-                   lhs.has_pending_cp_ == rhs.has_pending_cp_ && lhs.iso2022jp_state_ == rhs.iso2022jp_state_ &&
-                   lhs.iso2022jp_output_state_ == rhs.iso2022jp_output_state_ &&
-                   lhs.iso2022jp_output_flag_ == rhs.iso2022jp_output_flag_ &&
-                   lhs.iso2022jp_lead_ == rhs.iso2022jp_lead_ && lhs.gb_replay_count_ == rhs.gb_replay_count_ &&
-                   lhs.gb_replay_pos_ == rhs.gb_replay_pos_ &&
-                   std::equal(std::begin(lhs.pending_), std::end(lhs.pending_), std::begin(rhs.pending_)) &&
-                   std::equal(std::begin(lhs.gb_replay_), std::end(lhs.gb_replay_), std::begin(rhs.gb_replay_));
+            if (this->done_ || rhs.done_)
+                return this->done_ == rhs.done_;
+            return this->current_ == rhs.current_ && this->value_ == rhs.value_ && this->done_ == rhs.done_ &&
+                   this->pending_count_ == rhs.pending_count_ && this->pending_cp_ == rhs.pending_cp_ &&
+                   this->has_pending_cp_ == rhs.has_pending_cp_ && this->iso2022jp_state_ == rhs.iso2022jp_state_ &&
+                   this->iso2022jp_output_state_ == rhs.iso2022jp_output_state_ &&
+                   this->iso2022jp_output_flag_ == rhs.iso2022jp_output_flag_ &&
+                   this->iso2022jp_lead_ == rhs.iso2022jp_lead_ && this->gb_replay_count_ == rhs.gb_replay_count_ &&
+                   this->gb_replay_pos_ == rhs.gb_replay_pos_ &&
+                   std::equal(std::begin(this->pending_), std::end(this->pending_), std::begin(rhs.pending_)) &&
+                   std::equal(std::begin(this->gb_replay_), std::end(this->gb_replay_), std::begin(rhs.gb_replay_));
         }
 
-        constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
+        // WORKAROUND: Prevent ADL issues with expected.
+        constexpr bool operator==(std::default_sentinel_t) const { return this->done_; }
     };
 
   public:
