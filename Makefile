@@ -254,6 +254,14 @@ bench: compile ## Run benchmark smoke
 bench-utf: compile ## Run UTF-family benchmarks
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.utf "[benchmark][utf]"
 
+.PHONY: bench-whatwg
+bench-whatwg: compile ## Run WHATWG legacy codec benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
+
+.PHONY: bench-pluggable
+bench-pluggable: compile ## Run pluggable codec benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile

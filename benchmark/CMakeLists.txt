@@ -42,3 +42,29 @@ target_link_libraries(
         beman.transcode.benchmark_fixture
         Catch2::Catch2WithMain
 )
+
+add_executable(beman.transcode.benchmarks.whatwg)
+target_sources(
+    beman.transcode.benchmarks.whatwg
+    PRIVATE whatwg_benchmarks.bench.cpp
+)
+target_link_libraries(
+    beman.transcode.benchmarks.whatwg
+    PRIVATE
+        beman::transcode
+        beman.transcode.benchmark_fixture
+        Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.benchmarks.pluggable)
+target_sources(
+    beman.transcode.benchmarks.pluggable
+    PRIVATE pluggable_codec_benchmarks.bench.cpp
+)
+target_link_libraries(
+    beman.transcode.benchmarks.pluggable
+    PRIVATE
+        beman::transcode
+        beman.transcode.benchmark_fixture
+        Catch2::Catch2WithMain
+)
