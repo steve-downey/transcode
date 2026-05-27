@@ -3,11 +3,15 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_CONCEPTS_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_CONCEPTS_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/codec_result.hpp>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <concepts>
 #include <optional>
 
+#endif
 namespace beman::transcoding {
 
 template <typename C>

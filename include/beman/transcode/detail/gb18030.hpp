@@ -3,14 +3,18 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_GB18030_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_GB18030_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/tables/gb18030_ranges.hpp>
 #include <beman/transcode/detail/tables/gbk.hpp>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <cstdint>
 #include <iterator>
 #include <utility>
 
+#endif
 namespace beman::transcoding::detail {
 
 struct gb18030_decode_result {

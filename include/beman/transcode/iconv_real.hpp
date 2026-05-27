@@ -3,12 +3,16 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_ICONV_REAL_HPP
 #define INCLUDE_BEMAN_TRANSCODE_ICONV_REAL_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/iconv_transcode_or_error_view.hpp>
 #include <beman/transcode/iconv_transcode_view.hpp>
 
 #include <iconv.h>
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <span>
 
+#endif
 namespace beman::transcoding {
 
 inline iconv_functions make_real_iconv_fns() noexcept { return {::iconv_open, ::iconv, ::iconv_close}; }

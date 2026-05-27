@@ -3,10 +3,14 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_NULL_TERM_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_NULL_TERM_HPP
 
+#include <beman/transcode/config.hpp>
+
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <iterator>
 #include <ranges>
 #include <type_traits>
 
+#endif
 namespace beman::transcoding {
 
 struct null_sentinel_t {

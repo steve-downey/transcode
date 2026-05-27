@@ -3,14 +3,18 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_SNIFF_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_SNIFF_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/null_term.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <cstdint>
 #include <optional>
 #include <ranges>
 
+#endif
 namespace beman::transcoding {
 
 // Detects encoding by examining a BOM at the start of the byte range.

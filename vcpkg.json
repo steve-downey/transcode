@@ -5,6 +5,7 @@
     {
       "name": "catch2",
       "host": true
-    }
+    },
+    "libiconv"
   ]
 }

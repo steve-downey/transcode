@@ -3,16 +3,20 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_ICONV_TRANSCODE_VIEW_HPP
 #define INCLUDE_BEMAN_TRANSCODE_ICONV_TRANSCODE_VIEW_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
 
 #include <iconv.h>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <cerrno>
 #include <iterator>
 #include <ranges>
 #include <span>
 
+#endif
 namespace beman::transcoding {
 
 // iconv_functions bundles the three POSIX iconv lifecycle callables.

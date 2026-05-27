@@ -3,10 +3,14 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF16_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF16_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/error.hpp>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <iterator>
 
+#endif
 namespace beman::transcoding::detail {
 
 struct utf16_decode_result {

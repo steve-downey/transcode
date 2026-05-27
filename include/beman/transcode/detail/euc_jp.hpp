@@ -3,12 +3,16 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_EUC_JP_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_EUC_JP_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/tables/euc_jp_jis0212.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <iterator>
 
+#endif
 namespace beman::transcoding::detail {
 
 struct euc_jp_decode_result {

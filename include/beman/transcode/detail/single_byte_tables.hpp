@@ -3,6 +3,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_SINGLE_BYTE_TABLES_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_SINGLE_BYTE_TABLES_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/whatwg_decode_view.hpp>
 
 namespace beman::transcoding::detail {

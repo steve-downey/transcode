@@ -5,8 +5,12 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_GB18030_RANGES_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_GB18030_RANGES_HPP
 
+#include <beman/transcode/config.hpp>
+
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <cstdint>
 
+#endif
 namespace beman::transcoding::detail::tables {
 
 struct gb18030_range {

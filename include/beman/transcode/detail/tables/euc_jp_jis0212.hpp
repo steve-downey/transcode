@@ -5,6 +5,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_JP_JIS0212_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_JP_JIS0212_HPP
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {
 
 inline constexpr char32_t euc_jp_jis0212[8836] = {

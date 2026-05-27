@@ -3,11 +3,15 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_EUC_KR_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_EUC_KR_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/tables/euc_kr.hpp>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <iterator>
 
+#endif
 namespace beman::transcoding::detail {
 
 struct euc_kr_decode_result {
