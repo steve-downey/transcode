@@ -10,9 +10,9 @@
 #include <beman/transcode/whatwg_decode_view.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-#include <cstdint>
-#include <optional>
-#include <ranges>
+    #include <cstdint>
+    #include <optional>
+    #include <ranges>
 
 #endif
 namespace beman::transcoding {

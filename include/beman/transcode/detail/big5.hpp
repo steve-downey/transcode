@@ -9,7 +9,7 @@
 #include <beman/transcode/detail/tables/big5.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-#include <iterator>
+    #include <iterator>
 
 #endif
 namespace beman::transcoding::detail {

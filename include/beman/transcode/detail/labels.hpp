@@ -9,9 +9,9 @@
 #include <beman/transcode/whatwg_decode_view.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-#include <algorithm>
-#include <optional>
-#include <string_view>
+    #include <algorithm>
+    #include <optional>
+    #include <string_view>
 
 #endif
 namespace beman::transcoding {

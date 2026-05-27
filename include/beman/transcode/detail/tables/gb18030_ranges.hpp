@@ -8,7 +8,7 @@
 #include <beman/transcode/config.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-#include <cstdint>
+    #include <cstdint>
 
 #endif
 namespace beman::transcoding::detail::tables {

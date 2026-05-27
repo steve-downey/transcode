@@ -46,11 +46,11 @@
 #include <beman/transcode/whatwg_decode_view.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-#include <expected>
-#include <compare>
-#include <algorithm>
-#include <iterator>
-#include <ranges>
+    #include <expected>
+    #include <compare>
+    #include <algorithm>
+    #include <iterator>
+    #include <ranges>
 
 #endif
 namespace beman::transcoding {

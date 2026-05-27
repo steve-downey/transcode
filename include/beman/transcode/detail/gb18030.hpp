@@ -10,9 +10,9 @@
 #include <beman/transcode/detail/tables/gbk.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-#include <cstdint>
-#include <iterator>
-#include <utility>
+    #include <cstdint>
+    #include <iterator>
+    #include <utility>
 
 #endif
 namespace beman::transcoding::detail {

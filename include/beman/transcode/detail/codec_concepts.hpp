@@ -8,8 +8,8 @@
 #include <beman/transcode/detail/codec_result.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-#include <concepts>
-#include <optional>
+    #include <concepts>
+    #include <optional>
 
 #endif
 namespace beman::transcoding {

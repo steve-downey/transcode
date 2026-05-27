@@ -8,8 +8,8 @@
 #include <beman/transcode/detail/single_byte_tables.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-#include <iterator>
-#include <ranges>
+    #include <iterator>
+    #include <ranges>
 
 #endif
 namespace beman::transcoding {

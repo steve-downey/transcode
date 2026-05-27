@@ -10,7 +10,7 @@
 
 #include <iconv.h>
 #if !BEMAN_TRANSCODE_USE_MODULES()
-#include <span>
+    #include <span>
 
 #endif
 namespace beman::transcoding {
