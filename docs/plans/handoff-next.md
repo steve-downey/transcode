@@ -2,39 +2,42 @@
 
 ## Completed
 
-No Phase 3 steps have been completed yet.
+- **P3-Step 1: Benchmark harness scaffolding** — done on `worktree-pluggable-codec-protocol` branch
+
+## What was done
+
+- Added `BEMAN_TRANSCODE_BUILD_BENCHMARKS` option to `CMakeLists.txt` (default `${PROJECT_IS_TOP_LEVEL}`)
+- Added `add_subdirectory(benchmark)` guarded by that option (after the examples block)
+- Created `benchmark/CMakeLists.txt` — registers `beman.transcode.benchmarks.smoke` linked to `beman::transcode` and `Catch2::Catch2WithMain`
+- Created `benchmark/smoke.bench.cpp` — one `BENCHMARK` case decoding a 4096-byte ASCII string via `whatwg_decode<codec::utf_8>`
+- Added `make bench` target to `Makefile` — depends on `compile`, runs the smoke binary with `"[smoke]"` tag filter
+
+## Files created
+
+- `benchmark/CMakeLists.txt`
+- `benchmark/smoke.bench.cpp`
 
 ## Next Step
 
-Read `docs/plans/p3-step1-benchmark-harness.md`
+Read `docs/plans/p3-step2-benchmark-data.md`
 
 Also read `docs/plans/phase3-handoff.md` for project conventions.
 
 ## Current State
 
-- `make test` passes (662 tests)
+- `make test` passes (662 C++ + 171 Python tests)
 - `make lint` passes
-- No `benchmark/` directory exists yet
-- No `make bench` target exists yet
-- Catch2 3.x is available via FetchContent (already a dependency)
+- `make bench` works: executable at `.build/build-system/benchmark/Asan/beman.transcode.benchmarks.smoke`
+- Smoke benchmark reports ~127 µs/iter for 4096-byte ASCII UTF-8 decode (measured under Asan)
 
 ## Branch Discipline
 
-Each step works in its own git worktree:
-```bash
-# Create worktree for the step:
-git worktree add .claude/worktrees/p3-step1 -b p3-step1-benchmark-harness main
-cd .claude/worktrees/p3-step1
-
-# After completing work:
-git add <files> && git commit -m "..."
-# Return to main repo and merge:
-cd <main-repo>
-git merge --no-ff p3-step1-benchmark-harness -m "Merge p3-step1-benchmark-harness"
-git push origin main && git push bbgithub main
-git worktree remove .claude/worktrees/p3-step1
-```
+This step was done on `worktree-pluggable-codec-protocol`. After merging to main, the next step
+should follow the same pattern (work in this worktree, update from main first).
 
 ## Notes
 
-None yet.
+- Benchmark executable path: `.build/build-system/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke`
+- The `[smoke]` tag filter in `make bench` means only tests tagged `[smoke]` run; add this tag to any benchmark TEST_CASE you want included in the smoke run
+- Catch2 benchmark macros are in `<catch2/catch_all.hpp>` (already available via FetchContent)
+- Asan config is the default (`CONFIG ?= Asan` in Makefile); Release/RelWithDebInfo give more realistic perf numbers
