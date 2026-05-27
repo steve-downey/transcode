@@ -11,6 +11,9 @@ tmp/
 .update-submodules
 /installtest/.build/
 
+# Generated benchmark corpora (populated by tools/download_benchmark_corpora.py)
+/data/benchmarks/
+
 # Python / uv
 /.venv/
 uv.lock
