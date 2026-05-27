@@ -31,4 +31,22 @@ TEST_CASE("UTF benchmarks", "[benchmark][utf]") {
         meter.measure(
             [&] { return count_elements(data | whatwg_decode<codec::utf_8> | whatwg_encode<codec::utf_8>); });
     };
+
+    // Large-stream benchmarks: exercises sustained throughput rather than
+    // per-call overhead.  Uses War and Peace (~3.2 MiB when downloaded via
+    // tools/download_benchmark_corpora.py; falls back to a small excerpt
+    // from benchmark/corpus/ when the full corpus is not present).
+
+    BENCHMARK_ADVANCED("UTF-8 decode: large stream (War and Peace, ASCII-heavy)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("war_and_peace_utf8.txt");
+        meter.measure([&] { return count_elements(data | whatwg_decode<codec::utf_8>); });
+    };
+
+    BENCHMARK_ADVANCED("UTF-8 encode round-trip: large stream (War and Peace)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("war_and_peace_utf8.txt");
+        meter.measure(
+            [&] { return count_elements(data | whatwg_decode<codec::utf_8> | whatwg_encode<codec::utf_8>); });
+    };
 }
