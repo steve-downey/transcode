@@ -2,73 +2,71 @@
 
 ## Completed
 
-- **P3-Step 4: UTF-family and ASCII fast-path benchmarks** — done on `worktree-pluggable-codec-protocol` branch
+- **P3-Step 5: Legacy WHATWG codec and pluggable codec benchmarks** — done on `worktree-pluggable-codec-protocol` branch
 
 ## What was done
 
-- Created `benchmark/utf_benchmarks.bench.cpp` — three benchmark cases:
-  - `UTF-8 decode: English (ASCII-heavy)` — measures `corpus_span("en_mars_utf8.txt") | whatwg_decode<codec::utf_8>`
-  - `UTF-8 decode: Arabic (multibyte-heavy)` — measures `corpus_span("ar_mars_utf8.txt") | whatwg_decode<codec::utf_8>`
-  - `UTF-8 encode round-trip: English` — measures decode then re-encode via `| whatwg_decode<codec::utf_8> | whatwg_encode<codec::utf_8>`
-- Updated `benchmark/CMakeLists.txt` — added `beman.transcode.benchmarks.utf` executable
-- Updated `Makefile` — added `bench-utf` target running `[benchmark][utf]` tag filter
-- Applied clang-format alignment fixes to fixture files that pre-commit caught
-- 671 C++ + 189 Python tests pass; mypy + ruff + clang-format + gersemi all clean
+- Created `benchmark/whatwg_benchmarks.bench.cpp` — three benchmark cases:
+  - `Single-byte decode: windows-1251 Russian` — `ru_mars_windows1251.bin`
+  - `Multi-byte decode: Shift-JIS Japanese` — `ja_mars_shiftjis.bin`
+  - `UTF-8 decode: Japanese (3-byte heavy)` — `ja_mars_utf8.txt`
+- Created `benchmark/pluggable_codec_benchmarks.bench.cpp` — two benchmark cases:
+  - `pluggable table_codec: 4K upper-half` — synthetic 4096-byte buffer of `\xC0`,
+    decoded via `table_codec<latin1_upper>` (pluggable protocol)
+  - `whatwg iso-8859-15: 4K upper-half` — same data via `whatwg_decode<codec::iso_8859_15>`
+    (built-in WHATWG path, used as parity baseline)
+- Added fallback corpus files (checked in, ~350–435 bytes each):
+  - `benchmark/corpus/ru_mars_windows1251.bin` — Russian mars text in Windows-1251
+  - `benchmark/corpus/ja_mars_shiftjis.bin` — Japanese mars text in Shift-JIS
+- Updated `benchmark/CMakeLists.txt` — added `beman.transcode.benchmarks.whatwg` and
+  `beman.transcode.benchmarks.pluggable` executables
+- Updated `Makefile` — added `bench-whatwg` and `bench-pluggable` targets
+
+671 C++ + 189 Python tests pass; mypy + ruff + clang-format + gersemi all clean
 
 ## Files created
 
-- `benchmark/utf_benchmarks.bench.cpp`
+- `benchmark/whatwg_benchmarks.bench.cpp`
+- `benchmark/pluggable_codec_benchmarks.bench.cpp`
+- `benchmark/corpus/ru_mars_windows1251.bin`
+- `benchmark/corpus/ja_mars_shiftjis.bin`
 
 ## Files modified
 
-- `benchmark/CMakeLists.txt` — added utf benchmark executable
-- `Makefile` — added `bench-utf` target
-- `benchmark/benchmark_fixture.cpp` — clang-format alignment (no logic change)
-- `benchmark/benchmark_fixture.hpp` — clang-format alignment (no logic change)
-- `tests/beman/transcode/benchmark_fixture.test.cpp` — clang-format alignment (no logic change)
+- `benchmark/CMakeLists.txt` — added two new benchmark executables
+- `Makefile` — added `bench-whatwg` and `bench-pluggable` targets
 
 ## Next Step
 
-Read `docs/plans/p3-step5-legacy-whatwg-benchmarks.md`
+Read `docs/plans/p3-step6-iconv-baselines.md`
 
 Also read `docs/plans/phase3-handoff.md` for project conventions.
 
 ## Benchmark Results (fallback corpus — sub-KB files)
 
-With the checked-in fallback corpus (each file ~600 bytes), timings are tiny
-and variable. Run `make bench-utf` to see them. For meaningful throughput
-numbers, download the full corpus first:
+Observed on fallback corpus (indicative only, high variance due to tiny files):
+
+**WHATWG legacy codecs:**
+- windows-1251 Russian decode: ~762 ns (435-byte file, single-byte O(1) table)
+- Shift-JIS Japanese decode: ~1.55 µs (340-byte file, multi-byte stateless)
+- UTF-8 Japanese (3-byte heavy): ~1.47 µs (comparable to Shift-JIS)
+
+**Pluggable vs WhatWG parity (4K synthetic `\xC0` buffer):**
+- `table_codec<latin1_upper>`: ~9.3 µs
+- `whatwg_decode<codec::iso_8859_15>`: ~10.1 µs
+- Conclusion: pluggable protocol has zero measurable overhead vs built-in codecs
+
+Key observations:
+- Single-byte (windows-1251) is faster per-byte than multi-byte (Shift-JIS), as expected
+- The pluggable `decode(codec{})` path matches the built-in `whatwg_decode<C>` path in throughput
+
+For meaningful throughput numbers, download the full corpus first:
 
 ```bash
 uv run python tools/download_benchmark_corpora.py
-make bench-utf
+make bench-whatwg
+make bench-pluggable
 ```
-
-Observed on fallback corpus (indicative only):
-- English decode: ~68 µs (high variance due to small data)
-- Arabic decode: ~14 µs (Arabic file is 640 bytes, also small)
-- Round-trip encode: ~24 µs
-
-The `whatwg_encode<codec::utf_8>` composes cleanly in pipe with
-`whatwg_decode<codec::utf_8>` — the pipe expression compiles and runs
-without issues.
-
-## Fixture API (unchanged from step 3)
-
-```cpp
-#include <benchmark/benchmark_fixture.hpp>
-#include <benchmark/benchmark_sink.hpp>
-
-std::span<const char>          sp     = beman::transcoding::bench::corpus_span("en_mars_utf8.txt");
-std::vector<std::string_view>  chunks = beman::transcoding::bench::chunk_corpus(sv, 1024);
-std::size_t                    n      = beman::transcoding::bench::count_elements(range);
-beman::transcoding::bench::volatile_sink(value);
-```
-
-## Include paths and linking
-
-- Link `beman.transcode.benchmark_fixture` to get `<benchmark/benchmark_fixture.hpp>` and `<benchmark/benchmark_sink.hpp>`
-- In `benchmark/CMakeLists.txt`: link against `beman::transcode`, `beman.transcode.benchmark_fixture`, `Catch2::Catch2WithMain`
 
 ## Current State
 
@@ -76,9 +74,33 @@ beman::transcoding::bench::volatile_sink(value);
 - `make lint` passes (mypy, ruff, clang-format, gersemi all clean)
 - `make bench` runs smoke (ASCII corpus, `[smoke]` tag)
 - `make bench-utf` runs UTF benchmarks (`[benchmark][utf]` tag)
+- `make bench-whatwg` runs WHATWG legacy codec benchmarks (`[benchmark][whatwg]` tag)
+- `make bench-pluggable` runs pluggable codec benchmarks (`[benchmark][pluggable]` tag)
+
+## Include and Linking Pattern (for future benchmark files)
+
+```cpp
+#include <benchmark/benchmark_fixture.hpp>
+#include <benchmark/benchmark_sink.hpp>
+#include <beman/transcode/transcode.hpp>
+#include <beman/transcode/transcode.hpp>   // double-include for idempotency check
+
+#include <catch2/catch_all.hpp>
+```
+
+Link in `benchmark/CMakeLists.txt`:
+```cmake
+target_link_libraries(
+    beman.transcode.benchmarks.<name>
+    PRIVATE
+        beman::transcode
+        beman.transcode.benchmark_fixture
+        Catch2::Catch2WithMain
+)
+```
 
 ## Branch Discipline
 
-This step was done on `worktree-pluggable-codec-protocol`. After merging to main,
-the next step should follow the same pattern (work in this worktree, rebase
-from origin/main first).
+Steps 3, 4, and 5 are on `worktree-pluggable-codec-protocol` awaiting merge to main.
+After merging to main, the next step should follow the same pattern (work in this
+worktree, rebase from origin/main first).
