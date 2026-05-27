@@ -165,9 +165,12 @@ def write_source_md(out_dir: Path, entries: list[CorpusEntry]) -> None:
         "",
         "**Attribution:**",
         "- English: Wikipedia contributors, 'Mars', Wikipedia, The Free Encyclopedia",
-        "- Arabic: Wikipedia contributors, 'Mars (المريخ)', Wikipedia (ar.wikipedia.org)",  # noqa: E501
-        "- Russian: Wikipedia contributors, 'Mars (Марс)', Wikipedia (ru.wikipedia.org)",  # noqa: E501
-        "- Japanese: Wikipedia contributors, 'Mars (火星)', Wikipedia (ja.wikipedia.org)",  # noqa: E501
+        "- Arabic: Wikipedia contributors, 'Mars (المريخ)',"
+        " Wikipedia (ar.wikipedia.org)",
+        "- Russian: Wikipedia contributors, 'Mars (Марс)',"
+        " Wikipedia (ru.wikipedia.org)",
+        "- Japanese: Wikipedia contributors, 'Mars (火星)',"
+        " Wikipedia (ja.wikipedia.org)",
         "",
         "## Corpus Files",
         "",

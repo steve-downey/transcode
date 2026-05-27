@@ -250,6 +250,124 @@ view-coverage: ## View the coverage report
 bench: compile ## Run benchmark smoke
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]"
 
+.PHONY: bench-utf
+bench-utf: compile ## Run UTF-family benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.utf "[benchmark][utf]"
+
+.PHONY: bench-whatwg
+bench-whatwg: compile ## Run WHATWG legacy codec benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
+
+.PHONY: bench-pluggable
+bench-pluggable: compile ## Run pluggable codec benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+
+.PHONY: bench-iconv
+bench-iconv: compile ## Run iconv baseline benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
+
+.PHONY: bench-codecvt
+bench-codecvt: compile ## Run std::codecvt negative baseline benchmarks (skips if <codecvt> absent)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.codecvt "[benchmark][codecvt]"
+
+.PHONY: bench-encoding-rs
+bench-encoding-rs: compile ## Run encoding_rs baseline benchmarks (requires cargo; skips build if absent)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.encoding_rs "[benchmark][encoding_rs]"
+
+.PHONY: bench-simdutf
+bench-simdutf: compile ## Run simdutf ceiling baseline benchmarks (requires cmake -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.simdutf "[benchmark][simdutf]"
+
+.PHONY: bench-boundary
+bench-boundary: compile ## Run boundary stress benchmarks (chunked + mock-iconv EINVAL/E2BIG)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
+
+.PHONY: bench-env
+bench-env: ## Print environment metadata (compiler versions, CPU, OS)
+	@echo "# TIMESTAMP: $$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+	@echo "# HOSTNAME: $$(hostname)"
+	@echo "# OS: $$(uname -srm)"
+	@if [ -r /etc/os-release ]; then . /etc/os-release; echo "# DISTRO: $${PRETTY_NAME:-unknown}"; fi
+	@if [ -r /proc/cpuinfo ]; then echo "# CPU: $$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | xargs)"; echo "# CPU_CORES: $$(nproc)"; fi
+	@if command -v gcc >/dev/null 2>&1; then echo "# GCC: $$(gcc --version | head -1)"; else echo "# GCC: not found"; fi
+	@if command -v clang >/dev/null 2>&1; then echo "# CLANG: $$(clang --version | head -1)"; else echo "# CLANG: not found"; fi
+
+.PHONY: bench-lto
+bench-lto: ## Configure (if needed), build, and run GCC LTO benchmark smoke
+	@if ! [ -f build/gcc-release-lto/CMakeCache.txt ]; then \
+		echo "Configuring gcc-release-lto preset..."; \
+		$(CMAKE) --preset gcc-release-lto; \
+	fi
+	$(CMAKE) --build build/gcc-release-lto --target beman.transcode.benchmarks.smoke
+	build/gcc-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-matrix-gcc
+bench-matrix-gcc: ## Configure (if needed), build, and run GCC -O3 benchmark smoke
+	@if ! [ -f build/gcc-release/CMakeCache.txt ]; then \
+		echo "Configuring gcc-release preset..."; \
+		$(CMAKE) --preset gcc-release; \
+	fi
+	$(CMAKE) --build build/gcc-release --target beman.transcode.benchmarks.smoke
+	build/gcc-release/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-matrix-gcc-lto
+bench-matrix-gcc-lto: bench-lto ## Alias for bench-lto (GCC -O3 -flto smoke)
+
+.PHONY: bench-matrix-llvm-lto
+bench-matrix-llvm-lto: ## Configure (if needed), build, and run Clang LTO benchmark smoke (skips if clang absent)
+	@if ! command -v clang >/dev/null 2>&1; then \
+		echo "SKIP: clang not found"; \
+		exit 0; \
+	fi
+	@if ! [ -f build/llvm-release-lto/CMakeCache.txt ]; then \
+		echo "Configuring llvm-release-lto preset..."; \
+		$(CMAKE) --preset llvm-release-lto; \
+	fi
+	$(CMAKE) --build build/llvm-release-lto --target beman.transcode.benchmarks.smoke
+	build/llvm-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-matrix
+bench-matrix: ## Run the full compiler/optimization matrix (skips unavailable slices)
+	infra/scripts/bench-matrix.sh "[smoke]"
+
+.PHONY: bench-matrix-full
+bench-matrix-full: ## Run the full compiler/optimization matrix with all benchmarks
+	infra/scripts/bench-matrix.sh "[benchmark]"
+
+BENCH_RESULTS_DIR ?= data/benchmarks/results
+
+.PHONY: bench-report
+bench-report: CONFIG=RelWithDebInfo
+bench-report: compile ## Run smoke benchmark (RelWithDebInfo) and generate Markdown throughput report
+	@mkdir -p $(BENCH_RESULTS_DIR)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
+	$(UV) run python tools/process_benchmark_results.py \
+		--corpus-dir benchmark/corpus \
+		--manifest data/benchmarks/corpus_manifest.json \
+		--label "$(CONFIG)" \
+		$(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
+
+.PHONY: bench-report-lto
+bench-report-lto: bench-lto-xml ## Run GCC LTO smoke benchmark and generate Markdown throughput report
+	$(UV) run python tools/process_benchmark_results.py \
+		--corpus-dir benchmark/corpus \
+		--manifest data/benchmarks/corpus_manifest.json \
+		--label "GCC -O3 -flto" \
+		--vegalite $(BENCH_RESULTS_DIR)/smoke-lto.vl.json \
+		$(BENCH_RESULTS_DIR)/smoke-lto.xml
+
+.PHONY: bench-lto-xml
+bench-lto-xml: ## Configure (if needed), build GCC LTO benchmarks, save XML results
+	@if ! [ -f build/gcc-release-lto/CMakeCache.txt ]; then \
+		echo "Configuring gcc-release-lto preset..."; \
+		$(CMAKE) --preset gcc-release-lto; \
+	fi
+	$(CMAKE) --build build/gcc-release-lto --target beman.transcode.benchmarks.smoke
+	@mkdir -p $(BENCH_RESULTS_DIR)
+	build/gcc-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-lto.xml
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile
