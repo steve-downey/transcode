@@ -334,6 +334,40 @@ bench-matrix: ## Run the full compiler/optimization matrix (skips unavailable sl
 bench-matrix-full: ## Run the full compiler/optimization matrix with all benchmarks
 	infra/scripts/bench-matrix.sh "[benchmark]"
 
+BENCH_RESULTS_DIR ?= data/benchmarks/results
+
+.PHONY: bench-report
+bench-report: CONFIG=RelWithDebInfo
+bench-report: compile ## Run smoke benchmark (RelWithDebInfo) and generate Markdown throughput report
+	@mkdir -p $(BENCH_RESULTS_DIR)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
+	$(UV) run python tools/process_benchmark_results.py \
+		--corpus-dir benchmark/corpus \
+		--manifest data/benchmarks/corpus_manifest.json \
+		--label "$(CONFIG)" \
+		$(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
+
+.PHONY: bench-report-lto
+bench-report-lto: bench-lto-xml ## Run GCC LTO smoke benchmark and generate Markdown throughput report
+	$(UV) run python tools/process_benchmark_results.py \
+		--corpus-dir benchmark/corpus \
+		--manifest data/benchmarks/corpus_manifest.json \
+		--label "GCC -O3 -flto" \
+		--vegalite $(BENCH_RESULTS_DIR)/smoke-lto.vl.json \
+		$(BENCH_RESULTS_DIR)/smoke-lto.xml
+
+.PHONY: bench-lto-xml
+bench-lto-xml: ## Configure (if needed), build GCC LTO benchmarks, save XML results
+	@if ! [ -f build/gcc-release-lto/CMakeCache.txt ]; then \
+		echo "Configuring gcc-release-lto preset..."; \
+		$(CMAKE) --preset gcc-release-lto; \
+	fi
+	$(CMAKE) --build build/gcc-release-lto --target beman.transcode.benchmarks.smoke
+	@mkdir -p $(BENCH_RESULTS_DIR)
+	build/gcc-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-lto.xml
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile
