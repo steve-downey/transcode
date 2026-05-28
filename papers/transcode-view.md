@@ -840,6 +840,38 @@ A typical workflow might use this proposal to decode legacy-encoded input to `ch
 The UTF-8 decode/encode in this proposal follows WHATWG semantics (replacement character on error), which may differ slightly from P2728's error handling.
 Applications requiring strict UTF validation should prefer P2728 for that portion of the pipeline.
 
+### API Surface Comparison
+
+The following table aligns the API surface across the component families in this
+proposal and P2728, showing where the interfaces are parallel and where gaps
+remain.
+
+| API | WHATWG | Pluggable | iconv | P2728R12 |
+|-----|--------|-----------|-------|----------|
+| **Codec identity** | `codec::utf_8` (enum) | `my_codec{}` (type) | `"UTF-8"` (string) | `char8_t`/`char16_t`/`char32_t` |
+| **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(from,to,buf)` | ✅ `views::to_utf32` |
+| **Decode view (errors)** | ✅ `whatwg_decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
+| **Encode view** | ✅ `whatwg_encode<C>` | 🔴 | 🔴 | ✅ `views::to_utf8`, `to_utf16` |
+| **Encode view (errors)** | ✅ `whatwg_encode_or_error<C>` | 🔴 | 🔴 | ✅ `views::to_utf8_or_error` |
+| **Transcode pipeline** | ✅ `transcode<From,To>` | 🔴 | ✅ `iconv_transcode(from,to,buf)` | ✅ compose `to_utfN` views |
+| **Bulk decode → vector** | ✅ `decode_to<C>(range)` | 🔴 | 🔴 | ✅ `ranges::to<u32string>()` |
+| **Bulk encode → string** | ✅ `encode_to<C>(range)` | 🔴 | 🔴 | ✅ `ranges::to<u8string>()` |
+| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | 🔴 | 🔴 | 🔴 |
+| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | 🔴 | 🔴 | 🔴 |
+| **Runtime label lookup** | ✅ `get_encoding("utf-8")` | 🔴 | n/a | 🔴 |
+| **Runtime transcode** | ✅ `transcode_string(…)` | 🔴 | 🔴 | 🔴 |
+| **BOM sniffing** | ✅ `sniff_encoding(range)` | 🔴 | 🔴 | 🔴 |
+| **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | 🔴 | 🔴 |
+| **Error enum** | `whatwg_error` | `decode_error` | `iconv_error` | `utf_transcoding_error` |
+| **Codepoint type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
+| **Input type** | `char`/`unsigned char`/`byte` | `unsigned char` | `char` | `char8_t`/`char16_t`/`char32_t` |
+| **constexpr** | ✅ | ✅ | 🔴 (system call) | ✅ |
+
+The shared design patterns are the `_or_error` suffix convention, `char32_t` as
+the codepoint type, and pipe-operator composition.  The P2728 column operates on
+a different axis (type-encoded UTF vs byte-oriented I/O), so gaps between the
+columns are expected rather than defects — the two proposals are complementary.
+
 ## References
 
 - WHATWG Encoding Standard [@whatwg-encoding]
