@@ -1,11 +1,21 @@
 # beman.transcode
 
 A C++23 header-only library for Unicode transcoding using ranges and views.
-Implements the [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/),
-providing compile-time-safe pipeline-oriented views that transform byte sequences
-to Unicode codepoints and back.  Covers 39 codecs including UTF-8, all ISO-8859
-and Windows code pages, and CJK multi-byte encodings (GB18030, Big5, Shift-JIS,
-EUC-JP/KR, ISO-2022-JP).
+Provides two transcoding backends with a shared pipeline-oriented interface:
+
+- **WHATWG codecs** — a compile-time-safe, constexpr-capable implementation of
+  the [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/) covering 39
+  codecs (UTF-8, all ISO-8859 and Windows code pages, CJK multi-byte encodings
+  including GB18030, Big5, Shift-JIS, EUC-JP/KR, ISO-2022-JP)
+- **iconv range adaptor** — a C++ ranges wrapper around the POSIX/system `iconv`
+  API, giving safe, composable access to whatever encodings the platform provides
+
+Most C and C++ code doing encoding conversion today uses `iconv` (directly, or
+through libraries that call it).  The iconv view gives that existing ecosystem a
+zero-overhead ranges interface — no resource leaks, no manual buffer management,
+composable with other range adaptors — while the WHATWG views provide a
+portable, header-only alternative with standardized error semantics for the
+codecs web and network protocols actually use.
 
 Part of the [Beman Project](https://github.com/bemanproject), targeting C++29
 standardization.
@@ -104,10 +114,18 @@ auto decoded = input | beman::transcoding::decode(my_codec{});
 See [`examples/custom_single_byte_decoder.cpp`](examples/custom_single_byte_decoder.cpp)
 for a complete working example.
 
-### iconv as a Range Adaptor
+### iconv Range Adaptor — System Encoding Support
 
-Wraps the POSIX `iconv` API as a C++ range adaptor — no manual buffer juggling,
-no `iconv_close` leaks:
+If your code already uses `iconv` — or uses a library that does — the iconv
+range adaptor is the interoperability path.  On most POSIX systems, `iconv` is
+the system's encoding engine: glibc, musl, ICU, and platform-specific
+implementations all expose the same `iconv_open`/`iconv`/`iconv_close` API.
+Any encoding your system supports is available through this view, with no need
+to reimplement the codec.
+
+The raw `iconv` API requires manual buffer allocation, pointer arithmetic, error
+code inspection, and careful resource cleanup.  The range adaptor handles all of
+that:
 
 ```cpp
 #include <beman/transcode/transcode.hpp>
@@ -119,16 +137,22 @@ for (char byte : input | beman::transcoding::iconv_transcode("UTF-8", "UTF-32LE"
 }
 ```
 
-Compare with the raw iconv equivalent (30+ lines of buffer management, error
-handling, and resource cleanup) in
+Compare with the raw `iconv` equivalent — 30+ lines of buffer management, error
+handling, and resource cleanup — in
 [`examples/paper_iconv_view.cpp`](examples/paper_iconv_view.cpp).
+
+An `_or_error` variant yields `std::expected<char, iconv_error>` instead of
+replacement characters, for applications that need to distinguish
+`invalid_sequence`, `incomplete_sequence`, and `output_full` conditions.
 
 Key design choices:
 - **External buffer**: caller provides the working `std::span<char>` — no hidden
   heap allocation
 - **Dependency injection**: the `iconv_functions` struct accepts callable pointers
-  for `iconv_open`/`iconv`/`iconv_close`, enabling test mocking
-- **Move-only iterator**: safeguards the uncopyable `iconv_t` handle
+  for `iconv_open`/`iconv`/`iconv_close`, enabling test mocking and allowing
+  alternative iconv implementations (e.g., libiconv vs glibc)
+- **Move-only iterator**: safeguards the uncopyable `iconv_t` handle — copying
+  the iterator would double-free
 
 ### Bulk Operations
 
@@ -145,13 +169,22 @@ std::string encoded = beman::transcoding::encode_to<codec::shift_jis>(codepoints
 beman::transcoding::decode_into<codec::utf_8>(bytes, std::back_inserter(vec));
 ```
 
-## Codec Identifiers: WHATWG vs `std::text_encoding`
+## Codec Identifiers: WHATWG, iconv, and `std::text_encoding`
 
-`std::text_encoding` (P1885) provides IANA charset *names* — it identifies WHICH
-encoding a text uses, but does not define HOW to decode or encode.  It is a
+Three encoding identification schemes are relevant:
+
+**`std::text_encoding`** (P1885) provides IANA charset *names* — it identifies
+WHICH encoding a text uses, but does not define HOW to decode or encode.  It is a
 vocabulary type for labeling, not an implementation.
 
-The [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/) defines the
+**POSIX `iconv`** uses string labels (`"UTF-8"`, `"SHIFT_JIS"`, `"ISO-8859-1"`)
+to identify codecs at runtime.  The set of available encodings depends on the
+system — glibc's iconv supports hundreds.  If your codebase already uses iconv
+(or a library that wraps it — this includes most C and C++ programs doing
+encoding conversion today), these are the identifiers you already have, and the
+`iconv_transcode_view` accepts them directly with no translation layer.
+
+**The [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/)** defines the
 actual byte-level decode and encode *algorithms* — the same algorithms browsers
 execute when they process `<meta charset="...">`.  It specifies exact error
 recovery semantics per codec (replacement character U+FFFD on decode error, `?`
@@ -159,18 +192,22 @@ on encode error), alias consolidation (e.g., "ascii", "us-ascii", "iso-ir-6",
 "ansi_x3.4-1968" all map to `windows-1252` per the web-compatibility spec), and
 multi-byte state machines.
 
-`beman.transcode` implements the WHATWG algorithms and provides both:
+`beman.transcode` provides:
 
-- **Compile-time dispatch** via `codec::utf_8`, `codec::shift_jis`, etc. — enum
-  constants used as non-type template parameters for zero-overhead codec
-  selection
+- **Compile-time WHATWG dispatch** via `codec::utf_8`, `codec::shift_jis`, etc. —
+  enum constants used as non-type template parameters for zero-overhead codec
+  selection and fully constexpr-capable decoding
 - **Runtime label resolution** via `get_encoding("utf-8")` and
   `transcode_string(data, "shift_jis", "utf-8")` — for cases where the encoding
   name comes from user input, HTTP headers, or HTML meta tags
+- **System iconv interop** via `iconv_transcode("UTF-8", "EUC-TW", buffer)` —
+  string labels passed directly to the platform's iconv, giving access to every
+  encoding the system supports without this library needing to implement it
 
-A future integration point: `std::text_encoding::id()` could map directly to the
-`beman::transcoding::codec` enum, providing the standard vocabulary type on top
-of this library's implementation.
+A future integration point: `std::text_encoding::id()` could map to the
+`beman::transcoding::codec` enum for WHATWG codecs, or to iconv label strings
+for platform-specific encodings, providing the standard vocabulary type on top
+of this library's implementations.
 
 ## Performance
 
