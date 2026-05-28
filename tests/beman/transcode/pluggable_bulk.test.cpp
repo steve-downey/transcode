@@ -32,7 +32,7 @@ using latin1_codec = table_codec<latin1_upper>;
 // ---------------------------------------------------------------------------
 
 TEST_CASE("pluggable decode_to: ASCII bytes decode correctly", "[pluggable_bulk]") {
-    std::string src  = "ABC";
+    std::string src    = "ABC";
     auto        result = decode_to(latin1_codec{}, std::span<const char>(src));
     REQUIRE(result.size() == 3);
     CHECK(result[0] == U'A');
@@ -67,7 +67,7 @@ TEST_CASE("pluggable decode_to: vector<char> input", "[pluggable_bulk]") {
 // ---------------------------------------------------------------------------
 
 TEST_CASE("pluggable encode_to: ASCII codepoints encode correctly", "[pluggable_bulk]") {
-    std::u32string src = U"ABC";
+    std::u32string src    = U"ABC";
     auto           result = encode_to(latin1_codec{}, src);
     CHECK(result == "ABC");
 }
@@ -94,7 +94,7 @@ TEST_CASE("pluggable encode_to: empty input yields empty output", "[pluggable_bu
 }
 
 TEST_CASE("pluggable encode_to: vector<char> container type", "[pluggable_bulk]") {
-    std::u32string src = U"Hi";
+    std::u32string src    = U"Hi";
     auto           result = encode_to<latin1_codec, std::vector<char>>(latin1_codec{}, src);
     REQUIRE(result.size() == 2);
     CHECK(result[0] == 'H');
@@ -106,7 +106,7 @@ TEST_CASE("pluggable encode_to: vector<char> container type", "[pluggable_bulk]"
 // ---------------------------------------------------------------------------
 
 TEST_CASE("pluggable decode_into: decodes bytes to output iterator", "[pluggable_bulk]") {
-    std::string          src{'\x41', '\xC0'};
+    std::string           src{'\x41', '\xC0'};
     std::vector<char32_t> result;
     decode_into(latin1_codec{}, std::span<const char>(src), std::back_inserter(result));
     REQUIRE(result.size() == 2);
@@ -115,7 +115,7 @@ TEST_CASE("pluggable decode_into: decodes bytes to output iterator", "[pluggable
 }
 
 TEST_CASE("pluggable decode_into: empty input writes nothing", "[pluggable_bulk]") {
-    std::string          src;
+    std::string           src;
     std::vector<char32_t> result;
     decode_into(latin1_codec{}, std::span<const char>(src), std::back_inserter(result));
     CHECK(result.empty());
