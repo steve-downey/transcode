@@ -181,6 +181,16 @@ Key design choices:
 - **Move-only iterator**: safeguards the uncopyable `iconv_t` handle — copying
   the iterator would double-free
 
+> **TODO**: Provide bulk `iconv_transcode_to<std::string>(input, from, to)` and
+> `iconv_transcode_into(input, from, to, output_iter)` operations that call raw
+> `iconv()` with properly-sized buffers, bypassing per-byte iteration.  The view
+> is ~15-20x slower than raw iconv; bulk operations should close that to ~1.5-2x.
+
+> **TODO**: Gap analysis between iconv and WHATWG codec coverage — identify
+> encodings that iconv supports but WHATWG does not (platform-specific, rare
+> legacy), and encodings where WHATWG specifies behavior that diverges from a
+> given iconv implementation.
+
 ### Bulk Operations
 
 When you want a container rather than a lazy view:
