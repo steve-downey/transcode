@@ -186,10 +186,11 @@ Key design choices:
 > `iconv()` with properly-sized buffers, bypassing per-byte iteration.  The view
 > is ~15-20x slower than raw iconv; bulk operations should close that to ~1.5-2x.
 
-> **TODO**: Gap analysis between iconv and WHATWG codec coverage — identify
-> encodings that iconv supports but WHATWG does not (platform-specific, rare
-> legacy), and encodings where WHATWG specifies behavior that diverges from a
-> given iconv implementation.
+> **TODO**: API surface gap analysis between iconv and WHATWG — the two backends
+> should present matching named interfaces (`decode_to`, `encode_to`,
+> `transcode_string`, `_or_error` variants, etc.) even where the signatures
+> differ (iconv takes string labels, WHATWG takes enum constants).  Identify
+> which operations exist for one backend but not the other and close the gaps.
 
 ### Bulk Operations
 
