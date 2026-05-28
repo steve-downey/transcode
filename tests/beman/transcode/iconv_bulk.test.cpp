@@ -23,25 +23,22 @@ using namespace beman::transcoding::tests;
 
 TEST_CASE("iconv_transcode_to identity transcode", "[transcoding::iconv_bulk]") {
     iconv_functions fns{mock_iconv_open, mock_iconv, mock_iconv_close};
-    std::string     input = "Hello, world!";
-    auto            result =
-        iconv_transcode_to<std::string>(std::span<const char>(input), "ASCII", "ASCII", fns);
+    std::string     input  = "Hello, world!";
+    auto            result = iconv_transcode_to<std::string>(std::span<const char>(input), "ASCII", "ASCII", fns);
     CHECK(result == input);
 }
 
 TEST_CASE("iconv_transcode_to empty input", "[transcoding::iconv_bulk]") {
     iconv_functions fns{mock_iconv_open, mock_iconv, mock_iconv_close};
     std::string     empty;
-    auto            result =
-        iconv_transcode_to<std::string>(std::span<const char>(empty), "ASCII", "ASCII", fns);
+    auto            result = iconv_transcode_to<std::string>(std::span<const char>(empty), "ASCII", "ASCII", fns);
     CHECK(result.empty());
 }
 
 TEST_CASE("iconv_transcode_to vector<char> container", "[transcoding::iconv_bulk]") {
-    iconv_functions   fns{mock_iconv_open, mock_iconv, mock_iconv_close};
-    std::string       input = "ABCDE";
-    auto              result =
-        iconv_transcode_to<std::vector<char>>(std::span<const char>(input), "ASCII", "ASCII", fns);
+    iconv_functions fns{mock_iconv_open, mock_iconv, mock_iconv_close};
+    std::string     input = "ABCDE";
+    auto result           = iconv_transcode_to<std::vector<char>>(std::span<const char>(input), "ASCII", "ASCII", fns);
     CHECK(result == std::vector<char>(input.begin(), input.end()));
 }
 
@@ -52,9 +49,8 @@ TEST_CASE("iconv_transcode_to vector<char> container", "[transcoding::iconv_bulk
 TEST_CASE("iconv_transcode_to recovers from E2BIG", "[transcoding::iconv_bulk]") {
     // mock_iconv_e2big writes 1 byte then returns E2BIG; forces repeated growth.
     iconv_functions fns{mock_iconv_open, mock_iconv_e2big, mock_iconv_close};
-    std::string     input = "Hello";
-    auto            result =
-        iconv_transcode_to<std::string>(std::span<const char>(input), "ASCII", "ASCII", fns);
+    std::string     input  = "Hello";
+    auto            result = iconv_transcode_to<std::string>(std::span<const char>(input), "ASCII", "ASCII", fns);
     CHECK(result == input);
 }
 
@@ -65,9 +61,8 @@ TEST_CASE("iconv_transcode_to recovers from E2BIG", "[transcoding::iconv_bulk]")
 TEST_CASE("iconv_transcode_to replaces EILSEQ bytes with '?'", "[transcoding::iconv_bulk]") {
     // mock_iconv_eilseq always signals EILSEQ; every input byte is replaced.
     iconv_functions fns{mock_iconv_open, mock_iconv_eilseq, mock_iconv_close};
-    std::string     input = "ABC";
-    auto            result =
-        iconv_transcode_to<std::string>(std::span<const char>(input), "X", "X", fns);
+    std::string     input  = "ABC";
+    auto            result = iconv_transcode_to<std::string>(std::span<const char>(input), "X", "X", fns);
     CHECK(result == "???");
 }
 
@@ -75,13 +70,11 @@ TEST_CASE("iconv_transcode_to replaces EILSEQ bytes with '?'", "[transcoding::ic
 // iconv_transcode_to — EINVAL (incomplete sequence at end)
 // ---------------------------------------------------------------------------
 
-TEST_CASE("iconv_transcode_to replaces trailing incomplete sequence with '?'",
-          "[transcoding::iconv_bulk]") {
+TEST_CASE("iconv_transcode_to replaces trailing incomplete sequence with '?'", "[transcoding::iconv_bulk]") {
     // mock_iconv_pairwise: needs 2 bytes; returns EINVAL for a lone trailing byte.
     iconv_functions   fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
     std::vector<char> input{0x41, 0x42, 0x43}; // one complete pair + one orphan
-    auto              result =
-        iconv_transcode_to<std::string>(std::span<const char>(input), "X", "X", fns);
+    auto              result = iconv_transcode_to<std::string>(std::span<const char>(input), "X", "X", fns);
     // Pair {0x41, 0x42} copied, orphan {0x43} replaced
     CHECK(result == std::string{0x41, 0x42, '?'});
 }
@@ -93,9 +86,8 @@ TEST_CASE("iconv_transcode_to replaces trailing incomplete sequence with '?'",
 TEST_CASE("iconv_transcode_to flushes stateful encoding", "[transcoding::iconv_bulk]") {
     // mock_iconv_stateful writes a 0x0F reset byte on flush.
     iconv_functions fns{mock_iconv_open, mock_iconv_stateful, mock_iconv_close};
-    std::string     input = "AB";
-    auto            result =
-        iconv_transcode_to<std::string>(std::span<const char>(input), "X", "X", fns);
+    std::string     input  = "AB";
+    auto            result = iconv_transcode_to<std::string>(std::span<const char>(input), "X", "X", fns);
     // input bytes copied, then 0x0F appended by flush
     REQUIRE(result.size() == 3);
     CHECK(result[0] == 'A');
@@ -130,8 +122,7 @@ TEST_CASE("iconv_transcode_into identity transcode", "[transcoding::iconv_bulk]"
     iconv_functions   fns{mock_iconv_open, mock_iconv, mock_iconv_close};
     std::string       input = "Hello";
     std::vector<char> output;
-    iconv_transcode_into(
-        std::span<const char>(input), "ASCII", "ASCII", std::back_inserter(output), fns);
+    iconv_transcode_into(std::span<const char>(input), "ASCII", "ASCII", std::back_inserter(output), fns);
     CHECK(output == std::vector<char>(input.begin(), input.end()));
 }
 
@@ -139,8 +130,7 @@ TEST_CASE("iconv_transcode_into replaces EILSEQ with '?'", "[transcoding::iconv_
     iconv_functions   fns{mock_iconv_open, mock_iconv_eilseq, mock_iconv_close};
     std::string       input = "AB";
     std::vector<char> output;
-    iconv_transcode_into(
-        std::span<const char>(input), "X", "X", std::back_inserter(output), fns);
+    iconv_transcode_into(std::span<const char>(input), "X", "X", std::back_inserter(output), fns);
     CHECK(output == std::vector<char>{'?', '?'});
 }
 
@@ -148,8 +138,7 @@ TEST_CASE("iconv_transcode_into with E2BIG recovery", "[transcoding::iconv_bulk]
     iconv_functions   fns{mock_iconv_open, mock_iconv_e2big, mock_iconv_close};
     std::string       input = "Test";
     std::vector<char> output;
-    iconv_transcode_into(
-        std::span<const char>(input), "ASCII", "ASCII", std::back_inserter(output), fns);
+    iconv_transcode_into(std::span<const char>(input), "ASCII", "ASCII", std::back_inserter(output), fns);
     CHECK(output == std::vector<char>(input.begin(), input.end()));
 }
 
@@ -157,8 +146,7 @@ TEST_CASE("iconv_transcode_into returns advanced output iterator", "[transcoding
     iconv_functions fns{mock_iconv_open, mock_iconv, mock_iconv_close};
     std::string     input = "XY";
     std::string     output(4, '\0'); // pre-allocated 4 chars
-    auto            it = iconv_transcode_into(
-        std::span<const char>(input), "ASCII", "ASCII", output.begin(), fns);
+    auto            it = iconv_transcode_into(std::span<const char>(input), "ASCII", "ASCII", output.begin(), fns);
     // Iterator should have advanced by 2 (input length)
     CHECK(std::distance(output.begin(), it) == 2);
     CHECK(output[0] == 'X');
@@ -172,38 +160,31 @@ TEST_CASE("iconv_transcode_into returns advanced output iterator", "[transcoding
 TEST_CASE("iconv_transcode_to_or_error succeeds on valid input", "[transcoding::iconv_bulk]") {
     iconv_functions fns{mock_iconv_open, mock_iconv, mock_iconv_close};
     std::string     input = "Hello";
-    auto            result =
-        iconv_transcode_to_or_error<std::string>(std::span<const char>(input), "ASCII", "ASCII", fns);
+    auto result = iconv_transcode_to_or_error<std::string>(std::span<const char>(input), "ASCII", "ASCII", fns);
     REQUIRE(result.has_value());
     CHECK(*result == input);
 }
 
-TEST_CASE("iconv_transcode_to_or_error returns invalid_sequence on EILSEQ",
-          "[transcoding::iconv_bulk]") {
+TEST_CASE("iconv_transcode_to_or_error returns invalid_sequence on EILSEQ", "[transcoding::iconv_bulk]") {
     iconv_functions fns{mock_iconv_open, mock_iconv_eilseq, mock_iconv_close};
-    std::string     input = "AB";
-    auto            result =
-        iconv_transcode_to_or_error<std::string>(std::span<const char>(input), "X", "X", fns);
+    std::string     input  = "AB";
+    auto            result = iconv_transcode_to_or_error<std::string>(std::span<const char>(input), "X", "X", fns);
     REQUIRE_FALSE(result.has_value());
     CHECK(result.error() == iconv_error::invalid_sequence);
 }
 
-TEST_CASE("iconv_transcode_to_or_error returns incomplete_sequence on EINVAL",
-          "[transcoding::iconv_bulk]") {
+TEST_CASE("iconv_transcode_to_or_error returns incomplete_sequence on EINVAL", "[transcoding::iconv_bulk]") {
     iconv_functions   fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
     std::vector<char> input{0x41, 0x42, 0x43}; // one pair + orphan
-    auto              result =
-        iconv_transcode_to_or_error<std::string>(std::span<const char>(input), "X", "X", fns);
+    auto              result = iconv_transcode_to_or_error<std::string>(std::span<const char>(input), "X", "X", fns);
     REQUIRE_FALSE(result.has_value());
     CHECK(result.error() == iconv_error::incomplete_sequence);
 }
 
-TEST_CASE("iconv_transcode_to_or_error with E2BIG recovery succeeds",
-          "[transcoding::iconv_bulk]") {
+TEST_CASE("iconv_transcode_to_or_error with E2BIG recovery succeeds", "[transcoding::iconv_bulk]") {
     iconv_functions fns{mock_iconv_open, mock_iconv_e2big, mock_iconv_close};
     std::string     input = "AB";
-    auto            result =
-        iconv_transcode_to_or_error<std::string>(std::span<const char>(input), "ASCII", "ASCII", fns);
+    auto result = iconv_transcode_to_or_error<std::string>(std::span<const char>(input), "ASCII", "ASCII", fns);
     REQUIRE(result.has_value());
     CHECK(*result == input);
 }

@@ -55,7 +55,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
     if (guard.handle == (iconv_t)-1)
         return Container{};
 
-    size_t            buf_size = input_buf.size() * 4;
+    size_t buf_size = input_buf.size() * 4;
     if (buf_size < 256)
         buf_size = 256;
     std::vector<char> out_buf(buf_size);
@@ -157,7 +157,7 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
     while (inp_left > 0) {
         char*  out      = tmp.data();
         size_t out_left = tmp.size();
-        size_t rc = fns.convert(guard.handle, &inp, &inp_left, &out, &out_left);
+        size_t rc       = fns.convert(guard.handle, &inp, &inp_left, &out, &out_left);
 
         size_t written = tmp.size() - out_left;
         for (size_t i = 0; i < written; ++i)
@@ -175,7 +175,7 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
             } else {
                 // EINVAL: skip remaining incomplete bytes, insert replacement
                 inp += inp_left;
-                inp_left = 0;
+                inp_left  = 0;
                 *output++ = '?';
             }
         }
@@ -185,8 +185,8 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
     while (true) {
         char*  out      = tmp.data();
         size_t out_left = tmp.size();
-        size_t rc = fns.convert(guard.handle, nullptr, nullptr, &out, &out_left);
-        size_t written = tmp.size() - out_left;
+        size_t rc       = fns.convert(guard.handle, nullptr, nullptr, &out, &out_left);
+        size_t written  = tmp.size() - out_left;
         for (size_t i = 0; i < written; ++i)
             *output++ = tmp[i];
         if (rc != (size_t)-1 || errno != E2BIG)
@@ -218,7 +218,7 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
     if (guard.handle == (iconv_t)-1)
         return std::unexpected(iconv_error::invalid_sequence);
 
-    size_t            buf_size = input_buf.size() * 4;
+    size_t buf_size = input_buf.size() * 4;
     if (buf_size < 256)
         buf_size = 256;
     std::vector<char> out_buf(buf_size);
@@ -272,10 +272,8 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
 // iconv_transcode_to_or_error<Container>(source, from, to)
 // Overload using real iconv.
 template <typename Container = std::string, legacy_byte_range R>
-std::expected<Container, iconv_error>
-iconv_transcode_to_or_error(R&& source, const char* from, const char* to) {
-    return iconv_transcode_to_or_error<Container>(
-        std::forward<R>(source), from, to, make_real_iconv_fns());
+std::expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source, const char* from, const char* to) {
+    return iconv_transcode_to_or_error<Container>(std::forward<R>(source), from, to, make_real_iconv_fns());
 }
 
 } // namespace beman::transcoding
