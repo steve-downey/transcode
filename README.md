@@ -188,30 +188,29 @@ Key design choices:
 
 ### API Surface Matrix
 
-The table below aligns the API surface across all four component families.  Empty
-cells are gaps; different identifiers for analogous operations are coherence
-problems to resolve.
+Cross-reference of operations across all component families.  The P2728R12
+(UTF transcoding) column shows alignment with the proposed standard UTF views.
 
-| API | WHATWG (enum codec) | Pluggable (codec object) | iconv (string labels) | P2728R12 (type-based) |
-|-----|--------------------|--------------------------|-----------------------|----------------------|
-| **Codec identity** | `codec::utf_8` (enum NTTP) | `my_codec{}` (semiregular type) | `"UTF-8"` (C string) | `char8_t`/`char16_t`/`char32_t` (type is encoding) |
-| **Decode view** | `whatwg_decode<C>` | `decode(codec)` | `iconv_transcode(from,to,buf)` | `views::to_utf32` |
-| **Decode view (errors)** | `whatwg_decode_or_error<C>` | `decode_or_error(codec)` | `iconv_transcode_or_error(from,to,buf)` | `views::to_utf32_or_error` |
-| **Encode view** | `whatwg_encode<C>` | — | — | `views::to_utf8`, `views::to_utf16` |
-| **Encode view (errors)** | `whatwg_encode_or_error<C>` | — | — | `views::to_utf8_or_error`, `views::to_utf16_or_error` |
-| **Transcode pipeline** | `transcode<From,To>` | — | `iconv_transcode(from,to,buf)` | compose `to_utfN` views |
-| **Bulk decode → vector** | `decode_to<C>(range)` | — | — | `ranges::to<u32string>()` |
-| **Bulk encode → string** | `encode_to<C>(range)` | — | — | `ranges::to<u8string>()` |
-| **Bulk decode → output iter** | `decode_into<C>(range,out)` | — | — | — |
-| **Bulk encode → output iter** | `encode_into<C>(range,out)` | — | — | — |
-| **Runtime label lookup** | `get_encoding("utf-8")` | — | n/a (labels are the API) | — |
-| **Runtime transcode** | `transcode_string(data,from,to)` | — | — | — |
-| **BOM sniffing** | `sniff_encoding(range)` | — | — | — |
-| **Null-terminated input** | `views::null_term(ptr)` | `views::null_term(ptr)` | — | — |
+| API | WHATWG | Pluggable | iconv | P2728R12 |
+|-----|--------|-----------|-------|----------|
+| **Codec identity** | `codec::utf_8` (enum) | `my_codec{}` (type) | `"UTF-8"` (string) | `char8_t`/`char16_t`/`char32_t` |
+| **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(from,to,buf)` | ✅ `views::to_utf32` |
+| **Decode view (errors)** | ✅ `whatwg_decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
+| **Encode view** | ✅ `whatwg_encode<C>` | 🔴 | 🔴 | ✅ `views::to_utf8`, `to_utf16` |
+| **Encode view (errors)** | ✅ `whatwg_encode_or_error<C>` | 🔴 | 🔴 | ✅ `views::to_utf8_or_error` |
+| **Transcode pipeline** | ✅ `transcode<From,To>` | 🔴 | ✅ `iconv_transcode(from,to,buf)` | ✅ compose `to_utfN` views |
+| **Bulk decode → vector** | ✅ `decode_to<C>(range)` | 🔴 | 🔴 | ✅ `ranges::to<u32string>()` |
+| **Bulk encode → string** | ✅ `encode_to<C>(range)` | 🔴 | 🔴 | ✅ `ranges::to<u8string>()` |
+| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | 🔴 | 🔴 | 🔴 |
+| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | 🔴 | 🔴 | 🔴 |
+| **Runtime label lookup** | ✅ `get_encoding("utf-8")` | 🔴 | n/a (labels are the API) | 🔴 |
+| **Runtime transcode** | ✅ `transcode_string(…)` | 🔴 | 🔴 | 🔴 |
+| **BOM sniffing** | ✅ `sniff_encoding(range)` | 🔴 | 🔴 | 🔴 |
+| **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | 🔴 | 🔴 |
 | **Error enum** | `whatwg_error` | `decode_error` | `iconv_error` | `utf_transcoding_error` |
 | **Codepoint type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
-| **Input type** | `char`/`unsigned char`/`std::byte` | `unsigned char` | `char` | `char8_t`/`char16_t`/`char32_t` |
-| **constexpr** | yes | yes | no (system call) | yes |
+| **Input type** | `char`/`unsigned char`/`byte` | `unsigned char` | `char` | `char8_t`/`char16_t`/`char32_t` |
+| **constexpr** | ✅ | ✅ | 🔴 (system call) | ✅ |
 
 Observations:
 
@@ -222,12 +221,13 @@ Observations:
   `iconv_transcode_into`), encode-only views, and label lookup (inherently
   runtime).  The bulk operations are the highest-priority gap since they would
   eliminate the per-byte overhead.
-- **Error enum names** diverge: `whatwg_error`, `decode_error`, `iconv_error`.
-  These should either unify or explicitly document why they differ.
-- **P2728R12** operates on a different axis entirely (type-encoded UTF, not
-  byte-oriented I/O), so gaps between the columns are expected rather than
-  defects.  The shared pattern is the `_or_error` suffix convention and
-  `char32_t` as the codepoint type.
+- **Error enum names** diverge across columns: `whatwg_error`, `decode_error`,
+  `iconv_error`, `utf_transcoding_error`.  These should either unify or
+  explicitly document why they differ.
+- **P2728R12** operates on a different axis (type-encoded UTF, not byte-oriented
+  I/O), so 🔴 gaps between the columns are expected rather than defects.  The
+  shared patterns are the `_or_error` suffix convention and `char32_t` as the
+  codepoint type.
 
 ### Bulk Operations
 
