@@ -12,9 +12,16 @@ var searchData=
   ['p3_2dstep_207_3a_20_3ctt_3estd_3a_3acodecvt_3c_2ftt_3e_20negative_20baseline_9',['P3-Step 7: &lt;tt&gt;std::codecvt&lt;/tt&gt; Negative Baseline',['../md_docs_plans_p3_step7_codecvt_baseline.html',1,'']]],
   ['p3_2dstep_208_3a_20_3ctt_3eencoding_5frs_3c_2ftt_3e_20baseline_10',['P3-Step 8: &lt;tt&gt;encoding_rs&lt;/tt&gt; Baseline',['../md_docs_plans_p3_step8_encoding_rs_baseline.html',1,'']]],
   ['p3_2dstep_209_3a_20_3ctt_3esimdutf_3c_2ftt_3e_20ceiling_20baseline_11',['P3-Step 9: &lt;tt&gt;simdutf&lt;/tt&gt; Ceiling Baseline',['../md_docs_plans_p3_step9_simdutf_baseline.html',1,'']]],
-  ['phase_202_20progress_20checklist_12',['Phase 2 Progress Checklist',['../md_docs_plans_phase2_checklist.html',1,'']]],
-  ['phase_202_3a_20full_20whatwg_20codec_20implementation_13',['Phase 2: Full WHATWG Codec Implementation',['../md_docs_plans_phase2_index.html',1,'']]],
-  ['phase_203_20general_20handoff_20—_20read_20this_20first_14',['Phase 3 General Handoff — Read This First',['../md_docs_plans_phase3_handoff.html',1,'']]],
-  ['phase_203_20progress_20checklist_15',['Phase 3 Progress Checklist',['../md_docs_plans_phase3_checklist.html',1,'']]],
-  ['phase_203_3a_20benchmarking_20and_20performance_20characterization_16',['Phase 3: Benchmarking and Performance Characterization',['../md_docs_plans_phase3_index.html',1,'']]]
+  ['p4_2dstep_201_3a_20pluggable_20encode_20view_12',['P4-Step 1: Pluggable Encode View',['../md_docs_plans_p4_step1_pluggable_encode.html',1,'']]],
+  ['p4_2dstep_202_3a_20pluggable_20bulk_20operations_13',['P4-Step 2: Pluggable Bulk Operations',['../md_docs_plans_p4_step2_pluggable_bulk.html',1,'']]],
+  ['p4_2dstep_203_3a_20pluggable_20transcode_20pipeline_14',['P4-Step 3: Pluggable Transcode Pipeline',['../md_docs_plans_p4_step3_pluggable_transcode.html',1,'']]],
+  ['p4_2dstep_204_3a_20iconv_20bulk_20operations_15',['P4-Step 4: iconv Bulk Operations',['../md_docs_plans_p4_step4_iconv_bulk.html',1,'']]],
+  ['p4_2dstep_205_3a_20iconv_20null_2dterminated_20input_16',['P4-Step 5: iconv Null-Terminated Input',['../md_docs_plans_p4_step5_iconv_null_term.html',1,'']]],
+  ['p4_2dstep_206_3a_20error_20enum_20coherence_17',['P4-Step 6: Error Enum Coherence',['../md_docs_plans_p4_step6_error_coherence.html',1,'']]],
+  ['phase_202_20progress_20checklist_18',['Phase 2 Progress Checklist',['../md_docs_plans_phase2_checklist.html',1,'']]],
+  ['phase_202_3a_20full_20whatwg_20codec_20implementation_19',['Phase 2: Full WHATWG Codec Implementation',['../md_docs_plans_phase2_index.html',1,'']]],
+  ['phase_203_20general_20handoff_20—_20read_20this_20first_20',['Phase 3 General Handoff — Read This First',['../md_docs_plans_phase3_handoff.html',1,'']]],
+  ['phase_203_20progress_20checklist_21',['Phase 3 Progress Checklist',['../md_docs_plans_phase3_checklist.html',1,'']]],
+  ['phase_203_3a_20benchmarking_20and_20performance_20characterization_22',['Phase 3: Benchmarking and Performance Characterization',['../md_docs_plans_phase3_index.html',1,'']]],
+  ['phase_204_3a_20api_20surface_20gap_20closure_23',['Phase 4: API Surface Gap Closure',['../md_docs_plans_phase4_index.html',1,'']]]
 ];
