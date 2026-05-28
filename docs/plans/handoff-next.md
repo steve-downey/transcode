@@ -1,75 +1,76 @@
-# Handoff: P4-Step 1 Complete — Pluggable Encode View
+# Handoff: P4-Step 2 Complete → P4-Step 3 Next
 
 ## Completed
 
-- **P4-Step 1: Pluggable Encode View** — done on branch `p4-step1-pluggable-encode`
+- **P4-Step 1: Pluggable Encode View** — done on `p4-step1-pluggable-encode` branch
+- **P4-Step 2: Pluggable Bulk Operations** — done on `p4-step2-pluggable-bulk` branch
 
-## What was done
+## What was done in Step 2
 
-Created `include/beman/transcode/encode_view.hpp` providing:
-- `encode_view<Codec, R>` — forward/input range that yields `char` bytes by calling
-  `codec.encode_one(cp)` for each `char32_t` in a `unicode_scalar_range`.  One codepoint
-  may produce 1–8 bytes; the iterator buffers them internally (`buf_[8]`, `len_`, `pos_`).
-  Unmapped codepoints (where `encode_result::is_error == true`) silently emit `'?'`.
-- `encode_or_error_view<Codec, R>` — same but yields `std::expected<char, decode_error>`.
-  Errors yield `std::unexpected(decode_error::unmapped_codepoint)`.
-- `encode_closure<Codec>` / `encode_or_error_closure<Codec>` — pipe adaptors.
-- `encode(Codec)` / `encode_or_error(Codec)` factory functions.
+- Modified `include/beman/transcode/detail/bulk_transcode.hpp`:
+  - Added `#include <beman/transcode/decode_view.hpp>`, `<beman/transcode/encode_view.hpp>`,
+    and `<beman/transcode/detail/codec_concepts.hpp>` to the existing includes
+  - Added four new function templates after the WHATWG overloads:
+    - `decode_to(Codec, R&&) → std::vector<char32_t>` — constrained on `decode_codec`;
+      uses `codec.decode_byte()` fast path when `random_access_decode_codec_type` is satisfied
+    - `encode_to(Codec, R&&, Container = std::string)` — constrained on `encode_codec`;
+      delegates to `encode(codec)` view
+    - `decode_into(Codec, R&&, Output)` — constrained on `decode_codec`;
+      same random-access fast path as `decode_to`
+    - `encode_into(Codec, R&&, Output)` — constrained on `encode_codec`
+  - All four are `constexpr`
+- `tests/beman/transcode/pluggable_bulk.test.cpp` — 16 runtime + consteval tests
+  using `latin1_codec` (a `table_codec<latin1_upper>` instantiation defined locally);
+  tests cover ASCII, upper-half, unmapped bytes, empty input, round-trip, and
+  consteval paths
+- Updated `tests/beman/transcode/CMakeLists.txt` — registered `beman.transcode.tests.pluggable_bulk`
+  executable with `add_test`
 
-The design mirrors `decode_view.hpp` exactly:
-- Same out-of-line function-body convention.
-- Same `terminal()` static sentinel for forward-range `end()`.
-- Same `std::default_sentinel_t end() const` fallback.
-- Constrained on `encode_codec` concept (from `detail/codec_concepts.hpp`).
-- Input constrained on `unicode_scalar_range` (from `detail/concepts.hpp`).
+## Files modified in Step 2
 
-## Files created
-
-- `include/beman/transcode/encode_view.hpp`
-- `tests/beman/transcode/encode_view.test.cpp` — 14 tests: ASCII, upper-half,
-  replacement byte, empty, span input, `_or_error` success/error/mixed,
-  round-trip via `decode|encode`, constexpr, `base()`.
-- `tests/beman/transcode/encode_view_reject.cpp` — negative compile test:
-  a struct with no `encode_one` fails with "encode_codec" in the diagnostic.
-
-## Files modified
-
-- `include/beman/transcode/transcode.hpp` — added `#include <beman/transcode/encode_view.hpp>`
-- `tests/beman/transcode/CMakeLists.txt` — added `beman.transcode.tests.encode_view`
-  executable + `add_test` and `beman.transcode.tests.encode_view_reject` negative-compile
-  target with `PASS_REGULAR_EXPRESSION "encode_codec"`.
+- `include/beman/transcode/detail/bulk_transcode.hpp` — added pluggable overloads
+- `tests/beman/transcode/pluggable_bulk.test.cpp` — new test file
+- `tests/beman/transcode/CMakeLists.txt` — added pluggable_bulk test target
 
 ## Current State
 
-- `make test` passes (673 C++ + 250 Python tests)
-- `make lint` passes (clang-format, gersemi, mypy, ruff, codespell, shellcheck all clean)
-- Branch `p4-step1-pluggable-encode` is ready to merge into `main`
+- `make test` passes: 674 C++ tests + 250 Python tests, all green
+- `make lint` passes: mypy, ruff, clang-format, gersemi, codespell, shellcheck all clean
 
 ## Branch State
 
-`p4-step1-pluggable-encode` is one commit ahead of `main`.
+`p4-step2-pluggable-bulk` is ready to merge to `main`.
+The user will merge it (along with `p4-step1-pluggable-encode` if not already done)
+before starting Step 3.
 
-## Next Steps for P4-Step 2
+## Next Step: P4-Step 3 — Pluggable Transcode Pipeline
 
-Read `docs/plans/p4-step2-pluggable-bulk.md` next.
+Read `docs/plans/p4-step3-pluggable-transcode.md` for full details.
 
-**What you need to know to start:**
+**Summary of what Step 3 requires:**
 
-- `encode(codec)` and `encode_or_error(codec)` pipe adaptors now exist in
-  `include/beman/transcode/encode_view.hpp`.  They are the encode mirror of
-  `decode(codec)` / `decode_or_error(codec)` in `include/beman/transcode/decode_view.hpp`.
+Add a `transcode_view<DecodeCodec, EncodeCodec, R>` view (and pipe adaptor) that
+chains `decode(decode_codec) | encode(encode_codec)` to transcode a byte range
+from one encoding to another using pluggable codecs. This is the pluggable
+analogue of the existing WHATWG `transcode_view`.
 
-- The test subject is `table_codec<Table>` from `include/beman/transcode/detail/table_codec.hpp`.
-  It satisfies both `decode_codec` and `encode_codec`.  A Latin-1 test instance is created
-  with `std::array<char32_t, 128> latin1_upper` (maps bytes 0x80-0xFF → U+0080-U+00FF).
+**Key files to read before starting Step 3:**
 
-- Step 2 adds *bulk* operations: `decode_to`, `encode_to`, and `into` for pluggable codecs.
-  These are string/container-filling functions that avoid per-element overhead.
-  They depend on Step 1's `encode_view` being available (Step 2 depends on Step 1).
+- `include/beman/transcode/transcode_view.hpp` — the existing WHATWG transcode
+  view (the pattern to follow for the pluggable version)
+- `include/beman/transcode/decode_view.hpp` — `decode(codec)` factory (Step 1 predecessor)
+- `include/beman/transcode/encode_view.hpp` — `encode(codec)` factory (Step 1)
+- `include/beman/transcode/detail/codec_concepts.hpp` — `decode_codec`, `encode_codec`
 
-- Look at `include/beman/transcode/detail/bulk_transcode.hpp` for the existing WHATWG
-  bulk transcode pattern to follow.
+**Design note:** The pluggable transcode view can be implemented simply by
+composing `decode` and `encode` views — it does not need a hand-rolled iterator.
+The main deliverable is the pipe adaptor factory and a `transcode<DC,EC>(range)`
+free function.
 
-- The worktree for the next step must be created fresh from `main` after the user
-  merges `p4-step1-pluggable-encode` into `main`.  Per CLAUDE.md: start every task on
-  its own branch and separate git worktree rooted from `main`.
+**Test file:** Create `tests/beman/transcode/pluggable_transcode.test.cpp` using
+`latin1_codec` (decode and encode) through the new view, plus consteval tests.
+
+**Register** the new test in `tests/beman/transcode/CMakeLists.txt` following the
+pattern of adjacent pluggable test targets.
+
+After `make test` and `make lint` are green, update `docs/plans/handoff-next.md`.
