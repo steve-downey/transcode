@@ -21,6 +21,7 @@ import beman.transcode;
     #include <beman/transcode/iconv_transcode_view.hpp>
     #include <beman/transcode/iconv_transcode_or_error_view.hpp>
     #include <beman/transcode/iconv_real.hpp>
+    #include <beman/transcode/iconv_bulk.hpp>
     #include <beman/transcode/detail/labels.hpp>
     #include <beman/transcode/detail/sniff.hpp>
     #include <beman/transcode/detail/transcode_string.hpp>

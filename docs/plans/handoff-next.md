@@ -1,77 +1,92 @@
-# Handoff: P4-Step 3 Complete → P4-Step 4 Next
+# Handoff: P4-Step 4 Complete → P4-Step 5 Next
 
 ## Completed
 
-- **P4-Step 1: Pluggable Encode View** — done on `p4-step1-pluggable-encode` branch
-- **P4-Step 2: Pluggable Bulk Operations** — done on `p4-step2-pluggable-bulk` branch
-- **P4-Step 3: Pluggable Transcode Pipeline** — done on `p4-step3-pluggable-transcode` branch
+- **P4-Step 1: Pluggable Encode View** — done, merged to `main`
+- **P4-Step 2: Pluggable Bulk Operations** — done, merged to `main`
+- **P4-Step 3: Pluggable Transcode Pipeline** — done, merged to `main`
+- **P4-Step 4: iconv Bulk Operations** — done on `p4-step4-iconv-bulk` branch
 
-## What was done in Step 3
+## What was done in Step 4
 
-- Modified `include/beman/transcode/detail/transcode_view.hpp`:
-  - Added `#include <beman/transcode/decode_view.hpp>` and `<beman/transcode/encode_view.hpp>`
-  - Added `pluggable_transcode_closure<From, To>` struct that holds two codec objects
-    and composes `decode(from_) | encode(to_)` in its `operator()(R&&)` and pipe `operator|`
-  - Added `pluggable_transcode(From, To)` factory function that returns the closure
-  - Out-of-line `operator()` definition follows the project convention
+Added bulk iconv transcoding functions in a new header
+`include/beman/transcode/iconv_bulk.hpp`:
 
-- **Naming note:** The factory is named `pluggable_transcode` (not `transcode`) because
-  C++ does not allow a function template and a variable template to share the same name
-  in the same namespace.  The existing `inline constexpr transcode_closure<From, To> transcode{}`
-  variable template would conflict with a `transcode(From, To)` function template.
-  The plan said they would coexist but GCC (correctly) rejects it.
+- `iconv_transcode_to<Container>(source, from, to, fns)` / `(source, from, to)` —
+  transcodes a `legacy_byte_range` from encoding `from` to `to`, returning a
+  Container (default `std::string`). Preallocates `max(input_size * 4, 256)` bytes
+  and grows 2x on E2BIG. EILSEQ and trailing EINVAL replace bytes with `'?'`.
+  Flushes stateful encodings at the end.
 
-- `tests/beman/transcode/pluggable_transcode.test.cpp` — 8 tests:
-  - ASCII identity round-trip via pipe
-  - Upper-half (0x80-0xFF) identity round-trip via pipe
-  - Empty input
-  - Mixed ASCII and upper-half bytes
-  - Closure `operator()` called directly (not piped)
-  - `span<const char>` input
-  - Two consteval (constexpr lambda) tests using `constify()`
+- `iconv_transcode_into(source, from, to, output, fns)` / `(source, from, to, output)` —
+  same semantics but writes to an `std::output_iterator<char>`. Uses a fixed
+  4096-byte temp buffer internally. Returns the advanced output iterator.
+
+- `iconv_transcode_to_or_error<Container>(source, from, to, fns)` /
+  `(source, from, to)` — like `iconv_transcode_to` but returns
+  `std::unexpected(iconv_error::invalid_sequence)` on EILSEQ and
+  `std::unexpected(iconv_error::incomplete_sequence)` on EINVAL instead of
+  inserting a replacement character. E2BIG still grows the buffer.
+
+All three accept an `IconvFns` template parameter for dependency injection;
+the no-fns overloads call `make_real_iconv_fns()` from `iconv_real.hpp`.
+
+A `detail::iconv_guard<IconvFns>` RAII struct closes the iconv handle.
+
+- Added `#include <beman/transcode/iconv_bulk.hpp>` to `transcode.hpp`.
+
+- `tests/beman/transcode/iconv_bulk.test.cpp` — 17 tests:
+  - Identity transcode, empty input, `vector<char>` container
+  - E2BIG recovery (`mock_iconv_e2big`)
+  - EILSEQ replacement with `'?'` (`mock_iconv_eilseq`)
+  - Trailing EINVAL (orphan byte) → `'?'` (`mock_iconv_pairwise`)
+  - Stateful encoding flush (`mock_iconv_stateful`)
+  - Real iconv UTF-8→UTF-32LE check
+  - `_into` identity, EILSEQ, E2BIG, and iterator-advancement tests
+  - `_or_error` success, EILSEQ error, EINVAL error, E2BIG recovery, real iconv
 
 - Updated `tests/beman/transcode/CMakeLists.txt` — registered
-  `beman.transcode.tests.pluggable_transcode` executable with `add_test`
+  `beman.transcode.tests.iconv_bulk` with `Iconv::Iconv` link
 
 ## Files modified
 
-- `include/beman/transcode/detail/transcode_view.hpp` — added pluggable closure and factory
-- `tests/beman/transcode/pluggable_transcode.test.cpp` — new test file
-- `tests/beman/transcode/CMakeLists.txt` — added pluggable_transcode test target
-- `include/beman/transcode/encode_view.hpp`, `tests/beman/transcode/encode_view.test.cpp`,
-  `tests/beman/transcode/pluggable_bulk.test.cpp` — clang-format whitespace fixes
+- `include/beman/transcode/iconv_bulk.hpp` — new file
+- `tests/beman/transcode/iconv_bulk.test.cpp` — new file
+- `include/beman/transcode/transcode.hpp` — added iconv_bulk include
+- `tests/beman/transcode/CMakeLists.txt` — registered new test target
 
 ## Current State
 
-- `make test` passes: 675 C++ tests + 250 Python tests, all green
+- `make test` passes: 688 C++ tests + 250 Python tests, all green
 - `make lint` passes: mypy, ruff, clang-format, gersemi, codespell, shellcheck all clean
 
 ## Branch State
 
-`p4-step3-pluggable-transcode` is ready to merge to `main`.
-All three of steps 1-3 live in this branch's ancestry (`p4-step3-pluggable-transcode`
-was branched from `p4-step2-pluggable-bulk`).  Merge with `--no-ff`.
+`p4-step4-iconv-bulk` is ready to merge to `main`.
+Merge with `--no-ff`.
 
-The user should merge step 3 before starting step 4.
+The user should merge step 4 before starting step 5.
 
-## Next Step: P4-Step 4 — iconv Bulk Operations
+## Next Step: P4-Step 5 — null_term support for iconv views
 
-Read `docs/plans/p4-step4-iconv-bulk.md` for full details.
+Read `docs/plans/p4-step5-iconv-null-term.md` for full details.
 
-**Summary of what Step 4 requires:**
+**Summary of what Step 5 requires:**
 
-Add `iconv_transcode_to` and `iconv_transcode_into` bulk functions that wrap
-`iconv_transcode_view` to transcode a byte range from one encoding to another
-using iconv, yielding a `std::string` or writing to an output iterator.
-This closes the performance gap for iconv bulk transcoding (currently requiring
-users to drive the view manually for every string).
+Add `null_term` support so that C strings can be piped directly to
+`iconv_transcode` and `iconv_transcode_or_error` without manually wrapping
+them in `views::null_term`. This closes the ergonomic gap where the WHATWG
+pipeline accepts `views::null_term(ptr)` but the iconv pipeline requires an
+explicit intermediate step.
 
-**Key files to read before starting Step 4:**
+**Key files to read before starting Step 5:**
 
-- `include/beman/transcode/iconv_transcode_view.hpp` — the iconv view (source of truth)
-- `include/beman/transcode/detail/bulk_transcode.hpp` — existing WHATWG bulk functions
-  (pattern to follow for new iconv bulk overloads)
-- `docs/plans/p4-step4-iconv-bulk.md` — detailed step plan
+- `include/beman/transcode/detail/null_term.hpp` — `views::null_term` adapter
+- `include/beman/transcode/iconv_transcode_view.hpp` — iconv_transcode_closure
+- `include/beman/transcode/iconv_transcode_or_error_view.hpp` — or_error closure
+- `include/beman/transcode/iconv_real.hpp` — the pipe factories
+- `docs/plans/p4-step5-iconv-null-term.md` — detailed step plan
 - `docs/plans/phase4-index.md` — phase overview
 
-**Start fresh:** create branch `p4-step4-iconv-bulk` from `main` after merging step 3.
+**Start fresh:** create branch `p4-step5-iconv-null-term` from `main` after
+merging step 4.
