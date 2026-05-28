@@ -1,5 +1,5 @@
-# ruff: noqa: E501
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+# ruff: noqa: E501
 """Tests for tools/process_benchmark_results.py."""
 
 import json

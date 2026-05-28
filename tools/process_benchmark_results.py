@@ -245,7 +245,7 @@ def main(argv: list[str] | None = None) -> int:
         metavar="DIR",
         type=Path,
         default=DEFAULT_CORPUS_DIR,
-        help=f"Directory of corpus files for size lookup (default: {DEFAULT_CORPUS_DIR})",  # noqa: E501
+        help=f"Corpus file dir for size lookup (default: {DEFAULT_CORPUS_DIR})",
     )
     parser.add_argument(
         "--vegalite",
