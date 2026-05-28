@@ -20,6 +20,33 @@ codecs web and network protocols actually use.
 Part of the [Beman Project](https://github.com/bemanproject), targeting C++29
 standardization.
 
+## Design: Byte-Oriented I/O Transcoding
+
+This library operates on **byte-like types** (`char`, `signed char`,
+`unsigned char`, `std::byte`) — the types you get from files, sockets, and
+memory-mapped I/O.  It deliberately does not use `char8_t`, `char16_t`, or
+`char32_t` as input types.  This is a different, complementary use case from
+the type-based encoding approach in [P2728](https://wg21.link/P2728) (Eddie
+Nolan's Unicode Transcoding paper), which uses distinct character types to
+statically track encoding at the type-system level.
+
+The two approaches serve non-overlapping problems:
+
+- **P2728 (type-based)**: transcoding between `std::u8string`, `std::u16string`,
+  `std::u32string` — the encoding is carried in the type, and the compiler
+  prevents mixing them
+- **beman.transcode (byte-based)**: transcoding I/O byte streams whose encoding
+  is determined at runtime or by protocol (HTTP `Content-Type`, BOM sniffing,
+  database column metadata, `iconv` string labels) — the bytes are just bytes
+  until you decode them
+
+The only Unicode scalar type this library uses is `char32_t` — as the decoded
+codepoint type.  Using `char32_t` for codepoints is the agreed pattern in WG21
+rather than introducing a distinct `code_point` type: since UTF-32 code units
+and Unicode code points are numerically identical, distinguishing them at the
+type level just introduces syntactic noise and "range casts" that alias without
+converting.
+
 ## Core APIs
 
 ### Decode Views — Bytes to Unicode
