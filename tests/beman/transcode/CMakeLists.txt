@@ -999,6 +999,46 @@ add_test(
     COMMAND beman.transcode.tests.ebcdic037
 )
 
+add_executable(beman.transcode.tests.encode_view)
+target_sources(beman.transcode.tests.encode_view PRIVATE encode_view.test.cpp)
+target_include_directories(
+    beman.transcode.tests.encode_view
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.encode_view
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.encode_view
+    COMMAND beman.transcode.tests.encode_view
+)
+
+# Negative compile test: encode rejects types that don't satisfy encode_codec
+add_library(beman.transcode.tests.encode_view_reject OBJECT)
+target_sources(
+    beman.transcode.tests.encode_view_reject
+    PRIVATE encode_view_reject.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.encode_view_reject
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.encode_view_reject
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME encode_view_reject
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.encode_view_reject --config $<CONFIGURATION>
+)
+set_tests_properties(
+    encode_view_reject
+    PROPERTIES PASS_REGULAR_EXPRESSION "encode_codec"
+)
+
 # ---------------------------------------------------------------------------
 # Benchmark fixture unit tests
 # ---------------------------------------------------------------------------
