@@ -171,26 +171,31 @@ beman::transcoding::decode_into<codec::utf_8>(bytes, std::back_inserter(vec));
 
 ## Codec Identifiers: WHATWG, iconv, and `std::text_encoding`
 
-Three encoding identification schemes are relevant:
+Encodings can be identified by IANA name, by WHATWG label, or by the string
+labels that a system's `iconv` accepts.  In most cases these overlap — you can
+look up a WHATWG codec by its IANA name or any of its aliases.  Where WHATWG goes
+further is in nailing down the *exact algorithm and data tables* for each codec.
+This matters most for encodings where there was historical diverging practice:
+different implementations of "Shift_JIS" or "Big5" could disagree on edge cases,
+unmapped byte values, or error recovery.  The WHATWG standard eliminates that
+ambiguity by specifying precisely what every byte sequence means.
 
-**`std::text_encoding`** (P1885) provides IANA charset *names* — it identifies
-WHICH encoding a text uses, but does not define HOW to decode or encode.  It is a
-vocabulary type for labeling, not an implementation.
+**`std::text_encoding`** (P1885) provides IANA charset names as a C++ vocabulary
+type.  It identifies WHICH encoding a text uses but does not define HOW to
+decode or encode — it is purely for labeling.  The explicit WHATWG API in
+`beman.transcode` reflects the tighter algorithmic specification but does not
+supersede `std::text_encoding`; the two serve different roles.
 
 **POSIX `iconv`** uses string labels (`"UTF-8"`, `"SHIFT_JIS"`, `"ISO-8859-1"`)
 to identify codecs at runtime.  The set of available encodings depends on the
-system — glibc's iconv supports hundreds.  If your codebase already uses iconv
-(or a library that wraps it — this includes most C and C++ programs doing
-encoding conversion today), these are the identifiers you already have, and the
-`iconv_transcode_view` accepts them directly with no translation layer.
-
-**The [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/)** defines the
-actual byte-level decode and encode *algorithms* — the same algorithms browsers
-execute when they process `<meta charset="...">`.  It specifies exact error
-recovery semantics per codec (replacement character U+FFFD on decode error, `?`
-on encode error), alias consolidation (e.g., "ascii", "us-ascii", "iso-ir-6",
-"ansi_x3.4-1968" all map to `windows-1252` per the web-compatibility spec), and
-multi-byte state machines.
+system — glibc's iconv supports hundreds.  Whether any given iconv
+implementation accepts `std::text_encoding` labels is purely quality-of-
+implementation; the standard does not require it.  It may become recommended
+practice for a compiler to identify an iconv function that interprets its
+`"literal"` and `"locale"` encodings, but this is not currently required.  If
+your codebase already uses iconv (or a library that wraps it — this includes
+most C and C++ programs doing encoding conversion today), the
+`iconv_transcode_view` accepts the same string labels you already have.
 
 `beman.transcode` provides:
 
@@ -203,11 +208,6 @@ multi-byte state machines.
 - **System iconv interop** via `iconv_transcode("UTF-8", "EUC-TW", buffer)` —
   string labels passed directly to the platform's iconv, giving access to every
   encoding the system supports without this library needing to implement it
-
-A future integration point: `std::text_encoding::id()` could map to the
-`beman::transcoding::codec` enum for WHATWG codecs, or to iconv label strings
-for platform-specific encodings, providing the standard vocabulary type on top
-of this library's implementations.
 
 ## Performance
 
