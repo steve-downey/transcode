@@ -5,6 +5,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_KR_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_EUC_KR_HPP
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {
 
 inline constexpr char32_t euc_kr[23940] = {

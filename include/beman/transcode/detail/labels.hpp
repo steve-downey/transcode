@@ -4,12 +4,16 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/whatwg_decode_view.hpp>
 
-#include <algorithm>
-#include <optional>
-#include <string_view>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <algorithm>
+    #include <optional>
+    #include <string_view>
 
+#endif
 namespace beman::transcoding {
 
 namespace detail {

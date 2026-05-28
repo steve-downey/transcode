@@ -3,11 +3,15 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_SHIFT_JIS_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_SHIFT_JIS_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
 
-#include <iterator>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <iterator>
 
+#endif
 namespace beman::transcoding::detail {
 
 struct shift_jis_decode_result {

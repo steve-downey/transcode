@@ -3,18 +3,22 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/single_byte_tables.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
 
-#include <cstddef>
-#include <iterator>
-#include <ranges>
-#include <string>
-#include <type_traits>
-#include <vector>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <cstddef>
+    #include <iterator>
+    #include <ranges>
+    #include <string>
+    #include <type_traits>
+    #include <vector>
 
+#endif
 namespace beman::transcoding {
 
 namespace detail {

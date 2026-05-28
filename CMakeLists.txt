@@ -105,13 +105,23 @@ else()
     )
 endif()
 
+find_package(Iconv REQUIRED)
+if(BEMAN_TRANSCODE_USE_MODULES)
+    target_link_libraries(beman.transcode PUBLIC Iconv::Iconv)
+else()
+    target_link_libraries(beman.transcode INTERFACE Iconv::Iconv)
+endif()
+
 add_subdirectory(include/beman/transcode)
 
-beman_install_library(beman.transcode TARGETS beman.transcode)
+beman_install_library(
+    beman.transcode
+    TARGETS beman.transcode
+    DEPENDENCIES Iconv
+)
 configure_build_telemetry()
 
 if(BEMAN_TRANSCODE_BUILD_TESTS)
-    find_package(Iconv REQUIRED)
     enable_testing()
     add_subdirectory(tests/beman/transcode)
 endif()

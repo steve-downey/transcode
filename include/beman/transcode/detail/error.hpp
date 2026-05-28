@@ -3,6 +3,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_ERROR_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_ERROR_HPP
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding {
 
 enum class whatwg_error {

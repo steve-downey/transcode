@@ -3,11 +3,15 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLE_CODEC_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLE_CODEC_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/codec_concepts.hpp>
 
-#include <array>
-#include <iterator>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <array>
+    #include <iterator>
 
+#endif
 namespace beman::transcoding {
 
 template <std::array<char32_t, 128> Table>

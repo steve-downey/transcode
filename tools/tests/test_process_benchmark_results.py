@@ -321,7 +321,7 @@ def test_render_markdown_shows_throughput_when_size_known(
     sizes = {"en_mars_utf8.txt": 586}
     table = render_markdown_table(results, sizes)
     # should contain a non-? throughput value for en_mars
-    lines = [ln for ln in table.splitlines() if "en_mars corpus" in ln]
+    lines = [line for line in table.splitlines() if "en_mars corpus" in line]
     assert lines
     # the throughput column should not be "?" for a known corpus
     assert "| ? |" not in lines[0]

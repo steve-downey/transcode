@@ -3,11 +3,15 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_GBK_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_GBK_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/tables/gbk.hpp>
 
-#include <iterator>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <iterator>
 
+#endif
 namespace beman::transcoding::detail {
 
 struct gbk_decode_result {

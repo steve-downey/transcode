@@ -3,6 +3,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_WHATWG_ENCODE_VIEW_HPP
 #define INCLUDE_BEMAN_TRANSCODE_WHATWG_ENCODE_VIEW_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/big5.hpp>
@@ -43,12 +45,14 @@
 #include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
 
-#include <expected>
-#include <compare>
-#include <algorithm>
-#include <iterator>
-#include <ranges>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <expected>
+    #include <compare>
+    #include <algorithm>
+    #include <iterator>
+    #include <ranges>
 
+#endif
 namespace beman::transcoding {
 
 namespace detail {

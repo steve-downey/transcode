@@ -3,6 +3,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_VIEW_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_VIEW_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/whatwg_decode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
 

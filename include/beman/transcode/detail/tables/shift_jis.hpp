@@ -5,6 +5,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_SHIFT_JIS_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_SHIFT_JIS_HPP
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {
 
 inline constexpr char32_t shift_jis[11280] = {

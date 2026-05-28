@@ -5,6 +5,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_KOI8_R_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_KOI8_R_HPP
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {
 
 inline constexpr char32_t koi8_r[128] = {

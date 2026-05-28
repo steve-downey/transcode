@@ -3,11 +3,15 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_SINGLE_BYTE_DECODE_VIEW_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_SINGLE_BYTE_DECODE_VIEW_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/single_byte_tables.hpp>
 
-#include <iterator>
-#include <ranges>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <iterator>
+    #include <ranges>
 
+#endif
 namespace beman::transcoding {
 
 namespace detail {

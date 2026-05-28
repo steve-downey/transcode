@@ -3,14 +3,18 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_STRING_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_STRING_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/labels.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
 
-#include <optional>
-#include <span>
-#include <string>
-#include <string_view>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <optional>
+    #include <span>
+    #include <string>
+    #include <string_view>
 
+#endif
 namespace beman::transcoding {
 
 // Decode bytes from `from` codec and re-encode to `to` codec.

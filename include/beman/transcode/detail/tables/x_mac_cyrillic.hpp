@@ -5,6 +5,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_X_MAC_CYRILLIC_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_X_MAC_CYRILLIC_HPP
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {
 
 inline constexpr char32_t x_mac_cyrillic[128] = {

@@ -3,14 +3,18 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DECODE_VIEW_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DECODE_VIEW_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/codec_concepts.hpp>
 #include <beman/transcode/detail/concepts.hpp>
 
-#include <expected>
-#include <iterator>
-#include <ranges>
-#include <type_traits>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <expected>
+    #include <iterator>
+    #include <ranges>
+    #include <type_traits>
 
+#endif
 namespace beman::transcoding {
 
 // ---------------------------------------------------------------------------

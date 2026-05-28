@@ -3,6 +3,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_WHATWG_DECODE_VIEW_HPP
 #define INCLUDE_BEMAN_TRANSCODE_WHATWG_DECODE_VIEW_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/single_byte.hpp>
@@ -43,12 +45,14 @@
 #include <beman/transcode/detail/utf16.hpp>
 #include <beman/transcode/detail/x_user_defined.hpp>
 
-#include <expected>
-#include <compare>
-#include <algorithm>
-#include <iterator>
-#include <ranges>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <expected>
+    #include <compare>
+    #include <algorithm>
+    #include <iterator>
+    #include <ranges>
 
+#endif
 namespace beman::transcoding {
 
 enum class codec {

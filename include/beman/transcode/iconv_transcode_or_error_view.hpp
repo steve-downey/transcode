@@ -3,18 +3,22 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_ICONV_TRANSCODE_OR_ERROR_VIEW_HPP
 #define INCLUDE_BEMAN_TRANSCODE_ICONV_TRANSCODE_OR_ERROR_VIEW_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/iconv_transcode_view.hpp>
 
 #include <iconv.h>
 
-#include <cerrno>
-#include <expected>
-#include <iterator>
-#include <ranges>
-#include <span>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <cerrno>
+    #include <expected>
+    #include <iterator>
+    #include <ranges>
+    #include <span>
 
+#endif
 namespace beman::transcoding {
 
 // iconv_transcode_or_error_view<IconvFns, R>
