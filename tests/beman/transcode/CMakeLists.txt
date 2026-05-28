@@ -1032,6 +1032,24 @@ add_test(
     COMMAND beman.transcode.tests.pluggable_bulk
 )
 
+add_executable(beman.transcode.tests.pluggable_transcode)
+target_sources(
+    beman.transcode.tests.pluggable_transcode
+    PRIVATE pluggable_transcode.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.pluggable_transcode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.pluggable_transcode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.pluggable_transcode
+    COMMAND beman.transcode.tests.pluggable_transcode
+)
+
 # Negative compile test: encode rejects types that don't satisfy encode_codec
 add_library(beman.transcode.tests.encode_view_reject OBJECT)
 target_sources(
