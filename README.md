@@ -242,39 +242,73 @@ Measured with GCC 16.1.1, `-O3 -march=native -mtune=native -flto=auto
 -fno-semantic-interposition` (Intel 13th-gen Alderlake, AVX2 enabled).  Corpora
 sourced from Wikipedia Mars articles in each language.
 
-### UTF-8 Decode and Encode
+### Competitive Comparison: UTF-8 Decode (586 B English, ASCII-heavy)
 
-| Benchmark | Corpus | Mean | Throughput |
-|-----------|--------|------|-----------|
-| UTF-8 decode: English (ASCII-heavy) | 586 B | 234 ns | 2.4 GiB/s |
-| UTF-8 decode: Arabic (multibyte-heavy) | 640 B | 1025 ns | 596 MiB/s |
-| UTF-8 encode round-trip: English | 586 B | 726 ns | 770 MiB/s |
+This library is a naive scalar implementation — no SIMD, no hand-tuned assembly.
+The comparison puts it in context against mature, production-optimized projects:
 
-### WHATWG Legacy Codecs
+| Implementation | Mean | Throughput | Notes |
+|----------------|------|-----------|-------|
+| **simdutf** (SIMD ceiling) | 26 ns | 21.5 GiB/s | AVX2 vectorized, validate+transcode |
+| **encoding_rs** (Rust) | 32 ns | 17.4 GiB/s | SIMD-accelerated, production Mozilla code |
+| **beman.transcode** (this library) | 234 ns | 2.4 GiB/s | Naive scalar, constexpr-capable |
+| Raw `iconv()` (glibc) | 712 ns | 785 MiB/s | Block API, system implementation |
+| `std::codecvt` (libstdc++) | 968 ns | 577 MiB/s | Deprecated, locale-dependent |
+| `iconv_transcode_view` (this library) | 15.4 µs | 36 MiB/s | Per-byte range adaptor over iconv |
 
-| Benchmark | Corpus | Mean | Throughput |
-|-----------|--------|------|-----------|
-| Shift-JIS decode: Japanese | 340 B | 261 ns | 1.2 GiB/s |
-| UTF-8 decode: Japanese (3-byte heavy) | 504 B | 423 ns | 1.1 GiB/s |
-| GB18030 decode: Chinese | 98 B | 94 ns | 993 MiB/s |
-| Big5 decode: Traditional Chinese | 98 B | 111 ns | 842 MiB/s |
-| EUC-JP decode: Japanese | 93 B | 47 ns | 1.9 GiB/s |
-| EUC-KR decode: Korean | 108 B | 103 ns | 1.0 GiB/s |
-| ISO-2022-JP decode: Japanese (stateful) | 111 B | 131 ns | 808 MiB/s |
-| UTF-16LE decode | 936 B | 218 ns | 4.1 GiB/s |
-| UTF-16BE decode | 936 B | 226 ns | 3.9 GiB/s |
+The ~9x gap between beman.transcode and simdutf is the cost of scalar
+byte-at-a-time iteration vs SIMD bulk processing.  This is expected and
+acceptable for a portable, constexpr-capable, standards-track implementation.
+SIMD backends (simdutf, encoding_rs) could be plugged in behind the same range
+interface in the future without changing user code.
 
-### iconv Comparison
+### Competitive Comparison: Shift-JIS Decode (340 B Japanese)
 
-| Benchmark | Corpus | Mean | Throughput |
-|-----------|--------|------|-----------|
-| Raw `iconv()`: UTF-8 → UTF-32LE | 586 B | 821 ns | 680 MiB/s |
-| `iconv_transcode_view`: UTF-8 → UTF-32LE | 586 B | 13.5 µs | 41 MiB/s |
-| Raw `iconv()`: Shift-JIS → UTF-8 | 340 B | 853 ns | 380 MiB/s |
+| Implementation | Mean | Throughput |
+|----------------|------|-----------|
+| **encoding_rs** (Rust) | 395 ns | 821 MiB/s |
+| **beman.transcode** (this library) | 261 ns | 1.2 GiB/s |
+| Raw `iconv()` (glibc) | 977 ns | 332 MiB/s |
 
-The `iconv_transcode_view` adds per-byte iteration overhead vs the block-oriented
-raw `iconv()` API.  Its value is safety (no resource leaks, no buffer management)
-and composability with other range adaptors.
+For legacy multi-byte CJK codecs, the WHATWG table-driven implementation is
+competitive with encoding_rs and significantly faster than system iconv.
+
+### UTF-8 Decode: Multibyte (640 B Arabic, 2-byte sequences)
+
+| Implementation | Mean | Throughput |
+|----------------|------|-----------|
+| **simdutf** | 249 ns | 2.5 GiB/s |
+| **beman.transcode** | 1025 ns | 596 MiB/s |
+
+The gap widens on multi-byte text where SIMD branch-free algorithms excel.
+
+### WHATWG Legacy Codecs (this library)
+
+| Codec | Corpus | Mean | Throughput |
+|-------|--------|------|-----------|
+| Shift-JIS | 340 B Japanese | 261 ns | 1.2 GiB/s |
+| UTF-8 | 504 B Japanese (3-byte) | 423 ns | 1.1 GiB/s |
+| GB18030 | 98 B Chinese | 94 ns | 993 MiB/s |
+| Big5 | 98 B Trad. Chinese | 111 ns | 842 MiB/s |
+| EUC-JP | 93 B Japanese | 47 ns | 1.9 GiB/s |
+| EUC-KR | 108 B Korean | 103 ns | 1.0 GiB/s |
+| ISO-2022-JP | 111 B Japanese | 131 ns | 808 MiB/s |
+| UTF-16LE | 936 B | 218 ns | 4.1 GiB/s |
+| UTF-16BE | 936 B | 226 ns | 3.9 GiB/s |
+
+### iconv Range Adaptor Overhead
+
+| Benchmark | Mean | Throughput |
+|-----------|------|-----------|
+| Raw `iconv()`: UTF-8 → UTF-32LE | 712 ns | 785 MiB/s |
+| `iconv_transcode_view`: same | 15.4 µs | 36 MiB/s |
+| Raw `iconv()`: Shift-JIS → UTF-8 | 977 ns | 332 MiB/s |
+| `iconv_transcode_view`: same | 10.9 µs | 30 MiB/s |
+
+The ~15-20x overhead of the range adaptor vs raw iconv is the cost of per-byte
+iteration through a block-oriented C API.  The adaptor's value is safety (no
+resource leaks, no manual buffer management) and composability with other range
+adaptors.
 
 ### Reproducing
 
@@ -282,9 +316,10 @@ and composability with other range adaptors.
 # Build GCC-16 optimized config and generate full report
 make bench-perf-report
 
-# Or run individual suites
-make bench-perf       # smoke only
-make bench-perf-all   # all core benchmarks
+# Competitive baselines (encoding_rs requires cargo; simdutf requires cmake flag)
+make bench-perf-all                                          # core benchmarks
+.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.encoding_rs "[benchmark]"
+.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.simdutf "[benchmark]"
 
 # Download full corpus (3 MiB War and Peace + Wikipedia articles)
 uv run python tools/download_benchmark_corpora.py
