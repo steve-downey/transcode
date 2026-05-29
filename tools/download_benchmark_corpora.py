@@ -31,12 +31,12 @@ _ARTICLE_BASE = "action=query&prop=extracts&explaintext=true&format=json"
 
 # (lang_code, output_filename, article_title, extra_url_params)
 # zh uses variant=zh-tw so Traditional Chinese characters convert to Big5
-# ko requires the Korean title because "Mars" doesn't redirect in ko.wikipedia
+# ar, ja, ko require native-language titles because "Mars" doesn't redirect.
 WIKI_CORPORA: list[tuple[str, str, str, str]] = [
     ("en", "en_mars_utf8.txt", "Mars", ""),
-    ("ar", "ar_mars_utf8.txt", "Mars", ""),
+    ("ar", "ar_mars_utf8.txt", "المريخ", ""),
     ("ru", "ru_mars_utf8.txt", "Mars", ""),
-    ("ja", "ja_mars_utf8.txt", "Mars", ""),
+    ("ja", "ja_mars_utf8.txt", "火星", ""),
     ("zh", "zh_mars_utf8.txt", "火星", "&variant=zh-tw"),
     ("ko", "ko_mars_utf8.txt", "화성", ""),
 ]
