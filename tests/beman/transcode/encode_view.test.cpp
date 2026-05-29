@@ -113,7 +113,7 @@ TEST_CASE("encode_or_error_view: unmapped codepoint yields unexpected", "[encode
 
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == decode_error::unmapped_codepoint);
+    CHECK(r.error() == whatwg_error::unmapped_codepoint);
 }
 
 TEST_CASE("encode_or_error_view: sparse table unmapped yields unexpected", "[encode_view]") {
@@ -123,19 +123,19 @@ TEST_CASE("encode_or_error_view: sparse table unmapped yields unexpected", "[enc
 
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == decode_error::unmapped_codepoint);
+    CHECK(r.error() == whatwg_error::unmapped_codepoint);
 }
 
 TEST_CASE("encode_or_error_view: mixed success and error", "[encode_view]") {
     std::u32string                                 src{U'A', U'\x1F600', U'B'}; // A, emoji, B
-    std::vector<std::expected<char, decode_error>> result;
+    std::vector<std::expected<char, whatwg_error>> result;
     for (auto v : src | encode_or_error(latin1_codec{}))
         result.push_back(v);
     REQUIRE(result.size() == 3);
     CHECK(result[0].has_value());
     CHECK(result[0].value() == 'A');
     CHECK(!result[1].has_value());
-    CHECK(result[1].error() == decode_error::unmapped_codepoint);
+    CHECK(result[1].error() == whatwg_error::unmapped_codepoint);
     CHECK(result[2].has_value());
     CHECK(result[2].value() == 'B');
 }

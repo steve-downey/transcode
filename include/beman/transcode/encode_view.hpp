@@ -93,7 +93,7 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R>> {
 };
 
 // ---------------------------------------------------------------------------
-// encode_or_error_view — encodes char32_t scalars to expected<char, decode_error>
+// encode_or_error_view — encodes char32_t scalars to expected<char, whatwg_error>
 // ---------------------------------------------------------------------------
 
 template <encode_codec Codec, std::ranges::input_range R>
@@ -105,7 +105,7 @@ class encode_or_error_view : public std::ranges::view_interface<encode_or_error_
     class iterator {
         using base_iter = detail::compatible_iterator_t<R>;
         using base_sent = detail::compatible_sentinel_t<R>;
-        using result_t  = std::expected<char, decode_error>;
+        using result_t  = std::expected<char, whatwg_error>;
 
         base_iter                    current_{};
         base_sent                    end_{};
@@ -385,7 +385,7 @@ template <encode_codec Codec, std::ranges::input_range R>
     requires unicode_scalar_range<R>
 constexpr auto encode_or_error_view<Codec, R>::iterator::operator*() const -> result_t {
     if (is_error_)
-        return std::unexpected(decode_error::unmapped_codepoint);
+        return std::unexpected(whatwg_error::unmapped_codepoint);
     return static_cast<char>(buf_[static_cast<std::size_t>(pos_)]);
 }
 
