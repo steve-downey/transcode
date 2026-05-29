@@ -5,8 +5,11 @@
 
 #include <beman/transcode/config.hpp>
 
+#include <beman/transcode/decode_view.hpp>
+#include <beman/transcode/detail/codec_concepts.hpp>
 #include <beman/transcode/detail/concepts.hpp>
 #include <beman/transcode/detail/single_byte_tables.hpp>
+#include <beman/transcode/encode_view.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
 
@@ -113,6 +116,55 @@ constexpr void encode_into(R&& source, Output output) {
         for (char byte : std::forward<R>(source) | whatwg_encode<C>)
             *output++ = byte;
     }
+}
+
+// ---------------------------------------------------------------------------
+// Pluggable codec bulk operations — codec object as first argument
+// ---------------------------------------------------------------------------
+
+template <decode_codec Codec, legacy_byte_range R>
+constexpr std::vector<char32_t> decode_to(Codec codec, R&& source) {
+    std::vector<char32_t> result;
+    detail::reserve_if_sized(result, source);
+
+    if constexpr (random_access_decode_codec_type<Codec>) {
+        for (auto byte : source)
+            result.push_back(codec.decode_byte(detail::to_unsigned_byte(byte)));
+    } else {
+        for (char32_t cp : std::forward<R>(source) | decode(codec))
+            result.push_back(cp);
+    }
+
+    return result;
+}
+
+template <encode_codec Codec, typename Container = std::string, unicode_scalar_range R>
+    requires detail::bulk_output_container<Container, char>
+constexpr Container encode_to(Codec codec, R&& source) {
+    Container result;
+    detail::reserve_if_sized(result, source);
+
+    for (char byte : std::forward<R>(source) | encode(codec))
+        result.push_back(byte);
+
+    return result;
+}
+
+template <decode_codec Codec, legacy_byte_range R, std::output_iterator<char32_t> Output>
+constexpr void decode_into(Codec codec, R&& source, Output output) {
+    if constexpr (random_access_decode_codec_type<Codec>) {
+        for (auto byte : source)
+            *output++ = codec.decode_byte(detail::to_unsigned_byte(byte));
+    } else {
+        for (char32_t cp : std::forward<R>(source) | decode(codec))
+            *output++ = cp;
+    }
+}
+
+template <encode_codec Codec, unicode_scalar_range R, std::output_iterator<char> Output>
+constexpr void encode_into(Codec codec, R&& source, Output output) {
+    for (char byte : std::forward<R>(source) | encode(codec))
+        *output++ = byte;
 }
 
 } // namespace beman::transcoding
