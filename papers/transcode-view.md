@@ -842,35 +842,61 @@ Applications requiring strict UTF validation should prefer P2728 for that portio
 
 ### API Surface Comparison
 
-The following table aligns the API surface across the component families in this
-proposal and P2728, showing where the interfaces are parallel and where gaps
-remain.
+The three implementation families in this proposal now have matching API
+surfaces for every operation their encoding model supports.  The P2728R12
+column shows the parallel design in the proposed standard UTF transcoding views.
 
-| API | WHATWG | Pluggable | iconv | P2728R12 |
-|-----|--------|-----------|-------|----------|
-| **Codec identity** | `codec::utf_8` (enum) | `my_codec{}` (type) | `"UTF-8"` (string) | `char8_t`/`char16_t`/`char32_t` |
-| **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(from,to,buf)` | ✅ `views::to_utf32` |
-| **Decode view (errors)** | ✅ `whatwg_decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
-| **Encode view** | ✅ `whatwg_encode<C>` | 🔴 | 🔴 | ✅ `views::to_utf8`, `to_utf16` |
-| **Encode view (errors)** | ✅ `whatwg_encode_or_error<C>` | 🔴 | 🔴 | ✅ `views::to_utf8_or_error` |
-| **Transcode pipeline** | ✅ `transcode<From,To>` | 🔴 | ✅ `iconv_transcode(from,to,buf)` | ✅ compose `to_utfN` views |
-| **Bulk decode → vector** | ✅ `decode_to<C>(range)` | 🔴 | 🔴 | ✅ `ranges::to<u32string>()` |
-| **Bulk encode → string** | ✅ `encode_to<C>(range)` | 🔴 | 🔴 | ✅ `ranges::to<u8string>()` |
-| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | 🔴 | 🔴 | 🔴 |
-| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | 🔴 | 🔴 | 🔴 |
-| **Runtime label lookup** | ✅ `get_encoding("utf-8")` | 🔴 | n/a | 🔴 |
-| **Runtime transcode** | ✅ `transcode_string(…)` | 🔴 | 🔴 | 🔴 |
+Legend: ✅ implemented · n/a architectural model doesn't support this ·
+🔴 not yet implemented
+
+| API | WHATWG | Pluggable codec | iconv | P2728R12 |
+|-----|--------|-----------------|-------|----------|
+| **Codec identity** | `codec::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
+| **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(f,t,buf)` | ✅ `views::to_utf32` |
+| **Decode or-error view** | ✅ `whatwg_decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
+| **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | n/a ¹ | ✅ `views::to_utf8` / `to_utf16` |
+| **Encode or-error view** | ✅ `whatwg_encode_or_error<C>` | ✅ `encode_or_error(codec)` | n/a ¹ | ✅ `views::to_utf8_or_error` |
+| **Transcode pipeline** | ✅ `transcode<From,To>` | ✅ `pluggable_transcode(f,t)` | ✅ `iconv_transcode(f,t,buf)` | ✅ compose via `|` |
+| **Bulk decode → container** | ✅ `decode_to<C>(range)` | ✅ `decode_to(codec{},range)` | n/a ¹ | ✅ `ranges::to<u32string>()` |
+| **Bulk encode → container** | ✅ `encode_to<C>(range)` | ✅ `encode_to(codec{},range)` | n/a ¹ | ✅ `ranges::to<u8string>()` |
+| **Bulk transcode → container** | n/a ² | n/a ² | ✅ `iconv_transcode_to(range,f,t)` | n/a ² |
+| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | ✅ `decode_into(codec{},range,out)` | n/a ¹ | ✅ `ranges::copy(v|to_utf32, out)` |
+| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | ✅ `encode_into(codec{},range,out)` | n/a ¹ | ✅ `ranges::copy(v|to_utf8, out)` |
+| **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
+| **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | n/a ³ |
+| **Runtime label lookup** | ✅ `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | 🔴 |
+| **Runtime transcode** | ✅ `transcode_string(src,from,to)` | 🔴 | 🔴 | 🔴 |
 | **BOM sniffing** | ✅ `sniff_encoding(range)` | 🔴 | 🔴 | 🔴 |
-| **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | 🔴 | 🔴 |
-| **Error enum** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
-| **Codepoint type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
-| **Input type** | `char`/`unsigned char`/`byte` | `unsigned char` | `char` | `char8_t`/`char16_t`/`char32_t` |
-| **constexpr** | ✅ | ✅ | 🔴 (system call) | ✅ |
+| **Error type** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
+| **Output element type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
+| **Input element type** | `char`/`byte` (legacy) | `char`/`byte` (legacy) | `char` (any byte encoding) | `char8_t`/`char16_t`/`char32_t` |
+| **constexpr** | ✅ | ✅ | 🔴 (OS syscall) | ✅ |
 
-The shared design patterns are the `_or_error` suffix convention, `char32_t` as
-the codepoint type, and pipe-operator composition.  The P2728 column operates on
-a different axis (type-encoded UTF vs byte-oriented I/O), so gaps between the
-columns are expected rather than defects — the two proposals are complementary.
+**Notes on n/a entries:**
+
+¹ **iconv is a byte↔byte transcoder.**  It converts one byte encoding directly
+to another without exposing an intermediate `char32_t` stage.  Encode (from
+`char32_t` to bytes) and decode (from bytes to `char32_t`) as separate steps
+are outside its model.
+
+² **WHATWG and pluggable codecs compose decode and encode.**  Bulk transcode is
+`encode_to(decode_to(range))`; there is no single-pass operation because the
+intermediate `char32_t` range is the natural composition point.  iconv performs
+single-pass byte→byte conversion and exposes it as a first-class operation.
+
+³ **P2728 operates on typed Unicode character types** (`char8_t`, `char16_t`,
+`char32_t`); `views::null_term` produces a range of `char`.  Bridging the two
+requires a reinterpret step that is outside both proposals.
+
+⁴ **Pluggable codecs are identified by C++ type**, not by name.  Codec
+selection happens at compile time through the type system; there is no runtime
+name-to-codec registry by design.
+
+The shared design patterns across all four columns are the `_or_error` suffix
+convention for error-surfacing variants, `char32_t` as the universal codepoint
+interchange type, and pipe-operator composition (`|`).  WHATWG/pluggable and
+P2728 are complementary: WHATWG/pluggable handles legacy byte encodings at the
+system boundary; P2728 handles UTF-to-UTF conversion within the application.
 
 ## References
 

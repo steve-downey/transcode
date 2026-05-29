@@ -188,50 +188,56 @@ iteration.  See the Performance section for measured overhead vs raw iconv.
 
 ### API Surface Matrix
 
-Cross-reference of operations across all component families.  The P2728R12
-(UTF transcoding) column shows alignment with the proposed standard UTF views.
+All three implementation families now have matching API surfaces for the
+operations their encoding model supports.  The P2728R12 (UTF transcoding)
+column shows the parallel standard proposal for type-safe UTF-to-UTF conversion.
 
-| API | WHATWG | Pluggable | iconv | P2728R12 |
-|-----|--------|-----------|-------|----------|
-| **Codec identity** | `codec::utf_8` (enum) | `my_codec{}` (type) | `"UTF-8"` (string) | `char8_t`/`char16_t`/`char32_t` |
-| **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(from,to,buf)` | ✅ `views::to_utf32` |
-| **Decode view (errors)** | ✅ `whatwg_decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
-| **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | 🔴 | ✅ `views::to_utf8`, `to_utf16` |
-| **Encode view (errors)** | ✅ `whatwg_encode_or_error<C>` | ✅ `encode_or_error(codec)` | 🔴 | ✅ `views::to_utf8_or_error` |
-| **Transcode pipeline** | ✅ `transcode<From,To>` | ✅ `pluggable_transcode(f,t)` | ✅ `iconv_transcode(from,to,buf)` | ✅ compose `to_utfN` views |
-| **Bulk decode → vector** | ✅ `decode_to<C>(range)` | ✅ `decode_to(codec{},range)` | 🔴 | ✅ `ranges::to<u32string>()` |
-| **Bulk encode → string** | ✅ `encode_to<C>(range)` | ✅ `encode_to(codec{},range)` | 🔴 | ✅ `ranges::to<u8string>()` |
-| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | ✅ `decode_into(codec{},range,out)` | 🔴 | 🔴 |
-| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | ✅ `encode_into(codec{},range,out)` | 🔴 | 🔴 |
-| **Bulk transcode → string** | 🔴 | 🔴 | ✅ `iconv_transcode_to(range,f,t)` | 🔴 |
-| **Bulk transcode → iter** | 🔴 | 🔴 | ✅ `iconv_transcode_into(range,f,t,out)` | 🔴 |
-| **Runtime label lookup** | ✅ `get_encoding("utf-8")` | 🔴 | n/a (labels are the API) | 🔴 |
-| **Runtime transcode** | ✅ `transcode_string(…)` | 🔴 | 🔴 | 🔴 |
+Legend: ✅ implemented · n/a architectural model doesn't support this ·
+🔴 not yet implemented
+
+| API | WHATWG | Pluggable codec | iconv | P2728R12 |
+|-----|--------|-----------------|-------|----------|
+| **Codec identity** | `codec::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
+| **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(f,t,buf)` | ✅ `views::to_utf32` |
+| **Decode or-error view** | ✅ `whatwg_decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
+| **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | n/a ¹ | ✅ `views::to_utf8` / `to_utf16` |
+| **Encode or-error view** | ✅ `whatwg_encode_or_error<C>` | ✅ `encode_or_error(codec)` | n/a ¹ | ✅ `views::to_utf8_or_error` |
+| **Transcode pipeline** | ✅ `transcode<From,To>` | ✅ `pluggable_transcode(f,t)` | ✅ `iconv_transcode(f,t,buf)` | ✅ compose views via `\|` |
+| **Bulk decode → container** | ✅ `decode_to<C>(range)` | ✅ `decode_to(codec{},range)` | n/a ¹ | ✅ `ranges::to<u32string>()` |
+| **Bulk encode → container** | ✅ `encode_to<C>(range)` | ✅ `encode_to(codec{},range)` | n/a ¹ | ✅ `ranges::to<u8string>()` |
+| **Bulk transcode → container** | n/a ² | n/a ² | ✅ `iconv_transcode_to(range,f,t)` | n/a ² |
+| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | ✅ `decode_into(codec{},range,out)` | n/a ¹ | ✅ `ranges::copy(v\|to_utf32, out)` |
+| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | ✅ `encode_into(codec{},range,out)` | n/a ¹ | ✅ `ranges::copy(v\|to_utf8, out)` |
+| **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
+| **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | n/a ³ |
+| **Runtime label lookup** | ✅ `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | 🔴 |
+| **Runtime transcode** | ✅ `transcode_string(src,from,to)` | 🔴 | 🔴 | 🔴 |
 | **BOM sniffing** | ✅ `sniff_encoding(range)` | 🔴 | 🔴 | 🔴 |
-| **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | 🔴 |
-| **Error enum** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
-| **Codepoint type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
-| **Input type** | `char`/`unsigned char`/`byte` | `unsigned char` | `char` | `char8_t`/`char16_t`/`char32_t` |
-| **constexpr** | ✅ | ✅ | 🔴 (system call) | ✅ |
+| **Error type** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
+| **Output element type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
+| **Input element type** | `char`/`unsigned char`/`byte` | `char`/`byte` (legacy) | `char` (any byte encoding) | `char8_t`/`char16_t`/`char32_t` |
+| **constexpr** | ✅ | ✅ | 🔴 (OS syscall) | ✅ |
 
-Observations:
+**Notes on n/a entries:**
 
-- The **pluggable codec** column now matches the WHATWG column for all streaming
-  and bulk operations.  Runtime label lookup remains 🔴 (custom codecs have
-  no name-to-type registry by design).
-- The **iconv** column now has bulk operations (`iconv_transcode_to`,
-  `iconv_transcode_into`) and null-terminated input support.  Encode-only views
-  and runtime transcode remain 🔴 since iconv is a byte↔byte transcoder,
-  not a decode-to-char32_t encoder.
-- **Error enum names**: the WHATWG and pluggable codec columns both use
-  `whatwg_error` (pluggable codecs adopt WHATWG error semantics as the common
-  framework).  The iconv column uses a separate `iconv_error` reflecting POSIX
-  errno values — iconv cannot distinguish WHY a byte is invalid, only that it
-  is (`EILSEQ`), incomplete (`EINVAL`), or overflowed the buffer (`E2BIG`).
-- **P2728R12** operates on a different axis (type-encoded UTF, not byte-oriented
-  I/O), so 🔴 gaps between the columns are expected rather than defects.  The
-  shared patterns are the `_or_error` suffix convention and `char32_t` as the
-  codepoint type.
+¹ **iconv is a byte↔byte transcoder.** It converts one byte encoding to another
+without exposing an intermediate `char32_t` codepoint stage.  "Encode" (from
+`char32_t` to bytes) and "decode" (from bytes to `char32_t`) as distinct steps
+are outside its model — it only offers transcode.
+
+² **WHATWG and pluggable codecs separate decode and encode.** "Bulk transcode"
+is just `encode_to(decode_to(range))` — there is no single-pass transcode
+operation because the intermediate `char32_t` range is the natural composition
+point.  iconv is the exception here: it performs single-pass byte→byte
+conversion more efficiently than a two-step decode+encode.
+
+³ **P2728 operates on typed Unicode character types** (`char8_t`, `char16_t`,
+`char32_t`).  `views::null_term` produces a range of `char`, which is a
+different type; adapting the two requires a reinterpret step.
+
+⁴ **Pluggable codecs are identified by C++ type**, not by name.  There is no
+runtime name-to-codec registry by design — codec selection happens at
+compile time through the type system.
 
 ### Bulk Operations
 
