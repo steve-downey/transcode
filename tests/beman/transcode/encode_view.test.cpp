@@ -42,7 +42,7 @@ using sparse_codec = table_codec<sparse_table>;
 // ---------------------------------------------------------------------------
 
 TEST_CASE("encode_view: ASCII codepoints round-trip", "[encode_view]") {
-    std::u32string src   = U"ABC";
+    std::u32string src = U"ABC";
     std::string    result;
     for (char c : src | encode(latin1_codec{}))
         result.push_back(c);
@@ -89,7 +89,7 @@ TEST_CASE("encode_view: pipe with span of char32_t", "[encode_view]") {
 // ---------------------------------------------------------------------------
 
 TEST_CASE("encode_or_error_view: ASCII codepoints succeed", "[encode_view]") {
-    std::u32string src = U"Hi";
+    std::u32string src  = U"Hi";
     auto           view = src | encode_or_error(latin1_codec{});
     auto           it   = view.begin();
 
@@ -127,7 +127,7 @@ TEST_CASE("encode_or_error_view: sparse table unmapped yields unexpected", "[enc
 }
 
 TEST_CASE("encode_or_error_view: mixed success and error", "[encode_view]") {
-    std::u32string src{U'A', U'\x1F600', U'B'}; // A, emoji, B
+    std::u32string                                 src{U'A', U'\x1F600', U'B'}; // A, emoji, B
     std::vector<std::expected<char, decode_error>> result;
     for (auto v : src | encode_or_error(latin1_codec{}))
         result.push_back(v);
@@ -199,7 +199,7 @@ TEST_CASE("encode_view: constexpr round-trip", "[encode_view]") {
 // ---------------------------------------------------------------------------
 
 TEST_CASE("encode_view: view base() returns underlying range", "[encode_view]") {
-    std::u32string src = U"AB";
+    std::u32string src  = U"AB";
     auto           view = src | encode(latin1_codec{});
     CHECK(view.base().size() == 2);
     CHECK(view.base()[0] == U'A');

@@ -187,8 +187,7 @@ struct encode_closure {
     template <typename R>
         requires std::is_array_v<std::remove_cvref_t<R>>
     friend auto operator|(R&&, const encode_closure&) {
-        static_assert(!std::is_array_v<std::remove_cvref_t<R>>,
-                      "transcode: raw arrays are not valid input to encode");
+        static_assert(!std::is_array_v<std::remove_cvref_t<R>>, "transcode: raw arrays are not valid input to encode");
     }
 };
 
