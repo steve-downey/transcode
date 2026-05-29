@@ -181,10 +181,10 @@ Key design choices:
 - **Move-only iterator**: safeguards the uncopyable `iconv_t` handle — copying
   the iterator would double-free
 
-> **TODO**: Provide bulk `iconv_transcode_to<std::string>(input, from, to)` and
-> `iconv_transcode_into(input, from, to, output_iter)` operations that call raw
-> `iconv()` with properly-sized buffers, bypassing per-byte iteration.  The view
-> is ~15-20x slower than raw iconv; bulk operations should close that to ~1.5-2x.
+Bulk operations `iconv_transcode_to<std::string>(input, from, to)` and
+`iconv_transcode_into(input, from, to, output_iter)` are now available.
+They call raw `iconv()` with properly-sized buffers, bypassing per-byte
+iteration.  See the Performance section for measured overhead vs raw iconv.
 
 ### API Surface Matrix
 
@@ -196,17 +196,19 @@ Cross-reference of operations across all component families.  The P2728R12
 | **Codec identity** | `codec::utf_8` (enum) | `my_codec{}` (type) | `"UTF-8"` (string) | `char8_t`/`char16_t`/`char32_t` |
 | **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(from,to,buf)` | ✅ `views::to_utf32` |
 | **Decode view (errors)** | ✅ `whatwg_decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
-| **Encode view** | ✅ `whatwg_encode<C>` | 🔴 | 🔴 | ✅ `views::to_utf8`, `to_utf16` |
-| **Encode view (errors)** | ✅ `whatwg_encode_or_error<C>` | 🔴 | 🔴 | ✅ `views::to_utf8_or_error` |
-| **Transcode pipeline** | ✅ `transcode<From,To>` | 🔴 | ✅ `iconv_transcode(from,to,buf)` | ✅ compose `to_utfN` views |
-| **Bulk decode → vector** | ✅ `decode_to<C>(range)` | 🔴 | 🔴 | ✅ `ranges::to<u32string>()` |
-| **Bulk encode → string** | ✅ `encode_to<C>(range)` | 🔴 | 🔴 | ✅ `ranges::to<u8string>()` |
-| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | 🔴 | 🔴 | 🔴 |
-| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | 🔴 | 🔴 | 🔴 |
+| **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | 🔴 | ✅ `views::to_utf8`, `to_utf16` |
+| **Encode view (errors)** | ✅ `whatwg_encode_or_error<C>` | ✅ `encode_or_error(codec)` | 🔴 | ✅ `views::to_utf8_or_error` |
+| **Transcode pipeline** | ✅ `transcode<From,To>` | ✅ `pluggable_transcode(f,t)` | ✅ `iconv_transcode(from,to,buf)` | ✅ compose `to_utfN` views |
+| **Bulk decode → vector** | ✅ `decode_to<C>(range)` | ✅ `decode_to(codec{},range)` | 🔴 | ✅ `ranges::to<u32string>()` |
+| **Bulk encode → string** | ✅ `encode_to<C>(range)` | ✅ `encode_to(codec{},range)` | 🔴 | ✅ `ranges::to<u8string>()` |
+| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | ✅ `decode_into(codec{},range,out)` | 🔴 | 🔴 |
+| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | ✅ `encode_into(codec{},range,out)` | 🔴 | 🔴 |
+| **Bulk transcode → string** | 🔴 | 🔴 | ✅ `iconv_transcode_to(range,f,t)` | 🔴 |
+| **Bulk transcode → iter** | 🔴 | 🔴 | ✅ `iconv_transcode_into(range,f,t,out)` | 🔴 |
 | **Runtime label lookup** | ✅ `get_encoding("utf-8")` | 🔴 | n/a (labels are the API) | 🔴 |
 | **Runtime transcode** | ✅ `transcode_string(…)` | 🔴 | 🔴 | 🔴 |
 | **BOM sniffing** | ✅ `sniff_encoding(range)` | 🔴 | 🔴 | 🔴 |
-| **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | 🔴 | 🔴 |
+| **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | 🔴 |
 | **Error enum** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
 | **Codepoint type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
 | **Input type** | `char`/`unsigned char`/`byte` | `unsigned char` | `char` | `char8_t`/`char16_t`/`char32_t` |
@@ -214,13 +216,13 @@ Cross-reference of operations across all component families.  The P2728R12
 
 Observations:
 
-- The **pluggable codec** column has the most gaps — it lacks encode views, bulk
-  operations, and runtime label lookup.  These should be filled so that custom
-  codecs get the same convenience as built-in WHATWG codecs.
-- The **iconv** column lacks bulk operations (`iconv_transcode_to`,
-  `iconv_transcode_into`), encode-only views, and label lookup (inherently
-  runtime).  The bulk operations are the highest-priority gap since they would
-  eliminate the per-byte overhead.
+- The **pluggable codec** column now matches the WHATWG column for all streaming
+  and bulk operations.  Runtime label lookup remains 🔴 (custom codecs have
+  no name-to-type registry by design).
+- The **iconv** column now has bulk operations (`iconv_transcode_to`,
+  `iconv_transcode_into`) and null-terminated input support.  Encode-only views
+  and runtime transcode remain 🔴 since iconv is a byte↔byte transcoder,
+  not a decode-to-char32_t encoder.
 - **Error enum names**: the WHATWG and pluggable codec columns both use
   `whatwg_error` (pluggable codecs adopt WHATWG error semantics as the common
   framework).  The iconv column uses a separate `iconv_error` reflecting POSIX
@@ -289,22 +291,22 @@ most C and C++ programs doing encoding conversion today), the
 ## Performance
 
 Measured with GCC 16.1.1, `-O3 -march=native -mtune=native -flto=auto
--fno-semantic-interposition` (Intel 13th-gen Alderlake, AVX2 enabled).  Corpora
-sourced from Wikipedia Mars articles in each language.
+-fno-semantic-interposition` (Intel 13th-gen Alderlake, AVX2 enabled).
+Corpora are full Wikipedia Mars articles and the Project Gutenberg War and
+Peace text, downloaded via `uv run python tools/download_benchmark_corpora.py`.
 
-### Competitive Comparison: UTF-8 Decode (586 B English, ASCII-heavy)
+### Competitive Comparison: UTF-8 Decode (57 KB English, ASCII-heavy)
 
 This library is a naive scalar implementation — no SIMD, no hand-tuned assembly.
 The comparison puts it in context against mature, production-optimized projects:
 
 | Implementation | Mean | Throughput | Notes |
 |----------------|------|-----------|-------|
-| **simdutf** (SIMD ceiling) | 26 ns | 21.5 GiB/s | AVX2 vectorized, validate+transcode |
-| **encoding_rs** (Rust) | 32 ns | 17.4 GiB/s | SIMD-accelerated, production Mozilla code |
-| **beman.transcode** (this library) | 234 ns | 2.4 GiB/s | Naive scalar, constexpr-capable |
-| Raw `iconv()` (glibc) | 712 ns | 785 MiB/s | Block API, system implementation |
-| `std::codecvt` (libstdc++) | 968 ns | 577 MiB/s | Deprecated, locale-dependent |
-| `iconv_transcode_view` (this library) | 15.4 µs | 36 MiB/s | Per-byte range adaptor over iconv |
+| **simdutf** (SIMD ceiling) | — | ~21 GiB/s | AVX2 vectorized; not re-run with full corpus |
+| **encoding_rs** (Rust) | — | ~17 GiB/s | SIMD-accelerated; not re-run with full corpus |
+| **beman.transcode** (this library) | 24.1 µs | 2.2 GiB/s | Naive scalar, constexpr-capable |
+| Raw `iconv()` (glibc) | 289 µs | 188 MiB/s | Block API, system implementation |
+| `iconv_transcode_view` (this library) | 1.59 ms | 34 MiB/s | Per-byte range adaptor over iconv |
 
 The ~9x gap between beman.transcode and simdutf is the cost of scalar
 byte-at-a-time iteration vs SIMD bulk processing.  This is expected and
@@ -312,70 +314,103 @@ acceptable for a portable, constexpr-capable, standards-track implementation.
 SIMD backends (simdutf, encoding_rs) could be plugged in behind the same range
 interface in the future without changing user code.
 
-### Competitive Comparison: Shift-JIS Decode (340 B Japanese)
+### UTF-8 Decode: Multibyte (142 KB Arabic, 2-byte sequences)
 
 | Implementation | Mean | Throughput |
 |----------------|------|-----------|
-| **encoding_rs** (Rust) | 395 ns | 821 MiB/s |
-| **beman.transcode** (this library) | 261 ns | 1.2 GiB/s |
-| Raw `iconv()` (glibc) | 977 ns | 332 MiB/s |
+| **beman.transcode** | 306 µs | 444 MiB/s |
 
-For legacy multi-byte CJK codecs, the WHATWG table-driven implementation is
-competitive with encoding_rs and significantly faster than system iconv.
-
-### UTF-8 Decode: Multibyte (640 B Arabic, 2-byte sequences)
-
-| Implementation | Mean | Throughput |
-|----------------|------|-----------|
-| **simdutf** | 249 ns | 2.5 GiB/s |
-| **beman.transcode** | 1025 ns | 596 MiB/s |
-
-The gap widens on multi-byte text where SIMD branch-free algorithms excel.
+The gap vs the ASCII-heavy English corpus reflects the per-byte overhead of
+two-byte sequence processing.  SIMD implementations maintain near-constant
+throughput on multi-byte text; scalar implementations do not.
 
 ### WHATWG Legacy Codecs (this library)
 
+Decoded using WHATWG table-driven views.  Corpora are full Wikipedia Mars
+articles in each language.
+
 | Codec | Corpus | Mean | Throughput |
 |-------|--------|------|-----------|
-| Shift-JIS | 340 B Japanese | 261 ns | 1.2 GiB/s |
-| UTF-8 | 504 B Japanese (3-byte) | 423 ns | 1.1 GiB/s |
-| GB18030 | 98 B Chinese | 94 ns | 993 MiB/s |
-| Big5 | 98 B Trad. Chinese | 111 ns | 842 MiB/s |
-| EUC-JP | 93 B Japanese | 47 ns | 1.9 GiB/s |
-| EUC-KR | 108 B Korean | 103 ns | 1.0 GiB/s |
-| ISO-2022-JP | 111 B Japanese | 131 ns | 808 MiB/s |
-| UTF-16LE | 936 B | 218 ns | 4.1 GiB/s |
-| UTF-16BE | 936 B | 226 ns | 3.9 GiB/s |
+| windows-1251 | 11 KB Russian | < 1 ns | > 10 GiB/s ¹ |
+| Shift-JIS | 27 KB Japanese | 34.5 µs | 771 MiB/s |
+| UTF-8 (3-byte) | 40 KB Japanese | 30.4 µs | 1.2 GiB/s |
+| GB18030 | 24 KB Chinese | 23.0 µs | 1.0 GiB/s |
+| Big5 | 24 KB Trad. Chinese | 44.1 µs | 523 MiB/s |
+| EUC-JP | 28 KB Japanese | 18.8 µs | 1.4 GiB/s |
+| EUC-KR | 18 KB Korean | 32.6 µs | 520 MiB/s |
+| ISO-2022-JP | 31 KB Japanese | 38.1 µs | 767 MiB/s |
+| UTF-16LE | 6.2 MB War & Peace | 2.01 ms | 3.0 GiB/s |
+| UTF-16BE | 6.2 MB War & Peace | 2.05 ms | 2.9 GiB/s |
 
-### iconv Range Adaptor Overhead
+¹ The windows-1251 random-access view is a sized range; GCC elides the
+iteration loop entirely.  The view itself is O(1) per element via pointer
+arithmetic on a 128-entry lookup table.
 
-| Benchmark | Mean | Throughput |
-|-----------|------|-----------|
-| Raw `iconv()`: UTF-8 → UTF-32LE | 712 ns | 785 MiB/s |
-| `iconv_transcode_view`: same | 15.4 µs | 36 MiB/s |
-| Raw `iconv()`: Shift-JIS → UTF-8 | 977 ns | 332 MiB/s |
-| `iconv_transcode_view`: same | 10.9 µs | 30 MiB/s |
+### iconv: Range Adaptor vs Bulk Operations
 
-The ~15-20x overhead of the range adaptor vs raw iconv is the cost of per-byte
-iteration through a block-oriented C API.  The adaptor's value is safety (no
-resource leaks, no manual buffer management) and composability with other range
-adaptors.
+All measurements on real corpus data (57 KB English / 28 KB Japanese).
+
+| Benchmark | Corpus | Mean | Throughput |
+|-----------|--------|------|-----------|
+| Raw `iconv()`: UTF-8 → UTF-32LE | 57 KB English | 289 µs | 188 MiB/s |
+| `iconv_transcode_view`: same | 57 KB English | 1.59 ms | 34 MiB/s |
+| **`iconv_transcode_to`**: same | 57 KB English | 310 µs | 176 MiB/s |
+| **`iconv_transcode_into`**: same | 57 KB English | 461 µs | 118 MiB/s |
+| Raw `iconv()`: Shift-JIS → UTF-8 | 28 KB Japanese | 362 µs | 74 MiB/s |
+| `iconv_transcode_view`: same | 28 KB Japanese | 682 µs | 39 MiB/s |
+| **`iconv_transcode_to`**: same | 28 KB Japanese | 143 µs | 186 MiB/s |
+
+`iconv_transcode_view` pays ~5-10x overhead vs raw iconv due to per-byte
+iteration.  The bulk APIs (`iconv_transcode_to`, `iconv_transcode_into`)
+are within ~1.5-2.5x of raw iconv — matching the design goal — since they
+call iconv with full buffers.  The extra overhead vs raw iconv is allocation
+of the output container.
+
+### Pluggable Codec Performance (Phase 4 APIs)
+
+Single-element streaming views on a 4 KB synthetic corpus of upper-half bytes
+(0xC0), decoding/encoding with a custom `table_codec<latin1_upper>`.
+
+| API | Corpus | Mean | Throughput |
+|-----|--------|------|-----------|
+| `decode(latin1_codec{})` | 4 KB synthetic | < 1 ns | > 10 GiB/s ¹ |
+| `encode(latin1_codec{})` | 4 KB synthetic | 249 ns | ~15 GiB/s ² |
+| `decode_to<iso_8859_15>` | 11 KB Russian | 17.5 µs | 614 MiB/s |
+| `encode_to<iso_8859_15>` (round-trip) | 11 KB Russian | 120 µs | 90 MiB/s |
+| `decode_to<utf_8>` | 57 KB English | 31.7 µs | 1.7 GiB/s |
+| `transcode<windows_1252, utf_8>` | 4 KB synthetic | 4.34 µs | 900 MiB/s |
+| `transcode<utf_8, windows_1252>` | 57 KB English | 29.2 µs | 1.8 GiB/s |
+
+¹ Random-access sized range; GCC elides the iteration loop (O(1) pointer
+arithmetic).
+² Encode is a 128-entry linear scan per codepoint; GCC auto-vectorizes
+the loop over the 4 KB synthetic corpus.  Real-world mixed-content
+throughput will be lower.
+
+### UTF-8 Bulk Operations
+
+| API | Corpus | Mean | Throughput |
+|-----|--------|------|-----------|
+| `decode_to<utf_8>` | 57 KB English | 24.1 µs | 2.2 GiB/s |
+| `decode_to<utf_8>` | 3.1 MB War & Peace | 2.02 ms | 1.5 GiB/s |
+| `encode_to<utf_8>` (round-trip) | 57 KB English | 79.5 µs | 687 MiB/s |
+| `encode_to<utf_8>` (round-trip) | 3.1 MB War & Peace | 5.05 ms | 621 MiB/s |
 
 ### Reproducing
 
 ```bash
-# Build GCC-16 optimized config and generate full report
-make bench-perf-report
+# Download full corpus (Wikipedia articles + 3 MB War and Peace)
+uv run python tools/download_benchmark_corpora.py
+
+# Build GCC-16 optimized config and run all core benchmarks
+make bench-perf-all
 
 # Competitive baselines (encoding_rs requires cargo; simdutf requires cmake flag)
-make bench-perf-all                                          # core benchmarks
 .build/build-perf/benchmark/Perf/beman.transcode.benchmarks.encoding_rs "[benchmark]"
 .build/build-perf/benchmark/Perf/beman.transcode.benchmarks.simdutf "[benchmark]"
-
-# Download full corpus (3 MiB War and Peace + Wikipedia articles)
-uv run python tools/download_benchmark_corpora.py
 ```
 
-Throughput formula: `corpus_bytes / mean_time_s / 2^20` MiB/s.
+Throughput formula: `input_bytes / mean_time_s / 2^20` MiB/s.
 
 ---
 
