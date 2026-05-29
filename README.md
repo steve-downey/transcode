@@ -360,12 +360,13 @@ between two legacy byte encodings that both represent the same characters.
 
 | Implementation | Mean | Throughput | Notes |
 |----------------|------|-----------|-------|
-| **`iconv_transcode_to`** (single pass) | 144 µs | 185 MiB/s | Direct byte→byte via OS kernel |
+| **`iconv_transcode_to`** (single pass) | 144 µs | 185 MiB/s | Direct byte→byte via glibc iconv |
 | **beman.transcode** streaming (`transcode` pipe) | 1.12 ms | 24 MiB/s | decode view \| encode view |
 | **beman.transcode** bulk (`encode_to` + `decode_to`) | 1.30 ms | 20 MiB/s | Two-step, char32_t intermediate |
 
 `iconv_transcode_to` is 7-9x faster because it performs a single-pass byte→byte
-conversion inside the kernel's codec tables.  The beman.transcode approach must
+conversion inside glibc's codec tables (decades of optimization).  The
+beman.transcode approach must
 decode every byte to char32_t (EUC-JP table lookup), then encode each codepoint
 back to Shift-JIS (linear scan of a 128-entry table per character).  The linear
 scan in `encode_one()` is the dominant cost.
