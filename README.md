@@ -207,7 +207,7 @@ Cross-reference of operations across all component families.  The P2728R12
 | **Runtime transcode** | ✅ `transcode_string(…)` | 🔴 | 🔴 | 🔴 |
 | **BOM sniffing** | ✅ `sniff_encoding(range)` | 🔴 | 🔴 | 🔴 |
 | **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | 🔴 | 🔴 |
-| **Error enum** | `whatwg_error` | `decode_error` | `iconv_error` | `utf_transcoding_error` |
+| **Error enum** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
 | **Codepoint type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
 | **Input type** | `char`/`unsigned char`/`byte` | `unsigned char` | `char` | `char8_t`/`char16_t`/`char32_t` |
 | **constexpr** | ✅ | ✅ | 🔴 (system call) | ✅ |
@@ -221,9 +221,11 @@ Observations:
   `iconv_transcode_into`), encode-only views, and label lookup (inherently
   runtime).  The bulk operations are the highest-priority gap since they would
   eliminate the per-byte overhead.
-- **Error enum names** diverge across columns: `whatwg_error`, `decode_error`,
-  `iconv_error`, `utf_transcoding_error`.  These should either unify or
-  explicitly document why they differ.
+- **Error enum names**: the WHATWG and pluggable codec columns both use
+  `whatwg_error` (pluggable codecs adopt WHATWG error semantics as the common
+  framework).  The iconv column uses a separate `iconv_error` reflecting POSIX
+  errno values — iconv cannot distinguish WHY a byte is invalid, only that it
+  is (`EILSEQ`), incomplete (`EINVAL`), or overflowed the buffer (`E2BIG`).
 - **P2728R12** operates on a different axis (type-encoded UTF, not byte-oriented
   I/O), so 🔴 gaps between the columns are expected rather than defects.  The
   shared patterns are the `_or_error` suffix convention and `char32_t` as the

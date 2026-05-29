@@ -9,11 +9,9 @@
 
 namespace beman::transcoding {
 
-using decode_error = whatwg_error;
-
 struct decode_result {
     char32_t     code_point{};
-    decode_error error{};
+    whatwg_error error{};
     bool         is_error{false};
 };
 
