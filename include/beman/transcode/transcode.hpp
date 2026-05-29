@@ -29,6 +29,7 @@ import beman.transcode;
     #include <beman/transcode/detail/codec_concepts.hpp>
     #include <beman/transcode/detail/table_codec.hpp>
     #include <beman/transcode/decode_view.hpp>
+    #include <beman/transcode/encode_view.hpp>
 
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)
