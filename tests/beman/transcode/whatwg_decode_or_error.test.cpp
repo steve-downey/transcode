@@ -244,3 +244,18 @@ TEST_CASE("whatwg_decode_or_error overlong 4-byte sequence", "[transcoding::what
     CHECK(result[2].error() == whatwg_error::invalid_byte);
     CHECK(result[3].error() == whatwg_error::invalid_byte);
 }
+
+// WHATWG: F4 requires first continuation byte in 80-8F; 90 is rejected as
+// out_of_range (U+110000 is the first codepoint beyond Unicode's range).
+TEST_CASE("whatwg_decode_or_error F4 out-of-range continuation", "[transcoding::whatwg_decode_or_error]") {
+    // F4 90 80 80 = U+110000, one beyond the maximum Unicode codepoint.
+    // F4 with cont 0x90 > 0x8F → out_of_range (not consumed), then three
+    // bare continuations → invalid_byte each.  4 errors total.
+    std::vector<char> bytes{'\xF4', '\x90', '\x80', '\x80'};
+    auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::utf_8>);
+    REQUIRE(result.size() == 4);
+    CHECK(result[0].error() == whatwg_error::out_of_range);
+    CHECK(result[1].error() == whatwg_error::invalid_byte);
+    CHECK(result[2].error() == whatwg_error::invalid_byte);
+    CHECK(result[3].error() == whatwg_error::invalid_byte);
+}

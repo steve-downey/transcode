@@ -111,3 +111,22 @@ TEST_CASE("bulk_transcode: decode_into is constexpr for UTF-8 ASCII", "[bulk][co
 TEST_CASE("bulk_transcode: encode_into is constexpr for UTF-8 ASCII", "[bulk][constexpr]") {
     CHECK(constify(encode_ascii_constexpr()) == std::array<char, 2>{'A', 'B'});
 }
+
+// ---------------------------------------------------------------------------
+// Single-byte fast path: unmapped bytes and codepoints
+// iso_8859_6 has many unmapped high bytes (Arabic-only encoding).
+// ---------------------------------------------------------------------------
+
+TEST_CASE("bulk_transcode: decode_to iso_8859_6 unmapped byte yields U+FFFD", "[bulk]") {
+    // Byte 0xA1 is unmapped in ISO-8859-6 (table entry 0 → replacement char).
+    const std::string input{static_cast<char>(0xA1)};
+    auto              result = decode_to<codec::iso_8859_6>(input);
+    REQUIRE(result.size() == 1);
+    CHECK(result[0] == U'\xFFFD');
+}
+
+TEST_CASE("bulk_transcode: encode_to iso_8859_6 unmapped codepoint yields '?'", "[bulk]") {
+    // U+0100 (Latin Extended-A) is not in ISO-8859-6's encode table.
+    const std::u32string input{U'Ā'};
+    CHECK(encode_to<codec::iso_8859_6>(input) == "?");
+}

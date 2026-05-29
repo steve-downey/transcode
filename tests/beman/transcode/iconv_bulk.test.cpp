@@ -195,3 +195,77 @@ TEST_CASE("iconv_transcode_to_or_error with real iconv succeeds", "[transcoding:
     REQUIRE(result.has_value());
     CHECK(*result == "ok");
 }
+
+// ---------------------------------------------------------------------------
+// iconv_open failure paths
+// ---------------------------------------------------------------------------
+
+TEST_CASE("iconv_transcode_to returns empty container on open failure", "[transcoding::iconv_bulk]") {
+    iconv_functions  fns{mock_iconv_open_fail, mock_iconv, mock_iconv_close};
+    std::string_view input  = "ABC";
+    auto             result = iconv_transcode_to<std::string>(input, "ASCII", "ASCII", fns);
+    CHECK(result.empty());
+}
+
+TEST_CASE("iconv_transcode_into returns unchanged iterator on open failure", "[transcoding::iconv_bulk]") {
+    iconv_functions   fns{mock_iconv_open_fail, mock_iconv, mock_iconv_close};
+    std::string_view  input = "ABC";
+    std::vector<char> output;
+    iconv_transcode_into(input, "ASCII", "ASCII", std::back_inserter(output), fns);
+    CHECK(output.empty());
+}
+
+TEST_CASE("iconv_transcode_to_or_error returns invalid_sequence on open failure", "[transcoding::iconv_bulk]") {
+    iconv_functions  fns{mock_iconv_open_fail, mock_iconv, mock_iconv_close};
+    std::string_view input  = "ABC";
+    auto             result = iconv_transcode_to_or_error<std::string>(input, "ASCII", "ASCII", fns);
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error() == iconv_error::invalid_sequence);
+}
+
+// ---------------------------------------------------------------------------
+// iconv_transcode_into — EINVAL (incomplete sequence at end)
+// ---------------------------------------------------------------------------
+
+TEST_CASE("iconv_transcode_into replaces trailing incomplete sequence with '?'", "[transcoding::iconv_bulk]") {
+    // mock_iconv_pairwise: needs 2 bytes; returns EINVAL for a lone trailing byte.
+    iconv_functions   fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
+    std::vector<char> input{0x41, 0x42, 0x43}; // one complete pair + one orphan
+    std::vector<char> output;
+    iconv_transcode_into(std::span<const char>(input), "X", "X", std::back_inserter(output), fns);
+    // Pair {0x41, 0x42} copied, orphan {0x43} replaced
+    CHECK(output == std::vector<char>{0x41, 0x42, '?'});
+}
+
+// ---------------------------------------------------------------------------
+// iconv_transcode_into — stateful encoding flush
+// ---------------------------------------------------------------------------
+
+TEST_CASE("iconv_transcode_into flushes stateful encoding", "[transcoding::iconv_bulk]") {
+    // mock_iconv_stateful writes a 0x0F reset byte on flush.
+    iconv_functions   fns{mock_iconv_open, mock_iconv_stateful, mock_iconv_close};
+    std::string       input = "AB";
+    std::vector<char> output;
+    iconv_transcode_into(std::span<const char>(input), "X", "X", std::back_inserter(output), fns);
+    // Input bytes copied, then 0x0F appended by flush
+    REQUIRE(output.size() == 3);
+    CHECK(output[0] == 'A');
+    CHECK(output[1] == 'B');
+    CHECK(static_cast<unsigned char>(output[2]) == 0x0F);
+}
+
+// ---------------------------------------------------------------------------
+// iconv_transcode_to_or_error — stateful encoding flush
+// ---------------------------------------------------------------------------
+
+TEST_CASE("iconv_transcode_to_or_error flushes stateful encoding", "[transcoding::iconv_bulk]") {
+    // mock_iconv_stateful writes a 0x0F reset byte on flush.
+    iconv_functions fns{mock_iconv_open, mock_iconv_stateful, mock_iconv_close};
+    std::string     input  = "AB";
+    auto            result = iconv_transcode_to_or_error<std::string>(std::span<const char>(input), "X", "X", fns);
+    REQUIRE(result.has_value());
+    REQUIRE(result->size() == 3);
+    CHECK((*result)[0] == 'A');
+    CHECK((*result)[1] == 'B');
+    CHECK(static_cast<unsigned char>((*result)[2]) == 0x0F);
+}
