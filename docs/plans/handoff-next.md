@@ -1,4 +1,4 @@
-# Handoff: P4-Step 5 Complete → P4-Step 6 Next
+# Handoff: P4-Step 6 Complete — Phase 4 Done
 
 ## Completed
 
@@ -6,80 +6,100 @@
 - **P4-Step 2: Pluggable Bulk Operations** — done, merged to `main`
 - **P4-Step 3: Pluggable Transcode Pipeline** — done, merged to `main`
 - **P4-Step 4: iconv Bulk Operations** — done, merged to `main`
-- **P4-Step 5: null_term support for iconv views** — done on `p4-step5-iconv-null-term` branch
+- **P4-Step 5: null_term support for iconv views** — done, merged to `main`
+- **P4-Step 6: Error Enum Coherence** — done on `p4-step6-error-coherence` branch
 
-## What was done in Step 5
+## What was done in Step 6
 
-**Outcome: no code changes needed.** The `iconv_transcode_view` already works with
-`views::null_term` because:
+**Decision: remove the `decode_error` alias; use `whatwg_error` directly.**
 
-- Its iterator holds `base_iter` / `base_sent` by value and compares them with
-  `current_ != end_`, which uses the C++20 rewritten comparison rule to call
-  `null_sentinel_t::operator==`.
-- The `load()` function appends input one byte at a time via `*current_` and
-  `++current_`, with no `size()` or `end - begin` arithmetic.
-- `iconv_transcode_to` (bulk) materializes input with a range-for loop, which
-  also terminates correctly against any sentinel.
+The alias `using decode_error = whatwg_error;` was confusing because it was
+named as if it were a generic codec error type, but it was literally `whatwg_error`.
 
-Added `tests/beman/transcode/iconv_null_term.test.cpp` — 9 tests:
+### Files modified
 
-- Mock: `null_term` string literal piped to `iconv_transcode_closure` identity
-- Mock: `null_term` char pointer piped to `iconv_transcode_closure` identity
-- Mock: empty `null_term` produces empty output
-- Mock: `null_term` piped to `iconv_transcode_or_error_closure` identity
-- Mock: `iconv_transcode_to` with `null_term` string literal source
-- Mock: `iconv_transcode_to` with `null_term` char pointer source
-- Real iconv: `null_term | iconv_transcode` UTF-8 identity
-- Real iconv: `null_term | iconv_transcode` UTF-8→UTF-32LE ("A" → 4 bytes)
-- Real iconv: `iconv_transcode_to` with `null_term` source UTF-8 identity
+- **`include/beman/transcode/detail/error.hpp`** — added documentation comment
+  blocks explaining:
+  - `whatwg_error`: WHATWG Encoding Standard error categories; used by
+    `whatwg_decode_or_error`, `whatwg_encode_or_error`, and all pluggable codec
+    `_or_error` views (pluggable codecs adopt WHATWG error semantics).
+  - `iconv_error`: POSIX iconv errno mappings; kept separate because iconv
+    cannot distinguish WHY a byte sequence is invalid (`EILSEQ`), only that it
+    is, that a sequence is incomplete (`EINVAL`), or that the output buffer is
+    full (`E2BIG`).
 
-The linter (clang-format) also applied minor alignment fixes to
-`iconv_bulk.hpp` and `iconv_bulk.test.cpp`.
+- **`include/beman/transcode/detail/codec_result.hpp`** — removed
+  `using decode_error = whatwg_error;`; changed `decode_result::error` field
+  type from `decode_error` to `whatwg_error`.
 
-Registered `beman.transcode.tests.iconv_null_term` in `tests/beman/transcode/CMakeLists.txt`
-with `Iconv::Iconv` link.
+- **`include/beman/transcode/decode_view.hpp`** — replaced all `decode_error`
+  references with `whatwg_error` (value_type, result_t, unexpected call).
 
-## Files modified
+- **`include/beman/transcode/detail/table_codec.hpp`** — replaced
+  `decode_error::invalid_byte` with `whatwg_error::invalid_byte` in both
+  `table_codec` and `full_table_codec`.
 
-- `tests/beman/transcode/iconv_null_term.test.cpp` — new file (9 tests)
-- `tests/beman/transcode/CMakeLists.txt` — registered new test target
-- `include/beman/transcode/iconv_bulk.hpp` — clang-format alignment fix
-- `tests/beman/transcode/iconv_bulk.test.cpp` — clang-format alignment fix
+- **`tests/beman/transcode/codec_concepts.test.cpp`** — updated two test
+  assertions from `decode_error::*` to `whatwg_error::*`.
+
+- **`tests/beman/transcode/decode_view.test.cpp`** — updated two test
+  assertions from `decode_error::*` to `whatwg_error::*`.
+
+- **`tests/beman/transcode/iconv_null_term.test.cpp`** — clang-format alignment
+  fixes only (no logic change).
+
+- **`README.md`** — updated API Surface Matrix error row: pluggable codec column
+  now shows `whatwg_error` instead of `decode_error`. Updated observations text
+  to explain the separation.
+
+- **`papers/transcode-view.md`** — same API Surface Matrix update.
 
 ## Current State
 
 - `make test` passes: 697 C++ tests + 250 Python tests, all green
-- `make lint` passes: mypy, ruff, clang-format, gersemi, codespell, shellcheck all clean
+- `make lint` passes: all hooks clean
 
 ## Branch State
 
-`p4-step5-iconv-null-term` is ready to merge to `main`.
+`p4-step6-error-coherence` is ready to merge to `main`.
 Merge with `--no-ff`.
 
-The user should merge step 5 before starting step 6.
+## Phase 4 Complete
 
-## Next Step: P4-Step 6 — Error Coherence
+All API surface gaps from the Phase 4 scope are now closed:
 
-Read `docs/plans/p4-step6-error-coherence.md` for full details.
+| Step | Deliverable | Status |
+|------|-------------|--------|
+| 1 | Pluggable encode view + encode_or_error | ✅ merged |
+| 2 | Pluggable bulk decode_to/encode_to/into | ✅ merged |
+| 3 | Pluggable transcode pipeline | ✅ merged |
+| 4 | iconv bulk transcode (iconv_transcode_to/into) | ✅ merged |
+| 5 | null_term support for iconv views | ✅ merged |
+| 6 | Error enum coherence (removed decode_error alias) | ✅ ready to merge |
 
-**Summary of what Step 6 requires:**
+The README API Surface Matrix no longer shows `decode_error` anywhere;
+the pluggable codec column now correctly shows `whatwg_error`.
 
-Unify or document the error enum naming across the three backends. The
-pluggable codec backend has its own error types, the iconv backend has
-`iconv_error` (in `detail/error.hpp`), and the WHATWG backend has
-`whatwg_error`. Step 6 audits whether these can share a common enum or
-whether the differences are intentional and should be documented.
+## What Comes Next
 
-**Key files to read before starting Step 6:**
+There is no Phase 5 plan yet. Candidates for future work based on the
+README matrix and paper:
 
-- `include/beman/transcode/detail/error.hpp` — `whatwg_error` and
-  `iconv_error` enum definitions
-- `include/beman/transcode/iconv_transcode_or_error_view.hpp` — uses
-  `iconv_error`
-- `include/beman/transcode/whatwg_decode_view.hpp` — WHATWG error path
-  (replacement char `U'�'`, no enum surfaced)
-- `docs/plans/p4-step6-error-coherence.md` — detailed step plan
-- `docs/plans/phase4-index.md` — phase overview
+1. **Coverage audit** — Run `make coverage` and look for uncovered lines in
+   the Phase 4 additions (pluggable bulk, iconv bulk, error paths in
+   decode_or_error_view). This is low-effort and may surface gaps.
 
-**Start fresh:** create branch `p4-step6-error-coherence` from `main` after
-merging step 5.
+2. **WHATWG encode gap** — The WHATWG column in the API matrix still lacks a
+   streaming encode view for non-UTF-8 targets (BOM sniffing, runtime
+   transcode). These are longer-horizon features.
+
+3. **Paper update** — `papers/transcode-view.md` may need the pluggable codec
+   API section updated to describe the new encode views and bulk operations
+   added in Steps 1-3.
+
+4. **P2728R12 alignment** — The paper column gaps are expected (different
+   axis), but the `_or_error` suffix convention and `char32_t` codepoint type
+   are intentional alignments worth keeping in sync as that paper evolves.
+
+A fresh agent should read `docs/plans/phase4-index.md` and this file to
+understand the completed state before starting new work.
