@@ -301,35 +301,79 @@ Measured with GCC 16.1.1, `-O3 -march=native -mtune=native -flto=auto
 Corpora are full Wikipedia Mars articles and the Project Gutenberg War and
 Peace text, downloaded via `uv run python tools/download_benchmark_corpora.py`.
 
-### Competitive Comparison: UTF-8 Decode (57 KB English, ASCII-heavy)
+### Competitive Comparison: UTF-8 Decode (57 KB English → char32_t)
 
 This library is a naive scalar implementation — no SIMD, no hand-tuned assembly.
 The comparison puts it in context against mature, production-optimized projects:
 
 | Implementation | Mean | Throughput | Notes |
 |----------------|------|-----------|-------|
-| **simdutf** (SIMD ceiling) | — | ~21 GiB/s | AVX2 vectorized; not re-run with full corpus |
-| **encoding_rs** (Rust) | — | ~17 GiB/s | SIMD-accelerated; not re-run with full corpus |
+| **simdutf** (SIMD ceiling) | 6.93 µs | 7.7 GiB/s | AVX2 vectorized, UTF-8→UTF-32 |
 | **beman.transcode** (this library) | 21.4 µs | 2.5 GiB/s | Naive scalar, constexpr-capable |
-| Raw `iconv()` (glibc, 4 KB buffer) | 305 µs | 178 MiB/s | Block API, system implementation |
-| `iconv_transcode_to` (this library) | 79.4 µs | 686 MiB/s | Bulk API, pre-sized output buffer |
-| `iconv_transcode_view` (this library) | 1.46 ms | 37 MiB/s | Per-byte range adaptor over iconv |
+| `iconv_transcode_to` (this library) | 83 µs | 653 MiB/s | Bulk API, pre-sized buffer |
+| Raw `iconv()` (glibc, 4 KB buffer) | 334 µs | 163 MiB/s | Block API, system iconv |
+| `iconv_transcode_view` (this library) | 1.52 ms | 36 MiB/s | Per-byte range adaptor over iconv |
 
-The ~9x gap between beman.transcode and simdutf is the cost of scalar
+The ~3x gap between beman.transcode and simdutf is the cost of scalar
 byte-at-a-time iteration vs SIMD bulk processing.  This is expected and
 acceptable for a portable, constexpr-capable, standards-track implementation.
-SIMD backends (simdutf, encoding_rs) could be plugged in behind the same range
-interface in the future without changing user code.
+SIMD backends could be plugged in behind the same range interface in the future
+without changing user code.
 
 ### UTF-8 Decode: Multibyte (142 KB Arabic, 2-byte sequences)
 
 | Implementation | Mean | Throughput |
 |----------------|------|-----------|
+| **simdutf** (SIMD ceiling) | 58.6 µs | 2.3 GiB/s |
 | **beman.transcode** | 306 µs | 442 MiB/s |
 
-The gap vs the ASCII-heavy English corpus reflects the per-byte overhead of
-two-byte sequence processing.  SIMD implementations maintain near-constant
-throughput on multi-byte text; scalar implementations do not.
+The gap widens to ~5x on multi-byte text where SIMD branch-free algorithms
+excel.  Scalar implementations pay per-byte continuation checks.
+
+### Shift-JIS → UTF-8 (28 KB Japanese, produces output)
+
+The critical comparison for legacy CJK codecs: each implementation decodes
+Shift-JIS and produces UTF-8 output bytes.
+
+| Implementation | Mean | Throughput | Notes |
+|----------------|------|-----------|-------|
+| **beman.transcode** streaming (`transcode` pipe) | 80 µs | 332 MiB/s | Lazy views, `count_elements` only |
+| **encoding_rs** (Rust bulk C FFI) | 103 µs | 258 MiB/s | Single Rust call, opaque to optimizer |
+| **`iconv_transcode_to`** (this library) | 120 µs | 222 MiB/s | Bulk iconv, pre-sized buffer |
+| **beman.transcode** bulk (`encode_to` + `decode_to`) | 237 µs | 112 MiB/s | Two-step, produces `std::string` |
+| Raw `iconv()` (4 KB buffer) | 369 µs | 72 MiB/s | System iconv, many calls |
+| `iconv_transcode_view` (streaming) | 744 µs | 36 MiB/s | Per-byte range adaptor |
+
+The WHATWG table-driven decoder in this library's streaming view (80 µs, lazy
+evaluation) is competitive with encoding_rs's Rust implementation (103 µs,
+writing to a buffer).  The encoding_rs C FFI boundary is opaque to the C++
+optimizer — the same effect that any range adaptor wrapping a bulk API
+experiences (cf. `iconv_transcode_view` at 744 µs vs raw iconv at 369 µs).
+
+The two-step bulk approach (237 µs) pays for the intermediate `char32_t` vector
+allocation plus the Shift-JIS encode table search.
+
+### Non-UTF → Non-UTF: EUC-JP → Shift-JIS (28 KB Japanese)
+
+The problem case for a decode-codepoint-encode architecture: transcoding
+between two legacy byte encodings that both represent the same characters.
+
+| Implementation | Mean | Throughput | Notes |
+|----------------|------|-----------|-------|
+| **`iconv_transcode_to`** (single pass) | 144 µs | 185 MiB/s | Direct byte→byte via OS kernel |
+| **beman.transcode** streaming (`transcode` pipe) | 1.12 ms | 24 MiB/s | decode view \| encode view |
+| **beman.transcode** bulk (`encode_to` + `decode_to`) | 1.30 ms | 20 MiB/s | Two-step, char32_t intermediate |
+
+`iconv_transcode_to` is 7-9x faster because it performs a single-pass byte→byte
+conversion inside the kernel's codec tables.  The beman.transcode approach must
+decode every byte to char32_t (EUC-JP table lookup), then encode each codepoint
+back to Shift-JIS (linear scan of a 128-entry table per character).  The linear
+scan in `encode_one()` is the dominant cost.
+
+For non-UTF cross-encoding work, prefer `iconv_transcode_to` when both encodings
+are available on the system.  The streaming views are appropriate when you need
+composability with other range adaptors or when the intermediate `char32_t`
+representation is needed for processing (filtering, normalization, etc).
 
 ### WHATWG Legacy Codecs (this library)
 
@@ -355,30 +399,29 @@ arithmetic on a 128-entry lookup table.
 
 ### iconv: Range Adaptor vs Bulk Operations
 
-All measurements on real corpus data (57 KB English / 28 KB Japanese).
+All measurements on real corpus data.
 
 | Benchmark | Corpus | Mean | Throughput |
 |-----------|--------|------|-----------|
-| Raw `iconv()` (4 KB output buffer) | 57 KB English | 305 µs | 178 MiB/s |
-| **`iconv_transcode_to`** | 57 KB English | 79.4 µs | 686 MiB/s |
-| `iconv_transcode_into` | 57 KB English | 437 µs | 125 MiB/s |
-| `iconv_transcode_view` | 57 KB English | 1.46 ms | 37 MiB/s |
-| Raw `iconv()` (4 KB output buffer) | 28 KB Japanese | 363 µs | 73 MiB/s |
-| **`iconv_transcode_to`** | 28 KB Japanese | 100 µs | 265 MiB/s |
-| `iconv_transcode_view` | 28 KB Japanese | 666 µs | 40 MiB/s |
+| Raw `iconv()` (4 KB buffer) | 57 KB English UTF-8→UTF-32LE | 334 µs | 163 MiB/s |
+| **`iconv_transcode_to`** | 57 KB English UTF-8→UTF-32LE | 83 µs | 653 MiB/s |
+| `iconv_transcode_into` | 57 KB English UTF-8→UTF-32LE | 470 µs | 116 MiB/s |
+| `iconv_transcode_view` | 57 KB English UTF-8→UTF-32LE | 1.52 ms | 36 MiB/s |
+| Raw `iconv()` (4 KB buffer) | 28 KB Japanese SJIS→UTF-8 | 369 µs | 72 MiB/s |
+| **`iconv_transcode_to`** | 28 KB Japanese SJIS→UTF-8 | 120 µs | 222 MiB/s |
+| `iconv_transcode_view` | 28 KB Japanese SJIS→UTF-8 | 744 µs | 36 MiB/s |
+| **`iconv_transcode_to`** | 28 KB Japanese EUC-JP→SJIS | 144 µs | 185 MiB/s |
 
 `iconv_transcode_to` is **faster than naive raw iconv** because it pre-sizes
 the output buffer to `input_size * 4`, making a single iconv call for the
-entire conversion instead of looping over a 4 KB buffer.  The raw iconv
-benchmark (which uses a realistic 4 KB output buffer) requires ~56 calls for
-the UTF-8→UTF-32LE conversion of 57 KB.
+entire conversion instead of looping over a 4 KB buffer.
 
 `iconv_transcode_view` pays ~5-20x overhead due to per-byte iteration through
-a block-oriented C API.  Its value is composability with other range adaptors
-and safety (no resource leaks, no manual buffer management).
-
-`iconv_transcode_into` sits between the two: it avoids per-byte iconv calls
-but writes to an output iterator rather than a pre-allocated container.
+a block-oriented C API.  Wrapping any bulk C API (iconv, encoding_rs FFI, etc.)
+in a per-element range adaptor pays this cost — the opaque function boundary
+prevents the optimizer from seeing through the call.  The view's value is
+composability with other range adaptors and safety (no resource leaks, no
+manual buffer management).
 
 ### Pluggable Codec Performance (Phase 4 APIs)
 

@@ -79,3 +79,28 @@ TEST_CASE("Pluggable transcode view", "[benchmark][pluggable]") {
         return count_elements(corpus_span("en_mars_utf8.txt") | transcode<codec::utf_8, codec::windows_1252>);
     };
 }
+
+TEST_CASE("Cross-encoding transcoding", "[benchmark][pluggable]") {
+    using namespace beman::transcoding;
+    using namespace beman::transcoding::bench;
+
+    // Shift-JIS → UTF-8: produces actual output (fair comparison with encoding_rs)
+    BENCHMARK("Shift-JIS → UTF-8 bulk (encode_to + decode_to)") {
+        return encode_to<codec::utf_8>(decode_to<codec::shift_jis>(corpus_span("ja_mars_shiftjis.bin"))).size();
+    };
+
+    // Non-UTF → non-UTF: EUC-JP → Shift-JIS (both represent Japanese)
+    BENCHMARK("EUC-JP → Shift-JIS bulk (encode_to + decode_to)") {
+        return encode_to<codec::shift_jis>(decode_to<codec::euc_jp>(corpus_span("ja_mars_eucjp.bin"))).size();
+    };
+
+    // Streaming view: Shift-JIS → UTF-8 (lazy, count only)
+    BENCHMARK("Shift-JIS → UTF-8 streaming (transcode pipe)") {
+        return count_elements(corpus_span("ja_mars_shiftjis.bin") | transcode<codec::shift_jis, codec::utf_8>);
+    };
+
+    // Streaming view: EUC-JP → Shift-JIS (non-UTF → non-UTF, lazy)
+    BENCHMARK("EUC-JP → Shift-JIS streaming (transcode pipe)") {
+        return count_elements(corpus_span("ja_mars_eucjp.bin") | transcode<codec::euc_jp, codec::shift_jis>);
+    };
+}

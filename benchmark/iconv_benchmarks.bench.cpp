@@ -96,4 +96,10 @@ TEST_CASE("iconv bulk operations", "[benchmark][iconv]") {
             return sink.size();
         });
     };
+
+    BENCHMARK_ADVANCED("iconv_transcode_to: EUC-JP to Shift-JIS Japanese")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("ja_mars_eucjp.bin");
+        meter.measure([&] { return iconv_transcode_to<std::string>(data, "EUC-JP", "SHIFT_JIS").size(); });
+    };
 }
