@@ -42,7 +42,7 @@ struct stateful_test_codec {
     template <std::input_iterator I, std::sentinel_for<I> S>
     constexpr decode_result decode_one(I& current, S end) {
         if (current == end)
-            return {{}, decode_error::truncated_sequence, true};
+            return {{}, whatwg_error::truncated_sequence, true};
         auto byte = static_cast<unsigned char>(*current);
         ++current;
         ++state;
@@ -129,7 +129,7 @@ TEST_CASE("table_codec: unmapped byte returns error", "[codec_concepts]") {
 
     auto r = codec.decode_one(it, end);
     CHECK(r.is_error);
-    CHECK(r.error == decode_error::invalid_byte);
+    CHECK(r.error == whatwg_error::invalid_byte);
 }
 
 TEST_CASE("table_codec: decode_byte random access", "[codec_concepts]") {

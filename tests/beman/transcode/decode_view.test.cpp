@@ -122,7 +122,7 @@ TEST_CASE("decode_or_error_view: reports errors", "[decode_view]") {
 
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == decode_error::invalid_byte);
+    CHECK(r.error() == whatwg_error::invalid_byte);
 }
 
 // ---------------------------------------------------------------------------
@@ -230,7 +230,7 @@ TEST_CASE("decode_or_error_view: iterator base() tracks position", "[decode_view
     CHECK(*it.base() == 0x80);
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == decode_error::invalid_byte);
+    CHECK(r.error() == whatwg_error::invalid_byte);
 }
 
 // ---------------------------------------------------------------------------

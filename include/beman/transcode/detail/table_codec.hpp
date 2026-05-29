@@ -37,7 +37,7 @@ constexpr decode_result table_codec<Table>::decode_one(I& current, [[maybe_unuse
         return {static_cast<char32_t>(byte), {}, false};
     char32_t cp = Table[byte - 0x80];
     if (cp == 0)
-        return {{}, decode_error::invalid_byte, true};
+        return {{}, whatwg_error::invalid_byte, true};
     return {cp, {}, false};
 }
 
@@ -82,7 +82,7 @@ constexpr decode_result full_table_codec<Table>::decode_one(I& current, [[maybe_
     ++current;
     char32_t cp = Table[byte];
     if (cp == 0)
-        return {{}, decode_error::invalid_byte, true};
+        return {{}, whatwg_error::invalid_byte, true};
     return {cp, {}, false};
 }
 

@@ -862,7 +862,7 @@ remain.
 | **Runtime transcode** | ✅ `transcode_string(…)` | 🔴 | 🔴 | 🔴 |
 | **BOM sniffing** | ✅ `sniff_encoding(range)` | 🔴 | 🔴 | 🔴 |
 | **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | 🔴 | 🔴 |
-| **Error enum** | `whatwg_error` | `decode_error` | `iconv_error` | `utf_transcoding_error` |
+| **Error enum** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
 | **Codepoint type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
 | **Input type** | `char`/`unsigned char`/`byte` | `unsigned char` | `char` | `char8_t`/`char16_t`/`char32_t` |
 | **constexpr** | ✅ | ✅ | 🔴 (system call) | ✅ |
