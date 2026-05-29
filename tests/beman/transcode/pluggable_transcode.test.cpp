@@ -71,7 +71,7 @@ TEST_CASE("pluggable transcode: mixed ASCII and upper-half bytes", "[pluggable_t
 // ---------------------------------------------------------------------------
 
 TEST_CASE("pluggable transcode: operator() called directly", "[pluggable_transcode]") {
-    std::string src = "Hi";
+    std::string src     = "Hi";
     auto        closure = pluggable_transcode(latin1_codec{}, latin1_codec{});
     std::string result;
     for (char c : closure(src))
