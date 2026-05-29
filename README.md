@@ -310,9 +310,10 @@ The comparison puts it in context against mature, production-optimized projects:
 |----------------|------|-----------|-------|
 | **simdutf** (SIMD ceiling) | — | ~21 GiB/s | AVX2 vectorized; not re-run with full corpus |
 | **encoding_rs** (Rust) | — | ~17 GiB/s | SIMD-accelerated; not re-run with full corpus |
-| **beman.transcode** (this library) | 24.1 µs | 2.2 GiB/s | Naive scalar, constexpr-capable |
-| Raw `iconv()` (glibc) | 289 µs | 188 MiB/s | Block API, system implementation |
-| `iconv_transcode_view` (this library) | 1.59 ms | 34 MiB/s | Per-byte range adaptor over iconv |
+| **beman.transcode** (this library) | 21.4 µs | 2.5 GiB/s | Naive scalar, constexpr-capable |
+| Raw `iconv()` (glibc, 4 KB buffer) | 305 µs | 178 MiB/s | Block API, system implementation |
+| `iconv_transcode_to` (this library) | 79.4 µs | 686 MiB/s | Bulk API, pre-sized output buffer |
+| `iconv_transcode_view` (this library) | 1.46 ms | 37 MiB/s | Per-byte range adaptor over iconv |
 
 The ~9x gap between beman.transcode and simdutf is the cost of scalar
 byte-at-a-time iteration vs SIMD bulk processing.  This is expected and
@@ -324,7 +325,7 @@ interface in the future without changing user code.
 
 | Implementation | Mean | Throughput |
 |----------------|------|-----------|
-| **beman.transcode** | 306 µs | 444 MiB/s |
+| **beman.transcode** | 306 µs | 442 MiB/s |
 
 The gap vs the ASCII-heavy English corpus reflects the per-byte overhead of
 two-byte sequence processing.  SIMD implementations maintain near-constant
@@ -338,15 +339,15 @@ articles in each language.
 | Codec | Corpus | Mean | Throughput |
 |-------|--------|------|-----------|
 | windows-1251 | 11 KB Russian | < 1 ns | > 10 GiB/s ¹ |
-| Shift-JIS | 27 KB Japanese | 34.5 µs | 771 MiB/s |
-| UTF-8 (3-byte) | 40 KB Japanese | 30.4 µs | 1.2 GiB/s |
-| GB18030 | 24 KB Chinese | 23.0 µs | 1.0 GiB/s |
-| Big5 | 24 KB Trad. Chinese | 44.1 µs | 523 MiB/s |
-| EUC-JP | 28 KB Japanese | 18.8 µs | 1.4 GiB/s |
-| EUC-KR | 18 KB Korean | 32.6 µs | 520 MiB/s |
-| ISO-2022-JP | 31 KB Japanese | 38.1 µs | 767 MiB/s |
-| UTF-16LE | 6.2 MB War & Peace | 2.01 ms | 3.0 GiB/s |
-| UTF-16BE | 6.2 MB War & Peace | 2.05 ms | 2.9 GiB/s |
+| Shift-JIS | 28 KB Japanese | 19.8 µs | 1.3 GiB/s |
+| UTF-8 (3-byte) | 40 KB Japanese | 27.8 µs | 1.4 GiB/s |
+| GB18030 | 24 KB Chinese | 22.0 µs | 1.0 GiB/s |
+| Big5 | 24 KB Trad. Chinese | 38.8 µs | 594 MiB/s |
+| EUC-JP | 28 KB Japanese | 16.5 µs | 1.5 GiB/s |
+| EUC-KR | 18 KB Korean | 30.8 µs | 549 MiB/s |
+| ISO-2022-JP | 31 KB Japanese | 31.1 µs | 938 MiB/s |
+| UTF-16LE | 6.2 MB War & Peace | 1.84 ms | 3.3 GiB/s |
+| UTF-16BE | 6.2 MB War & Peace | 1.81 ms | 3.3 GiB/s |
 
 ¹ The windows-1251 random-access view is a sized range; GCC elides the
 iteration loop entirely.  The view itself is O(1) per element via pointer
@@ -358,19 +359,26 @@ All measurements on real corpus data (57 KB English / 28 KB Japanese).
 
 | Benchmark | Corpus | Mean | Throughput |
 |-----------|--------|------|-----------|
-| Raw `iconv()`: UTF-8 → UTF-32LE | 57 KB English | 289 µs | 188 MiB/s |
-| `iconv_transcode_view`: same | 57 KB English | 1.59 ms | 34 MiB/s |
-| **`iconv_transcode_to`**: same | 57 KB English | 310 µs | 176 MiB/s |
-| **`iconv_transcode_into`**: same | 57 KB English | 461 µs | 118 MiB/s |
-| Raw `iconv()`: Shift-JIS → UTF-8 | 28 KB Japanese | 362 µs | 74 MiB/s |
-| `iconv_transcode_view`: same | 28 KB Japanese | 682 µs | 39 MiB/s |
-| **`iconv_transcode_to`**: same | 28 KB Japanese | 143 µs | 186 MiB/s |
+| Raw `iconv()` (4 KB output buffer) | 57 KB English | 305 µs | 178 MiB/s |
+| **`iconv_transcode_to`** | 57 KB English | 79.4 µs | 686 MiB/s |
+| `iconv_transcode_into` | 57 KB English | 437 µs | 125 MiB/s |
+| `iconv_transcode_view` | 57 KB English | 1.46 ms | 37 MiB/s |
+| Raw `iconv()` (4 KB output buffer) | 28 KB Japanese | 363 µs | 73 MiB/s |
+| **`iconv_transcode_to`** | 28 KB Japanese | 100 µs | 265 MiB/s |
+| `iconv_transcode_view` | 28 KB Japanese | 666 µs | 40 MiB/s |
 
-`iconv_transcode_view` pays ~5-10x overhead vs raw iconv due to per-byte
-iteration.  The bulk APIs (`iconv_transcode_to`, `iconv_transcode_into`)
-are within ~1.5-2.5x of raw iconv — matching the design goal — since they
-call iconv with full buffers.  The extra overhead vs raw iconv is allocation
-of the output container.
+`iconv_transcode_to` is **faster than naive raw iconv** because it pre-sizes
+the output buffer to `input_size * 4`, making a single iconv call for the
+entire conversion instead of looping over a 4 KB buffer.  The raw iconv
+benchmark (which uses a realistic 4 KB output buffer) requires ~56 calls for
+the UTF-8→UTF-32LE conversion of 57 KB.
+
+`iconv_transcode_view` pays ~5-20x overhead due to per-byte iteration through
+a block-oriented C API.  Its value is composability with other range adaptors
+and safety (no resource leaks, no manual buffer management).
+
+`iconv_transcode_into` sits between the two: it avoids per-byte iconv calls
+but writes to an output iterator rather than a pre-allocated container.
 
 ### Pluggable Codec Performance (Phase 4 APIs)
 
@@ -380,12 +388,12 @@ Single-element streaming views on a 4 KB synthetic corpus of upper-half bytes
 | API | Corpus | Mean | Throughput |
 |-----|--------|------|-----------|
 | `decode(latin1_codec{})` | 4 KB synthetic | < 1 ns | > 10 GiB/s ¹ |
-| `encode(latin1_codec{})` | 4 KB synthetic | 249 ns | ~15 GiB/s ² |
-| `decode_to<iso_8859_15>` | 11 KB Russian | 17.5 µs | 614 MiB/s |
-| `encode_to<iso_8859_15>` (round-trip) | 11 KB Russian | 120 µs | 90 MiB/s |
-| `decode_to<utf_8>` | 57 KB English | 31.7 µs | 1.7 GiB/s |
-| `transcode<windows_1252, utf_8>` | 4 KB synthetic | 4.34 µs | 900 MiB/s |
-| `transcode<utf_8, windows_1252>` | 57 KB English | 29.2 µs | 1.8 GiB/s |
+| `encode(latin1_codec{})` | 4 KB synthetic | 221 ns | ~18 GiB/s ² |
+| `decode_to<iso_8859_15>` | 11 KB Russian | 15.7 µs | 684 MiB/s |
+| `encode_to<iso_8859_15>` (round-trip) | 11 KB Russian | 131 µs | 82 MiB/s |
+| `decode_to<utf_8>` | 57 KB English | 25.2 µs | 2.1 GiB/s |
+| `transcode<windows_1252, utf_8>` | 4 KB synthetic | 5.88 µs | 664 MiB/s |
+| `transcode<utf_8, windows_1252>` | 57 KB English | 27.8 µs | 1.9 GiB/s |
 
 ¹ Random-access sized range; GCC elides the iteration loop (O(1) pointer
 arithmetic).
@@ -397,10 +405,10 @@ throughput will be lower.
 
 | API | Corpus | Mean | Throughput |
 |-----|--------|------|-----------|
-| `decode_to<utf_8>` | 57 KB English | 24.1 µs | 2.2 GiB/s |
-| `decode_to<utf_8>` | 3.1 MB War & Peace | 2.02 ms | 1.5 GiB/s |
-| `encode_to<utf_8>` (round-trip) | 57 KB English | 79.5 µs | 687 MiB/s |
-| `encode_to<utf_8>` (round-trip) | 3.1 MB War & Peace | 5.05 ms | 621 MiB/s |
+| `decode_to<utf_8>` | 57 KB English | 21.4 µs | 2.5 GiB/s |
+| `decode_to<utf_8>` | 3.1 MB War & Peace | 1.77 ms | 1.7 GiB/s |
+| `encode_to<utf_8>` (round-trip) | 57 KB English | 75.5 µs | 721 MiB/s |
+| `encode_to<utf_8>` (round-trip) | 3.1 MB War & Peace | 4.77 ms | 658 MiB/s |
 
 ### Reproducing
 
