@@ -310,9 +310,10 @@ The comparison puts it in context against mature, production-optimized projects:
 |----------------|------|-----------|-------|
 | **simdutf** (SIMD ceiling) | 6.93 µs | 7.7 GiB/s | AVX2 vectorized, UTF-8→UTF-32 |
 | **beman.transcode** (this library) | 21.4 µs | 2.5 GiB/s | Naive scalar, constexpr-capable |
-| `std::codecvt` (libstdc++) | 83 µs | 657 MiB/s | Deprecated C++17, locale-dependent |
+| `mbstowcs` (glibc C89) | 31.1 µs | 1.7 GiB/s | C standard library, locale-dependent |
+| `std::codecvt` (libstdc++ C++11) | 75 µs | 724 MiB/s | Deprecated C++17, removed C++26 |
 | `iconv_transcode_to` (this library) | 83 µs | 653 MiB/s | Bulk API, pre-sized buffer |
-| Raw `iconv()` (glibc, 4 KB buffer) | 334 µs | 163 MiB/s | Block API, system iconv |
+| Raw `iconv()` (glibc, 4 KB buffer) | 334 µs | 163 MiB/s | Block API, looping over 4 KB |
 | `iconv_transcode_view` (this library) | 1.52 ms | 36 MiB/s | Per-byte range adaptor over iconv |
 
 The ~3x gap between beman.transcode and simdutf is the cost of scalar
@@ -321,11 +322,12 @@ acceptable for a portable, constexpr-capable, standards-track implementation.
 SIMD backends could be plugged in behind the same range interface in the future
 without changing user code.
 
-`std::codecvt` and `std::wstring_convert` (deprecated in C++17, removed in
-C++26) are included as a historical baseline — they represent the only UTF
-transcoding facility the standard library ever shipped.  `iconv_transcode_to`
-matches `std::codecvt` throughput while supporting all iconv encodings, not
-just UTF.
+`mbstowcs` (C89, still current) and `std::codecvt` (deprecated C++17, removed
+C++26) represent the standard library's transcoding facilities.  `mbstowcs` is
+a simple C API with no virtual dispatch overhead, which is why it outperforms
+`std::codecvt` by ~2x.  Both are locale-dependent and UTF-only.
+`iconv_transcode_to` matches `std::codecvt` throughput while supporting all
+iconv encodings, not just UTF.
 
 ### UTF-8 Decode: Multibyte (142 KB Arabic, 2-byte sequences)
 
