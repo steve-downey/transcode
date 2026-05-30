@@ -136,7 +136,9 @@
       "Bash(gcc-16 -std=c++26 -dM -E -x c++ /dev/null)",
       "Bash(gcc-16 -std=c++26 -dM -E -x c++ -)",
       "Bash(g++-13 -std=c++23 -dM -E -x c++ -)",
-      "Bash(.build/build-system/tests/beman/transcode/Asan/beman.transcode.tests.pluggable_bulk)"
+      "Bash(.build/build-system/tests/beman/transcode/Asan/beman.transcode.tests.pluggable_bulk)",
+      "Bash(uv run *)",
+      "Bash(.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.pluggable 'Bulk via')"
     ]
   }
 }

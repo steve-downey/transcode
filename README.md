@@ -207,11 +207,11 @@ Legend: ✅ implemented · n/a architectural model doesn't support this ·
 | **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | n/a ¹ | ✅ `views::to_utf8` / `to_utf16` |
 | **Encode or-error view** | ✅ `whatwg_encode_or_error<C>` | ✅ `encode_or_error(codec)` | n/a ¹ | ✅ `views::to_utf8_or_error` |
 | **Transcode pipeline** | ✅ `transcode<From,To>` | ✅ `pluggable_transcode(f,t)` | ✅ `iconv_transcode(f,t,buf)` | ✅ compose views via `\|` |
-| **Bulk decode → container** | ✅ `decode_to<C>(range)` | ✅ `decode_to(codec{},range)` | n/a ¹ | ✅ `ranges::to<u32string>()` |
-| **Bulk encode → container** | ✅ `encode_to<C>(range)` | ✅ `encode_to(codec{},range)` | n/a ¹ | ✅ `ranges::to<u8string>()` |
+| **Bulk decode → container** | ✅ `v\|ranges::to<>()` | ✅ `v\|ranges::to<>()` | n/a ¹ | ✅ `v\|ranges::to<>()` |
+| **Bulk encode → container** | ✅ `v\|ranges::to<>()` | ✅ `v\|ranges::to<>()` | n/a ¹ | ✅ `v\|ranges::to<>()` |
 | **Bulk transcode → container** | n/a ² | n/a ² | ✅ `iconv_transcode_to(range,f,t)` | n/a ² |
-| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | ✅ `decode_into(codec{},range,out)` | n/a ¹ | ✅ `ranges::copy(v\|to_utf32, out)` |
-| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | ✅ `encode_into(codec{},range,out)` | n/a ¹ | ✅ `ranges::copy(v\|to_utf8, out)` |
+| **Bulk decode → output iter** | ✅ `ranges::copy(v, out)` | ✅ `ranges::copy(v, out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
+| **Bulk encode → output iter** | ✅ `ranges::copy(v, out)` | ✅ `ranges::copy(v, out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
 | **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
 | **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | n/a ³ |
 | **Runtime label lookup** | ✅ `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
@@ -259,18 +259,26 @@ proposal addresses byte-order issues.
 
 ### Bulk Operations
 
-When you want a container rather than a lazy view:
+The views compose directly with `std::ranges::to` and `std::ranges::copy` —
+no dedicated bulk API is needed:
 
 ```cpp
-// Decode to vector
-std::vector<char32_t> cps = beman::transcoding::decode_to<codec::utf_8>(bytes);
+using namespace beman::transcoding;
 
-// Encode to string
-std::string encoded = beman::transcoding::encode_to<codec::shift_jis>(codepoints);
+// Decode to vector — view | ranges::to
+auto cps = bytes | whatwg_decode<codec::utf_8> | std::ranges::to<std::vector<char32_t>>();
 
-// Output-iterator versions (zero-copy into existing containers)
-beman::transcoding::decode_into<codec::utf_8>(bytes, std::back_inserter(vec));
+// Encode to string — view | ranges::to
+auto encoded = codepoints | whatwg_encode<codec::shift_jis> | std::ranges::to<std::string>();
+
+// Output-iterator — ranges::copy
+std::ranges::copy(bytes | whatwg_decode<codec::utf_8>, std::back_inserter(vec));
 ```
+
+This is deliberate: `decode_to` / `encode_to` convenience wrappers exist in
+`detail/bulk_transcode.hpp` but are not proposed for standardization.  The
+standard library's `ranges::to` and `ranges::copy` already provide the
+necessary functionality with no measurable performance difference.
 
 ## Codec Identifiers: WHATWG, iconv, and `std::text_encoding`
 
@@ -459,9 +467,9 @@ Single-element streaming views on a 4 KB synthetic corpus of upper-half bytes
 |-----|--------|------|-----------|
 | `decode(latin1_codec{})` | 4 KB synthetic | < 1 ns | > 10 GiB/s ¹ |
 | `encode(latin1_codec{})` | 4 KB synthetic | 221 ns | ~18 GiB/s ² |
-| `decode_to<iso_8859_15>` | 11 KB Russian | 15.7 µs | 684 MiB/s |
-| `encode_to<iso_8859_15>` (round-trip) | 11 KB Russian | 131 µs | 82 MiB/s |
-| `decode_to<utf_8>` | 57 KB English | 25.2 µs | 2.1 GiB/s |
+| `view\|ranges::to` decode iso-8859-15 | 11 KB Russian | 15.7 µs | 684 MiB/s |
+| `view\|ranges::to` encode iso-8859-15 | 11 KB Russian | 131 µs | 82 MiB/s |
+| `view\|ranges::to` decode UTF-8 | 57 KB English | 25.2 µs | 2.1 GiB/s |
 | `transcode<windows_1252, utf_8>` | 4 KB synthetic | 5.88 µs | 664 MiB/s |
 | `transcode<utf_8, windows_1252>` | 57 KB English | 27.8 µs | 1.9 GiB/s |
 
@@ -471,14 +479,14 @@ arithmetic).
 the loop over the 4 KB synthetic corpus.  Real-world mixed-content
 throughput will be lower.
 
-### UTF-8 Bulk Operations
+### UTF-8 via `view | ranges::to`
 
 | API | Corpus | Mean | Throughput |
 |-----|--------|------|-----------|
-| `decode_to<utf_8>` | 57 KB English | 21.4 µs | 2.5 GiB/s |
-| `decode_to<utf_8>` | 3.1 MB War & Peace | 1.77 ms | 1.7 GiB/s |
-| `encode_to<utf_8>` (round-trip) | 57 KB English | 75.5 µs | 721 MiB/s |
-| `encode_to<utf_8>` (round-trip) | 3.1 MB War & Peace | 4.77 ms | 658 MiB/s |
+| `whatwg_decode<utf_8> \| ranges::to` | 57 KB English | 21.4 µs | 2.5 GiB/s |
+| `whatwg_decode<utf_8> \| ranges::to` | 3.1 MB War & Peace | 1.77 ms | 1.7 GiB/s |
+| decode + encode round-trip `\| ranges::to` | 57 KB English | 75.5 µs | 721 MiB/s |
+| decode + encode round-trip `\| ranges::to` | 3.1 MB War & Peace | 4.77 ms | 658 MiB/s |
 
 ### Reproducing
 

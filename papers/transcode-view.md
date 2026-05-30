@@ -254,16 +254,25 @@ std::vector<char32_t> decode_utf8(
 }
 ```
 
-#### After: `decode_to`
+#### After: `view | ranges::to`
 
 ```cpp
 std::vector<char32_t> decode_utf8(
     std::string_view input) {
-  return decode_to<codec::utf_8>(input);
+  return input
+    | whatwg_decode<codec::utf_8>
+    | std::ranges::to<std::vector<char32_t>>();
 }
 ```
 
 :::
+
+Dedicated `decode_to` / `encode_to` / `decode_into` / `encode_into` helpers
+are deliberately **not** proposed.  The views satisfy the range concepts
+required by `std::ranges::to` and `std::ranges::copy`, making those standard
+algorithms the natural and sufficient bulk collection mechanism.  Benchmarks
+confirm no measurable performance difference between a named `decode_to`
+wrapper and the equivalent `view | ranges::to` composition.
 
 ## Motivation
 
@@ -859,11 +868,11 @@ Legend: ✅ implemented · n/a architectural model doesn't support this ·
 | **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | n/a ¹ | ✅ `views::to_utf8` / `to_utf16` |
 | **Encode or-error view** | ✅ `whatwg_encode_or_error<C>` | ✅ `encode_or_error(codec)` | n/a ¹ | ✅ `views::to_utf8_or_error` |
 | **Transcode pipeline** | ✅ `transcode<From,To>` | ✅ `pluggable_transcode(f,t)` | ✅ `iconv_transcode(f,t,buf)` | ✅ compose via `|` |
-| **Bulk decode → container** | ✅ `decode_to<C>(range)` | ✅ `decode_to(codec{},range)` | n/a ¹ | ✅ `ranges::to<u32string>()` |
-| **Bulk encode → container** | ✅ `encode_to<C>(range)` | ✅ `encode_to(codec{},range)` | n/a ¹ | ✅ `ranges::to<u8string>()` |
+| **Bulk decode → container** | ✅ `v\|ranges::to<>()` | ✅ `v\|ranges::to<>()` | n/a ¹ | ✅ `v\|ranges::to<>()` |
+| **Bulk encode → container** | ✅ `v\|ranges::to<>()` | ✅ `v\|ranges::to<>()` | n/a ¹ | ✅ `v\|ranges::to<>()` |
 | **Bulk transcode → container** | n/a ² | n/a ² | ✅ `iconv_transcode_to(range,f,t)` | n/a ² |
-| **Bulk decode → output iter** | ✅ `decode_into<C>(range,out)` | ✅ `decode_into(codec{},range,out)` | n/a ¹ | ✅ `ranges::copy(v|to_utf32, out)` |
-| **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | ✅ `encode_into(codec{},range,out)` | n/a ¹ | ✅ `ranges::copy(v|to_utf8, out)` |
+| **Bulk decode → output iter** | ✅ `ranges::copy(v, out)` | ✅ `ranges::copy(v, out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
+| **Bulk encode → output iter** | ✅ `ranges::copy(v, out)` | ✅ `ranges::copy(v, out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
 | **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
 | **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | n/a ³ |
 | **Runtime label lookup** | ✅ `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
@@ -881,10 +890,11 @@ to another without exposing an intermediate `char32_t` stage.  Encode (from
 `char32_t` to bytes) and decode (from bytes to `char32_t`) as separate steps
 are outside its model.
 
-² **WHATWG and pluggable codecs compose decode and encode.**  Bulk transcode is
-`encode_to(decode_to(range))`; there is no single-pass operation because the
-intermediate `char32_t` range is the natural composition point.  iconv performs
-single-pass byte→byte conversion and exposes it as a first-class operation.
+² **WHATWG and pluggable codecs compose decode and encode.**  Bulk collection
+uses `view | ranges::to<Container>()` and `ranges::copy(view, output)` — no
+dedicated bulk helpers are proposed since the standard algorithms suffice.
+Transcode is `decode | encode` composed with `|`.  iconv performs single-pass
+byte→byte conversion and exposes it as a first-class bulk operation.
 
 ³ **P2728 operates on typed Unicode character types** (`char8_t`, `char16_t`,
 `char32_t`); `views::null_term` produces a range of `char`.  Bridging the two
