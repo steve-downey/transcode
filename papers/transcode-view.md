@@ -20,7 +20,7 @@ bibliography:
   - ../docs/prior-art.bib
 ---
 
-<!-- markdownlint-disable MD013 -->
+<!-- markdownlint-disable MD013 MD056 MD060 -->
 
 ## Abstract
 
