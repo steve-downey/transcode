@@ -2,9 +2,9 @@
 
 #include <benchmark/benchmark_fixture.hpp>
 #include <benchmark/benchmark_sink.hpp>
+#include <beman/transcode/config_generated.hpp>
 #include <beman/transcode/detail/transcode_view.hpp>
 #include <beman/transcode/encode_view.hpp>
-#include <beman/transcode/transcode.hpp>
 #include <beman/transcode/transcode.hpp>
 
 #include <catch2/catch_all.hpp>
@@ -48,6 +48,7 @@ TEST_CASE("Pluggable codec streaming views", "[benchmark][pluggable]") {
     };
 }
 
+#if BEMAN_TRANSCODE_HAS_RANGES_TO
 TEST_CASE("Bulk via view|to", "[benchmark][pluggable]") {
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
@@ -70,6 +71,7 @@ TEST_CASE("Bulk via view|to", "[benchmark][pluggable]") {
             .size();
     };
 }
+#endif // BEMAN_TRANSCODE_HAS_RANGES_TO
 
 TEST_CASE("Pluggable transcode view", "[benchmark][pluggable]") {
     using namespace beman::transcoding;
@@ -88,6 +90,7 @@ TEST_CASE("Cross-encoding via view|to", "[benchmark][pluggable]") {
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
 
+#if BEMAN_TRANSCODE_HAS_RANGES_TO
     BENCHMARK("Shift-JIS -> UTF-8 via view|to") {
         auto cps = corpus_span("ja_mars_shiftjis.bin") | whatwg_decode<codec::shift_jis> |
                    std::ranges::to<std::vector<char32_t>>();
@@ -99,6 +102,7 @@ TEST_CASE("Cross-encoding via view|to", "[benchmark][pluggable]") {
             corpus_span("ja_mars_eucjp.bin") | whatwg_decode<codec::euc_jp> | std::ranges::to<std::vector<char32_t>>();
         return (cps | whatwg_encode<codec::shift_jis> | std::ranges::to<std::string>()).size();
     };
+#endif // BEMAN_TRANSCODE_HAS_RANGES_TO
 
     BENCHMARK("Shift-JIS -> UTF-8 streaming (transcode pipe)") {
         return count_elements(corpus_span("ja_mars_shiftjis.bin") | transcode<codec::shift_jis, codec::utf_8>);
@@ -113,6 +117,7 @@ TEST_CASE("Large corpus cross-encoding via view|to", "[benchmark][pluggable]") {
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
 
+#if BEMAN_TRANSCODE_HAS_RANGES_TO
     BENCHMARK("Shift-JIS -> UTF-8 via view|to: Genji (2.3 MB)") {
         auto cps = corpus_span("genji_monogatari_shiftjis.bin") | whatwg_decode<codec::shift_jis> |
                    std::ranges::to<std::vector<char32_t>>();
@@ -130,6 +135,7 @@ TEST_CASE("Large corpus cross-encoding via view|to", "[benchmark][pluggable]") {
                    std::ranges::to<std::vector<char32_t>>();
         return (cps | whatwg_encode<codec::big5> | std::ranges::to<std::string>()).size();
     };
+#endif // BEMAN_TRANSCODE_HAS_RANGES_TO
 
     BENCHMARK("Shift-JIS -> UTF-8 streaming: Genji (2.3 MB)") {
         return count_elements(corpus_span("genji_monogatari_shiftjis.bin") |
