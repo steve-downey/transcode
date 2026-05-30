@@ -52,7 +52,10 @@ def find_present_chapters(content: str) -> set[int]:
 
 def main() -> int:
     if not UTF8_FILE.exists():
-        print(f"Error: {UTF8_FILE} does not exist. Run download_benchmark_corpora.py first.")
+        print(
+            f"Error: {UTF8_FILE} does not exist."
+            " Run download_benchmark_corpora.py first."
+        )
         return 1
 
     existing_text = UTF8_FILE.read_text("utf-8")

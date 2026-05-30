@@ -20,6 +20,10 @@ codecs web and network protocols actually use.
 Part of the [Beman Project](https://github.com/bemanproject), targeting C++29
 standardization.
 
+> "It seems like a really messy situation and you're proposing to inherit that
+> mess into the C++ standard."
+> — Jan Schultke, personal correspondence
+
 ## Design: Byte-Oriented I/O Transcoding
 
 This library operates on **byte-like types** (`char`, `signed char`,
