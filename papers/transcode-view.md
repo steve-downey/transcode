@@ -343,16 +343,6 @@ The proposal adds four user-facing adaptor families:
 - **`iconv_transcode_view` / `iconv_transcode(from, to, buf)`** and **`iconv_transcode_or_error_view` / `iconv_transcode_or_error(from, to, buf)`**:
   Runtime-selected transcoding through the platform `iconv` implementation, using caller-provided staging storage.
 
-It also adds four eager bulk helper families:
-
-- **`decode_to<C>(source)`**: Decodes a byte range and collects the result into `std::vector<char32_t>`.
-
-- **`encode_to<C, Container = std::string>(source)`**: Encodes a `char32_t` range and collects the result into a caller-selected container, defaulting to `std::string`.
-
-- **`decode_into<C>(source, sink)`**: Decodes a byte range into an output iterator of `char32_t`.
-
-- **`encode_into<C>(source, sink)`**: Encodes a `char32_t` range into an output iterator of `char`.
-
 And three utility entry points:
 
 - **`transcode<From, To>`**: Convenience composition of `whatwg_decode<From>` followed by `whatwg_encode<To>`.
@@ -552,30 +542,29 @@ auto code_points = utf8 | whatwg_decode<codec::utf_8>;
 auto round_trip  = code_points | whatwg_encode<codec::utf_8>;
 ```
 
-The eager helpers cover the common case where the destination storage is part of the call site:
+Collecting into owned storage uses `std::ranges::to`:
 
 ```cpp
 std::string bytes = "caf\xE9";
-std::vector<char32_t> scalars =
-  decode_to<codec::windows_1252>(bytes);
+auto scalars = bytes
+  | whatwg_decode<codec::windows_1252>
+  | std::ranges::to<std::vector<char32_t>>();
 
-std::string utf8 =
-  encode_to<codec::utf_8>(scalars);
-
-std::vector<char> utf8_bytes =
-  encode_to<codec::utf_8, std::vector<char>>(scalars);
+auto utf8 = scalars
+  | whatwg_encode<codec::utf_8>
+  | std::ranges::to<std::string>();
 ```
 
-When output storage is supplied by the caller, the sink-oriented forms avoid an extra container handoff:
+Writing into an output iterator uses `std::ranges::copy`:
 
 ```cpp
 std::vector<char32_t> scalars;
-decode_into<codec::utf_8>(bytes,
-                          std::back_inserter(scalars));
+std::ranges::copy(bytes | whatwg_decode<codec::utf_8>,
+                  std::back_inserter(scalars));
 
 std::string encoded;
-encode_into<codec::utf_8>(scalars,
-                          std::back_inserter(encoded));
+std::ranges::copy(scalars | whatwg_encode<codec::utf_8>,
+                  std::back_inserter(encoded));
 ```
 
 The convenience `transcode<From, To>` adaptor is useful when the intermediate Unicode range is not otherwise needed:
@@ -768,7 +757,7 @@ static_assert(result == U'€');
 
 For codecs where encode is defined, roundtrip tests verify that `encode(decode(bytes)) == bytes` for all valid inputs, and that `decode(encode(codepoints)) == codepoints` for all mapped code points.
 
-The bulk helpers are covered separately to verify their container and output-iterator behavior, including the single-byte fast paths used by `decode_to` and the `encode_to` overloads.
+Bulk collection through `ranges::to` and output-iterator paths via `ranges::copy` are covered as part of the view tests to verify that the views satisfy the required range concepts.
 
 ## Impact on the Standard
 
@@ -783,7 +772,7 @@ This proposal adds new headers and does not modify existing standard library com
 ### Headers
 
 ```cpp
-#include <transcode>   // whatwg_decode, whatwg_encode, decode_to, encode_to, transcode, iconv_transcode
+#include <transcode>   // whatwg_decode, whatwg_encode, transcode, iconv_transcode, transcode_string
 #include <null_term>   // null_term_view
 ```
 

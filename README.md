@@ -73,7 +73,7 @@ For explicit error visibility, use the `_or_error` variant which yields
 `std::expected<char32_t, whatwg_error>`:
 
 ```cpp
-for (auto result : input | beman::transcoding::whatwg_decode_or_error<codec::utf_8>) {
+for (auto result : input | beman::transcoding::whatwg_decode_or_error<beman::transcoding::codec::utf_8>) {
     if (!result.has_value()) {
         // result.error() is whatwg_error::invalid_byte, ::truncated_sequence, etc.
     }
@@ -95,7 +95,7 @@ The reverse direction encodes Unicode scalars back to bytes:
 
 ```cpp
 // char32_t range → char range (UTF-8 bytes)
-auto encoded = codepoints | beman::transcoding::whatwg_encode<codec::utf_8>;
+auto encoded = codepoints | beman::transcoding::whatwg_encode<beman::transcoding::codec::utf_8>;
 ```
 
 ### Transcode — Any Encoding to Any Other
@@ -107,7 +107,7 @@ Compose decode and encode into a single pipeline:
 
 std::string shift_jis_to_utf8(std::string_view input) {
     std::string result;
-    for (char byte : input | beman::transcoding::transcode<codec::shift_jis, codec::utf_8>) {
+    for (char byte : input | beman::transcoding::transcode<beman::transcoding::codec::shift_jis, beman::transcoding::codec::utf_8>) {
         result.push_back(byte);
     }
     return result;
