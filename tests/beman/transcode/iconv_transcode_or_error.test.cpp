@@ -93,6 +93,8 @@ TEST_CASE("iconv_transcode_or_error_view destructor closes handle", "[transcodin
 
         iconv_t open(const char*, const char*) const { return (iconv_t)1; }
         size_t  convert(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) const {
+            if (in == nullptr || *in == nullptr)
+                return 0;
             size_t n = std::min(*inleft, *outleft);
             std::memcpy(*out, *in, n);
             *in += n;
@@ -129,4 +131,132 @@ TEST_CASE("iconv_transcode_or_error_closure pipe syntax with mock fns", "[transc
     CHECK(result[0].value() == 'H');
     REQUIRE(result[1].has_value());
     CHECK(result[1].value() == 'i');
+}
+
+TEST_CASE("iconv_transcode_or_error_view stateful flush produces trailing bytes",
+          "[transcoding::iconv_transcode_or_error]") {
+    std::vector<char>    input{'A', 'B'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_stateful, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    REQUIRE(result.size() == 3);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == 'A');
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == 'B');
+    REQUIRE(result[2].has_value());
+    CHECK(result[2].value() == 0x0F);
+}
+
+TEST_CASE("iconv_transcode_or_error_view E2BIG with zero output yields output_full error",
+          "[transcoding::iconv_transcode_or_error]") {
+    std::vector<char>    input{'A', 'B'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_e2big_zero_output, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    REQUIRE(result.size() >= 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == iconv_error::output_full);
+}
+
+TEST_CASE("iconv_transcode_or_error_view partial consume yields output then continues",
+          "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_partial_consume consumes 1 byte, writes 1, returns EINVAL.
+    std::vector<char>    input{0x41, 0x42, 0x43, 0x44};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_partial_consume, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    REQUIRE(result.size() >= 2);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == 0x41);
+}
+
+TEST_CASE("iconv_transcode_or_error_view output before EILSEQ error", "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_output_then_eilseq writes 1 byte then returns EILSEQ.
+    // Tests the path where output is yielded before EILSEQ error (line 202-203 return).
+    // The mock advances input past the written byte, so next call sees next byte.
+    std::vector<char>    input{'A', 'B', 'C'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_output_then_eilseq, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    // First result: 'A' written before EILSEQ → return early with output
+    REQUIRE(result.size() >= 1);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == 'A');
+    // Second result: 'B' written before EILSEQ → return early with output
+    REQUIRE(result.size() >= 2);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == 'B');
+}
+
+TEST_CASE("iconv_transcode_or_error_view output before E2BIG error", "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_output_then_e2big writes 1 byte then returns E2BIG.
+    // Tests the path where output is yielded before E2BIG error (line 216-217 return).
+    // The mock advances input past the written byte, so next call sees next byte.
+    std::vector<char>    input{'X', 'Y', 'Z'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_output_then_e2big, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    // First result: 'X' written before E2BIG → return early with output
+    REQUIRE(result.size() >= 1);
+    REQUIRE(result[0].has_value());
+    CHECK(result[0].value() == 'X');
+    // Second result: 'Y' written before E2BIG → return early with output
+    REQUIRE(result.size() >= 2);
+    REQUIRE(result[1].has_value());
+    CHECK(result[1].value() == 'Y');
+}
+
+TEST_CASE("iconv_transcode_or_error_view EILSEQ multi-byte shift", "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_shift_loop_eilseq always returns EILSEQ with no output.
+    // With 3+ staging bytes, triggers the byte-shifting loop (line 206-209).
+    std::vector<char>    input{'A', 'B', 'C'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_shift_loop_eilseq, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    // Should get invalid_sequence errors as staging bytes are shifted
+    REQUIRE(!result.empty());
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == iconv_error::invalid_sequence);
+}
+
+TEST_CASE("iconv_transcode_or_error_view success with no output at end of input",
+          "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_success_no_output returns success without producing output or consuming input.
+    // Tests the path where rc != -1 but staging_len_ == 0 && current_ == end_ (lines 178-180).
+    std::vector<char>    input{'A'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_success_no_output, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    // No output expected (mock never writes)
+    CHECK(result.empty());
+}
+
+TEST_CASE("iconv_transcode_or_error_view E2BIG multi-byte shift", "[transcoding::iconv_transcode_or_error]") {
+    // mock_iconv_shift_loop_e2big always returns E2BIG with no output.
+    // With 3+ staging bytes, triggers the byte-shifting loop (line 221-223).
+    std::vector<char>    input{'A', 'B', 'C'};
+    std::array<char, 16> buf{};
+    iconv_functions      fns{mock_iconv_open, mock_iconv_shift_loop_e2big, mock_iconv_close};
+    auto                 view =
+        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    auto result = collect(view);
+    // Should get output_full errors as staging bytes are shifted
+    REQUIRE(!result.empty());
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == iconv_error::output_full);
 }

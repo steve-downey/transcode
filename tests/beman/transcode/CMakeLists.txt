@@ -424,6 +424,184 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.wpt_bom)
+target_sources(beman.transcode.tests.wpt_bom PRIVATE wpt_bom.test.cpp)
+target_include_directories(
+    beman.transcode.tests.wpt_bom
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.wpt_bom
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.wpt_fatal_single_byte)
+target_sources(
+    beman.transcode.tests.wpt_fatal_single_byte
+    PRIVATE wpt_fatal_single_byte.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.wpt_fatal_single_byte
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.wpt_fatal_single_byte
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.wpt_eof)
+target_sources(beman.transcode.tests.wpt_eof PRIVATE wpt_eof.test.cpp)
+target_include_directories(
+    beman.transcode.tests.wpt_eof
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.wpt_eof
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.wpt_surrogates_utf8)
+target_sources(
+    beman.transcode.tests.wpt_surrogates_utf8
+    PRIVATE wpt_surrogates_utf8.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.wpt_surrogates_utf8
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.wpt_surrogates_utf8
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.wpt_encoder_surrogates)
+target_sources(
+    beman.transcode.tests.wpt_encoder_surrogates
+    PRIVATE wpt_encoder_surrogates.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.wpt_encoder_surrogates
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.wpt_encoder_surrogates
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.labels)
+target_sources(beman.transcode.tests.labels PRIVATE labels.test.cpp)
+target_include_directories(
+    beman.transcode.tests.labels
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.labels
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.sniff)
+target_sources(beman.transcode.tests.sniff PRIVATE sniff.test.cpp)
+target_include_directories(
+    beman.transcode.tests.sniff
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.sniff
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.transcode)
+target_sources(beman.transcode.tests.transcode PRIVATE transcode.test.cpp)
+target_include_directories(
+    beman.transcode.tests.transcode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.transcode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.transcode_string)
+target_sources(
+    beman.transcode.tests.transcode_string
+    PRIVATE transcode_string.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.transcode_string
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.transcode_string
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.transcode_string_label)
+target_sources(
+    beman.transcode.tests.transcode_string_label
+    PRIVATE transcode_string_label.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.transcode_string_label
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.transcode_string_label
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.transcode_view)
+target_sources(
+    beman.transcode.tests.transcode_view
+    PRIVATE transcode_view.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.transcode_view
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.transcode_view
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.bulk_transcode)
+target_sources(
+    beman.transcode.tests.bulk_transcode
+    PRIVATE bulk_transcode.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.bulk_transcode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.bulk_transcode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
+add_executable(beman.transcode.tests.iconv_bulk)
+target_sources(beman.transcode.tests.iconv_bulk PRIVATE iconv_bulk.test.cpp)
+target_include_directories(
+    beman.transcode.tests.iconv_bulk
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.iconv_bulk
+    PRIVATE beman::transcode Catch2::Catch2WithMain Iconv::Iconv
+)
+
+add_executable(beman.transcode.tests.iconv_null_term)
+target_sources(
+    beman.transcode.tests.iconv_null_term
+    PRIVATE iconv_null_term.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.iconv_null_term
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.iconv_null_term
+    PRIVATE beman::transcode Catch2::Catch2WithMain Iconv::Iconv
+)
+
 include(Catch)
 catch_discover_tests(beman.transcode.tests.todo)
 catch_discover_tests(beman.transcode.tests.error)
@@ -459,6 +637,20 @@ catch_discover_tests(beman.transcode.tests.wpt_iso2022jp)
 catch_discover_tests(beman.transcode.tests.wpt_single_byte)
 catch_discover_tests(beman.transcode.tests.wpt_utf16_surrogates)
 catch_discover_tests(beman.transcode.tests.wpt_fatal)
+catch_discover_tests(beman.transcode.tests.wpt_bom)
+catch_discover_tests(beman.transcode.tests.wpt_fatal_single_byte)
+catch_discover_tests(beman.transcode.tests.wpt_eof)
+catch_discover_tests(beman.transcode.tests.wpt_surrogates_utf8)
+catch_discover_tests(beman.transcode.tests.wpt_encoder_surrogates)
+catch_discover_tests(beman.transcode.tests.labels)
+catch_discover_tests(beman.transcode.tests.sniff)
+catch_discover_tests(beman.transcode.tests.transcode)
+catch_discover_tests(beman.transcode.tests.transcode_string)
+catch_discover_tests(beman.transcode.tests.transcode_string_label)
+catch_discover_tests(beman.transcode.tests.transcode_view)
+catch_discover_tests(beman.transcode.tests.bulk_transcode)
+catch_discover_tests(beman.transcode.tests.iconv_bulk)
+catch_discover_tests(beman.transcode.tests.iconv_null_term)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
 add_library(
@@ -579,7 +771,8 @@ add_test(
 set_tests_properties(
     concepts_reject_unicode_chars_fail
     PROPERTIES
-        PASS_REGULAR_EXPRESSION "no operand of the disjunction is satisfied"
+        PASS_REGULAR_EXPRESSION
+            "no operand of the disjunction is satisfied|constraints not satisfied"
 )
 
 # unicode_scalar_range rejects non-char32_t ranges (e.g. vector<char>)
@@ -661,3 +854,272 @@ set_tests_properties(
     utf16_decode_reject_char32_range_fail
     PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
 )
+
+# transcode_closure rejects raw arrays (char[N]) via a constrained operator|
+# with a static_assert that fires when the input is an array type.
+add_library(beman.transcode.tests.transcode_view_reject_array_fail OBJECT)
+target_sources(
+    beman.transcode.tests.transcode_view_reject_array_fail
+    PRIVATE transcode_view_reject_array_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.transcode_view_reject_array_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.transcode_view_reject_array_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME transcode_view_reject_array_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.transcode_view_reject_array_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    transcode_view_reject_array_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "transcode: raw arrays are not valid input to transcode"
+)
+
+# sniff_encoding requires legacy_byte_range; char32_t ranges must be rejected.
+add_library(beman.transcode.tests.sniff_reject_char32_range_fail OBJECT)
+target_sources(
+    beman.transcode.tests.sniff_reject_char32_range_fail
+    PRIVATE sniff_reject_char32_range_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.sniff_reject_char32_range_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.sniff_reject_char32_range_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME sniff_reject_char32_range_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.sniff_reject_char32_range_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    sniff_reject_char32_range_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
+)
+
+# Module integration test (only when modules are enabled)
+if(BEMAN_TRANSCODE_USE_MODULES)
+    add_executable(beman.transcode.tests.module_integration)
+    target_sources(
+        beman.transcode.tests.module_integration
+        PRIVATE module_integration.test.cpp
+    )
+    target_include_directories(
+        beman.transcode.tests.module_integration
+        PRIVATE ${TEST_INCLUDE_DIR}
+    )
+    target_link_libraries(
+        beman.transcode.tests.module_integration
+        PRIVATE beman::transcode Catch2::Catch2WithMain
+    )
+    add_test(
+        NAME beman.transcode.tests.module_integration
+        COMMAND beman.transcode.tests.module_integration
+    )
+endif()
+
+# ---------------------------------------------------------------------------
+# Pluggable codec protocol tests
+# ---------------------------------------------------------------------------
+
+add_executable(beman.transcode.tests.codec_concepts)
+target_sources(
+    beman.transcode.tests.codec_concepts
+    PRIVATE codec_concepts.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.codec_concepts
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.codec_concepts
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.codec_concepts
+    COMMAND beman.transcode.tests.codec_concepts
+)
+
+add_executable(beman.transcode.tests.decode_view)
+target_sources(beman.transcode.tests.decode_view PRIVATE decode_view.test.cpp)
+target_include_directories(
+    beman.transcode.tests.decode_view
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.decode_view
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.decode_view
+    COMMAND beman.transcode.tests.decode_view
+)
+
+# Negative compile test: decode rejects raw arrays
+add_library(beman.transcode.tests.decode_view_reject_arrays_fail OBJECT)
+target_sources(
+    beman.transcode.tests.decode_view_reject_arrays_fail
+    PRIVATE decode_view_reject_arrays_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.decode_view_reject_arrays_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.decode_view_reject_arrays_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME decode_view_reject_arrays_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.decode_view_reject_arrays_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    decode_view_reject_arrays_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "transcode: raw arrays are not valid input to decode"
+)
+
+add_executable(beman.transcode.tests.blp59001)
+target_sources(beman.transcode.tests.blp59001 PRIVATE blp59001.test.cpp)
+target_include_directories(
+    beman.transcode.tests.blp59001
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.blp59001
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.blp59001
+    COMMAND beman.transcode.tests.blp59001
+)
+
+add_executable(beman.transcode.tests.ebcdic037)
+target_sources(beman.transcode.tests.ebcdic037 PRIVATE ebcdic037.test.cpp)
+target_include_directories(
+    beman.transcode.tests.ebcdic037
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.ebcdic037
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.ebcdic037
+    COMMAND beman.transcode.tests.ebcdic037
+)
+
+add_executable(beman.transcode.tests.encode_view)
+target_sources(beman.transcode.tests.encode_view PRIVATE encode_view.test.cpp)
+target_include_directories(
+    beman.transcode.tests.encode_view
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.encode_view
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.encode_view
+    COMMAND beman.transcode.tests.encode_view
+)
+
+add_executable(beman.transcode.tests.pluggable_bulk)
+target_sources(
+    beman.transcode.tests.pluggable_bulk
+    PRIVATE pluggable_bulk.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.pluggable_bulk
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.pluggable_bulk
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.pluggable_bulk
+    COMMAND beman.transcode.tests.pluggable_bulk
+)
+
+add_executable(beman.transcode.tests.pluggable_transcode)
+target_sources(
+    beman.transcode.tests.pluggable_transcode
+    PRIVATE pluggable_transcode.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.pluggable_transcode
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.pluggable_transcode
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+add_test(
+    NAME beman.transcode.tests.pluggable_transcode
+    COMMAND beman.transcode.tests.pluggable_transcode
+)
+
+# Negative compile test: encode rejects types that don't satisfy encode_codec
+add_library(beman.transcode.tests.encode_view_reject OBJECT)
+target_sources(
+    beman.transcode.tests.encode_view_reject
+    PRIVATE encode_view_reject.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.encode_view_reject
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.encode_view_reject
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME encode_view_reject
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.encode_view_reject --config $<CONFIGURATION>
+)
+set_tests_properties(
+    encode_view_reject
+    PROPERTIES PASS_REGULAR_EXPRESSION "encode_codec"
+)
+
+# ---------------------------------------------------------------------------
+# Benchmark fixture unit tests
+# ---------------------------------------------------------------------------
+
+add_executable(beman.transcode.tests.benchmark_fixture)
+target_sources(
+    beman.transcode.tests.benchmark_fixture
+    PRIVATE benchmark_fixture.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.benchmark_fixture
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.benchmark_fixture
+    PRIVATE
+        beman::transcode
+        beman.transcode.benchmark_fixture
+        Catch2::Catch2WithMain
+)
+catch_discover_tests(beman.transcode.tests.benchmark_fixture)

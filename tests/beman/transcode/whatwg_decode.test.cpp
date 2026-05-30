@@ -26,7 +26,69 @@ TEST_CASE("whatwg_decode_view satisfies input_range", "[transcoding::whatwg_deco
     std::vector<char> bytes{'A'};
     auto              view = bytes | whatwg_decode<codec::utf_8>;
     static_assert(std::ranges::input_range<decltype(view)>);
+    static_assert(std::ranges::forward_range<decltype(view)>);
+    static_assert(std::ranges::common_range<decltype(view)>);
+    static_assert(std::ranges::range<const decltype(view)>);
+    static_assert(std::ranges::input_range<const decltype(view)>);
+    static_assert(std::ranges::forward_range<const decltype(view)>);
+    static_assert(std::ranges::common_range<const decltype(view)>);
+    static_assert(std::ranges::borrowed_range<decltype(view)>);
+    static_assert(!std::ranges::borrowed_range<decltype(std::vector<char>{'A'} | whatwg_decode<codec::utf_8>)>);
+    static_assert(std::copyable<std::ranges::iterator_t<decltype(view)>>);
+    static_assert(!std::ranges::random_access_range<decltype(view)>);
     static_assert(std::same_as<std::ranges::range_value_t<decltype(view)>, char32_t>);
+}
+
+TEST_CASE("whatwg_decode_view const iteration also works for owning views", "[transcoding::whatwg_decode]") {
+    auto view = std::vector<char>{'A'} | whatwg_decode<codec::utf_8>;
+    static_assert(std::ranges::range<const decltype(view)>);
+}
+
+TEST_CASE("whatwg_decode iso_2022_jp is common when base is common", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A'};
+    auto              view = bytes | whatwg_decode<codec::iso_2022_jp>;
+    static_assert(std::ranges::common_range<decltype(view)>);
+}
+
+TEST_CASE("whatwg_decode_view forward iterators are multipass for UTF-8", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A', '\xC3', '\xA9'};
+    auto              view  = bytes | whatwg_decode<codec::utf_8>;
+    auto              first = view.begin();
+    auto              copy  = first;
+    CHECK(*first == U'A');
+    CHECK(*copy == U'A');
+    ++first;
+    CHECK(*copy == U'A');
+    CHECK(*first == U'é');
+}
+
+TEST_CASE("whatwg_decode_view lifts to random_access_range for indexed codecs", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A', '\x80', 'B'};
+    auto              view = bytes | whatwg_decode<codec::windows_1252>;
+    static_assert(std::ranges::random_access_range<decltype(view)>);
+    static_assert(std::ranges::random_access_range<const decltype(view)>);
+    static_assert(std::ranges::sized_range<decltype(view)>);
+    static_assert(std::ranges::borrowed_range<decltype(view)>);
+    REQUIRE(view.size() == 3);
+    auto it = view.begin();
+    CHECK(it[0] == U'A');
+    CHECK(it[1] == U'\x20AC');
+    CHECK(it[2] == U'B');
+    it += 2;
+    CHECK(*it == U'B');
+}
+
+TEST_CASE("whatwg_decode iterators outlive borrowed views", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A', '\xC3', '\xA9'};
+    using view_t = decltype(bytes | whatwg_decode<codec::utf_8>);
+    std::ranges::iterator_t<view_t> it;
+    {
+        auto view = bytes | whatwg_decode<codec::utf_8>;
+        it        = view.begin();
+    }
+    CHECK(*it == U'A');
+    ++it;
+    CHECK(*it == U'é');
 }
 
 // All WHATWG codecs share the 7-bit ASCII base (U+0000–U+007F).
@@ -367,4 +429,22 @@ TEST_CASE("whatwg_decode x_mac_cyrillic cyrillic A", "[transcoding::whatwg_decod
 TEST_CASE("whatwg_decode iso_8859_6 unmapped byte yields U+FFFD", "[transcoding::whatwg_decode]") {
     std::vector<char> bytes{'\xA1'};
     CHECK(collect(bytes | whatwg_decode<codec::iso_8859_6>) == std::vector<char32_t>{U'\xFFFD'});
+}
+
+TEST_CASE("whatwg_decode: view base() returns underlying range", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A', 'B'};
+    auto              view = bytes | whatwg_decode<codec::utf_8>;
+    CHECK(view.base().size() == 2);
+    CHECK(view.base()[0] == 'A');
+}
+
+TEST_CASE("whatwg_decode: iterator base() points past consumed bytes", "[transcoding::whatwg_decode]") {
+    std::vector<char> bytes{'A', 'B', 'C'};
+    auto              view = bytes | whatwg_decode<codec::utf_8>;
+    auto              it   = view.begin();
+    CHECK(*it == U'A');
+    CHECK(*it.base() == 'B');
+    ++it;
+    CHECK(*it == U'B');
+    CHECK(*it.base() == 'C');
 }

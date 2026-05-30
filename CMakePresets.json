@@ -7,7 +7,7 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
-        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_STANDARD": "23",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "./infra/cmake/use-fetch-content.cmake"
       }
@@ -114,6 +114,37 @@
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "infra/cmake/msvc-toolchain.cmake"
       }
+    },
+    {
+      "name": "_lto-base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON"
+      }
+    },
+    {
+      "name": "gcc-release-lto",
+      "displayName": "GCC Release Build with LTO",
+      "inherits": [
+        "_root-config",
+        "_release-base",
+        "_lto-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "infra/cmake/gnu-toolchain.cmake"
+      }
+    },
+    {
+      "name": "llvm-release-lto",
+      "displayName": "Clang Release Build with LTO",
+      "inherits": [
+        "_root-config",
+        "_release-base",
+        "_lto-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "infra/cmake/llvm-toolchain.cmake"
+      }
     }
   ],
   "buildPresets": [
@@ -177,6 +208,20 @@
       "inherits": [
         "_root-build"
       ]
+    },
+    {
+      "name": "gcc-release-lto",
+      "configurePreset": "gcc-release-lto",
+      "inherits": [
+        "_root-build"
+      ]
+    },
+    {
+      "name": "llvm-release-lto",
+      "configurePreset": "llvm-release-lto",
+      "inherits": [
+        "_root-build"
+      ]
     }
   ],
   "testPresets": [
@@ -230,6 +275,16 @@
       "name": "msvc-release",
       "inherits": "_test_base",
       "configurePreset": "msvc-release"
+    },
+    {
+      "name": "gcc-release-lto",
+      "inherits": "_test_base",
+      "configurePreset": "gcc-release-lto"
+    },
+    {
+      "name": "llvm-release-lto",
+      "inherits": "_test_base",
+      "configurePreset": "llvm-release-lto"
     }
   ],
   "workflowPresets": [
@@ -366,6 +421,40 @@
         {
           "type": "test",
           "name": "msvc-release"
+        }
+      ]
+    },
+    {
+      "name": "gcc-release-lto",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "gcc-release-lto"
+        },
+        {
+          "type": "build",
+          "name": "gcc-release-lto"
+        },
+        {
+          "type": "test",
+          "name": "gcc-release-lto"
+        }
+      ]
+    },
+    {
+      "name": "llvm-release-lto",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "llvm-release-lto"
+        },
+        {
+          "type": "build",
+          "name": "llvm-release-lto"
+        },
+        {
+          "type": "test",
+          "name": "llvm-release-lto"
         }
       ]
     }

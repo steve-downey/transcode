@@ -3,11 +3,15 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_BIG5_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_BIG5_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/error.hpp>
 #include <beman/transcode/detail/tables/big5.hpp>
 
-#include <iterator>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <iterator>
 
+#endif
 namespace beman::transcoding::detail {
 
 struct big5_decode_result {
@@ -67,8 +71,11 @@ constexpr big5_decode_result big5_decode_one(I& current, S end) {
     else if (trail >= 0xA1 && trail <= 0xFE)
         offset = trail - 0x62;
 
-    if (offset < 0)
-        return {{}, {}, whatwg_error::invalid_byte, true};
+    if (offset < 0) {
+        // WHATWG: if trail is ASCII, prepend it back (emit as next codepoint)
+        char32_t repush = (trail < 0x80) ? static_cast<char32_t>(trail) : 0;
+        return {{}, repush, whatwg_error::invalid_byte, true};
+    }
 
     int pointer = (lead - 0x81) * 157 + offset;
 
@@ -83,8 +90,11 @@ constexpr big5_decode_result big5_decode_one(I& current, S end) {
         return {U'\x00EA', U'\x030C', {}, false};
 
     char32_t cp = tables::big5[pointer];
-    if (cp == 0)
-        return {{}, {}, whatwg_error::invalid_byte, true};
+    if (cp == 0) {
+        // WHATWG: if trail is ASCII, prepend it back
+        char32_t repush = (trail < 0x80) ? static_cast<char32_t>(trail) : 0;
+        return {{}, repush, whatwg_error::invalid_byte, true};
+    }
 
     return {cp, {}, {}, false};
 }

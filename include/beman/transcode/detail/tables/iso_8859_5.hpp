@@ -5,6 +5,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_ISO_8859_5_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_ISO_8859_5_HPP
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {
 
 inline constexpr char32_t iso_8859_5[128] = {

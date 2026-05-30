@@ -1,6 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-set(ALL_EXAMPLES todo)
+set(ALL_EXAMPLES
+    todo
+    custom_single_byte_decoder
+    paper_decode_utf8
+    paper_shift_jis_to_utf8
+    paper_iconv_view
+    paper_from_cstring
+    paper_error_visibility
+)
 message("Examples to be built: ${ALL_EXAMPLES}")
 
 foreach(example ${ALL_EXAMPLES})

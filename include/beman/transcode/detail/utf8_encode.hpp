@@ -3,6 +3,8 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF8_ENCODE_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF8_ENCODE_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/error.hpp>
 
 namespace beman::transcoding::detail {

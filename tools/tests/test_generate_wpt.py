@@ -7,17 +7,27 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generate_wpt_vectors import (
+    parse_bom_vectors,
+    parse_encoder_surrogates_vectors,
+    parse_eof_vectors,
+    parse_fatal_single_byte_cases,
     parse_fatal_vectors,
     parse_gb18030_decode_vectors,
     parse_iso2022jp_decode_vectors,
     parse_js_string,
     parse_single_byte_indexes,
+    parse_surrogates_utf8_vectors,
     parse_utf8_mistake_vectors,
     parse_utf16_surrogate_vectors,
+    render_bom_vectors_hpp,
+    render_encoder_surrogates_vectors_hpp,
+    render_eof_vectors_hpp,
+    render_fatal_single_byte_vectors_hpp,
     render_fatal_vectors_hpp,
     render_gb18030_vectors_hpp,
     render_iso2022jp_vectors_hpp,
     render_single_byte_vectors_hpp,
+    render_surrogates_utf8_vectors_hpp,
     render_utf8_vectors_hpp,
     render_utf16_surrogates_vectors_hpp,
 )
@@ -49,6 +59,14 @@ def test_parse_js_string_multi_surrogates() -> None:
 
 def test_parse_js_string_supplementary() -> None:
     assert parse_js_string("\\u{10FFFF}") == [0x10FFFF]
+
+
+def test_parse_js_string_surrogate_pair() -> None:
+    assert parse_js_string("\\uD834\\uDD1E") == [0x1D11E]
+
+
+def test_parse_js_string_surrogate_pair_private() -> None:
+    assert parse_js_string("\\uDBFF\\uDFFD") == [0x10FFFD]
 
 
 def test_parse_gb18030_decode_vectors_ascii() -> None:
@@ -314,6 +332,62 @@ def test_parse_fatal_vectors_utf16le() -> None:
     assert vectors[2]["description"] == "truncated code unit"
 
 
+_BOM_SAMPLE = """
+var testCases = [
+    {
+        encoding: 'utf-8',
+        bom: [0xEF, 0xBB, 0xBF],
+        bytes: [0x7A, 0xC2, 0xA2]
+    },
+    {
+        encoding: 'utf-16le',
+        bom: [0xff, 0xfe],
+        bytes: [0x7A, 0x00]
+    }
+];
+var string = 'z\\xA2\\uD834\\uDD1E';
+"""
+
+
+def test_parse_bom_vectors_count() -> None:
+    vectors = parse_bom_vectors(_BOM_SAMPLE)
+    assert len(vectors) == 2
+
+
+def test_parse_bom_vectors_first() -> None:
+    vectors = parse_bom_vectors(_BOM_SAMPLE)
+    assert vectors[0]["encoding"] == "utf-8"
+    assert vectors[0]["bom"] == [0xEF, 0xBB, 0xBF]
+    assert vectors[0]["bytes"] == [0x7A, 0xC2, 0xA2]
+    assert vectors[0]["expected"] == [0x7A, 0xA2, 0x1D11E]
+
+
+def test_parse_bom_vectors_second() -> None:
+    vectors = parse_bom_vectors(_BOM_SAMPLE)
+    assert vectors[1]["encoding"] == "utf-16le"
+    assert vectors[1]["bom"] == [0xFF, 0xFE]
+    assert vectors[1]["bytes"] == [0x7A, 0x00]
+    assert vectors[1]["expected"] == [0x7A, 0xA2, 0x1D11E]
+
+
+def test_render_bom_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {
+            "encoding": "utf-8",
+            "bom": [0xEF, 0xBB, 0xBF],
+            "bytes": [0x7A],
+            "expected": [0x7A],
+        },
+    ]
+    out = tmp_path / "wpt_bom_vectors.hpp"
+    render_bom_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_BOM_VECTORS_HPP" in content
+    assert "wpt_bom_cases" in content
+    assert "0xEF, 0xBB, 0xBF" in content
+    assert "utf-8" in content
+
+
 def test_render_fatal_vectors_hpp(tmp_path: Path) -> None:
     vectors: list[dict[str, object]] = [
         {"encoding": "utf-8", "input": [0xFF], "description": "invalid code"},
@@ -328,3 +402,183 @@ def test_render_fatal_vectors_hpp(tmp_path: Path) -> None:
     assert "0xFF" in content
     assert "invalid code" in content
     assert "truncated code unit" in content
+
+
+_SBFATAL_SAMPLE = """
+var singleByteEncodings = [
+     {encoding: 'IBM866', bad: []},
+     {encoding: 'ISO-8859-3', bad: [0xA5, 0xAE, 0xBE]},
+     {encoding: 'ISO-8859-8-I', bad: [0xA1, 0xBF, 0xFF]},
+];
+"""
+
+
+def test_parse_fatal_single_byte_cases_count() -> None:
+    cases = parse_fatal_single_byte_cases(_SBFATAL_SAMPLE)
+    assert len(cases) == 3
+
+
+def test_parse_fatal_single_byte_cases_empty_bad() -> None:
+    cases = parse_fatal_single_byte_cases(_SBFATAL_SAMPLE)
+    assert cases[0]["encoding"] == "IBM866"
+    assert cases[0]["bad"] == []
+
+
+def test_parse_fatal_single_byte_cases_with_bad() -> None:
+    cases = parse_fatal_single_byte_cases(_SBFATAL_SAMPLE)
+    assert cases[1]["encoding"] == "ISO-8859-3"
+    assert cases[1]["bad"] == [0xA5, 0xAE, 0xBE]
+
+
+def test_parse_fatal_single_byte_cases_hyphen_name() -> None:
+    cases = parse_fatal_single_byte_cases(_SBFATAL_SAMPLE)
+    assert cases[2]["encoding"] == "ISO-8859-8-I"
+    assert cases[2]["bad"] == [0xA1, 0xBF, 0xFF]
+
+
+def test_render_fatal_single_byte_vectors_hpp(tmp_path: Path) -> None:
+    cases: list[dict[str, object]] = [
+        {"encoding": "IBM866", "bad": []},
+        {"encoding": "ISO-8859-3", "bad": [0xA5, 0xAE]},
+    ]
+    out = tmp_path / "wpt_fatal_single_byte_vectors.hpp"
+    render_fatal_single_byte_vectors_hpp(cases, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_FATAL_SINGLE_BYTE_VECTORS_HPP" in content
+    assert "WptFatalSingleByteCase" in content
+    assert "wpt_fatal_single_byte_cases" in content
+    assert "IBM866" in content
+    assert "ISO-8859-3" in content
+    assert "0xA5" in content
+
+
+_EOF_SAMPLE = """\
+test(() => {
+  assert_equals(new TextDecoder().decode(new Uint8Array([0xF0])), "\\uFFFD");
+  assert_equals(new TextDecoder("Big5").decode(new Uint8Array([0x81])), "\\uFFFD");
+}, "TextDecoder end-of-queue handling");
+
+test(() => {
+  assert_equals(new TextDecoder().decode(new Uint8Array([0x41])), "A");
+}, "TextDecoder end-of-queue handling using stream: true");
+"""
+
+
+def test_parse_eof_vectors_count() -> None:
+    vectors = parse_eof_vectors(_EOF_SAMPLE)
+    assert len(vectors) == 2
+
+
+def test_parse_eof_vectors_utf8_default_encoding() -> None:
+    vectors = parse_eof_vectors(_EOF_SAMPLE)
+    assert vectors[0]["encoding"] == "utf-8"
+    assert vectors[0]["input"] == [0xF0]
+    assert vectors[0]["expected"] == [0xFFFD]
+
+
+def test_parse_eof_vectors_big5() -> None:
+    vectors = parse_eof_vectors(_EOF_SAMPLE)
+    assert vectors[1]["encoding"] == "Big5"
+    assert vectors[1]["input"] == [0x81]
+    assert vectors[1]["expected"] == [0xFFFD]
+
+
+def test_parse_eof_vectors_skips_streaming() -> None:
+    vectors = parse_eof_vectors(_EOF_SAMPLE)
+    # streaming block is excluded; only 2 non-streaming cases in sample
+    assert len(vectors) == 2
+
+
+def test_render_eof_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {"encoding": "utf-8", "input": [0xF0], "expected": [0xFFFD]},
+        {"encoding": "Big5", "input": [0x81, 0x40], "expected": [0xFFFD, 0x0040]},
+    ]
+    out = tmp_path / "wpt_eof_vectors.hpp"
+    render_eof_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_EOF_VECTORS_HPP" in content
+    assert "WptEofVector" in content
+    assert "wpt_eof_vectors" in content
+    assert "utf-8" in content
+    assert "Big5" in content
+    assert "0xFFFD" in content
+    assert "wpt_eof_vectors[]" in content
+
+
+_SURR_SAMPLE = """\
+var badStrings = [
+    { input: 'a', expected: [0x61], decoded: 'a', name: 'ASCII' },
+    { input: '\\uD800', expected: [0xef, 0xbf, 0xbd], decoded: '\\uFFFD',
+      name: 'Lone high surrogate' },
+];
+"""
+
+
+def test_parse_surrogates_utf8_count() -> None:
+    vectors = parse_surrogates_utf8_vectors(_SURR_SAMPLE)
+    assert len(vectors) == 2
+
+
+def test_parse_surrogates_utf8_ascii() -> None:
+    vectors = parse_surrogates_utf8_vectors(_SURR_SAMPLE)
+    assert vectors[0]["input"] == [0x61]
+    assert vectors[0]["expected"] == [0x61]
+    assert vectors[0]["decoded"] == [0x61]
+
+
+def test_parse_surrogates_utf8_surrogate() -> None:
+    vectors = parse_surrogates_utf8_vectors(_SURR_SAMPLE)
+    assert vectors[1]["input"] == [0xD800]
+    assert vectors[1]["expected"] == [0xEF, 0xBF, 0xBD]
+    assert vectors[1]["decoded"] == [0xFFFD]
+
+
+def test_render_surrogates_utf8_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {"input": [0x61], "expected": [0x61], "decoded": [0x61], "name": "a"},
+    ]
+    out = tmp_path / "wpt_surrogates_utf8_vectors.hpp"
+    render_surrogates_utf8_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_SURROGATES_UTF8_VECTORS_HPP" in content
+    assert "WptSurrogatesUtf8Vector" in content
+    assert "wpt_surrogates_utf8_vectors" in content
+
+
+_ENCODER_SURR_SAMPLE = """\
+var bad = [
+    { input: '\\uD800', expected: '\\uFFFD', name: 'lone surrogate lead' },
+    { input: '\\uD834\\uDD1E', expected: '\\uD834\\uDD1E',
+      name: 'proper pair' },
+];
+"""
+
+
+def test_parse_encoder_surrogates_count() -> None:
+    vectors = parse_encoder_surrogates_vectors(_ENCODER_SURR_SAMPLE)
+    assert len(vectors) == 2
+
+
+def test_parse_encoder_surrogates_lone() -> None:
+    vectors = parse_encoder_surrogates_vectors(_ENCODER_SURR_SAMPLE)
+    assert vectors[0]["input"] == [0xD800]
+    assert vectors[0]["expected"] == [0xFFFD]
+
+
+def test_parse_encoder_surrogates_pair() -> None:
+    vectors = parse_encoder_surrogates_vectors(_ENCODER_SURR_SAMPLE)
+    assert vectors[1]["input"] == [0x1D11E]
+    assert vectors[1]["expected"] == [0x1D11E]
+
+
+def test_render_encoder_surrogates_vectors_hpp(tmp_path: Path) -> None:
+    vectors: list[dict[str, object]] = [
+        {"input": [0xD800], "expected": [0xFFFD], "name": "lone"},
+    ]
+    out = tmp_path / "wpt_encoder_surrogates_vectors.hpp"
+    render_encoder_surrogates_vectors_hpp(vectors, out)
+    content = out.read_text()
+    assert "#ifndef TESTS_BEMAN_TRANSCODE_WPT_ENCODER_SURROGATES_VECTORS_HPP" in content
+    assert "WptEncoderSurrogatesVector" in content
+    assert "wpt_encoder_surrogates_vectors" in content

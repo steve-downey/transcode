@@ -3,8 +3,12 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_X_USER_DEFINED_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_X_USER_DEFINED_HPP
 
-#include <iterator>
+#include <beman/transcode/config.hpp>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <iterator>
+
+#endif
 namespace beman::transcoding::detail {
 
 // Decode one byte using the x-user-defined algorithm.

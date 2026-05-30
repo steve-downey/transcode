@@ -4,12 +4,11 @@
 from __future__ import annotations
 
 import html
-from pathlib import Path
 import re
 import subprocess
 import sys
 import tempfile
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MAKEFILE = ROOT / "Makefile"
@@ -85,14 +84,14 @@ def block_syncs(lines: list[str]) -> dict[int, dict[str, int | str]]:
     return syncs
 
 
-def instrument_markdown(lines: list[str], syncs: dict[int, dict[str, int | str]]) -> str:
+def instrument_markdown(
+    lines: list[str], syncs: dict[int, dict[str, int | str]]
+) -> str:
     out: list[str] = []
     for line_no, line in enumerate(lines, start=1):
         meta = syncs.get(line_no)
         if meta is not None:
-            out.append(
-                f'<!--SYNC {meta["id"]} {line_no} {meta["end"]}-->\n\n'
-            )
+            out.append(f"<!--SYNC {meta['id']} {line_no} {meta['end']}-->\n\n")
         out.append(line)
     return "".join(out)
 
@@ -100,7 +99,11 @@ def instrument_markdown(lines: list[str], syncs: dict[int, dict[str, int | str]]
 def source_pane(lines: list[str], syncs: dict[int, dict[str, int | str]]) -> str:
     out = ['<pre class="source-content">']
     for line_no, line in enumerate(lines, start=1):
-        attrs = [f'class="source-line"', f'id="src-L{line_no}"', f'data-src-line="{line_no}"']
+        attrs = [
+            'class="source-line"',
+            f'id="src-L{line_no}"',
+            f'data-src-line="{line_no}"',
+        ]
         meta = syncs.get(line_no)
         if meta is not None:
             attrs.append(f'data-sync="{meta["id"]}"')

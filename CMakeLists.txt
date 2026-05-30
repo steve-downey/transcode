@@ -11,6 +11,24 @@ project(
     VERSION 0.1.0
 )
 
+if(
+    CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "13"
+)
+    message(
+        FATAL_ERROR
+        "GCC >= 13 is required. Found: ${CMAKE_CXX_COMPILER_VERSION}"
+    )
+elseif(
+    CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19"
+)
+    message(
+        FATAL_ERROR
+        "Clang >= 19 is required (18 lacks __cpp_concepts >= 202002L needed by libstdc++ std::expected). Found: ${CMAKE_CXX_COMPILER_VERSION}"
+    )
+endif()
+
 # [CMAKE.SKIP_TESTS]
 option(
     BEMAN_TRANSCODE_BUILD_TESTS
@@ -22,6 +40,13 @@ option(
 option(
     BEMAN_TRANSCODE_BUILD_EXAMPLES
     "Enable building examples. Default: ${PROJECT_IS_TOP_LEVEL}. Values: { ON, OFF }."
+    ${PROJECT_IS_TOP_LEVEL}
+)
+
+# [CMAKE.SKIP_BENCHMARKS]
+option(
+    BEMAN_TRANSCODE_BUILD_BENCHMARKS
+    "Enable building benchmarks. Default: ${PROJECT_IS_TOP_LEVEL}. Values: { ON, OFF }."
     ${PROJECT_IS_TOP_LEVEL}
 )
 
@@ -73,26 +98,40 @@ else()
                     "${CMAKE_CURRENT_SOURCE_DIR}/include"
                     "${CMAKE_CURRENT_BINARY_DIR}/include"
     )
-    target_compile_features(beman.transcode INTERFACE cxx_std_20)
+    target_compile_features(beman.transcode INTERFACE cxx_std_23)
     set_target_properties(
         beman.transcode
         PROPERTIES VERIFY_INTERFACE_HEADER_SETS ${PROJECT_IS_TOP_LEVEL}
     )
 endif()
 
+find_package(Iconv REQUIRED)
+if(BEMAN_TRANSCODE_USE_MODULES)
+    target_link_libraries(beman.transcode PUBLIC Iconv::Iconv)
+else()
+    target_link_libraries(beman.transcode INTERFACE Iconv::Iconv)
+endif()
+
 add_subdirectory(include/beman/transcode)
 
-beman_install_library(beman.transcode TARGETS beman.transcode)
+beman_install_library(
+    beman.transcode
+    TARGETS beman.transcode
+    DEPENDENCIES Iconv
+)
 configure_build_telemetry()
 
 if(BEMAN_TRANSCODE_BUILD_TESTS)
-    find_package(Iconv REQUIRED)
     enable_testing()
     add_subdirectory(tests/beman/transcode)
 endif()
 
 if(BEMAN_TRANSCODE_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if(BEMAN_TRANSCODE_BUILD_BENCHMARKS)
+    add_subdirectory(benchmark)
 endif()
 
 # Coverage

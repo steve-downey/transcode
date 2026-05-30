@@ -44,7 +44,7 @@ else
 	_local_toolchain?=$(CURDIR)/etc/$(TOOLCHAIN)-toolchain.cmake
 endif
 
-_configuration_types ?= "RelWithDebInfo;Debug;Tsan;Asan;Gcov"
+_configuration_types ?= "RelWithDebInfo;Debug;Tsan;Asan;Gcov;Perf"
 
 _build_path ?= $(_build_dir)/$(_build_name)
 _build_path := $(subst //,/,$(_build_path))
@@ -102,6 +102,12 @@ compile_commands.json: ## symlink the current compile commands db
 		ln -sf $(_build_path)/compile_commands.json ; \
 	fi
 
+.PHONY: clean-compile-commands
+clean-compile-commands: ## Delete the compile commands symlink
+	-rm -f compile_commands.json
+
+clean: clean-compile-commands
+
 .PHONY: compile
 compile: $(_build_path)/CMakeCache.txt compile_commands.json
 compile: ## Compile the project
@@ -117,10 +123,12 @@ install: $(_build_path)/CMakeCache.txt compile ## Install the project
 
 .PHONY: clean-install
 clean-install:
-	-rm -rf .install
+	-rm -rf $(INSTALL_PREFIX)
+
+clean: clean-install
 
 .PHONY: realclean
-realclean: clean-install
+realclean: clean clean-install
 
 .PHONY: ctest
 ctest: $(_build_path)/CMakeCache.txt ## Run CTest on current build
@@ -146,12 +154,21 @@ cmake: |  $(_build_path)
 	cd $(_build_path) && ${run_cmake}
 
 .PHONY: clean
-clean: $(_build_path)/CMakeCache.txt ## Clean the build artifacts
-	$(CMAKE) --build $(_build_path)  --config $(CONFIG) --target clean
+clean: ## Clean the build artifacts without recreating the build tree
+	if [ -f $(_build_path)/CMakeCache.txt ] ; then \
+		$(CMAKE) --build $(_build_path) --config $(CONFIG) --target clean ; \
+	fi
+
+.PHONY: clean-reconf
+clean-reconf: ## Delete the current configured build tree
+	rm -rf $(_build_path)
+
+.PHONY: reconf
+reconf: clean-reconf cmake ## Recreate the current configured build tree
 
 .PHONY: realclean
-realclean: ## Delete the build directory
-	rm -rf $(_build_path)
+realclean: ## Delete the generated build infrastructure
+	rm -rf $(_build_dir) build
 
 .PHONY: env
 env:
@@ -168,7 +185,12 @@ venv: $(VENV)/$(MARKER)
 clean-venv: ## Delete python virtual env
 	-rm -rf $(VENV)
 
+.PHONY: clean-uv-lock
+clean-uv-lock: ## Delete the generated uv lockfile
+	-rm -f uv.lock
+
 realclean: clean-venv
+realclean: clean-uv-lock
 
 .PHONY: show-venv
 show-venv: venv
@@ -213,19 +235,230 @@ coverage: venv $(_build_path)/CMakeCache.txt
 	$(ACTIVATE) ctest --build-config Gcov --output-on-failure --test-dir $(_build_path)
 	$(CMAKE) --build $(_build_path) --config Gcov --target process_coverage
 
+.PHONY: bench-coverage
+bench-coverage: venv $(_build_path)/CMakeCache.txt ## Run benchmarks under Gcov and generate coverage report
+	$(CMAKE) --build $(_build_path) --config Gcov
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.smoke "[smoke]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.utf "[benchmark][utf]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
+	$(CMAKE) --build $(_build_path) --config Gcov --target process_coverage
+
+.PHONY: clean-coverage
+clean-coverage: ## Delete generated coverage reports
+	-rm -rf $(_build_path)/coverage
+	-rm -f .coverage .coverage.* coverage.xml
+
+clean: clean-coverage
+
 .PHONY: view-coverage
 view-coverage: ## View the coverage report
 	sensible-browser $(_build_path)/coverage/coverage.html
 
+.PHONY: bench
+bench: compile ## Run benchmark smoke
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-utf
+bench-utf: compile ## Run UTF-family benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.utf "[benchmark][utf]"
+
+.PHONY: bench-whatwg
+bench-whatwg: compile ## Run WHATWG legacy codec benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
+
+.PHONY: bench-pluggable
+bench-pluggable: compile ## Run pluggable codec benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+
+.PHONY: bench-iconv
+bench-iconv: compile ## Run iconv baseline benchmarks
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
+
+.PHONY: bench-codecvt
+bench-codecvt: compile ## Run std::codecvt negative baseline benchmarks (skips if <codecvt> absent)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.codecvt "[benchmark][codecvt]"
+
+.PHONY: bench-encoding-rs
+bench-encoding-rs: compile ## Run encoding_rs baseline benchmarks (requires cargo; skips build if absent)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.encoding_rs "[benchmark][encoding_rs]"
+
+.PHONY: bench-simdutf
+bench-simdutf: compile ## Run simdutf ceiling baseline benchmarks (requires cmake -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.simdutf "[benchmark][simdutf]"
+
+.PHONY: bench-boundary
+bench-boundary: compile ## Run boundary stress benchmarks (chunked + mock-iconv EINVAL/E2BIG)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
+
+.PHONY: bench-env
+bench-env: ## Print environment metadata (compiler versions, CPU, OS)
+	@echo "# TIMESTAMP: $$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+	@echo "# HOSTNAME: $$(hostname)"
+	@echo "# OS: $$(uname -srm)"
+	@if [ -r /etc/os-release ]; then . /etc/os-release; echo "# DISTRO: $${PRETTY_NAME:-unknown}"; fi
+	@if [ -r /proc/cpuinfo ]; then echo "# CPU: $$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | xargs)"; echo "# CPU_CORES: $$(nproc)"; fi
+	@if command -v gcc >/dev/null 2>&1; then echo "# GCC: $$(gcc --version | head -1)"; else echo "# GCC: not found"; fi
+	@if command -v clang >/dev/null 2>&1; then echo "# CLANG: $$(clang --version | head -1)"; else echo "# CLANG: not found"; fi
+
+.PHONY: bench-lto
+bench-lto: ## Configure (if needed), build, and run GCC LTO benchmark smoke
+	@if ! [ -f build/gcc-release-lto/CMakeCache.txt ]; then \
+		echo "Configuring gcc-release-lto preset..."; \
+		$(CMAKE) --preset gcc-release-lto; \
+	fi
+	$(CMAKE) --build build/gcc-release-lto --target beman.transcode.benchmarks.smoke
+	build/gcc-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-matrix-gcc
+bench-matrix-gcc: ## Configure (if needed), build, and run GCC -O3 benchmark smoke
+	@if ! [ -f build/gcc-release/CMakeCache.txt ]; then \
+		echo "Configuring gcc-release preset..."; \
+		$(CMAKE) --preset gcc-release; \
+	fi
+	$(CMAKE) --build build/gcc-release --target beman.transcode.benchmarks.smoke
+	build/gcc-release/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-matrix-gcc-lto
+bench-matrix-gcc-lto: bench-lto ## Alias for bench-lto (GCC -O3 -flto smoke)
+
+.PHONY: bench-matrix-llvm-lto
+bench-matrix-llvm-lto: ## Configure (if needed), build, and run Clang LTO benchmark smoke (skips if clang absent)
+	@if ! command -v clang >/dev/null 2>&1; then \
+		echo "SKIP: clang not found"; \
+		exit 0; \
+	fi
+	@if ! [ -f build/llvm-release-lto/CMakeCache.txt ]; then \
+		echo "Configuring llvm-release-lto preset..."; \
+		$(CMAKE) --preset llvm-release-lto; \
+	fi
+	$(CMAKE) --build build/llvm-release-lto --target beman.transcode.benchmarks.smoke
+	build/llvm-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-matrix
+bench-matrix: ## Run the full compiler/optimization matrix (skips unavailable slices)
+	infra/scripts/bench-matrix.sh "[smoke]"
+
+.PHONY: bench-matrix-full
+bench-matrix-full: ## Run the full compiler/optimization matrix with all benchmarks
+	infra/scripts/bench-matrix.sh "[benchmark]"
+
+BENCH_RESULTS_DIR ?= data/benchmarks/results
+
+.PHONY: bench-report
+bench-report: CONFIG=RelWithDebInfo
+bench-report: compile ## Run smoke benchmark (RelWithDebInfo) and generate Markdown throughput report
+	@mkdir -p $(BENCH_RESULTS_DIR)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
+	$(UV) run python tools/process_benchmark_results.py \
+		--corpus-dir benchmark/corpus \
+		--manifest data/benchmarks/corpus_manifest.json \
+		--label "$(CONFIG)" \
+		$(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
+
+.PHONY: bench-report-lto
+bench-report-lto: bench-lto-xml ## Run GCC LTO smoke benchmark and generate Markdown throughput report
+	$(UV) run python tools/process_benchmark_results.py \
+		--corpus-dir benchmark/corpus \
+		--manifest data/benchmarks/corpus_manifest.json \
+		--label "GCC -O3 -flto" \
+		--vegalite $(BENCH_RESULTS_DIR)/smoke-lto.vl.json \
+		$(BENCH_RESULTS_DIR)/smoke-lto.xml
+
+.PHONY: bench-lto-xml
+bench-lto-xml: ## Configure (if needed), build GCC LTO benchmarks, save XML results
+	@if ! [ -f build/gcc-release-lto/CMakeCache.txt ]; then \
+		echo "Configuring gcc-release-lto preset..."; \
+		$(CMAKE) --preset gcc-release-lto; \
+	fi
+	$(CMAKE) --build build/gcc-release-lto --target beman.transcode.benchmarks.smoke
+	@mkdir -p $(BENCH_RESULTS_DIR)
+	build/gcc-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-lto.xml
+
+_PERF_BUILD = .build/build-perf
+_PERF_BENCH = $(_PERF_BUILD)/benchmark/Perf
+
+$(_PERF_BUILD)/CMakeCache.txt: | .gitmodules $(VENV)
+	mkdir -p $(_PERF_BUILD)
+	cd $(_PERF_BUILD) && $(CMAKE) \
+		-G "Ninja Multi-Config" \
+		-DCMAKE_CONFIGURATION_TYPES=$(_configuration_types) \
+		-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
+		-DCMAKE_PREFIX_PATH=$(CURDIR)/infra/cmake \
+		-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(_cmake_top_level) \
+		-DCMAKE_C_COMPILER_LAUNCHER=ccache \
+		-DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+		-DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/etc/perf-toolchain.cmake \
+		$(CURDIR)
+
+.PHONY: bench-perf
+bench-perf: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf config and run smoke benchmark
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf --target beman.transcode.benchmarks.smoke -- -k 0
+	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]"
+
+.PHONY: bench-perf-all
+bench-perf-all: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf config and run all core benchmarks
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
+	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.utf "[benchmark][utf]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
+
+.PHONY: bench-perf-report
+bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core benchmarks, generate report
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
+	@mkdir -p $(BENCH_RESULTS_DIR)
+	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.utf "[benchmark][utf]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/utf-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/whatwg-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/pluggable-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.iconv "[benchmark][iconv]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/iconv-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/boundary-Perf.xml
+	$(UV) run python tools/process_benchmark_results.py \
+		--corpus-dir benchmark/corpus \
+		--manifest data/benchmarks/corpus_manifest.json \
+		--label "GCC-16 Perf (native)" \
+		--vegalite $(BENCH_RESULTS_DIR)/perf.vl.json \
+		$(BENCH_RESULTS_DIR)/smoke-Perf.xml \
+		$(BENCH_RESULTS_DIR)/utf-Perf.xml \
+		$(BENCH_RESULTS_DIR)/whatwg-Perf.xml \
+		$(BENCH_RESULTS_DIR)/pluggable-Perf.xml \
+		$(BENCH_RESULTS_DIR)/iconv-Perf.xml \
+		$(BENCH_RESULTS_DIR)/boundary-Perf.xml
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile
+
+.PHONY: clean-docs
+clean-docs: ## Delete generated Doxygen output
+	-rm -rf docs/html docs/latex
+
+clean: clean-docs
 
 .PHONY: mrdocs
 mrdocs: ## Build the docs with MrDocs
 	-rm -rf docs/adoc
 	cd docs && NO_COLOR=1 mrdocs mrdocs.yml 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
 	find docs/adoc -name '*.adoc' | xargs asciidoctor
+
+.PHONY: clean-mrdocs
+clean-mrdocs: ## Delete generated MrDocs output
+	-rm -rf docs/adoc
+
+clean: clean-mrdocs
 
 .PHONY: testinstall
 testinstall: install
@@ -238,6 +471,8 @@ testinstall: ## Test the installed package
 .PHONY: clean-testinstall
 clean-testinstall:
 	-rm -rf installtest/.build
+
+clean: clean-testinstall
 
 realclean: clean-testinstall
 
@@ -300,13 +535,26 @@ realclean: clean-emacs.d
 
 .PHONY: clean-org-deps
 clean-org-deps:
-	-rm $(ORGFILES:%.org=%.org.deps)
+	-rm -f $(ORGFILES:%.org=%.org.deps)
 clean: clean-org-deps
 
 .PHONY: clean-org-html
 clean-org-html:
-	-rm $(ORGFILES:%.org=%.html) $(ORGFILES:%.org=%-slides.html)
+	-rm -f $(ORGFILES:%.org=%.html) $(ORGFILES:%.org=%-slides.html)
 clean: clean-org-html
+
+.PHONY: clean-python-artifacts
+clean-python-artifacts: ## Delete Python test and lint caches
+	-rm -rf .cache .mypy_cache .pytest_cache .ruff_cache .tox .nox htmlcov cover
+	-find tools -type d -name __pycache__ -prune -exec rm -rf {} +
+
+clean: clean-python-artifacts
+
+.PHONY: clean-submodules
+clean-submodules: ## Delete the submodule update stamp
+	-rm -f .update-submodules
+
+realclean: clean-submodules
 
 .PHONY: presentation
 presentation: test

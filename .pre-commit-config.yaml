@@ -43,9 +43,11 @@ repos:
         # docs/whatwg/ contains pristine WHATWG data with Unicode char names
         # (e.g. "LAMDA", "TEH") that are correct Unicode terminology, not typos.
         # docs/wpt/ contains pristine WPT test files (upstream typos).
-        exclude: ^(docs/whatwg/|docs/wpt/)
+        # papers/wg21/generated/ is generated output and contains spellings
+        # that should not be mass-edited by the spell checker.
+        exclude: ^(docs/whatwg/|docs/wpt/|papers/wg21/generated/)
         args:
-          - --ignore-words-list=implementors
+          - --ignore-words-list=implementors,unexpect,caf
 
   #  MBake Makefile formatting
   - repo: https://github.com/EbodShojaei/bake
@@ -63,8 +65,8 @@ repos:
   - repo: local
     hooks:
       - id: gitleaks
-        name: gitleaks
-        entry: gitleaks protect --staged --no-banner
+        name: Detect hardcoded secrets
+        entry: bash tools/run-gitleaks.sh
         language: system
         pass_filenames: false
       - id: shellcheck

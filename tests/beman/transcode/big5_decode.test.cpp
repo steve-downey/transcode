@@ -92,12 +92,13 @@ TEST_CASE("big5 decode 2-codepoint pointer 1165: 0x88 0xA4 -> U+00EA U+030C", "[
     CHECK(result[1] == U'\x030C');
 }
 
-TEST_CASE("big5 decode null table entry 0x81 0x40 -> U+FFFD", "[transcoding::big5]") {
-    // pointer 0 is unmapped in the Big5 table
+TEST_CASE("big5 decode null table entry 0x81 0x40 -> U+FFFD U+0040", "[transcoding::big5]") {
+    // pointer 0 is unmapped; trail 0x40 is ASCII so WHATWG prepends it back
     std::vector<char> bytes{'\x81', '\x40'};
     auto              result = collect(bytes | whatwg_decode<codec::big5>);
-    REQUIRE(result.size() == 1);
+    REQUIRE(result.size() == 2);
     CHECK(result[0] == U'\xFFFD');
+    CHECK(result[1] == U'\x0040');
 }
 
 TEST_CASE("big5 decode bad trail byte 0x81 0x80 -> U+FFFD", "[transcoding::big5]") {
@@ -164,12 +165,15 @@ TEST_CASE("big5 or_error: valid 2-byte 0xA4 0x40 -> U+4E00", "[transcoding::big5
     CHECK(result[0].value() == U'\x4E00');
 }
 
-TEST_CASE("big5 or_error: null table entry -> invalid_byte error", "[transcoding::big5_or_error]") {
+TEST_CASE("big5 or_error: null table entry -> error + ASCII repush", "[transcoding::big5_or_error]") {
+    // pointer 0 is null; trail 0x40 is ASCII so WHATWG prepends it back
     std::vector<char> bytes{'\x81', '\x40'};
     auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::big5>);
-    REQUIRE(result.size() == 1);
+    REQUIRE(result.size() == 2);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::invalid_byte);
+    CHECK(result[1].has_value());
+    CHECK(result[1].value() == U'\x0040');
 }
 
 TEST_CASE("big5 or_error: bad trail byte -> invalid_byte error", "[transcoding::big5_or_error]") {

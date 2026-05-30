@@ -24,19 +24,21 @@ However, since this syntax is rather unfamiliar and cryptic, we offer `[@Pxxxx]{
 instead. This filter transforms `[@Pxxxx]{.title}` into `[@Pxxxx{}]`.
 """
 
+
 def citetitle(elem, doc):
     if not (
-        isinstance(elem, pf.Span) and
-        elem.classes == ['title'] and
-        len(elem.content) == 1 and
-        isinstance(elem.content[0], pf.Cite)
+        isinstance(elem, pf.Span)
+        and elem.classes == ["title"]
+        and len(elem.content) == 1
+        and isinstance(elem.content[0], pf.Cite)
     ):
         return None
 
     for citation in elem.content[0].citations:
-        citation.suffix.append(pf.Str('{}'))
+        citation.suffix.append(pf.Str("{}"))
 
     return elem
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     pf.run_filter(citetitle)

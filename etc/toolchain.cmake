@@ -2,6 +2,9 @@ include_guard(GLOBAL)
 
 include("${CMAKE_CURRENT_LIST_DIR}/gcc-flags.cmake")
 
-set(CMAKE_C_COMPILER cc)
-set(CMAKE_CXX_COMPILER c++)
-set(GCOV_EXECUTABLE "gcov" CACHE STRING "GCOV executable")
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_C_COMPILER gcc-16)
+set(CMAKE_CXX_COMPILER g++-16)
+set(GCOV_EXECUTABLE "gcov-16" CACHE STRING "GCOV executable")

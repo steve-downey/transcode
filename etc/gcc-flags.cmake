@@ -43,3 +43,17 @@ set(CMAKE_CXX_FLAGS_GCOV
 )
 
 set(CMAKE_LINKER_FLAGS_GCOV "--coverage" CACHE STRING "Linker GCOV Flags" FORCE)
+
+set(CMAKE_CXX_FLAGS_PERF
+    "-O3 -DNDEBUG -march=native -mtune=native -flto=auto -fno-semantic-interposition"
+    CACHE STRING
+    "C++ Perf Flags"
+    FORCE
+)
+
+set(CMAKE_EXE_LINKER_FLAGS_PERF
+    "-flto=auto -march=native"
+    CACHE STRING
+    "Linker Perf Flags"
+    FORCE
+)

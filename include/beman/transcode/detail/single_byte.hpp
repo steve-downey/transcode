@@ -3,10 +3,14 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_SINGLE_BYTE_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_SINGLE_BYTE_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/detail/error.hpp>
 
-#include <iterator>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <iterator>
 
+#endif
 namespace beman::transcoding::detail {
 
 struct single_byte_result {

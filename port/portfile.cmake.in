@@ -19,6 +19,7 @@ vcpkg_cmake_configure(
         ${FEATURE_OPTIONS}
         -DBEMAN_TRANSCODE_BUILD_TESTS=OFF
         -DBEMAN_TRANSCODE_BUILD_EXAMPLES=OFF
+        -DBEMAN_TRANSCODE_BUILD_BENCHMARKS=OFF
 )
 
 vcpkg_cmake_install()

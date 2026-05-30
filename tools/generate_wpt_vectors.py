@@ -16,12 +16,18 @@ ISO2022JP_JS = WPT_DIR / "iso-2022-jp-decoder.any.js"
 SINGLEBYTE_JS = WPT_DIR / "single-byte-decoder.window.js"
 UTF16SURROGATES_JS = WPT_DIR / "textdecoder-utf16-surrogates.any.js"
 FATAL_JS = WPT_DIR / "textdecoder-fatal.any.js"
+BOM_JS = WPT_DIR / "textdecoder-byte-order-marks.any.js"
+FATAL_SINGLE_BYTE_JS = WPT_DIR / "textdecoder-fatal-single-byte.any.js"
+EOF_JS = WPT_DIR / "textdecoder-eof.any.js"
+SURROGATES_UTF8_JS = WPT_DIR / "api-surrogates-utf8.any.js"
+ENCODER_SURROGATES_JS = WPT_DIR / "textencoder-utf16-surrogates.any.js"
 
 
 def parse_js_string(s: str) -> list[int]:
     """Parse a JavaScript string literal content to list of Unicode codepoints.
 
-    Handles \\uXXXX, \\u{XXXXX}, and literal characters.
+    Handles \\uXXXX (with surrogate-pair combining), \\u{XXXXX}, \\xNN,
+    and literal characters.
     """
     result: list[int] = []
     i = 0
@@ -35,8 +41,20 @@ def parse_js_string(s: str) -> list[int]:
                     i = j + 1
                 else:
                     cp = int(s[i + 2 : i + 6], 16)
-                    result.append(cp)
                     i += 6
+                    # Combine surrogate pairs (\uD800-\uDBFF followed by \uDC00-\uDFFF)
+                    if (
+                        0xD800 <= cp <= 0xDBFF
+                        and i + 5 <= len(s)
+                        and s[i] == "\\"
+                        and s[i + 1] == "u"
+                        and s[i + 2] != "{"
+                    ):
+                        low = int(s[i + 2 : i + 6], 16)
+                        if 0xDC00 <= low <= 0xDFFF:
+                            cp = 0x10000 + ((cp - 0xD800) << 10) + (low - 0xDC00)
+                            i += 6
+                    result.append(cp)
             elif s[i + 1] == "\\":
                 result.append(ord("\\"))
                 i += 2
@@ -572,6 +590,428 @@ def render_fatal_vectors_hpp(vectors: list[dict[str, object]], out_path: Path) -
     out_path.write_text("\n".join(lines))
 
 
+_BOM_CASE_RE = re.compile(
+    r"\{\s*encoding:\s*'([^']+)'\s*,\s*bom:\s*\[([^\]]*)\]\s*,"
+    r"\s*bytes:\s*\[([^\]]*)\]\s*\}",
+    re.MULTILINE | re.DOTALL,
+)
+
+_BOM_STRING_RE = re.compile(r"var string = '([^']*(?:\\.[^']*)*)'")
+
+
+def parse_bom_vectors(content: str) -> list[dict[str, object]]:
+    """Parse testCases from textdecoder-byte-order-marks.any.js.
+
+    Returns list of {"encoding": str, "bom": list[int], "bytes": list[int],
+    "expected": list[int]}.
+    """
+    string_match = _BOM_STRING_RE.search(content)
+    if not string_match:
+        return []
+    expected_cps = parse_js_string(string_match.group(1))
+
+    vectors: list[dict[str, object]] = []
+    for m in _BOM_CASE_RE.finditer(content):
+        encoding, bom_str, bytes_str = m.groups()
+        bom_bytes = [int(x.strip(), 0) for x in bom_str.split(",") if x.strip()]
+        input_bytes = [int(x.strip(), 0) for x in bytes_str.split(",") if x.strip()]
+        vectors.append(
+            {
+                "encoding": encoding,
+                "bom": bom_bytes,
+                "bytes": input_bytes,
+                "expected": expected_cps,
+            }
+        )
+    return vectors
+
+
+def render_bom_vectors_hpp(vectors: list[dict[str, object]], out_path: Path) -> None:
+    """Generate the C++ header for WPT BOM decode vectors."""
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/textdecoder-byte-order-marks.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_BOM_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_BOM_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <cstdint>")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptBomCase {")
+    lines.append("    std::vector<uint8_t>  bytes;")
+    lines.append("    std::vector<uint8_t>  bom;")
+    lines.append("    std::vector<char32_t> expected;")
+    lines.append("    const char*           encoding;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append("inline const WptBomCase wpt_bom_cases[] = {")
+
+    for v in vectors:
+        bom: list[int] = v["bom"]  # type: ignore[assignment]
+        input_bytes: list[int] = v["bytes"]  # type: ignore[assignment]
+        expected: list[int] = v["expected"]  # type: ignore[assignment]
+        encoding: str = v["encoding"]  # type: ignore[assignment]
+        bom_str = _format_bytes(bom)
+        in_str = _format_bytes(input_bytes)
+        exp_str = _format_codepoints(expected)
+        lines.append(
+            f'    {{{{{in_str}}}, {{{bom_str}}}, {{{exp_str}}}, "{encoding}"}},'
+        )
+
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_BOM_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
+_SBFATAL_RE = re.compile(
+    r"\{encoding:\s*'([^']+)'\s*,\s*bad:\s*\[([^\]]*)\]\s*\}",
+    re.MULTILINE,
+)
+
+
+def parse_fatal_single_byte_cases(content: str) -> list[dict[str, object]]:
+    """Parse singleByteEncodings from textdecoder-fatal-single-byte.any.js.
+
+    Returns list of {"encoding": str, "bad": list[int]}.
+    """
+    cases: list[dict[str, object]] = []
+    for m in _SBFATAL_RE.finditer(content):
+        encoding, bad_str = m.groups()
+        bad = [int(x.strip(), 0) for x in bad_str.split(",") if x.strip()]
+        cases.append({"encoding": encoding, "bad": bad})
+    return cases
+
+
+def render_fatal_single_byte_vectors_hpp(
+    cases: list[dict[str, object]], out_path: Path
+) -> None:
+    """Generate the C++ header for WPT fatal single-byte vectors."""
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/textdecoder-fatal-single-byte.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_FATAL_SINGLE_BYTE_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_FATAL_SINGLE_BYTE_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <cstdint>")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptFatalSingleByteCase {")
+    lines.append("    const char*          encoding;")
+    lines.append("    std::vector<uint8_t> bad;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append(
+        "inline const WptFatalSingleByteCase wpt_fatal_single_byte_cases[] = {"
+    )
+
+    for c in cases:
+        encoding: str = c["encoding"]  # type: ignore[assignment]
+        bad: list[int] = c["bad"]  # type: ignore[assignment]
+        bad_str = _format_bytes(bad)
+        lines.append(f'    {{"{encoding}", {{{bad_str}}}}},')
+
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_FATAL_SINGLE_BYTE_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
+_EOF_RE = re.compile(
+    r"assert_equals\("
+    r'new TextDecoder\("?([^")\s]*)"?\)'
+    r"\.decode\(new Uint8Array\(\[([^\]]*)\]\)\)"
+    r',\s*"((?:[^"\\]|\\.)*)"\)',
+    re.MULTILINE,
+)
+
+_EOF_END_MARKER = '}, "TextDecoder end-of-queue handling");'
+
+
+def parse_eof_vectors(content: str) -> list[dict[str, object]]:
+    """Parse non-streaming assert_equals from textdecoder-eof.any.js.
+
+    Returns list of {"encoding": str, "input": list[int], "expected": list[int]}.
+    Only parses the first test() block (before the streaming block).
+    """
+    end = content.find(_EOF_END_MARKER)
+    if end == -1:
+        return []
+    section = content[:end]
+    vectors: list[dict[str, object]] = []
+    for m in _EOF_RE.finditer(section):
+        encoding, bytes_str, expected_str = m.groups()
+        if not encoding:
+            encoding = "utf-8"
+        input_bytes = [int(x.strip(), 0) for x in bytes_str.split(",") if x.strip()]
+        expected_cps = parse_js_string(expected_str)
+        vectors.append(
+            {"encoding": encoding, "input": input_bytes, "expected": expected_cps}
+        )
+    return vectors
+
+
+def render_eof_vectors_hpp(vectors: list[dict[str, object]], out_path: Path) -> None:
+    """Generate the C++ header for WPT EOF decode vectors."""
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/textdecoder-eof.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("// Note: only non-streaming cases are included; streaming")
+    lines.append("//       (stream:true) cases require stateful API not provided")
+    lines.append("//       by this library's range-view interface.")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_EOF_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_EOF_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <cstdint>")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptEofVector {")
+    lines.append("    const char*           encoding;")
+    lines.append("    std::vector<uint8_t>  input;")
+    lines.append("    std::vector<char32_t> expected;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append("inline const WptEofVector wpt_eof_vectors[] = {")
+
+    for v in vectors:
+        encoding: str = v["encoding"]  # type: ignore[assignment]
+        input_bytes: list[int] = v["input"]  # type: ignore[assignment]
+        expected: list[int] = v["expected"]  # type: ignore[assignment]
+        in_str = _format_bytes(input_bytes)
+        exp_str = _format_codepoints(expected)
+        lines.append(f'    {{"{encoding}", {{{in_str}}}, {{{exp_str}}}}},')
+
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_EOF_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
+_SURR_ENTRY_RE = re.compile(
+    r"\{[^}]*?input:\s*'((?:[^'\\]|\\.)*)'.*?"
+    r"expected:\s*\[([^\]]*)\].*?"
+    r"decoded:\s*'((?:[^'\\]|\\.)*)'.*?"
+    r"name:\s*'((?:[^'\\]|\\.)*)'",
+    re.DOTALL,
+)
+
+
+def parse_surrogates_utf8_vectors(content: str) -> list[dict[str, object]]:
+    """Parse the badStrings[] array from api-surrogates-utf8.any.js."""
+    vectors: list[dict[str, object]] = []
+    for m in _SURR_ENTRY_RE.finditer(content):
+        input_str, bytes_str, decoded_str, name = m.groups()
+        input_cps = parse_js_string(input_str)
+        expected_bytes = [int(x.strip(), 0) for x in bytes_str.split(",") if x.strip()]
+        decoded_cps = parse_js_string(decoded_str)
+        vectors.append(
+            {
+                "input": input_cps,
+                "expected": expected_bytes,
+                "decoded": decoded_cps,
+                "name": name,
+            }
+        )
+    return vectors
+
+
+def render_surrogates_utf8_vectors_hpp(
+    vectors: list[dict[str, object]], out_path: Path
+) -> None:
+    """Generate the C++ header for WPT UTF-8 surrogate encode vectors."""
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/api-surrogates-utf8.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_SURROGATES_UTF8_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_SURROGATES_UTF8_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <cstdint>")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptSurrogatesUtf8Vector {")
+    lines.append("    std::vector<char32_t> input;")
+    lines.append("    std::vector<uint8_t>  expected;")
+    lines.append("    std::vector<char32_t> decoded;")
+    lines.append("    const char*           name;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append(
+        "inline const WptSurrogatesUtf8Vector wpt_surrogates_utf8_vectors[] = {"
+    )
+
+    for v in vectors:
+        input_cps: list[int] = v["input"]  # type: ignore[assignment]
+        expected_bytes: list[int] = v["expected"]  # type: ignore[assignment]
+        decoded_cps: list[int] = v["decoded"]  # type: ignore[assignment]
+        name: str = v["name"]  # type: ignore[assignment]
+        in_str = _format_codepoints(input_cps)
+        exp_str = _format_bytes(expected_bytes)
+        dec_str = _format_codepoints(decoded_cps)
+        name_escaped = _escape_c_string(name)
+        lines.append(
+            f'    {{{{{in_str}}}, {{{exp_str}}}, {{{dec_str}}}, "{name_escaped}"}},',
+        )
+
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_SURROGATES_UTF8_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
+_ENCODER_SURR_RE = re.compile(
+    r"\{[^}]*?input:\s*'((?:[^'\\]|\\.)*)'.*?"
+    r"expected:\s*'((?:[^'\\]|\\.)*)'.*?"
+    r"name:\s*'((?:[^'\\]|\\.)*)'",
+    re.DOTALL,
+)
+
+
+def parse_encoder_surrogates_vectors(content: str) -> list[dict[str, object]]:
+    """Parse the bad[] array from textencoder-utf16-surrogates.any.js."""
+    vectors: list[dict[str, object]] = []
+    for m in _ENCODER_SURR_RE.finditer(content):
+        input_str, expected_str, name = m.groups()
+        input_cps = parse_js_string(input_str)
+        expected_cps = parse_js_string(expected_str)
+        vectors.append(
+            {
+                "input": input_cps,
+                "expected": expected_cps,
+                "name": name,
+            }
+        )
+    return vectors
+
+
+def render_encoder_surrogates_vectors_hpp(
+    vectors: list[dict[str, object]], out_path: Path
+) -> None:
+    """Generate the C++ header for WPT encoder surrogate round-trip vectors."""
+    lines: list[str] = []
+    lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
+    lines.append(
+        "// GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py"
+    )
+    lines.append("//")
+    lines.append("// Source: docs/wpt/textencoder-utf16-surrogates.any.js")
+    lines.append(
+        "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
+    )
+    lines.append("// License: W3C 3-Clause BSD License")
+    lines.append("")
+    lines.append("#ifndef TESTS_BEMAN_TRANSCODE_WPT_ENCODER_SURROGATES_VECTORS_HPP")
+    lines.append("#define TESTS_BEMAN_TRANSCODE_WPT_ENCODER_SURROGATES_VECTORS_HPP")
+    lines.append("")
+    lines.append("#include <vector>")
+    lines.append("")
+    lines.append("namespace beman::transcoding::tests::wpt {")
+    lines.append("")
+    lines.append("struct WptEncoderSurrogatesVector {")
+    lines.append("    std::vector<char32_t> input;")
+    lines.append("    std::vector<char32_t> expected;")
+    lines.append("    const char*           name;")
+    lines.append("};")
+    lines.append("")
+    lines.append("// NOLINTBEGIN(cert-err58-cpp)")
+    lines.append(
+        "inline const WptEncoderSurrogatesVector wpt_encoder_surrogates_vectors[] = {"
+    )
+
+    for v in vectors:
+        input_cps: list[int] = v["input"]  # type: ignore[assignment]
+        expected_cps: list[int] = v["expected"]  # type: ignore[assignment]
+        name: str = v["name"]  # type: ignore[assignment]
+        in_str = _format_codepoints(input_cps)
+        exp_str = _format_codepoints(expected_cps)
+        name_escaped = _escape_c_string(name)
+        lines.append(
+            f'    {{{{{in_str}}}, {{{exp_str}}}, "{name_escaped}"}},',
+        )
+
+    lines.append("};")
+    lines.append("// NOLINTEND(cert-err58-cpp)")
+    lines.append("")
+    lines.append("} // namespace beman::transcoding::tests::wpt")
+    lines.append("")
+    lines.append("#endif // TESTS_BEMAN_TRANSCODE_WPT_ENCODER_SURROGATES_VECTORS_HPP")
+    lines.append("")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines))
+
+
 def main() -> int:
     gb18030_content = GB18030_JS.read_text()
     gb18030_vectors = parse_gb18030_decode_vectors(gb18030_content)
@@ -615,6 +1055,42 @@ def main() -> int:
     render_fatal_vectors_hpp(fatal_vectors, TEST_DIR / "wpt_fatal_vectors.hpp")
     print(f"Generated {TEST_DIR / 'wpt_fatal_vectors.hpp'}")
 
+    bom_content = BOM_JS.read_text()
+    bom_vectors = parse_bom_vectors(bom_content)
+    print(f"Parsed {len(bom_vectors)} BOM cases")
+    render_bom_vectors_hpp(bom_vectors, TEST_DIR / "wpt_bom_vectors.hpp")
+    print(f"Generated {TEST_DIR / 'wpt_bom_vectors.hpp'}")
+
+    fatal_sb_content = FATAL_SINGLE_BYTE_JS.read_text()
+    fatal_sb_cases = parse_fatal_single_byte_cases(fatal_sb_content)
+    print(f"Parsed {len(fatal_sb_cases)} fatal single-byte cases")
+    render_fatal_single_byte_vectors_hpp(
+        fatal_sb_cases, TEST_DIR / "wpt_fatal_single_byte_vectors.hpp"
+    )
+    print(f"Generated {TEST_DIR / 'wpt_fatal_single_byte_vectors.hpp'}")
+
+    eof_content = EOF_JS.read_text()
+    eof_vectors = parse_eof_vectors(eof_content)
+    print(f"Parsed {len(eof_vectors)} EOF vectors")
+    render_eof_vectors_hpp(eof_vectors, TEST_DIR / "wpt_eof_vectors.hpp")
+    print(f"Generated {TEST_DIR / 'wpt_eof_vectors.hpp'}")
+
+    surr_utf8_content = SURROGATES_UTF8_JS.read_text()
+    surr_utf8_vectors = parse_surrogates_utf8_vectors(surr_utf8_content)
+    print(f"Parsed {len(surr_utf8_vectors)} surrogate UTF-8 vectors")
+    render_surrogates_utf8_vectors_hpp(
+        surr_utf8_vectors, TEST_DIR / "wpt_surrogates_utf8_vectors.hpp"
+    )
+    print(f"Generated {TEST_DIR / 'wpt_surrogates_utf8_vectors.hpp'}")
+
+    enc_surr_content = ENCODER_SURROGATES_JS.read_text()
+    enc_surr_vectors = parse_encoder_surrogates_vectors(enc_surr_content)
+    print(f"Parsed {len(enc_surr_vectors)} encoder surrogate vectors")
+    render_encoder_surrogates_vectors_hpp(
+        enc_surr_vectors, TEST_DIR / "wpt_encoder_surrogates_vectors.hpp"
+    )
+    print(f"Generated {TEST_DIR / 'wpt_encoder_surrogates_vectors.hpp'}")
+
     run_cf = True
     try:
         subprocess.run(["clang-format", "--version"], capture_output=True, check=True)
@@ -629,6 +1105,11 @@ def main() -> int:
             TEST_DIR / "wpt_single_byte_vectors.hpp",
             TEST_DIR / "wpt_utf16_surrogates_vectors.hpp",
             TEST_DIR / "wpt_fatal_vectors.hpp",
+            TEST_DIR / "wpt_bom_vectors.hpp",
+            TEST_DIR / "wpt_fatal_single_byte_vectors.hpp",
+            TEST_DIR / "wpt_eof_vectors.hpp",
+            TEST_DIR / "wpt_surrogates_utf8_vectors.hpp",
+            TEST_DIR / "wpt_encoder_surrogates_vectors.hpp",
         ]:
             subprocess.run(["clang-format", "-i", str(hpp)], check=True)
             print(f"Formatted {hpp}")
