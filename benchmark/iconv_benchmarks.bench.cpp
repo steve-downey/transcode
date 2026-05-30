@@ -103,3 +103,35 @@ TEST_CASE("iconv bulk operations", "[benchmark][iconv]") {
         meter.measure([&] { return iconv_transcode_to<std::string>(data, "EUC-JP", "SHIFT_JIS").size(); });
     };
 }
+
+TEST_CASE("iconv large corpus", "[benchmark][iconv]") {
+    using namespace beman::transcoding;
+    using namespace beman::transcoding::bench;
+
+    static char out_buf[4096];
+
+    BENCHMARK_ADVANCED("iconv_transcode_to: Shift-JIS → UTF-8, Genji (2.3 MB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("genji_monogatari_shiftjis.bin");
+        meter.measure([&] { return iconv_transcode_to<std::string>(data, "SHIFT_JIS", "UTF-8").size(); });
+    };
+
+    BENCHMARK_ADVANCED("iconv_transcode_view: Shift-JIS → UTF-8, Genji (2.3 MB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("genji_monogatari_shiftjis.bin");
+        meter.measure(
+            [&] { return count_elements(data | iconv_transcode("SHIFT_JIS", "UTF-8", std::span(out_buf))); });
+    };
+
+    BENCHMARK_ADVANCED("iconv_transcode_to: GB18030 → UTF-8, Journey to the West (624 KB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("xiyouji_gb18030.bin");
+        meter.measure([&] { return iconv_transcode_to<std::string>(data, "GB18030", "UTF-8").size(); });
+    };
+
+    BENCHMARK_ADVANCED("iconv_transcode_to: EUC-JP → Shift-JIS, Genji (2.3 MB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("genji_monogatari_eucjp.bin");
+        meter.measure([&] { return iconv_transcode_to<std::string>(data, "EUC-JP", "SHIFT_JIS").size(); });
+    };
+}

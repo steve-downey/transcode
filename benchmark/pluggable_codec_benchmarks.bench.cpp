@@ -104,3 +104,26 @@ TEST_CASE("Cross-encoding transcoding", "[benchmark][pluggable]") {
         return count_elements(corpus_span("ja_mars_eucjp.bin") | transcode<codec::euc_jp, codec::shift_jis>);
     };
 }
+
+TEST_CASE("Large corpus cross-encoding", "[benchmark][pluggable]") {
+    using namespace beman::transcoding;
+    using namespace beman::transcoding::bench;
+
+    BENCHMARK("Shift-JIS → UTF-8 bulk: Genji (2.3 MB)") {
+        return encode_to<codec::utf_8>(decode_to<codec::shift_jis>(corpus_span("genji_monogatari_shiftjis.bin")))
+            .size();
+    };
+
+    BENCHMARK("EUC-JP → Shift-JIS bulk: Genji (2.3 MB)") {
+        return encode_to<codec::shift_jis>(decode_to<codec::euc_jp>(corpus_span("genji_monogatari_eucjp.bin"))).size();
+    };
+
+    BENCHMARK("GB18030 → Big5 bulk: Journey to the West (624 KB)") {
+        return encode_to<codec::big5>(decode_to<codec::gb18030>(corpus_span("xiyouji_gb18030.bin"))).size();
+    };
+
+    BENCHMARK("Shift-JIS → UTF-8 streaming: Genji (2.3 MB)") {
+        return count_elements(corpus_span("genji_monogatari_shiftjis.bin") |
+                              transcode<codec::shift_jis, codec::utf_8>);
+    };
+}

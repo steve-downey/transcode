@@ -90,4 +90,30 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
         auto data = corpus_span("war_and_peace_utf16be.bin");
         meter.measure([&] { return count_elements(data | whatwg_decode<codec::utf_16be>); });
     };
+
+    // --- Large CJK novels ---
+
+    BENCHMARK_ADVANCED("Shift-JIS decode: Tale of Genji (2.3 MB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("genji_monogatari_shiftjis.bin");
+        meter.measure([&] { return count_elements(data | whatwg_decode<codec::shift_jis>); });
+    };
+
+    BENCHMARK_ADVANCED("EUC-JP decode: Tale of Genji (2.3 MB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("genji_monogatari_eucjp.bin");
+        meter.measure([&] { return count_elements(data | whatwg_decode<codec::euc_jp>); });
+    };
+
+    BENCHMARK_ADVANCED("GB18030 decode: Journey to the West (624 KB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("xiyouji_gb18030.bin");
+        meter.measure([&] { return count_elements(data | whatwg_decode<codec::gb18030>); });
+    };
+
+    BENCHMARK_ADVANCED("Big5 decode: Journey to the West (624 KB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("xiyouji_big5.bin");
+        meter.measure([&] { return count_elements(data | whatwg_decode<codec::big5>); });
+    };
 }
