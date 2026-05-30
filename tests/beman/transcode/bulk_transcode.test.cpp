@@ -1,21 +1,24 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// Tests that ranges::to and ranges::copy compose naturally with the
+// decode/encode views, making dedicated bulk helpers unnecessary.
 
-#include <beman/transcode/detail/bulk_transcode.hpp>
+#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg_encode_view.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
 
 #include <catch2/catch_all.hpp>
 
+#include <algorithm>
 #include <array>
+#include <ranges>
 #include <span>
 #include <string>
 #include <vector>
 
 using beman::transcoding::codec;
-using beman::transcoding::decode_into;
-using beman::transcoding::decode_to;
-using beman::transcoding::encode_into;
-using beman::transcoding::encode_to;
 using beman::transcoding::tests::constify;
 
 namespace {
@@ -23,110 +26,121 @@ namespace {
 constexpr auto decode_ascii_constexpr() {
     constexpr std::array<char, 2> source{'A', 'B'};
     std::array<char32_t, 2>       output{};
-    decode_into<codec::utf_8>(source, output.begin());
+    std::ranges::copy(source | beman::transcoding::whatwg_decode<codec::utf_8>, output.begin());
     return output;
 }
 
 constexpr auto encode_ascii_constexpr() {
     constexpr std::array<char32_t, 2> source{U'A', U'B'};
     std::array<char, 2>               output{};
-    encode_into<codec::utf_8>(source, output.begin());
+    std::ranges::copy(source | beman::transcoding::whatwg_encode<codec::utf_8>, output.begin());
     return output;
 }
 
 } // namespace
 
-TEST_CASE("bulk_transcode: decode_to UTF-8", "[bulk]") {
-    const std::string input  = "Hello";
-    auto              result = decode_to<codec::utf_8>(input);
+TEST_CASE("view|to: decode UTF-8 to vector", "[bulk]") {
+    const std::string input = "Hello";
+    auto result = input | beman::transcoding::whatwg_decode<codec::utf_8> | std::ranges::to<std::vector<char32_t>>();
     REQUIRE(result == std::vector<char32_t>{U'H', U'e', U'l', U'l', U'o'});
 }
 
-TEST_CASE("bulk_transcode: decode_to single-byte fast path", "[bulk]") {
+TEST_CASE("view|to: decode single-byte iso-8859-15", "[bulk]") {
     const std::string input{'A', static_cast<char>(0xA4)};
-    auto              result = decode_to<codec::iso_8859_15>(input);
-    REQUIRE(result == std::vector<char32_t>{U'A', U'\u20AC'});
+    auto              result =
+        input | beman::transcoding::whatwg_decode<codec::iso_8859_15> | std::ranges::to<std::vector<char32_t>>();
+    REQUIRE(result == std::vector<char32_t>{U'A', U'€'});
 }
 
-TEST_CASE("bulk_transcode: encode_to UTF-8", "[bulk]") {
+TEST_CASE("view|to: encode UTF-8 to string", "[bulk]") {
     const std::u32string input = U"Hello";
-    CHECK(encode_to<codec::utf_8>(input) == "Hello");
+    auto result = input | beman::transcoding::whatwg_encode<codec::utf_8> | std::ranges::to<std::string>();
+    CHECK(result == "Hello");
 }
 
-TEST_CASE("bulk_transcode: encode_to single-byte fast path", "[bulk]") {
-    const std::u32string input{U'A', U'\u20AC'};
+TEST_CASE("view|to: encode single-byte iso-8859-15", "[bulk]") {
+    const std::u32string input{U'A', U'€'};
     const std::string    expected{'A', static_cast<char>(0xA4)};
-    CHECK(encode_to<codec::iso_8859_15>(input) == expected);
+    auto result = input | beman::transcoding::whatwg_encode<codec::iso_8859_15> | std::ranges::to<std::string>();
+    CHECK(result == expected);
 }
 
-TEST_CASE("bulk_transcode: encode_to supports alternate container", "[bulk]") {
+TEST_CASE("view|to: encode to alternate container (vector<char>)", "[bulk]") {
     const std::u32string input = U"Hi";
-    auto                 bytes = encode_to<codec::utf_8, std::vector<char>>(input);
+    auto bytes = input | beman::transcoding::whatwg_encode<codec::utf_8> | std::ranges::to<std::vector<char>>();
     REQUIRE(bytes == std::vector<char>{'H', 'i'});
 }
 
-TEST_CASE("bulk_transcode: decode_into appends to output iterator", "[bulk]") {
+TEST_CASE("ranges::copy: decode iso-8859-15 to output iterator", "[bulk]") {
     const std::string     input{'A', static_cast<char>(0xA4)};
     std::vector<char32_t> output;
-    decode_into<codec::iso_8859_15>(input, std::back_inserter(output));
-    REQUIRE(output == std::vector<char32_t>{U'A', U'\u20AC'});
+    std::ranges::copy(input | beman::transcoding::whatwg_decode<codec::iso_8859_15>, std::back_inserter(output));
+    REQUIRE(output == std::vector<char32_t>{U'A', U'€'});
 }
 
-TEST_CASE("bulk_transcode: encode_into appends to output iterator", "[bulk]") {
-    const std::u32string input{U'A', U'\u20AC'};
+TEST_CASE("ranges::copy: encode iso-8859-15 to output iterator", "[bulk]") {
+    const std::u32string input{U'A', U'€'};
     std::string          output;
-    encode_into<codec::iso_8859_15>(input, std::back_inserter(output));
+    std::ranges::copy(input | beman::transcoding::whatwg_encode<codec::iso_8859_15>, std::back_inserter(output));
     REQUIRE(output == std::string{'A', static_cast<char>(0xA4)});
 }
 
-TEST_CASE("bulk_transcode: round-trip UTF-8", "[bulk]") {
+TEST_CASE("view|to: round-trip UTF-8", "[bulk]") {
+    using namespace beman::transcoding;
     const std::string original = "Hello, World!";
-    CHECK(encode_to<codec::utf_8>(decode_to<codec::utf_8>(original)) == original);
+    auto              cps      = original | whatwg_decode<codec::utf_8> | std::ranges::to<std::vector<char32_t>>();
+    auto              result   = cps | whatwg_encode<codec::utf_8> | std::ranges::to<std::string>();
+    CHECK(result == original);
 }
 
-TEST_CASE("bulk_transcode: round-trip ISO-8859-15 fast path", "[bulk]") {
+TEST_CASE("view|to: round-trip ISO-8859-15", "[bulk]") {
+    using namespace beman::transcoding;
     const std::string original{'A', static_cast<char>(0xA4)};
-    CHECK(encode_to<codec::iso_8859_15>(decode_to<codec::iso_8859_15>(original)) == original);
+    auto              cps    = original | whatwg_decode<codec::iso_8859_15> | std::ranges::to<std::vector<char32_t>>();
+    auto              result = cps | whatwg_encode<codec::iso_8859_15> | std::ranges::to<std::string>();
+    CHECK(result == original);
 }
 
-TEST_CASE("bulk_transcode: std::byte input is accepted", "[bulk]") {
+TEST_CASE("view|to: std::byte input is accepted", "[bulk]") {
     constexpr std::array<std::byte, 2> input{std::byte{0x41}, std::byte{0xA4}};
-    auto                               result = decode_to<codec::iso_8859_15>(input);
-    REQUIRE(result == std::vector<char32_t>{U'A', U'\u20AC'});
+    auto                               result =
+        input | beman::transcoding::whatwg_decode<codec::iso_8859_15> | std::ranges::to<std::vector<char32_t>>();
+    REQUIRE(result == std::vector<char32_t>{U'A', U'€'});
 }
 
-TEST_CASE("bulk_transcode: empty input yields empty output", "[bulk]") {
+TEST_CASE("view|to: empty input yields empty output", "[bulk]") {
+    using namespace beman::transcoding;
     const std::span<const char>     empty_bytes{};
     const std::span<const char32_t> empty_code_points{};
 
-    CHECK(decode_to<codec::utf_8>(empty_bytes).empty());
-    CHECK(encode_to<codec::utf_8>(empty_code_points).empty());
-    CHECK((encode_to<codec::utf_8, std::vector<char>>(empty_code_points)).empty());
+    CHECK((empty_bytes | whatwg_decode<codec::utf_8> | std::ranges::to<std::vector<char32_t>>()).empty());
+    CHECK((empty_code_points | whatwg_encode<codec::utf_8> | std::ranges::to<std::string>()).empty());
+    CHECK((empty_code_points | whatwg_encode<codec::utf_8> | std::ranges::to<std::vector<char>>()).empty());
 }
 
-TEST_CASE("bulk_transcode: decode_into is constexpr for UTF-8 ASCII", "[bulk][constexpr]") {
+TEST_CASE("ranges::copy: constexpr decode UTF-8 ASCII", "[bulk][constexpr]") {
     CHECK(constify(decode_ascii_constexpr()) == std::array<char32_t, 2>{U'A', U'B'});
 }
 
-TEST_CASE("bulk_transcode: encode_into is constexpr for UTF-8 ASCII", "[bulk][constexpr]") {
+TEST_CASE("ranges::copy: constexpr encode UTF-8 ASCII", "[bulk][constexpr]") {
     CHECK(constify(encode_ascii_constexpr()) == std::array<char, 2>{'A', 'B'});
 }
 
 // ---------------------------------------------------------------------------
-// Single-byte fast path: unmapped bytes and codepoints
-// iso_8859_6 has many unmapped high bytes (Arabic-only encoding).
+// Single-byte codecs with unmapped bytes/codepoints: verify the views
+// handle replacement correctly even without a dedicated bulk path.
 // ---------------------------------------------------------------------------
 
-TEST_CASE("bulk_transcode: decode_to iso_8859_6 unmapped byte yields U+FFFD", "[bulk]") {
-    // Byte 0xA1 is unmapped in ISO-8859-6 (table entry 0 → replacement char).
+TEST_CASE("view|to: iso_8859_6 unmapped byte yields U+FFFD", "[bulk]") {
     const std::string input{static_cast<char>(0xA1)};
-    auto              result = decode_to<codec::iso_8859_6>(input);
+    auto              result =
+        input | beman::transcoding::whatwg_decode<codec::iso_8859_6> | std::ranges::to<std::vector<char32_t>>();
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
 
-TEST_CASE("bulk_transcode: encode_to iso_8859_6 unmapped codepoint yields '?'", "[bulk]") {
-    // U+0100 (Latin Extended-A) is not in ISO-8859-6's encode table.
+TEST_CASE("view|to: iso_8859_6 unmapped codepoint yields '?'", "[bulk]") {
     const std::u32string input{U'Ā'};
-    CHECK(encode_to<codec::iso_8859_6>(input) == "?");
+    auto result = input | beman::transcoding::whatwg_encode<codec::iso_8859_6> | std::ranges::to<std::string>();
+    CHECK(result == "?");
 }

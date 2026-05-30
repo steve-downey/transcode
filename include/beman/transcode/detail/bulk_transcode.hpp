@@ -1,4 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// Convenience helpers: decode_to, encode_to, decode_into, encode_into.
+//
+// These are thin wrappers over `view | ranges::to<Container>()` and
+// `ranges::copy(view, output)`.  They are NOT proposed for standardization
+// because the standard library already provides the necessary composition
+// tools (ranges::to, ranges::copy) and the views compose naturally with
+// them.  This header exists for practical convenience in codebases that
+// prefer a named-function call style.
 
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
@@ -8,163 +17,65 @@
 #include <beman/transcode/decode_view.hpp>
 #include <beman/transcode/detail/codec_concepts.hpp>
 #include <beman/transcode/detail/concepts.hpp>
-#include <beman/transcode/detail/single_byte_tables.hpp>
 #include <beman/transcode/encode_view.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-    #include <cstddef>
-    #include <iterator>
+    #include <algorithm>
     #include <ranges>
     #include <string>
-    #include <type_traits>
     #include <vector>
 
 #endif
 namespace beman::transcoding {
 
-namespace detail {
-
-template <codec C>
-inline constexpr bool bulk_single_byte_codec =
-    C == codec::ibm866 || C == codec::iso_8859_2 || C == codec::iso_8859_3 || C == codec::iso_8859_4 ||
-    C == codec::iso_8859_5 || C == codec::iso_8859_6 || C == codec::iso_8859_7 || C == codec::iso_8859_8 ||
-    C == codec::iso_8859_8_i || C == codec::iso_8859_10 || C == codec::iso_8859_13 || C == codec::iso_8859_14 ||
-    C == codec::iso_8859_15 || C == codec::iso_8859_16 || C == codec::koi8_r || C == codec::koi8_u ||
-    C == codec::macintosh || C == codec::windows_874 || C == codec::windows_1250 || C == codec::windows_1251 ||
-    C == codec::windows_1252 || C == codec::windows_1253 || C == codec::windows_1254 || C == codec::windows_1255 ||
-    C == codec::windows_1256 || C == codec::windows_1257 || C == codec::windows_1258 || C == codec::x_mac_cyrillic;
-
-template <typename T>
-constexpr unsigned char to_unsigned_byte(T value) {
-    if constexpr (std::same_as<std::remove_cv_t<T>, std::byte>)
-        return std::to_integer<unsigned char>(value);
-    else
-        return static_cast<unsigned char>(value);
-}
-
-template <std::ranges::range R, typename Container>
-constexpr void reserve_if_sized(Container& container, R&& range) {
-    if constexpr (std::ranges::sized_range<R> &&
-                  requires(Container& output, std::size_t size) { output.reserve(size); })
-        container.reserve(static_cast<std::size_t>(std::ranges::size(range)));
-}
-
-template <typename Container, typename Value>
-concept bulk_output_container = requires(Container container, Value value) {
-    Container{};
-    container.push_back(value);
-};
-
-} // namespace detail
+// ---------------------------------------------------------------------------
+// WHATWG codec bulk helpers (codec as NTTP enum)
+// ---------------------------------------------------------------------------
 
 template <codec C, legacy_byte_range R>
 std::vector<char32_t> decode_to(R&& source) {
-    std::vector<char32_t> result;
-    detail::reserve_if_sized(result, source);
-
-    if constexpr (detail::bulk_single_byte_codec<C>) {
-        const auto* table = detail::get_decode_table<C>();
-        for (auto byte : source)
-            result.push_back(detail::decode_single_byte_at(detail::to_unsigned_byte(byte), table));
-    } else {
-        for (char32_t code_point : std::forward<R>(source) | whatwg_decode<C>)
-            result.push_back(code_point);
-    }
-
-    return result;
+    return std::forward<R>(source) | whatwg_decode<C> | std::ranges::to<std::vector<char32_t>>();
 }
 
 template <codec C, typename Container = std::string, unicode_scalar_range R>
-    requires detail::bulk_output_container<Container, char>
 Container encode_to(R&& source) {
-    Container result;
-    detail::reserve_if_sized(result, source);
-
-    if constexpr (detail::bulk_single_byte_codec<C>) {
-        const auto* table = detail::get_encode_table<C>();
-        for (char32_t code_point : source)
-            result.push_back(detail::encode_single_byte_at(code_point, table));
-    } else {
-        for (char byte : std::forward<R>(source) | whatwg_encode<C>)
-            result.push_back(byte);
-    }
-
-    return result;
+    return std::forward<R>(source) | whatwg_encode<C> | std::ranges::to<Container>();
 }
 
 template <codec C, legacy_byte_range R, std::output_iterator<char32_t> Output>
 constexpr void decode_into(R&& source, Output output) {
-    if constexpr (detail::bulk_single_byte_codec<C>) {
-        const auto* table = detail::get_decode_table<C>();
-        for (auto byte : source)
-            *output++ = detail::decode_single_byte_at(detail::to_unsigned_byte(byte), table);
-    } else {
-        for (char32_t code_point : std::forward<R>(source) | whatwg_decode<C>)
-            *output++ = code_point;
-    }
+    std::ranges::copy(std::forward<R>(source) | whatwg_decode<C>, output);
 }
 
 template <codec C, unicode_scalar_range R, std::output_iterator<char> Output>
 constexpr void encode_into(R&& source, Output output) {
-    if constexpr (detail::bulk_single_byte_codec<C>) {
-        const auto* table = detail::get_encode_table<C>();
-        for (char32_t code_point : source)
-            *output++ = detail::encode_single_byte_at(code_point, table);
-    } else {
-        for (char byte : std::forward<R>(source) | whatwg_encode<C>)
-            *output++ = byte;
-    }
+    std::ranges::copy(std::forward<R>(source) | whatwg_encode<C>, output);
 }
 
 // ---------------------------------------------------------------------------
-// Pluggable codec bulk operations — codec object as first argument
+// Pluggable codec bulk helpers (codec as first argument)
 // ---------------------------------------------------------------------------
 
 template <decode_codec Codec, legacy_byte_range R>
 constexpr std::vector<char32_t> decode_to(Codec codec, R&& source) {
-    std::vector<char32_t> result;
-    detail::reserve_if_sized(result, source);
-
-    if constexpr (random_access_decode_codec_type<Codec>) {
-        for (auto byte : source)
-            result.push_back(codec.decode_byte(detail::to_unsigned_byte(byte)));
-    } else {
-        for (char32_t cp : std::forward<R>(source) | decode(codec))
-            result.push_back(cp);
-    }
-
-    return result;
+    return std::forward<R>(source) | decode(codec) | std::ranges::to<std::vector<char32_t>>();
 }
 
 template <encode_codec Codec, typename Container = std::string, unicode_scalar_range R>
-    requires detail::bulk_output_container<Container, char>
 constexpr Container encode_to(Codec codec, R&& source) {
-    Container result;
-    detail::reserve_if_sized(result, source);
-
-    for (char byte : std::forward<R>(source) | encode(codec))
-        result.push_back(byte);
-
-    return result;
+    return std::forward<R>(source) | encode(codec) | std::ranges::to<Container>();
 }
 
 template <decode_codec Codec, legacy_byte_range R, std::output_iterator<char32_t> Output>
 constexpr void decode_into(Codec codec, R&& source, Output output) {
-    if constexpr (random_access_decode_codec_type<Codec>) {
-        for (auto byte : source)
-            *output++ = codec.decode_byte(detail::to_unsigned_byte(byte));
-    } else {
-        for (char32_t cp : std::forward<R>(source) | decode(codec))
-            *output++ = cp;
-    }
+    std::ranges::copy(std::forward<R>(source) | decode(codec), output);
 }
 
 template <encode_codec Codec, unicode_scalar_range R, std::output_iterator<char> Output>
 constexpr void encode_into(Codec codec, R&& source, Output output) {
-    for (char byte : std::forward<R>(source) | encode(codec))
-        *output++ = byte;
+    std::ranges::copy(std::forward<R>(source) | encode(codec), output);
 }
 
 } // namespace beman::transcoding
