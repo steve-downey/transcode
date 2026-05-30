@@ -229,11 +229,11 @@ without exposing an intermediate `char32_t` codepoint stage.  "Encode" (from
 `char32_t` to bytes) and "decode" (from bytes to `char32_t`) as distinct steps
 are outside its model — it only offers transcode.
 
-² **WHATWG and pluggable codecs separate decode and encode.** "Bulk transcode"
-is just `encode_to(decode_to(range))` — there is no single-pass transcode
-operation because the intermediate `char32_t` range is the natural composition
-point.  iconv is the exception here: it performs single-pass byte→byte
-conversion more efficiently than a two-step decode+encode.
+² **WHATWG and pluggable codecs compose decode and encode.**  Bulk collection
+uses `view | ranges::to<Container>()` and `ranges::copy(view, output)` — no
+dedicated bulk helpers are needed since the standard algorithms suffice.
+Transcode is `decode | encode` composed with `|`.  iconv performs single-pass
+byte→byte conversion and exposes it as a first-class bulk operation.
 
 ³ **P2728 operates on typed Unicode character types** (`char8_t`, `char16_t`,
 `char32_t`).  `views::null_term` produces a range of `char`, which is a
@@ -375,7 +375,7 @@ Shift-JIS and produces UTF-8 output bytes.
 | **beman.transcode** streaming (`transcode` pipe) | 80 µs | 332 MiB/s | Lazy views, `count_elements` only |
 | **encoding_rs** (Rust bulk C FFI) | 103 µs | 258 MiB/s | Single Rust call, opaque to optimizer |
 | **`iconv_transcode_to`** (this library) | 120 µs | 222 MiB/s | Bulk iconv, pre-sized buffer |
-| **beman.transcode** bulk (`encode_to` + `decode_to`) | 237 µs | 112 MiB/s | Two-step, produces `std::string` |
+| **beman.transcode** bulk (`view \| ranges::to<string>()`) | 237 µs | 112 MiB/s | Two-step, char32_t intermediate |
 | Raw `iconv()` (4 KB buffer) | 369 µs | 72 MiB/s | System iconv, many calls |
 | `iconv_transcode_view` (streaming) | 368 µs | 72 MiB/s | Batched range adaptor over iconv |
 
@@ -397,7 +397,7 @@ between two legacy byte encodings that both represent the same characters.
 |----------------|------|-----------|-------|
 | **`iconv_transcode_to`** (single pass) | 144 µs | 185 MiB/s | Direct byte→byte via glibc iconv |
 | **beman.transcode** streaming (`transcode` pipe) | 1.12 ms | 24 MiB/s | decode view \| encode view |
-| **beman.transcode** bulk (`encode_to` + `decode_to`) | 1.30 ms | 20 MiB/s | Two-step, char32_t intermediate |
+| **beman.transcode** bulk (`view \| ranges::to<string>()`) | 1.30 ms | 20 MiB/s | Two-step, char32_t intermediate |
 
 `iconv_transcode_to` is 7-9x faster because it performs a single-pass byte→byte
 conversion inside glibc's codec tables (decades of optimization).  The
