@@ -102,7 +102,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase2_checklist.html','
 <div class="textblock"><p>Mark items <code>[x]</code> as they complete. Read this file first when resuming work.</p>
 <p><b>Current state:</b> Steps 0–56 complete. 612 C++ + 171 Python tests pass. On <code>main</code>.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md313"></a>
+<h1><a class="anchor" id="autotoc_md316"></a>
 Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-codec&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step14-replacement-codec</code> from <code>main</code></li>
@@ -117,7 +117,7 @@ Step 14: &lt;tt&gt;codec::replacement&lt;/tt&gt; (&lt;tt&gt;step14-replacement-c
 <li>[x] Merge to main: <code>git checkout main &amp;&amp; git merge --no-ff step14-replacement-codec</code></li>
 <li>[x] Push main to both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md314"></a>
+<h1><a class="anchor" id="autotoc_md317"></a>
 Step 15: &lt;tt&gt;codec::x_user_defined&lt;/tt&gt; (&lt;tt&gt;step15-x-user-defined&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step15-x-user-defined</code> from <code>main</code></li>
@@ -128,7 +128,7 @@ Step 15: &lt;tt&gt;codec::x_user_defined&lt;/tt&gt; (&lt;tt&gt;step15-x-user-def
 <li>[x] Commit GREEN + push both remotes</li>
 <li>[x] Merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md315"></a>
+<h1><a class="anchor" id="autotoc_md318"></a>
 Step 16: Single-byte infra + &lt;tt&gt;windows_1252&lt;/tt&gt; (&lt;tt&gt;step16-single-byte-infra&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step16-single-byte-infra</code> from <code>main</code></li>
@@ -139,7 +139,7 @@ Step 16: Single-byte infra + &lt;tt&gt;windows_1252&lt;/tt&gt; (&lt;tt&gt;step16
 <li>[x] Commit GREEN + push both remotes</li>
 <li>[x] Merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md316"></a>
+<h1><a class="anchor" id="autotoc_md319"></a>
 Step 17: Data tooling (&lt;tt&gt;step17-data-tooling&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step17-data-tooling</code> from <code>main</code></li>
@@ -158,7 +158,7 @@ Step 17: Data tooling (&lt;tt&gt;step17-data-tooling&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> + <code>make lint</code> (includes ruff)</li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md317"></a>
+<h1><a class="anchor" id="autotoc_md320"></a>
 Step 18: All single-byte decoders (&lt;tt&gt;step18-all-single-byte-decode&lt;/tt&gt;)</h1>
 <p>21 remaining single-byte codecs. Each needs: enum value, table include, dispatch in both <code>load()</code> functions, tests.</p>
 <ul>
@@ -172,7 +172,7 @@ Step 18: All single-byte decoders (&lt;tt&gt;step18-all-single-byte-decode&lt;/t
 <p>Tables placed in <code>include/beman/transcode/detail/tables/</code> (proper include tree, not <code>data/tables/</code>). iso-8859-8-i shares iso-8859-8 table.</p>
 <p>Codecs: IBM866, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-5, ISO-8859-6, ISO-8859-7, ISO-8859-8, ISO-8859-8-I, ISO-8859-10, ISO-8859-13, ISO-8859-14, ISO-8859-15, ISO-8859-16, KOI8-R, KOI8-U, macintosh, windows-874, windows-1250, windows-1251, windows-1253, windows-1254, windows-1255, windows-1256, windows-1257, windows-1258, x-mac-cyrillic.</p>
 <p>(ISO-8859-8-I shares ISO-8859-8's table; counted as one codec pair.)</p>
-<h1><a class="anchor" id="autotoc_md318"></a>
+<h1><a class="anchor" id="autotoc_md321"></a>
 Step 19: Single-byte encoder infra + all encoders (&lt;tt&gt;step19-single-byte-encode&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -184,7 +184,7 @@ Step 19: Single-byte encoder infra + all encoders (&lt;tt&gt;step19-single-byte-
 <li>[x] <code>make test</code> + <code>make lint</code> + <code>make coverage</code> (100% on new files)</li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md319"></a>
+<h1><a class="anchor" id="autotoc_md322"></a>
 Step 20: UTF-8 encoder (&lt;tt&gt;step20-utf8-encoder&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -194,7 +194,7 @@ Step 20: UTF-8 encoder (&lt;tt&gt;step20-utf8-encoder&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md320"></a>
+<h1><a class="anchor" id="autotoc_md323"></a>
 Step 21: UTF-16 decode + encode (&lt;tt&gt;step21-utf16&lt;/tt&gt;)</h1>
 <p>Algorithmic (no table). UTF-16BE and UTF-16LE, both directions.</p>
 <ul>
@@ -204,7 +204,7 @@ Step 21: UTF-16 decode + encode (&lt;tt&gt;step21-utf16&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md321"></a>
+<h1><a class="anchor" id="autotoc_md324"></a>
 Step 22: GBK decode + encode (&lt;tt&gt;step22-gbk&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -214,7 +214,7 @@ Step 22: GBK decode + encode (&lt;tt&gt;step22-gbk&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md322"></a>
+<h1><a class="anchor" id="autotoc_md325"></a>
 Step 23: gb18030 decode + encode (&lt;tt&gt;step23-gb18030&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -224,7 +224,7 @@ Step 23: gb18030 decode + encode (&lt;tt&gt;step23-gb18030&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md323"></a>
+<h1><a class="anchor" id="autotoc_md326"></a>
 Step 24: Big5 decode + encode (&lt;tt&gt;step24-big5&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -234,7 +234,7 @@ Step 24: Big5 decode + encode (&lt;tt&gt;step24-big5&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md324"></a>
+<h1><a class="anchor" id="autotoc_md327"></a>
 Step 25: Shift_JIS decode + encode (&lt;tt&gt;step25-shift-jis&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -244,7 +244,7 @@ Step 25: Shift_JIS decode + encode (&lt;tt&gt;step25-shift-jis&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md325"></a>
+<h1><a class="anchor" id="autotoc_md328"></a>
 Step 26: EUC-JP decode + encode (&lt;tt&gt;step26-euc-jp&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -254,7 +254,7 @@ Step 26: EUC-JP decode + encode (&lt;tt&gt;step26-euc-jp&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md326"></a>
+<h1><a class="anchor" id="autotoc_md329"></a>
 Step 27: ISO-2022-JP decode + encode (&lt;tt&gt;step27-iso-2022-jp&lt;/tt&gt;)</h1>
 <p>Stateful encoding (escape sequences).</p>
 <ul>
@@ -264,7 +264,7 @@ Step 27: ISO-2022-JP decode + encode (&lt;tt&gt;step27-iso-2022-jp&lt;/tt&gt;)</
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md327"></a>
+<h1><a class="anchor" id="autotoc_md330"></a>
 Step 28: EUC-KR decode + encode (&lt;tt&gt;step28-euc-kr&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -274,7 +274,7 @@ Step 28: EUC-KR decode + encode (&lt;tt&gt;step28-euc-kr&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md328"></a>
+<h1><a class="anchor" id="autotoc_md331"></a>
 Step 29: Round-trip composition (&lt;tt&gt;step29-roundtrip&lt;/tt&gt;)</h1>
 <p>Comprehensive round-trip tests for all implemented codecs.</p>
 <ul>
@@ -284,7 +284,7 @@ Step 29: Round-trip composition (&lt;tt&gt;step29-roundtrip&lt;/tt&gt;)</h1>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md330"></a>
+<h1><a class="anchor" id="autotoc_md333"></a>
 Step 30: WPT test vector integration (&lt;tt&gt;step30-wpt-vectors&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -296,7 +296,7 @@ Step 30: WPT test vector integration (&lt;tt&gt;step30-wpt-vectors&lt;/tt&gt;)</
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md331"></a>
+<h1><a class="anchor" id="autotoc_md334"></a>
 Step 31: WPT ISO-2022-JP + single-byte exhaustive (&lt;tt&gt;step31-wpt-iso2022jp-singlebyte&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -307,7 +307,7 @@ Step 31: WPT ISO-2022-JP + single-byte exhaustive (&lt;tt&gt;step31-wpt-iso2022j
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md332"></a>
+<h1><a class="anchor" id="autotoc_md335"></a>
 Step 32: ISO-2022-JP full WHATWG conformance (&lt;tt&gt;step32-iso2022jp-conformance&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -316,7 +316,7 @@ Step 32: ISO-2022-JP full WHATWG conformance (&lt;tt&gt;step32-iso2022jp-conform
 <li>[x] <code>make test</code> + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md333"></a>
+<h1><a class="anchor" id="autotoc_md336"></a>
 Step 33: WPT UTF-16 surrogate conformance (&lt;tt&gt;step33-wpt-utf16-surrogates&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -331,7 +331,7 @@ Step 33: WPT UTF-16 surrogate conformance (&lt;tt&gt;step33-wpt-utf16-surrogates
 <li>[x] <code>make lint</code> — clean</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md334"></a>
+<h1><a class="anchor" id="autotoc_md337"></a>
 Step 34: WPT fatal mode vectors (&lt;tt&gt;step34-wpt-fatal-vectors&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -346,7 +346,7 @@ Step 34: WPT fatal mode vectors (&lt;tt&gt;step34-wpt-fatal-vectors&lt;/tt&gt;)<
 <li>[x] <code>make lint</code> — clean</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md335"></a>
+<h1><a class="anchor" id="autotoc_md338"></a>
 Step 35: WPT BOM stripping conformance (&lt;tt&gt;step35-wpt-bom-vectors&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step35-wpt-bom-vectors</code> from <code>main</code></li>
@@ -364,7 +364,7 @@ Step 35: WPT BOM stripping conformance (&lt;tt&gt;step35-wpt-bom-vectors&lt;/tt&
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md337"></a>
+<h1><a class="anchor" id="autotoc_md340"></a>
 Step 37: WPT EOF vectors + Big5 conformance fix (&lt;tt&gt;step37-wpt-eof-vectors&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step37-wpt-eof-vectors</code> from <code>main</code></li>
@@ -382,7 +382,7 @@ Step 37: WPT EOF vectors + Big5 conformance fix (&lt;tt&gt;step37-wpt-eof-vector
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md339"></a>
+<h1><a class="anchor" id="autotoc_md342"></a>
 Step 36: WPT fatal single-byte (&lt;tt&gt;step36-wpt-fatal-single-byte&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step36-wpt-fatal-single-byte</code> from <code>main</code></li>
@@ -397,7 +397,7 @@ Step 36: WPT fatal single-byte (&lt;tt&gt;step36-wpt-fatal-single-byte&lt;/tt&gt
 <li>[x] <code>make lint</code> — clean</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md340"></a>
+<h1><a class="anchor" id="autotoc_md343"></a>
 Step 38: WPT UTF-8 surrogate encode vectors (&lt;tt&gt;step38-wpt-surrogates-utf8&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step38-wpt-surrogates-utf8</code> from <code>main</code></li>
@@ -413,9 +413,9 @@ Step 38: WPT UTF-8 surrogate encode vectors (&lt;tt&gt;step38-wpt-surrogates-utf
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md342"></a>
+<h1><a class="anchor" id="autotoc_md345"></a>
 Upcoming</h1>
-<h1><a class="anchor" id="autotoc_md343"></a>
+<h1><a class="anchor" id="autotoc_md346"></a>
 Step 39: WPT TextEncoder UTF-16 surrogate round-trip (&lt;tt&gt;step39-wpt-encoder-surrogates&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch from <code>main</code></li>
@@ -429,9 +429,9 @@ Step 39: WPT TextEncoder UTF-16 surrogate round-trip (&lt;tt&gt;step39-wpt-encod
 <li>[x] <code>make lint</code> — clean</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md344"></a>
+<h2><a class="anchor" id="autotoc_md347"></a>
 WPT TextEncoder UTF-16 surrogate round-trip (&lt;tt&gt;step39-wpt-encoder-surrogates&lt;/tt&gt;) — DONE</h2>
-<h2><a class="anchor" id="autotoc_md345"></a>
+<h2><a class="anchor" id="autotoc_md348"></a>
 Label lookup API (&lt;tt&gt;step39-label-lookup&lt;/tt&gt; or &lt;tt&gt;step40-label-lookup&lt;/tt&gt;)</h2>
 <p>WHATWG Encoding Standard §4.2 "Names and labels" defines ~200+ string labels that map to canonical encodings (e.g., <code>"sjis"</code>, <code>"x-sjis"</code>, <code>"shift_jis"</code> all → Shift_JIS). This is essential for:</p>
 <ul>
@@ -457,7 +457,7 @@ Label lookup API (&lt;tt&gt;step39-label-lookup&lt;/tt&gt; or &lt;tt&gt;step40-l
 <li>[x] <code>make test</code> (502 C++ + 171 Python) + <code>make lint</code></li>
 <li>[x] Push both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md346"></a>
+<h1><a class="anchor" id="autotoc_md349"></a>
 Step 41: &lt;tt&gt;sniff_encoding&lt;/tt&gt; BOM detection (&lt;tt&gt;step41-sniff-encoding&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step41-sniff-encoding</code> from <code>main</code></li>
@@ -466,7 +466,7 @@ Step 41: &lt;tt&gt;sniff_encoding&lt;/tt&gt; BOM detection (&lt;tt&gt;step41-sni
 <li>[x] <code>make test</code> (513 C++ + 171 Python all pass) + <code>make lint</code> (C++ clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md347"></a>
+<h1><a class="anchor" id="autotoc_md350"></a>
 Step 42: Umbrella header (&lt;tt&gt;step42-umbrella-header&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step42-umbrella-header</code> from <code>main</code></li>
@@ -477,7 +477,7 @@ Step 42: Umbrella header (&lt;tt&gt;step42-umbrella-header&lt;/tt&gt;)</h1>
 <li>[x] <code>make test</code> (521 C++ + 171 Python all pass) + <code>make lint</code> (C++ clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md348"></a>
+<h1><a class="anchor" id="autotoc_md351"></a>
 Step 43: &lt;tt&gt;transcode_string&lt;/tt&gt; one-shot function (&lt;tt&gt;step43-transcode-string&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step43-transcode-string</code> from <code>main</code></li>
@@ -489,7 +489,7 @@ Step 43: &lt;tt&gt;transcode_string&lt;/tt&gt; one-shot function (&lt;tt&gt;step
 <li>[x] <code>make test</code> (531 C++ + 171 Python all pass) + <code>make lint</code> (C++ clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md349"></a>
+<h1><a class="anchor" id="autotoc_md352"></a>
 Step 44: Coverage audit of &lt;tt&gt;transcode_string&lt;/tt&gt; (&lt;tt&gt;step44-coverage-audit&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step44-coverage-audit</code> from <code>main</code></li>
@@ -509,7 +509,7 @@ Step 44: Coverage audit of &lt;tt&gt;transcode_string&lt;/tt&gt; (&lt;tt&gt;step
 <li>[x] <code>make coverage</code>: lines 58.9→83.2%, functions 67.2→99.9%</li>
 <li>[x] Push GREEN to both remotes + merge to main</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md350"></a>
+<h1><a class="anchor" id="autotoc_md353"></a>
 Step 45: &lt;tt&gt;transcode_string&lt;/tt&gt; label overload (&lt;tt&gt;step45-transcode-string-label&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step45-transcode-string-label</code> from <code>main</code></li>
@@ -522,7 +522,7 @@ Step 45: &lt;tt&gt;transcode_string&lt;/tt&gt; label overload (&lt;tt&gt;step45-
 <li>[x] <code>make coverage</code>: lines 83.2%, functions 99.9% (unchanged — thin delegate)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md351"></a>
+<h1><a class="anchor" id="autotoc_md354"></a>
 Step 46: &lt;tt&gt;transcode_view&lt;/tt&gt; pipe composition helper (&lt;tt&gt;step46-transcode-view&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step46-transcode-view</code> from <code>main</code></li>
@@ -535,7 +535,7 @@ Step 46: &lt;tt&gt;transcode_view&lt;/tt&gt; pipe composition helper (&lt;tt&gt;
 <li>[x] <code>make coverage</code>: lines 83.4%, functions 99.9%</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md352"></a>
+<h1><a class="anchor" id="autotoc_md355"></a>
 Step 47: &lt;tt&gt;transcode_view&lt;/tt&gt; negative compile test + consteval test (&lt;tt&gt;step47-transcode-view-negative-consteval&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step47-transcode-view-negative-consteval</code> from <code>main</code></li>
@@ -547,7 +547,7 @@ Step 47: &lt;tt&gt;transcode_view&lt;/tt&gt; negative compile test + consteval t
 <li>[x] <code>make test</code> (558 C++ + 171 Python all pass) + <code>make lint</code> (C++ clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md353"></a>
+<h1><a class="anchor" id="autotoc_md356"></a>
 Step 48: &lt;tt&gt;sniff_encoding&lt;/tt&gt; negative compile test + Python lint fix (&lt;tt&gt;step48-sniff-negative-lint-fix&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step48-sniff-negative-lint-fix</code> from <code>main</code></li>
@@ -559,7 +559,7 @@ Step 48: &lt;tt&gt;sniff_encoding&lt;/tt&gt; negative compile test + Python lint
 <li>[x] <code>make test</code> (559 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean; papers/wg21 pre-existing only)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md354"></a>
+<h1><a class="anchor" id="autotoc_md357"></a>
 Step 49: &lt;tt&gt;whatwg_decode_view&lt;/tt&gt; coverage improvement (&lt;tt&gt;step49-decode-view-coverage&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step49-decode-view-coverage</code> from <code>main</code></li>
@@ -571,7 +571,7 @@ Step 49: &lt;tt&gt;whatwg_decode_view&lt;/tt&gt; coverage improvement (&lt;tt&gt
 <li>[x] <code>make coverage</code>: <code><a class="el" href="whatwg__decode__view_8hpp.html">whatwg_decode_view.hpp</a></code> 79.7% → 97.1%; overall lines 83.4% → 84.7%</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md355"></a>
+<h1><a class="anchor" id="autotoc_md358"></a>
 Step 50: iconv view boundary-condition tests (&lt;tt&gt;step50-iconv-boundary-tests&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step50-iconv-boundary-tests</code> from <code>main</code></li>
@@ -583,7 +583,7 @@ Step 50: iconv view boundary-condition tests (&lt;tt&gt;step50-iconv-boundary-te
 <li>[x] <code>make coverage</code>: <code>iconv_transcode_view</code> 84.8% → 94.9%; <code>iconv_transcode_or_error_view</code> 83.7% → 92.9%</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md356"></a>
+<h1><a class="anchor" id="autotoc_md359"></a>
 Step 51: iconv stateful flush (&lt;tt&gt;step51-iconv-stateful-flush&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step51-iconv-stateful-flush</code> from <code>main</code></li>
@@ -596,7 +596,7 @@ Step 51: iconv stateful flush (&lt;tt&gt;step51-iconv-stateful-flush&lt;/tt&gt;)
 <li>[x] <code>make test</code> (591 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md357"></a>
+<h1><a class="anchor" id="autotoc_md360"></a>
 Step 52: real-iconv ISO-2022-JP flush integration tests (&lt;tt&gt;step52-iconv-iso2022jp-flush-test&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step52-iconv-iso2022jp-flush-test</code> from <code>main</code></li>
@@ -607,7 +607,7 @@ Step 52: real-iconv ISO-2022-JP flush integration tests (&lt;tt&gt;step52-iconv-
 <li>[x] <code>make test</code> (595 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md358"></a>
+<h1><a class="anchor" id="autotoc_md361"></a>
 Step 53: coverage improvements (&lt;tt&gt;step53-coverage-improvements&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step53-coverage-improvements</code> from <code>main</code></li>
@@ -620,7 +620,7 @@ Step 53: coverage improvements (&lt;tt&gt;step53-coverage-improvements&lt;/tt&gt
 <li>[x] <code>make coverage</code>: <code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code> 92.0% → 100.0%; <code><a class="el" href="euc__jp_8hpp.html">euc_jp.hpp</a></code> 92.9% → 98.8%; <code><a class="el" href="gb18030_8hpp.html">gb18030.hpp</a></code> 93.3% → 95.0%; overall 85.1% → 85.4%</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md359"></a>
+<h1><a class="anchor" id="autotoc_md362"></a>
 Step 53b: unreachable code annotations (&lt;tt&gt;step53b-unreachable-annotations&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step53b-unreachable-annotations</code> from <code>main</code></li>
@@ -636,7 +636,7 @@ Step 53b: unreachable code annotations (&lt;tt&gt;step53b-unreachable-annotation
 <li>[x] <code>make test</code> (608 C++ + 171 Python all pass) + <code>make lint</code> (C++/tools clean)</li>
 <li>[x] Push GREEN to both remotes + merge to main + push both remotes</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md360"></a>
+<h1><a class="anchor" id="autotoc_md363"></a>
 Step 54: C++23 module support audit (&lt;tt&gt;step54-module-audit&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step54-module-audit</code> from <code>main</code></li>
@@ -650,7 +650,7 @@ Step 54: C++23 module support audit (&lt;tt&gt;step54-module-audit&lt;/tt&gt;)</
 <li>[x] Push main to both remotes</li>
 </ul>
 <p><b>Result</b>: Three iconv headers were found missing from the umbrella header (added in steps 11–13, predating the umbrella). Now all public APIs are properly exported by the C++23 module interface.</p>
-<h1><a class="anchor" id="autotoc_md361"></a>
+<h1><a class="anchor" id="autotoc_md364"></a>
 Step 55: Module integration and smoke tests (&lt;tt&gt;step55-module-tests&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step55-module-tests</code> from <code>main</code></li>
@@ -666,7 +666,7 @@ Step 55: Module integration and smoke tests (&lt;tt&gt;step55-module-tests&lt;/t
 <li>[x] Push both remotes + merge to main</li>
 </ul>
 <p><b>Result</b>: Module tests framework in place (requires GCC-16+ for compilation). Installtest now validates all key APIs work correctly. Fixed pre-existing issue where many headers weren't included in the installed package's FILE_SET. All 612 C++ + 171 Python tests pass.</p>
-<h1><a class="anchor" id="autotoc_md362"></a>
+<h1><a class="anchor" id="autotoc_md365"></a>
 Step 56: Coverage analysis — whatwg_decode_view.hpp (&lt;tt&gt;step56-decode-coverage&lt;/tt&gt;)</h1>
 <ul>
 <li>[x] Create branch <code>step56-decode-coverage</code> from <code>main</code></li>
@@ -689,7 +689,7 @@ Step 56: Coverage analysis — whatwg_decode_view.hpp (&lt;tt&gt;step56-decode-c
 </ul>
 <p><b>Result</b>: <a class="el" href="whatwg__decode__view_8hpp.html">whatwg_decode_view.hpp</a> is effectively 100% covered functionally. Coverage report shows 97.1% due to tool limitations with template code. Only 2 trivial uncovered lines remain in the library (edge cases for empty input). Total library coverage: 85.5% lines, 99.9% functions.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md364"></a>
+<h1><a class="anchor" id="autotoc_md367"></a>
 Notes</h1>
 <ul>
 <li>Each step's detailed plan: <code>docs/plans/step&lt;N&gt;-&lt;slug&gt;.md</code></li>

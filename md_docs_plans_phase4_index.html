@@ -99,12 +99,12 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase4_index.html',''); 
   <div class="headertitle"><div class="title">Phase 4: API Surface Gap Closure </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md464"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md467"></a>
 Context</h1>
 <p>The API Surface Matrix in the README identifies gaps where the pluggable codec and iconv backends lack operations that the WHATWG backend provides. Custom codecs are second-class citizens (no encode views, no bulk ops), and iconv has no bulk path (15-20x overhead vs raw iconv for "transcode this
 string").</p>
 <p>This phase closes those gaps so all three backends present matching named interfaces.</p>
-<h1><a class="anchor" id="autotoc_md465"></a>
+<h1><a class="anchor" id="autotoc_md468"></a>
 Step Index</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -123,7 +123,7 @@ Step Index</h1>
 <td class="markdownTableBodyNone">6   </td><td class="markdownTableBodyNone"><code>p4-step6-error-coherence</code>   </td><td class="markdownTableBodyNone">Unify or document error enum naming   </td><td class="markdownTableBodyNone">Steps 1-5   </td></tr>
 </table>
 <p>Steps 1-3 are the pluggable codec family (sequential dependency). Steps 4-5 are the iconv family (independent of pluggable work). Step 6 ties up naming coherence after all new APIs exist.</p>
-<h1><a class="anchor" id="autotoc_md466"></a>
+<h1><a class="anchor" id="autotoc_md469"></a>
 Standing Conventions</h1>
 <p>Same as Phase 3 — see <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> for branch discipline, coding rules, testing requirements, and commit conventions. </p>
 </div></div><!-- contents -->

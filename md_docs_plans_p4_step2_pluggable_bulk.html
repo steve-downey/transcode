@@ -101,21 +101,21 @@ $(document).ready(function(){initNavTree('md_docs_plans_p4_step2_pluggable_bulk.
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p4-step2-pluggable-bulk</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p4_step1_pluggable_encode.html">p4-step1-pluggable-encode.md</a> <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md261"></a>
+<h1><a class="anchor" id="autotoc_md264"></a>
 Goal</h1>
 <p>Add <code>decode_to</code>, <code>encode_to</code>, <code>decode_into</code>, <code>encode_into</code> overloads that accept pluggable codec objects (not just the WHATWG <code>codec</code> enum).</p>
-<h1><a class="anchor" id="autotoc_md262"></a>
+<h1><a class="anchor" id="autotoc_md265"></a>
 Context for Executing Agent</h1>
 <p>The existing bulk operations in <code><a class="el" href="bulk__transcode_8hpp.html">include/beman/transcode/detail/bulk_transcode.hpp</a></code> (lines 59-116) are template functions constrained on <code>codec C</code> (the WHATWG enum). They use <code>whatwg_decode&lt;C&gt;</code> / <code>whatwg_encode&lt;C&gt;</code> internally.</p>
 <p>The pluggable versions are additional overloads constrained on <code>decode_codec</code> / <code>encode_codec</code> concepts, using <code>decode(codec)</code> / <code>encode(codec)</code> from Step 1.</p>
-<h2><a class="anchor" id="autotoc_md263"></a>
+<h2><a class="anchor" id="autotoc_md266"></a>
 Signature difference</h2>
 <p>WHATWG: <code>decode_to&lt;C&gt;(range)</code> — enum as NTTP, no runtime codec argument Pluggable: <code>decode_to(codec, range)</code> — codec object as first argument</p>
 <p>This is intentional: the codec object may carry state (e.g., a custom table pointer), while the WHATWG enum is a compile-time constant.</p>
-<h2><a class="anchor" id="autotoc_md264"></a>
+<h2><a class="anchor" id="autotoc_md267"></a>
 Fast path opportunity</h2>
 <p>For codecs satisfying <code>random_access_decode_codec_type</code>, <code>decode_to</code> can use the <code>decode_byte()</code> method directly instead of going through the view, matching the WHATWG single-byte fast path in the existing code.</p>
-<h1><a class="anchor" id="autotoc_md265"></a>
+<h1><a class="anchor" id="autotoc_md268"></a>
 Deliverables</h1>
 <ul>
 <li>Modify <code><a class="el" href="bulk__transcode_8hpp.html">include/beman/transcode/detail/bulk_transcode.hpp</a></code>:<ul>
@@ -127,7 +127,7 @@ Deliverables</h1>
 </li>
 <li><code>tests/beman/transcode/pluggable_bulk.test.cpp</code> — runtime and consteval tests</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md266"></a>
+<h1><a class="anchor" id="autotoc_md269"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p4-step2-pluggable-bulk</code> from <code>main</code></li>
@@ -148,11 +148,11 @@ Procedure</h1>
 <li>Run <code>make test</code> + <code>make lint</code></li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md267"></a>
+<h1><a class="anchor" id="autotoc_md270"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md268"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md271"></a>
 Handoff to Step 3</h1>
 <p>Step 2 done, next read <code><a class="el" href="p4-step3-pluggable-transcode_8md.html">docs/plans/p4-step3-pluggable-transcode.md</a></code>. </p>
 </div></div><!-- contents -->

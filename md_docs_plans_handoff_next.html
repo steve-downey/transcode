@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>beman.transcode: Handoff: Phase 3 Complete</title>
+<title>beman.transcode: Handoff: Coverage Audit Complete — Ready for Phase 5 Planning</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -96,91 +96,111 @@ $(document).ready(function(){initNavTree('md_docs_plans_handoff_next.html',''); 
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">Handoff: Phase 3 Complete </div></div>
+  <div class="headertitle"><div class="title">Handoff: Coverage Audit Complete — Ready for Phase 5 Planning </div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h1><a class="anchor" id="autotoc_md111"></a>
 Completed</h1>
 <ul>
-<li><b>P3-Step 12: Reporting and Reproducibility Pack</b> — done on <code>p3-step12-reporting-and-repro</code> branch</li>
+<li><b>P4-Step 1: Pluggable Encode View</b> — done, merged to <code>main</code></li>
+<li><b>P4-Step 2: Pluggable Bulk Operations</b> — done, merged to <code>main</code></li>
+<li><b>P4-Step 3: Pluggable Transcode Pipeline</b> — done, merged to <code>main</code></li>
+<li><b>P4-Step 4: iconv Bulk Operations</b> — done, merged to <code>main</code></li>
+<li><b>P4-Step 5: null_term support for iconv views</b> — done, merged to <code>main</code></li>
+<li><b>P4-Step 6: Error Enum Coherence</b> — done, merged to <code>main</code></li>
+<li><b>Coverage Audit</b> — done on <code>coverage-p4-audit</code> branch</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md112"></a>
-What was done</h1>
+What was done in the Coverage Audit</h1>
+<p>Ran <code>make coverage</code> on <code>main</code> after merging all P4 steps. Baseline:</p><ul>
+<li><b>Lines</b>: 78.3% (8234/10510)</li>
+<li><b>Functions</b>: 96.5% (2184/2264) — already excellent</li>
+<li><b>Branches</b>: 42.6% — not a priority per CLAUDE.md</li>
+</ul>
+<p>Added 10 new tests (+10 C++ tests, now 707 total) across 5 files:</p>
+<h2><a class="anchor" id="autotoc_md113"></a>
+&lt;tt&gt;tests/beman/transcode/iconv_mock.hpp&lt;/tt&gt;</h2>
 <ul>
-<li>Created <code>tools/process_benchmark_results.py</code>:<ul>
-<li>Parses one or more Catch2 XML files produced via <code>--reporter xml</code></li>
-<li>Loads corpus byte counts from <code>data/benchmarks/corpus_manifest.json</code> (downloaded) and/or <code>benchmark/corpus/</code> (checked-in small files)</li>
-<li>Infers the corpus file for each benchmark via a priority-ordered hint table (<code>CORPUS_NAME_HINTS</code>); more-specific patterns (windows-1251, Shift-JIS) win over generic keywords (English, Arabic, Russian)</li>
-<li>Computes throughput in MiB/s: <code>corpus_bytes / (mean_ns × 10⁻⁹) / 2²⁰</code></li>
-<li>Renders a Markdown table (name, corpus bytes, mean µs, ±CI, MiB/s)</li>
-<li>Optionally writes a Vega-Lite JSON bar-chart spec (<code>--vegalite PATH</code>)</li>
-<li>Return type of <code>render_vegalite_spec</code> is <code>dict[str, Any]</code> (avoids double-subscript mypy errors on <code>dict[str, object]</code>)</li>
+<li>Added <code>mock_iconv_open_fail</code> — returns <code>(iconv_t)-1</code> to simulate <code>iconv_open</code> failure.</li>
 </ul>
-</li>
-<li>Created <code>tools/tests/test_process_benchmark_results.py</code>: 40 pytest tests covering all public functions</li>
-<li>Created <code><a class="el" href="README_8md.html">docs/benchmarks/README.md</a></code>: full benchmark guide (corpus files, quick start, throughput formula, report commands, matrix reproduction steps)</li>
-<li>Modified <code>Makefile</code>:<ul>
-<li><code>bench-report</code>: build RelWithDebInfo, run smoke, save XML, render Markdown report</li>
-<li><code>bench-lto-xml</code>: configure (if needed), build LTO benchmarks, save XML</li>
-<li><code>bench-report-lto</code>: run bench-lto-xml then process_benchmark_results with Vega-Lite</li>
-</ul>
-</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md113"></a>
-Sample Output</h1>
-<div class="fragment"><div class="line">## Benchmark Results — RelWithDebInfo</div>
-<div class="line"> </div>
-<div class="line">| Benchmark | Corpus (B) | Mean | ±CI | MiB/s |</div>
-<div class="line">|-----------|-----------|------|-----|-------|</div>
-<div class="line">| whatwg_decode utf_8 en_mars corpus | 586 | 0.1633 µs | ±0.00196 µs | 3421.6 |</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md114"></a>
-Files created</h1>
+<h2><a class="anchor" id="autotoc_md114"></a>
+&lt;tt&gt;tests/beman/transcode/iconv_bulk.test.cpp&lt;/tt&gt; (+7 tests)</h2>
 <ul>
-<li><code>tools/process_benchmark_results.py</code></li>
-<li><code>tools/tests/test_process_benchmark_results.py</code></li>
-<li><code><a class="el" href="README_8md.html">docs/benchmarks/README.md</a></code></li>
+<li><code>iconv_transcode_to</code> open failure → empty container (line 56)</li>
+<li><code>iconv_transcode_into</code> open failure → unchanged iterator (line 151)</li>
+<li><code>iconv_transcode_to_or_error</code> open failure → <code>invalid_sequence</code> (line 219)</li>
+<li><code>iconv_transcode_into</code> with pairwise mock → EINVAL orphan byte → '?' (lines 177-179)</li>
+<li><code>iconv_transcode_into</code> stateful flush → 0x0F appended (lines 185-191)</li>
+<li><code>iconv_transcode_to_or_error</code> stateful flush → 0x0F appended (lines 250-253)</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md115"></a>
-Files modified</h1>
+<h2><a class="anchor" id="autotoc_md115"></a>
+&lt;tt&gt;tests/beman/transcode/bulk_transcode.test.cpp&lt;/tt&gt; (+2 tests)</h2>
 <ul>
-<li><code>Makefile</code> — <code>bench-report</code>, <code>bench-report-lto</code>, <code>bench-lto-xml</code> targets</li>
+<li><code>decode_to&lt;codec::iso_8859_6&gt;</code> with unmapped byte 0xA1 → U+FFFD (line 147 in <code><a class="el" href="single__byte__tables_8hpp.html">single_byte_tables.hpp</a></code>)</li>
+<li><code>encode_to&lt;codec::iso_8859_6&gt;</code> with U+0100 (not in table) → '?' (line 160 in <code><a class="el" href="single__byte__tables_8hpp.html">single_byte_tables.hpp</a></code>)</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md116"></a>
-Implementation notes</h1>
+<h2><a class="anchor" id="autotoc_md116"></a>
+&lt;tt&gt;tests/beman/transcode/whatwg_decode_or_error.test.cpp&lt;/tt&gt; (+1 test)</h2>
 <ul>
-<li><code>bench-report</code> always overrides <code>CONFIG=RelWithDebInfo</code> so it never runs with Asan overhead; the recipe uses the Multi-Config <code>.build/build-system/</code> tree.</li>
-<li><code>bench-lto-xml</code> is a separate helper so <code>bench-report-lto</code> can be composed cleanly without duplicating the LTO build logic.</li>
-<li>The corpus manifest <code>data/benchmarks/corpus_manifest.json</code> is NOT committed (generated by <code>uv run python tools/download_benchmark_corpora.py</code>). The tool falls back to the small checked-in corpus in <code>benchmark/corpus/</code> when the manifest is absent.</li>
-<li>"Japanese" is deliberately absent from <code>CORPUS_NAME_HINTS</code> because it is ambiguous between <code>ja_mars_utf8.txt</code> and <code>ja_mars_shiftjis.bin</code>; benchmarks named "Shift-JIS Japanese" match via the more-specific "Shift-JIS" hint.</li>
+<li><code>\xF4\x90\x80\x80</code> → <code>out_of_range</code> (line 66 in <code><a class="el" href="utf8_8hpp.html">utf8.hpp</a></code>): F4 with first continuation &gt; 0x8F = U+110000, beyond Unicode max.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md117"></a>
-Phase 3 Status: COMPLETE</h1>
-<p>All 12 steps of Phase 3 are done and merged into main (or pending merge for steps 10–12 on their branches). To rerun the full benchmark suite:</p>
-<div class="fragment"><div class="line"># Download full corpus (one-time, requires network)</div>
-<div class="line">uv run python tools/download_benchmark_corpora.py</div>
-<div class="line"> </div>
-<div class="line"># Run the full matrix (GCC -O3, GCC -O3 -flto, Clang -O3 -flto where available)</div>
-<div class="line">make bench-matrix</div>
-<div class="line"> </div>
-<div class="line"># Generate LTO throughput report with Vega-Lite chart</div>
-<div class="line">make bench-report-lto</div>
-<div class="line"> </div>
-<div class="line"># Print environment metadata</div>
-<div class="line">make bench-env</div>
-</div><!-- fragment --><p>See <code><a class="el" href="README_8md.html">docs/benchmarks/README.md</a></code> for the complete guide.</p>
-<h1><a class="anchor" id="autotoc_md118"></a>
-Current State</h1>
+<h2><a class="anchor" id="autotoc_md117"></a>
+&lt;tt&gt;tests/beman/transcode/labels.test.cpp&lt;/tt&gt; (+1 test)</h2>
 <ul>
-<li><code>make test</code> passes (671 C++ + 229 Python tests)</li>
-<li><code>make lint</code> passes (mypy, ruff, clang-format, gersemi, shellcheck all clean)</li>
-<li>All existing <code>make bench-*</code> targets work (see <a class="el" href="phase3-handoff_8md.html">phase3-handoff.md</a> for the full list)</li>
-<li><code>make bench-report</code> — build RelWithDebInfo + run smoke + Markdown table</li>
-<li><code>make bench-report-lto</code> — GCC LTO + run smoke + Markdown table + Vega-Lite spec</li>
-<li><code>make bench-lto-xml</code> — build LTO benchmarks and save raw XML</li>
+<li>64-char label → <code>std::nullopt</code> (line 275 in <code><a class="el" href="labels_8hpp.html">labels.hpp</a></code>): label buffer is 63 bytes; label ≥ 64 bytes cannot match any codec.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md118"></a>
+After audit coverage</h2>
+<ul>
+<li><b>Lines</b>: 78.3% (8267/10564)</li>
+<li>**<code><a class="el" href="labels_8hpp.html">labels.hpp</a></code>**: 100% (was 94.7%)</li>
+<li>**<code><a class="el" href="iconv__bulk_8hpp.html">iconv_bulk.hpp</a></code>**: 83.6% (was 78.9%)</li>
+<li>**<code><a class="el" href="single__byte__tables_8hpp.html">single_byte_tables.hpp</a></code>**: 88.9% (was 77.8%)</li>
+<li>**<code><a class="el" href="utf8_8hpp.html">utf8.hpp</a></code>**: 94.6% (was 91.9%)</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md119"></a>
+Remaining Coverage Gaps (Explained)</h1>
+<p>These are NOT worth fighting. Each has a documented reason:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">File   </th><th class="markdownTableHeadNone">Lines   </th><th class="markdownTableHeadNone">Reason    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code><a class="el" href="single__byte_8hpp.html">single_byte.hpp</a></code>   </td><td class="markdownTableBodyNone">51, 56   </td><td class="markdownTableBodyNone">Template inlining artifact — gcov attributes coverage to <code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code> call site; the code runs but isn't attributed here    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code><a class="el" href="utf8_8hpp.html">utf8.hpp</a></code>   </td><td class="markdownTableBodyNone">73, 75   </td><td class="markdownTableBodyNone">Defensive dead code: surrogates always caught at line 62 (byte-level), 4-byte sequences can never produce values &gt; 0x10FFFF given the F4/0x90 guard    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code><a class="el" href="iconv__bulk_8hpp.html">iconv_bulk.hpp</a></code>   </td><td class="markdownTableBodyNone">109, 185, 250   </td><td class="markdownTableBodyNone">gcov artifact: <code>while(true)</code> headers are not marked covered on a single-iteration loop    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code><a class="el" href="iconv__bulk_8hpp.html">iconv_bulk.hpp</a></code>   </td><td class="markdownTableBodyNone">83-87, 96-100   </td><td class="markdownTableBodyNone">Sub-cases requiring EILSEQ/EINVAL simultaneously with a full output buffer — needs a mock that coordinates two conditions at once    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code><a class="el" href="iconv__bulk_8hpp.html">iconv_bulk.hpp</a></code>   </td><td class="markdownTableBodyNone">114-118, 254-261   </td><td class="markdownTableBodyNone">E2BIG during stateful flush — requires a mock that forces E2BIG on first flush then succeeds on second; complex stateful mock    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code><a class="el" href="single__byte__tables_8hpp.html">single_byte_tables.hpp</a></code>   </td><td class="markdownTableBodyNone">144, 155   </td><td class="markdownTableBodyNone"><code>table == nullptr</code> guard in decode/encode — only reachable via <code>single_byte_decode&lt;codec::replacement&gt;</code> streaming view, which no current test exercises    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code><a class="el" href="iconv__transcode__or__error__view_8hpp.html">iconv_transcode_or_error_view.hpp</a></code>   </td><td class="markdownTableBodyNone">2 lines   </td><td class="markdownTableBodyNone">Iterator equality when both iterators are mid-range (not at sentinel)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code>   </td><td class="markdownTableBodyNone">6 lines   </td><td class="markdownTableBodyNone">Iterator equality when both iterators are mid-range    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code><a class="el" href="bulk__transcode_8hpp.html">bulk_transcode.hpp</a></code>   </td><td class="markdownTableBodyNone">74, 92   </td><td class="markdownTableBodyNone">Closing <code>}</code> of if-constexpr branches — gcov attribute artifact   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md120"></a>
+Current State</h1>
+<ul>
+<li><code>make test</code> passes: 707 C++ tests + 250 Python tests, all green</li>
+<li><code>make lint</code> passes: all hooks clean</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md121"></a>
 Branch State</h1>
-<p>Steps 3–11 are merged into <code>main</code>; step 12 is on <code>p3-step12-reporting-and-repro</code>. The user will merge <code>p3-step12-reporting-and-repro</code> to <code>main</code>. No further steps are planned for Phase 3. </p>
+<p><code>coverage-p4-audit</code> is ready to merge to <code>main</code>. Merge with <code>--no-ff</code>.</p>
+<h1><a class="anchor" id="autotoc_md122"></a>
+What Comes Next</h1>
+<p>The coverage audit is done. Actionable next steps, in priority order:</p>
+<ol type="1">
+<li><b>Paper update</b> (<code>papers/transcode-view.md</code>) — The pluggable codec API section was written before Steps 1-3 (encode views, bulk ops, transcode pipeline). It needs a new section describing these additions with code examples, matching the style of the existing WHATWG codec sections. Key files to read: <code><a class="el" href="encode__view_8hpp.html">include/beman/transcode/encode_view.hpp</a></code>, <code>include/beman/transcode/bulk_transcode.hpp</code>, <code>include/beman/transcode/transcode_view.hpp</code>.</li>
+<li><b>WHATWG null-terminated encode gap</b> — The README API matrix shows <code>views::null_term</code> as ✅ for the WHATWG decode column but 🔴 for encode. The <code>whatwg_encode</code> view works fine with null_term input (it's a unicode scalar range, not a byte range), but there are no tests for it.</li>
+<li><b>BOM sniffing / runtime transcode gaps</b> — The README shows 🔴 for runtime transcode and BOM sniffing in pluggable and iconv columns. These are larger features; a Phase 5 plan would be needed.</li>
+</ol>
+<p>A fresh agent should read <code><a class="el" href="phase4-index_8md.html">docs/plans/phase4-index.md</a></code> and this file to understand the completed state before starting new work. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

@@ -100,7 +100,6 @@ $(document).ready(function(){initNavTree('namespacebeman_1_1transcoding.html',''
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#concepts">Concepts</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
@@ -125,7 +124,15 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__view.html">decode_view</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">encode_closure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__or__error__closure.html">encode_or_error_closure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1encode__or__error__view.html">encode_or_error_view</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__result.html">encode_result</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1encode__view.html">encode_view</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1full__table__codec.html">full_table_codec</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -142,6 +149,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1null__sentinel__t.html">null_sentinel_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1pluggable__transcode__closure.html">pluggable_transcode_closure</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__or__error__view.html">random_access_decode_or_error_view</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -198,11 +207,6 @@ Concepts</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptbeman_1_1transcoding_1_1unicode__scalar__range.html">unicode_scalar_range</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:adcc83abdce7a2758e9de01c2fc7c123c"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#adcc83abdce7a2758e9de01c2fc7c123c">decode_error</a> = <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a></td></tr>
-<tr class="separator:adcc83abdce7a2758e9de01c2fc7c123c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -287,16 +291,27 @@ Functions</h2></td></tr>
 <tr class="memitem:afab0bb5a673c5cc8c22f677d8bcfc120"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, legacy_byte_range R&gt; </td></tr>
 <tr class="memitem:afab0bb5a673c5cc8c22f677d8bcfc120"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; char32_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#afab0bb5a673c5cc8c22f677d8bcfc120">decode_to</a> (R &amp;&amp;source)</td></tr>
 <tr class="separator:afab0bb5a673c5cc8c22f677d8bcfc120"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2253e0ee556cfcdc70e51de14013e2b7"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, typename Container  = std::string, unicode_scalar_range R&gt; <br />
-requires detail::bulk_output_container&lt;Container, char&gt;</td></tr>
-<tr class="memitem:a2253e0ee556cfcdc70e51de14013e2b7"><td class="memTemplItemLeft" align="right" valign="top">Container&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a2253e0ee556cfcdc70e51de14013e2b7">encode_to</a> (R &amp;&amp;source)</td></tr>
-<tr class="separator:a2253e0ee556cfcdc70e51de14013e2b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d4c8de8e3875de1f29bd72a6c554749"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, typename Container  = std::string, unicode_scalar_range R&gt; </td></tr>
+<tr class="memitem:a5d4c8de8e3875de1f29bd72a6c554749"><td class="memTemplItemLeft" align="right" valign="top">Container&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a5d4c8de8e3875de1f29bd72a6c554749">encode_to</a> (R &amp;&amp;source)</td></tr>
+<tr class="separator:a5d4c8de8e3875de1f29bd72a6c554749"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d343993381aa73aaa3ee2367d8e92ff"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, legacy_byte_range R, std::output_iterator&lt; char32_t &gt; Output&gt; </td></tr>
 <tr class="memitem:a7d343993381aa73aaa3ee2367d8e92ff"><td class="memTemplItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a7d343993381aa73aaa3ee2367d8e92ff">decode_into</a> (R &amp;&amp;source, Output output)</td></tr>
 <tr class="separator:a7d343993381aa73aaa3ee2367d8e92ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4cb8e42c7c4590e4402244a8ab3a027d"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, unicode_scalar_range R, std::output_iterator&lt; char &gt; Output&gt; </td></tr>
 <tr class="memitem:a4cb8e42c7c4590e4402244a8ab3a027d"><td class="memTemplItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a4cb8e42c7c4590e4402244a8ab3a027d">encode_into</a> (R &amp;&amp;source, Output output)</td></tr>
 <tr class="separator:a4cb8e42c7c4590e4402244a8ab3a027d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75b12d58f0b3c9377f536e5c46959c4a"><td class="memTemplParams" colspan="2">template&lt;decode_codec Codec, legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:a75b12d58f0b3c9377f536e5c46959c4a"><td class="memTemplItemLeft" align="right" valign="top">constexpr std::vector&lt; char32_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a75b12d58f0b3c9377f536e5c46959c4a">decode_to</a> (Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>, R &amp;&amp;source)</td></tr>
+<tr class="separator:a75b12d58f0b3c9377f536e5c46959c4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f6eb3581f3ac2bcbcdda1d1d7a63d59"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec, typename Container  = std::string, unicode_scalar_range R&gt; </td></tr>
+<tr class="memitem:a8f6eb3581f3ac2bcbcdda1d1d7a63d59"><td class="memTemplItemLeft" align="right" valign="top">constexpr Container&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a8f6eb3581f3ac2bcbcdda1d1d7a63d59">encode_to</a> (Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>, R &amp;&amp;source)</td></tr>
+<tr class="separator:a8f6eb3581f3ac2bcbcdda1d1d7a63d59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b568f0d2e6499572d0da117be67e1c5"><td class="memTemplParams" colspan="2">template&lt;decode_codec Codec, legacy_byte_range R, std::output_iterator&lt; char32_t &gt; Output&gt; </td></tr>
+<tr class="memitem:a0b568f0d2e6499572d0da117be67e1c5"><td class="memTemplItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a0b568f0d2e6499572d0da117be67e1c5">decode_into</a> (Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>, R &amp;&amp;source, Output output)</td></tr>
+<tr class="separator:a0b568f0d2e6499572d0da117be67e1c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb24b6b61868de408d0c373f2f7f708b"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec, unicode_scalar_range R, std::output_iterator&lt; char &gt; Output&gt; </td></tr>
+<tr class="memitem:acb24b6b61868de408d0c373f2f7f708b"><td class="memTemplItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#acb24b6b61868de408d0c373f2f7f708b">encode_into</a> (Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>, R &amp;&amp;source, Output output)</td></tr>
+<tr class="separator:acb24b6b61868de408d0c373f2f7f708b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66a54f73e921a9aa3ccdf21aa982e3ec"><td class="memItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a66a54f73e921a9aa3ccdf21aa982e3ec">get_encoding</a> (std::string_view label) noexcept</td></tr>
 <tr class="separator:a66a54f73e921a9aa3ccdf21aa982e3ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a603156a9d20e68760ab8a23fb1e64f70"><td class="memTemplParams" colspan="2">template&lt;std::contiguous_iterator I&gt; </td></tr>
@@ -309,6 +324,33 @@ requires detail::bulk_output_container&lt;Container, char&gt;</td></tr>
 <tr class="separator:a56ed76d2fca064c209e690f3bfe595d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae36baae686b27c6b6bc50333f2616678"><td class="memItemLeft" align="right" valign="top">std::optional&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#ae36baae686b27c6b6bc50333f2616678">transcode_string</a> (std::span&lt; const char &gt; src, std::string_view from_label, std::string_view to_label)</td></tr>
 <tr class="separator:ae36baae686b27c6b6bc50333f2616678"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1554cf1fb18585527a6506d8afaca87f"><td class="memTemplParams" colspan="2">template&lt;decode_codec From, encode_codec To&gt; </td></tr>
+<tr class="memitem:a1554cf1fb18585527a6506d8afaca87f"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1pluggable__transcode__closure.html">pluggable_transcode_closure</a>&lt; From, To &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a1554cf1fb18585527a6506d8afaca87f">pluggable_transcode</a> (From from, To to)</td></tr>
+<tr class="separator:a1554cf1fb18585527a6506d8afaca87f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb7b318ba17a0e44907744ff34cf98d7"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec&gt; </td></tr>
+<tr class="memitem:acb7b318ba17a0e44907744ff34cf98d7"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">encode_closure</a>&lt; Codec &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#acb7b318ba17a0e44907744ff34cf98d7">encode</a> (Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>={})</td></tr>
+<tr class="separator:acb7b318ba17a0e44907744ff34cf98d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b74d40816b9b97e80cfcc816ba89c1e"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec&gt; </td></tr>
+<tr class="memitem:a7b74d40816b9b97e80cfcc816ba89c1e"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1encode__or__error__closure.html">encode_or_error_closure</a>&lt; Codec &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a7b74d40816b9b97e80cfcc816ba89c1e">encode_or_error</a> (Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>={})</td></tr>
+<tr class="separator:a7b74d40816b9b97e80cfcc816ba89c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fdf5884cb4687b0ecf581e3c5330649"><td class="memTemplParams" colspan="2">template&lt;typename Container  = std::string, typename IconvFns , legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:a9fdf5884cb4687b0ecf581e3c5330649"><td class="memTemplItemLeft" align="right" valign="top">Container&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a9fdf5884cb4687b0ecf581e3c5330649">iconv_transcode_to</a> (R &amp;&amp;source, const char *from, const char *to, IconvFns fns)</td></tr>
+<tr class="separator:a9fdf5884cb4687b0ecf581e3c5330649"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af52ca8888f11ec3a6b0148123816d22a"><td class="memTemplParams" colspan="2">template&lt;typename Container  = std::string, legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:af52ca8888f11ec3a6b0148123816d22a"><td class="memTemplItemLeft" align="right" valign="top">Container&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#af52ca8888f11ec3a6b0148123816d22a">iconv_transcode_to</a> (R &amp;&amp;source, const char *from, const char *to)</td></tr>
+<tr class="separator:af52ca8888f11ec3a6b0148123816d22a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43d5fe1038fd6241a6486baf3bb2a55c"><td class="memTemplParams" colspan="2">template&lt;typename IconvFns , legacy_byte_range R, std::output_iterator&lt; char &gt; Output&gt; </td></tr>
+<tr class="memitem:a43d5fe1038fd6241a6486baf3bb2a55c"><td class="memTemplItemLeft" align="right" valign="top">Output&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a43d5fe1038fd6241a6486baf3bb2a55c">iconv_transcode_into</a> (R &amp;&amp;source, const char *from, const char *to, Output output, IconvFns fns)</td></tr>
+<tr class="separator:a43d5fe1038fd6241a6486baf3bb2a55c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06d518f97b7706b182ba701e02be1da3"><td class="memTemplParams" colspan="2">template&lt;legacy_byte_range R, std::output_iterator&lt; char &gt; Output&gt; </td></tr>
+<tr class="memitem:a06d518f97b7706b182ba701e02be1da3"><td class="memTemplItemLeft" align="right" valign="top">Output&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a06d518f97b7706b182ba701e02be1da3">iconv_transcode_into</a> (R &amp;&amp;source, const char *from, const char *to, Output output)</td></tr>
+<tr class="separator:a06d518f97b7706b182ba701e02be1da3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4e3f677d12987bd36e5b70b5758116e"><td class="memTemplParams" colspan="2">template&lt;typename Container  = std::string, typename IconvFns , legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:ac4e3f677d12987bd36e5b70b5758116e"><td class="memTemplItemLeft" align="right" valign="top">std::expected&lt; Container, <a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730">iconv_error</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#ac4e3f677d12987bd36e5b70b5758116e">iconv_transcode_to_or_error</a> (R &amp;&amp;source, const char *from, const char *to, IconvFns fns)</td></tr>
+<tr class="separator:ac4e3f677d12987bd36e5b70b5758116e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7f6863870578b4e9fb2fce0890f1ce9"><td class="memTemplParams" colspan="2">template&lt;typename Container  = std::string, legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:ae7f6863870578b4e9fb2fce0890f1ce9"><td class="memTemplItemLeft" align="right" valign="top">std::expected&lt; Container, <a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730">iconv_error</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#ae7f6863870578b4e9fb2fce0890f1ce9">iconv_transcode_to_or_error</a> (R &amp;&amp;source, const char *from, const char *to)</td></tr>
+<tr class="separator:ae7f6863870578b4e9fb2fce0890f1ce9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8052302218d5a4ad20fe0e26e198765b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structbeman_1_1transcoding_1_1iconv__functions.html">iconv_functions</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b">make_real_iconv_fns</a> () noexcept</td></tr>
 <tr class="separator:a8052302218d5a4ad20fe0e26e198765b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab66a3b96e24d01f79bc11a5b9731dcb"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#aab66a3b96e24d01f79bc11a5b9731dcb">iconv_transcode</a> (const char *from, const char *to, std::span&lt; char &gt; buf)</td></tr>
@@ -342,21 +384,6 @@ Variables</h2></td></tr>
 <tr class="memitem:a62b7811f7a198b10e6372e16c5683b07"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html">whatwg_encode_or_error_closure</a>&lt; C &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a62b7811f7a198b10e6372e16c5683b07">whatwg_encode_or_error</a> {}</td></tr>
 <tr class="separator:a62b7811f7a198b10e6372e16c5683b07"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Typedef Documentation</h2>
-<a id="adcc83abdce7a2758e9de01c2fc7c123c" name="adcc83abdce7a2758e9de01c2fc7c123c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adcc83abdce7a2758e9de01c2fc7c123c">&#9670;&#160;</a></span>decode_error</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">using <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">beman::transcoding::decode_error</a> = typedef <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="a20dfb324ebd26c6127d014520f93005a" name="a20dfb324ebd26c6127d014520f93005a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a20dfb324ebd26c6127d014520f93005a">&#9670;&#160;</a></span>codec</h2>
@@ -508,8 +535,52 @@ template&lt;decode_codec Codec&gt; </div>
 
 </div>
 </div>
+<a id="a0b568f0d2e6499572d0da117be67e1c5" name="a0b568f0d2e6499572d0da117be67e1c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b568f0d2e6499572d0da117be67e1c5">&#9670;&#160;</a></span>decode_into() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;decode_codec Codec, legacy_byte_range R, std::output_iterator&lt; char32_t &gt; Output&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr void beman::transcoding::decode_into </td>
+          <td>(</td>
+          <td class="paramtype">Codec&#160;</td>
+          <td class="paramname"><em>codec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Output&#160;</td>
+          <td class="paramname"><em>output</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a7d343993381aa73aaa3ee2367d8e92ff" name="a7d343993381aa73aaa3ee2367d8e92ff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d343993381aa73aaa3ee2367d8e92ff">&#9670;&#160;</a></span>decode_into()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d343993381aa73aaa3ee2367d8e92ff">&#9670;&#160;</a></span>decode_into() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -574,8 +645,46 @@ template&lt;decode_codec Codec&gt; </div>
 
 </div>
 </div>
+<a id="a75b12d58f0b3c9377f536e5c46959c4a" name="a75b12d58f0b3c9377f536e5c46959c4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75b12d58f0b3c9377f536e5c46959c4a">&#9670;&#160;</a></span>decode_to() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;decode_codec Codec, legacy_byte_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr std::vector&lt; char32_t &gt; beman::transcoding::decode_to </td>
+          <td>(</td>
+          <td class="paramtype">Codec&#160;</td>
+          <td class="paramname"><em>codec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="afab0bb5a673c5cc8c22f677d8bcfc120" name="afab0bb5a673c5cc8c22f677d8bcfc120"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afab0bb5a673c5cc8c22f677d8bcfc120">&#9670;&#160;</a></span>decode_to()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afab0bb5a673c5cc8c22f677d8bcfc120">&#9670;&#160;</a></span>decode_to() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -594,8 +703,80 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
+<a id="acb7b318ba17a0e44907744ff34cf98d7" name="acb7b318ba17a0e44907744ff34cf98d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb7b318ba17a0e44907744ff34cf98d7">&#9670;&#160;</a></span>encode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;encode_codec Codec&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">encode_closure</a>&lt; Codec &gt; beman::transcoding::encode </td>
+          <td>(</td>
+          <td class="paramtype">Codec&#160;</td>
+          <td class="paramname"><em>codec</em> = <code>{}</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acb24b6b61868de408d0c373f2f7f708b" name="acb24b6b61868de408d0c373f2f7f708b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb24b6b61868de408d0c373f2f7f708b">&#9670;&#160;</a></span>encode_into() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;encode_codec Codec, unicode_scalar_range R, std::output_iterator&lt; char &gt; Output&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr void beman::transcoding::encode_into </td>
+          <td>(</td>
+          <td class="paramtype">Codec&#160;</td>
+          <td class="paramname"><em>codec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Output&#160;</td>
+          <td class="paramname"><em>output</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a4cb8e42c7c4590e4402244a8ab3a027d" name="a4cb8e42c7c4590e4402244a8ab3a027d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4cb8e42c7c4590e4402244a8ab3a027d">&#9670;&#160;</a></span>encode_into()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a4cb8e42c7c4590e4402244a8ab3a027d">&#9670;&#160;</a></span>encode_into() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -632,14 +813,79 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a2253e0ee556cfcdc70e51de14013e2b7" name="a2253e0ee556cfcdc70e51de14013e2b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2253e0ee556cfcdc70e51de14013e2b7">&#9670;&#160;</a></span>encode_to()</h2>
+<a id="a7b74d40816b9b97e80cfcc816ba89c1e" name="a7b74d40816b9b97e80cfcc816ba89c1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b74d40816b9b97e80cfcc816ba89c1e">&#9670;&#160;</a></span>encode_or_error()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, typename Container  = std::string, unicode_scalar_range R&gt; <br />
-requires detail::bulk_output_container&lt;Container, char&gt;</div>
+template&lt;encode_codec Codec&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structbeman_1_1transcoding_1_1encode__or__error__closure.html">encode_or_error_closure</a>&lt; Codec &gt; beman::transcoding::encode_or_error </td>
+          <td>(</td>
+          <td class="paramtype">Codec&#160;</td>
+          <td class="paramname"><em>codec</em> = <code>{}</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8f6eb3581f3ac2bcbcdda1d1d7a63d59" name="a8f6eb3581f3ac2bcbcdda1d1d7a63d59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f6eb3581f3ac2bcbcdda1d1d7a63d59">&#9670;&#160;</a></span>encode_to() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;encode_codec Codec, typename Container  = std::string, unicode_scalar_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr Container beman::transcoding::encode_to </td>
+          <td>(</td>
+          <td class="paramtype">Codec&#160;</td>
+          <td class="paramname"><em>codec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5d4c8de8e3875de1f29bd72a6c554749" name="a5d4c8de8e3875de1f29bd72a6c554749"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d4c8de8e3875de1f29bd72a6c554749">&#9670;&#160;</a></span>encode_to() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, typename Container  = std::string, unicode_scalar_range R&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">Container beman::transcoding::encode_to </td>
@@ -721,6 +967,96 @@ requires detail::bulk_output_container&lt;Container, char&gt;</div>
 
 </div>
 </div>
+<a id="a06d518f97b7706b182ba701e02be1da3" name="a06d518f97b7706b182ba701e02be1da3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06d518f97b7706b182ba701e02be1da3">&#9670;&#160;</a></span>iconv_transcode_into() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;legacy_byte_range R, std::output_iterator&lt; char &gt; Output&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">Output beman::transcoding::iconv_transcode_into </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>to</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Output&#160;</td>
+          <td class="paramname"><em>output</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a43d5fe1038fd6241a6486baf3bb2a55c" name="a43d5fe1038fd6241a6486baf3bb2a55c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43d5fe1038fd6241a6486baf3bb2a55c">&#9670;&#160;</a></span>iconv_transcode_into() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename IconvFns , legacy_byte_range R, std::output_iterator&lt; char &gt; Output&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">Output beman::transcoding::iconv_transcode_into </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>to</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Output&#160;</td>
+          <td class="paramname"><em>output</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IconvFns&#160;</td>
+          <td class="paramname"><em>fns</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a0b9d1350ae333361ebeca4ed71a3d2cd" name="a0b9d1350ae333361ebeca4ed71a3d2cd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0b9d1350ae333361ebeca4ed71a3d2cd">&#9670;&#160;</a></span>iconv_transcode_or_error()</h2>
 
@@ -759,6 +1095,162 @@ requires detail::bulk_output_container&lt;Container, char&gt;</div>
 <span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="af52ca8888f11ec3a6b0148123816d22a" name="af52ca8888f11ec3a6b0148123816d22a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af52ca8888f11ec3a6b0148123816d22a">&#9670;&#160;</a></span>iconv_transcode_to() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Container  = std::string, legacy_byte_range R&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">Container beman::transcoding::iconv_transcode_to </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>to</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9fdf5884cb4687b0ecf581e3c5330649" name="a9fdf5884cb4687b0ecf581e3c5330649"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9fdf5884cb4687b0ecf581e3c5330649">&#9670;&#160;</a></span>iconv_transcode_to() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Container  = std::string, typename IconvFns , legacy_byte_range R&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">Container beman::transcoding::iconv_transcode_to </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>to</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IconvFns&#160;</td>
+          <td class="paramname"><em>fns</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae7f6863870578b4e9fb2fce0890f1ce9" name="ae7f6863870578b4e9fb2fce0890f1ce9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7f6863870578b4e9fb2fce0890f1ce9">&#9670;&#160;</a></span>iconv_transcode_to_or_error() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Container  = std::string, legacy_byte_range R&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; Container, <a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730">iconv_error</a> &gt; beman::transcoding::iconv_transcode_to_or_error </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>to</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac4e3f677d12987bd36e5b70b5758116e" name="ac4e3f677d12987bd36e5b70b5758116e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4e3f677d12987bd36e5b70b5758116e">&#9670;&#160;</a></span>iconv_transcode_to_or_error() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Container  = std::string, typename IconvFns , legacy_byte_range R&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; Container, <a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730">iconv_error</a> &gt; beman::transcoding::iconv_transcode_to_or_error </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>to</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IconvFns&#160;</td>
+          <td class="paramname"><em>fns</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
 </div><div class="memdoc">
 
 </div>
@@ -804,6 +1296,44 @@ template&lt;std::contiguous_iterator I&gt; </div>
           <td> -&gt;  <a class="el" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a>&lt; I &gt;</td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1554cf1fb18585527a6506d8afaca87f" name="a1554cf1fb18585527a6506d8afaca87f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1554cf1fb18585527a6506d8afaca87f">&#9670;&#160;</a></span>pluggable_transcode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;decode_codec From, encode_codec To&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structbeman_1_1transcoding_1_1pluggable__transcode__closure.html">pluggable_transcode_closure</a>&lt; From, To &gt; beman::transcoding::pluggable_transcode </td>
+          <td>(</td>
+          <td class="paramtype">From&#160;</td>
+          <td class="paramname"><em>from</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">To&#160;</td>
+          <td class="paramname"><em>to</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

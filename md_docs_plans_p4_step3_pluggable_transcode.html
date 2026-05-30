@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p4_step3_pluggable_trans
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p4-step3-pluggable-transcode</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p4_step1_pluggable_encode.html">p4-step1-pluggable-encode.md</a> <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md271"></a>
+<h1><a class="anchor" id="autotoc_md274"></a>
 Goal</h1>
 <p>Add a <code>transcode(decode_codec, encode_codec)</code> pipe adaptor that composes decode and encode in a single pipeline for pluggable codecs.</p>
-<h1><a class="anchor" id="autotoc_md272"></a>
+<h1><a class="anchor" id="autotoc_md275"></a>
 Context for Executing Agent</h1>
 <p>The WHATWG version is <code>transcode&lt;From, To&gt;</code> in <code><a class="el" href="transcode__view_8hpp.html">include/beman/transcode/detail/transcode_view.hpp</a></code> (lines 14-39). It composes <code>whatwg_decode&lt;From&gt;</code> and <code>whatwg_encode&lt;To&gt;</code>:</p>
 <div class="fragment"><div class="line"><span class="keyword">template</span> &lt;codec From, codec To&gt;</div>
@@ -117,10 +117,10 @@ Context for Executing Agent</h1>
 <div class="line">};</div>
 <div class="line"><span class="keyword">template</span> &lt;codec From, codec To&gt;</div>
 <div class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> transcode_closure&lt;From, To&gt; <a class="code hl_variable" href="namespacebeman_1_1transcoding.html#a15372a675c2cf5b924a60dfc94e21dc8">transcode</a>{};</div>
-<div class="ttc" id="anamespacebeman_1_1transcoding_html_a15372a675c2cf5b924a60dfc94e21dc8"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a15372a675c2cf5b924a60dfc94e21dc8">beman::transcoding::transcode</a></div><div class="ttdeci">constexpr transcode_closure&lt; From, To &gt; transcode</div><div class="ttdef"><b>Definition:</b> transcode_view.hpp:34</div></div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_html_a15372a675c2cf5b924a60dfc94e21dc8"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a15372a675c2cf5b924a60dfc94e21dc8">beman::transcoding::transcode</a></div><div class="ttdeci">constexpr transcode_closure&lt; From, To &gt; transcode</div><div class="ttdef"><b>Definition:</b> transcode_view.hpp:36</div></div>
 </div><!-- fragment --><p>The pluggable version takes two codec <em>objects</em>:</p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span> result = input | transcode(my_decoder{}, my_encoder{});</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md273"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md276"></a>
 Implementation</h2>
 <div class="fragment"><div class="line"><span class="keyword">template</span> &lt;decode_codec From, encode_codec To&gt;</div>
 <div class="line"><span class="keyword">struct </span>pluggable_transcode_closure {</div>
@@ -141,7 +141,7 @@ Implementation</h2>
 <div class="line">    <span class="keywordflow">return</span> {from, to};</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>This overloads the existing <code>transcode</code> name. The WHATWG version is a variable template (<code>transcode&lt;From, To&gt;</code> with enum NTTPs); the pluggable version is a function (<code>transcode(from_obj, to_obj)</code> with codec objects). These don't conflict because the WHATWG version requires <code>&lt;&gt;</code> template arguments.</p>
-<h1><a class="anchor" id="autotoc_md274"></a>
+<h1><a class="anchor" id="autotoc_md277"></a>
 Deliverables</h1>
 <ul>
 <li>Modify <code><a class="el" href="transcode__view_8hpp.html">include/beman/transcode/detail/transcode_view.hpp</a></code>:<ul>
@@ -151,22 +151,22 @@ Deliverables</h1>
 </li>
 <li><code>tests/beman/transcode/pluggable_transcode.test.cpp</code> — tests</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md275"></a>
+<h1><a class="anchor" id="autotoc_md278"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch from <code>main</code></li>
 <li>Add <code>pluggable_transcode_closure</code> and factory function to <code><a class="el" href="transcode__view_8hpp.html">transcode_view.hpp</a></code></li>
-<li>Include <code>&lt;<a class="el" href="decode__view_8hpp.html">beman/transcode/decode_view.hpp</a>&gt;</code> and <code>&lt;beman/transcode/encode_view.hpp&gt;</code> in <a class="el" href="transcode__view_8hpp.html">transcode_view.hpp</a> (needed for <code>decode()</code> and <code>encode()</code> calls)</li>
+<li>Include <code>&lt;<a class="el" href="decode__view_8hpp.html">beman/transcode/decode_view.hpp</a>&gt;</code> and <code>&lt;<a class="el" href="encode__view_8hpp.html">beman/transcode/encode_view.hpp</a>&gt;</code> in <a class="el" href="transcode__view_8hpp.html">transcode_view.hpp</a> (needed for <code>decode()</code> and <code>encode()</code> calls)</li>
 <li>Write test: <code>input | transcode(table_codec&lt;latin1&gt;{}, table_codec&lt;utf8&gt;{})</code> — but note <code>table_codec</code> may not implement a full UTF-8 encoder; use a simpler test case where decode and encode use the same single-byte table (identity round-trip)</li>
 <li>Write consteval test</li>
 <li><code>make test</code> + <code>make lint</code></li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md276"></a>
+<h1><a class="anchor" id="autotoc_md279"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md277"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md280"></a>
 Handoff</h1>
 <p>Step 3 done. The pluggable codec API surface is now complete (decode views, encode views, bulk ops, transcode pipeline). </p>
 </div></div><!-- contents -->

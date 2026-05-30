@@ -103,15 +103,15 @@ $(document).ready(function(){initNavTree('bulk__transcode_8hpp.html',''); initRe
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="config_8hpp_source.html">beman/transcode/config.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="decode__view_8hpp_source.html">beman/transcode/decode_view.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="codec__concepts_8hpp_source.html">beman/transcode/detail/codec_concepts.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/detail/concepts.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="single__byte__tables_8hpp_source.html">beman/transcode/detail/single_byte_tables.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="encode__view_8hpp_source.html">beman/transcode/encode_view.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="whatwg__decode__view_8hpp_source.html">beman/transcode/whatwg_decode_view.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="whatwg__encode__view_8hpp_source.html">beman/transcode/whatwg_encode_view.hpp</a>&gt;</code><br />
-<code>#include &lt;cstddef&gt;</code><br />
-<code>#include &lt;iterator&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;ranges&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
-<code>#include &lt;type_traits&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div>
 <p><a href="bulk__transcode_8hpp_source.html">Go to the source code of this file.</a></p>
@@ -128,16 +128,27 @@ Functions</h2></td></tr>
 <tr class="memitem:afab0bb5a673c5cc8c22f677d8bcfc120"><td class="memTemplParams" colspan="2">template&lt;codec C, legacy_byte_range R&gt; </td></tr>
 <tr class="memitem:afab0bb5a673c5cc8c22f677d8bcfc120"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; char32_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#afab0bb5a673c5cc8c22f677d8bcfc120">beman::transcoding::decode_to</a> (R &amp;&amp;source)</td></tr>
 <tr class="separator:afab0bb5a673c5cc8c22f677d8bcfc120"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2253e0ee556cfcdc70e51de14013e2b7"><td class="memTemplParams" colspan="2">template&lt;codec C, typename Container  = std::string, unicode_scalar_range R&gt; <br />
-requires detail::bulk_output_container&lt;Container, char&gt;</td></tr>
-<tr class="memitem:a2253e0ee556cfcdc70e51de14013e2b7"><td class="memTemplItemLeft" align="right" valign="top">Container&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a2253e0ee556cfcdc70e51de14013e2b7">beman::transcoding::encode_to</a> (R &amp;&amp;source)</td></tr>
-<tr class="separator:a2253e0ee556cfcdc70e51de14013e2b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d4c8de8e3875de1f29bd72a6c554749"><td class="memTemplParams" colspan="2">template&lt;codec C, typename Container  = std::string, unicode_scalar_range R&gt; </td></tr>
+<tr class="memitem:a5d4c8de8e3875de1f29bd72a6c554749"><td class="memTemplItemLeft" align="right" valign="top">Container&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a5d4c8de8e3875de1f29bd72a6c554749">beman::transcoding::encode_to</a> (R &amp;&amp;source)</td></tr>
+<tr class="separator:a5d4c8de8e3875de1f29bd72a6c554749"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d343993381aa73aaa3ee2367d8e92ff"><td class="memTemplParams" colspan="2">template&lt;codec C, legacy_byte_range R, std::output_iterator&lt; char32_t &gt; Output&gt; </td></tr>
 <tr class="memitem:a7d343993381aa73aaa3ee2367d8e92ff"><td class="memTemplItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a7d343993381aa73aaa3ee2367d8e92ff">beman::transcoding::decode_into</a> (R &amp;&amp;source, Output output)</td></tr>
 <tr class="separator:a7d343993381aa73aaa3ee2367d8e92ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4cb8e42c7c4590e4402244a8ab3a027d"><td class="memTemplParams" colspan="2">template&lt;codec C, unicode_scalar_range R, std::output_iterator&lt; char &gt; Output&gt; </td></tr>
 <tr class="memitem:a4cb8e42c7c4590e4402244a8ab3a027d"><td class="memTemplItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a4cb8e42c7c4590e4402244a8ab3a027d">beman::transcoding::encode_into</a> (R &amp;&amp;source, Output output)</td></tr>
 <tr class="separator:a4cb8e42c7c4590e4402244a8ab3a027d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75b12d58f0b3c9377f536e5c46959c4a"><td class="memTemplParams" colspan="2">template&lt;decode_codec Codec, legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:a75b12d58f0b3c9377f536e5c46959c4a"><td class="memTemplItemLeft" align="right" valign="top">constexpr std::vector&lt; char32_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a75b12d58f0b3c9377f536e5c46959c4a">beman::transcoding::decode_to</a> (Codec codec, R &amp;&amp;source)</td></tr>
+<tr class="separator:a75b12d58f0b3c9377f536e5c46959c4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f6eb3581f3ac2bcbcdda1d1d7a63d59"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec, typename Container  = std::string, unicode_scalar_range R&gt; </td></tr>
+<tr class="memitem:a8f6eb3581f3ac2bcbcdda1d1d7a63d59"><td class="memTemplItemLeft" align="right" valign="top">constexpr Container&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a8f6eb3581f3ac2bcbcdda1d1d7a63d59">beman::transcoding::encode_to</a> (Codec codec, R &amp;&amp;source)</td></tr>
+<tr class="separator:a8f6eb3581f3ac2bcbcdda1d1d7a63d59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b568f0d2e6499572d0da117be67e1c5"><td class="memTemplParams" colspan="2">template&lt;decode_codec Codec, legacy_byte_range R, std::output_iterator&lt; char32_t &gt; Output&gt; </td></tr>
+<tr class="memitem:a0b568f0d2e6499572d0da117be67e1c5"><td class="memTemplItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a0b568f0d2e6499572d0da117be67e1c5">beman::transcoding::decode_into</a> (Codec codec, R &amp;&amp;source, Output output)</td></tr>
+<tr class="separator:a0b568f0d2e6499572d0da117be67e1c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb24b6b61868de408d0c373f2f7f708b"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec, unicode_scalar_range R, std::output_iterator&lt; char &gt; Output&gt; </td></tr>
+<tr class="memitem:acb24b6b61868de408d0c373f2f7f708b"><td class="memTemplItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#acb24b6b61868de408d0c373f2f7f708b">beman::transcoding::encode_into</a> (Codec codec, R &amp;&amp;source, Output output)</td></tr>
+<tr class="separator:acb24b6b61868de408d0c373f2f7f708b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

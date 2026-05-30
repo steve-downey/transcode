@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step5_legacy_whatwg_b
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step5-legacy-whatwg-benchmarks</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step4_utf_benchmarks.html">p3-step4-utf-benchmarks.md</a> <b>Read first:</b> <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> and <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md198"></a>
+<h1><a class="anchor" id="autotoc_md201"></a>
 Goal</h1>
 <p>Extend native <code>beman::transcode</code> measurement beyond UTF into representative single-byte and multi-byte WHATWG codecs, plus the pluggable codec protocol.</p>
-<h1><a class="anchor" id="autotoc_md199"></a>
+<h1><a class="anchor" id="autotoc_md202"></a>
 Context for Executing Agent</h1>
 <p>Library API for legacy codecs: </p><div class="fragment"><div class="line"><span class="comment">// WhatWG enum-based (closed set):</span></div>
 <div class="line">bytes | whatwg_decode&lt;codec::windows_1251&gt;  <span class="comment">// single-byte table O(1)</span></div>
@@ -127,23 +127,23 @@ Context for Executing Agent</h1>
 <li>Fallback versions in <code>benchmark/corpus/</code></li>
 </ul>
 <p>Fixture API: <code>corpus_span("filename")</code>, <code>count_elements(range)</code></p>
-<h1><a class="anchor" id="autotoc_md200"></a>
+<h1><a class="anchor" id="autotoc_md203"></a>
 Deliverables</h1>
 <ol type="1">
 <li><code>benchmark/whatwg_benchmarks.bench.cpp</code> — WhatWG legacy codec cases</li>
 <li><code>benchmark/pluggable_codec_benchmarks.bench.cpp</code> — pluggable protocol cases</li>
 <li>Registration in <code>benchmark/CMakeLists.txt</code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md201"></a>
+<h1><a class="anchor" id="autotoc_md204"></a>
 Benchmark Cases</h1>
-<h2><a class="anchor" id="autotoc_md202"></a>
+<h2><a class="anchor" id="autotoc_md205"></a>
 whatwg_benchmarks.bench.cpp</h2>
 <ul>
 <li>"Single-byte decode: windows-1251 Russian" — <code>ru_mars_windows1251.bin</code></li>
 <li>"Multi-byte decode: Shift-JIS Japanese" — <code>ja_mars_shiftjis.bin</code></li>
 <li>"UTF-8 decode: Japanese (3-byte heavy)" — <code>ja_mars_utf8.txt</code></li>
 </ul>
-<h2><a class="anchor" id="autotoc_md203"></a>
+<h2><a class="anchor" id="autotoc_md206"></a>
 pluggable_codec_benchmarks.bench.cpp</h2>
 <p>For the pluggable protocol, use synthetic data since BLP-59001 and EBCDIC don't have real-world corpora in the repo:</p>
 <div class="fragment"><div class="line"><span class="comment">// 4K buffer of bytes 0x80-0xBF (exercises the table lookup path)</span></div>
@@ -164,7 +164,7 @@ pluggable_codec_benchmarks.bench.cpp</h2>
 </div><!-- fragment --><p>Compare against equivalent WhatWG codec to prove zero overhead: </p><div class="fragment"><div class="line">BENCHMARK(<span class="stringliteral">&quot;whatwg iso-8859-15: 4K upper-half&quot;</span>) {</div>
 <div class="line">    <span class="keywordflow">return</span> count_elements(std::span&lt;const char&gt;(synthetic) | whatwg_decode&lt;codec::iso_8859_15&gt;);</div>
 <div class="line">};</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md204"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md207"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create worktree branch <code>p3-step5-legacy-whatwg-benchmarks</code> from <code>main</code></li>
@@ -178,13 +178,13 @@ Procedure</h1>
 <li>Commit, merge to main (non-ff), push both remotes</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md205"></a>
+<h1><a class="anchor" id="autotoc_md208"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make compile</div>
 <div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line">make bench</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md206"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md209"></a>
 Handoff to Step 6</h1>
 <p>Write to <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>:</p><ul>
 <li>Step 5 is done</li>

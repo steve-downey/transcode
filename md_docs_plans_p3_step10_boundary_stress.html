@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step10_boundary_stres
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step10-boundary-stress</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step9_simdutf_baseline.html">p3-step9-simdutf-baseline.md</a> <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md134"></a>
+<h1><a class="anchor" id="autotoc_md137"></a>
 Goal</h1>
 <p>Measure the real lazy-pipeline penalty of chunked text processing and boundary recovery using deterministic stress cases, including mock-iconv <code>EINVAL</code> and <code>E2BIG</code> conditions.</p>
-<h1><a class="anchor" id="autotoc_md135"></a>
+<h1><a class="anchor" id="autotoc_md138"></a>
 Context for Executing Agent</h1>
 <p>The iconv mock library at <code>tests/beman/transcode/iconv_mock.hpp</code> provides deterministic mocks. Key mocks for benchmarking:</p><ul>
 <li><code>mock_iconv_e2big</code> &ndash; returns E2BIG after writing 1 byte</li>
@@ -113,7 +113,7 @@ Context for Executing Agent</h1>
 </ul>
 <p>The fixture library's <code>chunk_corpus(data, chunk_size)</code> splits data for chunked benchmarks. The iconv views accept mock function structs via template parameter.</p>
 <p>Also benchmark the native whatwg_decode views with chunked input (iterating each chunk separately to measure restart cost).</p>
-<h1><a class="anchor" id="autotoc_md136"></a>
+<h1><a class="anchor" id="autotoc_md139"></a>
 Deliverables</h1>
 <ul>
 <li>chunked benchmark cases for native <code>beman::transcode</code></li>
@@ -121,14 +121,14 @@ Deliverables</h1>
 <li>synthetic corpora chosen to split multi-byte sequences at hostile boundaries</li>
 <li>smoke filters for one <code>EINVAL</code> and one <code>E2BIG</code> scenario</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md137"></a>
+<h1><a class="anchor" id="autotoc_md140"></a>
 Constraints</h1>
 <ul>
 <li>this step is about worst-case control-flow stress, not peak throughput</li>
 <li>keep the stress cases deterministic and reproducible</li>
 <li>reuse existing iconv test scaffolding where practical rather than inventing a second mocking model</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md138"></a>
+<h1><a class="anchor" id="autotoc_md141"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p3-step10-boundary-stress</code> from <code>main</code></li>
@@ -140,15 +140,15 @@ Procedure</h1>
 <li>Run the boundary benchmark smoke command</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md139"></a>
+<h1><a class="anchor" id="autotoc_md142"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line"># plus the boundary benchmark smoke command</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md140"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md143"></a>
 Notes</h1>
 <p>If this step reveals correctness defects rather than performance cliffs, stop and write a P2 follow-up instead of folding the fix invisibly into P3.</p>
-<h1><a class="anchor" id="autotoc_md141"></a>
+<h1><a class="anchor" id="autotoc_md144"></a>
 Handoff to Step 11</h1>
 <p>Step 10 done, next read <a class="el" href="p3-step11-toolchain-matrix_8md.html">p3-step11-toolchain-matrix.md</a>. </p>
 </div></div><!-- contents -->
