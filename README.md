@@ -314,7 +314,7 @@ The comparison puts it in context against mature, production-optimized projects:
 | `std::codecvt` (libstdc++ C++11) | 75 µs | 724 MiB/s | Deprecated C++17, removed C++26 |
 | `iconv_transcode_to` (this library) | 83 µs | 653 MiB/s | Bulk API, pre-sized buffer |
 | Raw `iconv()` (glibc, 4 KB buffer) | 334 µs | 163 MiB/s | Block API, looping over 4 KB |
-| `iconv_transcode_view` (this library) | 1.52 ms | 36 MiB/s | Per-byte range adaptor over iconv |
+| `iconv_transcode_view` (this library) | 351 µs | 155 MiB/s | Batched range adaptor over iconv |
 
 The ~3x gap between beman.transcode and simdutf is the cost of scalar
 byte-at-a-time iteration vs SIMD bulk processing.  This is expected and
@@ -351,13 +351,13 @@ Shift-JIS and produces UTF-8 output bytes.
 | **`iconv_transcode_to`** (this library) | 120 µs | 222 MiB/s | Bulk iconv, pre-sized buffer |
 | **beman.transcode** bulk (`encode_to` + `decode_to`) | 237 µs | 112 MiB/s | Two-step, produces `std::string` |
 | Raw `iconv()` (4 KB buffer) | 369 µs | 72 MiB/s | System iconv, many calls |
-| `iconv_transcode_view` (streaming) | 744 µs | 36 MiB/s | Per-byte range adaptor |
+| `iconv_transcode_view` (streaming) | 368 µs | 72 MiB/s | Batched range adaptor over iconv |
 
 The WHATWG table-driven decoder in this library's streaming view (80 µs, lazy
 evaluation) is competitive with encoding_rs's Rust implementation (103 µs,
 writing to a buffer).  The encoding_rs C FFI boundary is opaque to the C++
 optimizer — the same effect that any range adaptor wrapping a bulk API
-experiences (cf. `iconv_transcode_view` at 744 µs vs raw iconv at 369 µs).
+experiences.
 
 The two-step bulk approach (237 µs) pays for the intermediate `char32_t` vector
 allocation plus the Shift-JIS encode table search.
@@ -416,22 +416,21 @@ All measurements on real corpus data.
 | Raw `iconv()` (4 KB buffer) | 57 KB English UTF-8→UTF-32LE | 334 µs | 163 MiB/s |
 | **`iconv_transcode_to`** | 57 KB English UTF-8→UTF-32LE | 83 µs | 653 MiB/s |
 | `iconv_transcode_into` | 57 KB English UTF-8→UTF-32LE | 470 µs | 116 MiB/s |
-| `iconv_transcode_view` | 57 KB English UTF-8→UTF-32LE | 1.52 ms | 36 MiB/s |
+| `iconv_transcode_view` | 57 KB English UTF-8→UTF-32LE | 351 µs | 155 MiB/s |
 | Raw `iconv()` (4 KB buffer) | 28 KB Japanese SJIS→UTF-8 | 369 µs | 72 MiB/s |
 | **`iconv_transcode_to`** | 28 KB Japanese SJIS→UTF-8 | 120 µs | 222 MiB/s |
-| `iconv_transcode_view` | 28 KB Japanese SJIS→UTF-8 | 744 µs | 36 MiB/s |
+| `iconv_transcode_view` | 28 KB Japanese SJIS→UTF-8 | 368 µs | 72 MiB/s |
 | **`iconv_transcode_to`** | 28 KB Japanese EUC-JP→SJIS | 144 µs | 185 MiB/s |
 
 `iconv_transcode_to` is **faster than naive raw iconv** because it pre-sizes
 the output buffer to `input_size * 4`, making a single iconv call for the
 entire conversion instead of looping over a 4 KB buffer.
 
-`iconv_transcode_view` pays ~5-20x overhead due to per-byte iteration through
-a block-oriented C API.  Wrapping any bulk C API (iconv, encoding_rs FFI, etc.)
-in a per-element range adaptor pays this cost — the opaque function boundary
-prevents the optimizer from seeing through the call.  The view's value is
-composability with other range adaptors and safety (no resource leaks, no
-manual buffer management).
+`iconv_transcode_view` now batches input — for contiguous ranges it passes the
+entire remaining input to iconv in one call per output-buffer fill, matching
+raw iconv throughput within ~15%.  The view's residual overhead vs
+`iconv_transcode_to` is the iterator machinery and the composability cost of
+yielding one byte at a time through `operator++`.
 
 ### Pluggable Codec Performance (Phase 4 APIs)
 
