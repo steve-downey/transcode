@@ -17,20 +17,20 @@
 
 #if BEMAN_TRANSCODE_HAS_RANGES_TO
 
-#include <beman/transcode/decode_view.hpp>
-#include <beman/transcode/detail/codec_concepts.hpp>
-#include <beman/transcode/detail/concepts.hpp>
-#include <beman/transcode/encode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_encode_view.hpp>
+    #include <beman/transcode/decode_view.hpp>
+    #include <beman/transcode/detail/codec_concepts.hpp>
+    #include <beman/transcode/detail/concepts.hpp>
+    #include <beman/transcode/encode_view.hpp>
+    #include <beman/transcode/whatwg_decode_view.hpp>
+    #include <beman/transcode/whatwg_encode_view.hpp>
 
-#if !BEMAN_TRANSCODE_USE_MODULES()
-    #include <algorithm>
-    #include <ranges>
-    #include <string>
-    #include <vector>
+    #if !BEMAN_TRANSCODE_USE_MODULES()
+        #include <algorithm>
+        #include <ranges>
+        #include <string>
+        #include <vector>
 
-#endif
+    #endif
 namespace beman::transcoding {
 
 // ---------------------------------------------------------------------------
