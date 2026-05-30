@@ -457,6 +457,26 @@ enum class whatwg_error {
 };
 ```
 
+#### Relationship to `utf_transcoding_error` (P2728)
+
+P2728 (beman.utf_view) defines `utf_transcoding_error` for its `_or_error` views.
+The two enumerations are not the same type, but most values correspond directly:
+
+| `whatwg_error` | `utf_transcoding_error` (P2728) | Notes |
+|---|---|---|
+| `truncated_sequence` | `truncated_utf8_sequence` | Same concept; `whatwg_error` applies to all codecs, not just UTF-8 |
+| `overlong_encoding` | `overlong` | Identical semantics |
+| `surrogate_code_point` | `encoded_surrogate` | Identical semantics for UTF-8 and UTF-32 |
+| `out_of_range` | `out_of_range` | Identical semantics |
+| `invalid_byte` | `invalid_utf8_leading_byte` + `unexpected_utf8_continuation_byte` | P2728 distinguishes two invalid-byte cases; WHATWG conflates them because its spec produces U+FFFD for both without differentiating |
+| `unmapped_codepoint` | *(no equivalent)* | See below |
+| *(not needed)* | `unpaired_high_surrogate` / `unpaired_low_surrogate` | UTF-16 code-unit-level concepts; this library operates on byte streams with explicit endianness (`codec::utf_16be`/`utf_16le`), so there is no paired/unpaired distinction at the byte level |
+
+`unmapped_codepoint` is the reason reusing `utf_transcoding_error` directly is not possible.
+UTF-8, UTF-16, and UTF-32 can encode every Unicode scalar value, so P2728 never needs to report "no mapping exists for this code point."
+Legacy codecs cannot: windows-1252 has no representation for U+4E2D (中), Shift-JIS has no representation for U+00E9 (é), and so on for most of the Unicode range.
+`whatwg_encode_or_error<codec::windows_1252>` must be able to report this condition through the same error type as `whatwg_encode_or_error<codec::utf_8>`, so the error type must accommodate it uniformly across all 39 codecs.
+
 The `iconv` adaptors use a separate `iconv_error` enumeration:
 
 ```cpp
