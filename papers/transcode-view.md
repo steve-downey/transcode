@@ -866,13 +866,13 @@ Legend: ✅ implemented · n/a architectural model doesn't support this ·
 | **Bulk encode → output iter** | ✅ `encode_into<C>(range,out)` | ✅ `encode_into(codec{},range,out)` | n/a ¹ | ✅ `ranges::copy(v|to_utf8, out)` |
 | **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
 | **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | n/a ³ |
-| **Runtime label lookup** | ✅ `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | 🔴 |
-| **Runtime transcode** | ✅ `transcode_string(src,from,to)` | 🔴 | 🔴 | 🔴 |
-| **BOM sniffing** | ✅ `sniff_encoding(range)` | 🔴 | 🔴 | 🔴 |
+| **Runtime label lookup** | ✅ `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
+| **Runtime transcode** | ✅ `transcode_string(src,from,to)` | n/a ⁴ | ✅ `iconv_transcode_to(r,f,t)` | n/a ⁵ |
+| **BOM sniffing** | ✅ `sniff_encoding(range)` | n/a ⁶ | n/a ⁶ | n/a ⁷ |
 | **Error type** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
 | **Output element type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
 | **Input element type** | `char`/`byte` (legacy) | `char`/`byte` (legacy) | `char` (any byte encoding) | `char8_t`/`char16_t`/`char32_t` |
-| **constexpr** | ✅ | ✅ | 🔴 (OS syscall) | ✅ |
+| **constexpr** | ✅ | ✅ | 🔴 (POSIX userland library) | ✅ |
 
 **Notes on n/a entries:**
 
@@ -892,7 +892,21 @@ requires a reinterpret step that is outside both proposals.
 
 ⁴ **Pluggable codecs are identified by C++ type**, not by name.  Codec
 selection happens at compile time through the type system; there is no runtime
-name-to-codec registry by design.
+name-to-codec registry by design.  Runtime transcode is similarly outside
+the model: you compose `decode(codec_a{}) | encode(codec_b{})` at compile time.
+
+⁵ **P2728 is type-based**, not string-label-based.  Codec selection is
+determined by the character types (`char8_t`, `char16_t`, `char32_t`), so
+runtime label lookup and runtime transcode are outside its model.
+
+⁶ **BOM sniffing is a property of the byte stream**, not of individual codecs.
+`sniff_encoding()` examines the first bytes of a stream to detect UTF-8/16/32
+BOMs and returns the appropriate `codec` enum value.  This is a WHATWG-specific
+facility; pluggable codecs and iconv operate on already-identified encodings.
+
+⁷ **P2728 operates on in-memory typed data** where the encoding is known from
+the type.  BOM detection is an I/O concern; a separate endian-converting view
+proposal addresses byte-order issues.
 
 The shared design patterns across all four columns are the `_or_error` suffix
 convention for error-surfacing variants, `char32_t` as the universal codepoint
