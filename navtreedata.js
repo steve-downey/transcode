@@ -746,16 +746,15 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classbeman_1_1transcoding_1_1encode__view.html#ae2abd3069c7b057925db42475ac1dc50",
-"classbeman_1_1transcoding_1_1random__access__decode__or__error__view.html#a5230efb683d7d2f8b4736bca3a64f564",
-"classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a5096f6f4f5576528ae10d8e79e4a33ba",
-"classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a52abb7dc831ba5080933c5cbe2969f68",
-"classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a87364b9e6bb85d9d499ede882780d93f",
-"iso__8859__5_8hpp.html",
-"md_docs_plans_p3_step8_encoding_rs_baseline.html",
-"md_docs_plans_step17_iso_8859_tables.html#autotoc_md509",
-"structbeman_1_1transcoding_1_1decode__result.html#a8cb3cd394d3bda42a0dec8b148e51a16",
-"windows__1257_8hpp.html"
+"classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a1959514af85afb54f413022c7f564bfd",
+"classbeman_1_1transcoding_1_1random__access__decode__or__error__view.html#ac8898cab09ecafd3848229b46a99d874",
+"classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa53dc46eeae6db4f5a39e2b45d709956",
+"classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a9b5b0c1fb874370d7d2281c4b06f4656",
+"classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a91ea895c81f92bd9b36f824488572292",
+"koi8__r_8hpp.html",
+"md_docs_plans_p3_step8_encoding_rs_baseline.html#autotoc_md239",
+"md_docs_plans_step17_iso_8859_tables.html#autotoc_md517",
+"structbeman_1_1transcoding_1_1encode__or__error__closure.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
