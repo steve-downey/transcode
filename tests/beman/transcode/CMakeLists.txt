@@ -563,19 +563,21 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
-add_executable(beman.transcode.tests.bulk_transcode)
-target_sources(
-    beman.transcode.tests.bulk_transcode
-    PRIVATE bulk_transcode.test.cpp
-)
-target_include_directories(
-    beman.transcode.tests.bulk_transcode
-    PRIVATE ${TEST_INCLUDE_DIR}
-)
-target_link_libraries(
-    beman.transcode.tests.bulk_transcode
-    PRIVATE beman::transcode Catch2::Catch2WithMain
-)
+if(BEMAN_TRANSCODE_HAS_RANGES_TO)
+    add_executable(beman.transcode.tests.bulk_transcode)
+    target_sources(
+        beman.transcode.tests.bulk_transcode
+        PRIVATE bulk_transcode.test.cpp
+    )
+    target_include_directories(
+        beman.transcode.tests.bulk_transcode
+        PRIVATE ${TEST_INCLUDE_DIR}
+    )
+    target_link_libraries(
+        beman.transcode.tests.bulk_transcode
+        PRIVATE beman::transcode Catch2::Catch2WithMain
+    )
+endif()
 
 add_executable(beman.transcode.tests.iconv_bulk)
 target_sources(beman.transcode.tests.iconv_bulk PRIVATE iconv_bulk.test.cpp)
@@ -648,7 +650,9 @@ catch_discover_tests(beman.transcode.tests.transcode)
 catch_discover_tests(beman.transcode.tests.transcode_string)
 catch_discover_tests(beman.transcode.tests.transcode_string_label)
 catch_discover_tests(beman.transcode.tests.transcode_view)
-catch_discover_tests(beman.transcode.tests.bulk_transcode)
+if(BEMAN_TRANSCODE_HAS_RANGES_TO)
+    catch_discover_tests(beman.transcode.tests.bulk_transcode)
+endif()
 catch_discover_tests(beman.transcode.tests.iconv_bulk)
 catch_discover_tests(beman.transcode.tests.iconv_null_term)
 
@@ -1041,23 +1045,25 @@ add_test(
     COMMAND beman.transcode.tests.encode_view
 )
 
-add_executable(beman.transcode.tests.pluggable_bulk)
-target_sources(
-    beman.transcode.tests.pluggable_bulk
-    PRIVATE pluggable_bulk.test.cpp
-)
-target_include_directories(
-    beman.transcode.tests.pluggable_bulk
-    PRIVATE ${TEST_INCLUDE_DIR}
-)
-target_link_libraries(
-    beman.transcode.tests.pluggable_bulk
-    PRIVATE beman::transcode Catch2::Catch2WithMain
-)
-add_test(
-    NAME beman.transcode.tests.pluggable_bulk
-    COMMAND beman.transcode.tests.pluggable_bulk
-)
+if(BEMAN_TRANSCODE_HAS_RANGES_TO)
+    add_executable(beman.transcode.tests.pluggable_bulk)
+    target_sources(
+        beman.transcode.tests.pluggable_bulk
+        PRIVATE pluggable_bulk.test.cpp
+    )
+    target_include_directories(
+        beman.transcode.tests.pluggable_bulk
+        PRIVATE ${TEST_INCLUDE_DIR}
+    )
+    target_link_libraries(
+        beman.transcode.tests.pluggable_bulk
+        PRIVATE beman::transcode Catch2::Catch2WithMain
+    )
+    add_test(
+        NAME beman.transcode.tests.pluggable_bulk
+        COMMAND beman.transcode.tests.pluggable_bulk
+    )
+endif()
 
 add_executable(beman.transcode.tests.pluggable_transcode)
 target_sources(

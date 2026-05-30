@@ -12,7 +12,6 @@ import beman.transcode;
 #else
 
     #include <beman/transcode/detail/null_term.hpp>
-    #include <beman/transcode/detail/bulk_transcode.hpp>
     #include <beman/transcode/whatwg_decode_view.hpp>
     #include <beman/transcode/whatwg_encode_view.hpp>
     #include <beman/transcode/detail/single_byte_decode_view.hpp>

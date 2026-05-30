@@ -13,6 +13,9 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
 
 #include <beman/transcode/config.hpp>
+#include <beman/transcode/config_generated.hpp>
+
+#if BEMAN_TRANSCODE_HAS_RANGES_TO
 
 #include <beman/transcode/decode_view.hpp>
 #include <beman/transcode/detail/codec_concepts.hpp>
@@ -80,4 +83,5 @@ constexpr void encode_into(Codec codec, R&& source, Output output) {
 
 } // namespace beman::transcoding
 
+#endif // BEMAN_TRANSCODE_HAS_RANGES_TO
 #endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
