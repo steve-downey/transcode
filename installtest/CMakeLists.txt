@@ -6,13 +6,7 @@ project(TestInstalledTranscode)
 
 enable_testing()
 
-set(TRANSCODE_INSTALL_DIR "../.install/lib/cmake/beman.transcode/")
-find_package(
-    beman.transcode
-    REQUIRED
-    PATHS ${TRANSCODE_INSTALL_DIR}
-    NO_DEFAULT_PATH
-)
+find_package(beman.transcode REQUIRED)
 
 # Test 1: Header mode (C++23)
 set(CMAKE_CXX_STANDARD 23)
