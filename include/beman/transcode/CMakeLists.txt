@@ -19,9 +19,15 @@ else()
             FILE_SET HEADERS
                 FILES
                     config.hpp
+                    decode_view.hpp
+                    encode_view.hpp
+                    iconv_bulk.hpp
                     transcode.hpp
                     todo.hpp
                     detail/big5.hpp
+                    detail/bulk_transcode.hpp
+                    detail/codec_concepts.hpp
+                    detail/codec_result.hpp
                     detail/concepts.hpp
                     detail/error.hpp
                     detail/euc_jp.hpp
@@ -32,7 +38,11 @@ else()
                     detail/gbk.hpp
                     detail/shift_jis.hpp
                     detail/single_byte.hpp
+                    detail/single_byte_decode_view.hpp
+                    detail/single_byte_encode_view.hpp
+                    detail/single_byte_tables.hpp
                     detail/sniff.hpp
+                    detail/table_codec.hpp
                     detail/transcode_string.hpp
                     detail/transcode_view.hpp
                     detail/utf8.hpp

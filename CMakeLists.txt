@@ -60,6 +60,22 @@ if(BEMAN_TRANSCODE_USE_MODULES)
     set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 endif()
 
+# Probe for std::ranges::to — available in libstdc++ since GCC 14, libc++ since Clang 19.
+# Uses the standard feature-test macro rather than a compiler version check so that
+# third-party builds with patched toolchains or alternate standard libraries are handled
+# correctly.
+include(CheckCXXSourceCompiles)
+set(CMAKE_REQUIRED_FLAGS "-std=c++23")
+check_cxx_source_compiles(
+    "#include <ranges>
+     #if !defined(__cpp_lib_ranges_to_container) || __cpp_lib_ranges_to_container < 202202L
+     #  error ranges::to not available
+     #endif
+     int main() { return 0; }"
+    BEMAN_TRANSCODE_HAS_RANGES_TO
+)
+unset(CMAKE_REQUIRED_FLAGS)
+
 configure_file(
     "${PROJECT_SOURCE_DIR}/include/beman/transcode/config_generated.hpp.in"
     "${PROJECT_BINARY_DIR}/include/beman/transcode/config_generated.hpp"

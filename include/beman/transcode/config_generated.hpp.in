@@ -5,4 +5,8 @@
 
 #cmakedefine01 BEMAN_TRANSCODE_USE_MODULES()
 
+// 1 when the toolchain's std::ranges::to is available (requires libstdc++ >= GCC 14
+// or libc++ >= Clang 19).  Used to guard detail/bulk_transcode.hpp and its tests.
+#cmakedefine01 BEMAN_TRANSCODE_HAS_RANGES_TO
+
 #endif

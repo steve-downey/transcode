@@ -103,7 +103,7 @@ class random_access_decode_or_error_view
         Codec     codec_{};
 
       public:
-        using value_type        = std::expected<char32_t, decode_error>;
+        using value_type        = std::expected<char32_t, whatwg_error>;
         using iterator_concept  = std::random_access_iterator_tag;
         using iterator_category = std::random_access_iterator_tag;
         using difference_type   = std::ptrdiff_t;
@@ -229,7 +229,7 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R>> {
 };
 
 // ---------------------------------------------------------------------------
-// decode_or_error_view — decodes bytes to expected<char32_t, decode_error>
+// decode_or_error_view — decodes bytes to expected<char32_t, whatwg_error>
 // ---------------------------------------------------------------------------
 
 template <decode_codec Codec, std::ranges::input_range R>
@@ -241,7 +241,7 @@ class decode_or_error_view : public std::ranges::view_interface<decode_or_error_
     class iterator {
         using base_iter = detail::compatible_iterator_t<R>;
         using base_sent = detail::compatible_sentinel_t<R>;
-        using result_t  = std::expected<char32_t, decode_error>;
+        using result_t  = std::expected<char32_t, whatwg_error>;
 
         base_iter current_{};
         base_sent end_{};
@@ -508,7 +508,7 @@ constexpr auto random_access_decode_or_error_view<Codec, R>::iterator::operator*
     const auto byte = static_cast<unsigned char>(*current_);
     char32_t   cp   = codec_.decode_byte(byte);
     if (cp == U'\xFFFD' && byte >= 0x80)
-        return std::unexpected(decode_error::invalid_byte);
+        return std::unexpected(whatwg_error::invalid_byte);
     return cp;
 }
 

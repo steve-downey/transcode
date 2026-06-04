@@ -11,8 +11,10 @@
 #include <iconv.h>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <algorithm>
     #include <cerrno>
     #include <iterator>
+    #include <memory>
     #include <ranges>
     #include <span>
 
@@ -57,7 +59,7 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         char*           output_end_;
         // Accumulates unconsumed input bytes across load() calls so that
         // multi-byte sequences can be assembled before passing to iconv.
-        char      staging_[4];
+        char      staging_[64];
         size_t    staging_len_;
         base_iter current_;
         base_sent end_;
@@ -153,81 +155,96 @@ iconv_transcode_view<IconvFns, R>::iterator::iterator(
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 void iconv_transcode_view<IconvFns, R>::iterator::load() {
-    while (true) {
-        // Append one input byte to staging (if any remains).
-        if (current_ != end_) {
+    char*  out_ptr = buffer_.data();
+    size_t outleft = buffer_.size();
+
+    while (outleft > 0) {
+        if constexpr (std::contiguous_iterator<base_iter> && std::sized_sentinel_for<base_sent, base_iter>) {
+            if (staging_len_ == 0 && current_ != end_) {
+                auto*  raw_ptr   = reinterpret_cast<const char*>(std::to_address(current_));
+                size_t remaining = static_cast<size_t>(end_ - current_);
+                char*  in_ptr    = const_cast<char*>(raw_ptr);
+                size_t inleft    = remaining;
+                size_t rc        = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
+                size_t consumed  = remaining - inleft;
+                current_ += static_cast<std::ptrdiff_t>(consumed);
+                if (rc != (size_t)-1) {
+                    if (current_ == end_)
+                        break;
+                    continue;
+                }
+                if (errno == E2BIG)
+                    break;
+                if (errno == EINVAL) {
+                    if (inleft > 0 && inleft <= sizeof(staging_)) {
+                        std::copy_n(in_ptr, inleft, staging_);
+                        staging_len_ = inleft;
+                        current_ += static_cast<std::ptrdiff_t>(inleft);
+                    }
+                    break;
+                }
+                // EILSEQ: skip one byte
+                if (current_ != end_)
+                    ++current_;
+                if (current_ == end_ && staging_len_ == 0)
+                    break;
+                continue;
+            }
+        }
+
+        // Slow path: fill staging from non-contiguous input or drain residue.
+        while (staging_len_ < sizeof(staging_) && current_ != end_) {
             staging_[staging_len_++] = static_cast<char>(*current_);
             ++current_;
-        } else if (staging_len_ == 0) {
-            if (!flushed_) {
-                flushed_       = true;
-                char*  out_ptr = buffer_.data();
-                size_t outleft = buffer_.size();
-                fns_.convert(handle_, nullptr, nullptr, &out_ptr, &outleft);
-                output_pos_ = buffer_.data();
-                output_end_ = out_ptr;
-                if (output_pos_ < output_end_)
-                    return;
-            }
-            done_ = true;
-            return;
         }
-        // else: staging holds bytes from a previous EINVAL; try to convert as-is.
+        if (staging_len_ == 0)
+            break;
 
-        char*  in_ptr  = staging_;
-        size_t inleft  = staging_len_;
-        char*  out_ptr = buffer_.data();
-        size_t outleft = buffer_.size();
-        size_t rc      = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
-
-        output_pos_ = buffer_.data();
-        output_end_ = out_ptr;
-
-        // Shift consumed bytes out of staging_.
+        char*  in_ptr   = staging_;
+        size_t inleft   = staging_len_;
+        size_t rc       = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
         size_t consumed = staging_len_ - inleft;
-        if (consumed > 0) {
-            for (size_t i = 0; i < inleft; ++i)
-                staging_[i] = staging_[consumed + i];
-            staging_len_ = inleft;
-        }
+        if (consumed > 0 && inleft > 0)
+            std::copy_n(in_ptr, inleft, staging_);
+        staging_len_ = inleft;
 
         if (rc != (size_t)-1) {
-            if (output_pos_ < output_end_)
-                return;
-            if (staging_len_ == 0 && current_ == end_) {
-                done_ = true;
-                return;
-            }
+            if (staging_len_ == 0 && current_ == end_)
+                break;
             continue;
         }
-
+        if (errno == E2BIG)
+            break;
         if (errno == EINVAL) {
-            // Incomplete input sequence: need more bytes before converting.
             if (current_ == end_) {
-                // No more input; discard the partial sequence.
                 staging_len_ = 0;
-                done_        = true;
-                return;
+                break;
             }
-            // Loop to read another byte into staging.
-            if (output_pos_ < output_end_)
-                return;
             continue;
         }
-
-        // E2BIG or EILSEQ: yield whatever was written to the output buffer.
-        if (output_pos_ < output_end_)
-            return;
-        // Nothing written; skip one staging byte to avoid stalling.
+        // EILSEQ: skip one staging byte.
         if (staging_len_ > 0) {
-            for (size_t i = 0; i + 1 < staging_len_; ++i)
-                staging_[i] = staging_[i + 1];
+            std::copy_n(staging_ + 1, staging_len_ - 1, staging_);
             --staging_len_;
         }
-        if (staging_len_ == 0 && current_ == end_) {
-            done_ = true;
-            return;
+        if (staging_len_ == 0 && current_ == end_)
+            break;
+    }
+
+    output_pos_ = buffer_.data();
+    output_end_ = out_ptr;
+
+    if (output_pos_ == output_end_) {
+        if (!flushed_) {
+            flushed_          = true;
+            char*  flush_out  = buffer_.data();
+            size_t flush_left = buffer_.size();
+            fns_.convert(handle_, nullptr, nullptr, &flush_out, &flush_left);
+            output_pos_ = buffer_.data();
+            output_end_ = flush_out;
         }
+        if (output_pos_ == output_end_)
+            done_ = true;
     }
 }
 

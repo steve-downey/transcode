@@ -61,3 +61,9 @@ TEST_CASE("get_encoding: consteval", "[transcoding::labels]") {
     CHECK(constify(get_encoding("unknown")) == std::nullopt);
     CHECK(constify(get_encoding("shift_jis")) == codec::shift_jis);
 }
+
+TEST_CASE("get_encoding: label >= 64 chars yields nullopt", "[transcoding::labels]") {
+    // The buffer limit is 63 bytes; a label of 64+ chars cannot match any codec.
+    std::string long_label(64, 'a');
+    CHECK(get_encoding(long_label) == std::nullopt);
+}

@@ -82,6 +82,20 @@ def test_wiki_corpora_ko_uses_korean_title() -> None:
     assert title != "Mars", "ko should use Korean title, not 'Mars'"
 
 
+def test_wiki_corpora_ar_uses_arabic_title() -> None:
+    ar_entries = [e for e in WIKI_CORPORA if e[0] == "ar"]
+    assert ar_entries, "ar entry missing"
+    title = ar_entries[0][2]
+    assert title == "المريخ", f"ar should use Arabic title 'المريخ', got {title!r}"
+
+
+def test_wiki_corpora_ja_uses_japanese_title() -> None:
+    ja_entries = [e for e in WIKI_CORPORA if e[0] == "ja"]
+    assert ja_entries, "ja entry missing"
+    title = ja_entries[0][2]
+    assert title == "火星", f"ja should use Japanese title '火星', got {title!r}"
+
+
 def test_conversions_contains_all_encodings() -> None:
     encodings = [enc for _, _, enc, _ in CONVERSIONS]
     assert "windows-1251" in encodings

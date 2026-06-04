@@ -12,9 +12,11 @@
 #include <iconv.h>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <algorithm>
     #include <cerrno>
     #include <expected>
     #include <iterator>
+    #include <memory>
     #include <ranges>
     #include <span>
 
@@ -50,7 +52,7 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
         std::span<char> buffer_;
         char*           output_pos_;
         char*           output_end_;
-        char            staging_[4];
+        char            staging_[64];
         size_t          staging_len_;
         base_iter       current_;
         base_sent       end_;
@@ -146,95 +148,137 @@ iconv_transcode_or_error_view<IconvFns, R>::iterator::iterator(
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
-    while (true) {
-        if (current_ != end_) {
-            staging_[staging_len_++] = static_cast<char>(*current_);
-            ++current_;
-        } else if (staging_len_ == 0) {
-            if (!flushed_) {
-                flushed_       = true;
-                char*  out_ptr = buffer_.data();
-                size_t outleft = buffer_.size();
-                fns_.convert(handle_, nullptr, nullptr, &out_ptr, &outleft);
-                output_pos_ = buffer_.data();
-                output_end_ = out_ptr;
+    char*  out_ptr = buffer_.data();
+    size_t outleft = buffer_.size();
+
+    // Fast path: contiguous+sized input with empty staging — pass directly to iconv.
+    if constexpr (std::contiguous_iterator<base_iter> && std::sized_sentinel_for<base_sent, base_iter>) {
+        if (staging_len_ == 0 && current_ != end_) {
+            auto*  raw_ptr   = reinterpret_cast<const char*>(std::to_address(current_));
+            size_t remaining = static_cast<size_t>(end_ - current_);
+            char*  in_ptr    = const_cast<char*>(raw_ptr);
+            size_t inleft    = remaining;
+            size_t rc        = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
+            size_t consumed  = remaining - inleft;
+            current_ += static_cast<std::ptrdiff_t>(consumed);
+
+            output_pos_ = buffer_.data();
+            output_end_ = out_ptr;
+
+            if (rc != (size_t)-1) {
+                if (output_pos_ == output_end_ && current_ == end_)
+                    goto do_flush;
+                return;
+            }
+            if (errno == E2BIG) {
                 if (output_pos_ < output_end_)
                     return;
+                // No output: buffer too small for one conversion unit.
+                if (current_ != end_)
+                    ++current_;
+                has_error_   = true;
+                error_value_ = iconv_error::output_full;
+                return;
             }
-            done_ = true;
+            if (errno == EINVAL) {
+                // Save unconsumed residue to staging for next call.
+                if (inleft > 0 && inleft <= sizeof(staging_)) {
+                    std::copy_n(in_ptr, inleft, staging_);
+                    staging_len_ = inleft;
+                    current_ += static_cast<std::ptrdiff_t>(inleft);
+                }
+                if (output_pos_ < output_end_)
+                    return;
+                if (staging_len_ == 0 || current_ == end_) {
+                    staging_len_ = 0;
+                    has_error_   = true;
+                    error_value_ = iconv_error::incomplete_sequence;
+                }
+                return;
+            }
+            // EILSEQ
+            if (output_pos_ < output_end_)
+                return; // yield output; invalid byte still at current_ for retry
+            if (current_ != end_)
+                ++current_;
+            has_error_   = true;
+            error_value_ = iconv_error::invalid_sequence;
             return;
         }
+    }
 
-        char*  in_ptr  = staging_;
-        size_t inleft  = staging_len_;
-        char*  out_ptr = buffer_.data();
-        size_t outleft = buffer_.size();
-        size_t rc      = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
+    {
+        // Slow path: fill staging from non-contiguous input or drain residue.
+        while (staging_len_ < sizeof(staging_) && current_ != end_) {
+            staging_[staging_len_++] = static_cast<char>(*current_);
+            ++current_;
+        }
+        if (staging_len_ == 0) {
+            output_pos_ = output_end_ = buffer_.data();
+            goto do_flush;
+        }
+
+        char*  in_ptr   = staging_;
+        size_t inleft   = staging_len_;
+        size_t rc       = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
+        size_t consumed = staging_len_ - inleft;
+        if (consumed > 0 && inleft > 0)
+            std::copy_n(in_ptr, inleft, staging_);
+        staging_len_ = inleft;
 
         output_pos_ = buffer_.data();
         output_end_ = out_ptr;
 
-        size_t consumed = staging_len_ - inleft;
-        if (consumed > 0) {
-            for (size_t i = 0; i < inleft; ++i)
-                staging_[i] = staging_[consumed + i];
-            staging_len_ = inleft;
-        }
-
         if (rc != (size_t)-1) {
-            if (output_pos_ < output_end_)
-                return;
-            if (staging_len_ == 0 && current_ == end_) {
-                done_ = true;
-                return;
-            }
-            continue;
+            if (output_pos_ == output_end_ && staging_len_ == 0 && current_ == end_)
+                goto do_flush;
+            return;
         }
-
         if (errno == EINVAL) {
-            // Yield any output produced before the incomplete sequence.
             if (output_pos_ < output_end_)
                 return;
             if (current_ == end_) {
-                // Incomplete trailing sequence — report error; next load() sets done_.
                 staging_len_ = 0;
                 has_error_   = true;
                 error_value_ = iconv_error::incomplete_sequence;
-                return;
             }
-            // More input available — accumulate another byte.
-            continue;
+            return;
         }
-
         if (errno == EILSEQ) {
-            // Yield any output produced before the invalid byte.
             if (output_pos_ < output_end_)
-                return;
-            // Skip one bad staging byte and report the error.
+                return; // yield output; residue still in staging for retry
             if (staging_len_ > 0) {
-                for (size_t i = 0; i + 1 < staging_len_; ++i)
-                    staging_[i] = staging_[i + 1];
+                std::copy_n(staging_ + 1, staging_len_ - 1, staging_);
                 --staging_len_;
             }
             has_error_   = true;
             error_value_ = iconv_error::invalid_sequence;
             return;
         }
-
-        // E2BIG: yield whatever was written.
+        // E2BIG
         if (output_pos_ < output_end_)
             return;
-        // Nothing written; output buffer too small to hold even one unit.
-        // Skip one staging byte to avoid stalling, and report the error.
         if (staging_len_ > 0) {
-            for (size_t i = 0; i + 1 < staging_len_; ++i)
-                staging_[i] = staging_[i + 1];
+            std::copy_n(staging_ + 1, staging_len_ - 1, staging_);
             --staging_len_;
         }
         has_error_   = true;
         error_value_ = iconv_error::output_full;
         return;
     }
+
+do_flush:
+    if (!flushed_) {
+        flushed_          = true;
+        char*  flush_out  = buffer_.data();
+        size_t flush_left = buffer_.size();
+        fns_.convert(handle_, nullptr, nullptr, &flush_out, &flush_left);
+        output_pos_ = buffer_.data();
+        output_end_ = flush_out;
+        if (output_pos_ < output_end_)
+            return;
+    }
+    done_ = true;
 }
 
 template <typename IconvFns, std::ranges::input_range R>

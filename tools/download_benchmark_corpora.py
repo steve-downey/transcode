@@ -31,12 +31,12 @@ _ARTICLE_BASE = "action=query&prop=extracts&explaintext=true&format=json"
 
 # (lang_code, output_filename, article_title, extra_url_params)
 # zh uses variant=zh-tw so Traditional Chinese characters convert to Big5
-# ko requires the Korean title because "Mars" doesn't redirect in ko.wikipedia
+# ar, ja, ko require native-language titles because "Mars" doesn't redirect.
 WIKI_CORPORA: list[tuple[str, str, str, str]] = [
     ("en", "en_mars_utf8.txt", "Mars", ""),
-    ("ar", "ar_mars_utf8.txt", "Mars", ""),
+    ("ar", "ar_mars_utf8.txt", "المريخ", ""),
     ("ru", "ru_mars_utf8.txt", "Mars", ""),
-    ("ja", "ja_mars_utf8.txt", "Mars", ""),
+    ("ja", "ja_mars_utf8.txt", "火星", ""),
     ("zh", "zh_mars_utf8.txt", "火星", "&variant=zh-tw"),
     ("ko", "ko_mars_utf8.txt", "화성", ""),
 ]
@@ -57,6 +57,19 @@ CONVERSIONS: list[tuple[str, str, str, str]] = [
 
 GUTENBERG_WAR_AND_PEACE_URL = "https://www.gutenberg.org/cache/epub/2600/pg2600.txt"
 GUTENBERG_WAR_AND_PEACE_FILE = "war_and_peace_utf8.txt"
+
+# Aozora Bunko: 源氏物語 (Tale of Genji), Yosano Akiko modernization (1912-1913)
+# Public domain in Japan (author died 1942, translation published 1912-1913).
+# 56 chapters, card IDs 5016-5071 under person 000052 (紫式部/与謝野晶子).
+AOZORA_GENJI_BASE = "https://www.aozora.gr.jp/cards/000052"
+AOZORA_GENJI_CARDS = list(range(5016, 5072))  # 5016..5071 inclusive
+GENJI_UTF8_FILE = "genji_monogatari_utf8.txt"
+
+# Wikisource: 西遊記 (Journey to the West), classical Chinese, 100 chapters.
+# Public domain (16th century).
+WIKISOURCE_XYJI_BASE = "https://zh.wikisource.org/w/index.php"
+WIKISOURCE_XYJI_CHAPTERS = 100
+XYJI_UTF8_FILE = "xiyouji_utf8.txt"
 
 
 def sha256_of(data: bytes) -> str:
@@ -228,6 +241,133 @@ def derive_utf16(out_dir: Path, src_filename: str) -> tuple[CorpusEntry, CorpusE
     return le_entry, be_entry
 
 
+def download_aozora_genji(out_dir: Path, force: bool = False) -> CorpusEntry:
+    """Download Tale of Genji from Aozora Bunko; return manifest entry."""
+    import io
+    import re
+    import zipfile
+
+    dest = out_dir / GENJI_UTF8_FILE
+    if dest.exists() and not force:
+        print(f"  cached: {GENJI_UTF8_FILE}")
+        raw = dest.read_bytes()
+        return build_manifest_entry(
+            GENJI_UTF8_FILE, "ja", "utf-8", AOZORA_GENJI_BASE, raw
+        )
+
+    print(f"  downloading Tale of Genji ({len(AOZORA_GENJI_CARDS)} chapters) ...")
+    all_text: list[str] = []
+    for card_id in AOZORA_GENJI_CARDS:
+        card_url = f"{AOZORA_GENJI_BASE}/card{card_id}.html"
+        try:
+            card_html = fetch_url(card_url).decode("shift_jis", errors="replace")
+        except subprocess.CalledProcessError:
+            print(f"    warning: could not fetch card {card_id}, skipping")
+            continue
+        # Extract zip filename from card page (pattern: files/NNNN_ruby_MMMM.zip)
+        match = re.search(r"files/(\d+_ruby_\d+\.zip)", card_html)
+        if not match:
+            print(f"    warning: no zip link on card {card_id}, skipping")
+            continue
+        zip_name = match.group(1)
+        zip_url = f"{AOZORA_GENJI_BASE}/files/{zip_name}"
+        try:
+            zip_data = fetch_url(zip_url)
+        except subprocess.CalledProcessError:
+            print(f"    warning: could not fetch {zip_name}, skipping")
+            continue
+        # Extract text from zip
+        with zipfile.ZipFile(io.BytesIO(zip_data)) as zf:
+            txt_names = [n for n in zf.namelist() if n.endswith(".txt")]
+            if not txt_names:
+                continue
+            raw_text = zf.read(txt_names[0]).decode("shift_jis", errors="replace")
+        # Strip Aozora ruby markup: ｜text《ruby》 → text, and bare 《ruby》
+        raw_text = re.sub(r"｜([^《]+)《[^》]+》", r"\1", raw_text)
+        raw_text = re.sub(r"《[^》]+》", "", raw_text)
+        # Strip header (everything before the first blank line after metadata)
+        # and footer (lines starting with 底本：onwards)
+        lines = raw_text.split("\n")
+        start = 0
+        for i, line in enumerate(lines):
+            if line.startswith("---") and i > 5:
+                start = i + 1
+                break
+        end = len(lines)
+        for i in range(len(lines) - 1, -1, -1):
+            if lines[i].startswith("底本："):
+                end = i
+                break
+        chapter_text = "\n".join(lines[start:end]).strip()
+        if chapter_text:
+            all_text.append(chapter_text)
+        print(f"    chapter {card_id - 5015:02d}: {len(chapter_text):,} chars")
+
+    full_text = "\n\n".join(all_text)
+    data = full_text.encode("utf-8")
+    dest.write_bytes(data)
+    print(f"  saved: {GENJI_UTF8_FILE} ({len(data):,} bytes, {len(all_text)} chapters)")
+    return build_manifest_entry(GENJI_UTF8_FILE, "ja", "utf-8", AOZORA_GENJI_BASE, data)
+
+
+def download_wikisource_xiyouji(out_dir: Path, force: bool = False) -> CorpusEntry:
+    """Download Journey to the West from zh.wikisource.org; return manifest entry."""
+    import re
+    import time
+
+    dest = out_dir / XYJI_UTF8_FILE
+    source_url = f"{WIKISOURCE_XYJI_BASE}?title=西遊記"
+    if dest.exists() and not force:
+        print(f"  cached: {XYJI_UTF8_FILE}")
+        raw = dest.read_bytes()
+        return build_manifest_entry(XYJI_UTF8_FILE, "zh", "utf-8", source_url, raw)
+
+    print(
+        f"  downloading Journey to the West ({WIKISOURCE_XYJI_CHAPTERS} chapters) ..."
+    )
+    all_text: list[str] = []
+    for chapter_num in range(1, WIKISOURCE_XYJI_CHAPTERS + 1):
+        title = f"西遊記/第{chapter_num:03d}回"
+        import urllib.parse
+
+        url = f"{WIKISOURCE_XYJI_BASE}?title={urllib.parse.quote(title)}&action=raw"
+        try:
+            raw_wikitext = fetch_url(url).decode("utf-8")
+        except subprocess.CalledProcessError:
+            print(f"    warning: could not fetch chapter {chapter_num:03d}, skipping")
+            continue
+        # Strip wikitext markup
+        text = raw_wikitext
+        # Remove {{templates}}
+        text = re.sub(r"\{\{[^}]*\}\}", "", text)
+        # Remove [[Category:...]] and [[File:...]] links
+        text = re.sub(r"\[\[(?:Category|File|分類|分类):[^\]]*\]\]", "", text)
+        # Convert [[link|display]] to display, [[link]] to link
+        text = re.sub(r"\[\[[^|\]]*\|([^\]]*)\]\]", r"\1", text)
+        text = re.sub(r"\[\[([^\]]*)\]\]", r"\1", text)
+        # Remove HTML tags
+        text = re.sub(r"<[^>]+>", "", text)
+        # Remove section headers (== ... ==)
+        text = re.sub(r"^=+\s*.*?\s*=+$", "", text, flags=re.MULTILINE)
+        # Remove leading/trailing whitespace per line
+        text = "\n".join(line.strip() for line in text.split("\n"))
+        # Collapse multiple blank lines
+        text = re.sub(r"\n{3,}", "\n\n", text)
+        text = text.strip()
+        if text:
+            all_text.append(text)
+        print(f"    chapter {chapter_num:03d}: {len(text):,} chars")
+        # Be polite to Wikisource
+        if chapter_num % 10 == 0:
+            time.sleep(1)
+
+    full_text = "\n\n".join(all_text)
+    data = full_text.encode("utf-8")
+    dest.write_bytes(data)
+    print(f"  saved: {XYJI_UTF8_FILE} ({len(data):,} bytes, {len(all_text)} chapters)")
+    return build_manifest_entry(XYJI_UTF8_FILE, "zh", "utf-8", source_url, data)
+
+
 def write_source_md(out_dir: Path, entries: list[CorpusEntry]) -> None:
     from datetime import date
 
@@ -266,6 +406,21 @@ def write_source_md(out_dir: Path, entries: list[CorpusEntry]) -> None:
         "**Author:** Leo Tolstoy (translated by Louise and Aylmer Maude)",
         "**License:** Public domain in the USA (Project Gutenberg License)",
         "See <https://www.gutenberg.org/policy/license.html>",
+        "",
+        "## Tale of Genji 源氏物語 (Aozora Bunko)",
+        "",
+        "**Source:** Aozora Bunko (青空文庫), <https://www.aozora.gr.jp/>  ",
+        "**Author:** Murasaki Shikibu (紫式部), modernized by"
+        " Yosano Akiko (与謝野晶子, 1912-1913)  ",
+        "**License:** Public domain in Japan (author died 1942;"
+        " translation published 1912-1913, copyright expired)",
+        "",
+        "## Journey to the West 西遊記 (Wikisource)",
+        "",
+        "**Source:** Chinese Wikisource, <https://zh.wikisource.org/wiki/西遊記>  ",
+        "**Author:** Wu Cheng'en (吳承恩, 16th century)  ",
+        "**License:** Public domain (published 16th century)  ",
+        "Content available under CC BY-SA 4.0.",
         "",
         "## Corpus Files",
         "",
@@ -335,6 +490,58 @@ def main(argv: list[str] | None = None) -> int:
     le_entry, be_entry = derive_utf16(out_dir, GUTENBERG_WAR_AND_PEACE_FILE)
     entries.append(le_entry)
     entries.append(be_entry)
+
+    print("\n--- Aozora Bunko: Tale of Genji (源氏物語) ---")
+    genji_entry = download_aozora_genji(out_dir, force=args.force)
+    entries.append(genji_entry)
+    # Legacy encoding conversions
+    genji_sjis = derive_conversion(
+        out_dir, GENJI_UTF8_FILE, "genji_monogatari_shiftjis.bin", "shift_jis"
+    )
+    entries.append(
+        build_manifest_entry(
+            "genji_monogatari_shiftjis.bin",
+            "ja",
+            "shift_jis",
+            AOZORA_GENJI_BASE,
+            genji_sjis,
+        )
+    )
+    genji_eucjp = derive_conversion(
+        out_dir, GENJI_UTF8_FILE, "genji_monogatari_eucjp.bin", "euc_jp"
+    )
+    entries.append(
+        build_manifest_entry(
+            "genji_monogatari_eucjp.bin", "ja", "euc_jp", AOZORA_GENJI_BASE, genji_eucjp
+        )
+    )
+
+    print("\n--- Wikisource: Journey to the West (西遊記) ---")
+    xyji_entry = download_wikisource_xiyouji(out_dir, force=args.force)
+    entries.append(xyji_entry)
+    # Legacy encoding conversions
+    xyji_gb = derive_conversion(
+        out_dir, XYJI_UTF8_FILE, "xiyouji_gb18030.bin", "gb18030"
+    )
+    entries.append(
+        build_manifest_entry(
+            "xiyouji_gb18030.bin",
+            "zh",
+            "gb18030",
+            f"{WIKISOURCE_XYJI_BASE}?title=西遊記",
+            xyji_gb,
+        )
+    )
+    xyji_big5 = derive_conversion(out_dir, XYJI_UTF8_FILE, "xiyouji_big5.bin", "big5")
+    entries.append(
+        build_manifest_entry(
+            "xiyouji_big5.bin",
+            "zh",
+            "big5",
+            f"{WIKISOURCE_XYJI_BASE}?title=西遊記",
+            xyji_big5,
+        )
+    )
 
     write_manifest_json(out_dir, entries)
     write_source_md(out_dir, entries)
