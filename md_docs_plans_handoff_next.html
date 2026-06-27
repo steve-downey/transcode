@@ -99,7 +99,7 @@ $(document).ready(function(){initNavTree('md_docs_plans_handoff_next.html',''); 
   <div class="headertitle"><div class="title">Handoff: Coverage Audit Complete — Ready for Phase 5 Planning </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md111"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md124"></a>
 Completed</h1>
 <ul>
 <li><b>P4-Step 1: Pluggable Encode View</b> — done, merged to <code>main</code></li>
@@ -110,7 +110,7 @@ Completed</h1>
 <li><b>P4-Step 6: Error Enum Coherence</b> — done, merged to <code>main</code></li>
 <li><b>Coverage Audit</b> — done on <code>coverage-p4-audit</code> branch</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md112"></a>
+<h1><a class="anchor" id="autotoc_md125"></a>
 What was done in the Coverage Audit</h1>
 <p>Ran <code>make coverage</code> on <code>main</code> after merging all P4 steps. Baseline:</p><ul>
 <li><b>Lines</b>: 78.3% (8234/10510)</li>
@@ -118,12 +118,12 @@ What was done in the Coverage Audit</h1>
 <li><b>Branches</b>: 42.6% — not a priority per CLAUDE.md</li>
 </ul>
 <p>Added 10 new tests (+10 C++ tests, now 707 total) across 5 files:</p>
-<h2><a class="anchor" id="autotoc_md113"></a>
+<h2><a class="anchor" id="autotoc_md126"></a>
 &lt;tt&gt;tests/beman/transcode/iconv_mock.hpp&lt;/tt&gt;</h2>
 <ul>
 <li>Added <code>mock_iconv_open_fail</code> — returns <code>(iconv_t)-1</code> to simulate <code>iconv_open</code> failure.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md114"></a>
+<h2><a class="anchor" id="autotoc_md127"></a>
 &lt;tt&gt;tests/beman/transcode/iconv_bulk.test.cpp&lt;/tt&gt; (+7 tests)</h2>
 <ul>
 <li><code>iconv_transcode_to</code> open failure → empty container (line 56)</li>
@@ -133,23 +133,23 @@ What was done in the Coverage Audit</h1>
 <li><code>iconv_transcode_into</code> stateful flush → 0x0F appended (lines 185-191)</li>
 <li><code>iconv_transcode_to_or_error</code> stateful flush → 0x0F appended (lines 250-253)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md115"></a>
+<h2><a class="anchor" id="autotoc_md128"></a>
 &lt;tt&gt;tests/beman/transcode/bulk_transcode.test.cpp&lt;/tt&gt; (+2 tests)</h2>
 <ul>
 <li><code>decode_to&lt;codec::iso_8859_6&gt;</code> with unmapped byte 0xA1 → U+FFFD (line 147 in <code><a class="el" href="single__byte__tables_8hpp.html">single_byte_tables.hpp</a></code>)</li>
 <li><code>encode_to&lt;codec::iso_8859_6&gt;</code> with U+0100 (not in table) → '?' (line 160 in <code><a class="el" href="single__byte__tables_8hpp.html">single_byte_tables.hpp</a></code>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md116"></a>
+<h2><a class="anchor" id="autotoc_md129"></a>
 &lt;tt&gt;tests/beman/transcode/whatwg_decode_or_error.test.cpp&lt;/tt&gt; (+1 test)</h2>
 <ul>
 <li><code>\xF4\x90\x80\x80</code> → <code>out_of_range</code> (line 66 in <code><a class="el" href="utf8_8hpp.html">utf8.hpp</a></code>): F4 with first continuation &gt; 0x8F = U+110000, beyond Unicode max.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md117"></a>
+<h2><a class="anchor" id="autotoc_md130"></a>
 &lt;tt&gt;tests/beman/transcode/labels.test.cpp&lt;/tt&gt; (+1 test)</h2>
 <ul>
 <li>64-char label → <code>std::nullopt</code> (line 275 in <code><a class="el" href="labels_8hpp.html">labels.hpp</a></code>): label buffer is 63 bytes; label ≥ 64 bytes cannot match any codec.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md118"></a>
+<h2><a class="anchor" id="autotoc_md131"></a>
 After audit coverage</h2>
 <ul>
 <li><b>Lines</b>: 78.3% (8267/10564)</li>
@@ -158,7 +158,7 @@ After audit coverage</h2>
 <li>**<code><a class="el" href="single__byte__tables_8hpp.html">single_byte_tables.hpp</a></code>**: 88.9% (was 77.8%)</li>
 <li>**<code><a class="el" href="utf8_8hpp.html">utf8.hpp</a></code>**: 94.6% (was 91.9%)</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md119"></a>
+<h1><a class="anchor" id="autotoc_md132"></a>
 Remaining Coverage Gaps (Explained)</h1>
 <p>These are NOT worth fighting. Each has a documented reason:</p>
 <table class="markdownTable">
@@ -183,16 +183,16 @@ Remaining Coverage Gaps (Explained)</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code><a class="el" href="bulk__transcode_8hpp.html">bulk_transcode.hpp</a></code>   </td><td class="markdownTableBodyNone">74, 92   </td><td class="markdownTableBodyNone">Closing <code>}</code> of if-constexpr branches — gcov attribute artifact   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md120"></a>
+<h1><a class="anchor" id="autotoc_md133"></a>
 Current State</h1>
 <ul>
 <li><code>make test</code> passes: 707 C++ tests + 250 Python tests, all green</li>
 <li><code>make lint</code> passes: all hooks clean</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md121"></a>
+<h1><a class="anchor" id="autotoc_md134"></a>
 Branch State</h1>
 <p><code>coverage-p4-audit</code> is ready to merge to <code>main</code>. Merge with <code>--no-ff</code>.</p>
-<h1><a class="anchor" id="autotoc_md122"></a>
+<h1><a class="anchor" id="autotoc_md135"></a>
 What Comes Next</h1>
 <p>The coverage audit is done. Actionable next steps, in priority order:</p>
 <ol type="1">

@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p4_step4_iconv_bulk.html
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p4-step4-iconv-bulk</code> <b>Depends on:</b> None (independent of pluggable codec steps) <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md283"></a>
+<h1><a class="anchor" id="autotoc_md296"></a>
 Goal</h1>
 <p>Add <code>iconv_transcode_to&lt;Container&gt;(input, from, to)</code> and <code>iconv_transcode_into(input, from, to, output_iter)</code> that call raw <code>iconv()</code> with block buffers, bypassing per-byte iteration. Target: ~1.5-2x overhead vs raw iconv (down from the current ~15-20x of <code>iconv_transcode_view</code>).</p>
-<h1><a class="anchor" id="autotoc_md284"></a>
+<h1><a class="anchor" id="autotoc_md297"></a>
 Context for Executing Agent</h1>
 <p>The <code>iconv_transcode_view</code> in <code><a class="el" href="iconv__transcode__view_8hpp.html">include/beman/transcode/iconv_transcode_view.hpp</a></code> wraps iconv as a per-byte range adaptor. Each <code>++iterator</code> may trigger an <code>iconv()</code> call that processes a few bytes into a small staging buffer, then doles them out one at a time. This is correct but slow.</p>
 <p>The bulk operation should implement the same logic as the "before" code in <code><a class="el" href="paper__iconv__view_8cpp.html">examples/paper_iconv_view.cpp</a></code> (lines 12-56), but wrapped in a clean function with RAII and proper error handling:</p>
@@ -116,11 +116,11 @@ Context for Executing Agent</h1>
 <li>Handle <code>EINVAL</code>: incomplete sequence at end of input — insert replacement</li>
 <li>Return the completed container</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md285"></a>
+<h2><a class="anchor" id="autotoc_md298"></a>
 Dependency injection</h2>
 <p>Accept an <code>iconv_functions</code> struct (same pattern as the view in <code><a class="el" href="iconv__transcode__view_8hpp.html">iconv_transcode_view.hpp</a></code> lines 16-27) so tests can use <code>mock_iconv</code> from <code>tests/beman/transcode/iconv_mock.hpp</code>.</p>
 <p>Default to real iconv (from <code><a class="el" href="iconv__real_8hpp.html">iconv_real.hpp</a></code>).</p>
-<h2><a class="anchor" id="autotoc_md286"></a>
+<h2><a class="anchor" id="autotoc_md299"></a>
 Key files to reference</h2>
 <ul>
 <li><code><a class="el" href="iconv__transcode__view_8hpp.html">include/beman/transcode/iconv_transcode_view.hpp</a></code> — the view implementation (shows how iconv_functions is injected, how staging works)</li>
@@ -129,7 +129,7 @@ Key files to reference</h2>
 <li><code><a class="el" href="paper__iconv__view_8cpp.html">examples/paper_iconv_view.cpp</a></code> — the "before" code to model</li>
 <li><code><a class="el" href="error_8hpp.html">include/beman/transcode/detail/error.hpp</a></code> — <code>iconv_error</code> enum</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md287"></a>
+<h1><a class="anchor" id="autotoc_md300"></a>
 Deliverables</h1>
 <ul>
 <li><code><a class="el" href="iconv__bulk_8hpp.html">include/beman/transcode/iconv_bulk.hpp</a></code> — new file:<ul>
@@ -143,7 +143,7 @@ Deliverables</h1>
 <li><code>tests/beman/transcode/iconv_bulk.test.cpp</code> — tests using mock_iconv</li>
 <li>Update <code><a class="el" href="transcode_8hpp.html">include/beman/transcode/transcode.hpp</a></code> to include the new header</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md288"></a>
+<h1><a class="anchor" id="autotoc_md301"></a>
 Constraints</h1>
 <ul>
 <li>Input must satisfy <code>legacy_byte_range</code> (same as the view)</li>
@@ -152,7 +152,7 @@ Constraints</h1>
 <li>The initial output buffer size should be <code>input.size() * 4</code> (worst case expansion for UTF-8 output), capped at some reasonable maximum to avoid huge allocations for small inputs</li>
 <li>The RAII guard for <code>iconv_t</code> should use a local struct or <code>std::unique_ptr</code> with a custom deleter</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md289"></a>
+<h1><a class="anchor" id="autotoc_md302"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p4-step4-iconv-bulk</code> from <code>main</code></li>
@@ -197,13 +197,13 @@ Procedure</h1>
 <li>Run <code>make bench-perf</code> and compare new bulk iconv vs view iconv numbers</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md290"></a>
+<h1><a class="anchor" id="autotoc_md303"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line"># Performance check — should see ~10x improvement over iconv_transcode_view:</div>
 <div class="line">make bench-perf</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md291"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md304"></a>
 Handoff to Step 5</h1>
 <p>Step 4 done, next read <code><a class="el" href="p4-step5-iconv-null-term_8md.html">docs/plans/p4-step5-iconv-null-term.md</a></code>. The bulk operations close the iconv performance gap. </p>
 </div></div><!-- contents -->

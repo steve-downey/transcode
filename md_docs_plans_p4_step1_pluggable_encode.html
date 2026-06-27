@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p4_step1_pluggable_encod
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p4-step1-pluggable-encode</code> <b>Depends on:</b> None (first step in Phase 4) <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="phase4-index_8md.html">docs/plans/phase4-index.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md252"></a>
+<h1><a class="anchor" id="autotoc_md265"></a>
 Goal</h1>
 <p>Add <code>encode(codec)</code> and <code>encode_or_error(codec)</code> pipe adaptors for any type satisfying the <code>encode_codec</code> concept. This closes the biggest single gap in the pluggable codec API surface.</p>
-<h1><a class="anchor" id="autotoc_md253"></a>
+<h1><a class="anchor" id="autotoc_md266"></a>
 Context for Executing Agent</h1>
 <p>The pluggable decode view already exists at <code><a class="el" href="decode__view_8hpp.html">include/beman/transcode/decode_view.hpp</a></code>. It has two variants:</p><ul>
 <li><code>decode_view&lt;Codec, R&gt;</code> (general, input/forward range)</li>
@@ -115,7 +115,7 @@ Context for Executing Agent</h1>
 <li><code>decode_or_error(codec)</code> → returns the <code>_or_error</code> variant</li>
 </ul>
 <p>The encode view must mirror this structure.</p>
-<h2><a class="anchor" id="autotoc_md254"></a>
+<h2><a class="anchor" id="autotoc_md267"></a>
 Key files to reference</h2>
 <ul>
 <li><code><a class="el" href="decode__view_8hpp.html">include/beman/transcode/decode_view.hpp</a></code> — the pattern to follow (structure, CPO closures at lines 307-355, factory functions at lines 355-360)</li>
@@ -124,7 +124,7 @@ Key files to reference</h2>
 <li><code><a class="el" href="codec__result_8hpp.html">include/beman/transcode/detail/codec_result.hpp</a></code> — <code>encode_result</code> struct: <code>{ std::array&lt;unsigned char, 8&gt; bytes; int count; bool is_error; }</code></li>
 <li><code><a class="el" href="table__codec_8hpp.html">include/beman/transcode/detail/table_codec.hpp</a></code> — <code>table_codec</code> provides both <code>decode_one</code> and <code>encode_one</code>, making it the test subject</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md255"></a>
+<h2><a class="anchor" id="autotoc_md268"></a>
 Key differences from decode_view</h2>
 <ul>
 <li><b>Input type</b>: <code>unicode_scalar_range</code> (range of <code>char32_t</code>), not <code>legacy_byte_range</code></li>
@@ -132,14 +132,14 @@ Key differences from decode_view</h2>
 <li><b>Internal buffering</b>: one <code>char32_t</code> may produce 1-8 output bytes, so the iterator needs <code>buf_[8]</code>, <code>len_</code>, <code>pos_</code> fields</li>
 <li><b>Concept</b>: constrained on <code>encode_codec</code>, not <code>decode_codec</code></li>
 </ul>
-<h2><a class="anchor" id="autotoc_md256"></a>
+<h2><a class="anchor" id="autotoc_md269"></a>
 The encode_codec concept</h2>
 <div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt;</div>
 <div class="line"><span class="keyword">concept </span>encode_codec = std::semiregular&lt;C&gt; &amp;&amp;</div>
 <div class="line">    <span class="keyword">requires</span>(C&amp; c, <span class="keywordtype">char32_t</span> cp) {</div>
 <div class="line">        { c.encode_one(cp) } -&gt; std::same_as&lt;encode_result&gt;;</div>
 <div class="line">    };</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md257"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md270"></a>
 Deliverables</h1>
 <ul>
 <li><code><a class="el" href="encode__view_8hpp.html">include/beman/transcode/encode_view.hpp</a></code> — new file containing:<ul>
@@ -156,7 +156,7 @@ Deliverables</h1>
 <li>Update <code><a class="el" href="transcode_8hpp.html">include/beman/transcode/transcode.hpp</a></code> to include the new header</li>
 <li>Update <code>tests/beman/transcode/CMakeLists.txt</code> for the new test targets</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md258"></a>
+<h1><a class="anchor" id="autotoc_md271"></a>
 Constraints</h1>
 <ul>
 <li>Functions defined out-of-line in the header (body after class), per coding rules</li>
@@ -164,7 +164,7 @@ Constraints</h1>
 <li><code>constexpr</code> everything — the encode view should work at compile time</li>
 <li>The <code>_or_error</code> view uses <code>std::expected&lt;char, decode_error&gt;</code> (where <code>decode_error</code> is the alias for <code>whatwg_error</code>) to match the decode_or_error pattern</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md259"></a>
+<h1><a class="anchor" id="autotoc_md272"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p4-step1-pluggable-encode</code> from <code>main</code></li>
@@ -203,13 +203,13 @@ Procedure</h1>
 <li><code><code><code>Update</code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a>`</code></code></li>
 </ol>
 <p><code><code></code></code></p>
-<h1><a class="anchor" id="autotoc_md260"></a>
+<h1><a class="anchor" id="autotoc_md273"></a>
 Verification</h1>
 <p><code><code> </p><div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
 </div><!-- fragment --><p></code></code></p>
 <p><code><code></code></code></p>
-<h1><a class="anchor" id="autotoc_md261"></a>
+<h1><a class="anchor" id="autotoc_md274"></a>
 Handoff to Step 2</h1>
 <p><code><code> Step 1 done, next read <code><a class="el" href="p4-step2-pluggable-bulk_8md.html">docs/plans/p4-step2-pluggable-bulk.md</a></code>. The new <code>encode(codec)</code> pipe adaptor is available for use in Step 2's bulk operations. </code></code></p>
 </div></div><!-- contents -->
