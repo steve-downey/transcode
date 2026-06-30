@@ -1,0 +1,32 @@
+# Lint profile — must be 100% clean; enforced by `make lint`.
+# Strict subset of .clang-tidy (the dev profile).
+---
+Checks: >
+  -*,
+  bugprone-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -bugprone-branch-clone,
+  -bugprone-unchecked-optional-access,
+  -modernize-avoid-c-style-cast,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-std-namespace-modification,
+  -bugprone-throwing-static-initialization,
+  -modernize-avoid-c-arrays,
+  -modernize-macro-to-enum,
+  -modernize-use-designated-initializers,
+  -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
+  -performance-enum-size,
+  -performance-no-int-to-ptr,
+  -readability-braces-around-statements,
+  -readability-duplicate-include,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+  -readability-uppercase-literal-suffix
+
+HeaderFilterRegex: 'beman/transcode/.*'
+WarningsAsErrors: '*'

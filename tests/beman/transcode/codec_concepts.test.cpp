@@ -90,8 +90,8 @@ static_assert(!decode_codec<int>);
 TEST_CASE("table_codec: ASCII passthrough", "[codec_concepts]") {
     latin1_codec                 codec;
     std::array<unsigned char, 3> input{0x41, 0x42, 0x43}; // ABC
-    auto                         it  = input.begin();
-    auto                         end = input.end();
+    auto*                        it  = input.begin();
+    auto*                        end = input.end();
 
     auto r1 = codec.decode_one(it, end);
     CHECK(!r1.is_error);
@@ -109,8 +109,8 @@ TEST_CASE("table_codec: ASCII passthrough", "[codec_concepts]") {
 TEST_CASE("table_codec: upper-half decode", "[codec_concepts]") {
     latin1_codec                 codec;
     std::array<unsigned char, 2> input{0x80, 0xFF};
-    auto                         it  = input.begin();
-    auto                         end = input.end();
+    auto*                        it  = input.begin();
+    auto*                        end = input.end();
 
     auto r1 = codec.decode_one(it, end);
     CHECK(!r1.is_error);
@@ -124,8 +124,8 @@ TEST_CASE("table_codec: upper-half decode", "[codec_concepts]") {
 TEST_CASE("table_codec: unmapped byte returns error", "[codec_concepts]") {
     sparse_codec                 codec;
     std::array<unsigned char, 1> input{0x80}; // index 0 is zero (unmapped)
-    auto                         it  = input.begin();
-    auto                         end = input.end();
+    auto*                        it  = input.begin();
+    auto*                        end = input.end();
 
     auto r = codec.decode_one(it, end);
     CHECK(r.is_error);
@@ -193,8 +193,8 @@ TEST_CASE("table_codec: constexpr encode_one", "[codec_concepts]") {
 TEST_CASE("stateful_test_codec: state advances", "[codec_concepts]") {
     stateful_test_codec          codec;
     std::array<unsigned char, 3> input{0x10, 0x20, 0x30};
-    auto                         it  = input.begin();
-    auto                         end = input.end();
+    auto*                        it  = input.begin();
+    auto*                        end = input.end();
 
     auto r1 = codec.decode_one(it, end);
     CHECK(!r1.is_error);

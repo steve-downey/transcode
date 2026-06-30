@@ -9,6 +9,7 @@
 #include <beman/transcode/iconv_transcode_or_error_view.hpp>
 
 #include <array>
+#include <cstddef>
 #include <span>
 #include <string>
 #include <vector>
@@ -87,10 +88,10 @@ TEST_CASE("real iconv E2BIG: long input with small buffer", "[transcoding::iconv
         output.push_back(c);
     REQUIRE(output.size() == 400);
     for (int i = 0; i < 100; ++i) {
-        CHECK(static_cast<unsigned char>(output[i * 4]) == 0x41);
-        CHECK(static_cast<unsigned char>(output[i * 4 + 1]) == 0x00);
-        CHECK(static_cast<unsigned char>(output[i * 4 + 2]) == 0x00);
-        CHECK(static_cast<unsigned char>(output[i * 4 + 3]) == 0x00);
+        CHECK(static_cast<unsigned char>(output[static_cast<std::size_t>(i) * 4]) == 0x41);
+        CHECK(static_cast<unsigned char>(output[(static_cast<std::size_t>(i) * 4) + 1]) == 0x00);
+        CHECK(static_cast<unsigned char>(output[(static_cast<std::size_t>(i) * 4) + 2]) == 0x00);
+        CHECK(static_cast<unsigned char>(output[(static_cast<std::size_t>(i) * 4) + 3]) == 0x00);
     }
 }
 

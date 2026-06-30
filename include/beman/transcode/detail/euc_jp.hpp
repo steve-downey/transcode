@@ -85,7 +85,7 @@ constexpr euc_jp_decode_result euc_jp_decode_one(I& current, S end) {
         ++current;
         if (b2 < 0xA1 || b2 > 0xFE)
             return {{}, whatwg_error::invalid_byte, true};
-        int      pointer = (b1 - 0xA1) * 94 + (b2 - 0xA1);
+        int      pointer = ((b1 - 0xA1) * 94) + (b2 - 0xA1);
         char32_t cp      = tables::euc_jp_jis0212[pointer];
         if (cp == 0)
             return {{}, whatwg_error::invalid_byte, true};
@@ -100,7 +100,7 @@ constexpr euc_jp_decode_result euc_jp_decode_one(I& current, S end) {
         ++current;
         if (trail < 0xA1 || trail > 0xFE)
             return {{}, whatwg_error::invalid_byte, true};
-        int      pointer = (lead - 0xA1) * 94 + (trail - 0xA1);
+        int      pointer = ((lead - 0xA1) * 94) + (trail - 0xA1);
         char32_t cp      = tables::shift_jis[pointer];
         if (cp == 0)
             return {{}, whatwg_error::invalid_byte, true};

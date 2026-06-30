@@ -20,6 +20,7 @@
     #include <iterator>
     #include <ranges>
     #include <string>
+    #include <utility>
     #include <vector>
 
 #endif
@@ -79,8 +80,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
         return Container{};
 
     size_t buf_size = input.size * 4;
-    if (buf_size < 256)
-        buf_size = 256;
+    buf_size        = std::max<size_t>(buf_size, 256);
     std::vector<char> out_buf(buf_size);
 
     char*  inp      = input.data;
@@ -90,9 +90,9 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
 
     while (inp_left > 0) {
         size_t rc = fns.convert(guard.handle, &inp, &inp_left, &out, &out_left);
-        if (rc == (size_t)-1) {
+        if (rc == iconv_error_rc) {
             if (errno == E2BIG) {
-                size_t used = static_cast<size_t>(out - out_buf.data());
+                auto used = static_cast<size_t>(out - out_buf.data());
                 buf_size *= 2;
                 out_buf.resize(buf_size);
                 out      = out_buf.data() + used;
@@ -103,7 +103,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
                     --inp_left;
                 }
                 if (out_left == 0) {
-                    size_t used = static_cast<size_t>(out - out_buf.data());
+                    auto used = static_cast<size_t>(out - out_buf.data());
                     buf_size *= 2;
                     out_buf.resize(buf_size);
                     out      = out_buf.data() + used;
@@ -116,7 +116,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
                 inp += inp_left;
                 inp_left = 0;
                 if (out_left == 0) {
-                    size_t used = static_cast<size_t>(out - out_buf.data());
+                    auto used = static_cast<size_t>(out - out_buf.data());
                     buf_size *= 2;
                     out_buf.resize(buf_size);
                     out      = out_buf.data() + used;
@@ -131,10 +131,10 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
     // Flush stateful encodings
     while (true) {
         size_t rc = fns.convert(guard.handle, nullptr, nullptr, &out, &out_left);
-        if (rc != (size_t)-1)
+        if (rc != iconv_error_rc)
             break;
         if (errno == E2BIG) {
-            size_t used = static_cast<size_t>(out - out_buf.data());
+            auto used = static_cast<size_t>(out - out_buf.data());
             buf_size *= 2;
             out_buf.resize(buf_size);
             out      = out_buf.data() + used;
@@ -144,7 +144,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
         }
     }
 
-    size_t out_used = static_cast<size_t>(out - out_buf.data());
+    auto out_used = static_cast<size_t>(out - out_buf.data());
     return Container(out_buf.data(), out_buf.data() + out_used);
 }
 
@@ -180,7 +180,7 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
         size_t written = tmp.size() - out_left;
         output         = std::copy_n(tmp.data(), written, output);
 
-        if (rc == (size_t)-1) {
+        if (rc == iconv_error_rc) {
             if (errno == E2BIG) {
                 // Temp buffer filled; loop refreshes it on the next iteration
             } else if (errno == EILSEQ) {
@@ -205,7 +205,7 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
         size_t rc       = fns.convert(guard.handle, nullptr, nullptr, &out, &out_left);
         size_t written  = tmp.size() - out_left;
         output          = std::copy_n(tmp.data(), written, output);
-        if (rc != (size_t)-1 || errno != E2BIG)
+        if (rc != iconv_error_rc || errno != E2BIG)
             break;
     }
 
@@ -233,8 +233,7 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
         return std::unexpected(iconv_error::invalid_sequence);
 
     size_t buf_size = input.size * 4;
-    if (buf_size < 256)
-        buf_size = 256;
+    buf_size        = std::max<size_t>(buf_size, 256);
     std::vector<char> out_buf(buf_size);
 
     char*  inp      = input.data;
@@ -244,9 +243,9 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
 
     while (inp_left > 0) {
         size_t rc = fns.convert(guard.handle, &inp, &inp_left, &out, &out_left);
-        if (rc == (size_t)-1) {
+        if (rc == iconv_error_rc) {
             if (errno == E2BIG) {
-                size_t used = static_cast<size_t>(out - out_buf.data());
+                auto used = static_cast<size_t>(out - out_buf.data());
                 buf_size *= 2;
                 out_buf.resize(buf_size);
                 out      = out_buf.data() + used;
@@ -263,10 +262,10 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
     // Flush stateful encodings
     while (true) {
         size_t rc = fns.convert(guard.handle, nullptr, nullptr, &out, &out_left);
-        if (rc != (size_t)-1)
+        if (rc != iconv_error_rc)
             break;
         if (errno == E2BIG) {
-            size_t used = static_cast<size_t>(out - out_buf.data());
+            auto used = static_cast<size_t>(out - out_buf.data());
             buf_size *= 2;
             out_buf.resize(buf_size);
             out      = out_buf.data() + used;
@@ -276,7 +275,7 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
         }
     }
 
-    size_t out_used = static_cast<size_t>(out - out_buf.data());
+    auto out_used = static_cast<size_t>(out - out_buf.data());
     return Container(out_buf.data(), out_buf.data() + out_used);
 }
 

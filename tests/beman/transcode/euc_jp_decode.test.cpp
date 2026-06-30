@@ -245,14 +245,14 @@ TEST_CASE("euc_jp decode truncated SS3: 0x8F only -> U+FFFD", "[transcoding::euc
 TEST_CASE("euc_jp decode SS3 invalid first trail: 0x8F 0x00 -> U+FFFD", "[transcoding::euc_jp]") {
     std::vector<char> bytes{'\x8F', '\x00'};
     auto              result = collect(bytes | whatwg_decode<codec::euc_jp>);
-    REQUIRE(result.size() >= 1);
+    REQUIRE(!result.empty());
     CHECK(result[0] == U'\xFFFD');
 }
 
 TEST_CASE("euc_jp decode SS3 invalid second trail: 0x8F 0xA1 0x00 -> U+FFFD", "[transcoding::euc_jp]") {
     std::vector<char> bytes{'\x8F', '\xA1', '\x00'};
     auto              result = collect(bytes | whatwg_decode<codec::euc_jp>);
-    REQUIRE(result.size() >= 1);
+    REQUIRE(!result.empty());
     CHECK(result[0] == U'\xFFFD');
 }
 

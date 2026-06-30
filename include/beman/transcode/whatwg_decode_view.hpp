@@ -539,7 +539,7 @@ struct whatwg_decode_closure {
 };
 
 template <codec C>
-inline constexpr whatwg_decode_closure<C> whatwg_decode{};
+inline constexpr auto whatwg_decode = whatwg_decode_closure<C>{};
 
 // ---------------------------------------------------------------------------
 // whatwg_decode_or_error_view — decodes bytes to expected<char32_t, whatwg_error>
@@ -557,7 +557,7 @@ class whatwg_decode_or_error_view : public std::ranges::view_interface<whatwg_de
 
         base_iter     current_{};
         base_sent     end_{};
-        result_t      value_{};
+        result_t      value_;
         bool          done_{false};
         int           pending_count_{0};
         unsigned char pending_[2]{};
@@ -659,7 +659,7 @@ struct whatwg_decode_or_error_closure {
 };
 
 template <codec C>
-inline constexpr whatwg_decode_or_error_closure<C> whatwg_decode_or_error{};
+inline constexpr auto whatwg_decode_or_error = whatwg_decode_or_error_closure<C>{};
 
 } // namespace beman::transcoding
 
@@ -842,7 +842,8 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
         value_ = r.is_error ? U'\xFFFD' : r.code_point;
     } else if constexpr (C == codec::utf_16be || C == codec::utf_16le) {
         // Read the first code unit (2 bytes), using pending buffer if available.
-        unsigned char b0, b1;
+        unsigned char b0;
+        unsigned char b1;
         if (pending_count_ > 0) {
             b0             = pending_[0];
             b1             = pending_[1];
@@ -1073,7 +1074,7 @@ constexpr void whatwg_decode_view<C, R>::iterator::load() {
                 iso2022jp_state_       = iso2022jp_output_state_;
                 iso2022jp_output_flag_ = false;
                 if (byte >= 0x21 && byte <= 0x7E) {
-                    int  pointer = (static_cast<int>(iso2022jp_lead_) - 0x21) * 94 + (static_cast<int>(byte) - 0x21);
+                    int  pointer = ((static_cast<int>(iso2022jp_lead_) - 0x21) * 94) + (static_cast<int>(byte) - 0x21);
                     auto cp      = detail::tables::shift_jis[pointer];
                     if (cp != 0) {
                         value_ = cp;
@@ -1417,7 +1418,8 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
         else
             value_ = r.code_point;
     } else if constexpr (C == codec::utf_16be || C == codec::utf_16le) {
-        unsigned char b0, b1;
+        unsigned char b0;
+        unsigned char b1;
         if (pending_count_ > 0) {
             b0             = pending_[0];
             b1             = pending_[1];
@@ -1647,7 +1649,7 @@ constexpr void whatwg_decode_or_error_view<C, R>::iterator::load() {
                 iso2022jp_state_       = iso2022jp_output_state_;
                 iso2022jp_output_flag_ = false;
                 if (byte >= 0x21 && byte <= 0x7E) {
-                    int  pointer = (static_cast<int>(iso2022jp_lead_) - 0x21) * 94 + (static_cast<int>(byte) - 0x21);
+                    int  pointer = ((static_cast<int>(iso2022jp_lead_) - 0x21) * 94) + (static_cast<int>(byte) - 0x21);
                     auto cp      = detail::tables::shift_jis[pointer];
                     if (cp != 0) {
                         value_ = cp;

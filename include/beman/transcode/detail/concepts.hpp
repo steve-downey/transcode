@@ -37,11 +37,11 @@ struct compatible_iterator {
 
 template <typename R>
 struct compatible_iterator<R, true> {
-    using type = typename common_or_mutable<std::ranges::iterator_t<R>, std::ranges::iterator_t<const R>>::type;
+    using type = common_or_mutable<std::ranges::iterator_t<R>, std::ranges::iterator_t<const R>>::type;
 };
 
 template <typename R>
-using compatible_iterator_t = typename compatible_iterator<R>::type;
+using compatible_iterator_t = compatible_iterator<R>::type;
 
 template <typename R, bool = std::ranges::range<const R>>
 struct compatible_sentinel {
@@ -50,11 +50,11 @@ struct compatible_sentinel {
 
 template <typename R>
 struct compatible_sentinel<R, true> {
-    using type = typename common_or_mutable<std::ranges::sentinel_t<R>, std::ranges::sentinel_t<const R>>::type;
+    using type = common_or_mutable<std::ranges::sentinel_t<R>, std::ranges::sentinel_t<const R>>::type;
 };
 
 template <typename R>
-using compatible_sentinel_t = typename compatible_sentinel<R>::type;
+using compatible_sentinel_t = compatible_sentinel<R>::type;
 
 template <typename R>
 concept const_iterator_compatible_range =

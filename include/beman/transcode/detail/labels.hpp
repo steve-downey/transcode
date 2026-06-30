@@ -280,7 +280,7 @@ constexpr std::optional<codec> get_encoding(std::string_view label) noexcept {
     std::string_view lower{buf, label.size()};
 
     // Binary search the sorted table.
-    auto it = std::ranges::lower_bound(
+    const auto* it = std::ranges::lower_bound(
         detail::label_table, lower, {}, [](const detail::label_entry& e) { return std::string_view{e.label}; });
     if (it != std::end(detail::label_table) && std::string_view{it->label} == lower)
         return it->value;

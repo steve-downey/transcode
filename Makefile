@@ -44,7 +44,7 @@ else
 	_local_toolchain?=$(CURDIR)/etc/$(TOOLCHAIN)-toolchain.cmake
 endif
 
-_configuration_types ?= "RelWithDebInfo;Debug;Tsan;Asan;Gcov;Perf"
+_configuration_types ?= "RelWithDebInfo;Debug;Tsan;Asan;Gcov;Perf;Tidy"
 
 _build_path ?= $(_build_dir)/$(_build_name)
 _build_path := $(subst //,/,$(_build_path))
@@ -67,7 +67,6 @@ endif
 
 CMAKE ?= $(UV) run cmake
 CTEST ?= $(UV) run ctest
-
 define run_cmake =
 	$(CMAKE) \
 	-G "Ninja Multi-Config" \
@@ -219,7 +218,7 @@ bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
 .PHONY: lint
-lint: venv mypy
+lint: venv mypy clang-tidy
 lint: ## Run all configured tools in pre-commit and mypy
 	$(PRE_COMMIT) run -a
 
@@ -227,6 +226,10 @@ lint: ## Run all configured tools in pre-commit and mypy
 lint-manual: venv
 lint-manual: ## Run all manual tools in pre-commit
 	$(PRE_COMMIT) run --hook-stage manual -a
+
+.PHONY: clang-tidy
+clang-tidy: $(_build_path)/CMakeCache.txt ## Run clang-tidy on project headers via Tidy config
+	$(CMAKE) --build $(_build_path) --config Tidy --target all_verify_interface_header_sets -- -k 0
 
 .PHONY: coverage
 coverage: ## Build and run the tests with the GCOV profile and process the results

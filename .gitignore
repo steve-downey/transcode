@@ -5,6 +5,7 @@ tmp/
 
 /.cache
 /compile_commands.json
+/compile_commands_tidy.json
 /build
 /.build/
 /.install/

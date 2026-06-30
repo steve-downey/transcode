@@ -33,7 +33,7 @@ struct transcode_closure {
 };
 
 template <codec From, codec To>
-inline constexpr transcode_closure<From, To> transcode{};
+inline constexpr auto transcode = transcode_closure<From, To>{};
 
 // Out-of-line definition: transcode_closure::operator()
 template <codec From, codec To>
