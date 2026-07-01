@@ -17,7 +17,7 @@ namespace {
 template <codec C>
 void check_single_byte_index(const WptSingleByteIndex& idx) {
     for (int i = 0; i < 128; ++i) {
-        uint8_t               byte = static_cast<uint8_t>(i + 0x80);
+        auto                  byte = static_cast<uint8_t>(i + 0x80);
         std::vector<char>     input{static_cast<char>(byte)};
         std::vector<char32_t> result;
         for (char32_t cp : input | whatwg_decode<C>)

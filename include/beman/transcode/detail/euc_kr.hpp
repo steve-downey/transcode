@@ -66,7 +66,7 @@ constexpr euc_kr_decode_result euc_kr_decode_one(I& current, S end) {
         return {{}, whatwg_error::invalid_byte, true};
 
     int offset  = trail > 0x7F ? 1 : 0;
-    int pointer = (lead - 0x81) * 190 + (trail - 0x41) - offset;
+    int pointer = ((lead - 0x81) * 190) + (trail - 0x41) - offset;
 
     char32_t cp = tables::euc_kr[pointer];
     if (cp == 0)
@@ -84,11 +84,11 @@ constexpr euc_kr_encode_result euc_kr_encode_one(char32_t cp) {
 
     for (int i = 0; i < 23940; ++i) {
         if (tables::euc_kr[i] == cp) {
-            int trail = i % 190 + 0x41;
+            int trail = (i % 190) + 0x41;
             if (trail >= 0x7F)
                 ++trail;
             euc_kr_encode_result r{};
-            r.bytes[0] = static_cast<unsigned char>(i / 190 + 0x81);
+            r.bytes[0] = static_cast<unsigned char>((i / 190) + 0x81);
             r.bytes[1] = static_cast<unsigned char>(trail);
             r.count    = 2;
             return r;

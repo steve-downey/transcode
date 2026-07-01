@@ -128,7 +128,7 @@ TEST_CASE("gb18030 or_error encode U+4E02", "[transcoding::gb18030_encode_or_err
 
 // Coverage: U+E7C7 (PUA) exercises gb18030_ranges_encode special case (pointer 7457).
 TEST_CASE("gb18030 encode U+E7C7 -> 0x81 0x35 0xF4 0x37 (4-byte special case)", "[transcoding::gb18030_encode]") {
-    std::vector<char32_t> cps{char32_t(0xE7C7)};
+    std::vector<char32_t> cps{static_cast<char32_t>(0xE7C7)};
     auto                  result = collect(cps | whatwg_encode<codec::gb18030>);
     REQUIRE(result.size() == 4);
     CHECK(static_cast<unsigned char>(result[0]) == 0x81);
@@ -139,7 +139,7 @@ TEST_CASE("gb18030 encode U+E7C7 -> 0x81 0x35 0xF4 0x37 (4-byte special case)", 
 
 // Coverage: U+0080 (C1 control) exercises 4-byte range encoding with binary search hi-branch.
 TEST_CASE("gb18030 encode U+0080 -> 0x81 0x30 0x81 0x30 (4-byte range)", "[transcoding::gb18030_encode]") {
-    std::vector<char32_t> cps{char32_t(0x0080)};
+    std::vector<char32_t> cps{static_cast<char32_t>(0x0080)};
     auto                  result = collect(cps | whatwg_encode<codec::gb18030>);
     REQUIRE(result.size() == 4);
     CHECK(static_cast<unsigned char>(result[0]) == 0x81);

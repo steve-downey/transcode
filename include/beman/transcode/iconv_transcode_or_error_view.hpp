@@ -19,6 +19,7 @@
     #include <memory>
     #include <ranges>
     #include <span>
+    #include <utility>
 
 #endif
 namespace beman::transcoding {
@@ -53,16 +54,13 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
         char*           output_pos_;
         char*           output_end_;
         char            staging_[64];
-        size_t          staging_len_;
+        size_t          staging_len_{0};
         base_iter       current_;
         base_sent       end_;
         bool            done_;
-        bool            flushed_;
-        bool            has_error_;
-        iconv_error     error_value_;
-
-        iterator(const iterator&)            = delete;
-        iterator& operator=(const iterator&) = delete;
+        bool            flushed_{false};
+        bool            has_error_{false};
+        iconv_error     error_value_{};
 
         void load();
 
@@ -74,6 +72,9 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
         using value_type       = result_t;
         using difference_type  = std::ptrdiff_t;
         using reference        = result_t;
+
+        iterator(const iterator&)            = delete;
+        iterator& operator=(const iterator&) = delete;
 
         iterator(iterator&&) noexcept;
         iterator& operator=(iterator&&) noexcept;
@@ -88,7 +89,6 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
         friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
-  public:
     explicit iconv_transcode_or_error_view(
         R base, IconvFns fns, const char* from, const char* to, std::span<char> buf);
 
@@ -134,13 +134,10 @@ iconv_transcode_or_error_view<IconvFns, R>::iterator::iterator(
       buffer_(buffer),
       output_pos_(buffer.data()),
       output_end_(buffer.data()),
-      staging_len_(0),
+
       current_(std::move(current)),
       end_(std::move(end)),
-      done_(handle == (iconv_t)-1),
-      flushed_(false),
-      has_error_(false),
-      error_value_() {
+      done_(handle == (iconv_t)-1) {
     if (!done_)
         load();
 }
@@ -154,18 +151,18 @@ void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
     // Fast path: contiguous+sized input with empty staging — pass directly to iconv.
     if constexpr (std::contiguous_iterator<base_iter> && std::sized_sentinel_for<base_sent, base_iter>) {
         if (staging_len_ == 0 && current_ != end_) {
-            auto*  raw_ptr   = reinterpret_cast<const char*>(std::to_address(current_));
-            size_t remaining = static_cast<size_t>(end_ - current_);
-            char*  in_ptr    = const_cast<char*>(raw_ptr);
-            size_t inleft    = remaining;
-            size_t rc        = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
-            size_t consumed  = remaining - inleft;
+            const auto* raw_ptr   = reinterpret_cast<const char*>(std::to_address(current_));
+            auto        remaining = static_cast<size_t>(end_ - current_);
+            char*       in_ptr    = const_cast<char*>(raw_ptr);
+            size_t      inleft    = remaining;
+            size_t      rc        = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
+            size_t      consumed  = remaining - inleft;
             current_ += static_cast<std::ptrdiff_t>(consumed);
 
             output_pos_ = buffer_.data();
             output_end_ = out_ptr;
 
-            if (rc != (size_t)-1) {
+            if (rc != iconv_error_rc) {
                 if (output_pos_ == output_end_ && current_ == end_)
                     goto do_flush;
                 return;
@@ -229,7 +226,7 @@ void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
         output_pos_ = buffer_.data();
         output_end_ = out_ptr;
 
-        if (rc != (size_t)-1) {
+        if (rc != iconv_error_rc) {
             if (output_pos_ == output_end_ && staging_len_ == 0 && current_ == end_)
                 goto do_flush;
             return;

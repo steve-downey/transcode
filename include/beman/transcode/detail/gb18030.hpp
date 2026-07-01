@@ -56,12 +56,13 @@ constexpr char32_t gb18030_ranges_decode(std::uint32_t pointer) {
     if ((pointer > 39419 && pointer < 189000) || pointer > 1237575)
         return U'\xFFFD';
     if (pointer == 7457)
-        return char32_t(0xE7C7);
+        return static_cast<char32_t>(0xE7C7);
     const auto* table = tables::gb18030_ranges;
     int         n     = tables::gb18030_ranges_count;
-    int         lo = 0, hi = n - 1;
+    int         lo    = 0;
+    int         hi    = n - 1;
     while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
+        int mid = lo + ((hi - lo) / 2);
         if (mid + 1 < n && table[mid + 1].pointer <= pointer) {
             lo = mid + 1;
         } else if (table[mid].pointer > pointer) {
@@ -82,13 +83,14 @@ constexpr char32_t gb18030_ranges_decode(std::uint32_t pointer) {
 // Binary search the ranges table to convert a codepoint to a linear 4-byte pointer.
 // WHATWG special case: U+E7C7 → pointer 7457.
 constexpr std::uint32_t gb18030_ranges_encode(char32_t cp) {
-    if (cp == char32_t(0xE7C7))
+    if (cp == static_cast<char32_t>(0xE7C7))
         return 7457;
     const auto* table = tables::gb18030_ranges;
     int         n     = tables::gb18030_ranges_count;
-    int         lo = 0, hi = n - 1;
+    int         lo    = 0;
+    int         hi    = n - 1;
     while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
+        int mid = lo + ((hi - lo) / 2);
         if (mid + 1 < n && table[mid + 1].codepoint <= cp) {
             lo = mid + 1;
         } else if (table[mid].codepoint > cp) {
@@ -150,7 +152,7 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
         ++current; // consume fourth
 
         std::uint32_t pointer =
-            ((lead - 0x81u) * 10u + (second - 0x30u)) * 126u * 10u + (third - 0x81u) * 10u + (fourth - 0x30u);
+            ((((lead - 0x81u) * 10u) + (second - 0x30u)) * 126u * 10u) + ((third - 0x81u) * 10u) + (fourth - 0x30u);
         char32_t cp = gb18030_ranges_decode(pointer);
         if (cp == U'\xFFFD')
             return {{}, whatwg_error::invalid_byte, true};
@@ -168,7 +170,7 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
     ++current; // consume second
 
     int offset = second > 0x7F ? 1 : 0;
-    int index  = (lead - 0x81) * 190 + (second - 0x40) - offset;
+    int index  = ((lead - 0x81) * 190) + (second - 0x40) - offset;
 
     char32_t cp = tables::gbk[index];
     if (cp == 0)
@@ -190,8 +192,8 @@ constexpr gb18030_encode_result gb18030_encode_one(char32_t cp) {
     // Search GBK 2-byte table
     for (int i = 0; i < 23940; ++i) {
         if (tables::gbk[i] == cp) {
-            int lead  = i / 190 + 0x81;
-            int trail = i % 190 + 0x40;
+            int lead  = (i / 190) + 0x81;
+            int trail = (i % 190) + 0x40;
             if (trail >= 0x7F)
                 ++trail;
             r.bytes[0] = static_cast<unsigned char>(lead);
@@ -204,18 +206,18 @@ constexpr gb18030_encode_result gb18030_encode_one(char32_t cp) {
     // Encode via GB18030 4-byte ranges
     std::uint32_t pointer = gb18030_ranges_encode(cp);
     std::uint32_t p       = pointer;
-    unsigned char b4      = static_cast<unsigned char>(p % 10 + 0x30);
+    auto          b4      = static_cast<unsigned char>((p % 10) + 0x30);
     p /= 10;
-    unsigned char b3 = static_cast<unsigned char>(p % 126 + 0x81);
+    auto b3 = static_cast<unsigned char>((p % 126) + 0x81);
     p /= 126;
-    unsigned char b2 = static_cast<unsigned char>(p % 10 + 0x30);
+    auto b2 = static_cast<unsigned char>((p % 10) + 0x30);
     p /= 10;
-    unsigned char b1 = static_cast<unsigned char>(p + 0x81);
-    r.bytes[0]       = b1;
-    r.bytes[1]       = b2;
-    r.bytes[2]       = b3;
-    r.bytes[3]       = b4;
-    r.count          = 4;
+    auto b1    = static_cast<unsigned char>(p + 0x81);
+    r.bytes[0] = b1;
+    r.bytes[1] = b2;
+    r.bytes[2] = b3;
+    r.bytes[3] = b4;
+    r.count    = 4;
     return r;
 }
 

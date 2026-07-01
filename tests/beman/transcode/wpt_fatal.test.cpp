@@ -5,6 +5,7 @@
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/wpt_fatal_vectors.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <expected>
@@ -31,10 +32,7 @@ std::vector<std::expected<char32_t, whatwg_error>> decode_utf16le_or_error(const
 }
 
 bool has_error(const std::vector<std::expected<char32_t, whatwg_error>>& result) {
-    for (const auto& r : result)
-        if (!r.has_value())
-            return true;
-    return false;
+    return std::ranges::any_of(result, [](const auto& r) { return !r.has_value(); });
 }
 
 } // namespace

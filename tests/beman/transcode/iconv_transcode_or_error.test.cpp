@@ -91,8 +91,8 @@ TEST_CASE("iconv_transcode_or_error_view destructor closes handle", "[transcodin
     struct close_counting_fns {
         int* close_count;
 
-        iconv_t open(const char*, const char*) const { return (iconv_t)1; }
-        size_t  convert(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) const {
+        static iconv_t open(const char*, const char*) { return (iconv_t)1; }
+        static size_t  convert(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
             if (in == nullptr || *in == nullptr)
                 return 0;
             size_t n = std::min(*inleft, *outleft);
@@ -158,7 +158,7 @@ TEST_CASE("iconv_transcode_or_error_view E2BIG with zero output yields output_fu
     auto                 view =
         iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
     auto result = collect(view);
-    REQUIRE(result.size() >= 1);
+    REQUIRE(!result.empty());
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == iconv_error::output_full);
 }
@@ -188,7 +188,7 @@ TEST_CASE("iconv_transcode_or_error_view output before EILSEQ error", "[transcod
         iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
     auto result = collect(view);
     // First result: 'A' written before EILSEQ → return early with output
-    REQUIRE(result.size() >= 1);
+    REQUIRE(!result.empty());
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == 'A');
     // Second result: 'B' written before EILSEQ → return early with output
@@ -208,7 +208,7 @@ TEST_CASE("iconv_transcode_or_error_view output before E2BIG error", "[transcodi
         iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
     auto result = collect(view);
     // First result: 'X' written before E2BIG → return early with output
-    REQUIRE(result.size() >= 1);
+    REQUIRE(!result.empty());
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == 'X');
     // Second result: 'Y' written before E2BIG → return early with output

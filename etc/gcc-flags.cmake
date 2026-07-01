@@ -57,3 +57,10 @@ set(CMAKE_EXE_LINKER_FLAGS_PERF
     "Linker Perf Flags"
     FORCE
 )
+
+set(CMAKE_CXX_FLAGS_TIDY
+    "-O0 -fno-inline -g3"
+    CACHE STRING
+    "C++ Tidy Flags"
+    FORCE
+)

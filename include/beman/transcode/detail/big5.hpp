@@ -77,7 +77,7 @@ constexpr big5_decode_result big5_decode_one(I& current, S end) {
         return {{}, repush, whatwg_error::invalid_byte, true};
     }
 
-    int pointer = (lead - 0x81) * 157 + offset;
+    int pointer = ((lead - 0x81) * 157) + offset;
 
     // WHATWG special cases: four pointers yield two codepoints each
     if (pointer == 1133)
@@ -109,7 +109,7 @@ constexpr big5_encode_result big5_encode_one(char32_t cp) {
 
     for (int i = 0; i < 19782; ++i) {
         if (tables::big5[i] == cp) {
-            int                lead   = i / 157 + 0x81;
+            int                lead   = (i / 157) + 0x81;
             int                offset = i % 157;
             int                trail  = (offset < 63) ? offset + 0x40 : offset + 0x62;
             big5_encode_result r{};

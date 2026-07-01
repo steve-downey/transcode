@@ -17,7 +17,7 @@ TEST_CASE("transcode_string label: windows-1252 to UTF-8 by label", "[transcode_
     std::string expected{'\xE2', '\x82', '\xAC'};
     auto        result = transcode_string(std::span<const char>(src), "windows-1252", "utf-8");
     REQUIRE(result.has_value());
-    CHECK(*result == expected);
+    CHECK(result.value() == expected);
 }
 
 TEST_CASE("transcode_string label: UTF-8 to windows-1252 by label", "[transcode_string][label]") {
@@ -26,7 +26,7 @@ TEST_CASE("transcode_string label: UTF-8 to windows-1252 by label", "[transcode_
     std::string expected{'\x80'};
     auto        result = transcode_string(std::span<const char>(src), "utf-8", "windows-1252");
     REQUIRE(result.has_value());
-    CHECK(*result == expected);
+    CHECK(result.value() == expected);
 }
 
 TEST_CASE("transcode_string label: case-insensitive label lookup", "[transcode_string][label]") {
@@ -37,16 +37,16 @@ TEST_CASE("transcode_string label: case-insensitive label lookup", "[transcode_s
     REQUIRE(r1.has_value());
     REQUIRE(r2.has_value());
     REQUIRE(r3.has_value());
-    CHECK(*r1 == "hello");
-    CHECK(*r2 == "hello");
-    CHECK(*r3 == "hello");
+    CHECK(r1.value() == "hello");
+    CHECK(r2.value() == "hello");
+    CHECK(r3.value() == "hello");
 }
 
 TEST_CASE("transcode_string label: whitespace-stripped label", "[transcode_string][label]") {
     std::string src    = "hello";
     auto        result = transcode_string(std::span<const char>(src), "  utf-8  ", "  utf-8  ");
     REQUIRE(result.has_value());
-    CHECK(*result == "hello");
+    CHECK(result.value() == "hello");
 }
 
 TEST_CASE("transcode_string label: unknown from_label returns nullopt", "[transcode_string][label]") {
@@ -76,9 +76,9 @@ TEST_CASE("transcode_string label: alias labels resolve correctly", "[transcode_
     REQUIRE(r1.has_value());
     REQUIRE(r2.has_value());
     REQUIRE(r3.has_value());
-    CHECK(*r1 == "abc");
-    CHECK(*r2 == "abc");
-    CHECK(*r3 == "abc");
+    CHECK(r1.value() == "abc");
+    CHECK(r2.value() == "abc");
+    CHECK(r3.value() == "abc");
 }
 
 TEST_CASE("transcode_string label: empty label returns nullopt", "[transcode_string][label]") {

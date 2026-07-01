@@ -30,8 +30,8 @@ TEST_CASE("iconv_transcode_view destructor closes handle", "[transcoding::iconv_
     struct close_counting_fns {
         int* close_count;
 
-        iconv_t open(const char*, const char*) const { return (iconv_t)1; }
-        size_t  convert(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) const {
+        static iconv_t open(const char*, const char*) { return (iconv_t)1; }
+        static size_t  convert(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
             if (in == nullptr || *in == nullptr)
                 return 0;
             size_t n = std::min(*inleft, *outleft);

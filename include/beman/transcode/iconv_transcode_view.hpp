@@ -17,9 +17,12 @@
     #include <memory>
     #include <ranges>
     #include <span>
+    #include <utility>
 
 #endif
 namespace beman::transcoding {
+
+inline constexpr size_t iconv_error_rc = static_cast<size_t>(-1);
 
 // iconv_functions bundles the three POSIX iconv lifecycle callables.
 // Inject a mock implementation in tests to avoid OS libc dependencies.
@@ -60,14 +63,11 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         // Accumulates unconsumed input bytes across load() calls so that
         // multi-byte sequences can be assembled before passing to iconv.
         char      staging_[64];
-        size_t    staging_len_;
+        size_t    staging_len_{0};
         base_iter current_;
         base_sent end_;
         bool      done_;
-        bool      flushed_;
-
-        iterator(const iterator&)            = delete;
-        iterator& operator=(const iterator&) = delete;
+        bool      flushed_{false};
 
         // Fills output_pos_/output_end_ with the next batch of converted bytes.
         // Handles EINVAL (incomplete sequence) by accumulating more input, and
@@ -85,6 +85,9 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         using difference_type  = std::ptrdiff_t;
         using reference        = char;
 
+        iterator(const iterator&)            = delete;
+        iterator& operator=(const iterator&) = delete;
+
         iterator(iterator&&) noexcept;
         iterator& operator=(iterator&&) noexcept;
         ~iterator();
@@ -98,7 +101,6 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
-  public:
     explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to, std::span<char> buf);
 
     const R& base() const& noexcept { return base_; }
@@ -143,11 +145,10 @@ iconv_transcode_view<IconvFns, R>::iterator::iterator(
       buffer_(buffer),
       output_pos_(buffer.data()),
       output_end_(buffer.data()),
-      staging_len_(0),
+
       current_(std::move(current)),
       end_(std::move(end)),
-      done_(handle == (iconv_t)-1),
-      flushed_(false) {
+      done_(handle == (iconv_t)-1) {
     if (!done_)
         load();
 }
@@ -161,14 +162,14 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
     while (outleft > 0) {
         if constexpr (std::contiguous_iterator<base_iter> && std::sized_sentinel_for<base_sent, base_iter>) {
             if (staging_len_ == 0 && current_ != end_) {
-                auto*  raw_ptr   = reinterpret_cast<const char*>(std::to_address(current_));
-                size_t remaining = static_cast<size_t>(end_ - current_);
-                char*  in_ptr    = const_cast<char*>(raw_ptr);
-                size_t inleft    = remaining;
-                size_t rc        = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
-                size_t consumed  = remaining - inleft;
+                const auto* raw_ptr   = reinterpret_cast<const char*>(std::to_address(current_));
+                auto        remaining = static_cast<size_t>(end_ - current_);
+                char*       in_ptr    = const_cast<char*>(raw_ptr);
+                size_t      inleft    = remaining;
+                size_t      rc        = fns_.convert(handle_, &in_ptr, &inleft, &out_ptr, &outleft);
+                size_t      consumed  = remaining - inleft;
                 current_ += static_cast<std::ptrdiff_t>(consumed);
-                if (rc != (size_t)-1) {
+                if (rc != iconv_error_rc) {
                     if (current_ == end_)
                         break;
                     continue;
@@ -208,7 +209,7 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
             std::copy_n(in_ptr, inleft, staging_);
         staging_len_ = inleft;
 
-        if (rc != (size_t)-1) {
+        if (rc != iconv_error_rc) {
             if (staging_len_ == 0 && current_ == end_)
                 break;
             continue;

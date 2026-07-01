@@ -86,6 +86,10 @@ configure_file(
 include(infra/cmake/beman-install-library.cmake)
 include(infra/cmake/BuildTelemetryConfig.cmake)
 
+set(CMAKE_CXX_CLANG_TIDY
+    "$<$<CONFIG:Tidy>:clang-tidy;--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy-lint>"
+)
+
 if(BEMAN_TRANSCODE_USE_MODULES)
     add_library(beman.transcode STATIC)
 else()

@@ -54,7 +54,7 @@ constexpr gbk_decode_result gbk_decode_one(I& current, S end) {
         return {static_cast<char32_t>(lead), {}, false};
 
     if (lead == 0x80)
-        return {char32_t(0x20AC), {}, false};
+        return {static_cast<char32_t>(0x20AC), {}, false};
 
     if (lead < 0x81 || lead > 0xFE)
         return {{}, whatwg_error::invalid_byte, true};
@@ -73,7 +73,7 @@ constexpr gbk_decode_result gbk_decode_one(I& current, S end) {
     ++current;
 
     int offset = trail > 0x7F ? 1 : 0;
-    int index  = (lead - 0x81) * 190 + (trail - 0x40) - offset;
+    int index  = ((lead - 0x81) * 190) + (trail - 0x40) - offset;
 
     char32_t cp = tables::gbk[index];
     if (cp == 0)
@@ -92,8 +92,8 @@ constexpr gbk_encode_result gbk_encode_one(char32_t cp) {
 
     for (int i = 0; i < 23940; ++i) {
         if (tables::gbk[i] == cp) {
-            int lead  = i / 190 + 0x81;
-            int trail = i % 190 + 0x40;
+            int lead  = (i / 190) + 0x81;
+            int trail = (i % 190) + 0x40;
             if (trail >= 0x7F)
                 ++trail;
             gbk_encode_result r{};

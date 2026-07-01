@@ -465,7 +465,7 @@ struct whatwg_encode_closure {
 };
 
 template <codec C>
-inline constexpr whatwg_encode_closure<C> whatwg_encode{};
+inline constexpr auto whatwg_encode = whatwg_encode_closure<C>{};
 
 // ---------------------------------------------------------------------------
 // whatwg_encode_or_error_view — encodes char32_t codepoints to
@@ -571,7 +571,7 @@ struct whatwg_encode_or_error_closure {
 };
 
 template <codec C>
-inline constexpr whatwg_encode_or_error_closure<C> whatwg_encode_or_error{};
+inline constexpr auto whatwg_encode_or_error = whatwg_encode_or_error_closure<C>{};
 
 } // namespace beman::transcoding
 
@@ -1049,7 +1049,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
+                this->buf_[i] = result_value{r.bytes[i]};
             len_ = r.count;
         }
         pos_ = 0;
@@ -1115,7 +1115,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
+                this->buf_[i] = result_value{r.bytes[i]};
             len_ = r.count;
         }
         pos_ = 0;
@@ -1127,7 +1127,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
+                this->buf_[i] = result_value{r.bytes[i]};
             len_ = r.count;
         }
         pos_ = 0;
@@ -1139,7 +1139,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
+                this->buf_[i] = result_value{r.bytes[i]};
             len_ = r.count;
         }
         pos_ = 0;
@@ -1158,7 +1158,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
+                this->buf_[i] = result_value{r.bytes[i]};
             len_ = r.count;
         }
         pos_ = 0;
@@ -1170,7 +1170,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
+                this->buf_[i] = result_value{r.bytes[i]};
             len_ = r.count;
         }
         pos_ = 0;
@@ -1182,7 +1182,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
+                this->buf_[i] = result_value{r.bytes[i]};
             len_ = r.count;
         }
         pos_ = 0;
@@ -1256,7 +1256,7 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_          = 1;
         } else {
             for (int i = 0; i < r.count; ++i)
-                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
+                this->buf_[i] = result_value{r.bytes[i]};
             len_ = r.count;
         }
         pos_ = 0;

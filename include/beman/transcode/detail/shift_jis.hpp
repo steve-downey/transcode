@@ -80,7 +80,7 @@ constexpr shift_jis_decode_result shift_jis_decode_one(I& current, S end) {
 
     int lead_offset  = (lead <= 0x9F) ? lead - 0x81 : lead - 0xC1;
     int trail_offset = (trail < 0x7F) ? trail - 0x40 : trail - 0x41;
-    int pointer      = lead_offset * 188 + trail_offset;
+    int pointer      = (lead_offset * 188) + trail_offset;
 
     char32_t cp = tables::shift_jis[pointer];
     if (cp == 0)
