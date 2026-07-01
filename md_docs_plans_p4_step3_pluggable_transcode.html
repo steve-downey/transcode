@@ -116,8 +116,8 @@ Context for Executing Agent</h1>
 <div class="line">    <span class="comment">// pipe operator| ...</span></div>
 <div class="line">};</div>
 <div class="line"><span class="keyword">template</span> &lt;codec From, codec To&gt;</div>
-<div class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> transcode_closure&lt;From, To&gt; <a class="code hl_variable" href="namespacebeman_1_1transcoding.html#a15372a675c2cf5b924a60dfc94e21dc8">transcode</a>{};</div>
-<div class="ttc" id="anamespacebeman_1_1transcoding_html_a15372a675c2cf5b924a60dfc94e21dc8"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a15372a675c2cf5b924a60dfc94e21dc8">beman::transcoding::transcode</a></div><div class="ttdeci">constexpr transcode_closure&lt; From, To &gt; transcode</div><div class="ttdef"><b>Definition:</b> transcode_view.hpp:36</div></div>
+<div class="line"><span class="keyword">inline</span> <span class="keyword">constexpr</span> transcode_closure&lt;From, To&gt; <a class="code hl_variable" href="namespacebeman_1_1transcoding.html#add5187cf1755a6aff167117a6d003f7a">transcode</a>{};</div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_html_add5187cf1755a6aff167117a6d003f7a"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#add5187cf1755a6aff167117a6d003f7a">beman::transcoding::transcode</a></div><div class="ttdeci">constexpr auto transcode</div><div class="ttdef"><b>Definition:</b> transcode_view.hpp:36</div></div>
 </div><!-- fragment --><p>The pluggable version takes two codec <em>objects</em>:</p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span> result = input | transcode(my_decoder{}, my_encoder{});</div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md289"></a>
@@ -137,7 +137,7 @@ Implementation</h2>
 <div class="line">};</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">template</span> &lt;decode_codec From, encode_codec To&gt;</div>
-<div class="line"><span class="keyword">constexpr</span> pluggable_transcode_closure&lt;From, To&gt; <a class="code hl_variable" href="namespacebeman_1_1transcoding.html#a15372a675c2cf5b924a60dfc94e21dc8">transcode</a>(From from, To to) {</div>
+<div class="line"><span class="keyword">constexpr</span> pluggable_transcode_closure&lt;From, To&gt; <a class="code hl_variable" href="namespacebeman_1_1transcoding.html#add5187cf1755a6aff167117a6d003f7a">transcode</a>(From from, To to) {</div>
 <div class="line">    <span class="keywordflow">return</span> {from, to};</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>This overloads the existing <code>transcode</code> name. The WHATWG version is a variable template (<code>transcode&lt;From, To&gt;</code> with enum NTTPs); the pluggable version is a function (<code>transcode(from_obj, to_obj)</code> with codec objects). These don't conflict because the WHATWG version requires <code>&lt;&gt;</code> template arguments.</p>

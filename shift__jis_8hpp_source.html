@@ -181,7 +181,7 @@ $(document).ready(function(){initNavTree('shift__jis_8hpp_source.html',''); init
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordtype">int</span> lead_offset  = (lead &lt;= 0x9F) ? lead - 0x81 : lead - 0xC1;</div>
 <div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="keywordtype">int</span> trail_offset = (trail &lt; 0x7F) ? trail - 0x40 : trail - 0x41;</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keywordtype">int</span> pointer      = lead_offset * 188 + trail_offset;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keywordtype">int</span> pointer      = (lead_offset * 188) + trail_offset;</div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordtype">char32_t</span> cp = tables::shift_jis[pointer];</div>
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <span class="keywordflow">if</span> (cp == 0)</div>

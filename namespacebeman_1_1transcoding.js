@@ -122,12 +122,13 @@ var namespacebeman_1_1transcoding =
     [ "sniff_encoding", "namespacebeman_1_1transcoding.html#a9e96b2209ecc3472323642bbc8bc1322", null ],
     [ "transcode_string", "namespacebeman_1_1transcoding.html#a56ed76d2fca064c209e690f3bfe595d6", null ],
     [ "transcode_string", "namespacebeman_1_1transcoding.html#ae36baae686b27c6b6bc50333f2616678", null ],
+    [ "iconv_error_rc", "namespacebeman_1_1transcoding.html#a51c614ab370846ad687e12691645601e", null ],
     [ "null_sentinel", "namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311", null ],
     [ "single_byte_decode", "namespacebeman_1_1transcoding.html#aef322db207ff0a4583061027a96a7475", null ],
     [ "single_byte_encode", "namespacebeman_1_1transcoding.html#a82f706c2813d6a4b7ec40aeb51af5ae6", null ],
-    [ "transcode", "namespacebeman_1_1transcoding.html#a15372a675c2cf5b924a60dfc94e21dc8", null ],
-    [ "whatwg_decode", "namespacebeman_1_1transcoding.html#a73a91c92245e7a8b395fbf3e0334c063", null ],
-    [ "whatwg_decode_or_error", "namespacebeman_1_1transcoding.html#ad15ffa8f43ff243d79c92bf31e8aefc2", null ],
-    [ "whatwg_encode", "namespacebeman_1_1transcoding.html#ab1d7219d1a0e414363d643942b48024f", null ],
-    [ "whatwg_encode_or_error", "namespacebeman_1_1transcoding.html#a62b7811f7a198b10e6372e16c5683b07", null ]
+    [ "transcode", "namespacebeman_1_1transcoding.html#add5187cf1755a6aff167117a6d003f7a", null ],
+    [ "whatwg_decode", "namespacebeman_1_1transcoding.html#a9f959dc7dbc650d7b6c58b5c3cdd7bf1", null ],
+    [ "whatwg_decode_or_error", "namespacebeman_1_1transcoding.html#a730c203e982c0f5dfc92eab78ff300b7", null ],
+    [ "whatwg_encode", "namespacebeman_1_1transcoding.html#a91f6bccc9d0695ed53d27683dc2ee9f4", null ],
+    [ "whatwg_encode_or_error", "namespacebeman_1_1transcoding.html#a49f6c3ca3827e8e48c2915d3888ebeed", null ]
 ];

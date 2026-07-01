@@ -52,6 +52,6 @@ var whatwg__decode__view_8hpp =
       [ "iso_2022_jp", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa1cb1e17468c4d59d51f3998f250c1b3f", null ],
       [ "euc_kr", "whatwg__decode__view_8hpp.html#a20dfb324ebd26c6127d014520f93005aa86c9996b17a77b9a0033b639a7018ebd", null ]
     ] ],
-    [ "whatwg_decode", "whatwg__decode__view_8hpp.html#a73a91c92245e7a8b395fbf3e0334c063", null ],
-    [ "whatwg_decode_or_error", "whatwg__decode__view_8hpp.html#ad15ffa8f43ff243d79c92bf31e8aefc2", null ]
+    [ "whatwg_decode", "whatwg__decode__view_8hpp.html#a9f959dc7dbc650d7b6c58b5c3cdd7bf1", null ],
+    [ "whatwg_decode_or_error", "whatwg__decode__view_8hpp.html#a730c203e982c0f5dfc92eab78ff300b7", null ]
 ];

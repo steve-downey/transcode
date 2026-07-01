@@ -167,7 +167,7 @@ $(document).ready(function(){initNavTree('euc__kr_8hpp_source.html',''); initRes
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>        <span class="keywordflow">return</span> {{}, <a class="code hl_enumvalue" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0">whatwg_error::invalid_byte</a>, <span class="keyword">true</span>};</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keywordtype">int</span> offset  = trail &gt; 0x7F ? 1 : 0;</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keywordtype">int</span> pointer = (lead - 0x81) * 190 + (trail - 0x41) - offset;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keywordtype">int</span> pointer = ((lead - 0x81) * 190) + (trail - 0x41) - offset;</div>
 <div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keywordtype">char32_t</span> cp = tables::euc_kr[pointer];</div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordflow">if</span> (cp == 0)</div>
@@ -185,11 +185,11 @@ $(document).ready(function(){initNavTree('euc__kr_8hpp_source.html',''); initRes
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 23940; ++i) {</div>
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>        <span class="keywordflow">if</span> (tables::euc_kr[i] == cp) {</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>            <span class="keywordtype">int</span> trail = i % 190 + 0x41;</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>            <span class="keywordtype">int</span> trail = (i % 190) + 0x41;</div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>            <span class="keywordflow">if</span> (trail &gt;= 0x7F)</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>                ++trail;</div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>            euc_kr_encode_result r{};</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>            r.bytes[0] = <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span> <span class="keywordtype">char</span><span class="keyword">&gt;</span>(i / 190 + 0x81);</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>            r.bytes[0] = <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span> <span class="keywordtype">char</span><span class="keyword">&gt;</span>((i / 190) + 0x81);</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>            r.bytes[1] = <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span> <span class="keywordtype">char</span><span class="keyword">&gt;</span>(trail);</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>            r.count    = 2;</div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>            <span class="keywordflow">return</span> r;</div>

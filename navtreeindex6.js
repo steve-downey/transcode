@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"iso__8859__8_8hpp_source.html":[48,0,2,0,0,0,0,17],
 "koi8__r_8hpp.html":[48,0,2,0,0,0,0,18],
 "koi8__r_8hpp_source.html":[48,0,2,0,0,0,0,18],
 "koi8__u_8hpp.html":[48,0,2,0,0,0,0,19],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "md_docs_plans_p3_step6_iconv_baselines.html#autotoc_md231":[17,6],
 "md_docs_plans_p3_step6_iconv_baselines.html#autotoc_md232":[17,7],
 "md_docs_plans_p3_step7_codecvt_baseline.html":[18],
-"md_docs_plans_p3_step7_codecvt_baseline.html#autotoc_md235":[18,0],
-"md_docs_plans_p3_step7_codecvt_baseline.html#autotoc_md236":[18,1]
+"md_docs_plans_p3_step7_codecvt_baseline.html#autotoc_md235":[18,0]
 };
