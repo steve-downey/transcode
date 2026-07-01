@@ -82,4 +82,6 @@ repos:
   #   hooks:
   #   - id: beman-tidy
 
-exclude: 'template/|copier/|infra/|port/'
+# papers/wg21/ is the mpark/wg21 framework vendored as a git subtree; keep it
+# pristine (no autoformatting/linting) so `git subtree pull` stays conflict-free.
+exclude: 'template/|copier/|infra/|port/|papers/wg21/'

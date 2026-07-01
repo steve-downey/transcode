@@ -11,34 +11,32 @@ import panflute as pf
 
 """
 This filter is separate from `wg21.py` because it needs to run before `citeproc`.
-`wg21.py` currently needs to run after `citeproc` due to `citation_link` (may be others too).
+`wg21.py` currently needs to run after `citeproc` due to `citation_link` (maybe others too).
 
 The mechanism is a bit convoluted, but basically... `wg21.csl` is the CSL definition
 that determines how references are handled and rendered. The logic there is to optionally
 display the title of the reference if a "locator" is present. I don't currently know of
 another way to inject a cite-specific thing into the citation.
 
-So, for example `[@Pxxxx]` is a citation without a locator, whereas `[@Pxxxx{}]` is
-a citation with a locator. Note the "{}" suffix. This is sufficient to inject the title.
-However, since this syntax is rather unfamiliar and cryptic, we offer `[@Pxxxx]{.title}`
-instead. This filter transforms `[@Pxxxx]{.title}` into `[@Pxxxx{}]`.
+So, for example `[@Pxxxx]` is a citation without a locator, whereas `[@Pxxxx, 1]`
+is a citation with a locator. The locator value is ignored by the CSL layout; its
+presence is sufficient to inject the title. However, since this syntax is rather
+unfamiliar and cryptic, we offer `[@Pxxxx]{.title}` instead.
 """
-
 
 def citetitle(elem, doc):
     if not (
-        isinstance(elem, pf.Span)
-        and elem.classes == ["title"]
-        and len(elem.content) == 1
-        and isinstance(elem.content[0], pf.Cite)
+        isinstance(elem, pf.Span) and
+        elem.classes == ['title'] and
+        len(elem.content) == 1 and
+        isinstance(elem.content[0], pf.Cite)
     ):
         return None
 
     for citation in elem.content[0].citations:
-        citation.suffix.append(pf.Str("{}"))
+        citation.suffix.extend([pf.Str(','), pf.Space, pf.Str('1')])
 
     return elem
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     pf.run_filter(citetitle)
