@@ -306,14 +306,9 @@ Converting between encodings requires extracting data from one container, passin
 ### Why WHATWG?
 
 The WHATWG Encoding Standard defines precise behavior for every legacy encoding encountered on the web.
-Its specifications are:
+It gives exact byte-to-scalar mappings for all byte values, including every error case, and the Web Platform Tests [@wpt-encoding] pin that behavior across all major browsers.
 
-- **Complete**: Defines exact mappings for all byte values, including error cases.
-- **Tested**: The Web Platform Tests [@wpt-encoding] provide thousands of test vectors.
-- **Interoperable**: All major browsers implement identical behavior.
-- **Practical**: Designed for real-world data, not theoretical purity.
-
-Using WHATWG semantics means C++ programs can process web content identically to browsers, parse HTML and JSON files with the same error handling, and benefit from years of specification refinement.
+Targeting it means a C++ program decodes a page the way the browser that fetched it did, and parses HTML and JSON with the same error handling.
 
 ### Why Forward-Only Iterators?
 
@@ -682,7 +677,7 @@ Runtime selection can be layered on top via `variant` or `any` if needed.
 
 Unicode scalar values are represented as `char32_t`, not `char8_t[]` sequences. This simplifies composition — a `char32_t` stream can be fed to any encoder without reparsing — and makes individual code point inspection trivial.
 
-The tradeoff is that UTF-32 is space-inefficient, but since these are lazy views, no intermediate storage is created unless explicitly collected.
+UTF-32 is the wasteful choice. A `char32_t` per scalar is four bytes where UTF-8 would often use one — but these are lazy views, so nothing is stored unless a caller collects it, and a single code point is trivial to inspect. All other interchange types are worse.
 
 ### Separation of Decode and Encode
 
@@ -733,7 +728,7 @@ This serves three purposes:
 ### Python Preprocessing for Tables and Conformance Vectors
 
 The project uses small Python helpers to transform upstream WHATWG and WPT data into C++-friendly artifacts.
-This was an explicit engineering choice made before the paper was written and is part of the methodology, not just build glue.
+The generators are checked in and unit-tested; regeneration is a maintenance step, not part of the build.
 
 For codec tables, Python scripts download the WHATWG index files, record provenance, and generate checked-in lookup tables for single-byte and multibyte codecs.
 This avoids manually maintaining large arrays of code points while keeping the generated results reviewable and deterministic.
@@ -831,7 +826,7 @@ Henri Sivonen's `encoding_rs` [@encoding-rs] is important implementation prior a
 
 ### P2728 Unicode in the Library
 
-[@P2728R6] proposes transcoding views for UTF-8, UTF-16, and UTF-32 that operate on the strict Unicode character types (`char8_t`, `char16_t`, `char32_t`). This proposal overlaps in the UTF portions but differs in scope and philosophy:
+[@P2728R13] proposes transcoding views for UTF-8, UTF-16, and UTF-32 that operate on the strict Unicode character types (`char8_t`, `char16_t`, `char32_t`). This proposal overlaps in the UTF portions but differs in scope and philosophy:
 
 | Aspect | P2728 | This Proposal |
 | -------- | ------- | --------------- |
@@ -873,13 +868,13 @@ Applications requiring strict UTF validation should prefer P2728 for that portio
 ### API Surface Comparison
 
 The three implementation families in this proposal now have matching API
-surfaces for every operation their encoding model supports.  The P2728R12
+surfaces for every operation their encoding model supports.  The P2728R13
 column shows the parallel design in the proposed standard UTF transcoding views.
 
 Legend: ✅ implemented · n/a architectural model doesn't support this ·
 🔴 not yet implemented
 
-| API | WHATWG | Pluggable codec | iconv | P2728R12 |
+| API | WHATWG | Pluggable codec | iconv | P2728R13 |
 |-----|--------|-----------------|-------|----------|
 | **Codec identity** | `codec::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
 | **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(f,t,buf)` | ✅ `views::to_utf32` |
