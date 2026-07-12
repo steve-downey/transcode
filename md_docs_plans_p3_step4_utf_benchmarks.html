@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step4_utf_benchmarks.
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step4-utf-benchmarks</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step3_benchmark_fixtures.html">p3-step3-benchmark-fixtures.md</a> <b>Read first:</b> <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> and <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md205"></a>
+<h1><a class="anchor" id="autotoc_md162"></a>
 Goal</h1>
 <p>Measure the algorithmic UTF paths in <code>beman::transcode</code>, focusing on the highest-value core conversions and the ASCII-dominant best-case path.</p>
-<h1><a class="anchor" id="autotoc_md206"></a>
+<h1><a class="anchor" id="autotoc_md163"></a>
 Context for Executing Agent</h1>
 <p>Benchmark fixtures are available (from Step 3): </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;benchmark_fixture.hpp&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;benchmark_sink.hpp&quot;</span></div>
@@ -123,14 +123,14 @@ Context for Executing Agent</h1>
 <li><code>en_mars_utf8.txt</code> — English, ASCII-heavy</li>
 <li><code>ar_mars_utf8.txt</code> — Arabic, mixed 1/2-byte UTF-8 sequences</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md207"></a>
+<h1><a class="anchor" id="autotoc_md164"></a>
 Deliverables</h1>
 <ol type="1">
 <li><code>benchmark/utf_benchmarks.bench.cpp</code> — UTF-8 decode and encode cases</li>
 <li>Registration in <code>benchmark/CMakeLists.txt</code></li>
 <li>Updated <code>make bench</code> or tag-based execution</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md208"></a>
+<h1><a class="anchor" id="autotoc_md165"></a>
 Benchmark Cases</h1>
 <div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;UTF benchmarks&quot;</span>, <span class="stringliteral">&quot;[benchmark][utf]&quot;</span>) {</div>
 <div class="line">    BENCHMARK_ADVANCED(<span class="stringliteral">&quot;UTF-8 decode: English (ASCII-heavy)&quot;</span>)</div>
@@ -157,7 +157,7 @@ Benchmark Cases</h1>
 <div class="line">        });</div>
 <div class="line">    };</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md209"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md166"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create worktree branch <code>p3-step4-utf-benchmarks</code> from <code>main</code></li>
@@ -170,13 +170,13 @@ Procedure</h1>
 <li>Commit, merge to main (non-ff), push both remotes</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md210"></a>
+<h1><a class="anchor" id="autotoc_md167"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make compile</div>
 <div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line">make bench     # shows UTF timing numbers</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md211"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md168"></a>
 Handoff to Step 5</h1>
 <p>Write to <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>:</p><ul>
 <li>Step 4 is done</li>

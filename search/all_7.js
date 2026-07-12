@@ -1,12 +1,8 @@
 var searchData=
 [
-  ['gb18030_0',['gb18030',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadf5406096b7ec5329d3a13468430e56a',1,'beman::transcoding']]],
-  ['gb18030_2ehpp_1',['gb18030.hpp',['../gb18030_8hpp.html',1,'']]],
-  ['gb18030_5franges_2ehpp_2',['gb18030_ranges.hpp',['../gb18030__ranges_8hpp.html',1,'']]],
-  ['gb_5freplay_5f_3',['gb_replay_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#af4503769d0e9242a09723e7b21d91300',1,'beman::transcoding::whatwg_decode_view::iterator::gb_replay_()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a1f1ac550383d628fd3e2a8b1919d063c',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::gb_replay_()']]],
-  ['gb_5freplay_5fcount_5f_4',['gb_replay_count_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#aeb0535194dba428b79c5c74a1439e8bb',1,'beman::transcoding::whatwg_decode_view::iterator::gb_replay_count_()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#a8e9b3936c12b1a531f2d7f6b518d33cc',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::gb_replay_count_()']]],
-  ['gb_5freplay_5fpos_5f_5',['gb_replay_pos_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a4f954a7ef1c89f03cb4fe70f7f7719f3',1,'beman::transcoding::whatwg_decode_view::iterator::gb_replay_pos_()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#ad6d3a3544b7cb7a37d19b5e6971f1d2c',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::gb_replay_pos_()']]],
-  ['gbk_6',['gbk',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadeb297cfef1bd867fa7f55bebd119cec',1,'beman::transcoding']]],
-  ['gbk_2ehpp_7',['gbk.hpp',['../gbk_8hpp.html',1,'(Global Namespace)'],['../tables_2gbk_8hpp.html',1,'(Global Namespace)']]],
-  ['get_5fencoding_8',['get_encoding',['../namespacebeman_1_1transcoding.html#a66a54f73e921a9aa3ccdf21aa982e3ec',1,'beman::transcoding']]]
+  ['handle_5f_0',['handle_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3fcae46ebebc5e9e79e61bcfe1375f23',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::handle_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#aea361942e397fb4f4953b11eb0db6f9e',1,'beman::transcoding::iconv_transcode_view::iterator::handle_()']]],
+  ['handoff_2dnext_2emd_1',['handoff-next.md',['../handoff-next_8md.html',1,'']]],
+  ['handoff_3a_20coverage_20audit_20complete_20—_20ready_20for_20phase_205_20planning_2',['Handoff: Coverage Audit Complete — Ready for Phase 5 Planning',['../md_docs_plans_handoff_next.html',1,'']]],
+  ['has_5ferror_5f_3',['has_error_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3f5e8cf2c0a2c63c44d9bba7a5bc307f',1,'beman::transcoding::iconv_transcode_or_error_view::iterator']]],
+  ['has_5fpending_5fcp_5f_4',['has_pending_cp_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ab7e2e6a4441d233dedcc9323a8bf9629',1,'beman::transcoding::whatwg_decode_view::iterator::has_pending_cp_()'],['../classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html#aafed159cb1718ba43ba21a8569b28870',1,'beman::transcoding::whatwg_decode_or_error_view::iterator::has_pending_cp_()']]]
 ];

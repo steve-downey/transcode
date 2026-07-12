@@ -99,10 +99,10 @@ $(document).ready(function(){initNavTree('md_docs_benchmarks_PLATFORM_NOTES.html
   <div class="headertitle"><div class="title">Benchmark Platform Notes </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md36"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md1"></a>
 &lt;tt&gt;simdutf&lt;/tt&gt; ceiling baseline (optional — requires explicit CMake opt-in)</h1>
 <p><code>simdutf</code> uses SIMD intrinsics (SSE4, AVX2, AVX-512, NEON, etc.) to achieve maximum throughput for UTF-8 decode, validate, and transcode operations. It represents the performance ceiling against which the composable <code>beman::transcode</code> range-based approach is compared.</p>
-<h2><a class="anchor" id="autotoc_md37"></a>
+<h2><a class="anchor" id="autotoc_md2"></a>
 Enabling</h2>
 <p><code>simdutf</code> is <b>off by default</b> because it requires network access on the first configure (FetchContent downloads the repo). To enable:</p>
 <div class="fragment"><div class="line"># Re-configure with simdutf enabled (downloads on first run)</div>
@@ -111,7 +111,7 @@ Enabling</h2>
 <div class="line"> </div>
 <div class="line"># Then run</div>
 <div class="line">make bench-simdutf</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md38"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md3"></a>
 Files</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -121,7 +121,7 @@ Files</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>benchmark/CMakeLists.txt</code>   </td><td class="markdownTableBodyNone">FetchContent wiring under <code>BEMAN_TRANSCODE_BENCHMARK_SIMDUTF</code> option   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md39"></a>
+<h2><a class="anchor" id="autotoc_md4"></a>
 Platform availability</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -135,7 +135,7 @@ Platform availability</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">macOS / arm64   </td><td class="markdownTableBodyNone">NEON fast-paths active   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md40"></a>
+<h2><a class="anchor" id="autotoc_md5"></a>
 Benchmarks provided</h2>
 <ul>
 <li><code>simdutf UTF-8→UTF-32: English (ASCII-heavy)</code> — aligned with Step 4 <code>whatwg_decode&lt;utf_8&gt;</code> English case</li>
@@ -145,19 +145,19 @@ Benchmarks provided</h2>
 <li><code>simdutf UTF-8→UTF-16: English</code> — common runtime output format</li>
 <li><code>simdutf UTF-8→UTF-16: Arabic</code> — common runtime output format</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md41"></a>
+<h2><a class="anchor" id="autotoc_md6"></a>
 Expected comparison</h2>
 <p><code>simdutf</code> routinely achieves 3–20× the throughput of scalar implementations on multibyte-heavy text, and often saturates memory bandwidth on ASCII-heavy text. The gap measured here quantifies the "mechanical sympathy cost" of using standard C++ range composition instead of hand-tuned SIMD intrinsics.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md43"></a>
+<h1><a class="anchor" id="autotoc_md8"></a>
 &lt;tt&gt;encoding_rs&lt;/tt&gt; baseline (optional — requires Rust/Cargo)</h1>
 <p><code>encoding_rs</code> is a Rust library providing WHATWG Encoding Standard compliant decode/encode. The benchmark uses the non-streaming (contiguous buffer) API to avoid heap allocation in the measured region.</p>
-<h2><a class="anchor" id="autotoc_md44"></a>
+<h2><a class="anchor" id="autotoc_md9"></a>
 Enabling</h2>
 <p>The CMake configure step auto-detects <code>cargo</code> on <code>PATH</code>. If found, the <code>beman.transcode.benchmarks.encoding_rs</code> target is built automatically during <code>make compile</code>. If <code>cargo</code> is absent, the target is silently skipped.</p>
 <div class="fragment"><div class="line"># Run encoding_rs benchmarks (requires cargo to be on PATH)</div>
 <div class="line">make bench-encoding-rs</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md45"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md10"></a>
 Files</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -173,7 +173,7 @@ Files</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>benchmark/encoding_rs_bench/Cargo.lock</code>   </td><td class="markdownTableBodyNone">Lock file for reproducible Rust builds   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md46"></a>
+<h2><a class="anchor" id="autotoc_md11"></a>
 Platform availability</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -187,7 +187,7 @@ Platform availability</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">CI (without Rust)   </td><td class="markdownTableBodyNone">No   </td><td class="markdownTableBodyNone">Silently skipped; <code>bench-encoding-rs</code> target absent   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md47"></a>
+<h2><a class="anchor" id="autotoc_md12"></a>
 Benchmarks provided</h2>
 <ul>
 <li><code>encoding_rs UTF-8→UTF-8: English (ASCII-heavy)</code> — WHATWG UTF-8 passthrough</li>
@@ -195,7 +195,7 @@ Benchmarks provided</h2>
 <li><code>encoding_rs Windows-1251→UTF-8: Russian</code> — legacy encoding decode</li>
 <li><code>encoding_rs Shift-JIS→UTF-8: Japanese</code> — legacy encoding decode</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md48"></a>
+<h2><a class="anchor" id="autotoc_md13"></a>
 Results on this machine (Asan build — indicative only)</h2>
 <ul>
 <li>English ASCII: ~75 ns (435-byte corpus) — essentially no work; all-ASCII passthrough</li>
@@ -205,7 +205,7 @@ Results on this machine (Asan build — indicative only)</h2>
 </ul>
 <p>Contrast with <code>whatwg_decode&lt;utf_8&gt;</code> on the same corpora: ≪ 1 µs. <code>encoding_rs</code> is competitive on the ASCII-heavy path and slightly slower on CJK/legacy paths, consistent with the Rust→C FFI overhead on small corpora.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md50"></a>
+<h1><a class="anchor" id="autotoc_md15"></a>
 &lt;tt&gt;std::codecvt&lt;/tt&gt; / &lt;tt&gt;std::wstring_convert&lt;/tt&gt; (negative baseline)</h1>
 <p><code>std::codecvt_utf8</code> and <code>std::wstring_convert</code> were deprecated in C++17 and removed in C++26. The <code>codecvt_benchmarks.bench.cpp</code> file compiles on any platform but produces live benchmarks only where <code>__has_include(&lt;codecvt&gt;)</code> is true. Otherwise, <code>SKIP()</code> is invoked at runtime.</p>
 <table class="markdownTable">

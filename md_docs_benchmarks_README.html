@@ -102,7 +102,7 @@ $(document).ready(function(){initNavTree('md_docs_benchmarks_README.html',''); i
 <div class="textblock"><p>This document is the entry point for the <code>beman.transcode</code> benchmark suite. It covers running the benchmarks, generating throughput reports, and reproducing the published results.</p>
 <p>See <a class="el" href="md_docs_benchmarks_RUNNING.html">RUNNING.md</a> for quick-reference make targets and <a class="el" href="md_docs_benchmarks_PLATFORM_NOTES.html">PLATFORM_NOTES.md</a> for hardware-specific observations.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md53"></a>
+<h1><a class="anchor" id="autotoc_md18"></a>
 Overview</h1>
 <p>The benchmark infrastructure comprises:</p>
 <table class="markdownTable">
@@ -124,7 +124,7 @@ Overview</h1>
 <td class="markdownTableBodyNone"><code><a class="el" href="RUNNING_8md.html">docs/benchmarks/RUNNING.md</a></code>   </td><td class="markdownTableBodyNone">How to run each benchmark suite   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md55"></a>
+<h1><a class="anchor" id="autotoc_md20"></a>
 Quick Start</h1>
 <div class="fragment"><div class="line"># 1. Build and run smoke benchmark, then generate a Markdown report</div>
 <div class="line">make bench-report</div>
@@ -134,9 +134,9 @@ Quick Start</h1>
 </div><!-- fragment --><p><code>bench-report</code> uses the <code>RelWithDebInfo</code> config (optimized, no sanitizers) and writes results to <code>data/benchmarks/results/smoke-RelWithDebInfo.xml</code>.</p>
 <p><code>bench-report-lto</code> uses the <code>gcc-release-lto</code> CMake preset (GCC -O3 -flto).</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md57"></a>
+<h1><a class="anchor" id="autotoc_md22"></a>
 Corpus Files</h1>
-<h2><a class="anchor" id="autotoc_md58"></a>
+<h2><a class="anchor" id="autotoc_md23"></a>
 Small Corpus (checked-in)</h2>
 <p>Located in <code>benchmark/corpus/</code> — shipped with the repository for reproducible smoke runs without network access.</p>
 <table class="markdownTable">
@@ -156,25 +156,25 @@ Small Corpus (checked-in)</h2>
 <td class="markdownTableBodyNone"><code>ja_mars_shiftjis.bin</code>   </td><td class="markdownTableBodyNone">Japanese   </td><td class="markdownTableBodyNone">Shift-JIS   </td><td class="markdownTableBodyNone">~340 B   </td></tr>
 </table>
 <p>Source: excerpts from the Mars Wikipedia article in each language.</p>
-<h2><a class="anchor" id="autotoc_md59"></a>
+<h2><a class="anchor" id="autotoc_md24"></a>
 Large Corpus (downloaded)</h2>
 <p>Run once to download and write to <code>data/benchmarks/</code>:</p>
 <div class="fragment"><div class="line">uv run python tools/download_benchmark_corpora.py</div>
 </div><!-- fragment --><p>This also writes <code>data/benchmarks/corpus_manifest.json</code> with file sizes and checksums. The reporting tool uses the manifest to compute throughput for full-scale runs.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md61"></a>
+<h1><a class="anchor" id="autotoc_md26"></a>
 Generating Reports</h1>
-<h2><a class="anchor" id="autotoc_md62"></a>
+<h2><a class="anchor" id="autotoc_md27"></a>
 From a Single XML File</h2>
 <div class="fragment"><div class="line">uv run python tools/process_benchmark_results.py \</div>
 <div class="line">    --corpus-dir benchmark/corpus \</div>
 <div class="line">    data/benchmarks/results/smoke-RelWithDebInfo.xml</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md63"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md28"></a>
 With Large Corpus Sizes</h2>
 <div class="fragment"><div class="line">uv run python tools/process_benchmark_results.py \</div>
 <div class="line">    --manifest data/benchmarks/corpus_manifest.json \</div>
 <div class="line">    data/benchmarks/results/smoke-RelWithDebInfo.xml</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md64"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md29"></a>
 With a Vega-Lite Chart</h2>
 <div class="fragment"><div class="line">uv run python tools/process_benchmark_results.py \</div>
 <div class="line">    --manifest data/benchmarks/corpus_manifest.json \</div>
@@ -182,20 +182,20 @@ With a Vega-Lite Chart</h2>
 <div class="line">    --label &quot;GCC -O3 -flto&quot; \</div>
 <div class="line">    data/benchmarks/results/smoke-lto.xml</div>
 </div><!-- fragment --><p>Paste the <code>.vl.json</code> contents into <a href="https://vega.github.io/editor/">https://vega.github.io/editor/</a> to render an interactive bar chart.</p>
-<h2><a class="anchor" id="autotoc_md65"></a>
+<h2><a class="anchor" id="autotoc_md30"></a>
 Comparing Multiple Toolchains</h2>
 <p>Pass multiple XML files to the tool — it merges all results into one table:</p>
 <div class="fragment"><div class="line">uv run python tools/process_benchmark_results.py \</div>
 <div class="line">    data/benchmarks/results/smoke-gcc-release.xml \</div>
 <div class="line">    data/benchmarks/results/smoke-lto.xml</div>
 </div><!-- fragment --><hr  />
-<h1><a class="anchor" id="autotoc_md67"></a>
+<h1><a class="anchor" id="autotoc_md32"></a>
 Throughput Formula</h1>
 <div class="fragment"><div class="line">throughput_MiBs = corpus_bytes / (mean_time_s) / 2^20</div>
 </div><!-- fragment --><p>where <code>mean_time_s = mean_ns × 10⁻⁹</code> is the Catch2 mean per iteration.</p>
 <p>All values in the Markdown table use 95% confidence interval bounds from Catch2's bootstrap analysis.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md69"></a>
+<h1><a class="anchor" id="autotoc_md34"></a>
 Reproducing Published Results</h1>
 <div class="fragment"><div class="line"># Step 1: Download full corpus (one-time, requires network)</div>
 <div class="line">uv run python tools/download_benchmark_corpora.py</div>
@@ -217,7 +217,7 @@ Reproducing Published Results</h1>
 </div><!-- fragment --><p>Metadata lines in the output are prefixed with <code>#</code> and can be grepped:</p>
 <div class="fragment"><div class="line">grep &quot;^#&quot; data/benchmarks/results/matrix-20260527.txt</div>
 </div><!-- fragment --><hr  />
-<h1><a class="anchor" id="autotoc_md71"></a>
+<h1><a class="anchor" id="autotoc_md36"></a>
 Benchmark Suites</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">

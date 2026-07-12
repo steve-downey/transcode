@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('md_docs_benchmarks_RUNNING.html',''); 
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>This document describes how to run benchmarks for <code>beman.transcode</code>, both quick smoke checks and the full compiler/optimization matrix.</p>
-<h1><a class="anchor" id="autotoc_md73"></a>
+<h1><a class="anchor" id="autotoc_md38"></a>
 Quick Smoke Run (Default Build)</h1>
 <p>The default build (Asan config via <code>make compile</code>) is not suitable for performance measurement but is useful as a smoke check that benchmarks work.</p>
 <div class="fragment"><div class="line">make bench           # smoke: ASCII corpus</div>
@@ -109,24 +109,24 @@ Quick Smoke Run (Default Build)</h1>
 <div class="line">make bench-pluggable # pluggable codec benchmarks</div>
 <div class="line">make bench-iconv     # iconv baseline benchmarks</div>
 <div class="line">make bench-boundary  # boundary stress benchmarks</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md74"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md39"></a>
 Optimized Builds via CMake Presets</h1>
 <p>For meaningful performance numbers, use release presets that compile with <code>-O3</code>. These produce separate build directories under <code>build/</code>.</p>
-<h2><a class="anchor" id="autotoc_md75"></a>
+<h2><a class="anchor" id="autotoc_md40"></a>
 GCC -O3 (smoke)</h2>
 <div class="fragment"><div class="line">make bench-matrix-gcc</div>
 </div><!-- fragment --><p>Configures <code>gcc-release</code> preset (<code>build/gcc-release/</code>) if not already done, then runs the smoke benchmark.</p>
-<h2><a class="anchor" id="autotoc_md76"></a>
+<h2><a class="anchor" id="autotoc_md41"></a>
 GCC -O3 -flto (smoke)</h2>
 <div class="fragment"><div class="line">make bench-lto</div>
 <div class="line"># or equivalently:</div>
 <div class="line">make bench-matrix-gcc-lto</div>
 </div><!-- fragment --><p>Configures <code>gcc-release-lto</code> preset (<code>build/gcc-release-lto/</code>) if not already done, then runs the smoke benchmark.</p>
-<h2><a class="anchor" id="autotoc_md77"></a>
+<h2><a class="anchor" id="autotoc_md42"></a>
 Clang -O3 -flto (smoke)</h2>
 <div class="fragment"><div class="line">make bench-matrix-llvm-lto</div>
 </div><!-- fragment --><p>Configures <code>llvm-release-lto</code> preset (<code>build/llvm-release-lto/</code>) if not already done. <b>Skips cleanly</b> if <code>clang</code> is not found in <code>PATH</code>.</p>
-<h1><a class="anchor" id="autotoc_md78"></a>
+<h1><a class="anchor" id="autotoc_md43"></a>
 Full Compiler Matrix</h1>
 <p>Run all supported matrix slices in sequence:</p>
 <div class="fragment"><div class="line">make bench-matrix       # smoke filter per slice (fast)</div>
@@ -140,14 +140,14 @@ Full Compiler Matrix</h1>
 </ol>
 <p>You can also invoke the script directly with a custom tag filter:</p>
 <div class="fragment"><div class="line">infra/scripts/bench-matrix.sh &quot;[benchmark][utf]&quot;</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md79"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md44"></a>
 Capturing Results</h1>
 <p>Redirect output to capture both metadata and results together:</p>
 <div class="fragment"><div class="line">make bench-matrix 2&gt;&amp;1 | tee results-$(date +%Y%m%d).txt</div>
 </div><!-- fragment --><p>Metadata lines are prefixed with <code>#</code> for easy grepping:</p>
 <div class="fragment"><div class="line">grep &quot;^#&quot; results-20260101.txt   # environment metadata only</div>
 <div class="line">grep -v &quot;^#&quot; results-20260101.txt  # benchmark data only</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md80"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md45"></a>
 Environment Metadata</h1>
 <p>Print just the environment metadata without running benchmarks:</p>
 <div class="fragment"><div class="line">make bench-env</div>
@@ -160,7 +160,7 @@ Environment Metadata</h1>
 <div class="line"># CPU_CORES: 32</div>
 <div class="line"># GCC: gcc (Ubuntu 13.3.0) 13.3.0</div>
 <div class="line"># CLANG: not found</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md81"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md46"></a>
 Manually Configuring a Preset</h1>
 <p>To configure a preset once and then build/run manually:</p>
 <div class="fragment"><div class="line"># Configure</div>
@@ -171,7 +171,7 @@ Manually Configuring a Preset</h1>
 <div class="line"> </div>
 <div class="line"># Run a specific benchmark binary</div>
 <div class="line">build/gcc-release-lto/benchmark/beman.transcode.benchmarks.utf &quot;[benchmark][utf]&quot;</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md82"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md47"></a>
 Matrix Slices</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -184,7 +184,7 @@ Matrix Slices</h1>
 <td class="markdownTableBodyNone">Clang -O3 -flto   </td><td class="markdownTableBodyNone"><code>llvm-release-lto</code>   </td><td class="markdownTableBodyNone"><code>clang</code>   </td><td class="markdownTableBodyNone"><code>-O3 -flto</code>   </td></tr>
 </table>
 <p>LTO presets set <code>CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON</code>, which CMake translates to <code>-flto</code> flags at compile and link time for all targets.</p>
-<h1><a class="anchor" id="autotoc_md83"></a>
+<h1><a class="anchor" id="autotoc_md48"></a>
 Notes</h1>
 <ul>
 <li>Sanitizer builds (the default <code>Asan</code> config) inhibit optimization and are <b>not</b> suitable for benchmarking. Always use a release preset for numbers.</li>

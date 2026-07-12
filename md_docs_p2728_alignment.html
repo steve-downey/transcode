@@ -99,16 +99,16 @@ $(document).ready(function(){initNavTree('md_docs_p2728_alignment.html',''); ini
   <div class="headertitle"><div class="title">p2728-alignment </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md110"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md67"></a>
 Tracking P2728: UTF Transcoding alignment</h1>
 <p>This document records how <code>beman.transcode</code> relates to WG21 <a href="https://isocpp.org/files/papers/P2728R13.html">P2728 "Unicode in the Library, Part 1: UTF Transcoding"</a> (Eddie Nolan; reference implementation <a href="https://github.com/bemanproject/utf_view"><code>beman.utf_view</code></a>), and what we should do to <b>follow that model as closely as possible while tracking its evolution</b>.</p>
 <p>Latest revision reviewed: <b>P2728R13</b> (2026-05-26). When a new revision lands, update the Revision history and Action items sections below.</p>
-<h2><a class="anchor" id="autotoc_md111"></a>
+<h2><a class="anchor" id="autotoc_md68"></a>
 How the two relate</h2>
 <p>P2728 is <b>type-based</b> transcoding: the encoding is carried in the character type (<code>char8_t</code> = UTF-8, <code>char16_t</code> = UTF-16, <code>char32_t</code> = UTF-32), and the view transcodes UTF-N → UTF-M between those types. The compiler statically tracks the encoding.</p>
 <p><code>beman.transcode</code> is <b>byte-based</b> transcoding: it decodes byte-like I/O (<code>char</code>, <code>signed char</code>, <code>unsigned char</code>, <code>std::byte</code>) to <code>char32_t</code> code points, where the codec is selected at compile time from the <code>codec</code> enum but corresponds to a runtime/protocol fact (HTTP <code>Content-Type</code>, BOM sniff, DB column metadata, an <code>iconv</code> label). It also wraps system <code>iconv</code>.</p>
 <p>These are <b>complementary, non-overlapping</b> problems — the repository README already says so. Therefore "follow the model as exactly as possible" means matching P2728's <b>structural and error-handling patterns</b>, <b>not</b> copying its <code>charN_t</code>-typed interface. The character-typed cast adaptors P2728 provides (<code>as_char8_t</code>, etc.) are the natural <em>interop seam</em> between the two libraries, not a feature gap.</p>
-<h2><a class="anchor" id="autotoc_md112"></a>
+<h2><a class="anchor" id="autotoc_md69"></a>
 The model in brief (P2728R13)</h2>
 <ul>
 <li><b>One view template:</b> <code>to_utf_view&lt;V, E, ToType&gt;</code>, where <code>V</code>'s value type is a <code>code-unit</code> (<code>char8_t</code>/<code>char16_t</code>/<code>char32_t</code>), <code>ToType</code> is the target code-unit type, and <code>E</code> is a <code>to_utf_view_error_kind</code> constant.</li>
@@ -119,7 +119,7 @@ The model in brief (P2728R13)</h2>
 <li><b>Code-unit cast adaptors:</b> <code>as_char</code>, <code>as_wchar_t</code>, <code>as_char8_t</code>, <code>as_char16_t</code>, <code>as_char32_t</code> (thin <code>transform_view</code> casts).</li>
 <li><code>null_term</code>; rejects raw arrays (string-literal null-terminator trap); does not cache <code>begin()</code>; double-transcode elision in the CPO; feature macro <code>__cpp_lib_unicode_transcoding</code>.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md113"></a>
+<h2><a class="anchor" id="autotoc_md70"></a>
 Revision history of the model</h2>
 <p>The evolution we are tracking, most recent first:</p>
 <table class="markdownTable">
@@ -134,7 +134,7 @@ Revision history of the model</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>R10</b>   </td><td class="markdownTableBodyNone">Replaced separate <code>to_utfX_view</code> classes with a <b>single <code>to_utf_view</code></b> + tag constructors; replaced <code>bool OrError</code> with the **<code>to_utf_view_error_kind</code> enum**; stopped caching <code>begin()</code>; reject <code>charN_t</code> arrays; double-transcode elision in CPOs.   </td><td class="markdownTableBodyNone">The big structural consolidation.   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md114"></a>
+<h3><a class="anchor" id="autotoc_md71"></a>
 Design intent from committee review</h3>
 <p>The SG9 review (Kona 2025, on R9) records the <em>reasoning</em> behind several of the above changes — useful because it tells us which patterns are load-bearing:</p>
 <ul>
@@ -145,7 +145,7 @@ Design intent from committee review</h3>
 <li><b>SIMD / eager read-ahead is in tension with lazy views.</b> The room leaned toward keeping bulk/SIMD a <em>separate</em> mechanism rather than baking read-ahead into the lazy <code>operator++</code>.</li>
 <li><b>Iterator category should not be over-downgraded</b> (e.g. UTF-32 self- transcode should stay random access).</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md115"></a>
+<h2><a class="anchor" id="autotoc_md72"></a>
 Where &lt;tt&gt;beman.transcode&lt;/tt&gt; already follows the model</h2>
 <ul>
 <li>**<code>_or_error</code> paired views** with errors carried in the <code>value_type</code> (<code>expected&lt;char32_t, whatwg_error&gt;</code>) — and <b>no</b> error-query member on the iterator. This matches both the <code>_or_error</code> pattern and the explicit SG9 preference that produced it.</li>
@@ -158,9 +158,9 @@ Where &lt;tt&gt;beman.transcode&lt;/tt&gt; already follows the model</h2>
 <li><b>Strongest iterator category per codec</b> — single-byte codecs get a dedicated <code>random_access_whatwg_decode_view</code> rather than a uniform floor.</li>
 <li><b>Same-codec transcode is not a no-op</b> (it sanitizes) — README §6.2 mirrors P2728 §6.2.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md116"></a>
+<h2><a class="anchor" id="autotoc_md73"></a>
 Where it diverges, and how to track</h2>
-<h3><a class="anchor" id="autotoc_md117"></a>
+<h3><a class="anchor" id="autotoc_md74"></a>
 1. Collapse the &lt;tt&gt;_view&lt;/tt&gt; / &lt;tt&gt;_or_error_view&lt;/tt&gt; pairs into one template (highest value)</h3>
 <p>The repository still exposes <b>separate</b> <code>whatwg_decode_view</code> and <code>whatwg_decode_or_error_view</code> classes (and likewise for encode and the pluggable <code>decode_view</code>/<code>encode_view</code>). That is P2728's <b>pre-R10</b> shape.</p>
 <p>Track the model by unifying each pair into a single view template parameterized on an <b>extensible error-kind enum</b> — the analog of <code>to_utf_view_error_kind</code>:</p>
@@ -171,19 +171,19 @@ Where it diverges, and how to track</h2>
 <li>Use **<code>std::constant_wrapper</code>** + a tag type for CTAD (R11), and do <b>not</b> add a bare constructor lacking a corresponding deduction guide (SG9 kept this deliberately).</li>
 <li>Keep errors in the <code>value_type</code>; do not add an error-query iterator member.</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md118"></a>
+<h3><a class="anchor" id="autotoc_md75"></a>
 2. Unspecified underlying type for the error enums (R13)</h3>
 <p><code>whatwg_error</code> currently has the implicit <code>int</code>. Match R13 by not depending on a fixed underlying type for the error / error-kind enums.</p>
-<h3><a class="anchor" id="autotoc_md119"></a>
+<h3><a class="anchor" id="autotoc_md76"></a>
 3. Verify &lt;tt&gt;base()&lt;/tt&gt; semantics</h3>
 <p>Confirm the decode <code>iterator::base()</code> returns the position at the <b>start of the current code point's bytes</b> (P2728's forward-range contract), not the next boundary — the repo's decoder advances eagerly in <code>load()</code>, so this is worth a test.</p>
-<h3><a class="anchor" id="autotoc_md120"></a>
+<h3><a class="anchor" id="autotoc_md77"></a>
 Intentional, non-convergent differences (do not "fix" toward P2728)</h3>
 <ul>
 <li>The uniform <code>buf_</code>/<code>to_increment_</code> small-buffer iterator and <b>bidirectional</b> traversal assume <em>stateless</em> UTF-N. The repo's CJK codecs (ISO-2022-JP, GB18030 replay) are inherently <b>stateful and forward-only</b>; bidirectional like P2728 is not achievable for them.</li>
 <li><code>as_charN_t</code> cast adaptors are pointless for a byte-in/<code>char32_t</code>-out pipeline — unless added deliberately as the interop seam to feed <code>char</code>-stored UTF into a P2728-typed pipeline.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md121"></a>
+<h2><a class="anchor" id="autotoc_md78"></a>
 Action items</h2>
 <ul>
 <li>[ ] Unify <code>whatwg_decode_view</code> + <code>whatwg_decode_or_error_view</code> (and the encode and pluggable counterparts) under one error-kind-parameterized template.</li>
@@ -192,7 +192,7 @@ Action items</h2>
 <li>[ ] Make the closures' <code>operator()</code> <code>static</code> (C++23) — small QoI.</li>
 <li>[ ] (Future, not now) A "which input bytes failed" capability for error reporting, expressed as an error-kind / error payload rather than a new iterator member.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md122"></a>
+<h2><a class="anchor" id="autotoc_md79"></a>
 Future bolt-ons that the model leaves open</h2>
 <ul>
 <li>A <code>base_code_units</code>-style accessor for error reporting (forward ranges only), as syntactic sugar over <code>subrange(it.base(), ranges::next(it).base())</code>.</li>

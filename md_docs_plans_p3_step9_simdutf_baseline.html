@@ -101,16 +101,16 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step9_simdutf_baselin
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step9-simdutf-baseline</code> <b>Depends on:</b> <a class="el" href="md_docs_plans_p3_step8_encoding_rs_baseline.html">p3-step8-encoding-rs-baseline.md</a> <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md255"></a>
+<h1><a class="anchor" id="autotoc_md212"></a>
 Goal</h1>
 <p>Add the <code>simdutf</code> performance ceiling baseline so the project can quantify the gap between composable standard C++ ranges and hardware-specific SIMD code.</p>
-<h1><a class="anchor" id="autotoc_md256"></a>
+<h1><a class="anchor" id="autotoc_md213"></a>
 Context for Executing Agent</h1>
 <p>simdutf is a C++ library available via FetchContent or vcpkg. API: </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;simdutf.h&gt;</span></div>
 <div class="line">simdutf::convert_utf8_to_utf32(data, length, output);</div>
 <div class="line">simdutf::validate_utf8(data, length);</div>
 </div><!-- fragment --><p> Guard with CMake option <code>BEMAN_TRANSCODE_BENCHMARK_SIMDUTF</code>. Use <code>#ifdef</code> in source. Match workloads against Step 4 UTF cases for fair comparison.</p>
-<h1><a class="anchor" id="autotoc_md257"></a>
+<h1><a class="anchor" id="autotoc_md214"></a>
 Deliverables</h1>
 <ul>
 <li>optional <code>simdutf</code> dependency wiring</li>
@@ -118,14 +118,14 @@ Deliverables</h1>
 <li>smoke benchmark filters for at least UTF-8 decode and UTF-8 &lt;-&gt; UTF-16 paths</li>
 <li>clear metadata marking <code>simdutf</code> as the ceiling baseline</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md258"></a>
+<h1><a class="anchor" id="autotoc_md215"></a>
 Constraints</h1>
 <ul>
 <li>keep the dependency optional and off by default</li>
 <li>align workloads with existing UTF benchmark cases for fair comparison</li>
 <li>do not mix <code>simdutf</code>-specific data preparation into the timed region</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md259"></a>
+<h1><a class="anchor" id="autotoc_md216"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p3-step9-simdutf-baseline</code> from <code>main</code></li>
@@ -137,15 +137,15 @@ Procedure</h1>
 <li>Run the <code>simdutf</code> smoke command</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md260"></a>
+<h1><a class="anchor" id="autotoc_md217"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
 <div class="line"># plus the simdutf smoke command on an enabled environment</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md261"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md218"></a>
 Notes</h1>
 <p>This step should make the mechanical-sympathy gap measurable, not erase it.</p>
-<h1><a class="anchor" id="autotoc_md262"></a>
+<h1><a class="anchor" id="autotoc_md219"></a>
 Handoff to Step 10</h1>
 <p>Step 9 done, next read <a class="el" href="p3-step10-boundary-stress_8md.html">p3-step10-boundary-stress.md</a>. </p>
 </div></div><!-- contents -->

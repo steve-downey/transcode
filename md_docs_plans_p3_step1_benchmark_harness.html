@@ -101,16 +101,16 @@ $(document).ready(function(){initNavTree('md_docs_plans_p3_step1_benchmark_harne
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p3-step1-benchmark-harness</code> <b>Depends on:</b> Phase 2 stability on <code>main</code> <b>Read first:</b> <code><a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a></code> and <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md138"></a>
+<h1><a class="anchor" id="autotoc_md95"></a>
 Goal</h1>
 <p>Create the dedicated top-level <code>benchmark/</code> build surface for the project: CMake wiring, Catch2 benchmark executable pattern, Makefile target, and one trivial smoke benchmark proving the harness works.</p>
 <p>This step is intentionally about structure, not real benchmark coverage.</p>
-<h1><a class="anchor" id="autotoc_md139"></a>
+<h1><a class="anchor" id="autotoc_md96"></a>
 Context for Executing Agent</h1>
 <p>The project is <code>beman.transcode</code>, a C++23 header-only Unicode transcoding library. It uses CMake + Ninja Multi-Config. Tests use Catch2 3.x (already a dependency via FetchContent). The Makefile exposes <code>make compile</code>, <code>make test</code>, <code>make lint</code>.</p>
 <p>No <code>benchmark/</code> directory exists yet. No <code>make bench</code> target exists.</p>
 <p>The build uses Ninja Multi-Config, so executables land under a config subdirectory (e.g., <code>.build/build-system/benchmark/Asan/</code>).</p>
-<h2><a class="anchor" id="autotoc_md140"></a>
+<h2><a class="anchor" id="autotoc_md97"></a>
 Key files to reference</h2>
 <ul>
 <li><code>CMakeLists.txt</code> — top-level; add option + <code>add_subdirectory</code> here</li>
@@ -118,7 +118,7 @@ Key files to reference</h2>
 <li><code>examples/CMakeLists.txt</code> — pattern for adding executables</li>
 <li><code>tests/beman/transcode/CMakeLists.txt</code> — pattern for Catch2 linking</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md141"></a>
+<h2><a class="anchor" id="autotoc_md98"></a>
 Build conventions</h2>
 <div class="fragment"><div class="line"># Examples pattern (follow this for benchmarks):</div>
 <div class="line">add_executable(beman.transcode.benchmarks.smoke)</div>
@@ -127,7 +127,7 @@ Build conventions</h2>
 <div class="line">    beman.transcode.benchmarks.smoke</div>
 <div class="line">    PRIVATE beman::transcode Catch2::Catch2WithMain</div>
 <div class="line">)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md142"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md99"></a>
 Library usage in benchmark code</h2>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="transcode_8hpp.html">beman/transcode/transcode.hpp</a>&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &lt;catch2/catch_all.hpp&gt;</span></div>
@@ -138,7 +138,7 @@ Library usage in benchmark code</h2>
 <div class="line">std::span&lt;const char&gt;(input) | whatwg_decode&lt;codec::utf_8&gt;</div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html"><div class="ttname"><a href="namespacebeman_1_1transcoding.html">beman::transcoding</a></div><div class="ttdef"><b>Definition:</b> decode_view.hpp:18</div></div>
 <div class="ttc" id="atranscode_8hpp_html"><div class="ttname"><a href="transcode_8hpp.html">transcode.hpp</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md143"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md100"></a>
 Deliverables</h1>
 <ol type="1">
 <li><code>benchmark/CMakeLists.txt</code> — registers smoke benchmark executable</li>
@@ -146,7 +146,7 @@ Deliverables</h1>
 <li>Top-level <code>CMakeLists.txt</code> — option <code>BEMAN_TRANSCODE_BUILD_BENCHMARKS</code> + conditional <code>add_subdirectory(benchmark)</code></li>
 <li><code>Makefile</code> — <code>make bench</code> target that runs the smoke executable</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md144"></a>
+<h1><a class="anchor" id="autotoc_md101"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create worktree branch <code>p3-step1-benchmark-harness</code> from <code>main</code></li>
@@ -167,7 +167,7 @@ Procedure</h1>
 <li>Commit, merge to main (non-ff), push both remotes</li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md145"></a>
+<h1><a class="anchor" id="autotoc_md102"></a>
 Makefile Target Pattern</h1>
 <p>Look at existing targets in <code>Makefile</code> (e.g., <code>compile</code>, <code>ctest_</code>). The benchmark target should:</p><ul>
 <li>Depend on <code>compile</code> (ensures build is current)</li>
@@ -175,13 +175,13 @@ Makefile Target Pattern</h1>
 <li>Pass <code>"[smoke]"</code> tag filter if using Catch2 tags</li>
 </ul>
 <p>Determine the actual executable path from the build directory layout. For Ninja Multi-Config with Asan config, it will be something like: <code>.build/build-system/benchmark/Asan/beman.transcode.benchmarks.smoke</code></p>
-<h1><a class="anchor" id="autotoc_md146"></a>
+<h1><a class="anchor" id="autotoc_md103"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make compile   # benchmark code compiles</div>
 <div class="line">make test      # existing 662+ tests still pass</div>
 <div class="line">make lint      # clean</div>
 <div class="line">make bench     # runs smoke benchmark, prints timing output</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md147"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md104"></a>
 Handoff to Step 2</h1>
 <p>After completing, write to <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>:</p><ul>
 <li>Step 1 is done</li>

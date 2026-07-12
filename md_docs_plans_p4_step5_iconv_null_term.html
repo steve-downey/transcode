@@ -101,14 +101,14 @@ $(document).ready(function(){initNavTree('md_docs_plans_p4_step5_iconv_null_term
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p4-step5-iconv-null-term</code> <b>Depends on:</b> None (independent of other steps) <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md307"></a>
+<h1><a class="anchor" id="autotoc_md264"></a>
 Goal</h1>
 <p>Verify and test that <code>views::null_term(ptr) | iconv_transcode(...)</code> works. Fix the view if <code>null_sentinel_t</code> is not handled correctly.</p>
-<h1><a class="anchor" id="autotoc_md308"></a>
+<h1><a class="anchor" id="autotoc_md265"></a>
 Context for Executing Agent</h1>
 <p><code>views::null_term(ptr)</code> (in <code><a class="el" href="null__term_8hpp.html">include/beman/transcode/detail/null_term.hpp</a></code>) produces a range of <code>char</code> values with <code>null_sentinel_t</code> as the sentinel type. The <code>whatwg_decode_view</code> handles this fine because it works with any <code>legacy_byte_range</code>, comparing iterators against <code>null_sentinel_t</code>.</p>
 <p>The <code>iconv_transcode_view</code> also accepts <code>legacy_byte_range</code>, but its implementation needs to call <code>iconv()</code> which requires a <code>char*</code> + <code>size_t</code> (contiguous buffer with known length). With a sentinel-based range, the length is unknown until the null terminator is reached.</p>
-<h2><a class="anchor" id="autotoc_md309"></a>
+<h2><a class="anchor" id="autotoc_md266"></a>
 Possible outcomes</h2>
 <ol type="1">
 <li><b>Already works</b>: If <code>iconv_transcode_view</code> accumulates input into its staging buffer one byte at a time (feeding partial input to iconv), then null_sentinel_t just means "no more bytes" and the existing code handles it.</li>
@@ -117,7 +117,7 @@ Possible outcomes</h2>
 </ol>
 <p>The fix (if needed) would be to ensure the view works byte-by-byte with any input iterator + sentinel pair, not just random-access ranges.</p>
 <p>Also test that <code>iconv_transcode_to(views::null_term(ptr), from, to)</code> works (from Step 4), which may need to materialize the null-terminated range into a contiguous buffer before calling iconv.</p>
-<h1><a class="anchor" id="autotoc_md310"></a>
+<h1><a class="anchor" id="autotoc_md267"></a>
 Deliverables</h1>
 <ul>
 <li><code>tests/beman/transcode/iconv_null_term.test.cpp</code>:<ul>
@@ -128,7 +128,7 @@ Deliverables</h1>
 <li>Fixes to <code>iconv_transcode_view</code> if null_sentinel_t is not handled</li>
 <li>Register tests in CMakeLists.txt</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md311"></a>
+<h1><a class="anchor" id="autotoc_md268"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p4-step5-iconv-null-term</code> from <code>main</code></li>
@@ -148,11 +148,11 @@ Procedure</h1>
 <li><code>make test</code> + <code>make lint</code></li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code></li>
 </ol>
-<h1><a class="anchor" id="autotoc_md312"></a>
+<h1><a class="anchor" id="autotoc_md269"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md313"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md270"></a>
 Handoff to Step 6</h1>
 <p>Step 5 done, next read <code><a class="el" href="p4-step6-error-coherence_8md.html">docs/plans/p4-step6-error-coherence.md</a></code>. </p>
 </div></div><!-- contents -->

@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_step14_replacement_codec
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>step14-replacement-codec</code> <b>Depends on:</b> Steps 0–13 complete (53 tests, <code>main</code>)</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md485"></a>
+<h1><a class="anchor" id="autotoc_md442"></a>
 Goal</h1>
 <p>Introduce <code>if constexpr</code> dispatch on the <code>codec C</code> template parameter in both decode view <code>load()</code> methods. The <code>replacement</code> codec is the simplest WHATWG codec and serves as the vehicle for establishing the multi-codec dispatch pattern.</p>
-<h1><a class="anchor" id="autotoc_md486"></a>
+<h1><a class="anchor" id="autotoc_md443"></a>
 WHATWG Specification</h1>
 <p>Per the WHATWG Encoding Standard, the replacement decoder:</p><ol type="1">
 <li>If byte is end-of-queue → finished.</li>
@@ -112,9 +112,9 @@ WHATWG Specification</h1>
 <li>Return finished.</li>
 </ol>
 <p><b>Effect:</b> Any non-empty input produces exactly ONE U+FFFD (or one error in the or_error variant). All remaining input is consumed without producing additional output.</p>
-<h1><a class="anchor" id="autotoc_md487"></a>
+<h1><a class="anchor" id="autotoc_md444"></a>
 Files Modified</h1>
-<h2><a class="anchor" id="autotoc_md488"></a>
+<h2><a class="anchor" id="autotoc_md445"></a>
 &lt;tt&gt;include/beman/transcode/whatwg_decode_view.hpp&lt;/tt&gt;</h2>
 <ol type="1">
 <li><b>Line 16:</b> Extend the <code>codec</code> enum: <div class="fragment"><div class="line"><span class="keyword">enum class</span> codec { utf_8, replacement };</div>
@@ -154,7 +154,7 @@ Files Modified</h1>
 <div class="line">}</div>
 </div><!-- fragment --></li>
 </ol>
-<h2><a class="anchor" id="autotoc_md489"></a>
+<h2><a class="anchor" id="autotoc_md446"></a>
 &lt;tt&gt;tests/beman/transcode/whatwg_decode.test.cpp&lt;/tt&gt;</h2>
 <p>Add after existing tests:</p>
 <div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_decode replacement empty input&quot;</span>, <span class="stringliteral">&quot;[transcoding::whatwg_decode]&quot;</span>) {</div>
@@ -183,7 +183,7 @@ Files Modified</h1>
 <div class="line">    };</div>
 <div class="line">    CHECK(constify(decode_replacement()) == U<span class="stringliteral">&#39;\xFFFD&#39;</span>);</div>
 <div class="line">}</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md490"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md447"></a>
 &lt;tt&gt;tests/beman/transcode/whatwg_decode_or_error.test.cpp&lt;/tt&gt;</h2>
 <p>Add after existing tests:</p>
 <div class="fragment"><div class="line">TEST_CASE(<span class="stringliteral">&quot;whatwg_decode_or_error replacement empty&quot;</span>, <span class="stringliteral">&quot;[transcoding::whatwg_decode_or_error]&quot;</span>) {</div>
@@ -198,13 +198,13 @@ Files Modified</h1>
 <div class="line">    CHECK(!result[0].has_value());</div>
 <div class="line">    CHECK(result[0].error() == whatwg_error::invalid_byte);</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md491"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md448"></a>
 No New Files Created</h1>
 <p>This step only modifies existing files. No new headers, no new test executables, no CMakeLists changes needed.</p>
-<h1><a class="anchor" id="autotoc_md492"></a>
+<h1><a class="anchor" id="autotoc_md449"></a>
 No Negative Compile Tests</h1>
 <p>No new constraints or <code>static_assert</code>s are introduced. The <code>if constexpr</code> dispatch is an internal implementation detail.</p>
-<h1><a class="anchor" id="autotoc_md493"></a>
+<h1><a class="anchor" id="autotoc_md450"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test   # existing 53 + ~6 new tests all pass</div>
 <div class="line">make lint   # clean</div>

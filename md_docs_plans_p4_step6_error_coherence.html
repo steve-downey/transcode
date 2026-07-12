@@ -101,13 +101,13 @@ $(document).ready(function(){initNavTree('md_docs_plans_p4_step6_error_coherence
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p4-step6-error-coherence</code> <b>Depends on:</b> Steps 1-5 (all new APIs should exist before cleaning up naming) <b>Read first:</b> <a class="el" href="phase3-handoff_8md.html">docs/plans/phase3-handoff.md</a> and <a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md316"></a>
+<h1><a class="anchor" id="autotoc_md273"></a>
 Goal</h1>
 <p>Resolve the naming divergence between <code>whatwg_error</code>, <code>decode_error</code>, and <code>iconv_error</code>. Either unify, rename, or explicitly document why they differ.</p>
-<h1><a class="anchor" id="autotoc_md317"></a>
+<h1><a class="anchor" id="autotoc_md274"></a>
 Context for Executing Agent</h1>
 <p>Three error types currently exist:</p>
-<h2><a class="anchor" id="autotoc_md318"></a>
+<h2><a class="anchor" id="autotoc_md275"></a>
 whatwg_error (include/beman/transcode/detail/error.hpp)</h2>
 <div class="fragment"><div class="line"><span class="keyword">enum class</span> whatwg_error {</div>
 <div class="line">    invalid_byte,</div>
@@ -118,11 +118,11 @@ whatwg_error (include/beman/transcode/detail/error.hpp)</h2>
 <div class="line">    unmapped_codepoint,</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>Used by: <code>whatwg_decode_or_error</code>, <code>whatwg_encode_or_error</code>, and transitively by pluggable codec <code>_or_error</code> views.</p>
-<h2><a class="anchor" id="autotoc_md319"></a>
+<h2><a class="anchor" id="autotoc_md276"></a>
 decode_error (include/beman/transcode/detail/codec_result.hpp)</h2>
 <div class="fragment"><div class="line"><span class="keyword">using </span>decode_error = whatwg_error;</div>
 </div><!-- fragment --><p>This is just a type alias — <code>decode_error</code> IS <code>whatwg_error</code>. Used in <code>decode_result</code> and <code>encode_result</code> structs, and in the pluggable codec concept signatures.</p>
-<h2><a class="anchor" id="autotoc_md320"></a>
+<h2><a class="anchor" id="autotoc_md277"></a>
 iconv_error (include/beman/transcode/detail/error.hpp)</h2>
 <div class="fragment"><div class="line"><span class="keyword">enum class</span> iconv_error {</div>
 <div class="line">    invalid_sequence,</div>
@@ -130,15 +130,15 @@ iconv_error (include/beman/transcode/detail/error.hpp)</h2>
 <div class="line">    output_full,</div>
 <div class="line">};</div>
 </div><!-- fragment --><p>Used by: <code>iconv_transcode_or_error_view</code> and (after Step 4) <code>iconv_transcode_to_or_error</code>.</p>
-<h2><a class="anchor" id="autotoc_md321"></a>
+<h2><a class="anchor" id="autotoc_md278"></a>
 Why they differ</h2>
 <p><code>whatwg_error</code> has 6 values reflecting WHATWG spec error conditions — semantically rich (overlong? surrogate? out of range?).</p>
 <p><code>iconv_error</code> has 3 values reflecting POSIX <code>errno</code> semantics — the OS doesn't distinguish WHY a byte is invalid, just that it IS (<code>EILSEQ</code>), incomplete (<code>EINVAL</code>), or couldn't fit (<code>E2BIG</code>).</p>
 <p>These are fundamentally different abstraction levels. Full unification would lose semantic specificity.</p>
-<h2><a class="anchor" id="autotoc_md322"></a>
+<h2><a class="anchor" id="autotoc_md279"></a>
 The problem</h2>
 <p>The <code>decode_error</code> alias is confusing: it's named as if it's a generic error type, but it's literally <code>whatwg_error</code>. The pluggable codec path uses <code>decode_error</code> in struct definitions (<code>decode_result</code>, <code>encode_result</code>), which means pluggable codecs report WHATWG-specific error categories even though they have nothing to do with WHATWG.</p>
-<h1><a class="anchor" id="autotoc_md323"></a>
+<h1><a class="anchor" id="autotoc_md280"></a>
 Deliverables</h1>
 <ul>
 <li>Decision documented in code comments in <code><a class="el" href="error_8hpp.html">detail/error.hpp</a></code></li>
@@ -147,7 +147,7 @@ Deliverables</h1>
 <li>Update README API matrix error row to reflect final state</li>
 <li>Update <code>papers/transcode-view.md</code> API matrix error row</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md324"></a>
+<h1><a class="anchor" id="autotoc_md281"></a>
 Procedure</h1>
 <ol type="1">
 <li>Create branch <code>p4-step6-error-coherence</code> from <code>main</code></li>
@@ -166,11 +166,11 @@ Procedure</h1>
 <li>Run <code>make test</code> + <code>make lint</code></li>
 <li>Update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code> — Phase 4 complete</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md325"></a>
+<h1><a class="anchor" id="autotoc_md282"></a>
 Verification</h1>
 <div class="fragment"><div class="line">make test</div>
 <div class="line">make lint</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md326"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md283"></a>
 Handoff (Phase 4 Complete)</h1>
 <p>Phase 4 complete. All API surface gaps from the README matrix are closed:</p><ul>
 <li>Pluggable codecs: encode views, bulk operations, transcode pipeline</li>

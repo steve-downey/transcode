@@ -99,14 +99,14 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase3_index.html',''); 
   <div class="headertitle"><div class="title">Phase 3: Benchmarking and Performance Characterization </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md449"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md406"></a>
 Overview</h1>
 <p>Builds a reproducible benchmarking program for <code>beman::transcode</code> that measures the library's throughput, latency-sensitive boundary behavior, and abstraction costs against the baselines called out in the benchmarking report: raw <code>iconv</code>, <code>iconv_transcode_view</code>, <code>std::codecvt</code>, <code>encoding_rs</code>, and <code>simdutf</code>. The success condition is a benchmark suite whose code is always compiled in normal project builds, whose reusable support code is covered by ordinary unit tests, and whose benchmark execution can be run in small smoke mode during ordinary step work and in a full matrix mode for proposal-quality reporting.</p>
 <p><b>Preconditions:</b> Phase 2 feature work is functionally stable on <code>main</code>. Step 50 is complete. <code>make test</code> and <code>make lint</code> are green before starting.</p>
 <p><b>Workflow per P3 step:</b> Branch <code>p3-step&lt;N&gt;-&lt;slug&gt;</code> from <code>main</code> -&gt; add the smallest missing benchmark/test/tooling slice -&gt; run <code>make test</code> and <code>make lint</code> -&gt; run the step's required benchmark smoke check through the Makefile workflow -&gt; update <code><a class="el" href="handoff-next_8md.html">handoff-next.md</a></code> with the next <code>P3-stepN</code> file, expected <code>make</code> targets, and any environment caveats.</p>
 <p><b>Progress:</b> See <a class="el" href="md_docs_plans_phase3_checklist.html">phase3-checklist.md</a> for status.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md451"></a>
+<h1><a class="anchor" id="autotoc_md408"></a>
 Why Phase 3 Is Separate</h1>
 <p>Phase 2 is still free to grow with additional conformance and quality work. This phase therefore uses an independent <code>P3-stepN</code> namespace instead of continuing the Phase 2 numeric sequence. That keeps the benchmarking track stable even if more P2 items are added later.</p>
 <p>This phase also needs a different execution discipline than P2:</p>
@@ -119,7 +119,7 @@ Why Phase 3 Is Separate</h1>
 <li>Benchmark execution should be reachable through stable Makefile targets, not only through direct binary invocation or ad hoc shell commands.</li>
 </ol>
 <hr  />
-<h1><a class="anchor" id="autotoc_md453"></a>
+<h1><a class="anchor" id="autotoc_md410"></a>
 Phase Scope</h1>
 <p>The benchmarking report calls for four dimensions:</p>
 <ol type="1">
@@ -130,54 +130,54 @@ Phase Scope</h1>
 </ol>
 <p>The plan below stages these dimensions so each step is isolated and leaves the tree green.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md455"></a>
+<h1><a class="anchor" id="autotoc_md412"></a>
 P3 Steps</h1>
-<h2><a class="anchor" id="autotoc_md456"></a>
+<h2><a class="anchor" id="autotoc_md413"></a>
 Harness and data foundations</h2>
-<h3><a class="anchor" id="autotoc_md457"></a>
+<h3><a class="anchor" id="autotoc_md414"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step1-benchmark-harness.md "P3-Step 1: Benchmark harness scaffolding"</h3>
 <p>Create the dedicated top-level <code>benchmark/</code> build surface, CMake wiring, Catch2 benchmark executable pattern, benchmark labels, and smoke-run entry points. This step establishes the rule that benchmark code is always built, benchmark support code is testable, and benchmark runs do not occur in the default <code>make test</code> path.</p>
-<h3><a class="anchor" id="autotoc_md458"></a>
+<h3><a class="anchor" id="autotoc_md415"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step2-benchmark-data.md "P3-Step 2: Benchmark corpus acquisition and provenance"</h3>
 <p>Acquire the real-world and synthetic corpora called for by the report, including provenance, checksums, and a generated manifest. No benchmark logic yet.</p>
-<h3><a class="anchor" id="autotoc_md459"></a>
+<h3><a class="anchor" id="autotoc_md416"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step3-benchmark-fixtures.md "P3-Step 3: Benchmark fixture library and result schema"</h3>
 <p>Add reusable corpus-loading, chunking, sink, and metadata helpers plus a stable output schema for later post-processing to GiB/s and charts.</p>
-<h2><a class="anchor" id="autotoc_md460"></a>
+<h2><a class="anchor" id="autotoc_md417"></a>
 Native &lt;tt&gt;beman::transcode&lt;/tt&gt; measurement</h2>
-<h3><a class="anchor" id="autotoc_md461"></a>
+<h3><a class="anchor" id="autotoc_md418"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step4-utf-benchmarks.md "P3-Step 4: UTF-family and ASCII fast-path benchmarks"</h3>
 <p>Measure the core algorithmic UTF paths for <code>beman::transcode</code>, including ASCII fast paths and UTF-8 &lt;-&gt; UTF-16 conversions.</p>
-<h3><a class="anchor" id="autotoc_md462"></a>
+<h3><a class="anchor" id="autotoc_md419"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step5-legacy-whatwg-benchmarks.md "P3-Step 5: Legacy WHATWG codec benchmarks"</h3>
 <p>Measure representative single-byte and multi-byte WHATWG codecs, with corpora chosen to expose table lookups, branch pressure, and trie/state-machine costs.</p>
-<h2><a class="anchor" id="autotoc_md463"></a>
+<h2><a class="anchor" id="autotoc_md420"></a>
 Baseline implementations</h2>
-<h3><a class="anchor" id="autotoc_md464"></a>
+<h3><a class="anchor" id="autotoc_md421"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step6-iconv-baselines.md "P3-Step 6: `iconv` baselines"</h3>
 <p>Add raw <code>iconv</code> and <code>iconv_transcode_view</code> benchmarks so the zero-cost wrapper claim can be quantified directly.</p>
-<h3><a class="anchor" id="autotoc_md465"></a>
+<h3><a class="anchor" id="autotoc_md422"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step7-codecvt-baseline.md "P3-Step 7: `std::codecvt` negative baseline"</h3>
 <p>Add the deprecated standard-library comparison path as a conditional benchmark surface with clear skip behavior when unavailable or broken.</p>
-<h3><a class="anchor" id="autotoc_md466"></a>
+<h3><a class="anchor" id="autotoc_md423"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step8-encoding-rs-baseline.md "P3-Step 8: `encoding_rs` baseline"</h3>
 <p>Integrate an <code>encoding_rs</code> benchmark baseline through an isolated FFI or helper binary path, matching the existing oracle direction in repository docs.</p>
-<h3><a class="anchor" id="autotoc_md467"></a>
+<h3><a class="anchor" id="autotoc_md424"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step9-simdutf-baseline.md "P3-Step 9: `simdutf` ceiling baseline"</h3>
 <p>Add the hardware-accelerated ceiling baseline, gated behind an optional build switch so the normal tree stays portable.</p>
-<h2><a class="anchor" id="autotoc_md468"></a>
+<h2><a class="anchor" id="autotoc_md425"></a>
 Stress paths and final reporting</h2>
-<h3><a class="anchor" id="autotoc_md469"></a>
+<h3><a class="anchor" id="autotoc_md426"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step10-boundary-stress.md "P3-Step 10: Chunked/lazy boundary stress benchmarks"</h3>
 <p>Add chunked-range, <code>EINVAL</code>, <code>E2BIG</code>, and mock-iconv stress benchmarks to measure the real abstraction penalty of lazy pipelines at boundaries.</p>
-<h3><a class="anchor" id="autotoc_md470"></a>
+<h3><a class="anchor" id="autotoc_md427"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step11-toolchain-matrix.md "P3-Step 11: Toolchain matrix automation"</h3>
 <p>Automate the compiler/flag matrix and capture environment metadata so results are comparable across runs and machines.</p>
-<h3><a class="anchor" id="autotoc_md471"></a>
+<h3><a class="anchor" id="autotoc_md428"></a>
 @ref /home/runner/work/transcode/transcode/docs/plans/p3-step12-reporting-and-repro.md "P3-Step 12: Reporting, dashboard, and reproducibility pack"</h3>
 <p>Turn Catch2 timing output plus benchmark metadata into proposal-ready tables, GiB/s summaries, and reproducible documentation for future reruns.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md473"></a>
+<h1><a class="anchor" id="autotoc_md430"></a>
 Key Architecture Decisions</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -202,7 +202,7 @@ Key Architecture Decisions</h1>
 <td class="markdownTableBodyNone">Stable JSON/CSV output schema before charting   </td><td class="markdownTableBodyNone">Makes later reporting scripts mechanical rather than ad hoc   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md475"></a>
+<h1><a class="anchor" id="autotoc_md432"></a>
 Agent Execution Model</h1>
 <p>Each step is executed by a <b>stateless agent</b> that has no memory of prior steps. Before starting any step, the agent reads exactly three documents:</p>
 <ol type="1">
@@ -210,7 +210,7 @@ Agent Execution Model</h1>
 <li>**<code>docs/plans/p3-step&lt;N&gt;-&lt;slug&gt;.md</code>** — the step-specific plan with full context, deliverables, procedure, and verification.</li>
 <li>**<code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code>** — step-specific notes left by the previous agent: what was done, what files exist, any surprises.</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md476"></a>
+<h2><a class="anchor" id="autotoc_md433"></a>
 Worktree Discipline</h2>
 <p>Each step works in its own git worktree so nothing steps on anything else: </p><div class="fragment"><div class="line">git worktree add .claude/worktrees/p3-step&lt;N&gt; -b p3-step&lt;N&gt;-&lt;slug&gt; main</div>
 <div class="line">cd .claude/worktrees/p3-step&lt;N&gt;</div>
@@ -219,7 +219,7 @@ Worktree Discipline</h2>
 <div class="line">cd &lt;main-repo&gt;</div>
 <div class="line">git merge --no-ff p3-step&lt;N&gt;-&lt;slug&gt; -m &quot;Merge p3-step&lt;N&gt;-&lt;slug&gt;&quot;</div>
 <div class="line">git push origin main &amp;&amp; git push bbgithub main</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md477"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md434"></a>
 What to write in handoff-next.md</h2>
 <p>After completing a step, <b>overwrite</b> <code><a class="el" href="handoff-next_8md.html">docs/plans/handoff-next.md</a></code> with:</p><ul>
 <li>Which step was just completed</li>
@@ -229,7 +229,7 @@ What to write in handoff-next.md</h2>
 <li>The exact <code>make</code> targets now expected to work</li>
 <li>Whether any optional dependency is required for the next step</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md478"></a>
+<h2><a class="anchor" id="autotoc_md435"></a>
 Rules</h2>
 <ol type="1">
 <li>Name the active <code>P3-stepN</code> file explicitly in prompts.</li>
