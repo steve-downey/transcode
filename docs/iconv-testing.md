@@ -61,7 +61,7 @@ size_t mock_iconv(void* /*cd*/,
         (*outbuf)++;
         (*outbytesleft)--;
         return 0;
-    }I
+    }
 
     // Simulate EINVAL (Incomplete sequence at the end of input)
     // If the input is exactly the byte 0xF0, pretend it needs more bytes.
