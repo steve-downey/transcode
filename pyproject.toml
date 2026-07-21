@@ -14,7 +14,7 @@ dev = [
   "cmake==4.4.0",
   "gcovr>=8.6",
   "mbake==1.4.6",
-  "mypy>=2.1.0",
+  "mypy>=2.3.0",
   "ninja>=1.13",
   "pre-commit>=4.6.0",
   "pytest>=9.1.1",
