@@ -46,7 +46,7 @@ This phase also needs a different execution discipline than P2:
 5. Reusable benchmark support code should have ordinary unit tests, just like
    any other non-trivial code.
 6. Benchmark execution should be reachable through stable Makefile targets,
-   not only through direct binary invocation or ad hoc shell commands.
+   rather than through direct binary invocation or ad hoc shell commands.
 
 ---
 

@@ -80,7 +80,7 @@ Merge with `--no-ff`.
 
 ## What Comes Next
 
-The coverage audit is done. Actionable next steps, in priority order:
+The coverage audit is done. Next steps, in priority order:
 
 1. **Paper update** (`papers/transcode-view.md`) — The pluggable codec API
    section was written before Steps 1-3 (encode views, bulk ops, transcode
