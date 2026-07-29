@@ -51,7 +51,7 @@ than type-oriented, is in [`papers/transcode-view.md`](papers/transcode-view.md)
 ## Design: Byte-Oriented I/O Transcoding
 
 This library operates on **byte-like types** (`char`, `signed char`,
-`unsigned char`, `std::byte`) — the types you get from files, sockets, and
+`unsigned char`, `std::byte`), the types you get from files, sockets, and
 memory-mapped I/O.  It deliberately does not use `char8_t`, `char16_t`, or
 `char32_t` as input types.  This is a different, complementary use case from
 the type-based encoding approach in [P2728](https://wg21.link/P2728) (Eddie
@@ -61,14 +61,14 @@ statically track encoding at the type-system level.
 The two approaches serve non-overlapping problems:
 
 - **P2728 (type-based)**: transcoding between `std::u8string`, `std::u16string`,
-  `std::u32string` — the encoding is carried in the type, and the compiler
+  `std::u32string`; the encoding is carried in the type, and the compiler
   prevents mixing them
 - **beman.transcode (byte-based)**: transcoding I/O byte streams whose encoding
   is determined at runtime or by protocol (HTTP `Content-Type`, BOM sniffing,
-  database column metadata, `iconv` string labels) — the bytes are just bytes
+  database column metadata, `iconv` string labels); the bytes are just bytes
   until you decode them
 
-The only Unicode scalar type this library uses is `char32_t` — as the decoded
+The only Unicode scalar type this library uses is `char32_t`, as the decoded
 codepoint type.  Using `char32_t` for codepoints is the agreed pattern in WG21
 rather than introducing a distinct `code_point` type: since UTF-32 code units
 and Unicode code points are numerically identical, distinguishing them at the
@@ -171,7 +171,7 @@ for a complete working example.
 
 ### iconv Range Adaptor — System Encoding Support
 
-If your code already uses `iconv` — or uses a library that does — the iconv
+If your code already uses `iconv` (or uses a library that does), the iconv
 range adaptor is the interoperability path.  On most POSIX systems, `iconv` is
 the system's encoding engine: glibc, musl, ICU, and platform-specific
 implementations all expose the same `iconv_open`/`iconv`/`iconv_close` API.
@@ -192,8 +192,8 @@ for (char byte : input | beman::transcoding::iconv_transcode("UTF-8", "UTF-32LE"
 }
 ```
 
-Compare with the raw `iconv` equivalent — 30+ lines of buffer management, error
-handling, and resource cleanup — in
+Compare with the raw `iconv` equivalent, 30+ lines of buffer management, error
+handling, and resource cleanup, in
 [`examples/paper_iconv_view.cpp`](examples/paper_iconv_view.cpp).
 
 An `_or_error` variant yields `std::expected<char, iconv_error>` instead of
@@ -201,12 +201,12 @@ replacement characters, for applications that need to distinguish
 `invalid_sequence`, `incomplete_sequence`, and `output_full` conditions.
 
 Key design choices:
-- **External buffer**: caller provides the working `std::span<char>` — no hidden
+- **External buffer**: caller provides the working `std::span<char>`; no hidden
   heap allocation
 - **Dependency injection**: the `iconv_functions` struct accepts callable pointers
   for `iconv_open`/`iconv`/`iconv_close`, enabling test mocking and allowing
   alternative iconv implementations (e.g., libiconv vs glibc)
-- **Move-only iterator**: safeguards the uncopyable `iconv_t` handle — copying
+- **Move-only iterator**: safeguards the uncopyable `iconv_t` handle; copying
   the iterator would double-free
 
 Bulk operations `iconv_transcode_to<std::string>(input, from, to)` and
@@ -254,7 +254,7 @@ without exposing an intermediate `char32_t` codepoint stage.  "Encode" (from
 are outside its model — it only offers transcode.
 
 ² **WHATWG and pluggable codecs compose decode and encode.**  Bulk collection
-uses `view | ranges::to<Container>()` and `ranges::copy(view, output)` — no
+uses `view | ranges::to<Container>()` and `ranges::copy(view, output)`; no
 dedicated bulk helpers are needed since the standard algorithms suffice.
 Transcode is `decode | encode` composed with `|`.  iconv performs single-pass
 byte→byte conversion and exposes it as a first-class bulk operation.
@@ -268,11 +268,11 @@ runtime name-to-codec registry by design — codec selection happens at
 compile time through the type system.  Runtime transcode is similarly outside
 the model: you compose `decode(codec_a{}) | encode(codec_b{})` at compile time.
 
-⁵ **P2728 is type-based**, not string-label-based.  Codec selection is
+⁵ **P2728 selects its codec from the character type.**  Selection is
 determined by the character types (`char8_t`, `char16_t`, `char32_t`), so
 runtime label lookup and runtime transcode are outside its model.
 
-⁶ **BOM sniffing is a property of the byte stream**, not of individual codecs.
+⁶ **BOM sniffing is a property of the byte stream.**
 `sniff_encoding()` examines the first bytes of a stream to detect UTF-8/16/32
 BOMs and returns the appropriate `codec` enum value.  This is a WHATWG-specific
 facility; pluggable codecs and iconv operate on already-identified encodings.
@@ -307,7 +307,7 @@ necessary functionality with no measurable performance difference.
 ## Codec Identifiers: WHATWG, iconv, and `std::text_encoding`
 
 Encodings can be identified by IANA name, by WHATWG label, or by the string
-labels that a system's `iconv` accepts.  In most cases these overlap — you can
+labels that a system's `iconv` accepts.  In most cases these overlap: you can
 look up a WHATWG codec by its IANA name or any of its aliases.  Where WHATWG goes
 further is in nailing down the *exact algorithm and data tables* for each codec.
 This matters most for encodings where there was historical diverging practice:
@@ -317,13 +317,13 @@ ambiguity by specifying precisely what every byte sequence means.
 
 **`std::text_encoding`** (P1885) provides IANA charset names as a C++ vocabulary
 type.  It identifies WHICH encoding a text uses but does not define HOW to
-decode or encode — it is purely for labeling.  The explicit WHATWG API in
+decode or encode; it is purely for labeling.  The explicit WHATWG API in
 `beman.transcode` reflects the tighter algorithmic specification but does not
 supersede `std::text_encoding`; the two serve different roles.
 
 **POSIX `iconv`** uses string labels (`"UTF-8"`, `"SHIFT_JIS"`, `"ISO-8859-1"`)
 to identify codecs at runtime.  The set of available encodings depends on the
-system — glibc's iconv supports hundreds.  Whether any given iconv
+system, and glibc's iconv supports hundreds.  Whether any given iconv
 implementation accepts `std::text_encoding` labels is purely quality-of-
 implementation; the standard does not require it.  It may become recommended
 practice for a compiler to identify an iconv function that interprets its
@@ -353,7 +353,7 @@ Peace text, downloaded via `uv run python tools/download_benchmark_corpora.py`.
 
 ### Competitive Comparison: UTF-8 Decode (57 KB English → char32_t)
 
-This library is a naive scalar implementation — no SIMD, no hand-tuned assembly.
+This library is a naive scalar implementation, with no SIMD and no hand-tuned assembly.
 The comparison puts it in context against mature, production-optimized projects:
 
 | Implementation | Mean | Throughput | Notes |
@@ -406,7 +406,7 @@ Shift-JIS and produces UTF-8 output bytes.
 The WHATWG table-driven decoder in this library's streaming view (80 µs, lazy
 evaluation) is competitive with encoding_rs's Rust implementation (103 µs,
 writing to a buffer).  The encoding_rs C FFI boundary is opaque to the C++
-optimizer — the same effect that any range adaptor wrapping a bulk API
+optimizer, the same effect that any range adaptor wrapping a bulk API
 experiences.
 
 The two-step bulk approach (237 µs) pays for the intermediate `char32_t` vector
@@ -476,7 +476,7 @@ All measurements on real corpus data.
 the output buffer to `input_size * 4`, making a single iconv call for the
 entire conversion instead of looping over a 4 KB buffer.
 
-`iconv_transcode_view` now batches input — for contiguous ranges it passes the
+`iconv_transcode_view` now batches input; for contiguous ranges it passes the
 entire remaining input to iconv in one call per output-buffer fill, matching
 raw iconv throughput within ~15%.  The view's residual overhead vs
 `iconv_transcode_to` is the iterator machinery and the composability cost of
