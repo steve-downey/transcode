@@ -12,9 +12,9 @@ Provides two transcoding backends with a shared pipeline-oriented interface:
 
 Most C and C++ code doing encoding conversion today uses `iconv` (directly, or
 through libraries that call it).  The iconv view gives that existing ecosystem a
-zero-overhead ranges interface — no resource leaks, no manual buffer management,
-composable with other range adaptors — while the WHATWG views provide a
-portable, header-only alternative with standardized error semantics for the
+leak-free ranges interface, with no manual buffer management, composable with
+other range adaptors.  The WHATWG views provide a portable, header-only
+alternative with standardized error semantics for the
 codecs web and network protocols actually use.
 
 Part of the [Beman Project](https://github.com/bemanproject), targeting C++29
@@ -367,8 +367,8 @@ The comparison puts it in context against mature, production-optimized projects:
 | `iconv_transcode_view` (this library) | 351 µs | 155 MiB/s | Batched range adaptor over iconv |
 
 The ~3x gap between beman.transcode and simdutf is the cost of scalar
-byte-at-a-time iteration vs SIMD bulk processing.  This is expected and
-acceptable for a portable, constexpr-capable, standards-track implementation.
+byte-at-a-time iteration vs SIMD bulk processing.  That is the price of a portable
+scalar decoder that also runs at compile time.
 SIMD backends could be plugged in behind the same range interface in the future
 without changing user code.
 
