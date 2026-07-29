@@ -26,6 +26,13 @@ bibliography:
 
 > "It seems like a really messy situation and you're proposing to inherit that mess into the C++ standard." — Jan Schultke [@schultke-quote]
 
+He is right about the mess.
+The encodings are underspecified, the implementations disagree about the edge cases, and no amount of standards work will make Shift_JIS pleasant.
+However, the data exists, and C++ programs have to read it.
+The alternative to a specified transcoder is not a clean world; it is the world we have, where every program invents its own recovery rules and gets different answers from the same bytes.
+WHATWG has already done the work of pinning down what every byte means.
+This proposal inherits that work rather than the mess.
+
 We propose a set of transcoding facilities for text between character encodings, centered on separate WHATWG decode and encode adaptors, eager bulk decode and encode helpers, a convenience composed transcoder, and an `iconv`-based adaptor for broader encoding support.
 
 Character encoding conversion is a fundamental operation when processing text from external sources — network protocols, file formats, legacy databases, and user input.
@@ -307,6 +314,11 @@ Converting between encodings requires extracting data from one container, passin
 
 The WHATWG Encoding Standard defines precise behavior for every legacy encoding encountered on the web.
 It gives exact byte-to-scalar mappings for all byte values, including every error case, and the Web Platform Tests [@wpt-encoding] pin that behavior across all major browsers.
+
+There is a principled objection to this: WHATWG is a web specification, and it makes web-compatible choices that a general text library would not.
+It conflates distinct UTF-8 error conditions, it strips BOMs, and its label table exists to parse HTML `<meta>` tags.
+However, those choices are the ones that four browser engines already agree on, tested, for the encodings that legacy data is actually written in.
+A general specification with no implementations to agree with would be worse.
 
 Targeting it means a C++ program decodes a page the way the browser that fetched it did, and parses HTML and JSON with the same error handling.
 
@@ -671,7 +683,10 @@ This was chosen because:
 2. **Constexpr**: Runtime codec selection would prevent compile-time transcoding.
 3. **Type safety**: Different codecs have different error characteristics that callers may want to handle differently.
 
-Runtime selection can be layered on top via `variant` or `any` if needed.
+The cost is real, and it is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter can not be spelled from a runtime string.
+However, the dispatch has to happen exactly once, at the point where the label is resolved, and it is a `switch` over an enumeration.
+`get_encoding` and `transcode_string` provide that dispatch, and runtime selection can be layered further via `variant` or `any`.
+Paying for dispatch on every code point instead would give up `constexpr` decoding for all callers to spare one `switch` for some of them.
 
 ### char32_t as the Interchange Type
 
