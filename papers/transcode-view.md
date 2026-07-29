@@ -46,13 +46,26 @@ For encodings not covered by WHATWG, an optional `iconv`-based adaptor provides 
 
 ## Context and Motivation
 
-The history of text encoding is one of increasing standardization out of necessity. Initially, IANA established a registry for character set names, but the specifications for these encodings were often loosely defined, leading to significant interoperability issues. To handle the growing need to convert between these varied encodings, C introduced multibyte encoding functions and POSIX standardized `iconv`. While `iconv` provided a system-level mechanism for text conversion, it suffers from implementation-defined behavior (e.g., differing drastically between glibc, musl, and various BSD/macOS implementations) and relies heavily on system configuration. The C++ standard library later introduced `std::codecvt`, but its design proved inadequate for modern text-processing needs and it has since been deprecated.
+IANA registered names for character sets before anyone had specified what the names meant.
+The registry says a document is "Shift_JIS"; it does not say what `0x81 0x40` decodes to.
+C answered with the multibyte functions and POSIX standardized `iconv`, and both work, as long as you do not care which implementation you get.
+glibc, musl, and the BSD and macOS libraries disagree about error recovery and about which encodings exist at all, and all of them depend on how the system was configured.
+C++ added `std::codecvt`, deprecated it in C++17, and removed it in C++26.
+It allocated on every call and dispatched through a virtual interface to do so; the C89 `mbstowcs` outruns it by roughly a factor of two.
 
-Later, the WHATWG Encoding Standard provided a rigorous specification for the specific legacy encodings that are actually used on the web today. WHATWG dictates exactly how to handle malformed sequences and maps web-compatible encodings to standard algorithms. Recently, C++ added `std::text_encoding` to identify encodings securely, but the language still lacks a standard facility to perform the actual conversions.
+The WHATWG Encoding Standard specified the missing part, for exactly the encodings the web still carries.
+It gives the byte-to-scalar mapping for every byte value, says what each malformed sequence produces, and the Web Platform Tests [@wpt-encoding] pin all of it across the browser engines.
+C++ has since added `std::text_encoding`, which names an encoding.
+Nothing in the standard converts one.
 
-While modern software engineering dictates that everyone *should* use Unicode (specifically UTF-8), the reality is far more complex. Postel's law applies: we must be conservative in what we emit, but liberal in what we accept. There is a vast amount of existing data in "legacy" encodings that backend C++ systems must process. Web data interchange hasn't fully migrated to UTF-8 either. In particular, email systems still generate and route significant volumes of non-UTF-8 text.
+Everyone should be using UTF-8.
+Postel's law applies anyway: conservative in what we emit, liberal in what we accept.
+There is a great deal of existing data in legacy encodings that backend C++ systems have to read, web interchange has not finished migrating, and email still generates and routes large volumes of non-UTF-8 text.
 
-Even more challenging is that real-world data is often poorly formed. Emails and web pages frequently lie about their declared encodings, or they blindly concatenate text in mismatched encodings into a single document or payload. A modern C++ facility must provide robust, explicit, and composable error-handling mechanisms to process this messy reality. We need a way to gracefully ingest whatever bytes our systems receive, applying pragmatic decoding strategies instead of aborting on the first malformed byte sequence.
+Real data is also badly formed.
+Emails and web pages lie about their declared encodings, and concatenate mismatched encodings into a single payload.
+So the facility has to keep going past a bad byte and let the caller decide what that meant.
+Aborting on the first bad byte is not an option when the bytes are what you were sent.
 
 ## Comparison Table
 

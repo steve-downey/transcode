@@ -26,13 +26,27 @@ standardization.
 
 ## Context and Motivation
 
-The history of text encoding is one of increasing standardization out of necessity. Initially, IANA established a registry for character set names, but the specifications for these encodings were often loosely defined, leading to significant interoperability issues. To handle the growing need to convert between these varied encodings, C introduced multibyte encoding functions and POSIX standardized `iconv`. While `iconv` provided a robust system-level mechanism for text conversion, it suffers from implementation-defined behavior (e.g., differing drastically between glibc, musl, and macOS) and relies heavily on system configuration. C++ later introduced `std::codecvt`, but its design proved inadequate for modern text-processing needs and it has since been deprecated.
+IANA registered names for character sets before anyone had specified what the
+names meant.  The registry says a document is "Shift_JIS"; it does not say what
+`0x81 0x40` decodes to.  C answered with the multibyte functions and POSIX
+standardized `iconv`, and both work, as long as you do not care which
+implementation you get: glibc, musl, and the macOS libraries disagree about
+error recovery and about which encodings exist at all.  `std::codecvt` was
+deprecated in C++17 and removed in C++26.  `std::text_encoding` names an
+encoding; nothing in the standard converts one.
 
-Later, the WHATWG Encoding Standard provided a rigorous specification for the specific legacy encodings that are actually used on the web today. WHATWG dictates exactly how to handle malformed sequences and maps web-compatible encodings to standard algorithms. Recently, C++ added `std::text_encoding` to securely identify encodings, but the language still lacks a standard facility to perform the actual conversions.
+The WHATWG Encoding Standard specified the missing part, for exactly the
+encodings the web still carries, down to what each malformed sequence produces,
+and the Web Platform Tests pin it.  That last part is what a C++ program needs,
+because there is a great deal of data in legacy encodings that backend systems
+have to read, and much of it is badly formed.  Emails and web pages lie about
+their declared encodings, and concatenate mismatched encodings into a single
+payload.  So the facility has to keep going past a bad byte and let the caller
+decide what that meant.  Aborting on the first bad byte is not an option when
+the bytes are what you were sent.
 
-While modern software engineering dictates that everyone *should* use Unicode (specifically UTF-8), the reality is far more complex. Postel's law applies: we must be conservative in what we emit, but liberal in what we accept. There is a vast amount of existing data in "legacy" encodings that backend C++ systems must process. Web data interchange hasn't fully migrated to UTF-8 either. In particular, email systems still generate and route significant volumes of non-UTF-8 text.
-
-Even more challenging is that real-world data is often poorly formed. Emails and web pages frequently lie about their declared encodings, or they blindly concatenate text in mismatched encodings into a single document or payload. A modern C++ facility must provide robust, explicit, and composable error-handling mechanisms to process this messy reality. We need a way to gracefully ingest whatever bytes our systems receive, applying pragmatic decoding strategies instead of aborting on the first bad byte.
+The argued version of this, including why the design is byte-oriented rather
+than type-oriented, is in [`papers/transcode-view.md`](papers/transcode-view.md).
 
 ## Design: Byte-Oriented I/O Transcoding
 
