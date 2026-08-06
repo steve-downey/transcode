@@ -340,7 +340,8 @@ The proposal adds four user-facing adaptor families:
   Decode errors are replaced with U+FFFD.
 
 - **`whatwg_encode_view<C>` / `whatwg_encode<C>`**: Encodes a `char32_t` range to bytes.
-  Encode failures are replaced with `'?'`.
+  Encode failures are replaced with `'?'`. The input range has the semantic
+  precondition that each `char32_t` value is a Unicode scalar value.
 
 - **`whatwg_decode_or_error_view<C>` / `whatwg_decode_or_error<C>`** and **`whatwg_encode_or_error_view<C>` / `whatwg_encode_or_error<C>`**:
   Error-reporting variants yielding `expected<T, whatwg_error>`.
@@ -502,6 +503,12 @@ concept unicode_scalar_range =
     !is_array_v<remove_cvref_t<R>> &&
     same_as<range_value_t<R>, char32_t>;
 ```
+
+`unicode_scalar_range` is intentionally a type-level concept.  It identifies the
+library's scalar-value interchange representation, but it cannot prove that each
+`char32_t` object is a Unicode scalar value.  The encode adaptors therefore have
+a semantic precondition, matching WHATWG's encoder hooks: callers that construct
+`char32_t` ranges directly must not supply surrogates or values above U+10FFFF.
 
 Raw arrays are explicitly rejected to prevent silent inclusion of null terminators.
 Use `views::null_term` for null-terminated strings or wrap counted byte buffers in `span`.
@@ -676,6 +683,11 @@ Runtime selection can be layered on top via `variant` or `any` if needed.
 ### char32_t as the Interchange Type
 
 Unicode scalar values are represented as `char32_t`, not `char8_t[]` sequences. This simplifies composition — a `char32_t` stream can be fed to any encoder without reparsing — and makes individual code point inspection trivial.
+
+The type is an interchange representation, not a trusted validation boundary.
+Decode views produce scalar values before an encoder sees them; a range of
+`char32_t` supplied from outside a decode pipeline must already satisfy the
+Unicode scalar value domain.
 
 UTF-32 is the wasteful choice. A `char32_t` per scalar is four bytes where UTF-8 would often use one — but these are lazy views, so nothing is stored unless a caller collects it, and a single code point is trivial to inspect. All other interchange types are worse.
 
