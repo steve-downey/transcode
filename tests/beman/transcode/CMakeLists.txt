@@ -143,17 +143,6 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
-add_executable(beman.transcode.tests.utf16_encode)
-target_sources(beman.transcode.tests.utf16_encode PRIVATE utf16_encode.test.cpp)
-target_include_directories(
-    beman.transcode.tests.utf16_encode
-    PRIVATE ${TEST_INCLUDE_DIR}
-)
-target_link_libraries(
-    beman.transcode.tests.utf16_encode
-    PRIVATE beman::transcode Catch2::Catch2WithMain
-)
-
 add_executable(beman.transcode.tests.gbk_decode)
 target_sources(beman.transcode.tests.gbk_decode PRIVATE gbk_decode.test.cpp)
 target_include_directories(
@@ -617,7 +606,6 @@ catch_discover_tests(beman.transcode.tests.iconv_transcode_or_error)
 catch_discover_tests(beman.transcode.tests.whatwg_encode)
 catch_discover_tests(beman.transcode.tests.whatwg_encode_or_error)
 catch_discover_tests(beman.transcode.tests.utf16_decode)
-catch_discover_tests(beman.transcode.tests.utf16_encode)
 catch_discover_tests(beman.transcode.tests.gbk_decode)
 catch_discover_tests(beman.transcode.tests.gbk_encode)
 catch_discover_tests(beman.transcode.tests.gb18030_decode)
@@ -803,6 +791,58 @@ add_test(
 set_tests_properties(
     whatwg_encode_reject_char_range_fail
     PROPERTIES PASS_REGULAR_EXPRESSION "unicode_scalar_range"
+)
+
+# WHATWG has no UTF-16BE encoder.
+add_library(beman.transcode.tests.whatwg_encode_utf16be_reject_fail OBJECT)
+target_sources(
+    beman.transcode.tests.whatwg_encode_utf16be_reject_fail
+    PRIVATE whatwg_encode_utf16be_reject_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.whatwg_encode_utf16be_reject_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.whatwg_encode_utf16be_reject_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME whatwg_encode_utf16be_reject_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.whatwg_encode_utf16be_reject_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    whatwg_encode_utf16be_reject_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "WHATWG does not define an encoder"
+)
+
+# WHATWG has no UTF-16LE encoder.
+add_library(beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail OBJECT)
+target_sources(
+    beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
+    PRIVATE whatwg_encode_utf16le_or_error_reject_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME whatwg_encode_utf16le_or_error_reject_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
+        --config $<CONFIGURATION>
+)
+set_tests_properties(
+    whatwg_encode_utf16le_or_error_reject_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "WHATWG does not define an encoder"
 )
 
 # views::null_term rejects non-pointer ranges via is_pointer_v constraint

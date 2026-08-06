@@ -52,37 +52,6 @@ TEST_CASE("utf_8 decode-then-encode: multi-byte sequence", "[roundtrip::utf_8]")
 }
 
 // ---------------------------------------------------------------------------
-// UTF-16BE
-// ---------------------------------------------------------------------------
-
-TEST_CASE("utf_16be encode-then-decode: ASCII, BMP, supplementary", "[roundtrip::utf_16be]") {
-    // U+1F600 encodes as surrogate pair D83D DE00
-    std::vector<char32_t> cps{U'A', U'\x4E00', U'\x1F600'};
-    CHECK(encode_then_decode<codec::utf_16be>(cps) == cps);
-}
-
-TEST_CASE("utf_16be decode-then-encode: known byte sequences", "[roundtrip::utf_16be]") {
-    // U+4E00 in UTF-16BE: 0x4E 0x00; U+0041 in UTF-16BE: 0x00 0x41
-    std::vector<char> bytes{'\x00', '\x41', '\x4E', '\x00'};
-    CHECK(decode_then_encode<codec::utf_16be>(bytes) == bytes);
-}
-
-// ---------------------------------------------------------------------------
-// UTF-16LE
-// ---------------------------------------------------------------------------
-
-TEST_CASE("utf_16le encode-then-decode: ASCII, BMP, supplementary", "[roundtrip::utf_16le]") {
-    std::vector<char32_t> cps{U'A', U'\x4E00', U'\x1F600'};
-    CHECK(encode_then_decode<codec::utf_16le>(cps) == cps);
-}
-
-TEST_CASE("utf_16le decode-then-encode: known byte sequences", "[roundtrip::utf_16le]") {
-    // U+0041 in UTF-16LE: 0x41 0x00; U+4E00 in UTF-16LE: 0x00 0x4E
-    std::vector<char> bytes{'\x41', '\x00', '\x00', '\x4E'};
-    CHECK(decode_then_encode<codec::utf_16le>(bytes) == bytes);
-}
-
-// ---------------------------------------------------------------------------
 // Single-byte: windows_1252
 // ---------------------------------------------------------------------------
 
