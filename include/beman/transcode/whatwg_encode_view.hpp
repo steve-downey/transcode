@@ -783,9 +783,14 @@ constexpr void whatwg_encode_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::gb18030) {
         auto r = detail::gb18030_encode_one(static_cast<char32_t>(*current_));
         ++current_;
-        for (int i = 0; i < r.count; ++i)
-            buf_[i] = static_cast<char>(r.bytes[i]);
-        len_ = r.count;
+        if (r.is_error) {
+            buf_[0] = '?';
+            len_    = 1;
+        } else {
+            for (int i = 0; i < r.count; ++i)
+                buf_[i] = static_cast<char>(r.bytes[i]);
+            len_ = r.count;
+        }
         pos_ = 0;
     } else if constexpr (C == codec::big5) {
         auto r = detail::big5_encode_one(static_cast<char32_t>(*current_));
@@ -1146,9 +1151,14 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
     } else if constexpr (C == codec::gb18030) {
         auto r = detail::gb18030_encode_one(static_cast<char32_t>(*current_));
         ++current_;
-        for (int i = 0; i < r.count; ++i)
-            this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
-        len_ = r.count;
+        if (r.is_error) {
+            this->buf_[0] = result_value{std::unexpect, whatwg_error::unmapped_codepoint};
+            len_          = 1;
+        } else {
+            for (int i = 0; i < r.count; ++i)
+                this->buf_[i] = result_value{static_cast<char>(r.bytes[i])};
+            len_ = r.count;
+        }
         pos_ = 0;
     } else if constexpr (C == codec::big5) {
         auto r = detail::big5_encode_one(static_cast<char32_t>(*current_));
