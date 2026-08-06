@@ -19,7 +19,8 @@ namespace beman::transcoding {
 
 // Decode bytes from `from` codec and re-encode to `to` codec.
 // Decode errors yield U+FFFD; unmapped encode codepoints yield '?'.
-// Returns empty string when `to` has no encoder (replacement, x_user_defined).
+// Returns empty string when `to` has no encoder
+// (replacement, x_user_defined, UTF-16BE/LE).
 std::string transcode_string(std::span<const char> src, codec from, codec to);
 
 // Label-based overload: looks up WHATWG labels for `from_label` and `to_label`.
@@ -283,12 +284,6 @@ inline std::string transcode_string(std::span<const char> src, codec from, codec
         break;
     case codec::x_mac_cyrillic:
         result = detail::transcode_encode_all<codec::x_mac_cyrillic>(u32v);
-        break;
-    case codec::utf_16be:
-        result = detail::transcode_encode_all<codec::utf_16be>(u32v);
-        break;
-    case codec::utf_16le:
-        result = detail::transcode_encode_all<codec::utf_16le>(u32v);
         break;
     case codec::gbk:
         result = detail::transcode_encode_all<codec::gbk>(u32v);

@@ -108,6 +108,10 @@ The reverse direction encodes Unicode scalars back to bytes:
 auto encoded = codepoints | beman::transcoding::whatwg_encode<beman::transcoding::codec::utf_8>;
 ```
 
+The WHATWG Encoding Standard does not define encoders for UTF-16BE or UTF-16LE;
+those codecs are exposed for byte-stream decoding, label lookup, and BOM
+sniffing, but not through `whatwg_encode` or `whatwg_encode_or_error`.
+
 ### Transcode — Any Encoding to Any Other
 
 Compose decode and encode into a single pipeline:
