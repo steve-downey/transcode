@@ -2,12 +2,12 @@
 //
 // Convenience helpers: decode_to, encode_to, decode_into, encode_into.
 //
-// These are thin wrappers over `view | ranges::to<Container>()` and
-// `ranges::copy(view, output)`.  They are NOT proposed for standardization
-// because the standard library already provides the necessary composition
-// tools (ranges::to, ranges::copy) and the views compose naturally with
-// them.  This header exists for practical convenience in codebases that
-// prefer a named-function call style.
+// Each is a one-line forward to the pipeline it names, over
+// `view | ranges::to<Container>()` or `ranges::copy(view, output)`.  They are
+// proposed, and the paper specifies them as those pipelines: converting a
+// buffer to a container is the operation users come for, and the standard
+// algorithms being sufficient is not a reason to withhold the name.  See
+// papers/transcode-view.md, "Bulk conversion to owned storage".
 
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP
@@ -38,12 +38,12 @@ namespace beman::transcoding {
 // ---------------------------------------------------------------------------
 
 template <codec C, legacy_byte_range R>
-std::vector<char32_t> decode_to(R&& source) {
+constexpr std::vector<char32_t> decode_to(R&& source) {
     return std::forward<R>(source) | whatwg_decode<C> | std::ranges::to<std::vector<char32_t>>();
 }
 
 template <codec C, typename Container = std::string, unicode_scalar_range R>
-Container encode_to(R&& source) {
+constexpr Container encode_to(R&& source) {
     return std::forward<R>(source) | whatwg_encode<C> | std::ranges::to<Container>();
 }
 
