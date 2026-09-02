@@ -341,6 +341,8 @@ The proposal adds four user-facing adaptor families:
 
 - **`whatwg_encode_view<C>` / `whatwg_encode<C>`**: Encodes a `char32_t` range to bytes.
   Encode failures are replaced with `'?'`.
+  The WHATWG UTF-16BE and UTF-16LE encodings are decode-only in this interface,
+  matching the Encoding Standard's lack of UTF-16BE/LE encoders.
 
 - **`whatwg_decode_or_error_view<C>` / `whatwg_decode_or_error<C>`** and **`whatwg_encode_or_error_view<C>` / `whatwg_encode_or_error<C>`**:
   Error-reporting variants yielding `expected<T, whatwg_error>`.
@@ -350,9 +352,9 @@ The proposal adds four user-facing adaptor families:
 
 And three utility entry points:
 
-- **`transcode<From, To>`**: Convenience composition of `whatwg_decode<From>` followed by `whatwg_encode<To>`.
+- **`transcode<From, To>`**: Convenience composition of `whatwg_decode<From>` followed by `whatwg_encode<To>`, for `To` codecs that have a WHATWG encoder.
 
-- **`transcode_string(source, from, to)`**: Eager convenience helper for runtime-selected WHATWG transcoding by codec or by label.
+- **`transcode_string(source, from, to)`**: Eager convenience helper for runtime-selected WHATWG transcoding by codec or by label. If the target codec has no WHATWG encoder, the result is empty.
 
 - **`null_term_view` / `views::null_term`**: Adapts a pointer to a null-terminated string into a range.
   This enables `views::null_term(cstr) | whatwg_decode<codec::utf_8>`.
@@ -363,8 +365,8 @@ And three utility entry points:
 enum class codec {
   // Unicode
   utf_8,
-  utf_16be,
-  utf_16le,
+  utf_16be,  // decode-only: WHATWG defines no UTF-16BE encoder
+  utf_16le,  // decode-only: WHATWG defines no UTF-16LE encoder
 
   // WHATWG special
   replacement,     // Always yields single U+FFFD
@@ -468,9 +470,9 @@ The two enumerations are not the same type, but most values correspond directly:
 | *(not needed)* | `unpaired_high_surrogate` / `unpaired_low_surrogate` | UTF-16 code-unit-level concepts; this library operates on byte streams with explicit endianness (`codec::utf_16be`/`utf_16le`), so there is no paired/unpaired distinction at the byte level |
 
 `unmapped_codepoint` is the reason reusing `utf_transcoding_error` directly is not possible.
-UTF-8, UTF-16, and UTF-32 can encode every Unicode scalar value, so P2728 never needs to report "no mapping exists for this code point."
+P2728's Unicode-only encoders can encode every Unicode scalar value, so P2728 never needs to report "no mapping exists for this code point."
 Legacy codecs cannot: windows-1252 has no representation for U+4E2D (中), Shift-JIS has no representation for U+00E9 (é), and so on for most of the Unicode range.
-`whatwg_encode_or_error<codec::windows_1252>` must be able to report this condition through the same error type as `whatwg_encode_or_error<codec::utf_8>`, so the error type must accommodate it uniformly across all 39 codecs.
+`whatwg_encode_or_error<codec::windows_1252>` must be able to report this condition through the same error type as `whatwg_encode_or_error<codec::utf_8>`, so the error type must accommodate it uniformly across the WHATWG encode surface.
 
 The `iconv` adaptors use a separate `iconv_error` enumeration:
 
