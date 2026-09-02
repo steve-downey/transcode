@@ -76,6 +76,13 @@ TEST_CASE("gb18030 encode U+10000 -> 0x90 0x30 0x81 0x30 (4-byte)", "[transcodin
     CHECK(static_cast<unsigned char>(result[3]) == 0x30);
 }
 
+TEST_CASE("gb18030 encode U+E5E5 yields replacement byte", "[transcoding::gb18030_encode]") {
+    std::vector<char32_t> cps{static_cast<char32_t>(0xE5E5)};
+    auto                  result = collect(cps | whatwg_encode<codec::gb18030>);
+    REQUIRE(result.size() == 1);
+    CHECK(result[0] == '?');
+}
+
 TEST_CASE("gb18030 encode mixed ASCII and 2-byte", "[transcoding::gb18030_encode]") {
     std::vector<char32_t> cps{U'A', U'\x4E02'};
     auto                  result = collect(cps | whatwg_encode<codec::gb18030>);
@@ -124,6 +131,14 @@ TEST_CASE("gb18030 or_error encode U+4E02", "[transcoding::gb18030_encode_or_err
     REQUIRE(result[1].has_value());
     CHECK(static_cast<unsigned char>(result[0].value()) == 0x81);
     CHECK(static_cast<unsigned char>(result[1].value()) == 0x40);
+}
+
+TEST_CASE("gb18030 or_error encode U+E5E5 yields unmapped_codepoint", "[transcoding::gb18030_encode_or_error]") {
+    std::vector<char32_t> cps{static_cast<char32_t>(0xE5E5)};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::gb18030>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::unmapped_codepoint);
 }
 
 // Coverage: U+E7C7 (PUA) exercises gb18030_ranges_encode special case (pointer 7457).
