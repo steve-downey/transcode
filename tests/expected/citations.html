@@ -5,7 +5,7 @@
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-01-01" />
-  <title>Same-stem Test Paper</title>
+  <title>Citation Tests</title>
   <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -87,7 +87,27 @@ code span.st { color: #9f6807; }
 code span.va { } 
 code span.vs { color: #9f6807; } 
 code span.wa { color: #6a737d; font-weight: bold; } 
-</style>
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+} </style>
   <style type="text/css">
 body {
 margin: 5em;
@@ -662,12 +682,12 @@ background-color: #4b6345;
 </form>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Same-stem Test Paper</h1>
+<h1 class="title" style="text-align:center">Citation Tests</h1>
 <table>
   <tr>
     <td>Document #:</td>
     <td>
-      P0000R0
+      D0000R1
       [<a href="https://wg21.link/P0000">Latest</a>]
       [<a href="https://wg21.link/P0000/status">Status</a>]
     </td>
@@ -683,13 +703,13 @@ background-color: #4b6345;
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      WG21<br>
+      Library Evolution<br>
     </td>
   </tr>
   <tr>
     <td style="vertical-align:top">Reply-to:</td>
     <td>
-      Test Author<br>&lt;&gt;<br>
+      Test Author<br>&lt;<a href="mailto:test@example.com" class="email">test@example.com</a>&gt;<br>
     </td>
   </tr>
 </table>
@@ -698,11 +718,65 @@ background-color: #4b6345;
 <div id="TOC" role="doc-toc">
 <h1 id="toctitle">Contents</h1>
 <ul>
-<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#citation" id="toc-citation"><span class="toc-section-number">1</span> Citation</a></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">2</span> References</a></li>
 </ul>
 </div>
-<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>This is a same-stem paper-layout test.</p>
+<h1 data-number="1" id="citation"><span class="header-section-number">1</span> Citation<a href="#citation" class="self-link"></a></h1>
+<p>Automatic references are written as
+<code class="sourceCode default">[@N4762]</code> and render as <span class="citation" data-cites="N4762"><a href="https://wg21.link/n4762">[N4762]</a></span>. Anything in <a href="https://wg21.link/index.yaml" class="uri">https://wg21.link/index.yaml</a> is linked
+automatically.</p>
+<ul>
+<li><code class="sourceCode cpp">N</code> Papers (e.g.,
+<code class="sourceCode default">[@N3887]</code> -&gt; <span class="citation" data-cites="N3887"><a href="https://wg21.link/n3887">[N3887]</a></span>)</li>
+<li><code class="sourceCode cpp">P</code> Papers (e.g.,
+<code class="sourceCode default">[@P1371R1]</code> -&gt; <span class="citation" data-cites="P1371R1"><a href="https://wg21.link/p1371r1">[P1371R1]</a></span>)</li>
+<li>CWG Issues (e.g., <code class="sourceCode default">[@CWG1234]</code>
+-&gt; <span class="citation" data-cites="CWG1234"><a href="https://wg21.link/cwg1234">[CWG1234]</a></span>)</li>
+<li>LWG Issues (e.g., <code class="sourceCode default">[@LWG1234]</code>
+-&gt; <span class="citation" data-cites="LWG1234"><a href="https://wg21.link/lwg1234">[LWG1234]</a></span>)</li>
+<li>Github Edits (e.g.,
+<code class="sourceCode default">[@EDIT1234]</code> -&gt; <span class="citation" data-cites="EDIT1234"><a href="https://wg21.link/edit1234">[EDIT1234]</a></span>)</li>
+<li>Standing Documents (e.g.,
+<code class="sourceCode default">[@SD6]</code> -&gt; <span class="citation" data-cites="SD6"><a href="https://wg21.link/sd6">[SD6]</a></span>)</li>
+</ul>
+<p>You may also write
+<code class="sourceCode default">[@P2996R8]{.title}</code> to include
+the title of the paper, which renders as: <span class="title"><span class="citation" data-cites="P2996R8"><a href="https://wg21.link/p2996r8">[P2996R8] (Reflection for
+C++26)</a></span></span>.</p>
+<h1 data-number="2" id="bibliography"><span class="header-section-number">2</span> References<a href="#bibliography" class="self-link"></a></h1>
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-CWG1234" class="csl-entry" role="listitem">
+[CWG1234] Johannes Schaub. 2011-01-18. abstract-declarator does not
+permit ... after ptr-operator. <a href="https://wg21.link/cwg1234"><div class="csl-indent">https://wg21.link/cwg1234</div></a>
+</div>
+<div id="ref-EDIT1234" class="csl-entry" role="listitem">
+[EDIT1234] [intro.races] Remove duplicated index entry for <span>“data
+race.”</span> <a href="https://wg21.link/edit1234"><div class="csl-indent">https://wg21.link/edit1234</div></a>
+</div>
+<div id="ref-LWG1234" class="csl-entry" role="listitem">
+[LWG1234] Matt Austern. <span>“Do the right thing”</span> and NULL. <a href="https://wg21.link/lwg1234"><div class="csl-indent">https://wg21.link/lwg1234</div></a>
+</div>
+<div id="ref-N3887" class="csl-entry" role="listitem">
+[N3887] Michael Park. 2013-12-26. Consistent Metafunction Aliases. <a href="https://wg21.link/n3887"><div class="csl-indent">https://wg21.link/n3887</div></a>
+</div>
+<div id="ref-N4762" class="csl-entry" role="listitem">
+[N4762] Richard Smith. 2018-07-07. Working Draft, Standard for
+Programming Language C++. <a href="https://wg21.link/n4762"><div class="csl-indent">https://wg21.link/n4762</div></a>
+</div>
+<div id="ref-P1371R1" class="csl-entry" role="listitem">
+[P1371R1] Sergei Murzin, Michael Park, David Sankel, Dan Sarginson.
+2019-06-17. Pattern Matching. <a href="https://wg21.link/p1371r1"><div class="csl-indent">https://wg21.link/p1371r1</div></a>
+</div>
+<div id="ref-P2996R8" class="csl-entry" role="listitem">
+[P2996R8] Barry Revzin, Wyatt Childers, Peter Dimov, Andrew Sutton,
+Faisal Vali, Daveed Vandevoorde, Dan Katz. 2024-12-17. Reflection for
+C++26. <a href="https://wg21.link/p2996r8"><div class="csl-indent">https://wg21.link/p2996r8</div></a>
+</div>
+<div id="ref-SD6" class="csl-entry" role="listitem">
+[SD6] SG10 Feature Test Recommendations. <a href="https://wg21.link/sd6"><div class="csl-indent">https://wg21.link/sd6</div></a>
+</div>
+</div>
 </div>
 </div>
 <script>

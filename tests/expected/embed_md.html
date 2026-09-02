@@ -5,7 +5,7 @@
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-01-01" />
-  <title>Same-stem Test Paper</title>
+  <title>Embedded Markdown Tests</title>
   <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -662,12 +662,12 @@ background-color: #4b6345;
 </form>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Same-stem Test Paper</h1>
+<h1 class="title" style="text-align:center">Embedded Markdown Tests</h1>
 <table>
   <tr>
     <td>Document #:</td>
     <td>
-      P0000R0
+      D0000R1
       [<a href="https://wg21.link/P0000">Latest</a>]
       [<a href="https://wg21.link/P0000/status">Status</a>]
     </td>
@@ -683,13 +683,13 @@ background-color: #4b6345;
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      WG21<br>
+      Library Evolution<br>
     </td>
   </tr>
   <tr>
     <td style="vertical-align:top">Reply-to:</td>
     <td>
-      Test Author<br>&lt;&gt;<br>
+      Test Author<br>&lt;<a href="mailto:test@example.com" class="email">test@example.com</a>&gt;<br>
     </td>
   </tr>
 </table>
@@ -698,11 +698,48 @@ background-color: #4b6345;
 <div id="TOC" role="doc-toc">
 <h1 id="toctitle">Contents</h1>
 <ul>
-<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#embedded-markdown" id="toc-embedded-markdown"><span class="toc-section-number">1</span> Embedded Markdown</a>
+<ul>
+<li><a href="#default-code-block" id="toc-default-code-block"><span class="toc-section-number">1.1</span> Default Code Block</a></li>
+<li><a href="#custom-delimiters" id="toc-custom-delimiters"><span class="toc-section-number">1.2</span> Custom Delimiters</a></li>
+<li><a href="#non-embedded-code" id="toc-non-embedded-code"><span class="toc-section-number">1.3</span> Non-Embedded Code</a></li>
+<li><a href="#embedded-markdown-in-c" id="toc-embedded-markdown-in-c"><span class="toc-section-number">1.4</span> Embedded Markdown in C++</a></li>
+</ul></li>
 </ul>
 </div>
-<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>This is a same-stem paper-layout test.</p>
+<h1 data-number="1" id="embedded-markdown"><span class="header-section-number">1</span> Embedded Markdown<a href="#embedded-markdown" class="self-link"></a></h1>
+<h2 data-number="1.1" id="default-code-block"><span class="header-section-number">1.1</span> Default Code Block<a href="#default-code-block" class="self-link"></a></h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="add"><ins>using <em>unspecified</em>::sender_base;</ins></span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="add"><ins><code class="sourceCode default cpp">using <em>unspecified</em>::sender_base;</code></ins></span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="add"><ins><code class="sourceCode default cpp">using <em>unspecified</em>::sender_base;</code></ins></span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="add"><ins>template&lt;class, class&gt; struct <em>as-receiver</em>; <em>// exposition only</em></ins></span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="add"><ins><code class="sourceCode default cpp">template&lt;class, class&gt; struct <em>as-receiver</em>; <em>// exposition only</em></code></ins></span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="add"><ins><code class="sourceCode default cpp">template&lt;class, class&gt; struct <em>as-receiver</em>; <em>// exposition only</em></code></ins></span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="add"><ins>template&lt;class, class&gt; struct <em>as-invocable</em>; <em>// exposition only</em></ins></span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="add"><ins><code class="sourceCode default cpp">template&lt;class, class&gt; struct <em>as-invocable</em>; <em>// exposition only</em></code></ins></span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="add"><ins><code class="sourceCode default cpp">template&lt;class, class&gt; struct <em>as-invocable</em>; <em>// exposition only</em></code></ins></span></span></code></pre></div>
+<h2 data-number="1.2" id="custom-delimiters"><span class="header-section-number">1.2</span> Custom Delimiters<a href="#custom-delimiters" class="self-link"></a></h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode default embed_md"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="add"><ins><code class="sourceCode default cpp">!custom!</code></ins></span></span></code></pre></div>
+<h2 data-number="1.3" id="non-embedded-code"><span class="header-section-number">1.3</span> Non-Embedded Code<a href="#non-embedded-code" class="self-link"></a></h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">@[not embedded]{.add}@ and <em>emphasized</em></span></span></code></pre></div>
+<h2 data-number="1.4" id="embedded-markdown-in-c"><span class="header-section-number">1.4</span> Embedded Markdown in C++<a href="#embedded-markdown-in-c" class="self-link"></a></h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="add"><ins><code class="sourceCode default cpp">namespace <em>unspecified</em> { struct sender_base {}; }</code></ins></span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="add"><ins><code class="sourceCode default cpp">using <em>unspecified</em>::sender_base;</code></ins></span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span><span class="rm"><del><code class="sourceCode default cpp">invocable</code></del></span><span class="add"><ins><code class="sourceCode default cpp">class</code></ins></span></span> F<span class="add"><ins><code class="sourceCode default cpp">, class</code></ins></span><span class="op">&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> <em>as-receiver</em> <span class="op">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="rm"><del><code class="sourceCode default cpp">private:</code></del></span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="rm"><del><code class="sourceCode default cpp">using invocable_type = std::remove_cvref_t&lt;F&gt;;</code></del></span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span><span class="rm"><del><code class="sourceCode default cpp">invocable_type</code></del></span><span class="add"><ins><code class="sourceCode default cpp">F</code></ins></span></span> f_<span class="op">;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="rm"><del><code class="sourceCode default cpp">public:</code></del></span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="rm"><del><code class="sourceCode default cpp">explicit <em>as-receiver</em>(invocable_type&amp;&amp; f)</code></del></span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="rm"><del><code class="sourceCode default cpp"><em>as-receiver</em>(<em>as-receiver</em>&amp;&amp; other) = default;</code></del></span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> set_value<span class="op">()</span> <span class="add"><ins><code class="sourceCode default cpp">noexcept(is_nothrow_invocable_v&lt;F&amp;&gt;)</code></ins></span> <span class="op">{</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    invoke<span class="op">(</span>f_<span class="op">);</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
 </div>
 </div>
 <script>

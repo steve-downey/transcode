@@ -5,7 +5,7 @@
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-01-01" />
-  <title>Same-stem Test Paper</title>
+  <title>Modify Text Tests</title>
   <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -662,12 +662,12 @@ background-color: #4b6345;
 </form>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Same-stem Test Paper</h1>
+<h1 class="title" style="text-align:center">Modify Text Tests</h1>
 <table>
   <tr>
     <td>Document #:</td>
     <td>
-      P0000R0
+      D0000R1
       [<a href="https://wg21.link/P0000">Latest</a>]
       [<a href="https://wg21.link/P0000/status">Status</a>]
     </td>
@@ -683,13 +683,13 @@ background-color: #4b6345;
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      WG21<br>
+      Library Evolution<br>
     </td>
   </tr>
   <tr>
     <td style="vertical-align:top">Reply-to:</td>
     <td>
-      Test Author<br>&lt;&gt;<br>
+      Test Author<br>&lt;<a href="mailto:test@example.com" class="email">test@example.com</a>&gt;<br>
     </td>
   </tr>
 </table>
@@ -698,11 +698,76 @@ background-color: #4b6345;
 <div id="TOC" role="doc-toc">
 <h1 id="toctitle">Contents</h1>
 <ul>
-<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#wording-changes" id="toc-wording-changes"><span class="toc-section-number">1</span> Wording Changes</a></li>
 </ul>
 </div>
-<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>This is a same-stem paper-layout test.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><em>unspecified</em> <span><span class="rm"><del>foo</del></span><span class="add"><ins>bar</ins></span></span>();</span></code></pre></div>
+<h1 data-number="1" id="wording-changes"><span class="header-section-number">1</span> Wording Changes<a href="#wording-changes" class="self-link"></a></h1>
+<p>Large changes are
+<code class="sourceCode cpp"><span class="op">:::</span> add</code> for
+additions,
+<code class="sourceCode cpp"><span class="op">:::</span> rm</code> for
+removals.</p>
+<blockquote>
+<p>Modify section <span>28.5.5 Formatting functions <a href="https://eel.is/c++draft/format.functions" title="28.5.5 Formatting functions">[format.functions]</a></span>:</p>
+<div class="add">
+<div class="sourceCode" id="cb2"><pre class="sourceCode default default"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>template&lt;class... Args&gt;</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  string format(const locale&amp; loc, string_view fmt, const Args&amp;... args);</span></code></pre></div>
+<p><em>Returns:</em>
+<code class="sourceCode default cpp">vformat(loc, fmt, make_format_args(args...))</code>.</p>
+</div>
+</blockquote>
+<p>Small, inline changes are done with
+<code class="sourceCode default">[new text]{.add}</code> or
+<code class="sourceCode default">[old text]{.rm}</code>.</p>
+<p>Substitutions can be written as
+<code class="sourceCode default">[old text](new text){.sub}</code>. This
+is essentially just a short-form for
+<code class="sourceCode default">[old text]{.rm}[new text]{.add}</code>.</p>
+<p>The optional <em>attribute-specifier-seq</em> appertains to the
+<span><span class="rm"><del>label</del></span><span class="add"><ins><em>general-label</em></ins></span></span>. The only
+use of a <span><span class="rm"><del>label with an
+<em>identifier</em></del></span><span class="add"><ins><em>label</em></ins></span></span> is as the target of
+a <code class="sourceCode cpp"><span class="cf">goto</span></code>,
+<span class="add"><ins><code class="sourceCode default cpp">break</code>, or
+<code class="sourceCode default cpp">continue</code></ins></span>. No
+two <span><span class="rm"><del>label</del></span><span class="add"><ins><em>label</em></ins></span></span>s in a function shall
+have the same <em>identifier</em>. A <span><span class="rm"><del>label</del></span><span class="add"><ins><em>general-label</em></ins></span></span> can be used
+<span class="rm"><del>in a
+<code class="sourceCode default cpp">goto</code> statement</del></span>
+before its introduction by a <em>labeled-statement</em>.</p>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 85%" />
+</colgroup>
+<thead>
+<tr>
+<th><div style="text-align:center">
+<strong>Specifier</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>Replacement</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="sourceCode cpp"><span class="op">%</span>a</code></td>
+<td>The locale’s abbreviated weekday name. If the value does not contain
+a valid weekday, <span class="rm"><del><code class="sourceCode default cpp">setstate(ios::failbit)</code>
+is called</del></span> <span class="add"><ins><code class="sourceCode default cpp">format_error</code>
+is thrown</ins></span>.</td>
+</tr>
+<tr>
+<td><code class="sourceCode cpp"><span class="op">%</span>A</code></td>
+<td>The locale’s full weekday name. If the value does not contain a
+valid weekday, <span class="rm"><del><code class="sourceCode default cpp">setstate(ios::failbit)</code>
+is called</del></span> <span class="add"><ins><code class="sourceCode default cpp">format_error</code>
+is thrown</ins></span>.</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <script>

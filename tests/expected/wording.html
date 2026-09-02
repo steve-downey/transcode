@@ -5,7 +5,7 @@
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-01-01" />
-  <title>Same-stem Test Paper</title>
+  <title>Wording Tests</title>
   <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -662,12 +662,12 @@ background-color: #4b6345;
 </form>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Same-stem Test Paper</h1>
+<h1 class="title" style="text-align:center">Wording Tests</h1>
 <table>
   <tr>
     <td>Document #:</td>
     <td>
-      P0000R0
+      D0000R1
       [<a href="https://wg21.link/P0000">Latest</a>]
       [<a href="https://wg21.link/P0000/status">Status</a>]
     </td>
@@ -683,13 +683,13 @@ background-color: #4b6345;
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      WG21<br>
+      Library Evolution<br>
     </td>
   </tr>
   <tr>
     <td style="vertical-align:top">Reply-to:</td>
     <td>
-      Test Author<br>&lt;&gt;<br>
+      Test Author<br>&lt;<a href="mailto:test@example.com" class="email">test@example.com</a>&gt;<br>
     </td>
   </tr>
 </table>
@@ -698,11 +698,90 @@ background-color: #4b6345;
 <div id="TOC" role="doc-toc">
 <h1 id="toctitle">Contents</h1>
 <ul>
-<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#wording-blocks" id="toc-wording-blocks"><span class="toc-section-number">1</span> Wording Blocks</a>
+<ul>
+<li><a href="#intro.compliance.general" id="toc-intro.compliance.general"><span>4.1.1 General
+[intro.compliance.general]</span></a></li>
+<li><a href="#cpp.error" id="toc-cpp.error"><span>15.9 Diagnostic
+directives [cpp.error]</span></a></li>
+</ul></li>
 </ul>
 </div>
-<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>This is a same-stem paper-layout test.</p>
+<h1 data-number="1" id="wording-blocks"><span class="header-section-number">1</span> Wording Blocks<a href="#wording-blocks" class="self-link"></a></h1>
+<h2 class="unnumbered" id="intro.compliance.general"><span>4.1.1 General
+<a href="https://eel.is/c++draft/intro.compliance.general" title="4.1.1 General">[intro.compliance.general]</a></span><a href="#intro.compliance.general" class="self-link"></a></h2>
+<div class="wording">
+<p><span class="marginalizedparent"><a href="#pnum-1" id="pnum-1" class="marginalized">1</a></span> The set of <em>diagnosable rules</em>
+consists of all syntactic and semantic rules in this document except for
+those rules containing an explicit notation that “no diagnostic is
+required” or which are described as resulting in “undefined
+behavior”.</p>
+<p><span class="marginalizedparent"><a href="#pnum-2" id="pnum-2" class="marginalized">2</a></span> Although this document states only
+requirements on C++ implementations, those requirements are often easier
+to understand if they are phrased as requirements on programs, parts of
+programs, or execution of programs. Such requirements have the following
+meaning:</p>
+<ul>
+<li><p><span class="marginalizedparent"><a href="#pnum-3" id="pnum-3" class="marginalized">(2.1)</a></span> If a program contains no
+violations of the rules in <span>Lexical conventions <a href="https://eel.is/c++draft/lex" title="5 Lexical conventions">[lex]</a></span> through <span>Execution
+control library <a href="https://eel.is/c++draft/exec" title="33 Execution control library">[exec]</a></span> as well as those
+specified in <span>Compatibility features <a href="https://eel.is/c++draft/depr" title="Annex D (normative) Compatibility features">[depr]</a></span>, a
+conforming implementation shall accept and correctly execute that
+program, except when the implementation’s limitations are
+exceeded.</p></li>
+<li><p><span class="marginalizedparent"><a href="#pnum-4" id="pnum-4" class="marginalized">(2.2)</a></span> If a program contains a violation
+of a rule for which no diagnostic is required, this document places no
+requirement on implementations with respect to that program.</p></li>
+<li><p><span class="marginalizedparent"><a href="#pnum-5" id="pnum-5" class="marginalized">(2.3)</a></span> Otherwise, if a program
+contains</p>
+<ul>
+<li><p><span class="marginalizedparent"><a href="#pnum-6" id="pnum-6" class="marginalized">(2.3.1)</a></span> a violation of any diagnosable
+rule,</p></li>
+<li><p><span class="marginalizedparent"><a href="#pnum-7" id="pnum-7" class="marginalized">(2.3.2)</a></span> a preprocessing translation unit
+with a
+<code class="sourceCode cpp"><span class="pp">#warning</span></code>
+preprocessing directive (<span>Diagnostic directives <a href="https://eel.is/c++draft/cpp.error" title="15.9 Diagnostic directives">[cpp.error]</a></span>),</p></li>
+<li><p><span class="marginalizedparent"><a href="#pnum-8" id="pnum-8" class="marginalized">(2.3.3)</a></span> an occurrence of a construct
+described in this document as “conditionally-supported”, when the
+implementation does not support that construct, or</p></li>
+<li><p><span class="marginalizedparent"><a href="#pnum-9" id="pnum-9" class="marginalized">(2.3.4)</a></span> a contract assertion
+(<span>Evaluation <a href="https://eel.is/c++draft/basic.contract.eval" title="6.11.2 Evaluation">[basic.contract.eval]</a></span>) evaluated
+with a checking semantic in a manifestly constant-evaluated context
+(<span>Further definitions <a href="https://eel.is/c++draft/expr.const.defns" title="7.7.7 Further definitions">[expr.const.defns]</a></span>)
+resulting in a contract violation,</p></li>
+</ul>
+a conforming implementation shall issue at least one diagnostic
+message.</li>
+</ul>
+<p><span id="note-1" class="note" data-num="1"><span>[ <em>Note <a href="#note-1">1</a>:</em> </span>During template argument deduction and
+substitution, certain constructs that in other contexts require a
+diagnostic are treated differently; see <span>Template argument
+deduction <a href="https://eel.is/c++draft/temp.deduct" title="13.10.3 Template argument deduction">[temp.deduct]</a></span>.<span>
+— <em>end note</em> ]</span></span></p>
+<p><span class="marginalizedparent"><a href="#pnum-10" id="pnum-10" class="marginalized">3</a></span> For classes and class templates, the
+library Clauses specify partial definitions. Private members are not
+specified, but each implementation shall supply them to complete the
+definitions according to the description in the library Clauses.</p>
+</div>
+<h2 class="unnumbered" id="cpp.error"><span>15.9 Diagnostic directives
+<a href="https://eel.is/c++draft/cpp.error" title="15.9 Diagnostic directives">[cpp.error]</a></span><a href="#cpp.error" class="self-link"></a></h2>
+<div class="wording">
+<p><span class="marginalizedparent"><a href="#pnum-11" id="pnum-11" class="marginalized">1</a></span> A preprocessing directive of the
+form</p>
+<blockquote>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp"># error <em>pp-tokens<sub>opt</sub></em> <em>new-line</em></span></span></code></pre></div>
+</blockquote>
+<p>renders the program ill-formed. A preprocessing directive of the
+form</p>
+<blockquote>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp"># warning <em>pp-tokens<sub>opt</sub></em> <em>new-line</em></span></span></code></pre></div>
+</blockquote>
+<p>requires the implementation to produce at least one diagnostic
+message for the preprocessing translation unit (<span>General <a href="https://eel.is/c++draft/intro.compliance.general" title="4.1.1 General">[intro.compliance.general]</a></span>).</p>
+<p><span class="marginalizedparent"><a href="#pnum-12" id="pnum-12" class="marginalized">2</a></span> <em>Recommended practice</em>: Any
+diagnostic message caused by either of these directives should include
+the specified sequence of preprocessing tokens.</p>
+</div>
 </div>
 </div>
 <script>

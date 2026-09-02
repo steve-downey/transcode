@@ -5,7 +5,7 @@
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-01-01" />
-  <title>Same-stem Test Paper</title>
+  <title>Inline Formatting Tests</title>
   <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -662,12 +662,12 @@ background-color: #4b6345;
 </form>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Same-stem Test Paper</h1>
+<h1 class="title" style="text-align:center">Inline Formatting Tests</h1>
 <table>
   <tr>
     <td>Document #:</td>
     <td>
-      P0000R0
+      D0000R1
       [<a href="https://wg21.link/P0000">Latest</a>]
       [<a href="https://wg21.link/P0000/status">Status</a>]
     </td>
@@ -683,13 +683,13 @@ background-color: #4b6345;
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      WG21<br>
+      Library Evolution<br>
     </td>
   </tr>
   <tr>
     <td style="vertical-align:top">Reply-to:</td>
     <td>
-      Test Author<br>&lt;&gt;<br>
+      Test Author<br>&lt;<a href="mailto:test@example.com" class="email">test@example.com</a>&gt;<br>
     </td>
   </tr>
 </table>
@@ -698,11 +698,57 @@ background-color: #4b6345;
 <div id="TOC" role="doc-toc">
 <h1 id="toctitle">Contents</h1>
 <ul>
-<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#inline-formatting" id="toc-inline-formatting"><span class="toc-section-number">1</span> Inline Formatting</a></li>
 </ul>
 </div>
-<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>This is a same-stem paper-layout test.</p>
+<h1 data-number="1" id="inline-formatting"><span class="header-section-number">1</span> Inline Formatting<a href="#inline-formatting" class="self-link"></a></h1>
+<p>Inline formatting such as <strong>bold</strong>, <em>italics</em>,
+and <code class="sourceCode cpp">verbatim</code> work as expected. There
+are also useful extensions such as <del>strikeout</del>,
+su<sub>b</sub>script, su<sup>per</sup>script, highlighted text
+<mark>highlighted</mark>, and highlighted code:
+<code class="sourceCode cpp"><span class="kw">constexpr</span></code>,
+including a custom keyword:
+<code class="sourceCode cpp"><span class="kw">match</span></code>.</p>
+<p>Various compositions in compact list:</p>
+<ul>
+<li><del><code class="sourceCode cpp">A<span class="op">&lt;</span>B<span class="op">&lt;</span>T<span class="op">&gt;&gt;</span></code></del></li>
+<li><code class="sourceCode cpp">compare_3way</code></li>
+<li><span class="add"><ins><code class="sourceCode default cpp">compare_3way</code></ins></span></li>
+<li><code class="sourceCode default">3WAY</code><code class="sourceCode cpp"><span class="op">&lt;</span>R<span class="op">&gt;</span></code></li>
+<li><code class="sourceCode default">operator@</code></li>
+<li><code class="sourceCode cpp"><span class="kw">operator</span><span class="op">+</span></code></li>
+<li><code class="sourceCode default">x @ y</code></li>
+<li><del><code class="sourceCode cpp">x <span class="op">&amp;</span> y</code></del></li>
+<li><strong>foo
+<code class="sourceCode cpp"><span class="kw">constexpr</span></code>
+bar</strong></li>
+<li><em>foo
+<code class="sourceCode cpp"><span class="kw">constexpr</span></code>
+bar</em></li>
+<li><del>foo
+<code class="sourceCode cpp"><span class="kw">constexpr</span></code>
+bar</del></li>
+<li><span class="add"><ins><code class="sourceCode default cpp">hello world</code></ins></span></li>
+<li><code class="sourceCode cpp"><span class="add"><ins>hello&lt;T&gt;</ins></span></code></li>
+<li><del><em><code class="sourceCode cpp">hello world</code></em></del></li>
+<li><del><code class="sourceCode cpp">hello world</code></del></li>
+<li><code class="sourceCode cpp"><span class="kw">namespace</span> <em>unspecified</em> <span class="op">{</span> <span class="kw">struct</span> sender_base <span class="op">{};</span> <span class="op">}</span></code></li>
+<li><code class="sourceCode cpp"><span class="kw">namespace</span> <em>unspecified</em> <span class="op">{</span> <span class="kw">struct</span> sender_base <span class="op">{};</span> <span class="op">}</span></code></li>
+<li><code class="sourceCode cpp"><span class="kw">constexpr</span><em><sub>opt</sub></em></code></li>
+<li><mark>highlighted</mark></li>
+<li><code class="sourceCode cpp"><span class="dt">void</span> <mark>foo</mark><span class="op">();</span></code></li>
+<li><mark><code class="sourceCode cpp"><span class="dt">void</span> foo<span class="op">();</span></code></mark></li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mfrac><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mn>2</mn></mfrac><annotation encoding="application/x-tex">\frac{a+b}{2}</annotation></semantics></math></li>
+<li><code class="sourceCode cpp">string format<span class="op">(...);</span>  <span class="co">// <span>28.5.5 Formatting functions <a href="https://eel.is/c++draft/format.functions" title="28.5.5 Formatting functions">[format.functions]</a></span></span></code></li>
+</ul>
+<p>Loose list:</p>
+<ul>
+<li><p><code class="sourceCode cpp">x<em><sub>i</sub></em> <span class="op">&lt;=&gt;</span> y<em><sub>i</sub></em></code></p></li>
+<li><p><span class="rm"><del>foo
+<code class="sourceCode default cpp">hello world</code>
+bar</del></span></p></li>
+</ul>
 </div>
 </div>
 <script>

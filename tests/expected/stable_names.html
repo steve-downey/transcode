@@ -5,7 +5,7 @@
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-01-01" />
-  <title>Same-stem Test Paper</title>
+  <title>Stable Reference Tests</title>
   <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -662,12 +662,12 @@ background-color: #4b6345;
 </form>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Same-stem Test Paper</h1>
+<h1 class="title" style="text-align:center">Stable Reference Tests</h1>
 <table>
   <tr>
     <td>Document #:</td>
     <td>
-      P0000R0
+      D0000R1
       [<a href="https://wg21.link/P0000">Latest</a>]
       [<a href="https://wg21.link/P0000/status">Status</a>]
     </td>
@@ -683,13 +683,13 @@ background-color: #4b6345;
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      WG21<br>
+      Library Evolution<br>
     </td>
   </tr>
   <tr>
     <td style="vertical-align:top">Reply-to:</td>
     <td>
-      Test Author<br>&lt;&gt;<br>
+      Test Author<br>&lt;<a href="mailto:test@example.com" class="email">test@example.com</a>&gt;<br>
     </td>
   </tr>
 </table>
@@ -698,11 +698,100 @@ background-color: #4b6345;
 <div id="TOC" role="doc-toc">
 <h1 id="toctitle">Contents</h1>
 <ul>
-<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#stable-names" id="toc-stable-names"><span class="toc-section-number">1</span> Stable Names</a></li>
+<li><a href="#override-stable-name-links" id="toc-override-stable-name-links"><span class="toc-section-number">2</span> Override stable name links</a></li>
 </ul>
 </div>
-<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>This is a same-stem paper-layout test.</p>
+<h1 data-number="1" id="stable-names"><span class="header-section-number">1</span> Stable Names<a href="#stable-names" class="self-link"></a></h1>
+<p>Stable names are written as
+<code class="sourceCode cpp"><span class="op">[</span>basic<span class="op">.</span>life<span class="op">]{.</span>sref<span class="op">}</span></code>,
+and render as <span>6.8.4 Lifetime <a href="https://eel.is/c++draft/basic.life" title="6.8.4 Lifetime">[basic.life]</a></span>.</p>
+<ul>
+<li>Add the
+<code class="sourceCode cpp"><span class="op">-</span></code> or
+<code class="sourceCode cpp"><span class="op">.</span>unnumbered</code>
+class to omit the section number.</li>
+<li>Add the
+<code class="sourceCode cpp"><span class="op">.</span>title</code> class
+to add the section title.</li>
+</ul>
+<p>Examples:</p>
+<table>
+<colgroup>
+<col style="width: 58%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr>
+<th><div style="text-align:center">
+<strong>Markdown Source</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>Rendered Output</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="sourceCode default">[basic.life]</code></td>
+<td><a href="https://eel.is/c++draft/basic.life" title="6.8.4 Lifetime">[basic.life]</a></td>
+</tr>
+<tr>
+<td><code class="sourceCode default">[basic.life]/1</code></td>
+<td><a href="https://eel.is/c++draft/basic.life#1" title="6.8.4 Lifetime, paragraph 1">[basic.life]/1</a></td>
+</tr>
+<tr>
+<td><code class="sourceCode default">[basic.life]/2.1</code></td>
+<td><a href="https://eel.is/c++draft/basic.life#2.1" title="6.8.4 Lifetime, paragraph 2.1">[basic.life]/2.1</a></td>
+</tr>
+<tr>
+<td><code class="sourceCode default">[basic.life]{.sref}</code></td>
+<td><span>6.8.4 Lifetime <a href="https://eel.is/c++draft/basic.life" title="6.8.4 Lifetime">[basic.life]</a></span></td>
+</tr>
+<tr>
+<td><code class="sourceCode default">[basic.life]{.sref}/1</code></td>
+<td><span>6.8.4 Lifetime <a href="https://eel.is/c++draft/basic.life#1" title="6.8.4 Lifetime, paragraph 1">[basic.life]/1</a></span></td>
+</tr>
+<tr>
+<td><code class="sourceCode default">[basic.life]{.sref .title}</code></td>
+<td><span>6.8.4 Lifetime <a href="https://eel.is/c++draft/basic.life" title="6.8.4 Lifetime">[basic.life]</a></span></td>
+</tr>
+<tr>
+<td><code class="sourceCode default">[basic.life]{.sref .title}/1</code></td>
+<td><span>6.8.4 Lifetime <a href="https://eel.is/c++draft/basic.life#1" title="6.8.4 Lifetime, paragraph 1">[basic.life]/1</a></span></td>
+</tr>
+</tbody>
+</table>
+<p>Also supported:</p>
+<table>
+<colgroup>
+<col style="width: 58%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr>
+<th><div style="text-align:center">
+<strong>Markdown Source</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>Rendered Output</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="sourceCode default">[basic.life#1]{.sref}</code></td>
+<td><span>6.8.4 Lifetime <a href="https://eel.is/c++draft/basic.life#1" title="6.8.4 Lifetime, paragraph 1">[basic.life]/1</a></span></td>
+</tr>
+<tr>
+<td><code class="sourceCode default">[basic.life]{- .sref .title}</code></td>
+<td><span>Lifetime <a href="https://eel.is/c++draft/basic.life" title="6.8.4 Lifetime">[basic.life]</a></span></td>
+</tr>
+</tbody>
+</table>
+<h1 data-number="2" id="override-stable-name-links"><span class="header-section-number">2</span> Override stable name links<a href="#override-stable-name-links" class="self-link"></a></h1>
+<p>Override <a href="https://isocpp.org">over.match</a> to something
+else.</p>
 </div>
 </div>
 <script>

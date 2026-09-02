@@ -5,7 +5,7 @@
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-01-01" />
-  <title>Same-stem Test Paper</title>
+  <title>Note Tests</title>
   <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -662,12 +662,12 @@ background-color: #4b6345;
 </form>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Same-stem Test Paper</h1>
+<h1 class="title" style="text-align:center">Note Tests</h1>
 <table>
   <tr>
     <td>Document #:</td>
     <td>
-      P0000R0
+      D0000R1
       [<a href="https://wg21.link/P0000">Latest</a>]
       [<a href="https://wg21.link/P0000/status">Status</a>]
     </td>
@@ -683,13 +683,13 @@ background-color: #4b6345;
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      WG21<br>
+      Library Evolution<br>
     </td>
   </tr>
   <tr>
     <td style="vertical-align:top">Reply-to:</td>
     <td>
-      Test Author<br>&lt;&gt;<br>
+      Test Author<br>&lt;<a href="mailto:test@example.com" class="email">test@example.com</a>&gt;<br>
     </td>
   </tr>
 </table>
@@ -698,11 +698,38 @@ background-color: #4b6345;
 <div id="TOC" role="doc-toc">
 <h1 id="toctitle">Contents</h1>
 <ul>
-<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#notes" id="toc-notes"><span class="toc-section-number">1</span> Notes</a></li>
 </ul>
 </div>
-<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>This is a same-stem paper-layout test.</p>
+<h1 data-number="1" id="notes"><span class="header-section-number">1</span> Notes<a href="#notes" class="self-link"></a></h1>
+<p>There are three supported styles of note:</p>
+<ul>
+<li><p>Use the <code class="sourceCode cpp">note</code> class for notes
+that are expected to appear in the specification wording.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>[Notes will look like this]{.note}</span></code></pre></div>
+<p><span class="note"><span>[ <em>Note:</em> </span>Notes will look like
+this<span> — <em>end note</em> ]</span></span></p></li>
+<li><p>Use <code class="sourceCode cpp">ednote</code> for editorial
+notes.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>[Editorial notes are important]{.ednote}</span></code></pre></div>
+<p><span class="ednote">[ Editor&#39;s note: Editorial notes are important
+]</span></p></li>
+<li><p>Use <code class="sourceCode cpp">draftnote</code> to include text
+that is intended as questions or information for reviews and working
+groups.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>[Drafting notes can be used to provide comments for reviewers that are explicitly not to be</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> included in the specification.]{.draftnote}</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>[It is also possible to indicate that a note is for</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a> a specific `audience` via this optional attribute.]{.draftnote audience=&quot;the reader&quot;}</span></code></pre></div>
+<p><span class="draftnote">[ Drafting note: Drafting notes can be used
+to provide comments for reviewers that are explicitly not to be included
+in the specification. ]</span></p>
+<p><span class="draftnote" data-audience="the reader">[ Drafting note
+for the reader: It is also possible to indicate that a note is for a
+specific <code class="sourceCode default cpp">audience</code> via this
+optional attribute. ]</span></p></li>
+</ul>
 </div>
 </div>
 <script>

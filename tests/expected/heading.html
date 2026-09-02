@@ -5,7 +5,7 @@
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-01-01" />
-  <title>Same-stem Test Paper</title>
+  <title>Heading Tests</title>
   <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -662,12 +662,12 @@ background-color: #4b6345;
 </form>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Same-stem Test Paper</h1>
+<h1 class="title" style="text-align:center">Heading Tests</h1>
 <table>
   <tr>
     <td>Document #:</td>
     <td>
-      P0000R0
+      D0000R1
       [<a href="https://wg21.link/P0000">Latest</a>]
       [<a href="https://wg21.link/P0000/status">Status</a>]
     </td>
@@ -683,13 +683,13 @@ background-color: #4b6345;
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      WG21<br>
+      Library Evolution<br>
     </td>
   </tr>
   <tr>
     <td style="vertical-align:top">Reply-to:</td>
     <td>
-      Test Author<br>&lt;&gt;<br>
+      Test Author<br>&lt;<a href="mailto:test@example.com" class="email">test@example.com</a>&gt;<br>
     </td>
   </tr>
 </table>
@@ -698,11 +698,34 @@ background-color: #4b6345;
 <div id="TOC" role="doc-toc">
 <h1 id="toctitle">Contents</h1>
 <ul>
-<li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#headings" id="toc-headings"><span class="toc-section-number">1</span> Headings</a>
+<ul>
+<li><a href="#auto-header-links" id="toc-auto-header-links"><span class="toc-section-number">1.1</span> Automatic Header Links</a></li>
+<li><a href="#inline-code-in-headers-int-x-y" id="toc-inline-code-in-headers-int-x-y"><span class="toc-section-number">1.2</span> Inline Code in Headers:
+<code class="sourceCode cpp"><span class="dt">int</span></code>,
+<code class="sourceCode cpp">x <span class="op">&amp;</span> y</code></a></li>
+<li><a href="#disabled-numbering" id="toc-disabled-numbering">Disabled
+Numbering</a></li>
+</ul></li>
 </ul>
 </div>
-<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>This is a same-stem paper-layout test.</p>
+<h1 data-number="1" id="headings"><span class="header-section-number">1</span> Headings<a href="#headings" class="self-link"></a></h1>
+<h2 data-number="1.1" id="auto-header-links"><span class="header-section-number">1.1</span> Automatic Header Links<a href="#auto-header-links" class="self-link"></a></h2>
+<p>Automatic header links are written as <code class="sourceCode markdown">[](#auto-header-links)</code>, and render as
+<a href="#auto-header-links">Automatic Header Links</a>.</p>
+<h2 data-number="1.2" id="inline-code-in-headers-int-x-y"><span class="header-section-number">1.2</span> Inline Code in Headers:
+<code class="sourceCode cpp"><span class="dt">int</span></code>,
+<code class="sourceCode cpp">x <span class="op">&amp;</span> y</code><a href="#inline-code-in-headers-int-x-y" class="self-link"></a></h2>
+<p>This heading checks highlighted inline code in section titles.</p>
+<h2 class="unnumbered" id="disabled-numbering">Disabled Numbering<a href="#disabled-numbering" class="self-link"></a></h2>
+<p>This heading should not show a section number.</p>
+<h2 class="unnumbered unlisted" id="unlisted-heading">Unlisted Heading<a href="#unlisted-heading" class="self-link"></a></h2>
+<p>This heading should not show a section number and should be absent
+from the TOC.</p>
+<h3 class="unnumbered" id="intro.compliance.general"><span>4.1.1 General
+<a href="https://eel.is/c++draft/intro.compliance.general" title="4.1.1 General">[intro.compliance.general]</a></span><a href="#intro.compliance.general" class="self-link"></a></h3>
+<p>This heading checks stable-name references in an unnumbered section
+heading.</p>
 </div>
 </div>
 <script>
