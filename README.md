@@ -61,6 +61,13 @@ and Unicode code points are numerically identical, distinguishing them at the
 type level just introduces syntactic noise and "range casts" that alias without
 converting.
 
+For encode views, `char32_t` is a representation of a Unicode scalar value, not
+a promise that every possible `char32_t` object is valid input.  This matches
+the WHATWG Encoding Standard's encoder hooks, which operate on I/O queues of
+scalar values.  The `unicode_scalar_range` concept checks the range's value
+type; callers that manufacture `char32_t` data directly remain responsible for
+not passing surrogates or values above U+10FFFF.
+
 ## Core APIs
 
 ### Decode Views — Bytes to Unicode
@@ -111,6 +118,11 @@ auto encoded = codepoints | beman::transcoding::whatwg_encode<beman::transcoding
 The WHATWG Encoding Standard does not define encoders for UTF-16BE or UTF-16LE;
 those codecs are exposed for byte-stream decoding, label lookup, and BOM
 sniffing, but not through `whatwg_encode` or `whatwg_encode_or_error`.
+
+Encode input has the semantic precondition that every `char32_t` denotes a
+Unicode scalar value.  Pipelines produced by this library's decode views satisfy
+that precondition before reaching an encoder; raw `char32_t` sources should be
+validated before being treated as text.
 
 ### Transcode — Any Encoding to Any Other
 
