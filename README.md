@@ -4,9 +4,9 @@ A C++23 header-only library for Unicode transcoding using ranges and views.
 Provides two transcoding backends with a shared pipeline-oriented interface:
 
 - **WHATWG codecs** — a compile-time-safe, constexpr-capable implementation of
-  the [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/) covering 39
-  codecs (UTF-8, all ISO-8859 and Windows code pages, CJK multi-byte encodings
-  including GB18030, Big5, Shift-JIS, EUC-JP/KR, ISO-2022-JP)
+  the [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/) exposing 40
+  codec identifiers (UTF-8, all ISO-8859 and Windows code pages, CJK multi-byte
+  encodings including GB18030, Big5, Shift-JIS, EUC-JP/KR, ISO-2022-JP)
 - **iconv range adaptor** — a C++ ranges wrapper around the POSIX/system `iconv`
   API, giving safe, composable access to whatever encodings the platform provides
 
@@ -247,11 +247,11 @@ Legend: ✅ implemented · n/a architectural model doesn't support this ·
 | **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | n/a ¹ | ✅ `views::to_utf8` / `to_utf16` |
 | **Encode or-error view** | ✅ `whatwg_encode_or_error<C>` | ✅ `encode_or_error(codec)` | n/a ¹ | ✅ `views::to_utf8_or_error` |
 | **Transcode pipeline** | ✅ `transcode<From,To>` | ✅ `pluggable_transcode(f,t)` | ✅ `iconv_transcode(f,t,buf)` | ✅ compose views via `\|` |
-| **Bulk decode → container** | ✅ `v\|ranges::to<>()` | ✅ `v\|ranges::to<>()` | n/a ¹ | ✅ `v\|ranges::to<>()` |
-| **Bulk encode → container** | ✅ `v\|ranges::to<>()` | ✅ `v\|ranges::to<>()` | n/a ¹ | ✅ `v\|ranges::to<>()` |
+| **Bulk decode → container** | ✅ `decode_to<C>(r)` | ✅ `decode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
+| **Bulk encode → container** | ✅ `encode_to<C,Cont>(r)` | ✅ `encode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
 | **Bulk transcode → container** | n/a ² | n/a ² | ✅ `iconv_transcode_to(range,f,t)` | n/a ² |
-| **Bulk decode → output iter** | ✅ `ranges::copy(v, out)` | ✅ `ranges::copy(v, out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
-| **Bulk encode → output iter** | ✅ `ranges::copy(v, out)` | ✅ `ranges::copy(v, out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
+| **Bulk decode → output iter** | ✅ `decode_into<C>(r,out)` | ✅ `decode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
+| **Bulk encode → output iter** | ✅ `encode_into<C>(r,out)` | ✅ `encode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
 | **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
 | **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | n/a ³ |
 | **Runtime label lookup** | ✅ `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
@@ -269,11 +269,11 @@ without exposing an intermediate `char32_t` codepoint stage.  "Encode" (from
 `char32_t` to bytes) and "decode" (from bytes to `char32_t`) as distinct steps
 are outside its model — it only offers transcode.
 
-² **WHATWG and pluggable codecs compose decode and encode.**  Bulk collection
-uses `view | ranges::to<Container>()` and `ranges::copy(view, output)`; no
-dedicated bulk helpers are needed since the standard algorithms suffice.
-Transcode is `decode | encode` composed with `|`.  iconv performs single-pass
-byte→byte conversion and exposes it as a first-class bulk operation.
+² **WHATWG and pluggable codecs compose decode and encode.**  The named bulk
+helpers forward to `view | ranges::to<Container>()` and
+`ranges::copy(view, output)`.  There is no separate bulk transcode helper:
+transcode remains `decode | encode` composed with `|`.  iconv performs
+single-pass byte→byte conversion and exposes it as a first-class bulk operation.
 
 ³ **P2728 operates on typed Unicode character types** (`char8_t`, `char16_t`,
 `char32_t`).  `views::null_term` produces a range of `char`, which is a
@@ -299,8 +299,8 @@ proposal addresses byte-order issues.
 
 ### Bulk Operations
 
-The views compose directly with `std::ranges::to` and `std::ranges::copy` —
-no dedicated bulk API is needed:
+The views compose directly with `std::ranges::to` and `std::ranges::copy`, and
+named helpers are provided for the same four operations:
 
 ```cpp
 using namespace beman::transcoding;
@@ -315,10 +315,17 @@ auto encoded = codepoints | whatwg_encode<codec::shift_jis> | std::ranges::to<st
 std::ranges::copy(bytes | whatwg_decode<codec::utf_8>, std::back_inserter(vec));
 ```
 
-This is deliberate: `decode_to` / `encode_to` convenience wrappers exist in
-`detail/bulk_transcode.hpp` but are not proposed for standardization.  The
-standard library's `ranges::to` and `ranges::copy` already provide the
-necessary functionality with no measurable performance difference.
+```cpp
+// The same four operations, named:
+auto cps2     = decode_to<codec::utf_8>(bytes);
+auto encoded2 = encode_to<codec::shift_jis, std::string>(codepoints);
+decode_into<codec::utf_8>(bytes, std::back_inserter(vec));
+encode_into<codec::utf_8>(codepoints, std::back_inserter(str));
+```
+
+Each helper is a one-line forward to the pipeline it names, with no measurable
+performance difference.  Both spellings are supported, and both are proposed;
+see `papers/transcode-view.md` for the argument.
 
 ## Codec Identifiers: WHATWG, iconv, and `std::text_encoding`
 
