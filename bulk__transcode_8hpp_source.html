@@ -103,12 +103,12 @@ $(document).ready(function(){initNavTree('bulk__transcode_8hpp_source.html','');
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment">//</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">// Convenience helpers: decode_to, encode_to, decode_into, encode_into.</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment">//</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment">// These are thin wrappers over `view | ranges::to&lt;Container&gt;()` and</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment">// `ranges::copy(view, output)`.  They are NOT proposed for standardization</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment">// because the standard library already provides the necessary composition</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment">// tools (ranges::to, ranges::copy) and the views compose naturally with</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment">// them.  This header exists for practical convenience in codebases that</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment">// prefer a named-function call style.</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment">// Each is a one-line forward to the pipeline it names, over</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment">// `view | ranges::to&lt;Container&gt;()` or `ranges::copy(view, output)`.  They are</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment">// proposed, and the paper specifies them as those pipelines: converting a</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment">// buffer to a container is the operation users come for, and the standard</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment">// algorithms being sufficient is not a reason to withhold the name.  See</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment">// papers/transcode-view.md, &quot;Bulk conversion to owned storage&quot;.</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#define INCLUDE_BEMAN_TRANSCODE_DETAIL_BULK_TRANSCODE_HPP</span></div>
@@ -139,12 +139,12 @@ $(document).ready(function(){initNavTree('bulk__transcode_8hpp_source.html','');
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="comment">// ---------------------------------------------------------------------------</span></div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="keyword">template</span> &lt;codec C, legacy_<span class="keywordtype">byte</span>_range R&gt;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>std::vector&lt;char32_t&gt; decode_to(R&amp;&amp; source) {</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">constexpr</span> std::vector&lt;char32_t&gt; decode_to(R&amp;&amp; source) {</div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keywordflow">return</span> std::forward&lt;R&gt;(source) | whatwg_decode&lt;C&gt; | std::ranges::to&lt;std::vector&lt;char32_t&gt;&gt;();</div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>}</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="keyword">template</span> &lt;codec C, <span class="keyword">typename</span> Container = std::<span class="keywordtype">string</span>, unicode_scalar_range R&gt;</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>Container encode_to(R&amp;&amp; source) {</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">constexpr</span> Container encode_to(R&amp;&amp; source) {</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordflow">return</span> std::forward&lt;R&gt;(source) | whatwg_encode&lt;C&gt; | std::ranges::to&lt;Container&gt;();</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>}</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>

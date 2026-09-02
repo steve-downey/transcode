@@ -99,7 +99,7 @@ $(document).ready(function(){initNavTree('md_docs_iconv_testing.html',''); initR
   <div class="headertitle"><div class="title">Testing C++ Range Adapters over <code>iconv</code> </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>If the goal is purely to test the C++ range adapter (the view) that wraps the <code>iconv</code> C API, you don't need megabytes of WPT JSON data. You only need a tiny, surgical set of test vectors designed specifically to trigger the boundary conditions of your <code>iconv</code> state machine.</p>
+<div class="textblock"><p>If the goal is purely to test the C++ range adapter (the view) that wraps the <code>iconv</code> C API, you don't need megabytes of WPT JSON data. A small set of vectors aimed at the boundary conditions of the <code>iconv</code> state machine is enough.</p>
 <p>Because a C++ view (especially a lazy or chunked one) must translate range iteration into <code>char**</code> buffer manipulations, your tests must verify that the view correctly interprets <code>iconv</code>'s return values and manages its internal buffers across iterations.</p>
 <h1><a class="anchor" id="autotoc_md58"></a>
 1. The &lt;tt&gt;iconv&lt;/tt&gt; View Boundary Conditions</h1>
@@ -108,18 +108,18 @@ $(document).ready(function(){initNavTree('md_docs_iconv_testing.html',''); initR
 A. Buffer Exhaustion (&lt;tt&gt;E2BIG&lt;/tt&gt;)</h2>
 <p>If your view processes data in chunks, <code>iconv</code> will return <code>E2BIG</code> when the output buffer fills up before the input is consumed.</p><ul>
 <li><b>Test Vector:</b> A long, valid string (e.g., 100 repetitions of <code>A</code>).</li>
-<li><b>View Expectation:</b> The iterator must yield the converted characters from the filled buffer, and upon the next increment, seamlessly resume passing the <em>unconsumed</em> input pointer back into <code>iconv</code> without dropping characters.</li>
+<li><b>View Expectation:</b> The iterator must yield the converted characters from the filled buffer, and upon the next increment, resume passing the <em>unconsumed</em> input pointer back into <code>iconv</code> without dropping characters.</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md60"></a>
 B. The Split Multi-byte Sequence (&lt;tt&gt;EINVAL&lt;/tt&gt;)</h2>
-<p>This is the most critical test for a range adapter. If the underlying data source provides bytes in chunks (e.g., reading from a socket or file), a multi-byte character might be sliced exactly in half at the chunk boundary. <code>iconv</code> will stop and return <code>EINVAL</code>.</p><ul>
+<p>This is the test a range adapter is most likely to fail. If the underlying data source provides bytes in chunks (e.g., reading from a socket or file), a multi-byte character might be sliced exactly in half at the chunk boundary. <code>iconv</code> will stop and return <code>EINVAL</code>.</p><ul>
 <li><b>Test Vector:</b> The UTF-8 sequence for "𝄞" (U+1D11E): <code>0xF0 0x9D 0x84 0x9E</code>.</li>
 <li><b>Procedure:</b> Feed the view an input range that yields <code>0xF0 0x9D</code> on the first iteration, and <code>0x84 0x9E</code> on the second.</li>
 <li><b>View Expectation:</b> The view must cache the leftover bytes, prepend them to the next chunk it pulls from the underlying range, and successfully yield the code point without throwing an error.</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md61"></a>
 C. Invalid Byte Sequences (&lt;tt&gt;EILSEQ&lt;/tt&gt;)</h2>
-<p>The view must handle strictly malformed data gracefully, according to your C++ API design (either throwing, returning a <code>std::expected</code> error state, or yielding a replacement character).</p><ul>
+<p>The view must keep going past malformed data, according to the C++ API design (either throwing, returning a <code>std::expected</code> error state, or yielding a replacement character).</p><ul>
 <li><b>Test Vector:</b> <code>0xFF 0xFF</code>.</li>
 <li><b>View Expectation:</b> The view evaluates <code>errno == EILSEQ</code>. It must not infinite-loop. It should advance the input pointer past the bad bytes (usually by 1) if it is designed to emit replacement characters, or immediately halt the range and bubble up the error.</li>
 </ul>
@@ -133,7 +133,7 @@ D. End-of-Range Stateful Flush</h2>
 <h1><a class="anchor" id="autotoc_md64"></a>
 2. Mocking &lt;tt&gt;iconv&lt;/tt&gt; for Deterministic View Testing</h1>
 <p>Relying on the system's <code>iconv</code> for unit testing the <em>view logic</em> can be risky because system implementations vary in how strictly they handle <code>EILSEQ</code> or undocumented encodings.</p>
-<p>The standard C++ approach for this is to inject a mock <code>iconv</code> wrapper into the view during testing. This guarantees your view is handling the API contract, completely independent of the underlying C library.</p>
+<p>The view therefore takes its three <code>iconv</code> entry points through the <code>iconv_functions</code> struct, so a test can substitute its own. <code>tests/beman/transcode/iconv_mock.hpp</code> is that substitute: it exercises the API contract without depending on the platform's tables.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;cerrno&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &lt;cstddef&gt;</span></div>

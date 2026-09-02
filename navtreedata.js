@@ -589,21 +589,9 @@ var NAVTREE =
       [ "File Provenance", "md_docs_whatwg_SOURCE.html#autotoc_md525", null ],
       [ "Full Checksums", "md_docs_whatwg_SOURCE.html#autotoc_md526", null ]
     ] ],
-    [ "The Story of Failing to Find a Way Out: Reverse-Parsing Legacy Encodings", "md_docs_why_forward_iterator.html", [
-      [ "Act I: The Overlapping Abyss", "md_docs_why_forward_iterator.html#autotoc_md528", [
-        [ "The Specific Example", "md_docs_why_forward_iterator.html#autotoc_md529", null ]
-      ] ],
-      [ "Act II: The Illusion of the Anchor", "md_docs_why_forward_iterator.html#autotoc_md531", [
-        [ "The Specific Example", "md_docs_why_forward_iterator.html#autotoc_md532", null ]
-      ] ],
-      [ "Act III: State Machine Amnesia", "md_docs_why_forward_iterator.html#autotoc_md534", [
-        [ "The Specific Example", "md_docs_why_forward_iterator.html#autotoc_md535", null ],
-        [ "The Final Verdict", "md_docs_why_forward_iterator.html#autotoc_md536", null ]
-      ] ]
-    ] ],
     [ "Web Platform Tests — Encoding Test Vectors", "md_docs_wpt_SOURCE.html", [
-      [ "File Provenance", "md_docs_wpt_SOURCE.html#autotoc_md538", null ],
-      [ "Full Checksums", "md_docs_wpt_SOURCE.html#autotoc_md539", null ]
+      [ "File Provenance", "md_docs_wpt_SOURCE.html#autotoc_md528", null ],
+      [ "Full Checksums", "md_docs_wpt_SOURCE.html#autotoc_md529", null ]
     ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
@@ -647,8 +635,8 @@ var NAVTREEINDEX =
 "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view_1_1iterator.html#a91ea895c81f92bd9b36f824488572292",
 "iso__8859__8_8hpp_source.html",
 "md_docs_plans_p4_step5_iconv_null_term.html#autotoc_md267",
-"namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a8f50f955a599a74ab40ff93c21f57efb",
-"structbeman_1_1transcoding_1_1single__byte__decode__closure.html"
+"namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa00b1d00a5438928d45b2ccf9c82ead4e",
+"structbeman_1_1transcoding_1_1single__byte__encode__closure.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
