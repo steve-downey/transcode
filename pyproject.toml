@@ -11,7 +11,7 @@ dependencies = [
 dev = [
   "clang-format==23.1.0",
   "clang-tidy==22.1.8",
-  "cmake==4.4.2",
+  "cmake==4.4.3",
   "gcovr>=8.6",
   "mbake==1.4.6",
   "mypy>=2.3.0",
