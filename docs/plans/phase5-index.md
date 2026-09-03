@@ -150,11 +150,18 @@ transcode steps, but they are executed in the specgen repository.
   leaves `ranges::`, which the leakage checker then reports as an undocumented
   entity.  The draft writes `ranges::view_interface` exactly that way, so the
   finding is wrong.  specgen has no corpus header that uses a `std::`
-  sub-namespace, which is why it has not been seen.  **Gates a clean
-  `--validate` in Steps 4-10**; until it is fixed, those steps track the
-  `ranges` findings as a known-noise allowlist rather than driving to zero.
-  Reproduction: run the whatwg_decode_view command above, then
+  sub-namespace, which is why it has not been seen.  Reproduction: run the
+  whatwg_decode_view command above, then
   `specgen render --from-ir - --backend mpark --validate`.
+
+  Step 1 narrowed this: `null_term.hpp` also derives from
+  `ranges::view_interface`, renders it that way in its class synopsis, and draws
+  **no** finding.  So the trigger is not "a `ranges::` qualifier in rendered
+  output"; something about where it appears in the WHATWG headers — most likely
+  a `std::ranges::` qualifier inside an itemdecl or a template head rather than
+  a class synopsis — is what fires it.  Isolate it before filing.  **Gates a
+  clean `--validate` in Steps 6-10**; those steps track the `ranges` findings as
+  a known-noise allowlist rather than driving to zero.
 - **U2 — `--base-heading-level` on the command line.**  The mpark backend hard
   codes level 2, so generated clause headings are `##` and land as siblings of
   the paper's own `##` sections.  A flag would let the wording nest under a
@@ -164,6 +171,37 @@ transcode steps, but they are executed in the specgen repository.
   the drop set from the header's own top-level namespaces, so
   `beman::transcoding` maps to `std` with no configuration.  Nothing to do;
   recorded so no step goes looking for a mapping option that does not exist.
+- **U4 — a deduction guide corrupts a gathered `.syn` synopsis.**  Found in
+  Step 1.  With a `\rSec2[x.syn]` gathered-synopsis region (architecture §3.4),
+  a class-template deduction guide makes the rendered synopsis repeat the class
+  body three times with `<deduction guide for null_term_view>` substituted for
+  the class name.  Neither `\omit` nor `\merge` suppresses it, and moving the
+  guide after the `/// END` fence or to the end of the file does not change it —
+  consistent with Clang reporting the guide's location inside the class.
+  Without a gathered region, `\omit` on the guide works and the output is
+  clean, which is why Step 1 does not use one.  **Gates Step 3 task 4**, which
+  is where the gathered `<transcode>` synopsis is introduced, and therefore
+  gates D1.
+- **U5 — a docblock on an in-class hidden friend is not attached.**  Found in
+  Step 1.  `null_sentinel_t`'s `friend constexpr bool operator==` carries a
+  `//! \returns` docblock and is still reported as
+  "declared in the synopsis but is not described".  Same result with `/*! */`,
+  and with or without an `\at` route to an existing section.  Hidden friends
+  are a deliberate pattern in this library (`CLAUDE.md`), so this affects every
+  comparison operator and every pipe `operator|` that ends up in the wording.
+  **Gates the `null_sentinel_t` wording in Step 4** and the closure types
+  later.
+- **U6 — every generated clause heading warns at paper-build time.**  mpark
+  prints `stable name null.term.view not found` for each `{- .sref}` span whose
+  name is not in its stable-names database, which by definition is every clause
+  a paper proposes.  specgen already emits the unnumbered form to avoid this and
+  it warns anyway.  **Gates Step 10's acceptance criterion** of a warning-free
+  build; the fix may belong in mpark/wg21 rather than specgen.
+- **U7 — no way to mask a variable's type.**  A customization point object is
+  spelled `inline constexpr unspecified null_term;` in the draft.  `\seebelow`
+  masks a function return type or an alias RHS, not a variable's type, so
+  `views::null_term` can currently only be `\omit`ted — which is what Step 1
+  does.  Wanted for Step 4.
 
 ## Risks
 

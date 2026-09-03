@@ -59,11 +59,21 @@ what is different.
   precisely — the wording should say the same thing in the same order, and any
   place it cannot is a sign the concept is doing something the specification
   cannot express.
-- **`null_term_view`** is the header that was proved end to end in Step 1;
-  replace the placeholder docblock from that step with the real wording.
-  `null_sentinel_t`'s hidden-friend `operator==` is a customization point and is
-  defined in-class by design (`CLAUDE.md`); confirm specgen routes it as a
-  hidden friend rather than reporting it.
+- **`null_term_view`** is the header Step 1 proved the harness on, and it
+  already carries markup: `\expos` on `ptr_`, section `[null.term.view]` with
+  the three member descriptions, and `\omit` on the deduction guide, on
+  `detail::null_term_fn` / `null_term_adaptor`, and on `views::null_term`.  Two
+  of those omissions are placeholders this step has to replace, and both are
+  blocked upstream:
+  - `null_sentinel_t`'s hidden-friend `operator==` carries a docblock specgen
+    does not attach (index U5), so it is still reported undescribed and its
+    `[null.term.sentinel]` section renders empty.
+  - `views::null_term` is `\omit`ted because its type is
+    `detail::null_term_adaptor` and there is no way to render it as
+    `inline constexpr unspecified null_term;` (index U7).
+
+  Neither is a header problem, so do not refactor around them; land the rest of
+  the clause and pick these up when the upstream items do.
 - This step is also where the **`constify()` consteval discipline meets the
   wording**: every element that says an operation is usable in constant
   evaluation should have the corresponding consteval test already, per

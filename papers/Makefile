@@ -16,3 +16,22 @@ export REQUESTS_CA_BUNDLE := /etc/ssl/certs/ca-certificates.crt
 export PIP_CERT := /etc/ssl/certs/ca-certificates.crt
 
 include wg21/flat.mk
+
+# The wording clauses are generated from the marked-up headers by
+# papers/wording/generate.sh, which also writes wording/wording.mk listing the
+# fragments in document order.  wg21.mk builds its pandoc command from
+# `$(filter %.md, $^)`, so naming them as ordered prerequisites is what
+# transcludes them: pandoc concatenates the paper and its wording in
+# prerequisite order.  These rules are explicit rather than relying on the
+# pattern rules in flat.mk, so that the order is stated here and not left to
+# make's prerequisite merging.
+-include wording/wording.mk
+
+$(OUTDIR)/transcode-view.html: transcode-view.md $(WORDING_MD) $(DEPS) | $(OUTDIR)
+	$(PANDOC)
+
+$(OUTDIR)/transcode-view.latex: transcode-view.md $(WORDING_MD) $(DEPS) | $(OUTDIR)
+	$(PANDOC)
+
+$(OUTDIR)/transcode-view.pdf: transcode-view.md $(WORDING_MD) $(DEPS) | $(OUTDIR)
+	$(PANDOC)

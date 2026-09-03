@@ -84,6 +84,8 @@ branch.  After each, `make test` and `make wording-check` must still pass.
    synopsis) or stay in family headers with a gathered synopsis assembled per
    family (D1's fallback).  Prefer the former; the measurement to make the call
    is how many lines the spec-facing surface is once (1) and (2) are done.
+   Blocked on index U4: a deduction guide corrupts a gathered `.syn` region,
+   and every view here has one.
 5. **Keep the parse working.**  `transcode.hpp` must still parse standalone for
    specgen, which needs `-I .build/build-system/include` for
    `config_generated.hpp`.  Verify with the Step 1 script, not by eye.
