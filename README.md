@@ -4,17 +4,17 @@ A C++23 header-only library for Unicode transcoding using ranges and views.
 Provides two transcoding backends with a shared pipeline-oriented interface:
 
 - **WHATWG codecs** — a compile-time-safe, constexpr-capable implementation of
-  the [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/) covering 39
-  codecs (UTF-8, all ISO-8859 and Windows code pages, CJK multi-byte encodings
-  including GB18030, Big5, Shift-JIS, EUC-JP/KR, ISO-2022-JP)
+  the [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/) exposing 40
+  codec identifiers (UTF-8, all ISO-8859 and Windows code pages, CJK multi-byte
+  encodings including GB18030, Big5, Shift-JIS, EUC-JP/KR, ISO-2022-JP)
 - **iconv range adaptor** — a C++ ranges wrapper around the POSIX/system `iconv`
   API, giving safe, composable access to whatever encodings the platform provides
 
 Most C and C++ code doing encoding conversion today uses `iconv` (directly, or
 through libraries that call it).  The iconv view gives that existing ecosystem a
-zero-overhead ranges interface — no resource leaks, no manual buffer management,
-composable with other range adaptors — while the WHATWG views provide a
-portable, header-only alternative with standardized error semantics for the
+leak-free ranges interface, with no manual buffer management, composable with
+other range adaptors.  The WHATWG views provide a portable, header-only
+alternative with standardized error semantics for the
 codecs web and network protocols actually use.
 
 Part of the [Beman Project](https://github.com/bemanproject), targeting C++29
@@ -26,18 +26,32 @@ standardization.
 
 ## Context and Motivation
 
-The history of text encoding is one of increasing standardization out of necessity. Initially, IANA established a registry for character set names, but the specifications for these encodings were often loosely defined, leading to significant interoperability issues. To handle the growing need to convert between these varied encodings, C introduced multibyte encoding functions and POSIX standardized `iconv`. While `iconv` provided a robust system-level mechanism for text conversion, it suffers from implementation-defined behavior (e.g., differing drastically between glibc, musl, and macOS) and relies heavily on system configuration. C++ later introduced `std::codecvt`, but its design proved inadequate for modern text-processing needs and it has since been deprecated.
+IANA registered names for character sets before anyone had specified what the
+names meant.  The registry says a document is "Shift_JIS"; it does not say what
+`0x81 0x40` decodes to.  C answered with the multibyte functions and POSIX
+standardized `iconv`, and both work, as long as you do not care which
+implementation you get: glibc, musl, and the macOS libraries disagree about
+error recovery and about which encodings exist at all.  `std::codecvt` was
+deprecated in C++17 and removed in C++26.  `std::text_encoding` names an
+encoding; nothing in the standard converts one.
 
-Later, the WHATWG Encoding Standard provided a rigorous specification for the specific legacy encodings that are actually used on the web today. WHATWG dictates exactly how to handle malformed sequences and maps web-compatible encodings to standard algorithms. Recently, C++ added `std::text_encoding` to securely identify encodings, but the language still lacks a standard facility to perform the actual conversions.
+The WHATWG Encoding Standard specified the missing part, for exactly the
+encodings the web still carries, down to what each malformed sequence produces,
+and the Web Platform Tests pin it.  That last part is what a C++ program needs,
+because there is a great deal of data in legacy encodings that backend systems
+have to read, and much of it is badly formed.  Emails and web pages lie about
+their declared encodings, and concatenate mismatched encodings into a single
+payload.  So the facility has to keep going past a bad byte and let the caller
+decide what that meant.  Aborting on the first bad byte is not an option when
+the bytes are what you were sent.
 
-While modern software engineering dictates that everyone *should* use Unicode (specifically UTF-8), the reality is far more complex. Postel's law applies: we must be conservative in what we emit, but liberal in what we accept. There is a vast amount of existing data in "legacy" encodings that backend C++ systems must process. Web data interchange hasn't fully migrated to UTF-8 either. In particular, email systems still generate and route significant volumes of non-UTF-8 text.
-
-Even more challenging is that real-world data is often poorly formed. Emails and web pages frequently lie about their declared encodings, or they blindly concatenate text in mismatched encodings into a single document or payload. A modern C++ facility must provide robust, explicit, and composable error-handling mechanisms to process this messy reality. We need a way to gracefully ingest whatever bytes our systems receive, applying pragmatic decoding strategies instead of aborting on the first bad byte.
+The argued version of this, including why the design is byte-oriented rather
+than type-oriented, is in [`papers/transcode-view.md`](papers/transcode-view.md).
 
 ## Design: Byte-Oriented I/O Transcoding
 
 This library operates on **byte-like types** (`char`, `signed char`,
-`unsigned char`, `std::byte`) — the types you get from files, sockets, and
+`unsigned char`, `std::byte`), the types you get from files, sockets, and
 memory-mapped I/O.  It deliberately does not use `char8_t`, `char16_t`, or
 `char32_t` as input types.  This is a different, complementary use case from
 the type-based encoding approach in [P2728](https://wg21.link/P2728) (Eddie
@@ -47,19 +61,26 @@ statically track encoding at the type-system level.
 The two approaches serve non-overlapping problems:
 
 - **P2728 (type-based)**: transcoding between `std::u8string`, `std::u16string`,
-  `std::u32string` — the encoding is carried in the type, and the compiler
+  `std::u32string`; the encoding is carried in the type, and the compiler
   prevents mixing them
 - **beman.transcode (byte-based)**: transcoding I/O byte streams whose encoding
   is determined at runtime or by protocol (HTTP `Content-Type`, BOM sniffing,
-  database column metadata, `iconv` string labels) — the bytes are just bytes
+  database column metadata, `iconv` string labels); the bytes are just bytes
   until you decode them
 
-The only Unicode scalar type this library uses is `char32_t` — as the decoded
+The only Unicode scalar type this library uses is `char32_t`, as the decoded
 codepoint type.  Using `char32_t` for codepoints is the agreed pattern in WG21
 rather than introducing a distinct `code_point` type: since UTF-32 code units
 and Unicode code points are numerically identical, distinguishing them at the
 type level just introduces syntactic noise and "range casts" that alias without
 converting.
+
+For encode views, `char32_t` is a representation of a Unicode scalar value, not
+a promise that every possible `char32_t` object is valid input.  This matches
+the WHATWG Encoding Standard's encoder hooks, which operate on I/O queues of
+scalar values.  The `unicode_scalar_range` concept checks the range's value
+type; callers that manufacture `char32_t` data directly remain responsible for
+not passing surrogates or values above U+10FFFF.
 
 ## Core APIs
 
@@ -107,6 +128,15 @@ The reverse direction encodes Unicode scalars back to bytes:
 // char32_t range → char range (UTF-8 bytes)
 auto encoded = codepoints | beman::transcoding::whatwg_encode<beman::transcoding::codec::utf_8>;
 ```
+
+The WHATWG Encoding Standard does not define encoders for UTF-16BE or UTF-16LE;
+those codecs are exposed for byte-stream decoding, label lookup, and BOM
+sniffing, but not through `whatwg_encode` or `whatwg_encode_or_error`.
+
+Encode input has the semantic precondition that every `char32_t` denotes a
+Unicode scalar value.  Pipelines produced by this library's decode views satisfy
+that precondition before reaching an encoder; raw `char32_t` sources should be
+validated before being treated as text.
 
 ### Transcode — Any Encoding to Any Other
 
@@ -157,7 +187,7 @@ for a complete working example.
 
 ### iconv Range Adaptor — System Encoding Support
 
-If your code already uses `iconv` — or uses a library that does — the iconv
+If your code already uses `iconv` (or uses a library that does), the iconv
 range adaptor is the interoperability path.  On most POSIX systems, `iconv` is
 the system's encoding engine: glibc, musl, ICU, and platform-specific
 implementations all expose the same `iconv_open`/`iconv`/`iconv_close` API.
@@ -178,8 +208,8 @@ for (char byte : input | beman::transcoding::iconv_transcode("UTF-8", "UTF-32LE"
 }
 ```
 
-Compare with the raw `iconv` equivalent — 30+ lines of buffer management, error
-handling, and resource cleanup — in
+Compare with the raw `iconv` equivalent, 30+ lines of buffer management, error
+handling, and resource cleanup, in
 [`examples/paper_iconv_view.cpp`](examples/paper_iconv_view.cpp).
 
 An `_or_error` variant yields `std::expected<char, iconv_error>` instead of
@@ -187,12 +217,12 @@ replacement characters, for applications that need to distinguish
 `invalid_sequence`, `incomplete_sequence`, and `output_full` conditions.
 
 Key design choices:
-- **External buffer**: caller provides the working `std::span<char>` — no hidden
+- **External buffer**: caller provides the working `std::span<char>`; no hidden
   heap allocation
 - **Dependency injection**: the `iconv_functions` struct accepts callable pointers
   for `iconv_open`/`iconv`/`iconv_close`, enabling test mocking and allowing
   alternative iconv implementations (e.g., libiconv vs glibc)
-- **Move-only iterator**: safeguards the uncopyable `iconv_t` handle — copying
+- **Move-only iterator**: safeguards the uncopyable `iconv_t` handle; copying
   the iterator would double-free
 
 Bulk operations `iconv_transcode_to<std::string>(input, from, to)` and
@@ -217,11 +247,11 @@ Legend: ✅ implemented · n/a architectural model doesn't support this ·
 | **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | n/a ¹ | ✅ `views::to_utf8` / `to_utf16` |
 | **Encode or-error view** | ✅ `whatwg_encode_or_error<C>` | ✅ `encode_or_error(codec)` | n/a ¹ | ✅ `views::to_utf8_or_error` |
 | **Transcode pipeline** | ✅ `transcode<From,To>` | ✅ `pluggable_transcode(f,t)` | ✅ `iconv_transcode(f,t,buf)` | ✅ compose views via `\|` |
-| **Bulk decode → container** | ✅ `v\|ranges::to<>()` | ✅ `v\|ranges::to<>()` | n/a ¹ | ✅ `v\|ranges::to<>()` |
-| **Bulk encode → container** | ✅ `v\|ranges::to<>()` | ✅ `v\|ranges::to<>()` | n/a ¹ | ✅ `v\|ranges::to<>()` |
+| **Bulk decode → container** | ✅ `decode_to<C>(r)` | ✅ `decode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
+| **Bulk encode → container** | ✅ `encode_to<C,Cont>(r)` | ✅ `encode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
 | **Bulk transcode → container** | n/a ² | n/a ² | ✅ `iconv_transcode_to(range,f,t)` | n/a ² |
-| **Bulk decode → output iter** | ✅ `ranges::copy(v, out)` | ✅ `ranges::copy(v, out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
-| **Bulk encode → output iter** | ✅ `ranges::copy(v, out)` | ✅ `ranges::copy(v, out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
+| **Bulk decode → output iter** | ✅ `decode_into<C>(r,out)` | ✅ `decode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
+| **Bulk encode → output iter** | ✅ `encode_into<C>(r,out)` | ✅ `encode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
 | **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
 | **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | n/a ³ |
 | **Runtime label lookup** | ✅ `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
@@ -239,11 +269,11 @@ without exposing an intermediate `char32_t` codepoint stage.  "Encode" (from
 `char32_t` to bytes) and "decode" (from bytes to `char32_t`) as distinct steps
 are outside its model — it only offers transcode.
 
-² **WHATWG and pluggable codecs compose decode and encode.**  Bulk collection
-uses `view | ranges::to<Container>()` and `ranges::copy(view, output)` — no
-dedicated bulk helpers are needed since the standard algorithms suffice.
-Transcode is `decode | encode` composed with `|`.  iconv performs single-pass
-byte→byte conversion and exposes it as a first-class bulk operation.
+² **WHATWG and pluggable codecs compose decode and encode.**  The named bulk
+helpers forward to `view | ranges::to<Container>()` and
+`ranges::copy(view, output)`.  There is no separate bulk transcode helper:
+transcode remains `decode | encode` composed with `|`.  iconv performs
+single-pass byte→byte conversion and exposes it as a first-class bulk operation.
 
 ³ **P2728 operates on typed Unicode character types** (`char8_t`, `char16_t`,
 `char32_t`).  `views::null_term` produces a range of `char`, which is a
@@ -254,11 +284,11 @@ runtime name-to-codec registry by design — codec selection happens at
 compile time through the type system.  Runtime transcode is similarly outside
 the model: you compose `decode(codec_a{}) | encode(codec_b{})` at compile time.
 
-⁵ **P2728 is type-based**, not string-label-based.  Codec selection is
+⁵ **P2728 selects its codec from the character type.**  Selection is
 determined by the character types (`char8_t`, `char16_t`, `char32_t`), so
 runtime label lookup and runtime transcode are outside its model.
 
-⁶ **BOM sniffing is a property of the byte stream**, not of individual codecs.
+⁶ **BOM sniffing is a property of the byte stream.**
 `sniff_encoding()` examines the first bytes of a stream to detect UTF-8/16/32
 BOMs and returns the appropriate `codec` enum value.  This is a WHATWG-specific
 facility; pluggable codecs and iconv operate on already-identified encodings.
@@ -269,8 +299,8 @@ proposal addresses byte-order issues.
 
 ### Bulk Operations
 
-The views compose directly with `std::ranges::to` and `std::ranges::copy` —
-no dedicated bulk API is needed:
+The views compose directly with `std::ranges::to` and `std::ranges::copy`, and
+named helpers are provided for the same four operations:
 
 ```cpp
 using namespace beman::transcoding;
@@ -285,15 +315,22 @@ auto encoded = codepoints | whatwg_encode<codec::shift_jis> | std::ranges::to<st
 std::ranges::copy(bytes | whatwg_decode<codec::utf_8>, std::back_inserter(vec));
 ```
 
-This is deliberate: `decode_to` / `encode_to` convenience wrappers exist in
-`detail/bulk_transcode.hpp` but are not proposed for standardization.  The
-standard library's `ranges::to` and `ranges::copy` already provide the
-necessary functionality with no measurable performance difference.
+```cpp
+// The same four operations, named:
+auto cps2     = decode_to<codec::utf_8>(bytes);
+auto encoded2 = encode_to<codec::shift_jis, std::string>(codepoints);
+decode_into<codec::utf_8>(bytes, std::back_inserter(vec));
+encode_into<codec::utf_8>(codepoints, std::back_inserter(str));
+```
+
+Each helper is a one-line forward to the pipeline it names, with no measurable
+performance difference.  Both spellings are supported, and both are proposed;
+see `papers/transcode-view.md` for the argument.
 
 ## Codec Identifiers: WHATWG, iconv, and `std::text_encoding`
 
 Encodings can be identified by IANA name, by WHATWG label, or by the string
-labels that a system's `iconv` accepts.  In most cases these overlap — you can
+labels that a system's `iconv` accepts.  In most cases these overlap: you can
 look up a WHATWG codec by its IANA name or any of its aliases.  Where WHATWG goes
 further is in nailing down the *exact algorithm and data tables* for each codec.
 This matters most for encodings where there was historical diverging practice:
@@ -303,13 +340,13 @@ ambiguity by specifying precisely what every byte sequence means.
 
 **`std::text_encoding`** (P1885) provides IANA charset names as a C++ vocabulary
 type.  It identifies WHICH encoding a text uses but does not define HOW to
-decode or encode — it is purely for labeling.  The explicit WHATWG API in
+decode or encode; it is purely for labeling.  The explicit WHATWG API in
 `beman.transcode` reflects the tighter algorithmic specification but does not
 supersede `std::text_encoding`; the two serve different roles.
 
 **POSIX `iconv`** uses string labels (`"UTF-8"`, `"SHIFT_JIS"`, `"ISO-8859-1"`)
 to identify codecs at runtime.  The set of available encodings depends on the
-system — glibc's iconv supports hundreds.  Whether any given iconv
+system, and glibc's iconv supports hundreds.  Whether any given iconv
 implementation accepts `std::text_encoding` labels is purely quality-of-
 implementation; the standard does not require it.  It may become recommended
 practice for a compiler to identify an iconv function that interprets its
@@ -339,7 +376,7 @@ Peace text, downloaded via `uv run python tools/download_benchmark_corpora.py`.
 
 ### Competitive Comparison: UTF-8 Decode (57 KB English → char32_t)
 
-This library is a naive scalar implementation — no SIMD, no hand-tuned assembly.
+This library is a naive scalar implementation, with no SIMD and no hand-tuned assembly.
 The comparison puts it in context against mature, production-optimized projects:
 
 | Implementation | Mean | Throughput | Notes |
@@ -353,8 +390,8 @@ The comparison puts it in context against mature, production-optimized projects:
 | `iconv_transcode_view` (this library) | 351 µs | 155 MiB/s | Batched range adaptor over iconv |
 
 The ~3x gap between beman.transcode and simdutf is the cost of scalar
-byte-at-a-time iteration vs SIMD bulk processing.  This is expected and
-acceptable for a portable, constexpr-capable, standards-track implementation.
+byte-at-a-time iteration vs SIMD bulk processing.  That is the price of a portable
+scalar decoder that also runs at compile time.
 SIMD backends could be plugged in behind the same range interface in the future
 without changing user code.
 
@@ -392,7 +429,7 @@ Shift-JIS and produces UTF-8 output bytes.
 The WHATWG table-driven decoder in this library's streaming view (80 µs, lazy
 evaluation) is competitive with encoding_rs's Rust implementation (103 µs,
 writing to a buffer).  The encoding_rs C FFI boundary is opaque to the C++
-optimizer — the same effect that any range adaptor wrapping a bulk API
+optimizer, the same effect that any range adaptor wrapping a bulk API
 experiences.
 
 The two-step bulk approach (237 µs) pays for the intermediate `char32_t` vector
@@ -462,7 +499,7 @@ All measurements on real corpus data.
 the output buffer to `input_size * 4`, making a single iconv call for the
 entire conversion instead of looping over a 4 KB buffer.
 
-`iconv_transcode_view` now batches input — for contiguous ranges it passes the
+`iconv_transcode_view` now batches input; for contiguous ranges it passes the
 entire remaining input to iconv in one call per output-buffer fill, matching
 raw iconv throughput within ~15%.  The view's residual overhead vs
 `iconv_transcode_to` is the iterator machinery and the composability cost of
@@ -538,12 +575,15 @@ You can disable building tests by setting CMake option `BEMAN_TRANSCODE_BUILD_TE
 | GCC        | 16-13   | C++26-C++23   | libstdc++         |
 | Clang      | 22-19   | C++26-C++23   | libstdc++, libc++*|
 | Clang      | 18      | C++26-C++23   | libc++            |
-
-* `libc++` on Clang 20+ is currently temporarily excluded from the CI matrix due to an upstream compiler bug causing a constraint recursion crash (`depends on itself`) when `std::expected` is used within `std::vector` combined with our iterators. We are tracking this upstream.
 | Clang      | 18      | C++23         | libstdc++         |
 | Clang      | 17      | C++26-C++23   | libc++            |
 | AppleClang | latest  | C++26-C++23   | libc++            |
 | MSVC       | latest  | C++23         | MSVC STL          |
+
+\* `libc++` on Clang 20+ is currently excluded from the CI matrix, due to an
+upstream compiler bug: a constraint recursion crash (`depends on itself`) when
+`std::expected` is used within `std::vector` combined with our iterators.  We
+are tracking it upstream.
 
 ## Development
 

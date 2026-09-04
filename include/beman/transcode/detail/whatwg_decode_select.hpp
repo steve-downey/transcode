@@ -63,59 +63,59 @@ concept single_byte_table_codec = random_access_decode_codec<C> && C != codec::x
 template <codec C>
     requires single_byte_table_codec<C>
 consteval const char32_t (&single_byte_decode_table())[128] {
-    if constexpr (C == codec::ibm866)
+    if constexpr (C == codec::ibm866) {
         return tables::ibm866;
-    else if constexpr (C == codec::iso_8859_2)
+    } else if constexpr (C == codec::iso_8859_2) {
         return tables::iso_8859_2;
-    else if constexpr (C == codec::iso_8859_3)
+    } else if constexpr (C == codec::iso_8859_3) {
         return tables::iso_8859_3;
-    else if constexpr (C == codec::iso_8859_4)
+    } else if constexpr (C == codec::iso_8859_4) {
         return tables::iso_8859_4;
-    else if constexpr (C == codec::iso_8859_5)
+    } else if constexpr (C == codec::iso_8859_5) {
         return tables::iso_8859_5;
-    else if constexpr (C == codec::iso_8859_6)
+    } else if constexpr (C == codec::iso_8859_6) {
         return tables::iso_8859_6;
-    else if constexpr (C == codec::iso_8859_7)
+    } else if constexpr (C == codec::iso_8859_7) {
         return tables::iso_8859_7;
-    else if constexpr (C == codec::iso_8859_8 || C == codec::iso_8859_8_i)
+    } else if constexpr (C == codec::iso_8859_8 || C == codec::iso_8859_8_i) {
         return tables::iso_8859_8;
-    else if constexpr (C == codec::iso_8859_10)
+    } else if constexpr (C == codec::iso_8859_10) {
         return tables::iso_8859_10;
-    else if constexpr (C == codec::iso_8859_13)
+    } else if constexpr (C == codec::iso_8859_13) {
         return tables::iso_8859_13;
-    else if constexpr (C == codec::iso_8859_14)
+    } else if constexpr (C == codec::iso_8859_14) {
         return tables::iso_8859_14;
-    else if constexpr (C == codec::iso_8859_15)
+    } else if constexpr (C == codec::iso_8859_15) {
         return tables::iso_8859_15;
-    else if constexpr (C == codec::iso_8859_16)
+    } else if constexpr (C == codec::iso_8859_16) {
         return tables::iso_8859_16;
-    else if constexpr (C == codec::koi8_r)
+    } else if constexpr (C == codec::koi8_r) {
         return tables::koi8_r;
-    else if constexpr (C == codec::koi8_u)
+    } else if constexpr (C == codec::koi8_u) {
         return tables::koi8_u;
-    else if constexpr (C == codec::macintosh)
+    } else if constexpr (C == codec::macintosh) {
         return tables::macintosh;
-    else if constexpr (C == codec::windows_874)
+    } else if constexpr (C == codec::windows_874) {
         return tables::windows_874;
-    else if constexpr (C == codec::windows_1250)
+    } else if constexpr (C == codec::windows_1250) {
         return tables::windows_1250;
-    else if constexpr (C == codec::windows_1251)
+    } else if constexpr (C == codec::windows_1251) {
         return tables::windows_1251;
-    else if constexpr (C == codec::windows_1252)
+    } else if constexpr (C == codec::windows_1252) {
         return tables::windows_1252;
-    else if constexpr (C == codec::windows_1253)
+    } else if constexpr (C == codec::windows_1253) {
         return tables::windows_1253;
-    else if constexpr (C == codec::windows_1254)
+    } else if constexpr (C == codec::windows_1254) {
         return tables::windows_1254;
-    else if constexpr (C == codec::windows_1255)
+    } else if constexpr (C == codec::windows_1255) {
         return tables::windows_1255;
-    else if constexpr (C == codec::windows_1256)
+    } else if constexpr (C == codec::windows_1256) {
         return tables::windows_1256;
-    else if constexpr (C == codec::windows_1257)
+    } else if constexpr (C == codec::windows_1257) {
         return tables::windows_1257;
-    else if constexpr (C == codec::windows_1258)
+    } else if constexpr (C == codec::windows_1258) {
         return tables::windows_1258;
-    else {
+    } else {
         static_assert(C == codec::x_mac_cyrillic, "single_byte_decode_table: codec has no single-byte table");
         return tables::x_mac_cyrillic;
     }

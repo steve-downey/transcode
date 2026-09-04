@@ -77,7 +77,7 @@ temporary directory and diffs.  CI runs the check.  Committing the fragments
 keeps the paper buildable on a machine with no specgen and no Clang 22, which
 is the normal case for a co-author.
 
-**D3 — Transclusion is native pandoc multi-file input.**  `wg21.mk` builds its
+**D3 — Transclusion is native pandoc multi-file input.**  `base.mk` builds its
 pandoc command from `$(filter %.md, $^)`, so a target with several markdown
 prerequisites is concatenated in prerequisite order.  The paper targets get the
 fragment list as ordered prerequisites; the order comes from the manifest

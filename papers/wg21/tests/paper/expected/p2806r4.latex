@@ -147,7 +147,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={Inline Formatting Tests},
+  pdftitle={Remapped Test Paper},
   pdflang={en},
   colorlinks=true,
   linkcolor={blue},
@@ -164,19 +164,18 @@
   \vskip 1.5em
   \begin{flushright}
     \begin{tabular}{ll}
-Document \#:&D0000R1\\
+Document \#:&P2806R4\\
 Date:       &\@date\\
 Project:    &Programming Language C++\\
-Audience:   &Library Evolution\\
+Audience:   &WG21\\
 Reply-to:   \@author
     \end{tabular}
   \end{flushright}
 }
 \makeatother
 
-\title{Inline Formatting Tests}
-\author{&Test
-Author\\&<\href{mailto:test@example.com}{\nolinkurl{test@example.com}}>\\}
+\title{Remapped Test Paper}
+\author{&Test Author\\}
 \date{2026-01-01}
 
 \begin{document}
@@ -185,80 +184,12 @@ Author\\&<\href{mailto:test@example.com}{\nolinkurl{test@example.com}}>\\}
 
 {
 \hypersetup{linkcolor=black}
-\setcounter{tocdepth}{2}
+\setcounter{tocdepth}{3}
 \hypertarget{toctitle}{\label{toctitle}}
 \tableofcontents
 }
-\section{\texorpdfstring{Inline
-Formatting\hyperref[inline-formatting]{}}{Inline Formatting}}\label{inline-formatting}
+\section{\texorpdfstring{Introduction\hyperref[introduction]{}}{Introduction}}\label{introduction}
 
-Inline formatting such as \textbf{bold}, \emph{italics}, and
-\VERB|\NormalTok{verbatim}| work as expected. There are also useful
-extensions such as \st{strikeout}, su\textsubscript{b}script,
-su\textsuperscript{per}script, highlighted text
-{{\setlength{\fboxsep}{1pt}\colorbox{yellow}{highlighted}}}, and
-highlighted code: \VERB|\KeywordTok{constexpr}|, including a custom
-keyword: \VERB|\KeywordTok{match}|.
-
-Various compositions in compact list:
-
-\begin{itemize}
-\tightlist
-\item
-  \st{{\mbox{\VERB|\NormalTok{A}\OperatorTok{\textless{}}\NormalTok{B}\OperatorTok{\textless{}}\NormalTok{T}\OperatorTok{\textgreater{}\textgreater{}}|}}}
-\item
-  \VERB|\NormalTok{compare\_3way}|
-\item
-  {{\color[HTML]{006e28}\uline{\VERB|\NormalTok{compare\_3way}|}}}
-\item
-  \VERB|\NormalTok{3WAY}|\VERB|\OperatorTok{\textless{}}\NormalTok{R}\OperatorTok{\textgreater{}}|
-\item
-  \VERB|\NormalTok{operator@}|
-\item
-  \VERB|\KeywordTok{operator}\OperatorTok{+}|
-\item
-  \VERB|\NormalTok{x @ y}|
-\item
-  \st{{\mbox{\VERB|\NormalTok{x }\OperatorTok{\&}\NormalTok{ y}|}}}
-\item
-  \textbf{foo \VERB|\KeywordTok{constexpr}| bar}
-\item
-  \emph{foo \VERB|\KeywordTok{constexpr}| bar}
-\item
-  \st{foo {\mbox{\VERB|\KeywordTok{constexpr}|}} bar}
-\item
-  {{\color[HTML]{006e28}\uline{\VERB|\NormalTok{hello world}|}}}
-\item
-  \VERB|\NormalTok{{{\color[HTML]{006e28}\uline{hello\textless{}T\textgreater{}}}}}|
-\item
-  \st{\emph{{\mbox{\VERB|\NormalTok{hello world}|}}}}
-\item
-  \st{{\mbox{\VERB|\NormalTok{hello world}|}}}
-\item
-  \VERB|\KeywordTok{namespace}\NormalTok{ \emph{unspecified} }\OperatorTok{\{} \KeywordTok{struct}\NormalTok{ sender\_base }\OperatorTok{\{\};} \OperatorTok{\}}|
-\item
-  \VERB|\KeywordTok{namespace}\NormalTok{ \emph{unspecified} }\OperatorTok{\{} \KeywordTok{struct}\NormalTok{ sender\_base }\OperatorTok{\{\};} \OperatorTok{\}}|
-\item
-  \VERB|\KeywordTok{constexpr}\NormalTok{\emph{\textsubscript{opt}}}|
-\item
-  {{\setlength{\fboxsep}{1pt}\colorbox{yellow}{highlighted}}}
-\item
-  \VERB|\DataTypeTok{void}\NormalTok{ {{\setlength{\fboxsep}{1pt}\colorbox{yellow}{foo}}}}\OperatorTok{();}|
-\item
-  {{\setlength{\fboxsep}{1pt}\colorbox{yellow}{{\mbox{\VERB|\DataTypeTok{void}\NormalTok{ foo}\OperatorTok{();}|}}}}}
-\item
-  \(\frac{a+b}{2}\)
-\item
-  \VERB|\NormalTok{string format}\OperatorTok{(...);}  \CommentTok{// {28.5.5 Formatting functions \href{https://eel.is/c++draft/format.functions}{{[}format.functions{]}}}}|
-\end{itemize}
-
-Loose list:
-
-\begin{itemize}
-\item
-  \VERB|\NormalTok{x\emph{\textsubscript{i}} }\OperatorTok{\textless{}=\textgreater{}}\NormalTok{ y\emph{\textsubscript{i}}}|
-\item
-  {{\color[HTML]{bf0303}\sout{foo \VERB|\NormalTok{hello world}| bar}}}
-\end{itemize}
+This is a remapped paper-layout test.
 
 \end{document}

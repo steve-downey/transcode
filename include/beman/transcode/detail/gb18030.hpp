@@ -42,7 +42,7 @@ template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr gb18030_decode_result gb18030_decode_one(I& current, S end);
 
 // Encode one Unicode codepoint as GB18030.
-// GB18030 covers all Unicode, so is_error is never true for valid scalar values.
+// WHATWG maps U+E5E5 to an encoder error for deployed-content compatibility.
 constexpr gb18030_encode_result gb18030_encode_one(char32_t cp);
 
 // ---------------------------------------------------------------------------
@@ -186,6 +186,11 @@ constexpr gb18030_encode_result gb18030_encode_one(char32_t cp) {
     if (cp < 0x80) {
         r.bytes[0] = static_cast<unsigned char>(cp);
         r.count    = 1;
+        return r;
+    }
+
+    if (cp == static_cast<char32_t>(0xE5E5)) {
+        r.is_error = true;
         return r;
     }
 

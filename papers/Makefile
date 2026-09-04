@@ -19,7 +19,7 @@ include wg21/flat.mk
 
 # The wording clauses are generated from the marked-up headers by
 # papers/wording/generate.sh, which also writes wording/wording.mk listing the
-# fragments in document order.  wg21.mk builds its pandoc command from
+# fragments in document order.  base.mk builds its pandoc command from
 # `$(filter %.md, $^)`, so naming them as ordered prerequisites is what
 # transcludes them: pandoc concatenates the paper and its wording in
 # prerequisite order.  These rules are explicit rather than relying on the

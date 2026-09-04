@@ -7,6 +7,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_WHATWG_ENCODE_SELECT_HPP
 
 #include <beman/transcode/codec.hpp>
+#include <beman/transcode/concepts.hpp>
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/detail/tables/ibm866.hpp>
@@ -48,6 +49,17 @@ concept random_access_encode_codec =
     C == codec::macintosh || C == codec::windows_874 || C == codec::windows_1250 || C == codec::windows_1251 ||
     C == codec::windows_1252 || C == codec::windows_1253 || C == codec::windows_1254 || C == codec::windows_1255 ||
     C == codec::windows_1256 || C == codec::windows_1257 || C == codec::windows_1258 || C == codec::x_mac_cyrillic;
+
+// WHATWG defines a decoder for every codec but an encoder for only some of
+// them: replacement, x-user-defined and the UTF-16 pair decode only. Naming one
+// of those in an encode pipeline is a compile-time error, not a runtime one.
+template <codec C>
+concept whatwg_encode_codec =
+    C == codec::utf_8 || random_access_encode_codec<C> || C == codec::gbk || C == codec::gb18030 || C == codec::big5 ||
+    C == codec::shift_jis || C == codec::euc_jp || C == codec::iso_2022_jp || C == codec::euc_kr;
+
+template <codec C, typename R>
+concept whatwg_encode_input = unicode_scalar_range<R> && whatwg_encode_codec<C>;
 
 template <codec C>
 consteval const char32_t (&random_access_encode_table())[128] {

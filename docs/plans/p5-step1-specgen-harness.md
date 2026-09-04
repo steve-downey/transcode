@@ -20,11 +20,12 @@ vendored `papers/wg21/` subtree, outputs in `papers/generated/`.
 
 Two facts about that framework drive the design:
 
-- `wg21.mk` builds its pandoc command as
+- `base.mk` builds its pandoc command as
   `pandoc $(DATADIR)/srefs.defs $(filter %.md, $^) -o $@ ...`.  **Every markdown
   prerequisite is an input, concatenated in prerequisite order.**  That is the
   transclusion mechanism (index D3); nothing else is needed.
-- `flat.mk` sets `SRC := $(wildcard *.md)` and makes a paper target of each.
+- `flat.mk` sets `src := $(wildcard *.md)` (less CHANGELOG/LICENSE/README) and
+  makes a paper target of each.
   Generated fragments must therefore live in a subdirectory (index D4).
 
 ## Tasks
