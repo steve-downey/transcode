@@ -43,8 +43,8 @@ make drift between the headers and the paper a CI failure.
    and skip it with an explicit, loud message elsewhere, rather than silently
    passing.
 6. **Full-document validation.**  `specgen render --validate` over every
-   spec-facing header must be clean except for index U1's known `ranges` noise;
-   when U1 lands upstream, remove the allowlist and make the check absolute.
+   spec-facing header must be clean, with no allowlist: U1 landed upstream on
+   2026-09-04 and the `ranges` noise it excused is gone.
 7. **Bump the paper's revision** and update the abstract to say the wording is
    generated from the reference implementation — that is a claim reviewers
    should be able to check, and it is the phase's headline.

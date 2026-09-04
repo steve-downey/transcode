@@ -146,84 +146,114 @@ mid-phase stop still leaves the paper buildable.
 These are upstream changes to specgen.  They are tracked here because they gate
 transcode steps, but they are executed in the specgen repository.
 
-- **U1 — `ranges::` reported as leakage.**  Every view in this library derives
-  from `std::ranges::view_interface`; the namespace drop set maps `std` away and
-  leaves `ranges::`, which the leakage checker then reports as an undocumented
-  entity.  The draft writes `ranges::view_interface` exactly that way, so the
-  finding is wrong.  specgen has no corpus header that uses a `std::`
-  sub-namespace, which is why it has not been seen.  Reproduction: run the
-  whatwg_decode_view command above, then
-  `specgen render --from-ir - --backend mpark --validate`.
+**Re-measured 2026-09-04** against specgen at `af60209`, which landed eight
+fixes.  Every item below carries its verified state; the probes are in the
+review that produced them.  Headline: `whatwg_decode_view.hpp` went from 64
+findings to 29, and no finding anywhere is `ranges` noise any more.  Across all
+eleven spec-facing headers the worklist is 128 findings, and every one of them
+is real work rather than something to allowlist.
 
-  Step 3 isolated it.  The finding fires on a **bare `ranges::` token inside a
-  class synopsis** — one whose `std::` prefix the drop set removed.  The WHATWG
-  views define `begin`, `end` and `size` in-class, so their synopses carry
-  `ranges::begin(base_)`, `ranges::view_interface` in the base-clause, and
-  `ranges::sized_range` in requires-clauses; `null_term.hpp` and
-  `decode_view.hpp` define those members out of line and draw no finding.  A
-  probe header confirms the same spelling inside a *concept* definition is
-  silent, so it is the class-synopsis path specifically.  The drop is correct —
-  the draft writes `ranges::view_interface` — and only the leakage checker's
-  reading of what is left needs to change.  **Gates a clean `--validate` in
-  Steps 6-10**; those steps track the `ranges` findings as a known-noise
-  allowlist rather than driving to zero.
-- **U2 — `--base-heading-level` on the command line.**  The mpark backend hard
-  codes level 2, so generated clause headings are `##` and land as siblings of
-  the paper's own `##` sections.  A flag would let the wording nest under a
-  `## Wording` heading.  Not blocking: Step 10 can accept flat headings or
-  post-process, and the plan says which it did.
+- **U1 — `ranges::` reported as leakage.  FIXED** (specgen `b1054dd`).  The
+  leakage checker skipped a foreign qualifier when its namespace was declared
+  outside the main file, which was the wrong discriminator; it now skips a
+  chain link whose qualified path is rooted in `std::` and reports every other
+  surviving qualifier wherever it was declared.  Verified: zero `ranges`
+  findings across all eleven headers, and the `ranges::view_interface`
+  base-clauses that produced them render unchanged.  **Steps 6-10 no longer
+  need the known-noise allowlist**; drive `--validate` to zero.
+
+  The same fix cuts the other way and is why the remaining counts are worth
+  trusting: `detail::` reached through an included header used to pass
+  silently, and Step 3 moved exactly that machinery into
+  `detail/range_traits.hpp` and `detail/whatwg_{decode,encode}_select.hpp`.
+  Those leaks are now reported.  They are D7 work, not noise.
+- **U2 — `--base-heading-level` on the command line.  NOT fixed.**  The mpark
+  backend hard codes level 2, so generated clause headings are `##` and land as
+  siblings of the paper's own `##` sections.  A flag would let the wording nest
+  under a `## Wording` heading.  Not blocking: Step 10 can accept flat headings
+  or post-process, and the plan says which it did.
 - **U3 — namespace mapping is automatic.**  `build_namespace_drop_set` derives
   the drop set from the header's own top-level namespaces, so
   `beman::transcoding` maps to `std` with no configuration.  Nothing to do;
   recorded so no step goes looking for a mapping option that does not exist.
-- **U4 — a deduction guide corrupts a gathered `.syn` synopsis.**  Found in
-  Step 1.  With a `\rSec2[x.syn]` gathered-synopsis region (architecture §3.4),
-  a class-template deduction guide makes the rendered synopsis repeat the class
-  body three times with `<deduction guide for null_term_view>` substituted for
-  the class name.  Neither `\omit` nor `\merge` suppresses it, and moving the
-  guide after the `/// END` fence or to the end of the file does not change it —
-  consistent with Clang reporting the guide's location inside the class.
-  Without a gathered region, `\omit` on the guide works and the output is
-  clean, which is why Step 1 does not use one.  Step 2 bounded the damage:
-  `null_term_view`'s is the **only** deduction guide in the library, so this
-  gates the `<null_term>` synopsis alone and not the `<transcode>` one — D1 and
-  Step 3 task 4 are clear.
-- **U5 — a docblock on an in-class hidden friend is not attached.**  Found in
-  Step 1.  `null_sentinel_t`'s `friend constexpr bool operator==` carries a
-  `//! \returns` docblock and is still reported as
-  "declared in the synopsis but is not described".  Same result with `/*! */`,
-  and with or without an `\at` route to an existing section.  Hidden friends
-  are a deliberate pattern in this library (`CLAUDE.md`), so this affects every
-  comparison operator and every pipe `operator|` that ends up in the wording.
-  **Gates the `null_sentinel_t` wording in Step 4** and the closure types
-  later.
+- **U4 — a deduction guide corrupts a gathered `.syn` synopsis.  NOT fixed,
+  and now silent.**  With a `\rSec2[x.syn]` region closed by a
+  `/// END [x.syn]` fence, the rendered synopsis still repeats the class body
+  with `<deduction guide for holder>` substituted for the class name, and
+  `\omit` on the guide does not suppress it.  What changed is that
+  `--validate` now reports **nothing** for the corrupted output, so the drift
+  gate will not catch it.  Still **gates the `<null_term>` header synopsis**,
+  and the corruption is now something a human has to see.
+
+  Two further notes for whoever picks this up.  Closing the region needs a
+  `/// END [x.syn]` fence, and this repo's standing conventions above reserve
+  `///` as unused — adopting a gathered synopsis means amending that rule.  And
+  outside a gathered region the guide is fine: `\omit` works and the output is
+  clean, which is still what Step 1 relies on.
+- **U5 — a docblock on an in-class hidden friend is not attached.  FIXED for
+  the general case; a narrower bug remains.**  The docblock now attaches and
+  renders as an itemdecl with its elements, provided the member is routed —
+  a `\rSec` section plus a `\ref{stable.name}` group in the class body, or an
+  `\at`.  Unrouted, the diagnostic is no longer "is not described" but the far
+  more useful "the description of `operator==` is routed to no section".
+
+  What still fails is narrow and was mis-diagnosed as being about hidden
+  friends: the docblock is dropped only when the declaration carries a
+  **requires-clause holding a requires-expression**.  Probes isolate it —
+  a constrained template parameter (`template <std::input_iterator I>`) is
+  clean, a named constraint (`requires std::equality_comparable<I>`) is clean,
+  and `requires requires(I i) { { *i == 0 }; }` is not.  `null_sentinel_t`'s
+  `operator==` is spelled the one way that fails.
+
+  **`null.term.sentinel` is unblocked**, at the price of naming the concept —
+  which is better wording material anyway, and which fix `1a6728f` now renders
+  as a documented item in its own right.  Step 4 owns the choice of where that
+  concept lives, because `detail::` in the signature would violate D7.
 - **U6 — every generated clause heading warns at paper-build time.**  mpark
   prints `stable name null.term.view not found` for each `{- .sref}` span whose
   name is not in its stable-names database, which by definition is every clause
   a paper proposes.  specgen already emits the unnumbered form to avoid this and
   it warns anyway.  **Gates Step 10's acceptance criterion** of a warning-free
-  build; the fix may belong in mpark/wg21 rather than specgen.
-- **U7 — no way to mask a variable's type.**  A customization point object is
-  spelled `inline constexpr unspecified null_term;` in the draft.  `\seebelow`
-  masks a function return type or an alias RHS, not a variable's type, so
-  `views::null_term` can currently only be `\omit`ted — which is what Step 1
-  does.  Wanted for Step 4.
-- **U8 — `\expos` does not apply to class templates or alias templates.**
-  Found in Step 3 with a probe header.  `\expos` on a namespace-scope *concept*
-  works: it renders as `$const-iterable$` with a `// exposition only` comment.
-  On a class template the marker is ignored and the name renders verbatim; on an
-  alias template the declaration is dropped from the synopsis and its uses
-  render unrenamed.  The draft's own exposition-only helpers include alias
-  templates (`$maybe-const$`) and class templates, so this is a real gap.
-  Wanted for `[transcode.reqs]`'s const-compatibility chain; see
+  build; the fix may belong in mpark/wg21 rather than specgen.  Not re-measured
+  on 2026-09-04: it is a paper-build warning, not a specgen finding.
+- **U7 — no way to mask a variable's type.  NOT fixed.**  A customization point
+  object is spelled `inline constexpr unspecified null_term;` in the draft.
+  `\seebelow` on a namespace-scope variable is still accepted with no effect:
+  a probe renders `inline constexpr detail::adaptor thing{};` verbatim,
+  initializer and all, and the `detail` qualifier is then reported as leakage.
+  So `views::null_term` can still only be `\omit`ted, which is what Step 1
+  does.  Note that `1a6728f` did make documented namespace-scope *variables*
+  render as wording items; it is the type masking that is missing, not the
+  rendering.  Wanted for Step 4.
+- **U8 — `\expos` does not apply to class templates or alias templates.  HALF
+  fixed** (specgen `26b7b7d`).  Alias templates now work: a marked one renders
+  as `using $maybe-const$ = ...; // exposition only` with its uses rewritten to
+  the exposid.  **Class templates still ignore the marker** — the name renders
+  verbatim with no exposition-only comment.  The draft's exposition-only
+  helpers include both kinds, so `[transcode.reqs]`'s const-compatibility chain
+  is unblocked exactly to the extent it is spelled as aliases; see
   `docs/wording-outline.md`, "The `detail::` audit".
-- **U9 — identifiers inside a string literal are scanned for leakage.**  The
-  WHATWG closures' `static_assert` diagnostic says "use
-  `beman::transcoding::views::null_term` …", and the leakage checker reports
-  `beman` as an undocumented qualifier from inside that string.  A qualified
-  name in a diagnostic message is text, not a reference.  Low priority: the
-  closure types are exposition-only in the wording anyway, so the bodies stop
-  being rendered once U7 lands.
+- **U9 — identifiers inside a string literal are scanned for leakage.  FIXED**
+  (specgen `b1054dd`, same change as U1).  The WHATWG closures'
+  `static_assert` diagnostic still says "use
+  `beman::transcoding::views::null_term` …" and no longer draws a `beman`
+  qualifier finding.
+
+Two defects found by this review and not yet filed upstream:
+
+- **N1 — a constructor's member-initializer list renders into the class
+  synopsis.**  Fix `f45e53e` splices in-class *bodies* out of the synopsis
+  unconditionally, but not the ctor-init-list that precedes one, so
+  `random_access_whatwg_decode_view` renders as
+  `constexpr explicit random_access_whatwg_decode_view(R base) : base_(move(base));`
+  where the draft would write the declaration alone.  Fix `eedc9ad`'s new
+  private-member check then correctly reports the `base_` it exposes, which is
+  how this surfaced: four findings across the view headers, naming `base_` and
+  `codec_`.  The finding is right and the rendering is what is wrong.
+- **N2 — U4's corruption is invisible to `--validate`.**  Recorded under U4
+  above; separate from the corruption itself, because a silent drift gate is
+  the part that would let a bad synopsis reach the paper.
+
 
 ## Risks
 

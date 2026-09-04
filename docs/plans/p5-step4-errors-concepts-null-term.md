@@ -40,9 +40,8 @@ what is different.
    `specgen render --from-ir <ir> --backend mpark --validate`.  Coverage errors
    mean a declaration has no home; leakage errors mean the wording names
    something the reader cannot see.  Both are real; fix the header, not the
-   report.  The `ranges` findings from index U1 are the one allowed exception,
-   and they are listed in the step's commit message so the allowlist stays
-   visible.
+   report.  There is no allowed exception: U1 landed upstream on 2026-09-04,
+   so the `ranges` findings that used to be excused no longer occur.
 6. **Commit headers and `papers/wording/*.md` together.**  A commit where they
    disagree fails `make wording-check`, which is the point.
 
@@ -65,9 +64,16 @@ what is different.
   `detail::null_term_fn` / `null_term_adaptor`, and on `views::null_term`.  Two
   of those omissions are placeholders this step has to replace, and both are
   blocked upstream:
-  - `null_sentinel_t`'s hidden-friend `operator==` carries a docblock specgen
-    does not attach (index U5), so it is still reported undescribed and its
-    `[null.term.sentinel]` section renders empty.
+  - `null_sentinel_t`'s hidden-friend `operator==` is **no longer blocked**.
+    specgen attaches the docblock once the member is routed, so the clause
+    needs a `\rSec2[null.term.sentinel]` section and a
+    `\ref{null.term.sentinel}` group in the class body.  One thing has to
+    change with it: the docblock is still dropped when the declaration carries
+    a requires-expression, which is exactly how this `operator==` is spelled
+    (`requires requires(I i) { { *i == 0 }; }`).  Naming that constraint as a
+    concept fixes it and is better wording anyway — but the concept cannot live
+    in `detail::` and still be named in a spec-visible signature (D7), so
+    deciding where it goes is part of this step.  See index U5.
   - `views::null_term` is `\omit`ted because its type is
     `detail::null_term_adaptor` and there is no way to render it as
     `inline constexpr unspecified null_term;` (index U7).
@@ -85,6 +91,7 @@ what is different.
 - `papers/wording/transcode.errors.md`, `transcode.reqs.md` and `null.term.md`
   exist and are non-empty.
 - `--validate` on the affected headers: no coverage findings, no `detail`
-  leakage findings, only index U1's `ranges` noise.
+  leakage findings, and no `ranges` noise -- U1 is fixed, so the clean bar is
+  absolute.
 - `make wording-check`, `make lint`, `make test` green.
 - The paper builds and the three clauses appear in it.

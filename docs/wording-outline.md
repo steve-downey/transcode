@@ -11,7 +11,8 @@ an ordering key.  Changing one later renames a file, a heading and a
 cross-reference at once.
 
 See `docs/plans/phase5-index.md` for the plan, its decisions D1-D7, and the
-upstream specgen items U1-U7 referenced below.
+upstream specgen items U1-U9 referenced below, whose state was re-measured
+on 2026-09-04 (see the index).
 
 ## How the tree maps onto fragments
 
@@ -67,7 +68,7 @@ subject entirely.
 | Stable name | Depth | Title | Entities | Generated from |
 |---|---|---|---|---|
 | `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | `null_term.hpp` |
-| `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | blocked on index U5 |
+| `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | unblocked 2026-09-04; needs the constraint named, see index U5 |
 | `null.term.view` | 2 | Class template `null_term_view` | the constructor, `begin`, `end` | done in Step 1 |
 | `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | blocked on index U7 |
 
