@@ -218,7 +218,7 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
 
         base_iter     current_{};
         base_sent     end_{};
-        result_t      value_;
+        result_t      value_{};
         bool          done_{false};
         int           pending_count_{0};
         unsigned char pending_[2]{};
