@@ -19,6 +19,7 @@ else()
         PUBLIC
             FILE_SET HEADERS
                 FILES
+                    codec.hpp
                     config.hpp
                     codec_concepts.hpp
                     codec_result.hpp
