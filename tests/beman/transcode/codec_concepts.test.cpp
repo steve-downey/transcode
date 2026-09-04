@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/detail/codec_concepts.hpp>
-#include <beman/transcode/detail/codec_concepts.hpp>
+#include <beman/transcode/codec_concepts.hpp>
+#include <beman/transcode/codec_concepts.hpp>
 
 #include <beman/transcode/detail/table_codec.hpp>
 #include <beman/transcode/detail/table_codec.hpp>

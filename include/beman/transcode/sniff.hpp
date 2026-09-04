@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_SNIFF_HPP
-#define INCLUDE_BEMAN_TRANSCODE_DETAIL_SNIFF_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_SNIFF_HPP
+#define INCLUDE_BEMAN_TRANSCODE_SNIFF_HPP
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/concepts.hpp>
-#include <beman/transcode/detail/null_term.hpp>
+#include <beman/transcode/concepts.hpp>
+#include <beman/transcode/null_term.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
@@ -59,4 +59,4 @@ constexpr std::optional<codec> sniff_encoding(R&& r) noexcept {
 
 } // namespace beman::transcoding
 
-#endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_SNIFF_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_SNIFF_HPP

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_RESULT_HPP
-#define INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_RESULT_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_CODEC_RESULT_HPP
+#define INCLUDE_BEMAN_TRANSCODE_CODEC_RESULT_HPP
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/error.hpp>
+#include <beman/transcode/error.hpp>
 
 namespace beman::transcoding {
 
@@ -23,4 +23,4 @@ struct encode_result {
 
 } // namespace beman::transcoding
 
-#endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_RESULT_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_CODEC_RESULT_HPP

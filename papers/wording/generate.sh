@@ -1,0 +1,145 @@
+#!/bin/sh
+# papers/wording/generate.sh                                          -*-sh-*-
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Regenerate the paper's wording fragments from the marked-up headers.
+#
+# This is the only place beman.specgen is invoked from (see
+# docs/plans/phase5-index.md, "Standing conventions").  Everything it writes
+# into this directory is generated output: the mpark/wg21 fragments and the
+# wording.mk that lists them in document order for papers/Makefile.  Do not
+# edit those by hand; edit the markup in the headers and run this again.
+#
+# Usage:
+#   papers/wording/generate.sh [--out DIR] [--validate]
+#
+#   --out DIR   write the fragments and wording.mk here instead of into
+#               papers/wording (used by `make wording-check`, which
+#               regenerates into a scratch directory and diffs)
+#   --validate  additionally run specgen's wording validators over each
+#               header and report the findings.  Findings are printed, not
+#               applied: this exits non-zero when any of them is an error, so
+#               it is a reporting target and not part of `make wording`.
+#
+# Environment:
+#   SPECGEN                       the specgen executable (default: `specgen`)
+#   BEMAN_TRANSCODE_BUILD_INCLUDE the build tree's include directory, which is
+#                                 where CMake writes config_generated.hpp.
+#                                 Added to the parse only when it exists; the
+#                                 umbrella header needs it, the others do not.
+#   SPECGEN_GCC_TOOLCHAIN         a GCC installation prefix to parse against.
+#                                 Unset by default: Clang selects the newest
+#                                 installed GCC on its own, which is GCC 16 on
+#                                 a machine set up to build this project.
+
+set -eu
+
+usage() {
+    sed -n '3,32p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+out_dir=
+validate=0
+while [ $# -gt 0 ]; do
+    case $1 in
+    --out)
+        [ $# -ge 2 ] || {
+            echo "generate.sh: --out needs a directory" >&2
+            exit 2
+        }
+        out_dir=$2
+        shift
+        ;;
+    --validate) validate=1 ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    *)
+        echo "generate.sh: unknown argument '$1'" >&2
+        exit 2
+        ;;
+    esac
+    shift
+done
+
+script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+repo_root=$(CDPATH='' cd -- "$script_dir/../.." && pwd)
+[ -n "$out_dir" ] || out_dir=$script_dir
+mkdir -p "$out_dir"
+out_dir=$(CDPATH='' cd -- "$out_dir" && pwd)
+out_parent=$(dirname -- "$out_dir")
+out_name=$(basename -- "$out_dir")
+
+specgen=${SPECGEN:-specgen}
+command -v "$specgen" >/dev/null 2>&1 || {
+    echo "generate.sh: '$specgen' not found on PATH." >&2
+    echo "  beman.specgen builds it; see ~/src/specgen/main/docs/building.md." >&2
+    echo "  Set SPECGEN=<path> to use a build tree copy." >&2
+    exit 1
+}
+
+# The parse tail, in one place.  --no-compile-commands keeps generation
+# independent of whatever build database happens to be lying around: the
+# wording must not change because someone reconfigured their build tree.
+clang_args="-std=c++2c -I $repo_root/include"
+build_include=${BEMAN_TRANSCODE_BUILD_INCLUDE:-$repo_root/.build/build-system/include}
+[ -d "$build_include" ] && clang_args="$clang_args -I $build_include"
+[ -z "${SPECGEN_GCC_TOOLCHAIN:-}" ] || clang_args="$clang_args --gcc-toolchain=$SPECGEN_GCC_TOOLCHAIN"
+
+# The spec-facing headers, one specgen document each, in the order their
+# clauses appear in the paper.  Each line is
+#
+#     <header path relative to the repository root>|<root fragment name>
+#
+# where the root fragment holds whatever is outside every \rSec section --
+# the header synopsis.  Adding a clause means adding markup to a header, and
+# adding a header means adding a line here.
+spec_headers() {
+    cat <<'HEADERS'
+include/beman/transcode/null_term.hpp|null.term
+HEADERS
+}
+
+ir_dir=$(mktemp -d)
+trap 'rm -rf "$ir_dir"' EXIT INT TERM
+
+rm -f "$out_dir"/*.md "$out_dir/wording.mk"
+
+manifest=$ir_dir/manifest
+: >"$manifest"
+findings=0
+
+while IFS='|' read -r header root; do
+    [ -n "$header" ] || continue
+    ir=$ir_dir/$(echo "$root" | tr '.' '_').json
+    # shellcheck disable=SC2086 # clang_args is a deliberate argument list
+    "$specgen" generate --emit-ir "$repo_root/$header" --no-compile-commands \
+        -o "$ir" -- $clang_args
+    (
+        cd "$out_parent" &&
+            "$specgen" render --from-ir "$ir" --backend mpark \
+                --split "$out_name" --root "$root"
+    ) >>"$manifest"
+    if [ "$validate" -eq 1 ]; then
+        echo "== $header" >&2
+        "$specgen" render --from-ir "$ir" --backend mpark --validate \
+            -o /dev/null || findings=1
+    fi
+done <<HEADERS
+$(spec_headers)
+HEADERS
+
+# The manifest is document order, and document order is the order pandoc has
+# to concatenate the fragments in, so it is what papers/Makefile consumes.
+{
+    echo "# Generated by papers/wording/generate.sh -- do not edit."
+    echo "# The paper's wording fragments, in document order."
+    echo "WORDING_MD := \\"
+    sed -e 's/^/\t/' -e 's/$/ \\/' -e '$ s/ \\$//' "$manifest"
+} >"$out_dir/wording.mk"
+
+if [ "$validate" -eq 1 ] && [ "$findings" -ne 0 ]; then
+    echo "generate.sh: validation reported errors (see above)" >&2
+    exit 1
+fi

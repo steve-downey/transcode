@@ -3,7 +3,7 @@
 #include <beman/transcode/iconv_transcode_view.hpp>
 #include <beman/transcode/iconv_transcode_view.hpp>
 
-#include <beman/transcode/detail/null_term.hpp>
+#include <beman/transcode/null_term.hpp>
 #include <beman/transcode/iconv_bulk.hpp>
 #include <beman/transcode/iconv_real.hpp>
 #include <beman/transcode/iconv_transcode_or_error_view.hpp>

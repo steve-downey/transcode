@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#ifndef INCLUDE_BEMAN_TRANSCODE_CONCEPTS_HPP
+#define INCLUDE_BEMAN_TRANSCODE_CONCEPTS_HPP
+
+#include <beman/transcode/config.hpp>
+
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <concepts>
+    #include <cstddef>
+    #include <ranges>
+    #include <type_traits>
+
+#endif
+namespace beman::transcoding {
+
+namespace detail {
+
+template <typename T>
+concept legacy_byte_type = std::same_as<T, char> || std::same_as<T, signed char> || std::same_as<T, unsigned char> ||
+                           std::same_as<T, std::byte>;
+
+} // namespace detail
+
+template <typename R>
+concept legacy_byte_range = std::ranges::range<R> && !std::is_array_v<std::remove_cvref_t<R>> &&
+                            detail::legacy_byte_type<std::remove_cv_t<std::ranges::range_value_t<R>>>;
+
+// Type-level gate for the WHATWG encoder input queue. The semantic precondition
+// is stronger: each char32_t value must be a Unicode scalar value.
+template <typename R>
+concept unicode_scalar_range = std::ranges::input_range<R> && !std::is_array_v<std::remove_cvref_t<R>> &&
+                               std::same_as<std::remove_cv_t<std::ranges::range_value_t<R>>, char32_t>;
+
+} // namespace beman::transcoding
+
+#endif // INCLUDE_BEMAN_TRANSCODE_CONCEPTS_HPP

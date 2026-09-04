@@ -5,7 +5,7 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/codec_concepts.hpp>
+#include <beman/transcode/codec_concepts.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <array>

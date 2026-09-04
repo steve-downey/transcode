@@ -57,9 +57,15 @@ To run a single test binary:
 The library is entirely in `include/beman/transcode/`:
 
 - **`whatwg_decode_view.hpp`** — Core range view that decodes a byte range (legacy chars/`std::byte`) to `char32_t` Unicode codepoints following the WHATWG UTF-8 codec. Invalid sequences yield `U'�'`.
-- **`detail/concepts.hpp`** — The `legacy_byte_range` concept: accepts ranges of `char`/`signed char`/`unsigned char`/`std::byte`, explicitly rejects raw arrays (to avoid silent null-terminator inclusion) and char8_t/wide char types.
-- **`detail/null_term.hpp`** — `views::null_term`: adapts a pointer to a null-terminated C string into a range, usable with `whatwg_decode_view`. Requires a pointer type; rejects non-pointer ranges.
-- **`detail/error.hpp`** — `whatwg_error` and `iconv_error` enums for future use.
+- **`concepts.hpp`** — The `legacy_byte_range` concept: accepts ranges of `char`/`signed char`/`unsigned char`/`std::byte`, explicitly rejects raw arrays (to avoid silent null-terminator inclusion) and char8_t/wide char types.
+- **`null_term.hpp`** — `views::null_term`: adapts a pointer to a null-terminated C string into a range, usable with `whatwg_decode_view`. Requires a pointer type; rejects non-pointer ranges.
+- **`error.hpp`** — `whatwg_error` and `iconv_error` enums.
+
+Headers directly under `include/beman/transcode/` are the specification surface:
+what the paper proposes, and what `beman.specgen` generates wording from.
+`detail/` is implementation, and is invisible to the wording because specgen
+only reads declarations in the file it is given. Adding a name to a
+specification header therefore proposes it; see `docs/wording-outline.md`.
 - **`transcode.cppm`** — Optional C++23 module interface (when `BEMAN_TRANSCODE_USE_MODULES=ON`).
 
 Typical usage: `views::null_term(ptr) | whatwg_decode_view` to get a `char32_t` range from a C string.
@@ -102,10 +108,10 @@ License header on every file: `// SPDX-License-Identifier: Apache-2.0 WITH LLVM-
 
 **Include guards** — use `#ifndef`/`#define`/`#endif`, never `#pragma once`.
 Guard name mirrors the repo-relative path with `/` and `.` replaced by `_`, uppercased.
-Examples: `include/beman/transcode/detail/concepts.hpp` → `INCLUDE_BEMAN_TRANSCODE_DETAIL_CONCEPTS_HPP`; `tests/beman/transcode/iconv_mock.hpp` → `TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP`.
+Examples: `include/beman/transcode/detail/range_traits.hpp` → `INCLUDE_BEMAN_TRANSCODE_DETAIL_RANGE_TRAITS_HPP`; `tests/beman/transcode/iconv_mock.hpp` → `TESTS_BEMAN_TRANSCODE_ICONV_MOCK_HPP`.
 
 **Includes** — always angle brackets (`<...>`), never quotes (`"..."`).
-Use the full path from the include root: `<beman/transcode/detail/concepts.hpp>`, `<tests/beman/transcode/test_utilities.hpp>`.
+Use the full path from the include root: `<beman/transcode/concepts.hpp>`, `<tests/beman/transcode/test_utilities.hpp>`.
 Never use relative `.`/`..` paths.
 Never rely on transitive includes — include every header you directly use.
 

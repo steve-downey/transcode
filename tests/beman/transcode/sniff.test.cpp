@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/detail/sniff.hpp>
-#include <beman/transcode/detail/sniff.hpp>
+#include <beman/transcode/sniff.hpp>
+#include <beman/transcode/sniff.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
 

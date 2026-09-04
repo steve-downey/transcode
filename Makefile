@@ -217,6 +217,26 @@ bash zsh: venv
 bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
+.PHONY: wording
+wording: ## Regenerate the paper's wording fragments from the header markup
+	papers/wording/generate.sh
+
+.PHONY: wording-check
+wording-check: ## Fail if the committed wording fragments are not what the headers generate
+	@scratch=$$(mktemp -d); \
+	trap 'rm -rf "$$scratch"' EXIT; \
+	papers/wording/generate.sh --out "$$scratch/wording"; \
+	if diff -ru --exclude=generate.sh papers/wording "$$scratch/wording"; then \
+		echo "wording fragments are up to date"; \
+	else \
+		echo "wording fragments are stale: run 'make wording' and commit the result" >&2; \
+		exit 1; \
+	fi
+
+.PHONY: wording-validate
+wording-validate: ## Report specgen's wording validation findings for each spec-facing header
+	papers/wording/generate.sh --validate
+
 .PHONY: lint
 lint: venv mypy clang-tidy
 lint: ## Run all configured tools in pre-commit and mypy

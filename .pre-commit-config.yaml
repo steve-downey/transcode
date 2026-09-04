@@ -45,7 +45,9 @@ repos:
         # docs/wpt/ contains pristine WPT test files (upstream typos).
         # papers/wg21/generated/ is generated output and contains spellings
         # that should not be mass-edited by the spell checker.
-        exclude: ^(docs/whatwg/|docs/wpt/|papers/wg21/generated/)
+        # papers/wording/ is generated from the header markup: a fix belongs in
+        # the header, not in the fragment, which the next run would overwrite.
+        exclude: ^(docs/whatwg/|docs/wpt/|papers/wg21/generated/|papers/wording/)
         args:
           - --ignore-words-list=implementors,unexpect,caf
 
@@ -54,6 +56,9 @@ repos:
     rev: v1.4.5
     hooks:
       - id: mbake-validate
+        # papers/wording/wording.mk is generated, and is a list of files rather
+        # than a makefile with targets, which mbake reads as invalid syntax.
+        exclude: ^papers/wording/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.13

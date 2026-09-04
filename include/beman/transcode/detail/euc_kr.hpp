@@ -5,7 +5,7 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/error.hpp>
+#include <beman/transcode/error.hpp>
 #include <beman/transcode/detail/tables/euc_kr.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()

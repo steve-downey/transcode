@@ -5,7 +5,7 @@
 // null_term is intentionally constrained to pointer/array types because it
 // must scan for a null terminator — a general range has no null sentinel.
 
-#include <beman/transcode/detail/null_term.hpp>
+#include <beman/transcode/null_term.hpp>
 
 #include <vector>
 

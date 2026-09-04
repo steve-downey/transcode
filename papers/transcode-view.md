@@ -1039,3 +1039,9 @@ whole, and split the wording only if the group wants separate progression.
 - WHATWG Encoding Standard [@whatwg-encoding]
 - Web Platform Tests [@wpt-encoding]
 - Beman.Transcode reference implementation: <https://github.com/bemanproject/transcode>
+
+## Wording
+
+The clauses below are generated from the reference implementation's headers by
+`beman.specgen` and transcluded into this paper by its build; they are not
+transcribed by hand.

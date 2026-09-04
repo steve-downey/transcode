@@ -5,8 +5,8 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/concepts.hpp>
-#include <beman/transcode/detail/error.hpp>
+#include <beman/transcode/concepts.hpp>
+#include <beman/transcode/error.hpp>
 #include <beman/transcode/iconv_transcode_view.hpp>
 
 #include <iconv.h>
