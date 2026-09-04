@@ -111,7 +111,7 @@ Step 3.
 | Step | Branch | Deliverable | Depends on |
 |------|--------|-------------|-----------|
 | 1 | `p5-step1-specgen-harness` | `papers/wording/`, pinned generate script, `make wording` / `wording-check`, paper transclusion rule, proved end to end on one header | — |
-| 2 | `p5-step2-wording-outline` | `docs/wording-outline.md`: clause tree, stable names, header→clause map, fragment order | — |
+| 2 | `p5-step2-wording-outline` | [`docs/wording-outline.md`](../wording-outline.md): clause tree, stable names, header→clause map, fragment order | — |
 | 3 | `p5-step3-spec-header-shape` | Headers refactored so each spec-facing header's main-file decls are exactly the spec surface | 2 |
 | 4 | `p5-step4-errors-concepts-null-term` | Markup for the error enums, the range concepts, and `null_term` | 1, 3 |
 | 5 | `p5-step5-codec-labels-sniff` | Markup for `codec`, `get_encoding`, `sniff_encoding` | 4 |
@@ -179,9 +179,10 @@ transcode steps, but they are executed in the specgen repository.
   guide after the `/// END` fence or to the end of the file does not change it —
   consistent with Clang reporting the guide's location inside the class.
   Without a gathered region, `\omit` on the guide works and the output is
-  clean, which is why Step 1 does not use one.  **Gates Step 3 task 4**, which
-  is where the gathered `<transcode>` synopsis is introduced, and therefore
-  gates D1.
+  clean, which is why Step 1 does not use one.  Step 2 bounded the damage:
+  `null_term_view`'s is the **only** deduction guide in the library, so this
+  gates the `<null_term>` synopsis alone and not the `<transcode>` one — D1 and
+  Step 3 task 4 are clear.
 - **U5 — a docblock on an in-class hidden friend is not attached.**  Found in
   Step 1.  `null_sentinel_t`'s `friend constexpr bool operator==` carries a
   `//! \returns` docblock and is still reported as
