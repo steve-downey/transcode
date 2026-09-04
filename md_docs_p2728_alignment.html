@@ -161,8 +161,11 @@ Where &lt;tt&gt;beman.transcode&lt;/tt&gt; already follows the model</h2>
 <h2><a class="anchor" id="autotoc_md73"></a>
 Where it diverges, and how to track</h2>
 <h3><a class="anchor" id="autotoc_md74"></a>
-1. Collapse the &lt;tt&gt;_view&lt;/tt&gt; / &lt;tt&gt;_or_error_view&lt;/tt&gt; pairs into one template (highest value)</h3>
-<p>The repository still exposes <b>separate</b> <code>whatwg_decode_view</code> and <code>whatwg_decode_or_error_view</code> classes (and likewise for encode and the pluggable <code>decode_view</code>/<code>encode_view</code>). That is P2728's <b>pre-R10</b> shape.</p>
+1. Collapse the &lt;tt&gt;_view&lt;/tt&gt; / &lt;tt&gt;_or_error_view&lt;/tt&gt; pairs into one template — &lt;strong&gt;done&lt;/strong&gt;</h3>
+<p>Closed in P5-Step 3c. All four families are now one template each, parameterized on <code>transcode_error_kind { replacement, expected }</code> (in <code><a class="el" href="error_8hpp.html">error.hpp</a></code>), with the <code>_or_error</code> spellings kept as alias templates and the closure objects selecting the kind: </p><pre class="fragment">whatwg_decode_view&lt;C, R, E&gt;       whatwg_encode_view&lt;C, R, E&gt;
+decode_view&lt;Codec, R, E&gt;          encode_view&lt;Codec, R, E&gt;
+</pre><p> The enum is named <code>_kind</code> and left open for the reason SG9 gave: a future kind that also surfaces the offending input bytes should be addable without a third class template. Errors stay in the <code>value_type</code>; no error-query member was added to any iterator.</p>
+<p>What the pairs had been, for the record:</p>
 <p>Track the model by unifying each pair into a single view template parameterized on an <b>extensible error-kind enum</b> — the analog of <code>to_utf_view_error_kind</code>:</p>
 <ul>
 <li>Name it for extension (e.g. <code>decode_error_kind</code>/<code>transcode_kind</code>), with at least <code>{ replacement, expected }</code>, leaving room for future kinds.</li>
@@ -186,8 +189,8 @@ Intentional, non-convergent differences (do not "fix" toward P2728)</h3>
 <h2><a class="anchor" id="autotoc_md78"></a>
 Action items</h2>
 <ul>
-<li>[ ] Unify <code>whatwg_decode_view</code> + <code>whatwg_decode_or_error_view</code> (and the encode and pluggable counterparts) under one error-kind-parameterized template.</li>
-<li>[ ] Give the error / error-kind enums an unspecified underlying type.</li>
+<li>[x] Unify <code>whatwg_decode_view</code> + <code>whatwg_decode_or_error_view</code> (and the encode and pluggable counterparts) under one error-kind-parameterized template. Done in P5-Step 3c.</li>
+<li>[ ] Give the error / error-kind enums an unspecified underlying type. Nothing to change in the code — neither enum names an enum-base — so this is a constraint on the <em>wording</em>, which must not fix one either.</li>
 <li>[ ] Add a test pinning <code>iterator::base()</code> to the start-of-code-point byte position.</li>
 <li>[ ] Make the closures' <code>operator()</code> <code>static</code> (C++23) — small QoI.</li>
 <li>[ ] (Future, not now) A "which input bytes failed" capability for error reporting, expressed as an error-kind / error payload rather than a new iterator member.</li>

@@ -3,13 +3,9 @@ var annotated_dup =
     [ "beman", "namespacebeman.html", [
       [ "transcoding", "namespacebeman_1_1transcoding.html", [
         [ "decode_closure", "structbeman_1_1transcoding_1_1decode__closure.html", "structbeman_1_1transcoding_1_1decode__closure" ],
-        [ "decode_or_error_closure", "structbeman_1_1transcoding_1_1decode__or__error__closure.html", "structbeman_1_1transcoding_1_1decode__or__error__closure" ],
-        [ "decode_or_error_view", "classbeman_1_1transcoding_1_1decode__or__error__view.html", "classbeman_1_1transcoding_1_1decode__or__error__view" ],
         [ "decode_result", "structbeman_1_1transcoding_1_1decode__result.html", "structbeman_1_1transcoding_1_1decode__result" ],
         [ "decode_view", "classbeman_1_1transcoding_1_1decode__view.html", "classbeman_1_1transcoding_1_1decode__view" ],
         [ "encode_closure", "structbeman_1_1transcoding_1_1encode__closure.html", "structbeman_1_1transcoding_1_1encode__closure" ],
-        [ "encode_or_error_closure", "structbeman_1_1transcoding_1_1encode__or__error__closure.html", "structbeman_1_1transcoding_1_1encode__or__error__closure" ],
-        [ "encode_or_error_view", "classbeman_1_1transcoding_1_1encode__or__error__view.html", "classbeman_1_1transcoding_1_1encode__or__error__view" ],
         [ "encode_result", "structbeman_1_1transcoding_1_1encode__result.html", "structbeman_1_1transcoding_1_1encode__result" ],
         [ "encode_view", "classbeman_1_1transcoding_1_1encode__view.html", "classbeman_1_1transcoding_1_1encode__view" ],
         [ "full_table_codec", "structbeman_1_1transcoding_1_1full__table__codec.html", "structbeman_1_1transcoding_1_1full__table__codec" ],
@@ -21,11 +17,8 @@ var annotated_dup =
         [ "null_sentinel_t", "structbeman_1_1transcoding_1_1null__sentinel__t.html", "structbeman_1_1transcoding_1_1null__sentinel__t" ],
         [ "null_term_view", "classbeman_1_1transcoding_1_1null__term__view.html", "classbeman_1_1transcoding_1_1null__term__view" ],
         [ "pluggable_transcode_closure", "structbeman_1_1transcoding_1_1pluggable__transcode__closure.html", "structbeman_1_1transcoding_1_1pluggable__transcode__closure" ],
-        [ "random_access_decode_or_error_view", "classbeman_1_1transcoding_1_1random__access__decode__or__error__view.html", "classbeman_1_1transcoding_1_1random__access__decode__or__error__view" ],
         [ "random_access_decode_view", "classbeman_1_1transcoding_1_1random__access__decode__view.html", "classbeman_1_1transcoding_1_1random__access__decode__view" ],
-        [ "random_access_whatwg_decode_or_error_view", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view" ],
         [ "random_access_whatwg_decode_view", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view" ],
-        [ "random_access_whatwg_encode_or_error_view", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__or__error__view" ],
         [ "random_access_whatwg_encode_view", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__view" ],
         [ "single_byte_decode_closure", "structbeman_1_1transcoding_1_1single__byte__decode__closure.html", "structbeman_1_1transcoding_1_1single__byte__decode__closure" ],
         [ "single_byte_decode_view", "classbeman_1_1transcoding_1_1single__byte__decode__view.html", "classbeman_1_1transcoding_1_1single__byte__decode__view" ],
@@ -34,12 +27,8 @@ var annotated_dup =
         [ "table_codec", "structbeman_1_1transcoding_1_1table__codec.html", "structbeman_1_1transcoding_1_1table__codec" ],
         [ "transcode_closure", "structbeman_1_1transcoding_1_1transcode__closure.html", "structbeman_1_1transcoding_1_1transcode__closure" ],
         [ "whatwg_decode_closure", "structbeman_1_1transcoding_1_1whatwg__decode__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__closure" ],
-        [ "whatwg_decode_or_error_closure", "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure" ],
-        [ "whatwg_decode_or_error_view", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__or__error__view" ],
         [ "whatwg_decode_view", "classbeman_1_1transcoding_1_1whatwg__decode__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__view" ],
         [ "whatwg_encode_closure", "structbeman_1_1transcoding_1_1whatwg__encode__closure.html", "structbeman_1_1transcoding_1_1whatwg__encode__closure" ],
-        [ "whatwg_encode_or_error_closure", "structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure.html", "structbeman_1_1transcoding_1_1whatwg__encode__or__error__closure" ],
-        [ "whatwg_encode_or_error_view", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view.html", "classbeman_1_1transcoding_1_1whatwg__encode__or__error__view" ],
         [ "whatwg_encode_view", "classbeman_1_1transcoding_1_1whatwg__encode__view.html", "classbeman_1_1transcoding_1_1whatwg__encode__view" ]
       ] ]
     ] ]

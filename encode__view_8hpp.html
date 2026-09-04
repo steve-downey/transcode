@@ -99,13 +99,15 @@ $(document).ready(function(){initNavTree('encode__view_8hpp.html',''); initResiz
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">encode_view.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="config_8hpp_source.html">beman/transcode/config.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="codec__concepts_8hpp_source.html">beman/transcode/detail/codec_concepts.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/detail/concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="codec__concepts_8hpp_source.html">beman/transcode/codec_concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="range__traits_8hpp_source.html">beman/transcode/detail/range_traits.hpp</a>&gt;</code><br />
 <code>#include &lt;array&gt;</code><br />
 <code>#include &lt;expected&gt;</code><br />
 <code>#include &lt;iterator&gt;</code><br />
@@ -116,17 +118,11 @@ $(document).ready(function(){initNavTree('encode__view_8hpp.html',''); initResiz
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1encode__view.html">beman::transcoding::encode_view&lt; Codec, R &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1encode__view.html">beman::transcoding::encode_view&lt; Codec, R, E &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1encode__view_1_1iterator.html">beman::transcoding::encode_view&lt; Codec, R &gt;::iterator</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1encode__view_1_1iterator.html">beman::transcoding::encode_view&lt; Codec, R, E &gt;::iterator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1encode__or__error__view.html">beman::transcoding::encode_or_error_view&lt; Codec, R &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1encode__or__error__view_1_1iterator.html">beman::transcoding::encode_or_error_view&lt; Codec, R &gt;::iterator</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">beman::transcoding::encode_closure&lt; Codec &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__or__error__closure.html">beman::transcoding::encode_or_error_closure&lt; Codec &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">beman::transcoding::encode_closure&lt; Codec, E &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -136,14 +132,20 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespacebeman_1_1transcoding"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html">beman::transcoding</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a665ad288e61a7b100b16a413246930c2"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec&gt; </td></tr>
+<tr class="memitem:a665ad288e61a7b100b16a413246930c2"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a665ad288e61a7b100b16a413246930c2">beman::transcoding::encode_or_error_closure</a> = () const -&gt; iterator detail encode_closure&lt; Codec, transcode_error_kind::expected &gt;</td></tr>
+<tr class="separator:a665ad288e61a7b100b16a413246930c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:acb7b318ba17a0e44907744ff34cf98d7"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec&gt; </td></tr>
 <tr class="memitem:acb7b318ba17a0e44907744ff34cf98d7"><td class="memTemplItemLeft" align="right" valign="top">constexpr encode_closure&lt; Codec &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#acb7b318ba17a0e44907744ff34cf98d7">beman::transcoding::encode</a> (Codec codec={})</td></tr>
 <tr class="separator:acb7b318ba17a0e44907744ff34cf98d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b74d40816b9b97e80cfcc816ba89c1e"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec&gt; </td></tr>
-<tr class="memitem:a7b74d40816b9b97e80cfcc816ba89c1e"><td class="memTemplItemLeft" align="right" valign="top">constexpr encode_or_error_closure&lt; Codec &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a7b74d40816b9b97e80cfcc816ba89c1e">beman::transcoding::encode_or_error</a> (Codec codec={})</td></tr>
-<tr class="separator:a7b74d40816b9b97e80cfcc816ba89c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4395a5c86a28d758f9352b819ea09c83"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec&gt; </td></tr>
+<tr class="memitem:a4395a5c86a28d758f9352b819ea09c83"><td class="memTemplItemLeft" align="right" valign="top">constexpr encode_closure&lt; Codec, transcode_error_kind::expected &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a4395a5c86a28d758f9352b819ea09c83">beman::transcoding::encode_or_error</a> (Codec codec={})</td></tr>
+<tr class="separator:a4395a5c86a28d758f9352b819ea09c83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

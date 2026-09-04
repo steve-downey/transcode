@@ -120,8 +120,8 @@ Key files to reference</h2>
 <ul>
 <li><code><a class="el" href="decode__view_8hpp.html">include/beman/transcode/decode_view.hpp</a></code> — the pattern to follow (structure, CPO closures at lines 307-355, factory functions at lines 355-360)</li>
 <li><code><a class="el" href="whatwg__encode__view_8hpp.html">include/beman/transcode/whatwg_encode_view.hpp</a></code> — the WHATWG encode view (lines 370-574 for class templates, lines 448-468 for CPO pattern, lines 956-964 for the dispatcher that selects random_access vs general)</li>
-<li><code><a class="el" href="codec__concepts_8hpp.html">include/beman/transcode/detail/codec_concepts.hpp</a></code> — the <code>encode_codec</code> concept (line 29) and <code>encode_result</code> type</li>
-<li><code><a class="el" href="codec__result_8hpp.html">include/beman/transcode/detail/codec_result.hpp</a></code> — <code>encode_result</code> struct: <code>{ std::array&lt;unsigned char, 8&gt; bytes; int count; bool is_error; }</code></li>
+<li><code>include/beman/transcode/detail/codec_concepts.hpp</code> — the <code>encode_codec</code> concept (line 29) and <code>encode_result</code> type</li>
+<li><code>include/beman/transcode/detail/codec_result.hpp</code> — <code>encode_result</code> struct: <code>{ std::array&lt;unsigned char, 8&gt; bytes; int count; bool is_error; }</code></li>
 <li><code><a class="el" href="table__codec_8hpp.html">include/beman/transcode/detail/table_codec.hpp</a></code> — <code>table_codec</code> provides both <code>decode_one</code> and <code>encode_one</code>, making it the test subject</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md225"></a>
@@ -170,7 +170,7 @@ Procedure</h1>
 <li>Create branch <code>p4-step1-pluggable-encode</code> from <code>main</code></li>
 <li>Create <code><a class="el" href="encode__view_8hpp.html">include/beman/transcode/encode_view.hpp</a></code>:<ul>
 <li>Include guard: <code>INCLUDE_BEMAN_TRANSCODE_ENCODE_VIEW_HPP</code></li>
-<li>Include: <code>&lt;<a class="el" href="codec__concepts_8hpp.html">beman/transcode/detail/codec_concepts.hpp</a>&gt;</code>, <code>&lt;<a class="el" href="concepts_8hpp.html">beman/transcode/detail/concepts.hpp</a>&gt;</code>, <code>&lt;expected&gt;</code>, <code>&lt;ranges&gt;</code>, etc.</li>
+<li>Include: <code>&lt;beman/transcode/detail/codec_concepts.hpp&gt;</code>, <code>&lt;beman/transcode/detail/concepts.hpp&gt;</code>, <code>&lt;expected&gt;</code>, <code>&lt;ranges&gt;</code>, etc.</li>
 <li>Define <code>encode_view&lt;Codec, R&gt;</code> with internal byte buffer</li>
 <li>Define <code>encode_or_error_view&lt;Codec, R&gt;</code></li>
 <li>Define <code>encode_closure&lt;Codec&gt;</code> and <code>encode_or_error_closure&lt;Codec&gt;</code></li>

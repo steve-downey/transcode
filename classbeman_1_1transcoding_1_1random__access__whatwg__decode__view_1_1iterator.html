@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>beman.transcode: beman::transcoding::random_access_whatwg_decode_view&lt; C, R &gt;::iterator Class Reference</title>
+<title>beman.transcode: beman::transcoding::random_access_whatwg_decode_view&lt; C, R, E &gt;::iterator Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -99,89 +99,95 @@ $(document).ready(function(){initNavTree('classbeman_1_1transcoding_1_1random__a
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pri-types">Private Types</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">beman::transcoding::random_access_whatwg_decode_view&lt; C, R &gt;::iterator Class Reference</div></div>
+  <div class="headertitle"><div class="title">beman::transcoding::random_access_whatwg_decode_view&lt; C, R, E &gt;::iterator Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:ab97d489b4c44d907e513b3296077d72e"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#ab97d489b4c44d907e513b3296077d72e">iterator_concept</a> = std::random_access_iterator_tag</td></tr>
-<tr class="separator:ab97d489b4c44d907e513b3296077d72e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a839ce4570ab7ace07f76371735132ea3"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a839ce4570ab7ace07f76371735132ea3">iterator_category</a> = std::random_access_iterator_tag</td></tr>
-<tr class="separator:a839ce4570ab7ace07f76371735132ea3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4cf004c8c8182f94e340ada32367e9cd"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a4cf004c8c8182f94e340ada32367e9cd">value_type</a> = char32_t</td></tr>
-<tr class="separator:a4cf004c8c8182f94e340ada32367e9cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2419961f747311806f056d55d95c7eb8"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a> = std::ptrdiff_t</td></tr>
-<tr class="separator:a2419961f747311806f056d55d95c7eb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f8f9431d55b4483bc988916ffbfbf6c"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a4f8f9431d55b4483bc988916ffbfbf6c">reference</a> = char32_t</td></tr>
-<tr class="separator:a4f8f9431d55b4483bc988916ffbfbf6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6aa78ed408a72c607aa0022f1abea333"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6aa78ed408a72c607aa0022f1abea333">iterator_concept</a> = std::random_access_iterator_tag</td></tr>
+<tr class="separator:a6aa78ed408a72c607aa0022f1abea333"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1239305591e6c170cb5c7b09b01f607a"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a1239305591e6c170cb5c7b09b01f607a">iterator_category</a> = std::random_access_iterator_tag</td></tr>
+<tr class="separator:a1239305591e6c170cb5c7b09b01f607a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e42f064cbf9d3f605385b4dec7aa145"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6e42f064cbf9d3f605385b4dec7aa145">value_type</a> = std::conditional_t&lt; E==<a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a>, std::expected&lt; char32_t, <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a> &gt;, char32_t &gt;</td></tr>
+<tr class="separator:a6e42f064cbf9d3f605385b4dec7aa145"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9492294b12678472a38006bc47c3fdd"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a> = std::ptrdiff_t</td></tr>
+<tr class="separator:aa9492294b12678472a38006bc47c3fdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fd1d1982c104b8798102a76ef349465"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a3fd1d1982c104b8798102a76ef349465">reference</a> = <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6e42f064cbf9d3f605385b4dec7aa145">value_type</a></td></tr>
+<tr class="separator:a3fd1d1982c104b8798102a76ef349465"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a3c7f7010c9b55becf50b790e704ff05d"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a3c7f7010c9b55becf50b790e704ff05d">iterator</a> ()=default</td></tr>
-<tr class="separator:a3c7f7010c9b55becf50b790e704ff05d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5096f6f4f5576528ae10d8e79e4a33ba"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a5096f6f4f5576528ae10d8e79e4a33ba">iterator</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#af5dba783a7507891b0da7f2558b7e26b">base_iter</a> current)</td></tr>
-<tr class="separator:a5096f6f4f5576528ae10d8e79e4a33ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa53dc46eeae6db4f5a39e2b45d709956"><td class="memItemLeft" align="right" valign="top">constexpr const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#af5dba783a7507891b0da7f2558b7e26b">base_iter</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa53dc46eeae6db4f5a39e2b45d709956">base</a> () const noexcept</td></tr>
-<tr class="separator:aa53dc46eeae6db4f5a39e2b45d709956"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a90d932fb4f2339fff9421f7cfbda2e49"><td class="memItemLeft" align="right" valign="top">constexpr char32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a90d932fb4f2339fff9421f7cfbda2e49">operator*</a> () const</td></tr>
-<tr class="separator:a90d932fb4f2339fff9421f7cfbda2e49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20a09883579cd1bef9b67221fa423a2e"><td class="memItemLeft" align="right" valign="top">constexpr char32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a20a09883579cd1bef9b67221fa423a2e">operator[]</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a> n) const</td></tr>
-<tr class="separator:a20a09883579cd1bef9b67221fa423a2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a47ec4cc85f2e705516ddb44638aea4cf"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a47ec4cc85f2e705516ddb44638aea4cf">operator++</a> ()</td></tr>
-<tr class="separator:a47ec4cc85f2e705516ddb44638aea4cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a68c7df1bb397947cba0bce2104b02969"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a68c7df1bb397947cba0bce2104b02969">operator++</a> (int)</td></tr>
-<tr class="separator:a68c7df1bb397947cba0bce2104b02969"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afde53a6e8950b92f80086ec63b337943"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#afde53a6e8950b92f80086ec63b337943">operator--</a> ()</td></tr>
-<tr class="separator:afde53a6e8950b92f80086ec63b337943"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ff4a4fcce09d4fc1299f9db69e08637"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a0ff4a4fcce09d4fc1299f9db69e08637">operator--</a> (int)</td></tr>
-<tr class="separator:a0ff4a4fcce09d4fc1299f9db69e08637"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a262d2fe4867093d109dfd79d61731649"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a262d2fe4867093d109dfd79d61731649">operator+=</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a> n)</td></tr>
-<tr class="separator:a262d2fe4867093d109dfd79d61731649"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab61d25dd0081de5c3fc4ccf94c8bd667"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#ab61d25dd0081de5c3fc4ccf94c8bd667">operator-=</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a> n)</td></tr>
-<tr class="separator:ab61d25dd0081de5c3fc4ccf94c8bd667"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2db18055169a2d4133b0c0a0662dc1f4"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2db18055169a2d4133b0c0a0662dc1f4">operator+</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a> n) const</td></tr>
-<tr class="separator:a2db18055169a2d4133b0c0a0662dc1f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac50903bd7552f55b2b9321b80c641b58"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#ac50903bd7552f55b2b9321b80c641b58">operator-</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a> n) const</td></tr>
-<tr class="separator:ac50903bd7552f55b2b9321b80c641b58"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad7902af397e704464220795aa2892bc0"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#ad7902af397e704464220795aa2892bc0">operator-</a> (const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;other) const</td></tr>
-<tr class="separator:ad7902af397e704464220795aa2892bc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09ebb4e6062974a05f5496ab868d369a"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a09ebb4e6062974a05f5496ab868d369a">operator&lt;=&gt;</a> (const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;) const =default</td></tr>
-<tr class="separator:a09ebb4e6062974a05f5496ab868d369a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af07829eedf7176c4d8b86dc333bfb094"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#af07829eedf7176c4d8b86dc333bfb094">iterator</a> ()=default</td></tr>
+<tr class="separator:af07829eedf7176c4d8b86dc333bfb094"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61e84c60792805517a6281e5cc896673"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a61e84c60792805517a6281e5cc896673">iterator</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a15b9d9777d0d4d8569a0fb6c2ef74883">base_iter</a> current)</td></tr>
+<tr class="separator:a61e84c60792805517a6281e5cc896673"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a454db437b916be67954f0a9ab7c52d"><td class="memItemLeft" align="right" valign="top">constexpr const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a15b9d9777d0d4d8569a0fb6c2ef74883">base_iter</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a1a454db437b916be67954f0a9ab7c52d">base</a> () const noexcept</td></tr>
+<tr class="separator:a1a454db437b916be67954f0a9ab7c52d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a790fe7d75145bbf04da969d5a44583f9"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6e42f064cbf9d3f605385b4dec7aa145">value_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a790fe7d75145bbf04da969d5a44583f9">operator*</a> () const</td></tr>
+<tr class="separator:a790fe7d75145bbf04da969d5a44583f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20006fc7b14526aa8dc1e218f5b3288e"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6e42f064cbf9d3f605385b4dec7aa145">value_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a20006fc7b14526aa8dc1e218f5b3288e">operator[]</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a> n) const</td></tr>
+<tr class="separator:a20006fc7b14526aa8dc1e218f5b3288e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b657e3cfbc1c71f917565eda9c2ce19"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a4b657e3cfbc1c71f917565eda9c2ce19">operator++</a> ()</td></tr>
+<tr class="separator:a4b657e3cfbc1c71f917565eda9c2ce19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7d64f6ad5b74189f8d94e26922f12c5"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#ab7d64f6ad5b74189f8d94e26922f12c5">operator++</a> (int)</td></tr>
+<tr class="separator:ab7d64f6ad5b74189f8d94e26922f12c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b1a231193d76f5751156c66768fa24c"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a3b1a231193d76f5751156c66768fa24c">operator--</a> ()</td></tr>
+<tr class="separator:a3b1a231193d76f5751156c66768fa24c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cefe0409af8dcb6d5b9fb46ffd35fa1"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a1cefe0409af8dcb6d5b9fb46ffd35fa1">operator--</a> (int)</td></tr>
+<tr class="separator:a1cefe0409af8dcb6d5b9fb46ffd35fa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70208cb0afbed7199b1c95cd5030cab4"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a70208cb0afbed7199b1c95cd5030cab4">operator+=</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a> n)</td></tr>
+<tr class="separator:a70208cb0afbed7199b1c95cd5030cab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0fee27612be3be1423985cd378dc3ed"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#ab0fee27612be3be1423985cd378dc3ed">operator-=</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a> n)</td></tr>
+<tr class="separator:ab0fee27612be3be1423985cd378dc3ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37e398d4667badcd8dca8fb6a73c1043"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a37e398d4667badcd8dca8fb6a73c1043">operator+</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a> n) const</td></tr>
+<tr class="separator:a37e398d4667badcd8dca8fb6a73c1043"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f8ce3bbb6d8afacd23a20329da7484f"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6f8ce3bbb6d8afacd23a20329da7484f">operator-</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a> n) const</td></tr>
+<tr class="separator:a6f8ce3bbb6d8afacd23a20329da7484f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac005bcd9ac9d881da6f344ba65bfe74d"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#ac005bcd9ac9d881da6f344ba65bfe74d">operator-</a> (const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;other) const</td></tr>
+<tr class="separator:ac005bcd9ac9d881da6f344ba65bfe74d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a273d6b0f2c98dc64da6aa8c4b6f32dfd"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a273d6b0f2c98dc64da6aa8c4b6f32dfd">operator&lt;=&gt;</a> (const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;) const =default</td></tr>
+<tr class="separator:a273d6b0f2c98dc64da6aa8c4b6f32dfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a9672407e759c094e12047feaa2214dbc"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6e42f064cbf9d3f605385b4dec7aa145">value_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a9672407e759c094e12047feaa2214dbc">error_result</a> (<a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a> e)</td></tr>
+<tr class="separator:a9672407e759c094e12047feaa2214dbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-types" name="pri-types"></a>
 Private Types</h2></td></tr>
-<tr class="memitem:af5dba783a7507891b0da7f2558b7e26b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#af5dba783a7507891b0da7f2558b7e26b">base_iter</a> = detail::compatible_iterator_t&lt; R &gt;</td></tr>
-<tr class="separator:af5dba783a7507891b0da7f2558b7e26b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15b9d9777d0d4d8569a0fb6c2ef74883"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a15b9d9777d0d4d8569a0fb6c2ef74883">base_iter</a> = detail::compatible_iterator_t&lt; R &gt;</td></tr>
+<tr class="separator:a15b9d9777d0d4d8569a0fb6c2ef74883"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:a4db3ab0bb53dce00c7fb0e557b21e496"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#af5dba783a7507891b0da7f2558b7e26b">base_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a4db3ab0bb53dce00c7fb0e557b21e496">current_</a> {}</td></tr>
-<tr class="separator:a4db3ab0bb53dce00c7fb0e557b21e496"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87886fe1ded1192201f74ae4098dafb4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a15b9d9777d0d4d8569a0fb6c2ef74883">base_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a87886fe1ded1192201f74ae4098dafb4">current_</a> {}</td></tr>
+<tr class="separator:a87886fe1ded1192201f74ae4098dafb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
-<tr class="memitem:abeef03867fd352948a091e4481677219"><td class="memItemLeft" align="right" valign="top">constexpr friend <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#abeef03867fd352948a091e4481677219">operator+</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a> n, <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> it)</td></tr>
+<tr class="memitem:abeef03867fd352948a091e4481677219"><td class="memItemLeft" align="right" valign="top">constexpr friend <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#abeef03867fd352948a091e4481677219">operator+</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a> n, <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> it)</td></tr>
 <tr class="separator:abeef03867fd352948a091e4481677219"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="af5dba783a7507891b0da7f2558b7e26b" name="af5dba783a7507891b0da7f2558b7e26b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5dba783a7507891b0da7f2558b7e26b">&#9670;&#160;</a></span>base_iter</h2>
+<a id="a15b9d9777d0d4d8569a0fb6c2ef74883" name="a15b9d9777d0d4d8569a0fb6c2ef74883"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15b9d9777d0d4d8569a0fb6c2ef74883">&#9670;&#160;</a></span>base_iter</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::base_iter =  detail::compatible_iterator_t&lt;R&gt;</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::base_iter =  detail::compatible_iterator_t&lt;R&gt;</td>
         </tr>
       </table>
   </td>
@@ -193,80 +199,80 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a2419961f747311806f056d55d95c7eb8" name="a2419961f747311806f056d55d95c7eb8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2419961f747311806f056d55d95c7eb8">&#9670;&#160;</a></span>difference_type</h2>
+<a id="aa9492294b12678472a38006bc47c3fdd" name="aa9492294b12678472a38006bc47c3fdd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9492294b12678472a38006bc47c3fdd">&#9670;&#160;</a></span>difference_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::difference_type =  std::ptrdiff_t</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::difference_type =  std::ptrdiff_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a839ce4570ab7ace07f76371735132ea3" name="a839ce4570ab7ace07f76371735132ea3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a839ce4570ab7ace07f76371735132ea3">&#9670;&#160;</a></span>iterator_category</h2>
+<a id="a1239305591e6c170cb5c7b09b01f607a" name="a1239305591e6c170cb5c7b09b01f607a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1239305591e6c170cb5c7b09b01f607a">&#9670;&#160;</a></span>iterator_category</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::iterator_category =  std::random_access_iterator_tag</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::iterator_category =  std::random_access_iterator_tag</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="ab97d489b4c44d907e513b3296077d72e" name="ab97d489b4c44d907e513b3296077d72e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab97d489b4c44d907e513b3296077d72e">&#9670;&#160;</a></span>iterator_concept</h2>
+<a id="a6aa78ed408a72c607aa0022f1abea333" name="a6aa78ed408a72c607aa0022f1abea333"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6aa78ed408a72c607aa0022f1abea333">&#9670;&#160;</a></span>iterator_concept</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::iterator_concept =  std::random_access_iterator_tag</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::iterator_concept =  std::random_access_iterator_tag</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a4f8f9431d55b4483bc988916ffbfbf6c" name="a4f8f9431d55b4483bc988916ffbfbf6c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f8f9431d55b4483bc988916ffbfbf6c">&#9670;&#160;</a></span>reference</h2>
+<a id="a3fd1d1982c104b8798102a76ef349465" name="a3fd1d1982c104b8798102a76ef349465"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3fd1d1982c104b8798102a76ef349465">&#9670;&#160;</a></span>reference</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::reference =  char32_t</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::reference =  <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6e42f064cbf9d3f605385b4dec7aa145">value_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a4cf004c8c8182f94e340ada32367e9cd" name="a4cf004c8c8182f94e340ada32367e9cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4cf004c8c8182f94e340ada32367e9cd">&#9670;&#160;</a></span>value_type</h2>
+<a id="a6e42f064cbf9d3f605385b4dec7aa145" name="a6e42f064cbf9d3f605385b4dec7aa145"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e42f064cbf9d3f605385b4dec7aa145">&#9670;&#160;</a></span>value_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::value_type =  char32_t</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::value_type =  std::conditional_t&lt;E == <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a>, std::expected&lt;char32_t, <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a>&gt;, char32_t&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -274,19 +280,19 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a3c7f7010c9b55becf50b790e704ff05d" name="a3c7f7010c9b55becf50b790e704ff05d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3c7f7010c9b55becf50b790e704ff05d">&#9670;&#160;</a></span>iterator() <span class="overload">[1/2]</span></h2>
+<a id="af07829eedf7176c4d8b86dc333bfb094" name="af07829eedf7176c4d8b86dc333bfb094"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af07829eedf7176c4d8b86dc333bfb094">&#9670;&#160;</a></span>iterator() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::iterator </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::iterator </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -301,21 +307,21 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a5096f6f4f5576528ae10d8e79e4a33ba" name="a5096f6f4f5576528ae10d8e79e4a33ba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5096f6f4f5576528ae10d8e79e4a33ba">&#9670;&#160;</a></span>iterator() <span class="overload">[2/2]</span></h2>
+<a id="a61e84c60792805517a6281e5cc896673" name="a61e84c60792805517a6281e5cc896673"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61e84c60792805517a6281e5cc896673">&#9670;&#160;</a></span>iterator() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::iterator </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::iterator </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#af5dba783a7507891b0da7f2558b7e26b">base_iter</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a15b9d9777d0d4d8569a0fb6c2ef74883">base_iter</a>&#160;</td>
           <td class="paramname"><em>current</em></td><td>)</td>
           <td></td>
         </tr>
@@ -330,19 +336,19 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="aa53dc46eeae6db4f5a39e2b45d709956" name="aa53dc46eeae6db4f5a39e2b45d709956"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa53dc46eeae6db4f5a39e2b45d709956">&#9670;&#160;</a></span>base()</h2>
+<a id="a1a454db437b916be67954f0a9ab7c52d" name="a1a454db437b916be67954f0a9ab7c52d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a454db437b916be67954f0a9ab7c52d">&#9670;&#160;</a></span>base()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#af5dba783a7507891b0da7f2558b7e26b">base_iter</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::base </td>
+          <td class="memname">constexpr const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a15b9d9777d0d4d8569a0fb6c2ef74883">base_iter</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::base </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -357,19 +363,47 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a90d932fb4f2339fff9421f7cfbda2e49" name="a90d932fb4f2339fff9421f7cfbda2e49"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a90d932fb4f2339fff9421f7cfbda2e49">&#9670;&#160;</a></span>operator*()</h2>
+<a id="a9672407e759c094e12047feaa2214dbc" name="a9672407e759c094e12047feaa2214dbc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9672407e759c094e12047feaa2214dbc">&#9670;&#160;</a></span>error_result()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr char32_t <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator* </td>
+          <td class="memname">static constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6e42f064cbf9d3f605385b4dec7aa145">value_type</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::error_result </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a>&#160;</td>
+          <td class="paramname"><em>e</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a790fe7d75145bbf04da969d5a44583f9" name="a790fe7d75145bbf04da969d5a44583f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a790fe7d75145bbf04da969d5a44583f9">&#9670;&#160;</a></span>operator*()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6e42f064cbf9d3f605385b4dec7aa145">value_type</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator* </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -384,21 +418,21 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a2db18055169a2d4133b0c0a0662dc1f4" name="a2db18055169a2d4133b0c0a0662dc1f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2db18055169a2d4133b0c0a0662dc1f4">&#9670;&#160;</a></span>operator+()</h2>
+<a id="a37e398d4667badcd8dca8fb6a73c1043" name="a37e398d4667badcd8dca8fb6a73c1043"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a37e398d4667badcd8dca8fb6a73c1043">&#9670;&#160;</a></span>operator+()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator+ </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator+ </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -412,19 +446,19 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a47ec4cc85f2e705516ddb44638aea4cf" name="a47ec4cc85f2e705516ddb44638aea4cf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a47ec4cc85f2e705516ddb44638aea4cf">&#9670;&#160;</a></span>operator++() <span class="overload">[1/2]</span></h2>
+<a id="a4b657e3cfbc1c71f917565eda9c2ce19" name="a4b657e3cfbc1c71f917565eda9c2ce19"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b657e3cfbc1c71f917565eda9c2ce19">&#9670;&#160;</a></span>operator++() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator++ </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator++ </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -439,19 +473,19 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a68c7df1bb397947cba0bce2104b02969" name="a68c7df1bb397947cba0bce2104b02969"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a68c7df1bb397947cba0bce2104b02969">&#9670;&#160;</a></span>operator++() <span class="overload">[2/2]</span></h2>
+<a id="ab7d64f6ad5b74189f8d94e26922f12c5" name="ab7d64f6ad5b74189f8d94e26922f12c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7d64f6ad5b74189f8d94e26922f12c5">&#9670;&#160;</a></span>operator++() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator++ </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator++ </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -467,21 +501,21 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a262d2fe4867093d109dfd79d61731649" name="a262d2fe4867093d109dfd79d61731649"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a262d2fe4867093d109dfd79d61731649">&#9670;&#160;</a></span>operator+=()</h2>
+<a id="a70208cb0afbed7199b1c95cd5030cab4" name="a70208cb0afbed7199b1c95cd5030cab4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70208cb0afbed7199b1c95cd5030cab4">&#9670;&#160;</a></span>operator+=()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator+= </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator+= </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td></td>
         </tr>
@@ -495,19 +529,19 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="ad7902af397e704464220795aa2892bc0" name="ad7902af397e704464220795aa2892bc0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad7902af397e704464220795aa2892bc0">&#9670;&#160;</a></span>operator-() <span class="overload">[1/2]</span></h2>
+<a id="ac005bcd9ac9d881da6f344ba65bfe74d" name="ac005bcd9ac9d881da6f344ba65bfe74d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac005bcd9ac9d881da6f344ba65bfe74d">&#9670;&#160;</a></span>operator-() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator- </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator- </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td>
           <td class="paramname"><em>other</em></td><td>)</td>
@@ -523,21 +557,21 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="ac50903bd7552f55b2b9321b80c641b58" name="ac50903bd7552f55b2b9321b80c641b58"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac50903bd7552f55b2b9321b80c641b58">&#9670;&#160;</a></span>operator-() <span class="overload">[2/2]</span></h2>
+<a id="a6f8ce3bbb6d8afacd23a20329da7484f" name="a6f8ce3bbb6d8afacd23a20329da7484f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f8ce3bbb6d8afacd23a20329da7484f">&#9670;&#160;</a></span>operator-() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator- </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator- </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -551,19 +585,19 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="afde53a6e8950b92f80086ec63b337943" name="afde53a6e8950b92f80086ec63b337943"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afde53a6e8950b92f80086ec63b337943">&#9670;&#160;</a></span>operator--() <span class="overload">[1/2]</span></h2>
+<a id="a3b1a231193d76f5751156c66768fa24c" name="a3b1a231193d76f5751156c66768fa24c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b1a231193d76f5751156c66768fa24c">&#9670;&#160;</a></span>operator--() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator-- </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator-- </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -578,19 +612,19 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a0ff4a4fcce09d4fc1299f9db69e08637" name="a0ff4a4fcce09d4fc1299f9db69e08637"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ff4a4fcce09d4fc1299f9db69e08637">&#9670;&#160;</a></span>operator--() <span class="overload">[2/2]</span></h2>
+<a id="a1cefe0409af8dcb6d5b9fb46ffd35fa1" name="a1cefe0409af8dcb6d5b9fb46ffd35fa1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1cefe0409af8dcb6d5b9fb46ffd35fa1">&#9670;&#160;</a></span>operator--() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator-- </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator-- </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -606,21 +640,21 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="ab61d25dd0081de5c3fc4ccf94c8bd667" name="ab61d25dd0081de5c3fc4ccf94c8bd667"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab61d25dd0081de5c3fc4ccf94c8bd667">&#9670;&#160;</a></span>operator-=()</h2>
+<a id="ab0fee27612be3be1423985cd378dc3ed" name="ab0fee27612be3be1423985cd378dc3ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0fee27612be3be1423985cd378dc3ed">&#9670;&#160;</a></span>operator-=()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator-= </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator-= </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td></td>
         </tr>
@@ -634,19 +668,19 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a09ebb4e6062974a05f5496ab868d369a" name="a09ebb4e6062974a05f5496ab868d369a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09ebb4e6062974a05f5496ab868d369a">&#9670;&#160;</a></span>operator&lt;=&gt;()</h2>
+<a id="a273d6b0f2c98dc64da6aa8c4b6f32dfd" name="a273d6b0f2c98dc64da6aa8c4b6f32dfd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a273d6b0f2c98dc64da6aa8c4b6f32dfd">&#9670;&#160;</a></span>operator&lt;=&gt;()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator&lt;=&gt; </td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator&lt;=&gt; </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -662,21 +696,21 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 
 </div>
 </div>
-<a id="a20a09883579cd1bef9b67221fa423a2e" name="a20a09883579cd1bef9b67221fa423a2e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a20a09883579cd1bef9b67221fa423a2e">&#9670;&#160;</a></span>operator[]()</h2>
+<a id="a20006fc7b14526aa8dc1e218f5b3288e" name="a20006fc7b14526aa8dc1e218f5b3288e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20006fc7b14526aa8dc1e218f5b3288e">&#9670;&#160;</a></span>operator[]()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr char32_t <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::operator[] </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a6e42f064cbf9d3f605385b4dec7aa145">value_type</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::operator[] </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -697,7 +731,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -705,7 +739,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
         <tr>
           <td class="memname">constexpr friend <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">iterator</a> operator+ </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a2419961f747311806f056d55d95c7eb8">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#aa9492294b12678472a38006bc47c3fdd">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -730,19 +764,19 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a4db3ab0bb53dce00c7fb0e557b21e496" name="a4db3ab0bb53dce00c7fb0e557b21e496"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4db3ab0bb53dce00c7fb0e557b21e496">&#9670;&#160;</a></span>current_</h2>
+<a id="a87886fe1ded1192201f74ae4098dafb4" name="a87886fe1ded1192201f74ae4098dafb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a87886fe1ded1192201f74ae4098dafb4">&#9670;&#160;</a></span>current_</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R&gt; </div>
+template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#af5dba783a7507891b0da7f2558b7e26b">base_iter</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R &gt;::iterator::current_ {}</td>
+          <td class="memname"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html#a15b9d9777d0d4d8569a0fb6c2ef74883">base_iter</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view</a>&lt; C, R, E &gt;::iterator::current_ {}</td>
         </tr>
       </table>
   </td>

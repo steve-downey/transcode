@@ -5,6 +5,10 @@ var error_8hpp =
       [ "incomplete_sequence", "error_8hpp.html#aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82", null ],
       [ "output_full", "error_8hpp.html#aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844", null ]
     ] ],
+    [ "transcode_error_kind", "error_8hpp.html#a692fa6937eaeda0a1ceaeed075b35218", [
+      [ "replacement", "error_8hpp.html#a692fa6937eaeda0a1ceaeed075b35218af5300127f646a4550bc4a04fbe393e79", null ],
+      [ "expected", "error_8hpp.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac", null ]
+    ] ],
     [ "whatwg_error", "error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30bab", [
       [ "invalid_byte", "error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0", null ],
       [ "truncated_sequence", "error_8hpp.html#a3823b84e4fc7b689f0b2b38741b30baba3c77c8fa3468fd7bfd6123cbcbc26a3e", null ],

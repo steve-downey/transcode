@@ -106,7 +106,7 @@ Goal</h1>
 <p>Add a <code>transcode(decode_codec, encode_codec)</code> pipe adaptor that composes decode and encode in a single pipeline for pluggable codecs.</p>
 <h1><a class="anchor" id="autotoc_md245"></a>
 Context for Executing Agent</h1>
-<p>The WHATWG version is <code>transcode&lt;From, To&gt;</code> in <code><a class="el" href="transcode__view_8hpp.html">include/beman/transcode/detail/transcode_view.hpp</a></code> (lines 14-39). It composes <code>whatwg_decode&lt;From&gt;</code> and <code>whatwg_encode&lt;To&gt;</code>:</p>
+<p>The WHATWG version is <code>transcode&lt;From, To&gt;</code> in <code>include/beman/transcode/detail/transcode_view.hpp</code> (lines 14-39). It composes <code>whatwg_decode&lt;From&gt;</code> and <code>whatwg_encode&lt;To&gt;</code>:</p>
 <div class="fragment"><div class="line"><span class="keyword">template</span> &lt;codec From, codec To&gt;</div>
 <div class="line"><span class="keyword">struct </span>transcode_closure {</div>
 <div class="line">    <span class="keyword">template</span> &lt;legacy_<span class="keywordtype">byte</span>_range R&gt;</div>
@@ -144,7 +144,7 @@ Implementation</h2>
 <h1><a class="anchor" id="autotoc_md247"></a>
 Deliverables</h1>
 <ul>
-<li>Modify <code><a class="el" href="transcode__view_8hpp.html">include/beman/transcode/detail/transcode_view.hpp</a></code>:<ul>
+<li>Modify <code>include/beman/transcode/detail/transcode_view.hpp</code>:<ul>
 <li>Add <code>pluggable_transcode_closure</code> struct</li>
 <li>Add <code>transcode(From, To)</code> factory function</li>
 </ul>

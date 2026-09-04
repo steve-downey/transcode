@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>beman.transcode: beman::transcoding::random_access_decode_view&lt; Codec, R &gt;::iterator Class Reference</title>
+<title>beman.transcode: beman::transcoding::random_access_decode_view&lt; Codec, R, E &gt;::iterator Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -99,73 +99,79 @@ $(document).ready(function(){initNavTree('classbeman_1_1transcoding_1_1random__a
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pri-types">Private Types</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">beman::transcoding::random_access_decode_view&lt; Codec, R &gt;::iterator Class Reference</div></div>
+  <div class="headertitle"><div class="title">beman::transcoding::random_access_decode_view&lt; Codec, R, E &gt;::iterator Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a1ed1df0a36ac9dc1b7901f71937fff49"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a1ed1df0a36ac9dc1b7901f71937fff49">iterator_concept</a> = std::random_access_iterator_tag</td></tr>
-<tr class="separator:a1ed1df0a36ac9dc1b7901f71937fff49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ea430d191c9d8df3d5ba51b4060f4d6"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0ea430d191c9d8df3d5ba51b4060f4d6">iterator_category</a> = std::random_access_iterator_tag</td></tr>
-<tr class="separator:a0ea430d191c9d8df3d5ba51b4060f4d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac70938d8ccc5381331222c614e9c3418"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac70938d8ccc5381331222c614e9c3418">value_type</a> = char32_t</td></tr>
-<tr class="separator:ac70938d8ccc5381331222c614e9c3418"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5709b9930c5d0b5ecacc692ad2ebe440"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a> = std::ptrdiff_t</td></tr>
-<tr class="separator:a5709b9930c5d0b5ecacc692ad2ebe440"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad530aaeb56c4bd89bbecee0360bff049"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ad530aaeb56c4bd89bbecee0360bff049">reference</a> = char32_t</td></tr>
-<tr class="separator:ad530aaeb56c4bd89bbecee0360bff049"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac304ddf2c138350de2c35375520146f7"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac304ddf2c138350de2c35375520146f7">value_type</a> = std::conditional_t&lt; E==<a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a>, std::expected&lt; char32_t, <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a> &gt;, char32_t &gt;</td></tr>
+<tr class="separator:ac304ddf2c138350de2c35375520146f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a127f87cab8a10090352f1f636f94c1e4"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a127f87cab8a10090352f1f636f94c1e4">iterator_concept</a> = std::random_access_iterator_tag</td></tr>
+<tr class="separator:a127f87cab8a10090352f1f636f94c1e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab49afb52c0cf8d47a3872a8221b44657"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ab49afb52c0cf8d47a3872a8221b44657">iterator_category</a> = std::random_access_iterator_tag</td></tr>
+<tr class="separator:ab49afb52c0cf8d47a3872a8221b44657"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c2d0807216f12039d1a863b2c058183"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a> = std::ptrdiff_t</td></tr>
+<tr class="separator:a0c2d0807216f12039d1a863b2c058183"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ee80320448e780a9b055c2701320478"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5ee80320448e780a9b055c2701320478">reference</a> = <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac304ddf2c138350de2c35375520146f7">value_type</a></td></tr>
+<tr class="separator:a5ee80320448e780a9b055c2701320478"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa6aa50f4f35a1d8054afc64c4bbc0f92"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#aa6aa50f4f35a1d8054afc64c4bbc0f92">iterator</a> ()=default</td></tr>
-<tr class="separator:aa6aa50f4f35a1d8054afc64c4bbc0f92"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d4d176803566b3d12886f1669aab7a9"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0d4d176803566b3d12886f1669aab7a9">iterator</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6846482417dfb89642aa867c232efa70">base_iter</a> current, Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>)</td></tr>
-<tr class="separator:a0d4d176803566b3d12886f1669aab7a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae82e38e7495b62faaa4ebcb5fc83e7cb"><td class="memItemLeft" align="right" valign="top">constexpr const <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6846482417dfb89642aa867c232efa70">base_iter</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ae82e38e7495b62faaa4ebcb5fc83e7cb">base</a> () const noexcept</td></tr>
-<tr class="separator:ae82e38e7495b62faaa4ebcb5fc83e7cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad85c52e56ae3162f1cee8fb5f578485"><td class="memItemLeft" align="right" valign="top">constexpr char32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#aad85c52e56ae3162f1cee8fb5f578485">operator*</a> () const</td></tr>
-<tr class="separator:aad85c52e56ae3162f1cee8fb5f578485"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4a227b4f4cbab9665360c26b17d7ddff"><td class="memItemLeft" align="right" valign="top">constexpr char32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a4a227b4f4cbab9665360c26b17d7ddff">operator[]</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a> n) const</td></tr>
-<tr class="separator:a4a227b4f4cbab9665360c26b17d7ddff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addce9921c73b3627c33abc9d5b05dab2"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#addce9921c73b3627c33abc9d5b05dab2">operator++</a> ()</td></tr>
-<tr class="separator:addce9921c73b3627c33abc9d5b05dab2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa25acf91b11ca5b696006034e3b1f037"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#aa25acf91b11ca5b696006034e3b1f037">operator++</a> (int)</td></tr>
-<tr class="separator:aa25acf91b11ca5b696006034e3b1f037"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6bb70651b24cdb58d8c9754324229ee1"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6bb70651b24cdb58d8c9754324229ee1">operator--</a> ()</td></tr>
-<tr class="separator:a6bb70651b24cdb58d8c9754324229ee1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8da0a2dadecdd318954b8ad4d1b38850"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a8da0a2dadecdd318954b8ad4d1b38850">operator--</a> (int)</td></tr>
-<tr class="separator:a8da0a2dadecdd318954b8ad4d1b38850"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a049656a91e19c090e230dbd43b5f0a6d"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a049656a91e19c090e230dbd43b5f0a6d">operator+=</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a> n)</td></tr>
-<tr class="separator:a049656a91e19c090e230dbd43b5f0a6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8c9a182861a480b296a685c38512782"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac8c9a182861a480b296a685c38512782">operator-=</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a> n)</td></tr>
-<tr class="separator:ac8c9a182861a480b296a685c38512782"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af08825aa15935f4d64ef193e0ef8d221"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#af08825aa15935f4d64ef193e0ef8d221">operator+</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a> n) const</td></tr>
-<tr class="separator:af08825aa15935f4d64ef193e0ef8d221"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6dac58ea0355468deaea94ef677905bc"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6dac58ea0355468deaea94ef677905bc">operator-</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a> n) const</td></tr>
-<tr class="separator:a6dac58ea0355468deaea94ef677905bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0721eb91b325f19f0574468e3ed8ddcb"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0721eb91b325f19f0574468e3ed8ddcb">operator-</a> (const <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;other) const</td></tr>
-<tr class="separator:a0721eb91b325f19f0574468e3ed8ddcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b9d4f211bdd99fd0a521fc78a47508c"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a2b9d4f211bdd99fd0a521fc78a47508c">iterator</a> ()=default</td></tr>
+<tr class="separator:a2b9d4f211bdd99fd0a521fc78a47508c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad27cdf008724b83673520d68aea3d154"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ad27cdf008724b83673520d68aea3d154">iterator</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a39586ad6a1584f2ee930307d8a7b780d">base_iter</a> current, Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>)</td></tr>
+<tr class="separator:ad27cdf008724b83673520d68aea3d154"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ddae0cdc75e60e50cd08d61254e4499"><td class="memItemLeft" align="right" valign="top">constexpr const <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a39586ad6a1584f2ee930307d8a7b780d">base_iter</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6ddae0cdc75e60e50cd08d61254e4499">base</a> () const noexcept</td></tr>
+<tr class="separator:a6ddae0cdc75e60e50cd08d61254e4499"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad22f1bcb0d20f710e5a7bc1bf1334a19"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac304ddf2c138350de2c35375520146f7">value_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ad22f1bcb0d20f710e5a7bc1bf1334a19">operator*</a> () const</td></tr>
+<tr class="separator:ad22f1bcb0d20f710e5a7bc1bf1334a19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2aae647b75df9f4e18eb6b7bf920aa96"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac304ddf2c138350de2c35375520146f7">value_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a2aae647b75df9f4e18eb6b7bf920aa96">operator[]</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a> n) const</td></tr>
+<tr class="separator:a2aae647b75df9f4e18eb6b7bf920aa96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a017afeca6d2f7cfff0fdfa7bac3c1238"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a017afeca6d2f7cfff0fdfa7bac3c1238">operator++</a> ()</td></tr>
+<tr class="separator:a017afeca6d2f7cfff0fdfa7bac3c1238"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0763f2a0e5187a800c305db4f2876488"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0763f2a0e5187a800c305db4f2876488">operator++</a> (int)</td></tr>
+<tr class="separator:a0763f2a0e5187a800c305db4f2876488"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7df450f56874e2634b9459a87c127320"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a7df450f56874e2634b9459a87c127320">operator--</a> ()</td></tr>
+<tr class="separator:a7df450f56874e2634b9459a87c127320"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12c8c4a8a16411dd6674aa53f362509e"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a12c8c4a8a16411dd6674aa53f362509e">operator--</a> (int)</td></tr>
+<tr class="separator:a12c8c4a8a16411dd6674aa53f362509e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a336b381f2c3c56c49ab1630272da4634"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a336b381f2c3c56c49ab1630272da4634">operator+=</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a> n)</td></tr>
+<tr class="separator:a336b381f2c3c56c49ab1630272da4634"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae886cab79a543ca9d8be4fbd97f6ab8b"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ae886cab79a543ca9d8be4fbd97f6ab8b">operator-=</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a> n)</td></tr>
+<tr class="separator:ae886cab79a543ca9d8be4fbd97f6ab8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a662343d1c95bbe89fd291bd19c8c1aa6"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a662343d1c95bbe89fd291bd19c8c1aa6">operator+</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a> n) const</td></tr>
+<tr class="separator:a662343d1c95bbe89fd291bd19c8c1aa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a352208ca37e57124107a4c4ef9a4301f"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a352208ca37e57124107a4c4ef9a4301f">operator-</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a> n) const</td></tr>
+<tr class="separator:a352208ca37e57124107a4c4ef9a4301f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a211f7eb073229c8214635cb1b893292a"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a211f7eb073229c8214635cb1b893292a">operator-</a> (const <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;other) const</td></tr>
+<tr class="separator:a211f7eb073229c8214635cb1b893292a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:aaa7561d74d26aebaa89f3398b40ef06d"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac304ddf2c138350de2c35375520146f7">value_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#aaa7561d74d26aebaa89f3398b40ef06d">error_result</a> (<a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a> e)</td></tr>
+<tr class="separator:aaa7561d74d26aebaa89f3398b40ef06d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-types" name="pri-types"></a>
 Private Types</h2></td></tr>
-<tr class="memitem:a6846482417dfb89642aa867c232efa70"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6846482417dfb89642aa867c232efa70">base_iter</a> = detail::compatible_iterator_t&lt; R &gt;</td></tr>
-<tr class="separator:a6846482417dfb89642aa867c232efa70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39586ad6a1584f2ee930307d8a7b780d"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a39586ad6a1584f2ee930307d8a7b780d">base_iter</a> = detail::compatible_iterator_t&lt; R &gt;</td></tr>
+<tr class="separator:a39586ad6a1584f2ee930307d8a7b780d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:ac0a5bd076aef3d543c4a0fe636f351f7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6846482417dfb89642aa867c232efa70">base_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac0a5bd076aef3d543c4a0fe636f351f7">current_</a> {}</td></tr>
-<tr class="separator:ac0a5bd076aef3d543c4a0fe636f351f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad67f544f460c35930b4bed319757aa70"><td class="memItemLeft" align="right" valign="top">Codec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ad67f544f460c35930b4bed319757aa70">codec_</a> {}</td></tr>
-<tr class="separator:ad67f544f460c35930b4bed319757aa70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab78f9dc608277e5dc23e04156feb591a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a39586ad6a1584f2ee930307d8a7b780d">base_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ab78f9dc608277e5dc23e04156feb591a">current_</a> {}</td></tr>
+<tr class="separator:ab78f9dc608277e5dc23e04156feb591a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ccb1ed5270cdd273e7b7ffbc66015cd"><td class="memItemLeft" align="right" valign="top">Codec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a9ccb1ed5270cdd273e7b7ffbc66015cd">codec_</a> {}</td></tr>
+<tr class="separator:a9ccb1ed5270cdd273e7b7ffbc66015cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
-<tr class="memitem:abeef03867fd352948a091e4481677219"><td class="memItemLeft" align="right" valign="top">constexpr friend <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#abeef03867fd352948a091e4481677219">operator+</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a> n, <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> it)</td></tr>
+<tr class="memitem:abeef03867fd352948a091e4481677219"><td class="memItemLeft" align="right" valign="top">constexpr friend <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#abeef03867fd352948a091e4481677219">operator+</a> (<a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a> n, <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> it)</td></tr>
 <tr class="separator:abeef03867fd352948a091e4481677219"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1158e0cddc1da960f2333e63d40d9af"><td class="memItemLeft" align="right" valign="top">constexpr friend bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#af1158e0cddc1da960f2333e63d40d9af">operator==</a> (const <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;lhs, const <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;rhs)</td></tr>
 <tr class="separator:af1158e0cddc1da960f2333e63d40d9af"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -173,19 +179,19 @@ Friends</h2></td></tr>
 <tr class="separator:a503660b22474d4d56b7a7b2258746eb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="a6846482417dfb89642aa867c232efa70" name="a6846482417dfb89642aa867c232efa70"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6846482417dfb89642aa867c232efa70">&#9670;&#160;</a></span>base_iter</h2>
+<a id="a39586ad6a1584f2ee930307d8a7b780d" name="a39586ad6a1584f2ee930307d8a7b780d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39586ad6a1584f2ee930307d8a7b780d">&#9670;&#160;</a></span>base_iter</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::base_iter =  detail::compatible_iterator_t&lt;R&gt;</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::base_iter =  detail::compatible_iterator_t&lt;R&gt;</td>
         </tr>
       </table>
   </td>
@@ -197,80 +203,80 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
 
 </div>
 </div>
-<a id="a5709b9930c5d0b5ecacc692ad2ebe440" name="a5709b9930c5d0b5ecacc692ad2ebe440"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5709b9930c5d0b5ecacc692ad2ebe440">&#9670;&#160;</a></span>difference_type</h2>
+<a id="a0c2d0807216f12039d1a863b2c058183" name="a0c2d0807216f12039d1a863b2c058183"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c2d0807216f12039d1a863b2c058183">&#9670;&#160;</a></span>difference_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::difference_type =  std::ptrdiff_t</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::difference_type =  std::ptrdiff_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a0ea430d191c9d8df3d5ba51b4060f4d6" name="a0ea430d191c9d8df3d5ba51b4060f4d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ea430d191c9d8df3d5ba51b4060f4d6">&#9670;&#160;</a></span>iterator_category</h2>
+<a id="ab49afb52c0cf8d47a3872a8221b44657" name="ab49afb52c0cf8d47a3872a8221b44657"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab49afb52c0cf8d47a3872a8221b44657">&#9670;&#160;</a></span>iterator_category</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::iterator_category =  std::random_access_iterator_tag</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::iterator_category =  std::random_access_iterator_tag</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a1ed1df0a36ac9dc1b7901f71937fff49" name="a1ed1df0a36ac9dc1b7901f71937fff49"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1ed1df0a36ac9dc1b7901f71937fff49">&#9670;&#160;</a></span>iterator_concept</h2>
+<a id="a127f87cab8a10090352f1f636f94c1e4" name="a127f87cab8a10090352f1f636f94c1e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a127f87cab8a10090352f1f636f94c1e4">&#9670;&#160;</a></span>iterator_concept</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::iterator_concept =  std::random_access_iterator_tag</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::iterator_concept =  std::random_access_iterator_tag</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="ad530aaeb56c4bd89bbecee0360bff049" name="ad530aaeb56c4bd89bbecee0360bff049"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad530aaeb56c4bd89bbecee0360bff049">&#9670;&#160;</a></span>reference</h2>
+<a id="a5ee80320448e780a9b055c2701320478" name="a5ee80320448e780a9b055c2701320478"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ee80320448e780a9b055c2701320478">&#9670;&#160;</a></span>reference</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::reference =  char32_t</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::reference =  <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac304ddf2c138350de2c35375520146f7">value_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="ac70938d8ccc5381331222c614e9c3418" name="ac70938d8ccc5381331222c614e9c3418"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac70938d8ccc5381331222c614e9c3418">&#9670;&#160;</a></span>value_type</h2>
+<a id="ac304ddf2c138350de2c35375520146f7" name="ac304ddf2c138350de2c35375520146f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac304ddf2c138350de2c35375520146f7">&#9670;&#160;</a></span>value_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::value_type =  char32_t</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::value_type =  std::conditional_t&lt;E == <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a>, std::expected&lt;char32_t, <a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a>&gt;, char32_t&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -278,19 +284,19 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="aa6aa50f4f35a1d8054afc64c4bbc0f92" name="aa6aa50f4f35a1d8054afc64c4bbc0f92"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6aa50f4f35a1d8054afc64c4bbc0f92">&#9670;&#160;</a></span>iterator() <span class="overload">[1/2]</span></h2>
+<a id="a2b9d4f211bdd99fd0a521fc78a47508c" name="a2b9d4f211bdd99fd0a521fc78a47508c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b9d4f211bdd99fd0a521fc78a47508c">&#9670;&#160;</a></span>iterator() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::iterator </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::iterator </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -305,22 +311,22 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
 
 </div>
 </div>
-<a id="a0d4d176803566b3d12886f1669aab7a9" name="a0d4d176803566b3d12886f1669aab7a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0d4d176803566b3d12886f1669aab7a9">&#9670;&#160;</a></span>iterator() <span class="overload">[2/2]</span></h2>
+<a id="ad27cdf008724b83673520d68aea3d154" name="ad27cdf008724b83673520d68aea3d154"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad27cdf008724b83673520d68aea3d154">&#9670;&#160;</a></span>iterator() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::iterator </td>
+          <td class="memname">constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::iterator </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6846482417dfb89642aa867c232efa70">base_iter</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a39586ad6a1584f2ee930307d8a7b780d">base_iter</a>&#160;</td>
           <td class="paramname"><em>current</em>, </td>
         </tr>
         <tr>
@@ -345,19 +351,19 @@ requires legacy_byte_range&lt;R&gt;</div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ae82e38e7495b62faaa4ebcb5fc83e7cb" name="ae82e38e7495b62faaa4ebcb5fc83e7cb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae82e38e7495b62faaa4ebcb5fc83e7cb">&#9670;&#160;</a></span>base()</h2>
+<a id="a6ddae0cdc75e60e50cd08d61254e4499" name="a6ddae0cdc75e60e50cd08d61254e4499"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6ddae0cdc75e60e50cd08d61254e4499">&#9670;&#160;</a></span>base()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr const <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6846482417dfb89642aa867c232efa70">base_iter</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::base </td>
+          <td class="memname">constexpr const <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a39586ad6a1584f2ee930307d8a7b780d">base_iter</a> &amp; <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::base </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -372,20 +378,48 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
 
 </div>
 </div>
-<a id="aad85c52e56ae3162f1cee8fb5f578485" name="aad85c52e56ae3162f1cee8fb5f578485"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aad85c52e56ae3162f1cee8fb5f578485">&#9670;&#160;</a></span>operator*()</h2>
+<a id="aaa7561d74d26aebaa89f3398b40ef06d" name="aaa7561d74d26aebaa89f3398b40ef06d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa7561d74d26aebaa89f3398b40ef06d">&#9670;&#160;</a></span>error_result()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#ac304ddf2c138350de2c35375520146f7">value_type</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::error_result </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a>&#160;</td>
+          <td class="paramname"><em>e</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad22f1bcb0d20f710e5a7bc1bf1334a19" name="ad22f1bcb0d20f710e5a7bc1bf1334a19"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad22f1bcb0d20f710e5a7bc1bf1334a19">&#9670;&#160;</a></span>operator*()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr char32_t <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator*</td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator*</td>
         </tr>
       </table>
   </td>
@@ -397,22 +431,22 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="af08825aa15935f4d64ef193e0ef8d221" name="af08825aa15935f4d64ef193e0ef8d221"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af08825aa15935f4d64ef193e0ef8d221">&#9670;&#160;</a></span>operator+()</h2>
+<a id="a662343d1c95bbe89fd291bd19c8c1aa6" name="a662343d1c95bbe89fd291bd19c8c1aa6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a662343d1c95bbe89fd291bd19c8c1aa6">&#9670;&#160;</a></span>operator+()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator+ </td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator+ </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -426,20 +460,20 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="addce9921c73b3627c33abc9d5b05dab2" name="addce9921c73b3627c33abc9d5b05dab2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#addce9921c73b3627c33abc9d5b05dab2">&#9670;&#160;</a></span>operator++() <span class="overload">[1/2]</span></h2>
+<a id="a017afeca6d2f7cfff0fdfa7bac3c1238" name="a017afeca6d2f7cfff0fdfa7bac3c1238"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a017afeca6d2f7cfff0fdfa7bac3c1238">&#9670;&#160;</a></span>operator++() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator++</td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator++</td>
         </tr>
       </table>
   </td>
@@ -451,20 +485,20 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="aa25acf91b11ca5b696006034e3b1f037" name="aa25acf91b11ca5b696006034e3b1f037"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa25acf91b11ca5b696006034e3b1f037">&#9670;&#160;</a></span>operator++() <span class="overload">[2/2]</span></h2>
+<a id="a0763f2a0e5187a800c305db4f2876488" name="a0763f2a0e5187a800c305db4f2876488"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0763f2a0e5187a800c305db4f2876488">&#9670;&#160;</a></span>operator++() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator++ </td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator++ </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -480,22 +514,22 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="a049656a91e19c090e230dbd43b5f0a6d" name="a049656a91e19c090e230dbd43b5f0a6d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a049656a91e19c090e230dbd43b5f0a6d">&#9670;&#160;</a></span>operator+=()</h2>
+<a id="a336b381f2c3c56c49ab1630272da4634" name="a336b381f2c3c56c49ab1630272da4634"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a336b381f2c3c56c49ab1630272da4634">&#9670;&#160;</a></span>operator+=()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator+= </td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator+= </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td></td>
         </tr>
@@ -509,20 +543,20 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="a0721eb91b325f19f0574468e3ed8ddcb" name="a0721eb91b325f19f0574468e3ed8ddcb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0721eb91b325f19f0574468e3ed8ddcb">&#9670;&#160;</a></span>operator-() <span class="overload">[1/2]</span></h2>
+<a id="a211f7eb073229c8214635cb1b893292a" name="a211f7eb073229c8214635cb1b893292a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a211f7eb073229c8214635cb1b893292a">&#9670;&#160;</a></span>operator-() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator- </td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator- </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> &amp;&#160;</td>
           <td class="paramname"><em>other</em></td><td>)</td>
@@ -538,22 +572,22 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="a6dac58ea0355468deaea94ef677905bc" name="a6dac58ea0355468deaea94ef677905bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6dac58ea0355468deaea94ef677905bc">&#9670;&#160;</a></span>operator-() <span class="overload">[2/2]</span></h2>
+<a id="a352208ca37e57124107a4c4ef9a4301f" name="a352208ca37e57124107a4c4ef9a4301f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a352208ca37e57124107a4c4ef9a4301f">&#9670;&#160;</a></span>operator-() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator- </td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator- </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -567,20 +601,20 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="a6bb70651b24cdb58d8c9754324229ee1" name="a6bb70651b24cdb58d8c9754324229ee1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6bb70651b24cdb58d8c9754324229ee1">&#9670;&#160;</a></span>operator--() <span class="overload">[1/2]</span></h2>
+<a id="a7df450f56874e2634b9459a87c127320" name="a7df450f56874e2634b9459a87c127320"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7df450f56874e2634b9459a87c127320">&#9670;&#160;</a></span>operator--() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator--</td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator--</td>
         </tr>
       </table>
   </td>
@@ -592,20 +626,20 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="a8da0a2dadecdd318954b8ad4d1b38850" name="a8da0a2dadecdd318954b8ad4d1b38850"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8da0a2dadecdd318954b8ad4d1b38850">&#9670;&#160;</a></span>operator--() <span class="overload">[2/2]</span></h2>
+<a id="a12c8c4a8a16411dd6674aa53f362509e" name="a12c8c4a8a16411dd6674aa53f362509e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12c8c4a8a16411dd6674aa53f362509e">&#9670;&#160;</a></span>operator--() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator-- </td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator-- </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -621,22 +655,22 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="ac8c9a182861a480b296a685c38512782" name="ac8c9a182861a480b296a685c38512782"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac8c9a182861a480b296a685c38512782">&#9670;&#160;</a></span>operator-=()</h2>
+<a id="ae886cab79a543ca9d8be4fbd97f6ab8b" name="ae886cab79a543ca9d8be4fbd97f6ab8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae886cab79a543ca9d8be4fbd97f6ab8b">&#9670;&#160;</a></span>operator-=()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator-= </td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator-= </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td></td>
         </tr>
@@ -650,22 +684,22 @@ requires legacy_byte_range&lt;R&gt;</div>
 
 </div>
 </div>
-<a id="a4a227b4f4cbab9665360c26b17d7ddff" name="a4a227b4f4cbab9665360c26b17d7ddff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4a227b4f4cbab9665360c26b17d7ddff">&#9670;&#160;</a></span>operator[]()</h2>
+<a id="a2aae647b75df9f4e18eb6b7bf920aa96" name="a2aae647b75df9f4e18eb6b7bf920aa96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2aae647b75df9f4e18eb6b7bf920aa96">&#9670;&#160;</a></span>operator[]()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; <br />
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E&gt; <br />
 requires legacy_byte_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr char32_t <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::operator[] </td>
+          <td class="memname">constexpr auto <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::operator[] </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -686,7 +720,7 @@ requires legacy_byte_range&lt;R&gt;</div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -694,7 +728,7 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
         <tr>
           <td class="memname">constexpr friend <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html">iterator</a> operator+ </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a5709b9930c5d0b5ecacc692ad2ebe440">difference_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a0c2d0807216f12039d1a863b2c058183">difference_type</a>&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -724,7 +758,7 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -762,7 +796,7 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -795,19 +829,19 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="ad67f544f460c35930b4bed319757aa70" name="ad67f544f460c35930b4bed319757aa70"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad67f544f460c35930b4bed319757aa70">&#9670;&#160;</a></span>codec_</h2>
+<a id="a9ccb1ed5270cdd273e7b7ffbc66015cd" name="a9ccb1ed5270cdd273e7b7ffbc66015cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ccb1ed5270cdd273e7b7ffbc66015cd">&#9670;&#160;</a></span>codec_</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Codec <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::codec_ {}</td>
+          <td class="memname">Codec <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::codec_ {}</td>
         </tr>
       </table>
   </td>
@@ -819,19 +853,19 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
 
 </div>
 </div>
-<a id="ac0a5bd076aef3d543c4a0fe636f351f7" name="ac0a5bd076aef3d543c4a0fe636f351f7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac0a5bd076aef3d543c4a0fe636f351f7">&#9670;&#160;</a></span>current_</h2>
+<a id="ab78f9dc608277e5dc23e04156feb591a" name="ab78f9dc608277e5dc23e04156feb591a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab78f9dc608277e5dc23e04156feb591a">&#9670;&#160;</a></span>current_</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R&gt; </div>
+template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a6846482417dfb89642aa867c232efa70">base_iter</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R &gt;::iterator::current_ {}</td>
+          <td class="memname"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html#a39586ad6a1584f2ee930307d8a7b780d">base_iter</a> <a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">beman::transcoding::random_access_decode_view</a>&lt; Codec, R, E &gt;::iterator::current_ {}</td>
         </tr>
       </table>
   </td>

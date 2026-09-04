@@ -141,7 +141,7 @@ The problem</h2>
 <h1><a class="anchor" id="autotoc_md280"></a>
 Deliverables</h1>
 <ul>
-<li>Decision documented in code comments in <code><a class="el" href="error_8hpp.html">detail/error.hpp</a></code></li>
+<li>Decision documented in code comments in <code>detail/error.hpp</code></li>
 <li>If <code>decode_error</code> alias is removed: update all references in <code><a class="el" href="codec__result_8hpp.html">codec_result.hpp</a></code>, <code><a class="el" href="decode__view_8hpp.html">decode_view.hpp</a></code>, <code><a class="el" href="encode__view_8hpp.html">encode_view.hpp</a></code>, <code><a class="el" href="table__codec_8hpp.html">table_codec.hpp</a></code></li>
 <li>If renamed: consistent new name throughout</li>
 <li>Update README API matrix error row to reflect final state</li>
@@ -154,7 +154,7 @@ Procedure</h1>
 <li>Run <code>grep -rn "decode_error" include/</code> to find all uses of the alias</li>
 <li>Evaluate: is <code>decode_error</code> used in any user-facing API (public function signatures, view value_types)?</li>
 <li>Decision tree: a. If only internal (struct fields, concept requirements): rename to <code>codec_error</code> or just use <code>whatwg_error</code> directly b. If user-facing: consider whether <code>codec_error</code> is clearer than <code>decode_error</code> (since it's used for encode errors too)</li>
-<li>Add a documentation comment block in <code><a class="el" href="error_8hpp.html">detail/error.hpp</a></code> explaining:<ul>
+<li>Add a documentation comment block in <code>detail/error.hpp</code> explaining:<ul>
 <li><code>whatwg_error</code>: WHATWG Encoding Standard error categories</li>
 <li><code>iconv_error</code>: POSIX iconv errno mappings</li>
 <li>Why they are separate (different abstraction levels)</li>

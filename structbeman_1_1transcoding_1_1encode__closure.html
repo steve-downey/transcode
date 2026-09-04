@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>beman.transcode: beman::transcoding::encode_closure&lt; Codec &gt; Struct Template Reference</title>
+<title>beman.transcode: beman::transcoding::encode_closure&lt; Codec, E &gt; Struct Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -101,7 +101,7 @@ $(document).ready(function(){initNavTree('structbeman_1_1transcoding_1_1encode__
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="structbeman_1_1transcoding_1_1encode__closure-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">beman::transcoding::encode_closure&lt; Codec &gt; Struct Template Reference</div></div>
+  <div class="headertitle"><div class="title">beman::transcoding::encode_closure&lt; Codec, E &gt; Struct Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
@@ -109,14 +109,14 @@ $(document).ready(function(){initNavTree('structbeman_1_1transcoding_1_1encode__
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae938a39eced69d006f042eb63463e26d"><td class="memTemplParams" colspan="2">template&lt;unicode_scalar_range R&gt; </td></tr>
-<tr class="memitem:ae938a39eced69d006f042eb63463e26d"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html#ae938a39eced69d006f042eb63463e26d">operator()</a> (R &amp;&amp;r) const</td></tr>
-<tr class="separator:ae938a39eced69d006f042eb63463e26d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3cea1c3d53b48e0bcc6e97d91f201bd"><td class="memTemplParams" colspan="2">template&lt;unicode_scalar_range R&gt; </td></tr>
+<tr class="memitem:ae3cea1c3d53b48e0bcc6e97d91f201bd"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html#ae3cea1c3d53b48e0bcc6e97d91f201bd">operator()</a> (R &amp;&amp;r) const</td></tr>
+<tr class="separator:ae3cea1c3d53b48e0bcc6e97d91f201bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a9e3989402c86cd0dec634d5b2cdf878f"><td class="memItemLeft" align="right" valign="top">Codec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html#a9e3989402c86cd0dec634d5b2cdf878f">codec_</a></td></tr>
-<tr class="separator:a9e3989402c86cd0dec634d5b2cdf878f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdbd2a40740d4df5c1c591897a126b91"><td class="memItemLeft" align="right" valign="top">Codec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html#afdbd2a40740d4df5c1c591897a126b91">codec_</a></td></tr>
+<tr class="separator:afdbd2a40740d4df5c1c591897a126b91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
@@ -129,13 +129,13 @@ requires std::is_array_v&lt;std::remove_cvref_t&lt;R&gt;&gt;</td></tr>
 <tr class="separator:af00c79ab8e15e1c620f4b1f6b0dd35d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ae938a39eced69d006f042eb63463e26d" name="ae938a39eced69d006f042eb63463e26d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae938a39eced69d006f042eb63463e26d">&#9670;&#160;</a></span>operator()()</h2>
+<a id="ae3cea1c3d53b48e0bcc6e97d91f201bd" name="ae3cea1c3d53b48e0bcc6e97d91f201bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3cea1c3d53b48e0bcc6e97d91f201bd">&#9670;&#160;</a></span>operator()()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;encode_codec Codec&gt; </div>
+template&lt;encode_codec Codec, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <div class="memtemplate">
 template&lt;unicode_scalar_range R&gt; </div>
 <table class="mlabels">
@@ -143,7 +143,7 @@ template&lt;unicode_scalar_range R&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">beman::transcoding::encode_closure</a>&lt; Codec &gt;::operator() </td>
+          <td class="memname">constexpr auto <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">beman::transcoding::encode_closure</a>&lt; Codec, E &gt;::operator() </td>
           <td>(</td>
           <td class="paramtype">R &amp;&amp;&#160;</td>
           <td class="paramname"><em>r</em></td><td>)</td>
@@ -166,7 +166,7 @@ template&lt;unicode_scalar_range R&gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;encode_codec Codec&gt; </div>
+template&lt;encode_codec Codec, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <div class="memtemplate">
 template&lt;typename R &gt; <br />
 requires std::is_array_v&lt;std::remove_cvref_t&lt;R&gt;&gt;</div>
@@ -183,7 +183,7 @@ requires std::is_array_v&lt;std::remove_cvref_t&lt;R&gt;&gt;</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">encode_closure</a>&lt; Codec &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">encode_closure</a>&lt; Codec, E &gt; &amp;&#160;</td>
           <td class="paramname">&#160;</td>
         </tr>
         <tr>
@@ -207,7 +207,7 @@ requires std::is_array_v&lt;std::remove_cvref_t&lt;R&gt;&gt;</div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;encode_codec Codec&gt; </div>
+template&lt;encode_codec Codec, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
 <div class="memtemplate">
 template&lt;unicode_scalar_range R&gt; </div>
 <table class="mlabels">
@@ -223,7 +223,7 @@ template&lt;unicode_scalar_range R&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">encode_closure</a>&lt; Codec &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">encode_closure</a>&lt; Codec, E &gt; &amp;&#160;</td>
           <td class="paramname"><em>self</em>&#160;</td>
         </tr>
         <tr>
@@ -242,16 +242,16 @@ template&lt;unicode_scalar_range R&gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a9e3989402c86cd0dec634d5b2cdf878f" name="a9e3989402c86cd0dec634d5b2cdf878f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9e3989402c86cd0dec634d5b2cdf878f">&#9670;&#160;</a></span>codec_</h2>
+<a id="afdbd2a40740d4df5c1c591897a126b91" name="afdbd2a40740d4df5c1c591897a126b91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afdbd2a40740d4df5c1c591897a126b91">&#9670;&#160;</a></span>codec_</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;encode_codec Codec&gt; </div>
+template&lt;encode_codec Codec, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">Codec <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">beman::transcoding::encode_closure</a>&lt; Codec &gt;::codec_</td>
+          <td class="memname">Codec <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">beman::transcoding::encode_closure</a>&lt; Codec, E &gt;::codec_</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -106,7 +106,7 @@ Goal</h1>
 <p>Verify and test that <code>views::null_term(ptr) | iconv_transcode(...)</code> works. Fix the view if <code>null_sentinel_t</code> is not handled correctly.</p>
 <h1><a class="anchor" id="autotoc_md265"></a>
 Context for Executing Agent</h1>
-<p><code>views::null_term(ptr)</code> (in <code><a class="el" href="null__term_8hpp.html">include/beman/transcode/detail/null_term.hpp</a></code>) produces a range of <code>char</code> values with <code>null_sentinel_t</code> as the sentinel type. The <code>whatwg_decode_view</code> handles this fine because it works with any <code>legacy_byte_range</code>, comparing iterators against <code>null_sentinel_t</code>.</p>
+<p><code>views::null_term(ptr)</code> (in <code>include/beman/transcode/detail/null_term.hpp</code>) produces a range of <code>char</code> values with <code>null_sentinel_t</code> as the sentinel type. The <code>whatwg_decode_view</code> handles this fine because it works with any <code>legacy_byte_range</code>, comparing iterators against <code>null_sentinel_t</code>.</p>
 <p>The <code>iconv_transcode_view</code> also accepts <code>legacy_byte_range</code>, but its implementation needs to call <code>iconv()</code> which requires a <code>char*</code> + <code>size_t</code> (contiguous buffer with known length). With a sentinel-based range, the length is unknown until the null terminator is reached.</p>
 <h2><a class="anchor" id="autotoc_md266"></a>
 Possible outcomes</h2>

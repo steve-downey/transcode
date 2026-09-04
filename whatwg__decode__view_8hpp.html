@@ -99,16 +99,21 @@ $(document).ready(function(){initNavTree('whatwg__decode__view_8hpp.html',''); i
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#enum-members">Enumerations</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">whatwg_decode_view.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="config_8hpp_source.html">beman/transcode/config.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/detail/concepts.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="error_8hpp_source.html">beman/transcode/detail/error.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="single__byte_8hpp_source.html">beman/transcode/detail/single_byte.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="codec_8hpp_source.html">beman/transcode/codec.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="range__traits_8hpp_source.html">beman/transcode/detail/range_traits.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="ibm866_8hpp_source.html">beman/transcode/detail/tables/ibm866.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__10_8hpp_source.html">beman/transcode/detail/tables/iso_8859_10.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__13_8hpp_source.html">beman/transcode/detail/tables/iso_8859_13.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__14_8hpp_source.html">beman/transcode/detail/tables/iso_8859_14.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__15_8hpp_source.html">beman/transcode/detail/tables/iso_8859_15.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="iso__8859__16_8hpp_source.html">beman/transcode/detail/tables/iso_8859_16.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="iso__8859__2_8hpp_source.html">beman/transcode/detail/tables/iso_8859_2.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="iso__8859__3_8hpp_source.html">beman/transcode/detail/tables/iso_8859_3.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="iso__8859__4_8hpp_source.html">beman/transcode/detail/tables/iso_8859_4.hpp</a>&gt;</code><br />
@@ -116,15 +121,10 @@ $(document).ready(function(){initNavTree('whatwg__decode__view_8hpp.html',''); i
 <code>#include &lt;<a class="el" href="iso__8859__6_8hpp_source.html">beman/transcode/detail/tables/iso_8859_6.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="iso__8859__7_8hpp_source.html">beman/transcode/detail/tables/iso_8859_7.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="iso__8859__8_8hpp_source.html">beman/transcode/detail/tables/iso_8859_8.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="iso__8859__10_8hpp_source.html">beman/transcode/detail/tables/iso_8859_10.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="iso__8859__13_8hpp_source.html">beman/transcode/detail/tables/iso_8859_13.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="iso__8859__14_8hpp_source.html">beman/transcode/detail/tables/iso_8859_14.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="iso__8859__15_8hpp_source.html">beman/transcode/detail/tables/iso_8859_15.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="iso__8859__16_8hpp_source.html">beman/transcode/detail/tables/iso_8859_16.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="koi8__r_8hpp_source.html">beman/transcode/detail/tables/koi8_r.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="koi8__u_8hpp_source.html">beman/transcode/detail/tables/koi8_u.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="macintosh_8hpp_source.html">beman/transcode/detail/tables/macintosh.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="windows__874_8hpp_source.html">beman/transcode/detail/tables/windows_874.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="tables_2shift__jis_8hpp_source.html">beman/transcode/detail/tables/shift_jis.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="windows__1250_8hpp_source.html">beman/transcode/detail/tables/windows_1250.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="windows__1251_8hpp_source.html">beman/transcode/detail/tables/windows_1251.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="windows__1252_8hpp_source.html">beman/transcode/detail/tables/windows_1252.hpp</a>&gt;</code><br />
@@ -134,7 +134,11 @@ $(document).ready(function(){initNavTree('whatwg__decode__view_8hpp.html',''); i
 <code>#include &lt;<a class="el" href="windows__1256_8hpp_source.html">beman/transcode/detail/tables/windows_1256.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="windows__1257_8hpp_source.html">beman/transcode/detail/tables/windows_1257.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="windows__1258_8hpp_source.html">beman/transcode/detail/tables/windows_1258.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="windows__874_8hpp_source.html">beman/transcode/detail/tables/windows_874.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="x__mac__cyrillic_8hpp_source.html">beman/transcode/detail/tables/x_mac_cyrillic.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="whatwg__decode__select_8hpp_source.html">beman/transcode/detail/whatwg_decode_select.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="error_8hpp_source.html">beman/transcode/error.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="single__byte_8hpp_source.html">beman/transcode/detail/single_byte.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="big5_8hpp_source.html">beman/transcode/detail/big5.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="euc__jp_8hpp_source.html">beman/transcode/detail/euc_jp.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="euc__kr_8hpp_source.html">beman/transcode/detail/euc_kr.hpp</a>&gt;</code><br />
@@ -149,30 +153,21 @@ $(document).ready(function(){initNavTree('whatwg__decode__view_8hpp.html',''); i
 <code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;iterator&gt;</code><br />
 <code>#include &lt;ranges&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
 </div>
 <p><a href="whatwg__decode__view_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view&lt; C, R &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">beman::transcoding::random_access_whatwg_decode_view&lt; C, R, E &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">beman::transcoding::random_access_whatwg_decode_view&lt; C, R &gt;::iterator</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view_1_1iterator.html">beman::transcoding::random_access_whatwg_decode_view&lt; C, R, E &gt;::iterator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view.html">beman::transcoding::random_access_whatwg_decode_or_error_view&lt; C, R &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">beman::transcoding::whatwg_decode_view&lt; C, R, E &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__or__error__view_1_1iterator.html">beman::transcoding::random_access_whatwg_decode_or_error_view&lt; C, R &gt;::iterator</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html">beman::transcoding::whatwg_decode_view&lt; C, R, E &gt;::iterator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">beman::transcoding::whatwg_decode_view&lt; C, R &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html">beman::transcoding::whatwg_decode_view&lt; C, R &gt;::iterator</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__closure.html">beman::transcoding::whatwg_decode_closure&lt; C &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view.html">beman::transcoding::whatwg_decode_or_error_view&lt; C, R &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__or__error__view_1_1iterator.html">beman::transcoding::whatwg_decode_or_error_view&lt; C, R &gt;::iterator</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__or__error__closure.html">beman::transcoding::whatwg_decode_or_error_closure&lt; C &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__closure.html">beman::transcoding::whatwg_decode_closure&lt; C, E &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -186,69 +181,25 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespacestd_1_1ranges"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacestd_1_1ranges.html">std::ranges</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
-Enumerations</h2></td></tr>
-<tr class="memitem:a20dfb324ebd26c6127d014520f93005a"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">beman::transcoding::codec</a> { <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3">beman::transcoding::utf_8</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79">beman::transcoding::replacement</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa0d8c71b93188d250d8368cac870134ae">beman::transcoding::x_user_defined</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa67e3d142d06befb5e5ff2367193c1b67">beman::transcoding::ibm866</a>
-, <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa99d669ffd526081afe3119aa749870f6">beman::transcoding::iso_8859_2</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aacbeba6881309052da9e5702cda7da698">beman::transcoding::iso_8859_3</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa722ae99064c1ffc63fa333425e73d718">beman::transcoding::iso_8859_4</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa870b1c8d709ae13c6f3125309e99e10a">beman::transcoding::iso_8859_5</a>
-, <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa4d72b7d26907ba6f74a13528580ba0c1">beman::transcoding::iso_8859_6</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa568fb0dac10de662d39ca1fd88769cf7">beman::transcoding::iso_8859_7</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa079ec8076fce3fe0828f9a0959c8c48f">beman::transcoding::iso_8859_8</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aac1a7d0a69f900692e08617b1073229f9">beman::transcoding::iso_8859_8_i</a>
-, <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa638ac6a64991d6773e1b71560f9c6ab2">beman::transcoding::iso_8859_10</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa43ae8d96de61721ef967c13e51dcf11b">beman::transcoding::iso_8859_13</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa1fb738da7485572f0e1a04da6caf5aad">beman::transcoding::iso_8859_14</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2c009742754c079a449be8fa9492a76c">beman::transcoding::iso_8859_15</a>
-, <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa9ef904d285fb3c0315eea84e6cb688c8">beman::transcoding::iso_8859_16</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa26309b71972721c4aab1d6bcf236f5d1">beman::transcoding::koi8_r</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa3b64ef546458f581c956e61e0ce371a3">beman::transcoding::koi8_u</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa88b12deabfb301d0d62b6fb5fa8f2565">beman::transcoding::macintosh</a>
-, <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa66e5d531270a80b8431b05866ce455c2">beman::transcoding::windows_874</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa9fad170b4372ea350044144d3b31edb0">beman::transcoding::windows_1250</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaec500c37785afe29b8f74e3bd58bb135">beman::transcoding::windows_1251</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa00b1d00a5438928d45b2ccf9c82ead4e">beman::transcoding::windows_1252</a>
-, <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aacfc65138654b7f3eecc2546b8bb34074">beman::transcoding::windows_1253</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa297be6c394734ffe9a99938f7e33d076">beman::transcoding::windows_1254</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aab669221809b79ab6931c05ea16bae7fe">beman::transcoding::windows_1255</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa29e5a8fb230a3155887bde0f5ca31baf">beman::transcoding::windows_1256</a>
-, <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa8034dde2b07847e0eef3470fb0865816">beman::transcoding::windows_1257</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaaf1e58bdd6df2320dac522c75d2e09e0">beman::transcoding::windows_1258</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf327dc91d47fbbc1d9957b9a7d3f2983">beman::transcoding::x_mac_cyrillic</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa0f4291507e17c4c6d550ebdd51087c65">beman::transcoding::utf_16be</a>
-, <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa8995e63b559f0f74f3efa7dc973dd2a8">beman::transcoding::utf_16le</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadeb297cfef1bd867fa7f55bebd119cec">beman::transcoding::gbk</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aadf5406096b7ec5329d3a13468430e56a">beman::transcoding::gb18030</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaed8f9582ae6bae8870badee92f2e158c">beman::transcoding::big5</a>
-, <br />
-&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa4d845cd5636875635b0ffea37c56b4eb">beman::transcoding::shift_jis</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa75565a04b50fefc842397c1d3f700edd">beman::transcoding::euc_jp</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa1cb1e17468c4d59d51f3998f250c1b3f">beman::transcoding::iso_2022_jp</a>
-, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa86c9996b17a77b9a0033b639a7018ebd">beman::transcoding::euc_kr</a>
-<br />
- }</td></tr>
-<tr class="separator:a20dfb324ebd26c6127d014520f93005a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a55587e810e69f106241e9eff77ca1108"><td class="memTemplParams" colspan="2">template&lt;codec C, std::ranges::input_range R&gt; </td></tr>
+<tr class="memitem:a55587e810e69f106241e9eff77ca1108"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a55587e810e69f106241e9eff77ca1108">beman::transcoding::whatwg_decode_or_error_view</a> = whatwg_decode_view&lt; C, R, transcode_error_kind::expected &gt;</td></tr>
+<tr class="separator:a55587e810e69f106241e9eff77ca1108"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fece62d0c7069b2cde57dc647556cda"><td class="memTemplParams" colspan="2">template&lt;codec C, std::ranges::random_access_range R&gt; </td></tr>
+<tr class="memitem:a4fece62d0c7069b2cde57dc647556cda"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a4fece62d0c7069b2cde57dc647556cda">beman::transcoding::random_access_whatwg_decode_or_error_view</a> = random_access_whatwg_decode_view&lt; C, R, transcode_error_kind::expected &gt;</td></tr>
+<tr class="separator:a4fece62d0c7069b2cde57dc647556cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b5d904bbc340a791b4bf6647f207684"><td class="memTemplParams" colspan="2">template&lt;codec C&gt; </td></tr>
+<tr class="memitem:a5b5d904bbc340a791b4bf6647f207684"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a5b5d904bbc340a791b4bf6647f207684">beman::transcoding::whatwg_decode_or_error_closure</a> = whatwg_decode_closure&lt; C, transcode_error_kind::expected &gt;</td></tr>
+<tr class="separator:a5b5d904bbc340a791b4bf6647f207684"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a9f959dc7dbc650d7b6c58b5c3cdd7bf1"><td class="memTemplParams" colspan="2">template&lt;codec C&gt; </td></tr>
-<tr class="memitem:a9f959dc7dbc650d7b6c58b5c3cdd7bf1"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a9f959dc7dbc650d7b6c58b5c3cdd7bf1">beman::transcoding::whatwg_decode</a> = whatwg_decode_closure&lt;C&gt;{}</td></tr>
+<tr class="memitem:a9f959dc7dbc650d7b6c58b5c3cdd7bf1"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a9f959dc7dbc650d7b6c58b5c3cdd7bf1">beman::transcoding::whatwg_decode</a> = whatwg_decode_closure&lt;C, transcode_error_kind::replacement&gt;{}</td></tr>
 <tr class="separator:a9f959dc7dbc650d7b6c58b5c3cdd7bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a730c203e982c0f5dfc92eab78ff300b7"><td class="memTemplParams" colspan="2">template&lt;codec C&gt; </td></tr>
-<tr class="memitem:a730c203e982c0f5dfc92eab78ff300b7"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a730c203e982c0f5dfc92eab78ff300b7">beman::transcoding::whatwg_decode_or_error</a> = whatwg_decode_or_error_closure&lt;C&gt;{}</td></tr>
+<tr class="memitem:a730c203e982c0f5dfc92eab78ff300b7"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a730c203e982c0f5dfc92eab78ff300b7">beman::transcoding::whatwg_decode_or_error</a> = whatwg_decode_closure&lt;C, transcode_error_kind::expected&gt;{}</td></tr>
 <tr class="separator:a730c203e982c0f5dfc92eab78ff300b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>beman.transcode: include/beman/transcode/detail/error.hpp Source File</title>
+<title>beman.transcode: include/beman/transcode/error.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -101,8 +101,8 @@ $(document).ready(function(){initNavTree('error_8hpp_source.html',''); initResiz
 <div class="contents">
 <a href="error_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_ERROR_HPP</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#define INCLUDE_BEMAN_TRANSCODE_DETAIL_ERROR_HPP</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#ifndef INCLUDE_BEMAN_TRANSCODE_ERROR_HPP</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#define INCLUDE_BEMAN_TRANSCODE_ERROR_HPP</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;<a class="code" href="config_8hpp.html">beman/transcode/config.hpp</a>&gt;</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
@@ -133,11 +133,25 @@ $(document).ready(function(){initNavTree('error_8hpp_source.html',''); initResiz
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <a class="code hl_enumvalue" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844">output_full</a>,</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>};</div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>} <span class="comment">// namespace beman::transcoding</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_DETAIL_ERROR_HPP</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="comment">// transcode_error_kind — how a view reports a codec failure, as a template</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="comment">// parameter rather than as a separate class template.  Modelled on P2728&#39;s</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="comment">// `to_utf_view_error_kind` (see docs/p2728-alignment.md): an enum rather than a</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="comment">// bool so that kinds beyond these two can be added, such as one that also</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="comment">// surfaces the offending input bytes.</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="comment">//</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="comment">//   replacement — substitute U+FFFD on decode, &#39;?&#39; on encode</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="comment">//   expected    — the value type becomes expected&lt;T, whatwg_error&gt;</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">   43</a></span><span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> {</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <a class="code hl_enumvalue" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79">replacement</a>,</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <a class="code hl_enumvalue" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">expected</a>,</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>};</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>} <span class="comment">// namespace beman::transcoding</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#endif </span><span class="comment">// INCLUDE_BEMAN_TRANSCODE_ERROR_HPP</span></div>
 <div class="ttc" id="aconfig_8hpp_html"><div class="ttname"><a href="config_8hpp.html">config.hpp</a></div></div>
-<div class="ttc" id="anamespacebeman_1_1transcoding_html"><div class="ttname"><a href="namespacebeman_1_1transcoding.html">beman::transcoding</a></div><div class="ttdef"><b>Definition:</b> decode_view.hpp:18</div></div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_html"><div class="ttname"><a href="namespacebeman_1_1transcoding.html">beman::transcoding</a></div><div class="ttdef"><b>Definition:</b> codec.hpp:8</div></div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_html_a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79">beman::transcoding::codec::replacement</a></div><div class="ttdeci">@ replacement</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30bab"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">beman::transcoding::whatwg_error</a></div><div class="ttdeci">whatwg_error</div><div class="ttdef"><b>Definition:</b> error.hpp:15</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d">beman::transcoding::whatwg_error::surrogate_code_point</a></div><div class="ttdeci">@ surrogate_code_point</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0">beman::transcoding::whatwg_error::invalid_byte</a></div><div class="ttdeci">@ invalid_byte</div></div>
@@ -145,6 +159,8 @@ $(document).ready(function(){initNavTree('error_8hpp_source.html',''); initResiz
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30baba41a389ed570cf4bd17e392adceb1bf31"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba41a389ed570cf4bd17e392adceb1bf31">beman::transcoding::whatwg_error::unmapped_codepoint</a></div><div class="ttdeci">@ unmapped_codepoint</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba4fb901c70a0fdc05b55d95985f3300b0">beman::transcoding::whatwg_error::out_of_range</a></div><div class="ttdeci">@ out_of_range</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_a3823b84e4fc7b689f0b2b38741b30baba6a0e0bbe71573653a91e08488f6d7e60"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba6a0e0bbe71573653a91e08488f6d7e60">beman::transcoding::whatwg_error::overlong_encoding</a></div><div class="ttdeci">@ overlong_encoding</div></div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_html_a692fa6937eaeda0a1ceaeed075b35218"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">beman::transcoding::transcode_error_kind</a></div><div class="ttdeci">transcode_error_kind</div><div class="ttdef"><b>Definition:</b> error.hpp:43</div></div>
+<div class="ttc" id="anamespacebeman_1_1transcoding_html_a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">beman::transcoding::transcode_error_kind::expected</a></div><div class="ttdeci">@ expected</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_aab196b86b3b7eea71d38ca7ca6e65730"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730">beman::transcoding::iconv_error</a></div><div class="ttdeci">iconv_error</div><div class="ttdef"><b>Definition:</b> error.hpp:29</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed">beman::transcoding::iconv_error::invalid_sequence</a></div><div class="ttdeci">@ invalid_sequence</div></div>
 <div class="ttc" id="anamespacebeman_1_1transcoding_html_aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82"><div class="ttname"><a href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82">beman::transcoding::iconv_error::incomplete_sequence</a></div><div class="ttdeci">@ incomplete_sequence</div></div>
@@ -154,7 +170,7 @@ $(document).ready(function(){initNavTree('error_8hpp_source.html',''); initResiz
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_94cf5e36d6dc57d8747f5a546f07158a.html">beman</a></li><li class="navelem"><a class="el" href="dir_19d3d3c6f4aef79816d3fd4a558f5e3d.html">transcode</a></li><li class="navelem"><a class="el" href="dir_9d798d0e78a5d20e3b6770198d219460.html">detail</a></li><li class="navelem"><a class="el" href="error_8hpp.html">error.hpp</a></li>
+    <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_94cf5e36d6dc57d8747f5a546f07158a.html">beman</a></li><li class="navelem"><a class="el" href="dir_19d3d3c6f4aef79816d3fd4a558f5e3d.html">transcode</a></li><li class="navelem"><a class="el" href="error_8hpp.html">error.hpp</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
   </ul>
 </div>
