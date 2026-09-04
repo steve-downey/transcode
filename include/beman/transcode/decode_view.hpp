@@ -122,7 +122,7 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
         base_iter current_{};
         base_sent end_{};
         Codec     codec_;
-        result_t  value_;
+        result_t  value_{};
         bool      done_{false};
 
         constexpr void load();
