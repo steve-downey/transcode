@@ -41,16 +41,16 @@ markers in the source, which is the order below.
 |---|---|---|---|---|
 | `transcode.general` | — | General | scope, terms, the byte/scalar model | authored in the paper |
 | `transcode.syn` | root | Header `<transcode>` synopsis | everything below, gathered | the header's declaration region |
-| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error` | `error.hpp` |
+| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error`, `transcode_error_kind` | `error.hpp` |
 | `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` |
 | `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp` |
 | `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `detail/labels.hpp` |
 | `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp` |
-| `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, `whatwg_decode_or_error_view`, their closures and `enable_borrowed_range` specializations | `whatwg_decode_view.hpp` |
-| `transcode.whatwg.encode` | 2 | Encoding views | `whatwg_encode_view`, `whatwg_encode_or_error_view`, likewise | `whatwg_encode_view.hpp` |
+| `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, its closures `whatwg_decode<C>` / `whatwg_decode_or_error<C>`, and its `enable_borrowed_range` specialization | `whatwg_decode_view.hpp` |
+| `transcode.whatwg.encode` | 2 | Encoding views | `whatwg_encode_view`, likewise | `whatwg_encode_view.hpp` |
 | `transcode.custom.reqs` | 2 | Codec requirements | `decode_codec`, `encode_codec`, `flushable_decode_codec`, `random_access_decode_codec_type`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp` |
-| `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode_or_error_view`, `decode`, `decode_or_error` | `decode_view.hpp` |
-| `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode_or_error_view`, `encode`, `encode_or_error` | `encode_view.hpp` |
+| `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp` |
+| `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp` |
 | `transcode.pipeline` | 2 | Transcoding pipelines | `transcode`, `pluggable_transcode` | `transcode_view.hpp` |
 | `transcode.string` | 2 | Eager transcoding | `transcode_string`, both overloads | `transcode_string.hpp` |
 | `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers |
@@ -92,7 +92,8 @@ so no step has to decide twice.
 
 | Entity | Why |
 |---|---|
-| `random_access_whatwg_decode_view`, `random_access_whatwg_decode_or_error_view`, and the encode and pluggable equivalents | decision W1 below |
+| `random_access_whatwg_decode_view` and the encode and pluggable equivalents | decision W1 below |
+| the `_or_error_view` / `_or_error_closure` alias templates | transition spellings for the pre-unification names, not API |
 | `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; it also triggers index U4 |
 | `detail::null_term_fn`, `detail::null_term_adaptor` | the adaptor object's type is unspecified |
 | `detail::label_entry`, `label_table` | generated data behind `get_encoding` |
@@ -160,13 +161,14 @@ adaptor over a C string that this proposal happens to need.
 
 ## Open, and deliberately not settled here
 
-- **The `_or_error` split.**  `docs/p2728-alignment.md` has an open action item
-  to unify each view with its `_or_error` twin under one error-kind-parameterized
-  template, and to give the error enums an unspecified underlying type.  That
-  would halve `transcode.whatwg.decode`, `transcode.whatwg.encode`,
-  `transcode.custom.decode` and `transcode.custom.encode`.  Steps 6 and 7 must
-  check that item before writing those clauses; writing wording for a shape that
-  is about to change is the one avoidable waste in this phase.
+- ~~**The `_or_error` split.**~~  Settled in P5-Step 3c, before the clauses were
+  written.  Each family is one view template parameterized on
+  `transcode_error_kind`, so `transcode.whatwg.decode`,
+  `transcode.whatwg.encode`, `transcode.custom.decode` and
+  `transcode.custom.encode` each specify **one** class template and two closure
+  objects rather than two of each.  `transcode.errors` gains
+  `transcode_error_kind`, and its wording must not fix an underlying type for
+  either enum (P2728 R13).
 - **Whether iconv is proposed at all** — Step 9's scope question, which is why
   `transcode.iconv` is listed last and is the only clause the paper can drop
   without renumbering anything else.

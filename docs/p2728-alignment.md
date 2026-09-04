@@ -122,11 +122,22 @@ above changes — useful because it tells us which patterns are load-bearing:
 
 ## Where it diverges, and how to track
 
-### 1. Collapse the `_view` / `_or_error_view` pairs into one template (highest value)
+### 1. Collapse the `_view` / `_or_error_view` pairs into one template — **done**
 
-The repository still exposes **separate** `whatwg_decode_view` and
-`whatwg_decode_or_error_view` classes (and likewise for encode and the pluggable
-`decode_view`/`encode_view`). That is P2728's **pre-R10** shape.
+Closed in P5-Step 3c. All four families are now one template each,
+parameterized on `transcode_error_kind { replacement, expected }` (in
+`error.hpp`), with the `_or_error` spellings kept as alias templates and the
+closure objects selecting the kind:
+
+    whatwg_decode_view<C, R, E>       whatwg_encode_view<C, R, E>
+    decode_view<Codec, R, E>          encode_view<Codec, R, E>
+
+The enum is named `_kind` and left open for the reason SG9 gave: a future kind
+that also surfaces the offending input bytes should be addable without a third
+class template. Errors stay in the `value_type`; no error-query member was added
+to any iterator.
+
+What the pairs had been, for the record:
 
 Track the model by unifying each pair into a single view template parameterized
 on an **extensible error-kind enum** — the analog of `to_utf_view_error_kind`:
@@ -164,9 +175,12 @@ test.
 
 ## Action items
 
-- [ ] Unify `whatwg_decode_view` + `whatwg_decode_or_error_view` (and the encode
+- [x] Unify `whatwg_decode_view` + `whatwg_decode_or_error_view` (and the encode
       and pluggable counterparts) under one error-kind-parameterized template.
-- [ ] Give the error / error-kind enums an unspecified underlying type.
+      Done in P5-Step 3c.
+- [ ] Give the error / error-kind enums an unspecified underlying type. Nothing
+      to change in the code — neither enum names an enum-base — so this is a
+      constraint on the *wording*, which must not fix one either.
 - [ ] Add a test pinning `iterator::base()` to the start-of-code-point byte
       position.
 - [ ] Make the closures' `operator()` `static` (C++23) — small QoI.
