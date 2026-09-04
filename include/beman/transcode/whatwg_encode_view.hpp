@@ -608,60 +608,8 @@ constexpr void whatwg_encode_view<C, R>::iterator::load() {
             len_ = r.count;
         }
         pos_ = 0;
-    } else if constexpr (C == codec::ibm866) {
-        encode_single(detail::tables::ibm866);
-    } else if constexpr (C == codec::iso_8859_2) {
-        encode_single(detail::tables::iso_8859_2);
-    } else if constexpr (C == codec::iso_8859_3) {
-        encode_single(detail::tables::iso_8859_3);
-    } else if constexpr (C == codec::iso_8859_4) {
-        encode_single(detail::tables::iso_8859_4);
-    } else if constexpr (C == codec::iso_8859_5) {
-        encode_single(detail::tables::iso_8859_5);
-    } else if constexpr (C == codec::iso_8859_6) {
-        encode_single(detail::tables::iso_8859_6);
-    } else if constexpr (C == codec::iso_8859_7) {
-        encode_single(detail::tables::iso_8859_7);
-    } else if constexpr (C == codec::iso_8859_8 || C == codec::iso_8859_8_i) {
-        encode_single(detail::tables::iso_8859_8);
-    } else if constexpr (C == codec::iso_8859_10) {
-        encode_single(detail::tables::iso_8859_10);
-    } else if constexpr (C == codec::iso_8859_13) {
-        encode_single(detail::tables::iso_8859_13);
-    } else if constexpr (C == codec::iso_8859_14) {
-        encode_single(detail::tables::iso_8859_14);
-    } else if constexpr (C == codec::iso_8859_15) {
-        encode_single(detail::tables::iso_8859_15);
-    } else if constexpr (C == codec::iso_8859_16) {
-        encode_single(detail::tables::iso_8859_16);
-    } else if constexpr (C == codec::koi8_r) {
-        encode_single(detail::tables::koi8_r);
-    } else if constexpr (C == codec::koi8_u) {
-        encode_single(detail::tables::koi8_u);
-    } else if constexpr (C == codec::macintosh) {
-        encode_single(detail::tables::macintosh);
-    } else if constexpr (C == codec::windows_874) {
-        encode_single(detail::tables::windows_874);
-    } else if constexpr (C == codec::windows_1250) {
-        encode_single(detail::tables::windows_1250);
-    } else if constexpr (C == codec::windows_1251) {
-        encode_single(detail::tables::windows_1251);
-    } else if constexpr (C == codec::windows_1252) {
-        encode_single(detail::tables::windows_1252);
-    } else if constexpr (C == codec::windows_1253) {
-        encode_single(detail::tables::windows_1253);
-    } else if constexpr (C == codec::windows_1254) {
-        encode_single(detail::tables::windows_1254);
-    } else if constexpr (C == codec::windows_1255) {
-        encode_single(detail::tables::windows_1255);
-    } else if constexpr (C == codec::windows_1256) {
-        encode_single(detail::tables::windows_1256);
-    } else if constexpr (C == codec::windows_1257) {
-        encode_single(detail::tables::windows_1257);
-    } else if constexpr (C == codec::windows_1258) {
-        encode_single(detail::tables::windows_1258);
-    } else if constexpr (C == codec::x_mac_cyrillic) {
-        encode_single(detail::tables::x_mac_cyrillic);
+    } else if constexpr (detail::random_access_encode_codec<C>) {
+        encode_single(detail::random_access_encode_table<C>());
     } else if constexpr (C == codec::utf_16be) {
         auto r = detail::utf16be_encode_one(static_cast<char32_t>(*current_));
         ++current_;
@@ -975,60 +923,8 @@ constexpr void whatwg_encode_or_error_view<C, R>::iterator::load() {
             len_ = r.count;
         }
         pos_ = 0;
-    } else if constexpr (C == codec::ibm866) {
-        encode_single(detail::tables::ibm866);
-    } else if constexpr (C == codec::iso_8859_2) {
-        encode_single(detail::tables::iso_8859_2);
-    } else if constexpr (C == codec::iso_8859_3) {
-        encode_single(detail::tables::iso_8859_3);
-    } else if constexpr (C == codec::iso_8859_4) {
-        encode_single(detail::tables::iso_8859_4);
-    } else if constexpr (C == codec::iso_8859_5) {
-        encode_single(detail::tables::iso_8859_5);
-    } else if constexpr (C == codec::iso_8859_6) {
-        encode_single(detail::tables::iso_8859_6);
-    } else if constexpr (C == codec::iso_8859_7) {
-        encode_single(detail::tables::iso_8859_7);
-    } else if constexpr (C == codec::iso_8859_8 || C == codec::iso_8859_8_i) {
-        encode_single(detail::tables::iso_8859_8);
-    } else if constexpr (C == codec::iso_8859_10) {
-        encode_single(detail::tables::iso_8859_10);
-    } else if constexpr (C == codec::iso_8859_13) {
-        encode_single(detail::tables::iso_8859_13);
-    } else if constexpr (C == codec::iso_8859_14) {
-        encode_single(detail::tables::iso_8859_14);
-    } else if constexpr (C == codec::iso_8859_15) {
-        encode_single(detail::tables::iso_8859_15);
-    } else if constexpr (C == codec::iso_8859_16) {
-        encode_single(detail::tables::iso_8859_16);
-    } else if constexpr (C == codec::koi8_r) {
-        encode_single(detail::tables::koi8_r);
-    } else if constexpr (C == codec::koi8_u) {
-        encode_single(detail::tables::koi8_u);
-    } else if constexpr (C == codec::macintosh) {
-        encode_single(detail::tables::macintosh);
-    } else if constexpr (C == codec::windows_874) {
-        encode_single(detail::tables::windows_874);
-    } else if constexpr (C == codec::windows_1250) {
-        encode_single(detail::tables::windows_1250);
-    } else if constexpr (C == codec::windows_1251) {
-        encode_single(detail::tables::windows_1251);
-    } else if constexpr (C == codec::windows_1252) {
-        encode_single(detail::tables::windows_1252);
-    } else if constexpr (C == codec::windows_1253) {
-        encode_single(detail::tables::windows_1253);
-    } else if constexpr (C == codec::windows_1254) {
-        encode_single(detail::tables::windows_1254);
-    } else if constexpr (C == codec::windows_1255) {
-        encode_single(detail::tables::windows_1255);
-    } else if constexpr (C == codec::windows_1256) {
-        encode_single(detail::tables::windows_1256);
-    } else if constexpr (C == codec::windows_1257) {
-        encode_single(detail::tables::windows_1257);
-    } else if constexpr (C == codec::windows_1258) {
-        encode_single(detail::tables::windows_1258);
-    } else if constexpr (C == codec::x_mac_cyrillic) {
-        encode_single(detail::tables::x_mac_cyrillic);
+    } else if constexpr (detail::random_access_encode_codec<C>) {
+        encode_single(detail::random_access_encode_table<C>());
     } else if constexpr (C == codec::utf_16be) {
         auto r = detail::utf16be_encode_one(static_cast<char32_t>(*current_));
         ++current_;

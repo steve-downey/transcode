@@ -55,7 +55,14 @@ template <codec C>
 concept single_byte_codec = random_access_decode_codec<C> || C == codec::replacement;
 
 template <codec C>
-consteval const char32_t* random_access_decode_table() {
+concept single_byte_table_codec = random_access_decode_codec<C> && C != codec::x_user_defined;
+
+// The 128-entry table codec C decodes its high half with. Returned by
+// reference so single_byte_decode_one, which takes the array, can be handed
+// the result directly.
+template <codec C>
+    requires single_byte_table_codec<C>
+consteval const char32_t (&single_byte_decode_table())[128] {
     if constexpr (C == codec::ibm866)
         return tables::ibm866;
     else if constexpr (C == codec::iso_8859_2)
@@ -108,8 +115,18 @@ consteval const char32_t* random_access_decode_table() {
         return tables::windows_1257;
     else if constexpr (C == codec::windows_1258)
         return tables::windows_1258;
-    else if constexpr (C == codec::x_mac_cyrillic)
+    else {
+        static_assert(C == codec::x_mac_cyrillic, "single_byte_decode_table: codec has no single-byte table");
         return tables::x_mac_cyrillic;
+    }
+}
+
+// The same table as a pointer, or null for a codec that decodes its high half
+// algorithmically rather than from a table (x_user_defined).
+template <codec C>
+consteval const char32_t* random_access_decode_table() {
+    if constexpr (single_byte_table_codec<C>)
+        return single_byte_decode_table<C>();
     else
         return nullptr;
 }
