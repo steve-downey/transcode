@@ -154,14 +154,18 @@ transcode steps, but they are executed in the specgen repository.
   whatwg_decode_view command above, then
   `specgen render --from-ir - --backend mpark --validate`.
 
-  Step 1 narrowed this: `null_term.hpp` also derives from
-  `ranges::view_interface`, renders it that way in its class synopsis, and draws
-  **no** finding.  So the trigger is not "a `ranges::` qualifier in rendered
-  output"; something about where it appears in the WHATWG headers — most likely
-  a `std::ranges::` qualifier inside an itemdecl or a template head rather than
-  a class synopsis — is what fires it.  Isolate it before filing.  **Gates a
-  clean `--validate` in Steps 6-10**; those steps track the `ranges` findings as
-  a known-noise allowlist rather than driving to zero.
+  Step 3 isolated it.  The finding fires on a **bare `ranges::` token inside a
+  class synopsis** — one whose `std::` prefix the drop set removed.  The WHATWG
+  views define `begin`, `end` and `size` in-class, so their synopses carry
+  `ranges::begin(base_)`, `ranges::view_interface` in the base-clause, and
+  `ranges::sized_range` in requires-clauses; `null_term.hpp` and
+  `decode_view.hpp` define those members out of line and draw no finding.  A
+  probe header confirms the same spelling inside a *concept* definition is
+  silent, so it is the class-synopsis path specifically.  The drop is correct —
+  the draft writes `ranges::view_interface` — and only the leakage checker's
+  reading of what is left needs to change.  **Gates a clean `--validate` in
+  Steps 6-10**; those steps track the `ranges` findings as a known-noise
+  allowlist rather than driving to zero.
 - **U2 — `--base-heading-level` on the command line.**  The mpark backend hard
   codes level 2, so generated clause headings are `##` and land as siblings of
   the paper's own `##` sections.  A flag would let the wording nest under a
@@ -203,6 +207,22 @@ transcode steps, but they are executed in the specgen repository.
   masks a function return type or an alias RHS, not a variable's type, so
   `views::null_term` can currently only be `\omit`ted — which is what Step 1
   does.  Wanted for Step 4.
+- **U8 — `\expos` does not apply to class templates or alias templates.**
+  Found in Step 3 with a probe header.  `\expos` on a namespace-scope *concept*
+  works: it renders as `$const-iterable$` with a `// exposition only` comment.
+  On a class template the marker is ignored and the name renders verbatim; on an
+  alias template the declaration is dropped from the synopsis and its uses
+  render unrenamed.  The draft's own exposition-only helpers include alias
+  templates (`$maybe-const$`) and class templates, so this is a real gap.
+  Wanted for `[transcode.reqs]`'s const-compatibility chain; see
+  `docs/wording-outline.md`, "The `detail::` audit".
+- **U9 — identifiers inside a string literal are scanned for leakage.**  The
+  WHATWG closures' `static_assert` diagnostic says "use
+  `beman::transcoding::views::null_term` …", and the leakage checker reports
+  `beman` as an undocumented qualifier from inside that string.  A qualified
+  name in a diagnostic message is text, not a reference.  Low priority: the
+  closure types are exposition-only in the wording anyway, so the bodies stop
+  being rendered once U7 lands.
 
 ## Risks
 

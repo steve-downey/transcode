@@ -7,6 +7,7 @@ if(BEMAN_TRANSCODE_USE_MODULES)
             FILE_SET CXX_MODULES FILES transcode.cppm
             FILE_SET HEADERS
                 FILES
+                    codec.hpp
                     config.hpp
                     transcode.hpp
                     todo.hpp
@@ -39,6 +40,8 @@ else()
                     detail/labels.hpp
                     detail/gb18030.hpp
                     detail/range_traits.hpp
+                    detail/whatwg_decode_select.hpp
+                    detail/whatwg_encode_select.hpp
                     detail/gbk.hpp
                     detail/shift_jis.hpp
                     detail/single_byte.hpp

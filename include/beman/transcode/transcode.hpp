@@ -11,6 +11,7 @@ import beman.transcode;
 
 #else
 
+    #include <beman/transcode/codec.hpp>
     #include <beman/transcode/null_term.hpp>
     #include <beman/transcode/whatwg_decode_view.hpp>
     #include <beman/transcode/whatwg_encode_view.hpp>

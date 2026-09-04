@@ -91,6 +91,30 @@ branch.  After each, `make test` and `make wording-check` must still pass.
    specgen, which needs `-I .build/build-system/include` for
    `config_generated.hpp`.  Verify with the Step 1 script, not by eye.
 
+## Outcome, and what is deferred
+
+Tasks 1 and 3 are done and verified; task 2 is half done; task 4 is deferred,
+for a reason task 2 measured.
+
+- **Task 2, done:** the `namespace detail` blocks left both WHATWG headers
+  (`detail/whatwg_decode_select.hpp`, `detail/whatwg_encode_select.hpp`), and
+  `enum class codec` moved to its own specification header, `codec.hpp`, which
+  broke the cycle that kept the selection machinery pinned next to the views.
+- **Task 2, deferred:** the codec state machines are still inline.  Two
+  `iterator::load()` bodies are 862 of `whatwg_decode_view.hpp`'s 1,645 lines
+  (52%) and 505 of `whatwg_encode_view.hpp`'s 1,246 (41%).  Pushing them down
+  to the `detail::<codec>_decode_one` functions the CJK codecs already use is
+  about 1,370 lines of mechanical extraction.  It does **not** gate the wording:
+  `load()` is a private member, private members are filtered out of the
+  synopsis, and no clause extracts a private body.  It is worth doing for the
+  headers' own sake, as its own step, and it is what makes task 4 viable.
+- **Task 4, deferred pending that.**  D1 wants one document per proposed
+  standard header so the root fragment is a real `<transcode>` synopsis.  Merged
+  as the headers stand today, that file is about 5,000 lines, over half of it
+  private state machines.  After the pushdown it is roughly 2,500 — the size
+  specgen already handles (`beman.optional` is 2,145).  So the decision is: the
+  merge is right, and it waits on the pushdown rather than being forced now.
+
 ## Acceptance
 
 - `make test` green at every commit, including the negative compile tests.

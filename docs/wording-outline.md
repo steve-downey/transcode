@@ -43,7 +43,7 @@ markers in the source, which is the order below.
 | `transcode.syn` | root | Header `<transcode>` synopsis | everything below, gathered | the header's declaration region |
 | `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error` | `error.hpp` |
 | `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` |
-| `transcode.codec` | 2 | Encodings | `enum class codec` | `whatwg_decode_view.hpp` |
+| `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp` |
 | `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `detail/labels.hpp` |
 | `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp` |
 | `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, `whatwg_decode_or_error_view`, their closures and `enable_borrowed_range` specializations | `whatwg_decode_view.hpp` |
@@ -110,6 +110,29 @@ so no step has to decide twice.
   injection exists so the tests can run without the platform's iconv tables
   (`tests/beman/transcode/iconv_mock.hpp`); whether it is API at all is part of
   Step 9's scope question.
+
+## The `detail::` audit (Step 3 task 3)
+
+After Step 3, `specgen render --validate` reports **no** `detail` leakage in any
+specification header.  Two chains got there differently, and the difference is
+worth recording because Steps 6 and 7 inherit it.
+
+- `detail::random_access_decode_codec` and `detail::random_access_encode_codec`
+  appeared in the `random_access_*` views' requires-clauses.  W1 omits those
+  views, and Step 3 moved the concepts themselves into
+  `detail/whatwg_decode_select.hpp` and `detail/whatwg_encode_select.hpp`, out
+  of the specification headers entirely.  Nothing left to decide.
+- `detail::const_iterator_compatible_range` and
+  `const_sentinel_compatible_range` constrain every `begin() const` and
+  `end() const`, so they are genuinely part of what the specification says.
+  They are **exposition-only in the wording**, but they cannot be rendered that
+  way yet: `\expos` works on a concept (verified) and not on the alias template
+  and class template the concept is defined in terms of (index U8).  They
+  therefore stay in `detail/range_traits.hpp` for now, and **Step 6 chooses**
+  between restating the concept in the specification header without helper
+  aliases so a single `\expos` covers it, and waiting for U8.  Whichever it
+  picks, the constraint is authored `\constraints` prose on the affected
+  members rather than derived from the requires-clause.
 
 ## Decisions this outline settles
 
