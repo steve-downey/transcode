@@ -68,9 +68,9 @@ subject entirely.
 | Stable name | Depth | Title | Entities | Generated from |
 |---|---|---|---|---|
 | `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | `null_term.hpp` |
-| `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | unblocked 2026-09-04; needs the constraint named, see index U5 |
+| `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | section and route land now; elements blocked on specgen#20 |
 | `null.term.view` | 2 | Class template `null_term_view` | the constructor, `begin`, `end` | done in Step 1 |
-| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | blocked on index U7 |
+| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | blocked on index U7 / specgen#24 |
 
 Step 1 generates `null.term` (the root, un-gathered) and `null.term.view`.  The
 other two are what Step 4 adds once their upstream items land.
@@ -87,7 +87,7 @@ so no step has to decide twice.
 | `null_term_view::ptr_` | `$ptr$` | the view's state, which the wording refers to |
 | `detail::legacy_byte_type` | `$legacy-byte-type$` | a real conjunct of `legacy_byte_range`; the draft would spell it out |
 | every view's `base_`, `codec_`, `buf_`, iterator state | exposition names | the wording describes what they hold |
-| the closure types (`whatwg_decode_closure` and the seven others) | ideally `unspecified` | blocked on index U7; see below |
+| the closure types (`whatwg_decode_closure` and the seven others) | ideally `unspecified` | blocked on index U7 / specgen#24; see below |
 
 ### Omitted (`\omit`)
 

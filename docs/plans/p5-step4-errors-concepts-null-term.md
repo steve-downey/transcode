@@ -64,19 +64,19 @@ what is different.
   `detail::null_term_fn` / `null_term_adaptor`, and on `views::null_term`.  Two
   of those omissions are placeholders this step has to replace, and both are
   blocked upstream:
-  - `null_sentinel_t`'s hidden-friend `operator==` is **no longer blocked**.
+  - `null_sentinel_t`'s hidden-friend `operator==` is **half unblocked**.
     specgen attaches the docblock once the member is routed, so the clause
-    needs a `\rSec2[null.term.sentinel]` section and a
-    `\ref{null.term.sentinel}` group in the class body.  One thing has to
-    change with it: the docblock is still dropped when the declaration carries
-    a requires-expression, which is exactly how this `operator==` is spelled
-    (`requires requires(I i) { { *i == 0 }; }`).  Naming that constraint as a
-    concept fixes it and is better wording anyway — but the concept cannot live
-    in `detail::` and still be named in a spec-visible signature (D7), so
-    deciding where it goes is part of this step.  See index U5.
+    wants a `\rSec2[null.term.sentinel]` section and a
+    `\ref{null.term.sentinel}` group in the class body.  What still fails is
+    specgen#20: the docblock is dropped when the declaration carries a
+    requires-expression, which is exactly how this `operator==` is spelled
+    (`requires requires(I i) { { *i == 0 }; }`).  Do not rewrite the constraint
+    to get around it — the header is spelled the way the library wants it, and
+    the wording is generated from the header.  Land the section and the route,
+    and the elements arrive when specgen#20 does.
   - `views::null_term` is `\omit`ted because its type is
     `detail::null_term_adaptor` and there is no way to render it as
-    `inline constexpr unspecified null_term;` (index U7).
+    `inline constexpr unspecified null_term;` (index U7, specgen#24).
 
   Neither is a header problem, so do not refactor around them; land the rest of
   the clause and pick these up when the upstream items do.

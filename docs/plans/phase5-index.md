@@ -182,8 +182,10 @@ is real work rather than something to allowlist.
   with `<deduction guide for holder>` substituted for the class name, and
   `\omit` on the guide does not suppress it.  What changed is that
   `--validate` now reports **nothing** for the corrupted output, so the drift
-  gate will not catch it.  Still **gates the `<null_term>` header synopsis**,
-  and the corruption is now something a human has to see.
+  gate will not catch it.  The second copy is raw source carrying its `//!`
+  markup, the code block is left unterminated, and every itemdecl that should
+  have followed is dropped.  Still **gates the `<null_term>` header synopsis**.
+  **Filed as specgen#22**, corruption and silence together.
 
   Two further notes for whoever picks this up.  Closing the region needs a
   `/// END [x.syn]` fence, and this repo's standing conventions above reserve
@@ -203,12 +205,13 @@ is real work rather than something to allowlist.
   a constrained template parameter (`template <std::input_iterator I>`) is
   clean, a named constraint (`requires std::equality_comparable<I>`) is clean,
   and `requires requires(I i) { { *i == 0 }; }` is not.  `null_sentinel_t`'s
-  `operator==` is spelled the one way that fails.
+  `operator==` is spelled the one way that fails.  At namespace scope the same
+  spelling makes a function *definition* report "markup belongs at the
+  definition", pointing at the line that is the definition.
 
-  **`null.term.sentinel` is unblocked**, at the price of naming the concept —
-  which is better wording material anyway, and which fix `1a6728f` now renders
-  as a documented item in its own right.  Step 4 owns the choice of where that
-  concept lives, because `detail::` in the signature would violate D7.
+  **Filed as specgen#20.**  It is a tool defect with a two-line reproduction,
+  so Step 4 waits for the fix rather than rewriting the constraint to suit it:
+  the wording is supposed to come from the headers as they are spelled.
 - **U6 — every generated clause heading warns at paper-build time.**  mpark
   prints `stable name null.term.view not found` for each `{- .sref}` span whose
   name is not in its stable-names database, which by definition is every clause
@@ -222,9 +225,10 @@ is real work rather than something to allowlist.
   a probe renders `inline constexpr detail::adaptor thing{};` verbatim,
   initializer and all, and the `detail` qualifier is then reported as leakage.
   So `views::null_term` can still only be `\omit`ted, which is what Step 1
-  does.  Note that `1a6728f` did make documented namespace-scope *variables*
-  render as wording items; it is the type masking that is missing, not the
-  rendering.  Wanted for Step 4.
+  does, and `[null.term.adaptor]` has no wording at all.  Note that `1a6728f`
+  did make documented namespace-scope *variables* render as wording items; it
+  is the type masking that is missing, not the rendering.  **Filed as
+  specgen#24.**  Wanted for Step 4, and for the eight closure objects later.
 - **U8 — `\expos` does not apply to class templates or alias templates.  HALF
   fixed** (specgen `26b7b7d`).  Alias templates now work: a marked one renders
   as `using $maybe-const$ = ...; // exposition only` with its uses rewritten to
@@ -232,14 +236,15 @@ is real work rather than something to allowlist.
   verbatim with no exposition-only comment.  The draft's exposition-only
   helpers include both kinds, so `[transcode.reqs]`'s const-compatibility chain
   is unblocked exactly to the extent it is spelled as aliases; see
-  `docs/wording-outline.md`, "The `detail::` audit".
+  `docs/wording-outline.md`, "The `detail::` audit".  **Filed as
+  specgen#23.**
 - **U9 — identifiers inside a string literal are scanned for leakage.  FIXED**
   (specgen `b1054dd`, same change as U1).  The WHATWG closures'
   `static_assert` diagnostic still says "use
   `beman::transcoding::views::null_term` …" and no longer draws a `beman`
   qualifier finding.
 
-Two defects found by this review and not yet filed upstream:
+Two defects found by this review, both filed:
 
 - **N1 — a constructor's member-initializer list renders into the class
   synopsis.**  Fix `f45e53e` splices in-class *bodies* out of the synopsis
@@ -249,10 +254,13 @@ Two defects found by this review and not yet filed upstream:
   where the draft would write the declaration alone.  Fix `eedc9ad`'s new
   private-member check then correctly reports the `base_` it exposes, which is
   how this surfaced: four findings across the view headers, naming `base_` and
-  `codec_`.  The finding is right and the rendering is what is wrong.
-- **N2 — U4's corruption is invisible to `--validate`.**  Recorded under U4
-  above; separate from the corruption itself, because a silent drift gate is
-  the part that would let a bad synopsis reach the paper.
+  `codec_`.  The finding is right and the rendering is what is wrong.  **Filed
+  as specgen#21**, together with two consequences of the same splice: the
+  exposition-only rename is not applied inside the mem-init list, and `std::`
+  is dropped inside it.
+- **N2 — U4's corruption is invisible to `--validate`.**  Filed with U4 as
+  specgen#22; called out separately here because a silent drift gate is the
+  part that would let a bad synopsis reach the paper.
 
 
 ## Risks
