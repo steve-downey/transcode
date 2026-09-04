@@ -820,7 +820,10 @@ set_tests_properties(
 )
 
 # WHATWG has no UTF-16LE encoder.
-add_library(beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail OBJECT)
+add_library(
+    beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
+    OBJECT
+)
 target_sources(
     beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
     PRIVATE whatwg_encode_utf16le_or_error_reject_fail.cpp
