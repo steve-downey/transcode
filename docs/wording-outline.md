@@ -41,18 +41,18 @@ markers in the source, which is the order below.
 |---|---|---|---|---|
 | `transcode.general` | — | General | scope, terms, the byte/scalar model | authored in the paper |
 | `transcode.syn` | root | Header `<transcode>` synopsis | everything below, gathered | the header's declaration region |
-| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error` | `detail/error.hpp` |
-| `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `detail/concepts.hpp` |
+| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error` | `error.hpp` |
+| `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` |
 | `transcode.codec` | 2 | Encodings | `enum class codec` | `whatwg_decode_view.hpp` |
 | `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `detail/labels.hpp` |
-| `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `detail/sniff.hpp` |
+| `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp` |
 | `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, `whatwg_decode_or_error_view`, their closures and `enable_borrowed_range` specializations | `whatwg_decode_view.hpp` |
 | `transcode.whatwg.encode` | 2 | Encoding views | `whatwg_encode_view`, `whatwg_encode_or_error_view`, likewise | `whatwg_encode_view.hpp` |
-| `transcode.custom.reqs` | 2 | Codec requirements | `decode_codec`, `encode_codec`, `flushable_decode_codec`, `random_access_decode_codec_type`, `decode_result`, `encode_result` | `detail/codec_concepts.hpp`, `detail/codec_result.hpp` |
+| `transcode.custom.reqs` | 2 | Codec requirements | `decode_codec`, `encode_codec`, `flushable_decode_codec`, `random_access_decode_codec_type`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp` |
 | `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode_or_error_view`, `decode`, `decode_or_error` | `decode_view.hpp` |
 | `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode_or_error_view`, `encode`, `encode_or_error` | `encode_view.hpp` |
-| `transcode.pipeline` | 2 | Transcoding pipelines | `transcode`, `pluggable_transcode` | `detail/transcode_view.hpp` |
-| `transcode.string` | 2 | Eager transcoding | `transcode_string`, both overloads | `detail/transcode_string.hpp` |
+| `transcode.pipeline` | 2 | Transcoding pipelines | `transcode`, `pluggable_transcode` | `transcode_view.hpp` |
+| `transcode.string` | 2 | Eager transcoding | `transcode_string`, both overloads | `transcode_string.hpp` |
 | `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers |
 
 `transcode.custom.*` rather than `transcode.decode` / `transcode.encode` for the
@@ -66,7 +66,7 @@ subject entirely.
 
 | Stable name | Depth | Title | Entities | Generated from |
 |---|---|---|---|---|
-| `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | `detail/null_term.hpp` |
+| `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | `null_term.hpp` |
 | `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | blocked on index U5 |
 | `null.term.view` | 2 | Class template `null_term_view` | the constructor, `begin`, `end` | done in Step 1 |
 | `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | blocked on index U7 |

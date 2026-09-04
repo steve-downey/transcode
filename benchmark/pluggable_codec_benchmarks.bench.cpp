@@ -3,7 +3,7 @@
 #include <benchmark/benchmark_fixture.hpp>
 #include <benchmark/benchmark_sink.hpp>
 #include <beman/transcode/config_generated.hpp>
-#include <beman/transcode/detail/transcode_view.hpp>
+#include <beman/transcode/transcode_view.hpp>
 #include <beman/transcode/encode_view.hpp>
 #include <beman/transcode/transcode.hpp>
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_VIEW_HPP
-#define INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_VIEW_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_TRANSCODE_VIEW_HPP
+#define INCLUDE_BEMAN_TRANSCODE_TRANSCODE_VIEW_HPP
 
 #include <beman/transcode/config.hpp>
 
@@ -83,4 +83,4 @@ constexpr auto pluggable_transcode_closure<From, To>::operator()(R&& r) const {
 
 } // namespace beman::transcoding
 
-#endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_TRANSCODE_VIEW_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_TRANSCODE_VIEW_HPP

@@ -6,7 +6,7 @@
 // not char/signed char/unsigned char/std::byte), so sniff_encoding must
 // reject it with a diagnostic mentioning legacy_byte_range.
 
-#include <beman/transcode/detail/sniff.hpp>
+#include <beman/transcode/sniff.hpp>
 
 #include <vector>
 

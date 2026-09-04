@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_NULL_TERM_HPP
-#define INCLUDE_BEMAN_TRANSCODE_DETAIL_NULL_TERM_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_NULL_TERM_HPP
+#define INCLUDE_BEMAN_TRANSCODE_NULL_TERM_HPP
 
 #include <beman/transcode/config.hpp>
 
@@ -128,4 +128,4 @@ constexpr auto detail::null_term_fn::operator()(T&&) const {
 
 } // namespace beman::transcoding
 
-#endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_NULL_TERM_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_NULL_TERM_HPP

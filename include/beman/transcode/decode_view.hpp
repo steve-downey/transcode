@@ -5,8 +5,9 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/codec_concepts.hpp>
-#include <beman/transcode/detail/concepts.hpp>
+#include <beman/transcode/codec_concepts.hpp>
+#include <beman/transcode/concepts.hpp>
+#include <beman/transcode/detail/range_traits.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <expected>

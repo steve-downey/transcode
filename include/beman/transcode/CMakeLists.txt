@@ -19,32 +19,33 @@ else()
             FILE_SET HEADERS
                 FILES
                     config.hpp
+                    codec_concepts.hpp
+                    codec_result.hpp
+                    concepts.hpp
                     decode_view.hpp
                     encode_view.hpp
+                    error.hpp
                     iconv_bulk.hpp
-                    transcode.hpp
+                    null_term.hpp
+                    sniff.hpp
                     todo.hpp
+                    transcode.hpp
+                    transcode_string.hpp
+                    transcode_view.hpp
                     detail/big5.hpp
                     detail/bulk_transcode.hpp
-                    detail/codec_concepts.hpp
-                    detail/codec_result.hpp
-                    detail/concepts.hpp
-                    detail/error.hpp
                     detail/euc_jp.hpp
                     detail/euc_kr.hpp
                     detail/labels.hpp
-                    detail/null_term.hpp
                     detail/gb18030.hpp
+                    detail/range_traits.hpp
                     detail/gbk.hpp
                     detail/shift_jis.hpp
                     detail/single_byte.hpp
                     detail/single_byte_decode_view.hpp
                     detail/single_byte_encode_view.hpp
                     detail/single_byte_tables.hpp
-                    detail/sniff.hpp
                     detail/table_codec.hpp
-                    detail/transcode_string.hpp
-                    detail/transcode_view.hpp
                     detail/utf8.hpp
                     detail/utf8_encode.hpp
                     detail/utf16.hpp

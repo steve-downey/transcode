@@ -5,8 +5,9 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/concepts.hpp>
-#include <beman/transcode/detail/error.hpp>
+#include <beman/transcode/concepts.hpp>
+#include <beman/transcode/detail/range_traits.hpp>
+#include <beman/transcode/error.hpp>
 #include <beman/transcode/detail/single_byte.hpp>
 #include <beman/transcode/detail/tables/ibm866.hpp>
 #include <beman/transcode/detail/tables/iso_8859_2.hpp>

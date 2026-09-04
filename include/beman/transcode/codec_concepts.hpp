@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_CONCEPTS_HPP
-#define INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_CONCEPTS_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_CODEC_CONCEPTS_HPP
+#define INCLUDE_BEMAN_TRANSCODE_CODEC_CONCEPTS_HPP
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/codec_result.hpp>
+#include <beman/transcode/codec_result.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <concepts>
@@ -37,4 +37,4 @@ concept flushable_decode_codec = decode_codec<C> && requires(C& c) {
 
 } // namespace beman::transcoding
 
-#endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_CODEC_CONCEPTS_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_CODEC_CONCEPTS_HPP

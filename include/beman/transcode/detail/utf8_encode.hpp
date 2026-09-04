@@ -5,7 +5,7 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/error.hpp>
+#include <beman/transcode/error.hpp>
 
 namespace beman::transcoding::detail {
 

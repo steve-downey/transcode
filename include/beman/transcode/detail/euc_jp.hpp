@@ -5,7 +5,7 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/error.hpp>
+#include <beman/transcode/error.hpp>
 #include <beman/transcode/detail/tables/euc_jp_jis0212.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
 

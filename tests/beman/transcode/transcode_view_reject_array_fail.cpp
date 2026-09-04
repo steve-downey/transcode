@@ -6,7 +6,7 @@
 // operator| overload with a static_assert, so that char[N] cannot silently
 // decay to a pointer and include the null terminator.
 
-#include <beman/transcode/detail/transcode_view.hpp>
+#include <beman/transcode/transcode_view.hpp>
 
 void test() {
     char arr[] = "hello";
