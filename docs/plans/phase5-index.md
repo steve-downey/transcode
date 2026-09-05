@@ -100,13 +100,23 @@ instruction ("Add a new clause [transcode] as follows:") reads better than
 several hundred underlined lines.  The switch is one flag if that judgement
 changes.
 
-**D7 — `detail::` never appears in a spec-visible signature.**  specgen's
-leakage checker errors on any surviving implementation-namespace qualifier,
-including in a synopsis, and it is right to.  Every concept, alias and helper
-named in a spec-facing declaration either moves out of `detail` (because it is
-really part of the specification) or is marked `\expos` (because it is
-exposition-only).  This is the single largest source of the refactoring in
-Step 3.
+**D7 — `detail::` never appears in a spec-visible signature, and the headers
+do not move to achieve that.**  A `detail::` name reaching the wording is a
+real finding: the published text must not name something the reader cannot see.
+What was wrong in the original decision is the remedy it accepted.  It said such
+a name "either moves out of `detail` ... or is marked `\expos`", and relocating
+a helper out of `detail` changes name lookup, ADL and the library's effective
+public surface — a real change to the library, taken on for a documentation
+tool.  It was recorded as the single largest source of the refactoring in
+Step 3, which is the clearest sign it was pointed the wrong way.
+
+The rule now: a `detail::` name in a spec-visible signature renders
+exposition-only or `unspecified`, and the header keeps the spelling it wants.
+`\expos` covers the entities declared in the spec-facing header itself.  For
+the ones declared in an included `detail/` header the marker cannot reach them
+today, which is specgen#36 (see N5); those findings wait for it rather than
+being refactored away.  The pattern of a synopsis plus out-of-line definitions
+is all a spec-facing header should have to be.
 
 ## Step index
 
@@ -156,9 +166,12 @@ project filed is now closed: #20, #21, #22, #23 and #24, on top of the eight
 fixes measured on 2026-09-04.  The worklist across the eleven spec-facing
 headers is 126 findings, down from 128, and `whatwg_decode_view.hpp` is at 28,
 down from 64 when Phase 5 was planned.  The small drop in the total is the
-point: the earlier fixes removed noise, and what is left is the D7 work of
-getting `detail::` out of spec-visible signatures.  `papers/wording/*.md`
-regenerates byte-identical, so nothing already committed drifted.
+point: the earlier fixes removed noise, and what is left is nearly all ordinary
+markup that Steps 5-9 write.  Of the 126, 34 are members not yet described
+(`begin`, `end`, `base`, `size`), 80 are declarations not yet described, nine
+are `detail::` qualifiers waiting on specgen#36, and two are false positives
+(N4).  `papers/wording/*.md` regenerates byte-identical, so nothing already
+committed drifted.
 
 The consequential change is not in the counts.  **A gathered header synopsis
 now works.**  With #22 and #31 fixed, `<null_term>` renders as three fragments
@@ -220,6 +233,17 @@ because closing the region needs a `/// END [x.syn]` fence.
   renders none: the sentinel's `operator==` is the one member defined in class.
   **Gates `[null.term.sentinel]` in Step 4** — but only that clause, and the
   header synopsis it sits beside is now sound.
+- **N5 — a `detail::` name in a spec-visible signature cannot be rendered
+  exposition-only from an included header.**  Filed as specgen#36.  `\expos`
+  does the right thing when the entity is declared in the spec-facing header,
+  and is silently ignored when the identical declaration sits in an included
+  one — so the only remedies specgen offers are to rewrite the name or move the
+  entity out of `detail`, both of which change the library.  Six concepts
+  account for all nine qualifier findings:
+  `const_iterator_compatible_range` and `const_sentinel_compatible_range` from
+  `detail/range_traits.hpp`, and `whatwg_encode_input`, `whatwg_encode_codec`,
+  `random_access_encode_codec`, `random_access_decode_codec` from the two
+  select headers.  See D7; do not refactor around this.
 - **N4 — the private-member check is keyed by bare name.**  Filed as
   specgen#35.  A private member in one class makes an unrelated *public* member
   of the same name in another class report as "an unmarked private member".
