@@ -66,10 +66,12 @@ worktree, not estimates.  They are what the steps below are sized against.
 this repo, and that header is what specgen is run over.  specgen only processes
 declarations located in the main file, so "what is in the file" *is* "what is in
 the synopsis"; one document per proposed header is what makes the root fragment
-a real header synopsis rather than a per-class accident.  The fallback, if
-co-location proves too disruptive, is one document per header family with a
-hand-authored `[transcode.syn]`; it is a fallback because it reintroduces a
-hand-maintained synopsis.
+a real header synopsis rather than a per-class accident.  Confirmed working
+on 2026-09-05: `<null_term>` renders a real gathered `[null.term.syn]` beside
+its per-class clauses, validating clean.  The fallback this decision carried --
+one document per header family with a hand-authored `[transcode.syn]` -- is
+retired; it existed because a deduction guide corrupted the gathered region
+(specgen#22), and that is fixed.
 
 **D2 — Generated fragments are committed and checked.**  `make wording`
 regenerates `papers/wording/*.md`; `make wording-check` regenerates into a
@@ -137,8 +139,11 @@ mid-phase stop still leaves the paper buildable.
   header markup and regenerate.
 - The specgen invocation lives in exactly one place, `papers/wording/generate.sh`.
   No step adds a second spelling of the parse tail.
-- Markup is `//!` and `/*! */` only.  `///` and `/** */` stay unused in this
-  repo so that no comment is ambiguous between Doxygen and specgen.
+- Markup is `//!` and `/*! */` only, with one exception: a gathered header
+  synopsis is closed by a `/// END [x.syn]` fence, which specgen requires and
+  which nothing else in the repo spells.  `/** */` stays unused, and `///` is
+  reserved for that fence alone, so no comment is ambiguous between Doxygen and
+  specgen.
 - Docblock lines stay under 119 columns so `ReflowComments` never touches them.
 
 ## External dependencies (work in `~/src/specgen/main`)
@@ -146,121 +151,82 @@ mid-phase stop still leaves the paper buildable.
 These are upstream changes to specgen.  They are tracked here because they gate
 transcode steps, but they are executed in the specgen repository.
 
-**Re-measured 2026-09-04** against specgen at `af60209`, which landed eight
-fixes.  Every item below carries its verified state; the probes are in the
-review that produced them.  Headline: `whatwg_decode_view.hpp` went from 64
-findings to 29, and no finding anywhere is `ranges` noise any more.  Across all
-eleven spec-facing headers the worklist is 128 findings, and every one of them
-is real work rather than something to allowlist.
+**Re-measured 2026-09-05** against specgen at `0c82726`.  Every defect this
+project filed is now closed: #20, #21, #22, #23 and #24, on top of the eight
+fixes measured on 2026-09-04.  The worklist across the eleven spec-facing
+headers is 126 findings, down from 128, and `whatwg_decode_view.hpp` is at 28,
+down from 64 when Phase 5 was planned.  The small drop in the total is the
+point: the earlier fixes removed noise, and what is left is the D7 work of
+getting `detail::` out of spec-visible signatures.  `papers/wording/*.md`
+regenerates byte-identical, so nothing already committed drifted.
 
-- **U1 — `ranges::` reported as leakage.  FIXED** (specgen `b1054dd`).  The
-  leakage checker skipped a foreign qualifier when its namespace was declared
-  outside the main file, which was the wrong discriminator; it now skips a
-  chain link whose qualified path is rooted in `std::` and reports every other
-  surviving qualifier wherever it was declared.  Verified: zero `ranges`
-  findings across all eleven headers, and the `ranges::view_interface`
-  base-clauses that produced them render unchanged.  **Steps 6-10 no longer
-  need the known-noise allowlist**; drive `--validate` to zero.
+The consequential change is not in the counts.  **A gathered header synopsis
+now works.**  With #22 and #31 fixed, `<null_term>` renders as three fragments
+in document order — a real `[null.term.syn]` carrying `null_sentinel_t`,
+`null_sentinel` and `null_term_view`, then the per-class clauses — and
+`--validate` is clean on it.  D1's fallback, a hand-authored `[transcode.syn]`,
+is no longer needed.  Two things follow: this is the arrangement Step 4 should
+adopt, and the standing convention above that reserves `///` has to be amended,
+because closing the region needs a `/// END [x.syn]` fence.
 
-  The same fix cuts the other way and is why the remaining counts are worth
-  trusting: `detail::` reached through an included header used to pass
-  silently, and Step 3 moved exactly that machinery into
-  `detail/range_traits.hpp` and `detail/whatwg_{decode,encode}_select.hpp`.
-  Those leaks are now reported.  They are D7 work, not noise.
-- **U2 — `--base-heading-level` on the command line.  NOT fixed.**  The mpark
-  backend hard codes level 2, so generated clause headings are `##` and land as
-  siblings of the paper's own `##` sections.  A flag would let the wording nest
-  under a `## Wording` heading.  Not blocking: Step 10 can accept flat headings
-  or post-process, and the plan says which it did.
-- **U3 — namespace mapping is automatic.**  `build_namespace_drop_set` derives
-  the drop set from the header's own top-level namespaces, so
-  `beman::transcoding` maps to `std` with no configuration.  Nothing to do;
-  recorded so no step goes looking for a mapping option that does not exist.
-- **U4 — a deduction guide corrupts a gathered `.syn` synopsis.  NOT fixed,
-  and now silent.**  With a `\rSec2[x.syn]` region closed by a
-  `/// END [x.syn]` fence, the rendered synopsis still repeats the class body
-  with `<deduction guide for holder>` substituted for the class name, and
-  `\omit` on the guide does not suppress it.  What changed is that
-  `--validate` now reports **nothing** for the corrupted output, so the drift
-  gate will not catch it.  The second copy is raw source carrying its `//!`
-  markup, the code block is left unterminated, and every itemdecl that should
-  have followed is dropped.  Still **gates the `<null_term>` header synopsis**.
-  **Filed as specgen#22**, corruption and silence together.
+### Closed
 
-  Two further notes for whoever picks this up.  Closing the region needs a
-  `/// END [x.syn]` fence, and this repo's standing conventions above reserve
-  `///` as unused — adopting a gathered synopsis means amending that rule.  And
-  outside a gathered region the guide is fine: `\omit` works and the output is
-  clean, which is still what Step 1 relies on.
-- **U5 — a docblock on an in-class hidden friend is not attached.  FIXED for
-  the general case; a narrower bug remains.**  The docblock now attaches and
-  renders as an itemdecl with its elements, provided the member is routed —
-  a `\rSec` section plus a `\ref{stable.name}` group in the class body, or an
-  `\at`.  Unrouted, the diagnostic is no longer "is not described" but the far
-  more useful "the description of `operator==` is routed to no section".
+- **U1 — `ranges::` reported as leakage.**  Fixed 2026-09-04 (`b1054dd`); no
+  `ranges` finding occurs anywhere.  Steps 6-10 need no allowlist.
+- **U4 — a deduction guide corrupts a gathered `.syn` synopsis.**  Fixed
+  (specgen#22, `4ae6398`): Clang's implicit deduction guides are no longer
+  collected as top-level items.  The synopsis renders once, cleanly, and the
+  `\omit`ted guide does not appear.
+- **U5 — a docblock on an in-class hidden friend is not attached.**  Fixed
+  (specgen#20, `199e291`).  The mis-diagnosis is worth remembering: the trigger
+  was never hidden friends but a requires-clause holding a requires-expression,
+  which is how `null_sentinel_t::operator==` is spelled.  Verified end to end —
+  the sentinel clause renders `operator==` with its *Returns* — but see N3
+  below for the gathered-region case.
+- **U7 — no way to mask a variable's type.**  Fixed (specgen#24, `953e7d4`):
+  bare `\seebelow` on a namespace-scope variable now renders
+  `inline constexpr $unspecified$ thing;`, type masked and initializer dropped.
+  **`[null.term.adaptor]` is unblocked**, and so are the eight closure objects.
+- **U8 — `\expos` does not apply to class templates or alias templates.**
+  Fixed (specgen#23, `64267e8`); the alias half landed 2026-09-04.  A marked
+  class template renders `$box$` with `// exposition only` and its uses are
+  rewritten, so `[transcode.reqs]`'s const-compatibility chain is unblocked
+  whichever way it is spelled.
+- **U9 — identifiers inside a string literal are scanned for leakage.**  Fixed
+  2026-09-04 (`b1054dd`).
+- **N1 — a constructor's member-initializer list renders into the synopsis.**
+  Fixed (specgen#21, `619311f`): the body splice starts at a written
+  ctor-initializer list.  The `\expos` rename now also reaches the description
+  text.
+- **N2 — U4's corruption was invisible to `--validate`.**  Closed with U4.
 
-  What still fails is narrow and was mis-diagnosed as being about hidden
-  friends: the docblock is dropped only when the declaration carries a
-  **requires-clause holding a requires-expression**.  Probes isolate it —
-  a constrained template parameter (`template <std::input_iterator I>`) is
-  clean, a named constraint (`requires std::equality_comparable<I>`) is clean,
-  and `requires requires(I i) { { *i == 0 }; }` is not.  `null_sentinel_t`'s
-  `operator==` is spelled the one way that fails.  At namespace scope the same
-  spelling makes a function *definition* report "markup belongs at the
-  definition", pointing at the line that is the definition.
+### Open
 
-  **Filed as specgen#20.**  It is a tool defect with a two-line reproduction,
-  so Step 4 waits for the fix rather than rewriting the constraint to suit it:
-  the wording is supposed to come from the headers as they are spelled.
-- **U6 — every generated clause heading warns at paper-build time.**  mpark
-  prints `stable name null.term.view not found` for each `{- .sref}` span whose
-  name is not in its stable-names database, which by definition is every clause
-  a paper proposes.  specgen already emits the unnumbered form to avoid this and
-  it warns anyway.  **Gates Step 10's acceptance criterion** of a warning-free
-  build; the fix may belong in mpark/wg21 rather than specgen.  Not re-measured
-  on 2026-09-04: it is a paper-build warning, not a specgen finding.
-- **U7 — no way to mask a variable's type.  NOT fixed.**  A customization point
-  object is spelled `inline constexpr unspecified null_term;` in the draft.
-  `\seebelow` on a namespace-scope variable is still accepted with no effect:
-  a probe renders `inline constexpr detail::adaptor thing{};` verbatim,
-  initializer and all, and the `detail` qualifier is then reported as leakage.
-  So `views::null_term` can still only be `\omit`ted, which is what Step 1
-  does, and `[null.term.adaptor]` has no wording at all.  Note that `1a6728f`
-  did make documented namespace-scope *variables* render as wording items; it
-  is the type masking that is missing, not the rendering.  **Filed as
-  specgen#24.**  Wanted for Step 4, and for the eight closure objects later.
-- **U8 — `\expos` does not apply to class templates or alias templates.  HALF
-  fixed** (specgen `26b7b7d`).  Alias templates now work: a marked one renders
-  as `using $maybe-const$ = ...; // exposition only` with its uses rewritten to
-  the exposid.  **Class templates still ignore the marker** — the name renders
-  verbatim with no exposition-only comment.  The draft's exposition-only
-  helpers include both kinds, so `[transcode.reqs]`'s const-compatibility chain
-  is unblocked exactly to the extent it is spelled as aliases; see
-  `docs/wording-outline.md`, "The `detail::` audit".  **Filed as
-  specgen#23.**
-- **U9 — identifiers inside a string literal are scanned for leakage.  FIXED**
-  (specgen `b1054dd`, same change as U1).  The WHATWG closures'
-  `static_assert` diagnostic still says "use
-  `beman::transcoding::views::null_term` …" and no longer draws a `beman`
-  qualifier finding.
-
-Two defects found by this review, both filed:
-
-- **N1 — a constructor's member-initializer list renders into the class
-  synopsis.**  Fix `f45e53e` splices in-class *bodies* out of the synopsis
-  unconditionally, but not the ctor-init-list that precedes one, so
-  `random_access_whatwg_decode_view` renders as
-  `constexpr explicit random_access_whatwg_decode_view(R base) : base_(move(base));`
-  where the draft would write the declaration alone.  Fix `eedc9ad`'s new
-  private-member check then correctly reports the `base_` it exposes, which is
-  how this surfaced: four findings across the view headers, naming `base_` and
-  `codec_`.  The finding is right and the rendering is what is wrong.  **Filed
-  as specgen#21**, together with two consequences of the same splice: the
-  exposition-only rename is not applied inside the mem-init list, and `std::`
-  is dropped inside it.
-- **N2 — U4's corruption is invisible to `--validate`.**  Filed with U4 as
-  specgen#22; called out separately here because a silent drift gate is the
-  part that would let a bad synopsis reach the paper.
+- **U2 — `--base-heading-level` on the command line.**  Still absent; the mpark
+  backend hard codes level 2.  Not blocking: Step 10 can accept flat headings or
+  post-process, and the plan says which it did.
+- **U3 — namespace mapping is automatic.**  Nothing to do; recorded so no step
+  goes looking for a mapping option that does not exist.
+- **U6 — every generated clause heading warns at paper-build time.**  A
+  paper-build warning from mpark, not a specgen finding; not re-measured.
+  **Gates Step 10's acceptance criterion** of a warning-free build.
+- **N3 — a routed member description is dropped inside a gathered synopsis
+  region.**  Filed as specgen#34.  A member *defined in class* inside the
+  region, carrying a docblock and a `\ref{stable.name}` route to a section
+  declared after the `END` fence, renders in the synopsis but its description is
+  discarded and the target clause comes out empty.  Silent under `--validate`.
+  Members defined *outside* the region are unaffected, which is why
+  `[null.term.view]` renders all three of its members and `[null.term.sentinel]`
+  renders none: the sentinel's `operator==` is the one member defined in class.
+  **Gates `[null.term.sentinel]` in Step 4** — but only that clause, and the
+  header synopsis it sits beside is now sound.
+- **N4 — the private-member check is keyed by bare name.**  Filed as
+  specgen#35.  A private member in one class makes an unrelated *public* member
+  of the same name in another class report as "an unmarked private member".
+  Two of the 126 findings are this: `decode_closure` and `encode_closure` are
+  `struct`s whose public `Codec codec_;` collides with the private
+  `Codec codec_;` in the corresponding view's iterator.  They are false
+  positives; do not mark or mask anything in response to them.
 
 
 ## Risks

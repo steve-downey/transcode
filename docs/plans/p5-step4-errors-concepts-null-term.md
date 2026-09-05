@@ -64,19 +64,23 @@ what is different.
   `detail::null_term_fn` / `null_term_adaptor`, and on `views::null_term`.  Two
   of those omissions are placeholders this step has to replace, and both are
   blocked upstream:
-  - `null_sentinel_t`'s hidden-friend `operator==` is **half unblocked**.
-    specgen attaches the docblock once the member is routed, so the clause
-    wants a `\rSec2[null.term.sentinel]` section and a
-    `\ref{null.term.sentinel}` group in the class body.  What still fails is
-    specgen#20: the docblock is dropped when the declaration carries a
-    requires-expression, which is exactly how this `operator==` is spelled
-    (`requires requires(I i) { { *i == 0 }; }`).  Do not rewrite the constraint
-    to get around it — the header is spelled the way the library wants it, and
-    the wording is generated from the header.  Land the section and the route,
-    and the elements arrive when specgen#20 does.
+  - `null_sentinel_t`'s hidden-friend `operator==` needs a
+    `\rSec2[null.term.sentinel]` section and a `\ref{null.term.sentinel}`
+    group in the class body.  specgen#20 is fixed, so with those two lines and
+    no gathered region the clause renders `operator==` with its *Returns* and
+    `--validate` is clean -- verified on the real header.
+
+    The catch is that it interacts with the header synopsis.  Adopt the
+    gathered `[null.term.syn]` region (see below) and this clause goes empty
+    again, because the member is defined in class, inside the region
+    (specgen#34).  Everything else about the gathered arrangement is right, so
+    land it and accept one empty clause until #34 lands, rather than giving up
+    the header synopsis for one member.
   - `views::null_term` is `\omit`ted because its type is
     `detail::null_term_adaptor` and there is no way to render it as
-    `inline constexpr unspecified null_term;` (index U7, specgen#24).
+    `inline constexpr unspecified null_term;`.  **No longer true**: specgen#24
+    is fixed and bare `\seebelow` on the variable now renders exactly that, so
+    replace the `\omit` and write `[null.term.adaptor]` in this step.
 
   Neither is a header problem, so do not refactor around them; land the rest of
   the clause and pick these up when the upstream items do.
