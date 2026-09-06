@@ -67,10 +67,10 @@ subject entirely.
 
 | Stable name | Depth | Title | Entities | Generated from |
 |---|---|---|---|---|
-| `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | `null_term.hpp` |
-| `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | specgen#20 fixed; empty while gathered, see specgen#34 |
+| `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | gathered region, done 2026-09-06 |
+| `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | done 2026-09-06 |
 | `null.term.view` | 2 | Class template `null_term_view` | the constructor, `begin`, `end` | done in Step 1 |
-| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | unblocked 2026-09-05; specgen#24 fixed |
+| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | blocked on specgen#55, see index N8 |
 
 Step 1 generates `null.term` (the root, un-gathered) and `null.term.view`.  The
 other two are what Step 4 adds once their upstream items land.
@@ -88,6 +88,9 @@ so no step has to decide twice.
 | `detail::legacy_byte_type` | `$legacy-byte-type$` | a real conjunct of `legacy_byte_range`; the draft would spell it out |
 | every view's `base_`, `codec_`, `buf_`, iterator state | exposition names | the wording describes what they hold |
 | the closure types (`whatwg_decode_closure` and the seven others) | ideally `unspecified` | unblocked 2026-09-05; specgen#24 fixed |
+| `detail::const_iterator_compatible_range`, `detail::const_sentinel_compatible_range` | `$const-iterator-compatible-range$`, `$const-sentinel-compatible-range$` | the const-compatibility chain the views constrain `begin`/`end` on |
+| `detail::random_access_decode_codec`, `detail::random_access_encode_codec` | `$random-access-decode-codec$`, `$random-access-encode-codec$` | which codecs are O(1) per element; a property of the specification, not of the tables |
+| `detail::whatwg_encode_codec`, `detail::whatwg_encode_input` | `$whatwg-encode-codec$`, `$whatwg-encode-input$` | WHATWG defines no encoder for some codecs; the constraint says which |
 
 ### Omitted (`\omit`)
 

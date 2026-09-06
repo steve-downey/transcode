@@ -64,25 +64,19 @@ what is different.
   `detail::null_term_fn` / `null_term_adaptor`, and on `views::null_term`.  Two
   of those omissions are placeholders this step has to replace, and both are
   blocked upstream:
-  - `null_sentinel_t`'s hidden-friend `operator==` needs a
+  - `null_sentinel_t`'s hidden-friend `operator==` is **done**.  The header
+    carries the gathered `\rSec2[null.term.syn]` region, a
     `\rSec2[null.term.sentinel]` section and a `\ref{null.term.sentinel}`
-    group in the class body.  specgen#20 is fixed, so with those two lines and
-    no gathered region the clause renders `operator==` with its *Returns* and
-    `--validate` is clean -- verified on the real header.
-
-    specgen#34 is fixed too, so the gathered `[null.term.syn]` region and this
-    clause now coexist: verified on the real header, all three clauses render
-    and `--validate` is clean.  Take the gathered arrangement.
-
-    Read the rendered clauses rather than trusting that clean result, though.
-    Upstream #45 means a class folded into a gathered synopsis is not
-    coverage-checked, so a member that loses its description renders without it
-    and validation stays silent.  See the index, "A caveat on 'clean'".
+    group in the class body; the clause renders `operator==` with its *Returns*
+    and `--validate` is clean.  #45 is fixed too, so that clean result now
+    means the clause is covered rather than unchecked.
   - `views::null_term` is `\omit`ted because its type is
     `detail::null_term_adaptor` and there is no way to render it as
-    `inline constexpr unspecified null_term;`.  **No longer true**: specgen#24
-    is fixed and bare `\seebelow` on the variable now renders exactly that, so
-    replace the `\omit` and write `[null.term.adaptor]` in this step.
+    `inline constexpr unspecified null_term;`.  specgen#24 fixed the marker,
+    but not inside a gathered region (specgen#55), and a customization point
+    object belongs in the header synopsis by construction.  The `\omit`
+    stands, with a comment in the header pointing at the issue.
+    `[null.term.adaptor]` waits for #55.
 
   Neither is a header problem, so do not refactor around them; land the rest of
   the clause and pick these up when the upstream items do.

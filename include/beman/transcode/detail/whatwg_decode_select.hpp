@@ -40,6 +40,7 @@
 
 namespace beman::transcoding::detail {
 
+//! \expos
 template <codec C>
 concept random_access_decode_codec =
     C == codec::ibm866 || C == codec::iso_8859_2 || C == codec::iso_8859_3 || C == codec::iso_8859_4 ||

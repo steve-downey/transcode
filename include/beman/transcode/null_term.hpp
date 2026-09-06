@@ -13,7 +13,10 @@
 #endif
 namespace beman::transcoding {
 
+// \rSec2[null.term.syn]{Header `<null_term>` synopsis}
+
 struct null_sentinel_t {
+    // \ref{null.term.sentinel}, comparison
     //! \returns `*it == 0`.
     template <std::input_iterator I>
         requires requires(I i) {
@@ -74,9 +77,15 @@ struct null_term_adaptor : null_term_fn {
 } // namespace detail
 
 namespace views {
+// \seebelow would be right here and is what [null.term.adaptor] needs, but the
+// marker is not applied to a variable inside a gathered region (specgen#55).
 //! \omit
 inline constexpr detail::null_term_adaptor null_term{};
 } // namespace views
+
+/// END [null.term.syn]
+
+// \rSec2[null.term.sentinel]{Class `null_sentinel_t`}
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions: null_term_view
