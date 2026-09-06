@@ -70,12 +70,14 @@ what is different.
     no gathered region the clause renders `operator==` with its *Returns* and
     `--validate` is clean -- verified on the real header.
 
-    The catch is that it interacts with the header synopsis.  Adopt the
-    gathered `[null.term.syn]` region (see below) and this clause goes empty
-    again, because the member is defined in class, inside the region
-    (specgen#34).  Everything else about the gathered arrangement is right, so
-    land it and accept one empty clause until #34 lands, rather than giving up
-    the header synopsis for one member.
+    specgen#34 is fixed too, so the gathered `[null.term.syn]` region and this
+    clause now coexist: verified on the real header, all three clauses render
+    and `--validate` is clean.  Take the gathered arrangement.
+
+    Read the rendered clauses rather than trusting that clean result, though.
+    Upstream #45 means a class folded into a gathered synopsis is not
+    coverage-checked, so a member that loses its description renders without it
+    and validation stays silent.  See the index, "A caveat on 'clean'".
   - `views::null_term` is `\omit`ted because its type is
     `detail::null_term_adaptor` and there is no way to render it as
     `inline constexpr unspecified null_term;`.  **No longer true**: specgen#24
