@@ -14,20 +14,31 @@
 #endif
 namespace beman::transcoding {
 
+// \rSec2[transcode.reqs]{Range requirements}
+
 namespace detail {
 
+//! \expos
 template <typename T>
 concept legacy_byte_type = std::same_as<T, char> || std::same_as<T, signed char> || std::same_as<T, unsigned char> ||
                            std::same_as<T, std::byte>;
 
 } // namespace detail
 
+//! \remarks An array type does not satisfy `legacy_byte_range`, so that the
+//! terminating null character of a string literal or of a character array is
+//! not transcoded along with the rest of the array.  `views::null_term`
+//! adapts a null-terminated character sequence, and `span` a counted buffer.
 template <typename R>
 concept legacy_byte_range = std::ranges::range<R> && !std::is_array_v<std::remove_cvref_t<R>> &&
                             detail::legacy_byte_type<std::remove_cv_t<std::ranges::range_value_t<R>>>;
 
 // Type-level gate for the WHATWG encoder input queue. The semantic precondition
 // is stronger: each char32_t value must be a Unicode scalar value.
+//! \remarks `unicode_scalar_range` constrains the type of a range and not its
+//! values.  That each element of the range is a Unicode scalar value is a
+//! precondition of every operation that encodes it, not a property this
+//! concept can require.
 template <typename R>
 concept unicode_scalar_range = std::ranges::input_range<R> && !std::is_array_v<std::remove_cvref_t<R>> &&
                                std::same_as<std::remove_cv_t<std::ranges::range_value_t<R>>, char32_t>;

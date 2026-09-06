@@ -96,3 +96,68 @@ what is different.
   absolute.
 - `make wording-check`, `make lint`, `make test` green.
 - The paper builds and the three clauses appear in it.
+
+---
+
+## Outcome (2026-09-06)
+
+One of the three clauses is written and generated.  The other two have no
+representable form in specgen today, and both are now filed upstream.  Nothing
+here is a header problem, and no header was changed to suit the tool (D7).
+
+- **`[transcode.reqs]` — done.**  `concepts.hpp` carries the `\rSec2` marker,
+  `\expos` on `detail::legacy_byte_type`, and a *Remarks* on each concept.  The
+  clause renders the exposition-only conjunct spelled out, then each concept
+  with its paragraph; `--validate` is clean, and
+  `papers/wording/transcode.reqs.md` is the first `<transcode>` fragment in
+  `wording.mk`.
+
+  Neither paragraph restates its definition — the definition is generated from
+  the header and says what it says.  They carry what it cannot: why an array
+  type is excluded (the terminating null character of a string literal is not
+  transcoded with the rest of the array), and that `unicode_scalar_range`
+  constrains the type of a range and not its values, so that each element being
+  a Unicode scalar value is a precondition of the operations that encode it.
+  That is the same order the negative compile tests state the constraints in,
+  as this step asked.  Neither element claims anything about constant
+  evaluation, so no `constify()` test is owed; `concepts.test.cpp` is already
+  entirely `static_assert`s.
+
+- **`[transcode.errors]` — blocked on specgen#68.**  An enumeration cannot be
+  specified at all.  A docblock on one is rejected — `a documented Enum
+  produces no wording: unsupported entity kind` — so the enumerator table has
+  nowhere to live; a gathered `.syn` region renders the declaration and still
+  refuses the docblock; a detached docblock after the enum is dropped silently;
+  and a `\verbatim-itemdecl` block before it attaches to the enum and hits the
+  same error.  There is no fourth spelling, so `error.hpp` is left unmarked.  A
+  `\rSec2[transcode.errors]` marker on its own would render a bare heading,
+  which is worse than an absent clause: the paper would ship an empty one.
+
+- **`[null.term.adaptor]` — blocked on specgen#69.**  The prose was not written
+  into the header.  A docblock on `views::null_term` renders its declaration in
+  the gathered synopsis and discards its description without a diagnostic, so
+  authoring it now would commit wording that nothing shows and would move the
+  fragments on an unrelated regeneration the day the fix lands.  The
+  declaration itself already renders as
+  `inline constexpr $unspecified$ null_term;`, which is what the draft writes;
+  it is only the paragraph saying what `views::null_term(E)` is
+  expression-equivalent to that is held.
+
+Generating the clause also caught a drift the paper had already: its "Concepts"
+section shows both concepts constrained on `ranges::input_range`, and
+`legacy_byte_range` is defined on `ranges::range`.  The generated wording is now
+the truth, so the authored prose is what is wrong; it is recorded as a task in
+`docs/plans/p5-step10-paper-assembly.md` rather than fixed by changing a concept
+to match a paragraph.
+
+Both upstream items are described in `docs/plans/phase5-index.md` under
+"External dependencies".  specgen#69 is the fifth instance of the
+gathered-region pattern that section had recorded as closed out, which is worth
+knowing for Steps 5-9: they gather a much larger surface, a dropped element is
+silent, and a clean `--validate` does not prove an authored paragraph arrived.
+Read the fragment.
+
+**Step 5 is not blocked by either** and can start.  When specgen#68 lands,
+`[transcode.errors]` is one docblock with three `\lib2dtab2` tables on
+`error.hpp` plus a line in `generate.sh`; when specgen#69 lands,
+`[null.term.adaptor]` is a `\rSec2` marker and one paragraph.

@@ -140,6 +140,12 @@ Steps 4-9 are the same loop nine times: mark up a clause, regenerate, drive
 together.  They are separated by clause so a step is reviewable and so a
 mid-phase stop still leaves the paper buildable.
 
+**Step 4 is partly landed** (2026-09-06): `[transcode.reqs]` is written and
+generated; `[transcode.errors]` and `[null.term.adaptor]`'s prose are held by
+specgen#68 and specgen#69 below.  Step 5 does not depend on either, so the
+sequence continues; see `docs/plans/p5-step4-errors-concepts-null-term.md`,
+"Outcome".
+
 ## Standing conventions
 
 - Branch and worktree per step, rooted from `main`, per `CLAUDE.md`.
@@ -167,6 +173,12 @@ defect this project has filed is closed, and there are no open specgen issues
 at all.**  114 findings across the eleven spec-facing headers, from 117, and
 **no qualifier finding anywhere**: `detail::` no longer reaches the wording from
 any spec-facing header.
+
+Step 4 then wrote the first clauses against that binary and filed two more, both
+about an entity kind that has no representable wording at all rather than a
+rendering defect: **specgen#68** (an enumeration) and **specgen#69** (a variable
+described inside a gathered region).  They are in "Open" below, with what each
+one blocks.
 
 - **N6 closed** (#48, `fa9af1c`).  The exposition-only rename now reaches a
   class template's own requires-clause, which was the last three qualifier
@@ -196,7 +208,15 @@ N3 (#34, a routed member's description), N7 (#45, coverage checking), N8 (#55,
 declaration masks) and the class-head half of N6 (#48).  All four are fixed, and
 the last of them landed in this round.  It is worth knowing the shape, because
 Steps 5-9 gather `<transcode>`, which is a much larger surface than
-`<null_term>` -- but there is nothing outstanding to work around.
+`<null_term>`.
+
+The shape is not closed out after all: **specgen#69 is the fifth of them**, one
+entity kind further on.  A namespace-scope variable folded into a gathered
+region keeps its declaration and its masks and loses its description, silently.
+Steps 5-9 should expect to meet the pattern again for every kind they gather,
+and to check that an authored element actually reached the clause rather than
+trusting a clean `--validate`: the roster of a dropped entity is empty, so
+coverage has nothing to report.
 
 ### Closed
 
@@ -228,8 +248,24 @@ Steps 5-9 gather `<transcode>`, which is a much larger surface than
 - **U3 — namespace mapping is automatic.**  Nothing to do; recorded so no step
   goes looking for a mapping option that does not exist.
 - **U6 — every generated clause heading warns at paper-build time.**  An mpark
-  warning, not a specgen finding.  **Gates Step 10's** warning-free build, and
-  is now the only external item that gates anything.
+  warning, not a specgen finding.  **Gates Step 10's** warning-free build.
+- **specgen#68 — a documented enumeration produces no wording.**  Filed
+  2026-09-06 by Step 4.  A docblock on an `enum class` is rejected as an
+  unsupported entity kind; a gathered region renders the declaration but the
+  description is still refused, and there is no third spelling.  **Blocks
+  [transcode.errors]** completely: three enumerations whose wording is a table
+  of enumerator meanings, which is the draft's own shape for an enum
+  ([fs.enum.file.type]) and which `\lib2dtab2` already renders for every other
+  entity kind.  This is the one item in the phase that blocks a clause outright
+  rather than delaying part of one.
+- **specgen#69 — a documented variable's description is dropped inside a
+  gathered region, and `\at` does not route it.**  Filed 2026-09-06 by Step 4.
+  **Blocks [null.term.adaptor]'s prose**, and only that: `views::null_term`
+  already renders as `inline constexpr $unspecified$ null_term;` in the
+  synopsis.  A range adaptor object is the case with no way around it -- it is a
+  variable with an initializer, so there is no out-of-line definition to carry
+  its description into a later section, and moving the declaration out of the
+  region would take it out of the header synopsis, where the draft puts it.
 
 
 ## Risks
