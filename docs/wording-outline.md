@@ -70,7 +70,7 @@ subject entirely.
 | `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | gathered region, done 2026-09-06 |
 | `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | done 2026-09-06 |
 | `null.term.view` | 2 | Class template `null_term_view` | the constructor, `begin`, `end` | done in Step 1 |
-| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | blocked on specgen#55, see index N8 |
+| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | unblocked 2026-09-06; renders `$unspecified$` in the synopsis, prose outstanding |
 
 Step 1 generates `null.term` (the root, un-gathered) and `null.term.view`.  The
 other two are what Step 4 adds once their upstream items land.

@@ -14,7 +14,7 @@ struct null_sentinel_t {
 
 inline constexpr null_sentinel_t null_sentinel{};
 
-template<std::contiguous_iterator I>
+template<contiguous_iterator I>
 class null_term_view : public ranges::view_interface<null_term_view<I>> {
   I $ptr$; // exposition only
 
@@ -25,6 +25,8 @@ public:
   constexpr I begin() const;
   constexpr null_sentinel_t end() const;
 };
+
+inline constexpr $unspecified$ null_term;
 ```
 
 :::

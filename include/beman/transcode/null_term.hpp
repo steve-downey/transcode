@@ -77,9 +77,7 @@ struct null_term_adaptor : null_term_fn {
 } // namespace detail
 
 namespace views {
-// \seebelow would be right here and is what [null.term.adaptor] needs, but the
-// marker is not applied to a variable inside a gathered region (specgen#55).
-//! \omit
+//! \seebelow
 inline constexpr detail::null_term_adaptor null_term{};
 } // namespace views
 

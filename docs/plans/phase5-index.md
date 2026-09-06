@@ -162,81 +162,74 @@ mid-phase stop still leaves the paper buildable.
 These are upstream changes to specgen.  They are tracked here because they gate
 transcode steps, but they are executed in the specgen repository.
 
-**Re-measured 2026-09-06** against specgen at `fba1271`, and this round the
-plan adapted to it rather than only recording it.  117 findings across the
-eleven spec-facing headers, from 124.
+**Re-measured 2026-09-06 (evening)** against specgen at `b90faa7`.  **Every
+defect this project has filed is closed, and there are no open specgen issues
+at all.**  114 findings across the eleven spec-facing headers, from 117, and
+**no qualifier finding anywhere**: `detail::` no longer reaches the wording from
+any spec-facing header.
 
-Three things changed.
+- **N6 closed** (#48, `fa9af1c`).  The exposition-only rename now reaches a
+  class template's own requires-clause, which was the last three qualifier
+  findings.  D7 is satisfied in full, by six `\expos` comments and nothing
+  else -- no declaration moved, no name changed.
+- **N8 closed** (#55, `5b04bf2`, apply the declaration masks inside a gathered
+  region).  `views::null_term` drops its `\omit` and renders
+  `inline constexpr $unspecified$ null_term;` in the header synopsis, which is
+  what the draft writes.  `[null.term.adaptor]` is unblocked; only its prose is
+  outstanding, and that is authorship, not tooling.
 
-**`--validate` means something again.**  #45 landed
-(`975ecaf`, coverage-check a class folded into a gathered synopsis).  The check
-that exposed it -- delete `null_term_view::end()`'s `\returns` in the gathered
-arrangement -- now reports two findings where it reported none, and the intact
-header stays clean.  N7 is closed and Step 10's acceptance criterion is
-meaningful again.
+The same round also tightened the template head's namespace drop (`fa9af1c`),
+so `template<std::contiguous_iterator I>` renders as
+`template<contiguous_iterator I>`.  That is the draft's spelling, and it moved
+the committed fragments -- regenerated and committed here, which is D2 working
+as intended.
 
-**`<null_term>` is generated as three clauses.**  The header now carries the
-gathered `\rSec2[null.term.syn]` region, `[null.term.sentinel]` with a
-`\ref` route for the hidden friend, and the existing `[null.term.view]`.
-`papers/wording/` holds `null.term.syn.md`, `null.term.sentinel.md` and
-`null.term.view.md` in document order, and `generate.sh` names the root
-`null.term.syn`.  Validation is clean.
+**Note for anyone regenerating**: the committed fragments now require a specgen
+at or after `b90faa7`.  An older binary reports the fragments as stale over the
+template-head spelling alone.
 
-**D7 cost six comments.**  Since #36, `\expos` on a concept declared in an
-included `detail/` header is honoured at its use sites.  The six concepts are
-marked, the audit in `docs/wording-outline.md` records why each is
-exposition-only, and the qualifier findings fell from nine to three.  Nothing
-moved and nothing was renamed, which is what the turned-around D7 asked for.
+### The gathered-region pattern, closed out
+
+Four defects turned out to be one shape: a marker or a check that works at
+namespace scope and is skipped for a declaration folded into a gathered region.
+N3 (#34, a routed member's description), N7 (#45, coverage checking), N8 (#55,
+declaration masks) and the class-head half of N6 (#48).  All four are fixed, and
+the last of them landed in this round.  It is worth knowing the shape, because
+Steps 5-9 gather `<transcode>`, which is a much larger surface than
+`<null_term>` -- but there is nothing outstanding to work around.
 
 ### Closed
 
-- **U1 / U9 — leakage checker discriminator.**  Fixed 2026-09-04 (`b1054dd`).
-- **U4 / N2 — a deduction guide corrupted a gathered `.syn` synopsis, silently.**
-  Fixed (#22, `4ae6398`).
-- **U5 — a docblock on an in-class hidden friend is not attached.**  Fixed
-  (#20, `199e291`).  Never about hidden friends: the trigger was a
-  requires-clause holding a requires-expression.
-- **U7 — no way to mask a variable's type.**  Fixed (#24, `953e7d4`) — but see
-  N8, which is why `views::null_term` is still `\omit`ted.
-- **U8 — `\expos` on class templates and alias templates.**  Fixed (#23,
-  `64267e8`).
+- **U1 / U9 — leakage checker discriminator.**  #3-era fix, `b1054dd`.
+- **U4 / N2 — a deduction guide corrupted a gathered `.syn` synopsis.**  #22.
+- **U5 — a docblock on an in-class hidden friend is not attached.**  #20.  Never
+  about hidden friends: the trigger was a requires-clause holding a
+  requires-expression.
+- **U7 — no way to mask a variable's type.**  #24, completed by #55.
+- **U8 — `\expos` on class and alias templates.**  #23.
 - **N1 — a constructor's member-initializer list rendered into the synopsis.**
-  Fixed (#21, `619311f`).
-- **N3 — a routed member description was dropped inside a gathered region.**
-  Fixed (#34, `68bbd69`).
-- **N4 — the private-member check was keyed by bare name.**  Fixed (#35,
-  `2e65aa4`).
-- **N5 — a `detail::` name could not be rendered exposition-only from an
-  included header.**  Fixed (#36, `08178e5`).  This is the one that made D7
-  cheap.
+  #21.
+- **N3 — a routed member description dropped inside a gathered region.**  #34.
+- **N4 — the private-member check keyed by bare name.**  #35.
+- **N5 — `detail::` could not render exposition-only from an included header.**
+  #36.  The one that made D7 cheap.
+- **N6 — the exposition-only rename skipped a class template's own
+  requires-clause.**  #48.
 - **N7 — a class folded into a gathered synopsis was not coverage-checked.**
-  Fixed (#45, `975ecaf`).
+  #45.
+- **N8 — bare `\seebelow` on a variable was not applied inside a gathered
+  region.**  #55.
 
 ### Open
 
 - **U2 — `--base-heading-level` on the command line.**  Still absent.  Not
-  blocking: Step 10 can accept flat headings or post-process.
-- **U3 — namespace mapping is automatic.**  Nothing to do.
+  blocking: Step 10 can accept flat headings or post-process, and the plan says
+  which it did.
+- **U3 — namespace mapping is automatic.**  Nothing to do; recorded so no step
+  goes looking for a mapping option that does not exist.
 - **U6 — every generated clause heading warns at paper-build time.**  An mpark
-  warning, not a specgen finding.  **Gates Step 10's** warning-free build.
-- **N6 — an exposition-only rename is not applied in a class template's own
-  requires-clause.**  specgen#48.  The rename reaches every member
-  requires-clause and stops at the class head, so three `detail::` spellings
-  survive, in `random_access_whatwg_decode_view`,
-  `random_access_whatwg_encode_view` and `whatwg_encode_view`.  These are the
-  only qualifier findings left; do not move the concepts to clear them.
-- **N8 — bare `\seebelow` on a variable is not applied inside a gathered
-  region.**  specgen#55.  A customization point object belongs in the header
-  synopsis, so `views::null_term` is inside the region by construction, which is
-  exactly where the masking stops.  Replacing its `\omit` renders the unmasked
-  `inline constexpr detail::null_term_adaptor null_term{};` and a leakage error,
-  so the `\omit` stands with a comment pointing at the issue.  **Gates
-  `[null.term.adaptor]`.**
-
-N6 and N8 are the same shape as N3 and N7 were: a marker or a check that works
-at namespace scope and is skipped for a declaration folded into a gathered
-region.  Worth saying out loud, because Steps 5-9 will adopt gathered regions
-for `<transcode>` too.
+  warning, not a specgen finding.  **Gates Step 10's** warning-free build, and
+  is now the only external item that gates anything.
 
 
 ## Risks

@@ -72,11 +72,12 @@ what is different.
     means the clause is covered rather than unchecked.
   - `views::null_term` is `\omit`ted because its type is
     `detail::null_term_adaptor` and there is no way to render it as
-    `inline constexpr unspecified null_term;`.  specgen#24 fixed the marker,
-    but not inside a gathered region (specgen#55), and a customization point
-    object belongs in the header synopsis by construction.  The `\omit`
-    stands, with a comment in the header pointing at the issue.
-    `[null.term.adaptor]` waits for #55.
+    `inline constexpr unspecified null_term;`.  Both halves are fixed --
+    specgen#24 for the marker, specgen#55 for applying it inside a gathered
+    region -- so the `\omit` is gone and the synopsis carries
+    `inline constexpr $unspecified$ null_term;`.  What is left for
+    `[null.term.adaptor]` is its prose: a `\rSec2` section and the wording for
+    what the adaptor does.  That is authorship, not tooling.
 
   Neither is a header problem, so do not refactor around them; land the rest of
   the clause and pick these up when the upstream items do.
