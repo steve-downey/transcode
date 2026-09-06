@@ -40,6 +40,7 @@
 
 namespace beman::transcoding::detail {
 
+//! \expos
 template <codec C>
 concept random_access_encode_codec =
     C == codec::ibm866 || C == codec::iso_8859_2 || C == codec::iso_8859_3 || C == codec::iso_8859_4 ||
@@ -53,11 +54,13 @@ concept random_access_encode_codec =
 // WHATWG defines a decoder for every codec but an encoder for only some of
 // them: replacement, x-user-defined and the UTF-16 pair decode only. Naming one
 // of those in an encode pipeline is a compile-time error, not a runtime one.
+//! \expos
 template <codec C>
 concept whatwg_encode_codec =
     C == codec::utf_8 || random_access_encode_codec<C> || C == codec::gbk || C == codec::gb18030 || C == codec::big5 ||
     C == codec::shift_jis || C == codec::euc_jp || C == codec::iso_2022_jp || C == codec::euc_kr;
 
+//! \expos
 template <codec C, typename R>
 concept whatwg_encode_input = unicode_scalar_range<R> && whatwg_encode_codec<C>;
 

@@ -1,15 +1,20 @@
+::: wording
+
+## Header `<null_term>` synopsis [null.term.syn]{- .sref} {-}
+
 ```cpp
 struct null_sentinel_t {
+  // @[null.term.sentinel]{- .sref}@, comparison
   template<input_iterator I>
     requires requires(I i) {
       { *i == 0 };
     }
   friend constexpr bool operator==(const I& it, null_sentinel_t);
 };
-```
 
-```cpp
-template<std::contiguous_iterator I>
+inline constexpr null_sentinel_t null_sentinel{};
+
+template<contiguous_iterator I>
 class null_term_view : public ranges::view_interface<null_term_view<I>> {
   I $ptr$; // exposition only
 
@@ -20,4 +25,8 @@ public:
   constexpr I begin() const;
   constexpr null_sentinel_t end() const;
 };
+
+inline constexpr $unspecified$ null_term;
 ```
+
+:::

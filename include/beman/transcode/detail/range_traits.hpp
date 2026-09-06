@@ -53,10 +53,12 @@ struct compatible_sentinel<R, true> {
 template <typename R>
 using compatible_sentinel_t = compatible_sentinel<R>::type;
 
+//! \expos
 template <typename R>
 concept const_iterator_compatible_range =
     std::ranges::range<const R> && std::constructible_from<compatible_iterator_t<R>, std::ranges::iterator_t<const R>>;
 
+//! \expos
 template <typename R>
 concept const_sentinel_compatible_range =
     std::ranges::range<const R> && std::constructible_from<compatible_sentinel_t<R>, std::ranges::sentinel_t<const R>>;

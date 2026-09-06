@@ -67,10 +67,10 @@ subject entirely.
 
 | Stable name | Depth | Title | Entities | Generated from |
 |---|---|---|---|---|
-| `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | `null_term.hpp` |
-| `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | section and route land now; elements blocked on specgen#20 |
+| `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | gathered region, done 2026-09-06 |
+| `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | done 2026-09-06 |
 | `null.term.view` | 2 | Class template `null_term_view` | the constructor, `begin`, `end` | done in Step 1 |
-| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | blocked on index U7 / specgen#24 |
+| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | unblocked 2026-09-06; renders `$unspecified$` in the synopsis, prose outstanding |
 
 Step 1 generates `null.term` (the root, un-gathered) and `null.term.view`.  The
 other two are what Step 4 adds once their upstream items land.
@@ -87,7 +87,10 @@ so no step has to decide twice.
 | `null_term_view::ptr_` | `$ptr$` | the view's state, which the wording refers to |
 | `detail::legacy_byte_type` | `$legacy-byte-type$` | a real conjunct of `legacy_byte_range`; the draft would spell it out |
 | every view's `base_`, `codec_`, `buf_`, iterator state | exposition names | the wording describes what they hold |
-| the closure types (`whatwg_decode_closure` and the seven others) | ideally `unspecified` | blocked on index U7 / specgen#24; see below |
+| the closure types (`whatwg_decode_closure` and the seven others) | ideally `unspecified` | unblocked 2026-09-05; specgen#24 fixed |
+| `detail::const_iterator_compatible_range`, `detail::const_sentinel_compatible_range` | `$const-iterator-compatible-range$`, `$const-sentinel-compatible-range$` | the const-compatibility chain the views constrain `begin`/`end` on |
+| `detail::random_access_decode_codec`, `detail::random_access_encode_codec` | `$random-access-decode-codec$`, `$random-access-encode-codec$` | which codecs are O(1) per element; a property of the specification, not of the tables |
+| `detail::whatwg_encode_codec`, `detail::whatwg_encode_input` | `$whatwg-encode-codec$`, `$whatwg-encode-input$` | WHATWG defines no encoder for some codecs; the constraint says which |
 
 ### Omitted (`\omit`)
 
@@ -95,7 +98,7 @@ so no step has to decide twice.
 |---|---|
 | `random_access_whatwg_decode_view` and the encode and pluggable equivalents | decision W1 below |
 | the `_or_error_view` / `_or_error_closure` alias templates | transition spellings for the pre-unification names, not API |
-| `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; it also triggers index U4 |
+| `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; index U4 no longer applies |
 | `detail::null_term_fn`, `detail::null_term_adaptor` | the adaptor object's type is unspecified |
 | `detail::label_entry`, `label_table` | generated data behind `get_encoding` |
 | `detail::iconv_guard`, `iconv_input_buf` | RAII plumbing |
