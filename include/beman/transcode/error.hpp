@@ -7,7 +7,7 @@
 
 namespace beman::transcoding {
 
-// \rSec2[transcode.errors]{Error types}
+// \ref{transcode.errors}, error types
 
 // whatwg_error — error categories defined by the WHATWG Encoding Standard.
 // Used by whatwg_decode_or_error, whatwg_encode_or_error, and all pluggable

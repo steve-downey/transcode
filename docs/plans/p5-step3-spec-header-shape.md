@@ -108,12 +108,26 @@ for a reason task 2 measured.
   `load()` is a private member, private members are filtered out of the
   synopsis, and no clause extracts a private body.  It is worth doing for the
   headers' own sake, as its own step, and it is what makes task 4 viable.
-- **Task 4, deferred pending that.**  D1 wants one document per proposed
-  standard header so the root fragment is a real `<transcode>` synopsis.  Merged
-  as the headers stand today, that file is about 5,000 lines, over half of it
-  private state machines.  After the pushdown it is roughly 2,500 — the size
-  specgen already handles (`beman.optional` is 2,145).  So the decision is: the
-  merge is right, and it waits on the pushdown rather than being forced now.
+- **Task 4, done 2026-09-07 — and not by merging.**  The measurement the
+  deferral was waiting for came out at ~3,460 lines of declarations across
+  sixteen headers once the pushdown landed, which specgen can handle.  But the
+  merge was never the point: what D1 needs is one *document* per proposed
+  header, and "document" meant "file" only because the tool said so.  specgen
+  now follows the headers `#include`d inside a gathered `.syn` region
+  (specgen#77, PR #78), so `transcode.hpp` carries the region and the component
+  headers stay exactly where they are.  Nothing moved, no include site changed,
+  and `[transcode.syn]` is a generated 1,160-line synopsis of all sixteen.
+
+  That is D7 for the second time: the answer to "the tool cannot see what the
+  library writes" is to fix the tool, not the library.  The first time cost six
+  `\expos` comments instead of a refactor; this time it cost one upstream
+  feature instead of a 3,500-line header.
+
+  Running it on the real library is what found three defects the tool's own
+  corpus could not: a late-instantiated member arriving as a top-level
+  declaration (a private member's body in the synopsis), a function definition
+  folded in with its body, and a body whose spliced range was then re-edited by
+  a qualifier drop.  All three are fixed in PR #78.
 
 ## Acceptance
 

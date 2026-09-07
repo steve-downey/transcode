@@ -63,10 +63,18 @@ worktree, not estimates.  They are what the steps below are sized against.
 
 **D1 — One specgen document per proposed standard header.**  The paper proposes
 `<transcode>` and `<null_term>`.  Each maps to exactly one spec-facing header in
-this repo, and that header is what specgen is run over.  specgen only processes
-declarations located in the main file, so "what is in the file" *is* "what is in
-the synopsis"; one document per proposed header is what makes the root fragment
-a real header synopsis rather than a per-class accident.  Confirmed working
+this repo, and that header is what specgen is run over.
+
+**How a document reaches more than one file, settled 2026-09-07.**  specgen used
+to process only declarations located in the main file, which would have made
+this decision "put the whole of `<transcode>` in one 3,500-line file".  It does
+not: a gathered `.syn` region now gathers the declarations of the headers
+`#include`d inside it (specgen#77, PR #78), so `transcode.hpp` stays the
+umbrella it already was and the sixteen component headers stay where they are.
+The region is the statement of which includes are the specification surface;
+`detail/` includes sit outside it.  This is D7 again -- the tool renders what
+the library writes -- and it is why Step 3's task 4 cost a rewrite of one
+umbrella rather than a rewrite of the library.  Confirmed working
 on 2026-09-05: `<null_term>` renders a real gathered `[null.term.syn]` beside
 its per-class clauses, validating clean.  The fallback this decision carried --
 one document per header family with a hand-authored `[transcode.syn]` -- is
@@ -140,6 +148,12 @@ Steps 4-9 are the same loop nine times: mark up a clause, regenerate, drive
 together.  They are separated by clause so a step is reviewable and so a
 mid-phase stop still leaves the paper buildable.
 
+**Step 3's task 4 is landed** (2026-09-07): `transcode.hpp` is the document for
+`<transcode>`, the sixteen component headers stay where they are, and
+`[transcode.syn]` is a generated 1,160-line header synopsis holding all of them.
+Step 3b's remainder -- the stateful codec pushdown -- landed with it.  See
+`docs/plans/p5-step3-spec-header-shape.md`, "Outcome".
+
 **Step 4 is landed** (2026-09-06), all three clauses, at the price of two
 upstream fixes: `[transcode.errors]` needed specgen to be able to specify an
 enumeration at all, and `[null.term.adaptor]` needed a folded-in declaration's
@@ -187,8 +201,10 @@ qualifier finding anywhere**: `detail::` still reaches no spec-facing header's
 wording.  The three headers Step 4 marked up -- `error.hpp`, `concepts.hpp`,
 `null_term.hpp` -- validate clean, at zero.
 
-**Note for anyone regenerating**: the committed fragments require a specgen at
-or after `b746da6` (#70 and #71 merged).  0.1.0 at `b90faa7` cannot generate
+**Note for anyone regenerating**: the committed fragments require a specgen with
+**PR #78** (a document reaches the headers it includes), which is what makes
+`transcode.hpp` a document at all, and at or after `b746da6` (#70 and #71
+merged) for the two clauses Step 4 wrote.  0.1.0 at `b90faa7` cannot generate
 `transcode.errors.md` or `null.term.adaptor.md` at all and reports them stale.
 A specgen installed from current `main` regenerates every committed fragment
 byte for byte, so no `SPECGEN=` override is needed.

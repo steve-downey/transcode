@@ -14,7 +14,7 @@
 #endif
 namespace beman::transcoding {
 
-// \rSec2[transcode.reqs]{Range requirements}
+// \ref{transcode.reqs}, range requirements
 
 namespace detail {
 
