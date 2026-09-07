@@ -76,8 +76,15 @@ struct null_term_adaptor : null_term_fn {
 
 } // namespace detail
 
+// \ref{null.term.adaptor}, range adaptor object
 namespace views {
 //! \seebelow
+//! \remarks The name `views::null_term` denotes a range adaptor object.  Given
+//! a subexpression `E`, the expression `views::null_term(E)` is
+//! expression-equivalent to `null_term_view(E)` when `E` has pointer type, and
+//! to `null_term_view(static_cast<const T*>(E))` when `E` has array type with
+//! element type `T`.  For any other type it is ill-formed, so that a range
+//! carrying no terminator is a diagnosed error and not a silent one.
 inline constexpr detail::null_term_adaptor null_term{};
 } // namespace views
 
@@ -110,6 +117,8 @@ constexpr null_sentinel_t null_term_view<I>::end() const {
 // ---------------------------------------------------------------------------
 // Out-of-line definitions: null_term_fn
 // ---------------------------------------------------------------------------
+
+// \rSec2[null.term.adaptor]{`views::null_term`}
 
 //! \omit
 template <typename T>

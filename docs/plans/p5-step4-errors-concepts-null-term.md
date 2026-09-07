@@ -101,9 +101,10 @@ what is different.
 
 ## Outcome (2026-09-06)
 
-One of the three clauses is written and generated.  The other two have no
-representable form in specgen today, and both are now filed upstream.  Nothing
-here is a header problem, and no header was changed to suit the tool (D7).
+All three clauses are written and generated.  Two of them had no representable
+form in specgen when the step started; both gaps were filed and fixed upstream
+rather than worked around here, so nothing in this step is a header problem and
+no header was changed to suit the tool (D7).
 
 - **`[transcode.reqs]` — done.**  `concepts.hpp` carries the `\rSec2` marker,
   `\expos` on `detail::legacy_byte_type`, and a *Remarks* on each concept.  The
@@ -123,25 +124,35 @@ here is a header problem, and no header was changed to suit the tool (D7).
   evaluation, so no `constify()` test is owed; `concepts.test.cpp` is already
   entirely `static_assert`s.
 
-- **`[transcode.errors]` — blocked on specgen#68.**  An enumeration cannot be
-  specified at all.  A docblock on one is rejected — `a documented Enum
-  produces no wording: unsupported entity kind` — so the enumerator table has
-  nowhere to live; a gathered `.syn` region renders the declaration and still
-  refuses the docblock; a detached docblock after the enum is dropped silently;
-  and a `\verbatim-itemdecl` block before it attaches to the enum and hits the
-  same error.  There is no fourth spelling, so `error.hpp` is left unmarked.  A
-  `\rSec2[transcode.errors]` marker on its own would render a bare heading,
-  which is worse than an absent clause: the paper would ship an empty one.
+- **`[transcode.errors]` — done, at the price of a specgen fix.**  An
+  enumeration could not be specified at all: a docblock on one was rejected as
+  an unsupported entity kind, a gathered `.syn` region rendered the declaration
+  and still refused the docblock, a detached docblock after the enum was
+  dropped silently, and a `\verbatim-itemdecl` block before it attached to the
+  enum and hit the same error.  There was no fourth spelling, and no way to
+  write the clause.  specgen PR #70 makes an enumeration a documented namespace
+  entity like the others, so `error.hpp` carries one docblock per enum and the
+  clause renders all three declarations with their enumerator meanings.  The
+  meanings are an authored `\item` list rather than the draft's two-column
+  Constant/Meaning table: `\lib2dtab2` is a two-*dimensional* table, a
+  row-heading column plus two columns, so it is the wrong shape, and a flat
+  two-column table is an enhancement nobody has needed yet.
 
-- **`[null.term.adaptor]` — blocked on specgen#69.**  The prose was not written
-  into the header.  A docblock on `views::null_term` renders its declaration in
-  the gathered synopsis and discards its description without a diagnostic, so
-  authoring it now would commit wording that nothing shows and would move the
-  fragments on an unrelated regeneration the day the fix lands.  The
-  declaration itself already renders as
-  `inline constexpr $unspecified$ null_term;`, which is what the draft writes;
-  it is only the paragraph saying what `views::null_term(E)` is
-  expression-equivalent to that is held.
+- **`[null.term.adaptor]` — done, at the price of the other one.**  A docblock
+  on `views::null_term` rendered its declaration in the gathered synopsis and
+  discarded its description without a diagnostic.  specgen PR #71 routes a
+  folded-in declaration's wording the way a folded-in class's members are
+  already routed, so the header now carries a `\ref{null.term.adaptor}` group
+  header — which renders in the synopsis, as the draft writes it — and the
+  prose reaches the clause.  The declaration stays where the draft puts it,
+  `inline constexpr $unspecified$ null_term;` in `[null.term.syn]`.
+
+  Writing that paragraph turned up one thing worth knowing: `views::null_term`
+  applied to an array yields `null_term_view<const T*>`, not
+  `null_term_view<T*>`, because the array overload casts to `const T*`.  The
+  wording says so, since the wording says what the code does.  Whether the
+  added `const` is deliberate is a question for the library, not for the
+  clause.
 
 Generating the clause also caught a drift the paper had already: its "Concepts"
 section shows both concepts constrained on `ranges::input_range`, and
@@ -151,13 +162,11 @@ the truth, so the authored prose is what is wrong; it is recorded as a task in
 to match a paragraph.
 
 Both upstream items are described in `docs/plans/phase5-index.md` under
-"External dependencies".  specgen#69 is the fifth instance of the
+"External dependencies", with the note that regenerating now needs a specgen
+built from those two branches.  specgen#69 is the fifth instance of the
 gathered-region pattern that section had recorded as closed out, which is worth
 knowing for Steps 5-9: they gather a much larger surface, a dropped element is
 silent, and a clean `--validate` does not prove an authored paragraph arrived.
 Read the fragment.
 
-**Step 5 is not blocked by either** and can start.  When specgen#68 lands,
-`[transcode.errors]` is one docblock with three `\lib2dtab2` tables on
-`error.hpp` plus a line in `generate.sh`; when specgen#69 lands,
-`[null.term.adaptor]` is a `\rSec2` marker and one paragraph.
+**Step 5 can start.**

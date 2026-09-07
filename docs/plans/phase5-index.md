@@ -140,11 +140,11 @@ Steps 4-9 are the same loop nine times: mark up a clause, regenerate, drive
 together.  They are separated by clause so a step is reviewable and so a
 mid-phase stop still leaves the paper buildable.
 
-**Step 4 is partly landed** (2026-09-06): `[transcode.reqs]` is written and
-generated; `[transcode.errors]` and `[null.term.adaptor]`'s prose are held by
-specgen#68 and specgen#69 below.  Step 5 does not depend on either, so the
-sequence continues; see `docs/plans/p5-step4-errors-concepts-null-term.md`,
-"Outcome".
+**Step 4 is landed** (2026-09-06), all three clauses, at the price of two
+upstream fixes: `[transcode.errors]` needed specgen to be able to specify an
+enumeration at all, and `[null.term.adaptor]` needed a folded-in declaration's
+description to reach its clause.  Both are written and open as specgen PRs #70
+and #71; see `docs/plans/p5-step4-errors-concepts-null-term.md`, "Outcome".
 
 ## Standing conventions
 
@@ -177,8 +177,15 @@ any spec-facing header.
 Step 4 then wrote the first clauses against that binary and filed two more, both
 about an entity kind that has no representable wording at all rather than a
 rendering defect: **specgen#68** (an enumeration) and **specgen#69** (a variable
-described inside a gathered region).  They are in "Open" below, with what each
-one blocks.
+described inside a gathered region).  **Both are fixed** -- specgen PR #70 and
+PR #71, open at the time of writing -- and Step 4's three clauses are written
+against them.
+
+**Note for anyone regenerating**: the committed fragments now require a specgen
+built from those two branches (or from a `main` that has merged them).  With
+0.1.0 at `b90faa7`, `make wording-check` reports `transcode.errors.md` and
+`null.term.adaptor.md` as stale, because that binary cannot generate them at
+all.  `SPECGEN=<path> make wording-check` points at a build that can.
 
 - **N6 closed** (#48, `fa9af1c`).  The exposition-only rename now reaches a
   class template's own requires-clause, which was the last three qualifier
@@ -210,13 +217,13 @@ the last of them landed in this round.  It is worth knowing the shape, because
 Steps 5-9 gather `<transcode>`, which is a much larger surface than
 `<null_term>`.
 
-The shape is not closed out after all: **specgen#69 is the fifth of them**, one
-entity kind further on.  A namespace-scope variable folded into a gathered
-region keeps its declaration and its masks and loses its description, silently.
-Steps 5-9 should expect to meet the pattern again for every kind they gather,
-and to check that an authored element actually reached the clause rather than
-trusting a clean `--validate`: the roster of a dropped entity is empty, so
-coverage has nothing to report.
+The shape was not closed out after all: **specgen#69 was the fifth of them**,
+one entity kind further on -- a namespace-scope variable folded into a region
+kept its declaration and its masks and lost its description, silently.  It is
+fixed too, and the lesson stands for Steps 5-9, which gather a much larger
+surface: check that an authored element actually reached the clause rather than
+trusting a clean `--validate`.  The roster of a dropped entity is empty, so
+coverage has nothing to report about it.
 
 ### Closed
 
@@ -242,6 +249,10 @@ coverage has nothing to report.
 
 ### Open
 
+The two Step 4 items below are fixed upstream and are kept here until their
+pull requests merge, because until then a regenerating machine needs to be
+told which binary to use.
+
 - **U2 — `--base-heading-level` on the command line.**  Still absent.  Not
   blocking: Step 10 can accept flat headings or post-process, and the plan says
   which it did.
@@ -249,8 +260,10 @@ coverage has nothing to report.
   goes looking for a mapping option that does not exist.
 - **U6 — every generated clause heading warns at paper-build time.**  An mpark
   warning, not a specgen finding.  **Gates Step 10's** warning-free build.
-- **specgen#68 — a documented enumeration produces no wording.**  Filed
-  2026-09-06 by Step 4.  A docblock on an `enum class` is rejected as an
+- **specgen#68 — a documented enumeration produces no wording.**  Filed and
+  fixed 2026-09-06 by Step 4 (specgen PR #70); an enumeration is a documented
+  namespace entity like the others, its declaration is the itemdecl and its
+  description says what the enumerators mean.  What follows is what it blocked.  A docblock on an `enum class` is rejected as an
   unsupported entity kind; a gathered region renders the declaration but the
   description is still refused, and there is no third spelling.  **Blocks
   [transcode.errors]** completely: three enumerations whose wording is a table
@@ -259,7 +272,10 @@ coverage has nothing to report.
   entity kind.  This is the one item in the phase that blocks a clause outright
   rather than delaying part of one.
 - **specgen#69 — a documented variable's description is dropped inside a
-  gathered region, and `\at` does not route it.**  Filed 2026-09-06 by Step 4.
+  gathered region, and `\at` does not route it.**  Filed and fixed 2026-09-06 by
+  Step 4 (specgen PR #71); a described namespace entity's wording travels to the
+  section `\at` names, else to the one its `\ref` group header names, else out
+  beside the synopsis.  What follows is what it blocked.
   **Blocks [null.term.adaptor]'s prose**, and only that: `views::null_term`
   already renders as `inline constexpr $unspecified$ null_term;` in the
   synopsis.  A range adaptor object is the case with no way around it -- it is a
