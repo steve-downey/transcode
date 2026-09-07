@@ -62,6 +62,33 @@ struct iso2022jp_decode_result {
 template <typename I, typename S>
 constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& st, I& current, S end);
 
+// The encoder's state between calls: the mode the output stream is currently
+// in, which decides whether a code point needs an escape sequence in front of
+// it.  0=ASCII, 1=Roman, 2=JIS X 0208.
+struct iso2022jp_encode_state {
+    int state{0};
+
+    friend constexpr bool operator==(const iso2022jp_encode_state& lhs, const iso2022jp_encode_state& rhs) {
+        return lhs.state == rhs.state;
+    }
+};
+
+// Up to an escape sequence and the two bytes it introduces.  On an unmapped
+// code point `bytes` is what a lossy encoder writes instead, which is why the
+// error carries bytes at all: returning to ASCII is part of the replacement.
+struct iso2022jp_encode_result {
+    char bytes[5]{};
+    int  count{0};
+    bool is_error{false};
+};
+
+// Encode one code point, updating `st`.
+constexpr iso2022jp_encode_result iso2022jp_encode_one(iso2022jp_encode_state& st, char32_t cp);
+
+// The escape back to ASCII that an exhausted input owes, and `count == 0` when
+// the stream is already there.  WHATWG's encoder ends in ASCII mode.
+constexpr iso2022jp_encode_result iso2022jp_encode_flush(iso2022jp_encode_state& st);
+
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
 // ---------------------------------------------------------------------------
@@ -198,6 +225,52 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
             return {0xFFFD, whatwg_error::invalid_byte, true, false};
         }
     }
+}
+
+constexpr iso2022jp_encode_result iso2022jp_encode_one(iso2022jp_encode_state& st, char32_t cp) {
+    // Roman state: U+00A5 (YEN SIGN) and U+203E (OVERLINE) are the two code
+    // points ASCII spells differently.
+    if (cp == 0x00A5 || cp == 0x203E) {
+        const char ascii_byte = (cp == 0x00A5) ? '\x5C' : '\x7E';
+        if (st.state != 1) {
+            st.state = 1;
+            return {{'\x1B', '\x28', '\x4A', ascii_byte}, 4, false};
+        }
+        return {{ascii_byte}, 1, false};
+    }
+    if (cp < 0x80) {
+        const char ascii_byte = static_cast<char>(cp);
+        if (st.state != 0) {
+            st.state = 0;
+            return {{'\x1B', '\x28', '\x42', ascii_byte}, 4, false};
+        }
+        return {{ascii_byte}, 1, false};
+    }
+    for (int i = 0; i < 8836; ++i) {
+        if (tables::shift_jis[i] == cp) {
+            const auto lead  = static_cast<char>((i / 94) + 0x21);
+            const auto trail = static_cast<char>((i % 94) + 0x21);
+            if (st.state != 2) {
+                st.state = 2;
+                return {{'\x1B', '\x24', '\x42', lead, trail}, 5, false};
+            }
+            return {{lead, trail}, 2, false};
+        }
+    }
+    // Unmapped.  The lossy encoder returns to ASCII before substituting, so the
+    // replacement carries the escape sequence with it.
+    if (st.state != 0) {
+        st.state = 0;
+        return {{'\x1B', '\x28', '\x42', '?'}, 4, true};
+    }
+    return {{'?'}, 1, true};
+}
+
+constexpr iso2022jp_encode_result iso2022jp_encode_flush(iso2022jp_encode_state& st) {
+    if (st.state == 0)
+        return {};
+    st.state = 0;
+    return {{'\x1B', '\x28', '\x42'}, 3, false};
 }
 
 } // namespace beman::transcoding::detail

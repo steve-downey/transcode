@@ -7,6 +7,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_WHATWG_ENCODE_SELECT_HPP
 
 #include <beman/transcode/codec.hpp>
+#include <beman/transcode/detail/iso2022jp.hpp>
 #include <beman/transcode/concepts.hpp>
 #include <beman/transcode/config.hpp>
 
@@ -39,6 +40,27 @@
 #include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
 
 namespace beman::transcoding::detail {
+
+// What an encode of C has to remember between calls, which for every codec but
+// ISO-2022-JP is nothing: an encoder that writes a self-delimiting sequence
+// starts each call in the same place.  The view's iterator holds one of these
+// and compares it, so the iterator declares no codec-specific field.
+struct no_encode_state {
+    friend constexpr bool operator==(const no_encode_state&, const no_encode_state&) { return true; }
+};
+
+template <codec C>
+struct encode_state_of {
+    using type = no_encode_state;
+};
+
+template <>
+struct encode_state_of<codec::iso_2022_jp> {
+    using type = iso2022jp_encode_state;
+};
+
+template <codec C>
+using encode_state_t = encode_state_of<C>::type;
 
 //! \expos
 template <codec C>
