@@ -97,6 +97,8 @@ build_include=${BEMAN_TRANSCODE_BUILD_INCLUDE:-$repo_root/.build/build-system/in
 # adding a header means adding a line here.
 spec_headers() {
     cat <<'HEADERS'
+include/beman/transcode/error.hpp|transcode.errors
+include/beman/transcode/concepts.hpp|transcode.reqs
 include/beman/transcode/null_term.hpp|null.term.syn
 HEADERS
 }

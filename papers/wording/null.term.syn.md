@@ -26,6 +26,8 @@ public:
   constexpr null_sentinel_t end() const;
 };
 
+// @[null.term.adaptor]{- .sref}@, range adaptor object
+
 inline constexpr $unspecified$ null_term;
 ```
 

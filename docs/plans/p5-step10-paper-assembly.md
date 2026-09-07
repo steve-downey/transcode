@@ -45,7 +45,15 @@ make drift between the headers and the paper a CI failure.
 6. **Full-document validation.**  `specgen render --validate` over every
    spec-facing header must be clean, with no allowlist: U1 landed upstream on
    2026-09-04 and the `ranges` noise it excused is gone.
-7. **Bump the paper's revision** and update the abstract to say the wording is
+7. **Reconcile the design sections against the generated clauses.**  The
+   authored prose was written before the wording existed and has drifted from
+   it in at least one place: the "Concepts" section shows both
+   `legacy_byte_range` and `unicode_scalar_range` constrained on
+   `ranges::input_range`, and `legacy_byte_range` is defined on
+   `ranges::range` (found while writing `[transcode.reqs]` in Step 4).  Read
+   every hand-written code block in the paper against its generated clause; the
+   generated one is the truth.
+8. **Bump the paper's revision** and update the abstract to say the wording is
    generated from the reference implementation — that is a claim reviewers
    should be able to check, and it is the phase's headline.
 

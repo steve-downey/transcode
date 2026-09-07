@@ -140,6 +140,12 @@ Steps 4-9 are the same loop nine times: mark up a clause, regenerate, drive
 together.  They are separated by clause so a step is reviewable and so a
 mid-phase stop still leaves the paper buildable.
 
+**Step 4 is landed** (2026-09-06), all three clauses, at the price of two
+upstream fixes: `[transcode.errors]` needed specgen to be able to specify an
+enumeration at all, and `[null.term.adaptor]` needed a folded-in declaration's
+description to reach its clause.  Both are merged (specgen #70 and #71); see
+`docs/plans/p5-step4-errors-concepts-null-term.md`, "Outcome".
+
 ## Standing conventions
 
 - Branch and worktree per step, rooted from `main`, per `CLAUDE.md`.
@@ -162,11 +168,40 @@ mid-phase stop still leaves the paper buildable.
 These are upstream changes to specgen.  They are tracked here because they gate
 transcode steps, but they are executed in the specgen repository.
 
-**Re-measured 2026-09-06 (evening)** against specgen at `b90faa7`.  **Every
-defect this project has filed is closed, and there are no open specgen issues
-at all.**  114 findings across the eleven spec-facing headers, from 117, and
-**no qualifier finding anywhere**: `detail::` no longer reaches the wording from
-any spec-facing header.
+**Re-measured 2026-09-07** against specgen at `1b4e10f`.  **Every defect this
+project has filed is closed**, including the two Step 4 filed -- #68 (an
+enumeration produced no wording) and #69 (a folded-in declaration's description
+was dropped), fixed by specgen PRs #70 and #71, both merged.  The same round
+brought one change of specgen's own, #72, which sizes each sentinel to the text
+that replaces it; it moves no fragment of this paper.
+
+**163 findings across the seventeen spec-facing headers**, and the *same* 163
+the previous binary reports on the same headers: the update unblocked two
+clauses and moved nothing else.  The 114 this section used to quote counted a
+smaller set of headers, so the two numbers are not comparable -- what the count
+is for is the size of Steps 5-9's worklist, which makes the denominator worth
+writing down.  All 163 are coverage or leakage findings against clauses nobody
+has written yet: 117 "declared in the synopsis but is not described", 42 "used
+in wording but is not a documented entity", 4 unmarked private members.  **No
+qualifier finding anywhere**: `detail::` still reaches no spec-facing header's
+wording.  The three headers Step 4 marked up -- `error.hpp`, `concepts.hpp`,
+`null_term.hpp` -- validate clean, at zero.
+
+**Note for anyone regenerating**: the committed fragments require a specgen at
+or after `b746da6` (#70 and #71 merged).  0.1.0 at `b90faa7` cannot generate
+`transcode.errors.md` or `null.term.adaptor.md` at all and reports them stale.
+A specgen installed from current `main` regenerates every committed fragment
+byte for byte, so no `SPECGEN=` override is needed.
+
+The recheck also found three things and filed all three, none of which moves a
+fragment of this paper: specgen PR #75 (a route this project's own clause
+depends on could name a section that does not exist and lose its paragraph
+silently -- the check a class member already had), PR #76 (`\expos` and
+`\seebelow` on an enumeration, the two markers #70 left behind), and issue #74
+(the draft's enumerator table is two columns flat and only the
+two-dimensional table exists).  The first two are defects in what this project
+asked for last round, which is what a recheck is for; the third is why
+`[transcode.errors]` states its enumerator meanings as an `\item` list.
 
 - **N6 closed** (#48, `fa9af1c`).  The exposition-only rename now reaches a
   class template's own requires-clause, which was the last three qualifier
@@ -184,19 +219,19 @@ so `template<std::contiguous_iterator I>` renders as
 the committed fragments -- regenerated and committed here, which is D2 working
 as intended.
 
-**Note for anyone regenerating**: the committed fragments now require a specgen
-at or after `b90faa7`.  An older binary reports the fragments as stale over the
-template-head spelling alone.
+### The gathered-region pattern
 
-### The gathered-region pattern, closed out
-
-Four defects turned out to be one shape: a marker or a check that works at
+**Five** defects turned out to be one shape: a marker or a check that works at
 namespace scope and is skipped for a declaration folded into a gathered region.
 N3 (#34, a routed member's description), N7 (#45, coverage checking), N8 (#55,
-declaration masks) and the class-head half of N6 (#48).  All four are fixed, and
-the last of them landed in this round.  It is worth knowing the shape, because
-Steps 5-9 gather `<transcode>`, which is a much larger surface than
-`<null_term>` -- but there is nothing outstanding to work around.
+declaration masks), the class-head half of N6 (#48), and #69 (a namespace
+entity's whole description).  All five are fixed.  Each of the first four was
+recorded here as the last of them, which is the reason to keep the shape
+written down rather than the count: Steps 5-9 gather `<transcode>`, a far
+larger surface than `<null_term>`, and the failure mode is silent.  A dropped
+entity has an empty roster, so coverage has nothing to report about it, and a
+clean `--validate` does not prove an authored paragraph arrived.  Read the
+fragment.
 
 ### Closed
 
@@ -219,17 +254,44 @@ Steps 5-9 gather `<transcode>`, which is a much larger surface than
   #45.
 - **N8 — bare `\seebelow` on a variable was not applied inside a gathered
   region.**  #55.
+- **specgen#68 — a documented enumeration produced no wording.**  #70,
+  `f64f043`.  A docblock on an `enum class` was rejected as an unsupported
+  entity kind, and there was no other spelling: a gathered region rendered the
+  declaration and still refused the docblock, a detached docblock was dropped,
+  and a `\verbatim-itemdecl` before the enum attached to it and hit the same
+  error.  An enumeration is now a documented namespace entity like the others,
+  its declaration is the itemdecl and its description says what the enumerators
+  mean.  `[transcode.errors]` could not be written at all without it.
+- **specgen#69 — a folded-in declaration's description was dropped, and `\at`
+  did not route it.**  #71, `b746da6`.  A described namespace entity's wording
+  now travels to the section `\at` names, else to the one its `\ref` group
+  header names, else out beside the synopsis.  `[null.term.adaptor]` is the
+  clause that needed it, and a range adaptor object is the case with no way
+  around it: a variable with an initializer has no out-of-line definition to
+  carry a description into a later clause, and moving its declaration out of
+  the region would take it out of the header synopsis.
 
 ### Open
 
-- **U2 — `--base-heading-level` on the command line.**  Still absent.  Not
-  blocking: Step 10 can accept flat headings or post-process, and the plan says
-  which it did.
+- **U2 — `--base-heading-level` on the command line.**  Still absent at
+  `1b4e10f`; `render --help` lists `--backend`, `--validate`, `--paper`,
+  `--split`, `--root` and `-o`, and nothing else.  Not blocking: Step 10 can
+  accept flat headings or post-process, and the plan says which it did.
 - **U3 — namespace mapping is automatic.**  Nothing to do; recorded so no step
   goes looking for a mapping option that does not exist.
+- **specgen#74 — an enumerator table is two columns flat, and only the
+  two-dimensional table exists.**  Filed 2026-09-07.  `\lib2dtab2` is a
+  row-heading column plus two columns; [fs.enum.file.type] prints Constant and
+  Meaning and nothing else.  Not blocking: `[transcode.errors]` says the same
+  thing in the same order as an authored `\item` list, and Step 10 can decide
+  whether the paper wants the draft's shape badly enough to wait for it.
 - **U6 — every generated clause heading warns at paper-build time.**  An mpark
-  warning, not a specgen finding.  **Gates Step 10's** warning-free build, and
-  is now the only external item that gates anything.
+  warning, not a specgen finding: `stable name <x> not found`, once per clause,
+  now six of them (`transcode.errors`, `transcode.reqs`, `null.term.syn`,
+  `null.term.sentinel`, `null.term.view`, `null.term.adaptor`).  It is what a
+  stable name that is not in the draft yet looks like, so it will be one per
+  clause the phase adds.  **Gates Step 10's** warning-free build, and is the
+  only external item still gating anything.
 
 
 ## Risks

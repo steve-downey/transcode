@@ -96,3 +96,79 @@ what is different.
   absolute.
 - `make wording-check`, `make lint`, `make test` green.
 - The paper builds and the three clauses appear in it.
+
+---
+
+## Outcome (2026-09-06)
+
+All three clauses are written and generated.  Two of them had no representable
+form in specgen when the step started; both gaps were filed and fixed upstream
+rather than worked around here, so nothing in this step is a header problem and
+no header was changed to suit the tool (D7).
+
+- **`[transcode.reqs]` — done.**  `concepts.hpp` carries the `\rSec2` marker,
+  `\expos` on `detail::legacy_byte_type`, and a *Remarks* on each concept.  The
+  clause renders the exposition-only conjunct spelled out, then each concept
+  with its paragraph; `--validate` is clean, and
+  `papers/wording/transcode.reqs.md` is the first `<transcode>` fragment in
+  `wording.mk`.
+
+  Neither paragraph restates its definition — the definition is generated from
+  the header and says what it says.  They carry what it cannot: why an array
+  type is excluded (the terminating null character of a string literal is not
+  transcoded with the rest of the array), and that `unicode_scalar_range`
+  constrains the type of a range and not its values, so that each element being
+  a Unicode scalar value is a precondition of the operations that encode it.
+  That is the same order the negative compile tests state the constraints in,
+  as this step asked.  Neither element claims anything about constant
+  evaluation, so no `constify()` test is owed; `concepts.test.cpp` is already
+  entirely `static_assert`s.
+
+- **`[transcode.errors]` — done, at the price of a specgen fix.**  An
+  enumeration could not be specified at all: a docblock on one was rejected as
+  an unsupported entity kind, a gathered `.syn` region rendered the declaration
+  and still refused the docblock, a detached docblock after the enum was
+  dropped silently, and a `\verbatim-itemdecl` block before it attached to the
+  enum and hit the same error.  There was no fourth spelling, and no way to
+  write the clause.  specgen #70 makes an enumeration a documented namespace
+  entity like the others, so `error.hpp` carries one docblock per enum and the
+  clause renders all three declarations with their enumerator meanings.  The
+  meanings are an authored `\item` list rather than the draft's two-column
+  Constant/Meaning table: `\lib2dtab2` is a two-*dimensional* table, a
+  row-heading column plus two columns, so it is the wrong shape.  A flat
+  two-column table is specgen#74, filed on the recheck and not blocking -- the
+  list says the same thing in the same order.
+
+- **`[null.term.adaptor]` — done, at the price of the other one.**  A docblock
+  on `views::null_term` rendered its declaration in the gathered synopsis and
+  discarded its description without a diagnostic.  specgen #71 routes a
+  folded-in declaration's wording the way a folded-in class's members are
+  already routed, so the header now carries a `\ref{null.term.adaptor}` group
+  header — which renders in the synopsis, as the draft writes it — and the
+  prose reaches the clause.  The declaration stays where the draft puts it,
+  `inline constexpr $unspecified$ null_term;` in `[null.term.syn]`.
+
+  Writing that paragraph turned up one thing worth knowing: `views::null_term`
+  applied to an array yields `null_term_view<const T*>`, not
+  `null_term_view<T*>`, because the array overload casts to `const T*`.  The
+  wording says so, since the wording says what the code does.  Whether the
+  added `const` is deliberate is a question for the library, not for the
+  clause.
+
+Generating the clause also caught a drift the paper had already: its "Concepts"
+section shows both concepts constrained on `ranges::input_range`, and
+`legacy_byte_range` is defined on `ranges::range`.  The generated wording is now
+the truth, so the authored prose is what is wrong; it is recorded as a task in
+`docs/plans/p5-step10-paper-assembly.md` rather than fixed by changing a concept
+to match a paragraph.
+
+Both upstream items are described in `docs/plans/phase5-index.md` under
+"External dependencies".  They merged on 2026-09-07, and regenerating needs a
+specgen at or after `b746da6`; an installed one from current specgen `main`
+reproduces every committed fragment byte for byte.  specgen#69 is the fifth instance of the
+gathered-region pattern that section had recorded as closed out, which is worth
+knowing for Steps 5-9: they gather a much larger surface, a dropped element is
+silent, and a clean `--validate` does not prove an authored paragraph arrived.
+Read the fragment.
+
+**Step 5 can start.**

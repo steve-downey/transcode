@@ -42,8 +42,8 @@ markers in the source, which is the order below.
 |---|---|---|---|---|
 | `transcode.general` | — | General | scope, terms, the byte/scalar model | authored in the paper |
 | `transcode.syn` | root | Header `<transcode>` synopsis | everything below, gathered | the header's declaration region |
-| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error`, `transcode_error_kind` | `error.hpp` |
-| `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` |
+| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error`, `transcode_error_kind` | `error.hpp`, done 2026-09-06 |
+| `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp`, done 2026-09-06 |
 | `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp` |
 | `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `detail/labels.hpp` |
 | `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp` |
@@ -70,10 +70,13 @@ subject entirely.
 | `null.term.syn` | root | Header `<null_term>` synopsis | `null_sentinel_t`, `null_sentinel`, `null_term_view`, `views::null_term` | gathered region, done 2026-09-06 |
 | `null.term.sentinel` | 2 | Class `null_sentinel_t` | the hidden friend `operator==` | done 2026-09-06 |
 | `null.term.view` | 2 | Class template `null_term_view` | the constructor, `begin`, `end` | done in Step 1 |
-| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | unblocked 2026-09-06; renders `$unspecified$` in the synopsis, prose outstanding |
+| `null.term.adaptor` | 2 | `views::null_term` | the range adaptor object | done 2026-09-06; `$unspecified$` in the synopsis, routed prose in the clause |
 
-Step 1 generates `null.term` (the root, un-gathered) and `null.term.view`.  The
-other two are what Step 4 adds once their upstream items land.
+Step 1 generates `null.term` (the root, un-gathered) and `null.term.view`.
+`null.term.sentinel` landed with the gathered region, and `null.term.adaptor`
+in Step 4: its declaration is folded into the synopsis and a
+`\ref{null.term.adaptor}` group header routes its prose to the clause, which is
+what specgen#69 made possible.
 
 ## Exposition-only, omitted, and not proposed
 
@@ -85,7 +88,7 @@ so no step has to decide twice.
 | Entity | Rendered as | Why |
 |---|---|---|
 | `null_term_view::ptr_` | `$ptr$` | the view's state, which the wording refers to |
-| `detail::legacy_byte_type` | `$legacy-byte-type$` | a real conjunct of `legacy_byte_range`; the draft would spell it out |
+| `detail::legacy_byte_type` | `$legacy-byte-type$` | a real conjunct of `legacy_byte_range`; the draft would spell it out.  Marked in Step 4 |
 | every view's `base_`, `codec_`, `buf_`, iterator state | exposition names | the wording describes what they hold |
 | the closure types (`whatwg_decode_closure` and the seven others) | ideally `unspecified` | unblocked 2026-09-05; specgen#24 fixed |
 | `detail::const_iterator_compatible_range`, `detail::const_sentinel_compatible_range` | `$const-iterator-compatible-range$`, `$const-sentinel-compatible-range$` | the const-compatibility chain the views constrain `begin`/`end` on |

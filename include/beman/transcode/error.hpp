@@ -7,11 +7,26 @@
 
 namespace beman::transcoding {
 
+// \rSec2[transcode.errors]{Error types}
+
 // whatwg_error — error categories defined by the WHATWG Encoding Standard.
 // Used by whatwg_decode_or_error, whatwg_encode_or_error, and all pluggable
 // codec _or_error views (decode_or_error_view, encode_or_error_view).
 // Pluggable codecs adopt WHATWG error semantics as the common framework;
 // custom codec decode_one() and encode_one() return these values directly.
+//! \remarks An operation that fails to decode or to encode reports one of
+//! these values.  The enumerators have the following meanings:
+//! \item `invalid_byte` -- the input holds a byte the encoding does not allow
+//! in that position.
+//! \item `truncated_sequence` -- the input ends in the middle of a sequence.
+//! \item `overlong_encoding` -- the sequence encodes a value that a shorter
+//! sequence also encodes.
+//! \item `surrogate_code_point` -- the sequence encodes a surrogate code
+//! point, which is not a Unicode scalar value.
+//! \item `out_of_range` -- the sequence encodes a value greater than the
+//! largest Unicode scalar value.
+//! \item `unmapped_codepoint` -- the encoding has no representation for the
+//! Unicode scalar value being encoded.
 enum class whatwg_error {
     invalid_byte,
     truncated_sequence,
@@ -26,6 +41,15 @@ enum class whatwg_error {
 // Kept separate from whatwg_error because iconv reports at the OS level:
 // EILSEQ (invalid_sequence), EINVAL (incomplete_sequence), E2BIG (output_full).
 // The OS cannot distinguish WHY a byte sequence is invalid, only that it is.
+//! \remarks An `iconv` conversion that fails reports one of these values,
+//! which are the three failures POSIX `iconv` distinguishes.  The enumerators
+//! have the following meanings:
+//! \item `invalid_sequence` -- the input is not valid in the source encoding,
+//! or has no representation in the destination encoding (`EILSEQ`).
+//! \item `incomplete_sequence` -- the input ends in the middle of a multibyte
+//! sequence (`EINVAL`).
+//! \item `output_full` -- the conversion has no room left to write its result
+//! (`E2BIG`).
 enum class iconv_error {
     invalid_sequence,
     incomplete_sequence,
@@ -40,6 +64,14 @@ enum class iconv_error {
 //
 //   replacement — substitute U+FFFD on decode, '?' on encode
 //   expected    — the value type becomes expected<T, whatwg_error>
+//! \remarks A view's error kind says how it reports a failure of the codec it
+//! drives.  The enumerators have the following meanings:
+//! \item `replacement` -- a failure to decode yields U+FFFD REPLACEMENT
+//! CHARACTER and a failure to encode yields `'?'`, and the view's value type
+//! is the codec's own.
+//! \item `expected` -- the view's value type is
+//! `expected<T, whatwg_error>`, and a failure yields an `unexpected` holding
+//! the error that occurred.
 enum class transcode_error_kind {
     replacement,
     expected,
