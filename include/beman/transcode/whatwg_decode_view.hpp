@@ -430,105 +430,17 @@ constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
         else
             value_ = r.code_point;
     } else if constexpr (C == codec::utf_16be || C == codec::utf_16le) {
-        unsigned char b0;
-        unsigned char b1;
-        if (state_.pending_count > 0) {
-            b0                   = state_.pending[0];
-            b1                   = state_.pending[1];
-            state_.pending_count = 0;
-        } else {
-            b0 = static_cast<unsigned char>(*current_);
-            ++current_;
-            if (current_ == end_) {
-                value_ = error_result(whatwg_error::truncated_sequence);
-                return;
-            }
-            b1 = static_cast<unsigned char>(*current_);
-            ++current_;
-        }
-        char16_t unit;
-        if constexpr (C == codec::utf_16be)
-            unit = static_cast<char16_t>((static_cast<unsigned>(b0) << 8) | b1);
-        else
-            unit = static_cast<char16_t>((static_cast<unsigned>(b1) << 8) | b0);
-
-        if (unit >= 0xD800 && unit <= 0xDBFF) {
-            if (current_ == end_) {
-                value_ = error_result(whatwg_error::truncated_sequence);
-                return;
-            }
-            auto b2 = static_cast<unsigned char>(*current_);
-            ++current_;
-            if (current_ == end_) {
-                value_ = error_result(whatwg_error::truncated_sequence);
-                return;
-            }
-            auto b3 = static_cast<unsigned char>(*current_);
-            ++current_;
-            char16_t low;
-            if constexpr (C == codec::utf_16be)
-                low = static_cast<char16_t>((static_cast<unsigned>(b2) << 8) | b3);
-            else
-                low = static_cast<char16_t>((static_cast<unsigned>(b3) << 8) | b2);
-            if (low >= 0xDC00 && low <= 0xDFFF) {
-                value_ = 0x10000 + ((static_cast<char32_t>(unit - 0xD800) << 10) | (low - 0xDC00));
-            } else {
-                value_               = error_result(whatwg_error::surrogate_code_point);
-                state_.pending[0]    = b2;
-                state_.pending[1]    = b3;
-                state_.pending_count = 2;
-            }
-        } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
-            value_ = error_result(whatwg_error::surrogate_code_point);
-        } else {
-            value_ = static_cast<char32_t>(unit);
-        }
-    } else if constexpr (C == codec::gbk || C == codec::gb18030) {
-        if (state_.replay_pos < state_.replay_count) {
-            auto byte = state_.replay[state_.replay_pos++];
-            if (state_.replay_pos == state_.replay_count) {
-                state_.replay_count = 0;
-                state_.replay_pos   = 0;
-            }
-            if (byte < 0x80) {
-                value_ = static_cast<char32_t>(byte);
-            } else {
-                unsigned char buf[4];
-                buf[0]    = byte;
-                int count = 1;
-                while (count < 4 && current_ != end_) {
-                    buf[count++] = static_cast<unsigned char>(*current_);
-                    ++current_;
-                }
-                const unsigned char* bp   = buf;
-                const unsigned char* be   = buf + count;
-                auto                 r    = detail::gb18030_decode_one(bp, be);
-                int                  left = static_cast<int>(be - bp);
-                if (left > 0) {
-                    state_.replay_count = left;
-                    state_.replay_pos   = 0;
-                    for (int i = 0; i < left; ++i)
-                        state_.replay[i] = bp[i];
-                }
-                if (r.is_error)
-                    value_ = error_result(r.error);
-                else
-                    value_ = r.code_point;
-            }
-            return;
-        }
-        auto r = detail::gb18030_decode_one(current_, end_);
-        if (r.is_error) {
+        auto r = detail::utf16_decode_one<C == codec::utf_16be>(state_, current_, end_);
+        if (r.is_error)
             value_ = error_result(r.error);
-            if (r.replay_count > 0) {
-                state_.replay_count = r.replay_count;
-                state_.replay_pos   = 0;
-                for (int i = 0; i < r.replay_count; ++i)
-                    state_.replay[i] = r.replay[i];
-            }
-        } else {
+        else
             value_ = r.code_point;
-        }
+    } else if constexpr (C == codec::gbk || C == codec::gb18030) {
+        auto r = detail::gb18030_decode_one(state_, current_, end_);
+        if (r.is_error)
+            value_ = error_result(r.error);
+        else
+            value_ = r.code_point;
     } else if constexpr (C == codec::big5) {
         auto r = detail::big5_decode_one(current_, end_);
         if (r.is_error)

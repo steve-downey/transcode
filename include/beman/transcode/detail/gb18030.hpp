@@ -59,6 +59,16 @@ struct gb18030_encode_result {
 template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr gb18030_decode_result gb18030_decode_one(I& current, S end);
 
+// Decode one code point with the replay buffer in play, advancing `current`
+// and updating `st`.
+//
+// A four-byte sequence whose trailing bytes turn out not to belong to it hands
+// them back, and they are decoded before any byte of the input is read again.
+// A handed-back byte can itself begin a multi-byte sequence, which is why the
+// replay path refills from the input rather than decoding the buffer alone.
+template <typename I, typename S>
+constexpr gb18030_decode_result gb18030_decode_one(gb18030_decode_state& st, I& current, S end);
+
 // Encode one Unicode codepoint as GB18030.
 // WHATWG maps U+E5E5 to an encoder error for deployed-content compatibility.
 constexpr gb18030_encode_result gb18030_encode_one(char32_t cp);
@@ -241,6 +251,47 @@ constexpr gb18030_encode_result gb18030_encode_one(char32_t cp) {
     r.bytes[2] = b3;
     r.bytes[3] = b4;
     r.count    = 4;
+    return r;
+}
+
+template <typename I, typename S>
+constexpr gb18030_decode_result gb18030_decode_one(gb18030_decode_state& st, I& current, S end) {
+    if (st.replay_pos < st.replay_count) {
+        auto byte = st.replay[st.replay_pos++];
+        if (st.replay_pos == st.replay_count) {
+            st.replay_count = 0;
+            st.replay_pos   = 0;
+        }
+        if (byte < 0x80)
+            return {static_cast<char32_t>(byte), {}, false, {}, 0};
+
+        unsigned char buf[4];
+        buf[0]    = byte;
+        int count = 1;
+        while (count < 4 && current != end) {
+            buf[count++] = static_cast<unsigned char>(*current);
+            ++current;
+        }
+        const unsigned char* bp   = buf;
+        const unsigned char* be   = buf + count;
+        auto                 r    = gb18030_decode_one(bp, be);
+        const int            left = static_cast<int>(be - bp);
+        if (left > 0) {
+            st.replay_count = left;
+            st.replay_pos   = 0;
+            for (int i = 0; i < left; ++i)
+                st.replay[i] = bp[i];
+        }
+        return r;
+    }
+
+    auto r = gb18030_decode_one(current, end);
+    if (r.is_error && r.replay_count > 0) {
+        st.replay_count = r.replay_count;
+        st.replay_pos   = 0;
+        for (int i = 0; i < r.replay_count; ++i)
+            st.replay[i] = r.replay[i];
+    }
     return r;
 }
 
