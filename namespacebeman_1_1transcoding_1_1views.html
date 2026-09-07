@@ -105,7 +105,6 @@ $(document).ready(function(){initNavTree('namespacebeman_1_1transcoding_1_1views
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:aaa8c7a22aa85348f2156d62b50097952"><td class="memItemLeft" align="right" valign="top">constexpr detail::null_term_adaptor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">null_term</a> {}</td></tr>
-<tr class="memdesc:aaa8c7a22aa85348f2156d62b50097952"><td class="mdescLeft">&#160;</td><td class="mdescRight">\seebelow  <br /></td></tr>
 <tr class="separator:aaa8c7a22aa85348f2156d62b50097952"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Variable Documentation</h2>
@@ -128,8 +127,7 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>\seebelow </p>
+<p>\seebelow </p><dl class="section remark"><dt>Remarks</dt><dd>The name <code><a class="el" href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">views::null_term</a></code> denotes a range adaptor object. Given a subexpression <code>E</code>, the expression <code><a class="el" href="namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952">views::null_term(E)</a></code> is expression-equivalent to <code>null_term_view(E)</code> when <code>E</code> has pointer type, and to <code><a class="el" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a>(static_cast&lt;const T*&gt;(E))</code> when <code>E</code> has array type with element type <code>T</code>. For any other type it is ill-formed, so that a range carrying no terminator is a diagnosed error and not a silent one. </dd></dl>
 
 </div>
 </div>

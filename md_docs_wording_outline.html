@@ -122,9 +122,9 @@ How the tree maps onto fragments</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>transcode.syn</code>   </td><td class="markdownTableBodyNone">root   </td><td class="markdownTableBodyNone">Header <code>&lt;transcode&gt;</code> synopsis   </td><td class="markdownTableBodyNone">everything below, gathered   </td><td class="markdownTableBodyNone">the header's declaration region    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>transcode.errors</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Error types   </td><td class="markdownTableBodyNone"><code>whatwg_error</code>, <code>iconv_error</code>, <code>transcode_error_kind</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="error_8hpp.html">error.hpp</a></code>    </td></tr>
+<td class="markdownTableBodyNone"><code>transcode.errors</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Error types   </td><td class="markdownTableBodyNone"><code>whatwg_error</code>, <code>iconv_error</code>, <code>transcode_error_kind</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="error_8hpp.html">error.hpp</a></code>, done 2026-09-06    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>transcode.reqs</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Range requirements   </td><td class="markdownTableBodyNone"><code>legacy_byte_range</code>, <code>unicode_scalar_range</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="concepts_8hpp.html">concepts.hpp</a></code>    </td></tr>
+<td class="markdownTableBodyNone"><code>transcode.reqs</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Range requirements   </td><td class="markdownTableBodyNone"><code>legacy_byte_range</code>, <code>unicode_scalar_range</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="concepts_8hpp.html">concepts.hpp</a></code>, done 2026-09-06    </td></tr>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>transcode.codec</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Encodings   </td><td class="markdownTableBodyNone"><code>enum class codec</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="codec_8hpp.html">codec.hpp</a></code>    </td></tr>
 <tr class="markdownTableRowEven">
@@ -161,9 +161,9 @@ How the tree maps onto fragments</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>null.term.view</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Class template <code>null_term_view</code>   </td><td class="markdownTableBodyNone">the constructor, <code>begin</code>, <code>end</code>   </td><td class="markdownTableBodyNone">done in Step 1    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>null.term.adaptor</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone"><code>views::null_term</code>   </td><td class="markdownTableBodyNone">the range adaptor object   </td><td class="markdownTableBodyNone">unblocked 2026-09-06; renders <code>$unspecified$</code> in the synopsis, prose outstanding   </td></tr>
+<td class="markdownTableBodyNone"><code>null.term.adaptor</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone"><code>views::null_term</code>   </td><td class="markdownTableBodyNone">the range adaptor object   </td><td class="markdownTableBodyNone">done 2026-09-06; <code>$unspecified$</code> in the synopsis, routed prose in the clause   </td></tr>
 </table>
-<p>Step 1 generates <code>null.term</code> (the root, un-gathered) and <code>null.term.view</code>. The other two are what Step 4 adds once their upstream items land.</p>
+<p>Step 1 generates <code>null.term</code> (the root, un-gathered) and <code>null.term.view</code>. <code>null.term.sentinel</code> landed with the gathered region, and <code>null.term.adaptor</code> in Step 4: its declaration is folded into the synopsis and a <code>\ref{null.term.adaptor}</code> group header routes its prose to the clause, which is what specgen#69 made possible.</p>
 <h2><a class="anchor" id="autotoc_md606"></a>
 Exposition-only, omitted, and not proposed</h2>
 <p>The three ways a declaration stays out of the wording, decided per entity here so no step has to decide twice.</p>
@@ -175,7 +175,7 @@ Exposition-only (&lt;tt&gt;\expos&lt;/tt&gt;)</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>null_term_view::ptr_</code>   </td><td class="markdownTableBodyNone"><code>$ptr$</code>   </td><td class="markdownTableBodyNone">the view's state, which the wording refers to    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>detail::legacy_byte_type</code>   </td><td class="markdownTableBodyNone"><code>$legacy-byte-type$</code>   </td><td class="markdownTableBodyNone">a real conjunct of <code>legacy_byte_range</code>; the draft would spell it out    </td></tr>
+<td class="markdownTableBodyNone"><code>detail::legacy_byte_type</code>   </td><td class="markdownTableBodyNone"><code>$legacy-byte-type$</code>   </td><td class="markdownTableBodyNone">a real conjunct of <code>legacy_byte_range</code>; the draft would spell it out. Marked in Step 4    </td></tr>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">every view's <code>base_</code>, <code>codec_</code>, <code>buf_</code>, iterator state   </td><td class="markdownTableBodyNone">exposition names   </td><td class="markdownTableBodyNone">the wording describes what they hold    </td></tr>
 <tr class="markdownTableRowEven">
