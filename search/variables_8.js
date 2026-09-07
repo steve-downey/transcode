@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['len_5f_0',['len_',['../classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a149bd44d873b0e2b1fac39bd12ec4645',1,'beman::transcoding::encode_view::iterator::len_()'],['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a2816ccbe80626082e9433eaffeb330fe',1,'beman::transcoding::whatwg_encode_view::iterator::len_()']]]
+  ['null_5fsentinel_0',['null_sentinel',['../namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311',1,'beman::transcoding']]],
+  ['null_5fterm_1',['null_term',['../namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952',1,'beman::transcoding::views']]]
 ];

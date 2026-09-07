@@ -24,16 +24,6 @@ var classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator =
     [ "current_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a5bb784b6a63ebd2b71f94dec112bd561", null ],
     [ "done_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a32814820e828324b16aa48589ea93de5", null ],
     [ "end_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a25bf957f1b9026a7d33d672395165041", null ],
-    [ "gb_replay_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a436228ed5dfccf89b35ccb8fd8c0a7c5", null ],
-    [ "gb_replay_count_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a53e62a19467ec000c50cdf1d316e40cb", null ],
-    [ "gb_replay_pos_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ac8b81a1dba48e08128edde51c0404c1d", null ],
-    [ "has_pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a74f9a0de0797e66d4a8eb4a19fab3003", null ],
-    [ "iso2022jp_lead_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a3e7f3870d56bee585e53afab29ec7612", null ],
-    [ "iso2022jp_output_flag_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a86dfc095dd4fec349effa6f545ee3142", null ],
-    [ "iso2022jp_output_state_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#addbc4b76efc1a753d6f3093ca45020bf", null ],
-    [ "iso2022jp_state_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#abe433920af0ef2ceb6968bfaabe466e4", null ],
-    [ "pending_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a175ad681582f368570a387ac9cdf3e1e", null ],
-    [ "pending_count_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a595969bd66213196453e35e9c3e3173b", null ],
-    [ "pending_cp_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a2dc77ad6eb99ca43a5c0f560ab37f716", null ],
+    [ "state_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a387f4197023df057119b644875e6829d", null ],
     [ "value_", "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ae251e0092176f363928876caf81be7d5", null ]
 ];

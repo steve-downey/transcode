@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['handle_5f_0',['handle_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3fcae46ebebc5e9e79e61bcfe1375f23',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::handle_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#aea361942e397fb4f4953b11eb0db6f9e',1,'beman::transcoding::iconv_transcode_view::iterator::handle_()']]],
-  ['has_5ferror_5f_1',['has_error_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3f5e8cf2c0a2c63c44d9bba7a5bc307f',1,'beman::transcoding::iconv_transcode_or_error_view::iterator']]],
-  ['has_5fpending_5fcp_5f_2',['has_pending_cp_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a74f9a0de0797e66d4a8eb4a19fab3003',1,'beman::transcoding::whatwg_decode_view::iterator']]]
+  ['iconv_5ferror_5frc_0',['iconv_error_rc',['../namespacebeman_1_1transcoding.html#a51c614ab370846ad687e12691645601e',1,'beman::transcoding']]],
+  ['is_5ferror_1',['is_error',['../structbeman_1_1transcoding_1_1decode__result.html#a8cb3cd394d3bda42a0dec8b148e51a16',1,'beman::transcoding::decode_result::is_error()'],['../structbeman_1_1transcoding_1_1encode__result.html#a91bc250bdd7519622bea99dd633bb04a',1,'beman::transcoding::encode_result::is_error()']]],
+  ['is_5ferror_5f_2',['is_error_',['../classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a77cd4691275f83d7cbb765127eb80467',1,'beman::transcoding::encode_view::iterator']]]
 ];

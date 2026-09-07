@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['emit_5ferror_0',['emit_error',['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a0b501c643e7813fe7dd9e00bbf2c3c69',1,'beman::transcoding::whatwg_encode_view::iterator']]],
+  ['emit_5ferror_0',['emit_error',['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a0b501c643e7813fe7dd9e00bbf2c3c69',1,'beman::transcoding::whatwg_encode_view::iterator::emit_error(whatwg_error e, std::initializer_list&lt; char &gt; replacement)'],['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#acb71e03a1b5ea8905ee47f3223047037',1,'beman::transcoding::whatwg_encode_view::iterator::emit_error(whatwg_error e, const char *replacement, int count)']]],
   ['encode_1',['encode',['../namespacebeman_1_1transcoding.html#acb7b318ba17a0e44907744ff34cf98d7',1,'beman::transcoding']]],
   ['encode_5fclosure_2',['encode_closure',['../structbeman_1_1transcoding_1_1encode__closure.html',1,'beman::transcoding']]],
   ['encode_5fone_3',['encode_one',['../structbeman_1_1transcoding_1_1full__table__codec.html#ae0faaf856d34ebe61a335b05c7cbbd9b',1,'beman::transcoding::full_table_codec::encode_one()'],['../structbeman_1_1transcoding_1_1table__codec.html#a5d10c902c20ea7350118d377dcf8cb99',1,'beman::transcoding::table_codec::encode_one()']]],

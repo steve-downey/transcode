@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['pending_5f_0',['pending_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a175ad681582f368570a387ac9cdf3e1e',1,'beman::transcoding::whatwg_decode_view::iterator']]],
-  ['pending_5fcount_5f_1',['pending_count_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a595969bd66213196453e35e9c3e3173b',1,'beman::transcoding::whatwg_decode_view::iterator']]],
-  ['pending_5fcp_5f_2',['pending_cp_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a2dc77ad6eb99ca43a5c0f560ab37f716',1,'beman::transcoding::whatwg_decode_view::iterator']]],
-  ['pos_5f_3',['pos_',['../classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a195927978a55255645a2c5665e56baf9',1,'beman::transcoding::encode_view::iterator::pos_()'],['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#af8ab4ea7b6e77993755fb2eeb45efcb5',1,'beman::transcoding::whatwg_encode_view::iterator::pos_()']]],
-  ['ptr_5f_4',['ptr_',['../classbeman_1_1transcoding_1_1null__term__view.html#a4769d0a29f6f92f8c5cd0cb13e7e0c2f',1,'beman::transcoding::null_term_view']]]
+  ['single_5fbyte_5fdecode_0',['single_byte_decode',['../namespacebeman_1_1transcoding.html#aef322db207ff0a4583061027a96a7475',1,'beman::transcoding']]],
+  ['single_5fbyte_5fencode_1',['single_byte_encode',['../namespacebeman_1_1transcoding.html#a82f706c2813d6a4b7ec40aeb51af5ae6',1,'beman::transcoding']]],
+  ['staging_5f_2',['staging_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a6c10f7ac6844d0d1788699f197688540',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::staging_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a5f48cb96bf5bd6303c68d224f652a819',1,'beman::transcoding::iconv_transcode_view::iterator::staging_()']]],
+  ['staging_5flen_5f_3',['staging_len_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#acfb77138a798c93764b144e58ab2d953',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::staging_len_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a204103d9670cdd628fddad9e75008af8',1,'beman::transcoding::iconv_transcode_view::iterator::staging_len_()']]],
+  ['state_5f_4',['state_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a387f4197023df057119b644875e6829d',1,'beman::transcoding::whatwg_decode_view::iterator::state_()'],['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a14b0602e8b9622c870222503299fe2b4',1,'beman::transcoding::whatwg_encode_view::iterator::state_()']]]
 ];

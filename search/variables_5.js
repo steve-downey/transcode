@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['gb_5freplay_5f_0',['gb_replay_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a436228ed5dfccf89b35ccb8fd8c0a7c5',1,'beman::transcoding::whatwg_decode_view::iterator']]],
-  ['gb_5freplay_5fcount_5f_1',['gb_replay_count_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a53e62a19467ec000c50cdf1d316e40cb',1,'beman::transcoding::whatwg_decode_view::iterator']]],
-  ['gb_5freplay_5fpos_5f_2',['gb_replay_pos_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ac8b81a1dba48e08128edde51c0404c1d',1,'beman::transcoding::whatwg_decode_view::iterator']]]
+  ['handle_5f_0',['handle_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3fcae46ebebc5e9e79e61bcfe1375f23',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::handle_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#aea361942e397fb4f4953b11eb0db6f9e',1,'beman::transcoding::iconv_transcode_view::iterator::handle_()']]],
+  ['has_5ferror_5f_1',['has_error_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3f5e8cf2c0a2c63c44d9bba7a5bc307f',1,'beman::transcoding::iconv_transcode_or_error_view::iterator']]]
 ];
