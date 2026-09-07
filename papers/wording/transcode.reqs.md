@@ -3,13 +3,6 @@
 ## Range requirements [transcode.reqs]{- .sref} {-}
 
 ```cpp
-template<typename T>
-concept $legacy-byte-type$ =
-    same_as<T, char> || same_as<T, signed char> || same_as<T, unsigned char> ||
-    same_as<T, byte>; // exposition only
-```
-
-```cpp
 template<typename R>
 concept legacy_byte_range = ranges::range<R> && !is_array_v<remove_cvref_t<R>> &&
                             $legacy-byte-type$<remove_cv_t<ranges::range_value_t<R>>>;

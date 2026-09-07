@@ -34,16 +34,19 @@ Heading level follows from mpark's fixed `base_heading_level = 2` (index U2):
 
 ## `<transcode>`
 
-Generated from the spec-facing `<transcode>` header (Step 3 decides whether that
-is one file or a family; index D1).  Fragment order is the order of the `\rSec`
-markers in the source, which is the order below.
+Generated from `transcode.hpp`, which is the umbrella of `#include`s it always
+was: specgen follows the headers included inside its `\rSec2[transcode.syn]`
+region (index D1), so the component headers are the document without being one
+file.  Fragment order is the order of the `\rSec` markers in `transcode.hpp`,
+which is the order below; the *synopsis* reads in include order, which is the
+order the compiler needs and need not match.
 
 | Stable name | Depth | Title | Entities | Generated from |
 |---|---|---|---|---|
 | `transcode.general` | — | General | scope, terms, the byte/scalar model | authored in the paper |
-| `transcode.syn` | root | Header `<transcode>` synopsis | everything below, gathered | the header's declaration region |
-| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error`, `transcode_error_kind` | `error.hpp`, done 2026-09-06 |
-| `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp`, done 2026-09-06 |
+| `transcode.syn` | 2 | Header `<transcode>` synopsis | everything below, gathered | `transcode.hpp`'s region and the sixteen headers included in it, done 2026-09-07 |
+| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error`, `transcode_error_kind` | `error.hpp` routes to it, done 2026-09-06 |
+| `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` routes to it, done 2026-09-06 |
 | `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp` |
 | `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `detail/labels.hpp` |
 | `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp` |
