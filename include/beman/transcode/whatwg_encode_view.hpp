@@ -207,22 +207,27 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
         int       len_{0};
         int       pos_{0};
         bool      done_{false};
-        int       iso2022jp_state_{0};
+        // What this codec's encode remembers between calls, and nothing for the
+        // codecs that remember nothing.
+        [[no_unique_address]] detail::encode_state_t<C> state_{};
 
         // Report a code point this codec cannot encode: one error element under
         // `expected`, and the codec's own replacement bytes otherwise -- which
         // differ in length, so this cannot be a value mapping.
-        constexpr void emit_error(whatwg_error e, std::initializer_list<char> replacement) {
+        constexpr void emit_error(whatwg_error e, const char* replacement, int count) {
             if constexpr (E == transcode_error_kind::expected) {
                 buf_[0] = result_t(std::unexpect, e);
                 len_    = 1;
             } else {
-                int i = 0;
-                for (char c : replacement)
-                    buf_[i++] = result_t(c);
-                len_ = i;
+                for (int i = 0; i < count; ++i)
+                    buf_[i] = result_t(replacement[i]);
+                len_ = count;
             }
             pos_ = 0;
+        }
+
+        constexpr void emit_error(whatwg_error e, std::initializer_list<char> replacement) {
+            emit_error(e, replacement.begin(), static_cast<int>(replacement.size()));
         }
 
         constexpr void load();
@@ -262,7 +267,7 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
             if (lhs.done_ || rhs.done_)
                 return lhs.done_ == rhs.done_;
             return lhs.current_ == rhs.current_ && lhs.len_ == rhs.len_ && lhs.pos_ == rhs.pos_ &&
-                   lhs.done_ == rhs.done_ && lhs.iso2022jp_state_ == rhs.iso2022jp_state_ &&
+                   lhs.done_ == rhs.done_ && lhs.state_ == rhs.state_ &&
                    std::equal(std::begin(lhs.buf_), std::end(lhs.buf_), std::begin(rhs.buf_));
         }
 
@@ -409,13 +414,14 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
 
     if (current_ == end_) {
         if constexpr (C == codec::iso_2022_jp) {
-            if (iso2022jp_state_ != 0) {
-                this->buf_[0]    = result_value{'\x1B'};
-                this->buf_[1]    = result_value{'\x28'};
-                this->buf_[2]    = result_value{'\x42'};
-                len_             = 3;
-                pos_             = 0;
-                iso2022jp_state_ = 0;
+            // WHATWG's encoder ends in ASCII mode, so an exhausted input can
+            // still owe the escape that returns to it.
+            const auto r = detail::iso2022jp_encode_flush(state_);
+            if (r.count > 0) {
+                for (int i = 0; i < r.count; ++i)
+                    this->buf_[i] = result_value{r.bytes[i]};
+                len_ = r.count;
+                pos_ = 0;
                 return;
             }
         }
@@ -502,69 +508,15 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
         }
         pos_ = 0;
     } else if constexpr (C == codec::iso_2022_jp) {
-        auto cp = static_cast<char32_t>(*current_);
+        auto r = detail::iso2022jp_encode_one(state_, static_cast<char32_t>(*current_));
         ++current_;
-        // Roman state: U+00A5 (YEN SIGN) and U+203E (OVERLINE)
-        if (cp == 0x00A5 || cp == 0x203E) {
-            char ascii_byte = (cp == 0x00A5) ? '\x5C' : '\x7E';
-            if (iso2022jp_state_ != 1) {
-                this->buf_[0]    = result_value{'\x1B'};
-                this->buf_[1]    = result_value{'\x28'};
-                this->buf_[2]    = result_value{'\x4A'};
-                this->buf_[3]    = result_value{ascii_byte};
-                len_             = 4;
-                iso2022jp_state_ = 1;
-            } else {
-                this->buf_[0] = result_value{ascii_byte};
-                len_          = 1;
-            }
-            pos_ = 0;
-            return;
-        }
-        if (cp < 0x80) {
-            char ascii_byte = static_cast<char>(cp);
-            if (iso2022jp_state_ != 0) {
-                this->buf_[0]    = result_value{'\x1B'};
-                this->buf_[1]    = result_value{'\x28'};
-                this->buf_[2]    = result_value{'\x42'};
-                this->buf_[3]    = result_value{ascii_byte};
-                len_             = 4;
-                iso2022jp_state_ = 0;
-            } else {
-                this->buf_[0] = result_value{ascii_byte};
-                len_          = 1;
-            }
-            pos_ = 0;
-            return;
-        }
-        for (int i = 0; i < 8836; ++i) {
-            if (detail::tables::shift_jis[i] == cp) {
-                int lead  = (i / 94) + 0x21;
-                int trail = (i % 94) + 0x21;
-                if (iso2022jp_state_ != 2) {
-                    this->buf_[0]    = result_value{'\x1B'};
-                    this->buf_[1]    = result_value{'\x24'};
-                    this->buf_[2]    = result_value{'\x42'};
-                    this->buf_[3]    = result_value{static_cast<char>(lead)};
-                    this->buf_[4]    = result_value{static_cast<char>(trail)};
-                    len_             = 5;
-                    iso2022jp_state_ = 2;
-                } else {
-                    this->buf_[0] = result_value{static_cast<char>(lead)};
-                    this->buf_[1] = result_value{static_cast<char>(trail)};
-                    len_          = 2;
-                }
-                pos_ = 0;
-                return;
-            }
-        }
-        // Unmapped. The lossy encoder returns to ASCII before substituting, so
-        // the replacement carries the escape sequence with it.
-        if (iso2022jp_state_ != 0) {
-            iso2022jp_state_ = 0;
-            this->emit_error(whatwg_error::unmapped_codepoint, {'\x1B', '\x28', '\x42', '?'});
+        if (r.is_error) {
+            this->emit_error(whatwg_error::unmapped_codepoint, r.bytes, r.count);
         } else {
-            this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
+            for (int i = 0; i < r.count; ++i)
+                this->buf_[i] = result_value{r.bytes[i]};
+            len_ = r.count;
+            pos_ = 0;
         }
     } else if constexpr (C == codec::euc_kr) {
         auto r = detail::euc_kr_encode_one(static_cast<char32_t>(*current_));
