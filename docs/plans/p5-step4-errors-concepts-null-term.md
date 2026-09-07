@@ -130,17 +130,18 @@ no header was changed to suit the tool (D7).
   and still refused the docblock, a detached docblock after the enum was
   dropped silently, and a `\verbatim-itemdecl` block before it attached to the
   enum and hit the same error.  There was no fourth spelling, and no way to
-  write the clause.  specgen PR #70 makes an enumeration a documented namespace
+  write the clause.  specgen #70 makes an enumeration a documented namespace
   entity like the others, so `error.hpp` carries one docblock per enum and the
   clause renders all three declarations with their enumerator meanings.  The
   meanings are an authored `\item` list rather than the draft's two-column
   Constant/Meaning table: `\lib2dtab2` is a two-*dimensional* table, a
-  row-heading column plus two columns, so it is the wrong shape, and a flat
-  two-column table is an enhancement nobody has needed yet.
+  row-heading column plus two columns, so it is the wrong shape.  A flat
+  two-column table is specgen#74, filed on the recheck and not blocking -- the
+  list says the same thing in the same order.
 
 - **`[null.term.adaptor]` — done, at the price of the other one.**  A docblock
   on `views::null_term` rendered its declaration in the gathered synopsis and
-  discarded its description without a diagnostic.  specgen PR #71 routes a
+  discarded its description without a diagnostic.  specgen #71 routes a
   folded-in declaration's wording the way a folded-in class's members are
   already routed, so the header now carries a `\ref{null.term.adaptor}` group
   header — which renders in the synopsis, as the draft writes it — and the
@@ -162,8 +163,9 @@ the truth, so the authored prose is what is wrong; it is recorded as a task in
 to match a paragraph.
 
 Both upstream items are described in `docs/plans/phase5-index.md` under
-"External dependencies", with the note that regenerating now needs a specgen
-built from those two branches.  specgen#69 is the fifth instance of the
+"External dependencies".  They merged on 2026-09-07, and regenerating needs a
+specgen at or after `b746da6`; an installed one from current specgen `main`
+reproduces every committed fragment byte for byte.  specgen#69 is the fifth instance of the
 gathered-region pattern that section had recorded as closed out, which is worth
 knowing for Steps 5-9: they gather a much larger surface, a dropped element is
 silent, and a clean `--validate` does not prove an authored paragraph arrived.
