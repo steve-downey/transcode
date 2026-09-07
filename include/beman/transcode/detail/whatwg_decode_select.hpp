@@ -37,8 +37,61 @@
 #include <beman/transcode/detail/tables/windows_1258.hpp>
 #include <beman/transcode/detail/tables/windows_874.hpp>
 #include <beman/transcode/detail/tables/x_mac_cyrillic.hpp>
+#include <beman/transcode/detail/big5.hpp>
+#include <beman/transcode/detail/gb18030.hpp>
+#include <beman/transcode/detail/iso2022jp.hpp>
+#include <beman/transcode/detail/utf16.hpp>
 
 namespace beman::transcoding::detail {
+
+// What a decode of C has to remember between calls, which for most codecs is
+// nothing: a decoder reading a self-delimiting sequence starts each call where
+// the last one stopped and needs no state of its own.  The four that do keep
+// it in their own headers, and the view's iterator holds one of these and
+// compares it, so the iterator declares no codec-specific field.
+struct no_decode_state {
+    static constexpr bool at_end() { return true; }
+
+    friend constexpr bool operator==(const no_decode_state&, const no_decode_state&) { return true; }
+};
+
+template <codec C>
+struct decode_state_of {
+    using type = no_decode_state;
+};
+
+template <>
+struct decode_state_of<codec::iso_2022_jp> {
+    using type = iso2022jp_decode_state;
+};
+
+template <>
+struct decode_state_of<codec::utf_16be> {
+    using type = utf16_decode_state;
+};
+
+template <>
+struct decode_state_of<codec::utf_16le> {
+    using type = utf16_decode_state;
+};
+
+template <>
+struct decode_state_of<codec::gbk> {
+    using type = gb18030_decode_state;
+};
+
+template <>
+struct decode_state_of<codec::gb18030> {
+    using type = gb18030_decode_state;
+};
+
+template <>
+struct decode_state_of<codec::big5> {
+    using type = big5_decode_state;
+};
+
+template <codec C>
+using decode_state_t = decode_state_of<C>::type;
 
 //! \expos
 template <codec C>

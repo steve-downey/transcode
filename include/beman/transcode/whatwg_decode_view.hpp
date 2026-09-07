@@ -24,7 +24,6 @@
 #include <beman/transcode/detail/tables/koi8_r.hpp>
 #include <beman/transcode/detail/tables/koi8_u.hpp>
 #include <beman/transcode/detail/tables/macintosh.hpp>
-#include <beman/transcode/detail/tables/shift_jis.hpp>
 #include <beman/transcode/detail/tables/windows_1250.hpp>
 #include <beman/transcode/detail/tables/windows_1251.hpp>
 #include <beman/transcode/detail/tables/windows_1252.hpp>
@@ -44,6 +43,7 @@
 #include <beman/transcode/detail/euc_kr.hpp>
 #include <beman/transcode/detail/gb18030.hpp>
 #include <beman/transcode/detail/gbk.hpp>
+#include <beman/transcode/detail/iso2022jp.hpp>
 #include <beman/transcode/detail/shift_jis.hpp>
 #include <beman/transcode/detail/utf8.hpp>
 #include <beman/transcode/detail/utf16.hpp>
@@ -216,21 +216,15 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
                 return U'\xFFFD';
         }
 
-        base_iter     current_{};
-        base_sent     end_{};
-        result_t      value_{};
-        bool          done_{false};
-        int           pending_count_{0};
-        unsigned char pending_[2]{};
-        char32_t      pending_cp_{};
-        bool          has_pending_cp_{false};
-        int           iso2022jp_state_{0};
-        int           iso2022jp_output_state_{0};
-        bool          iso2022jp_output_flag_{false};
-        unsigned char iso2022jp_lead_{0};
-        unsigned char gb_replay_[3]{};
-        int           gb_replay_count_{0};
-        int           gb_replay_pos_{0};
+        base_iter current_{};
+        base_sent end_{};
+        result_t  value_{};
+        bool      done_{false};
+        // What this codec's decode remembers between calls, and nothing for
+        // the codecs that remember nothing: an empty state costs no storage
+        // here, where it used to cost every iterator the union of every
+        // codec's fields.
+        [[no_unique_address]] detail::decode_state_t<C> state_{};
 
         constexpr void load();
 
@@ -269,14 +263,7 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
             if (lhs.done_ || rhs.done_)
                 return lhs.done_ == rhs.done_;
             return lhs.current_ == rhs.current_ && lhs.value_ == rhs.value_ && lhs.done_ == rhs.done_ &&
-                   lhs.pending_count_ == rhs.pending_count_ && lhs.pending_cp_ == rhs.pending_cp_ &&
-                   lhs.has_pending_cp_ == rhs.has_pending_cp_ && lhs.iso2022jp_state_ == rhs.iso2022jp_state_ &&
-                   lhs.iso2022jp_output_state_ == rhs.iso2022jp_output_state_ &&
-                   lhs.iso2022jp_output_flag_ == rhs.iso2022jp_output_flag_ &&
-                   lhs.iso2022jp_lead_ == rhs.iso2022jp_lead_ && lhs.gb_replay_count_ == rhs.gb_replay_count_ &&
-                   lhs.gb_replay_pos_ == rhs.gb_replay_pos_ &&
-                   std::equal(std::begin(lhs.pending_), std::end(lhs.pending_), std::begin(rhs.pending_)) &&
-                   std::equal(std::begin(lhs.gb_replay_), std::end(lhs.gb_replay_), std::begin(rhs.gb_replay_));
+                   lhs.state_ == rhs.state_;
         }
 
         constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
@@ -407,16 +394,16 @@ constexpr auto whatwg_decode_view<C, R, E>::end() const -> iterator
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires legacy_byte_range<R>
 constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
-    if (has_pending_cp_) {
-        value_          = pending_cp_;
-        has_pending_cp_ = false;
-        return;
-    }
-    if (current_ == end_) {
-        if (pending_count_ == 0 && iso2022jp_state_ <= 3 && gb_replay_pos_ >= gb_replay_count_) {
-            done_ = true;
+    if constexpr (C == codec::big5) {
+        if (state_.has_pending) {
+            value_             = state_.code_point;
+            state_.has_pending = false;
             return;
         }
+    }
+    if (current_ == end_ && state_.at_end()) {
+        done_ = true;
+        return;
     }
     if constexpr (C == codec::replacement) {
         while (current_ != end_)
@@ -445,10 +432,10 @@ constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
     } else if constexpr (C == codec::utf_16be || C == codec::utf_16le) {
         unsigned char b0;
         unsigned char b1;
-        if (pending_count_ > 0) {
-            b0             = pending_[0];
-            b1             = pending_[1];
-            pending_count_ = 0;
+        if (state_.pending_count > 0) {
+            b0                   = state_.pending[0];
+            b1                   = state_.pending[1];
+            state_.pending_count = 0;
         } else {
             b0 = static_cast<unsigned char>(*current_);
             ++current_;
@@ -486,10 +473,10 @@ constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
             if (low >= 0xDC00 && low <= 0xDFFF) {
                 value_ = 0x10000 + ((static_cast<char32_t>(unit - 0xD800) << 10) | (low - 0xDC00));
             } else {
-                value_         = error_result(whatwg_error::surrogate_code_point);
-                pending_[0]    = b2;
-                pending_[1]    = b3;
-                pending_count_ = 2;
+                value_               = error_result(whatwg_error::surrogate_code_point);
+                state_.pending[0]    = b2;
+                state_.pending[1]    = b3;
+                state_.pending_count = 2;
             }
         } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
             value_ = error_result(whatwg_error::surrogate_code_point);
@@ -497,11 +484,11 @@ constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
             value_ = static_cast<char32_t>(unit);
         }
     } else if constexpr (C == codec::gbk || C == codec::gb18030) {
-        if (gb_replay_pos_ < gb_replay_count_) {
-            auto byte = gb_replay_[gb_replay_pos_++];
-            if (gb_replay_pos_ == gb_replay_count_) {
-                gb_replay_count_ = 0;
-                gb_replay_pos_   = 0;
+        if (state_.replay_pos < state_.replay_count) {
+            auto byte = state_.replay[state_.replay_pos++];
+            if (state_.replay_pos == state_.replay_count) {
+                state_.replay_count = 0;
+                state_.replay_pos   = 0;
             }
             if (byte < 0x80) {
                 value_ = static_cast<char32_t>(byte);
@@ -518,10 +505,10 @@ constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
                 auto                 r    = detail::gb18030_decode_one(bp, be);
                 int                  left = static_cast<int>(be - bp);
                 if (left > 0) {
-                    gb_replay_count_ = left;
-                    gb_replay_pos_   = 0;
+                    state_.replay_count = left;
+                    state_.replay_pos   = 0;
                     for (int i = 0; i < left; ++i)
-                        gb_replay_[i] = bp[i];
+                        state_.replay[i] = bp[i];
                 }
                 if (r.is_error)
                     value_ = error_result(r.error);
@@ -534,10 +521,10 @@ constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
         if (r.is_error) {
             value_ = error_result(r.error);
             if (r.replay_count > 0) {
-                gb_replay_count_ = r.replay_count;
-                gb_replay_pos_   = 0;
+                state_.replay_count = r.replay_count;
+                state_.replay_pos   = 0;
                 for (int i = 0; i < r.replay_count; ++i)
-                    gb_replay_[i] = r.replay[i];
+                    state_.replay[i] = r.replay[i];
             }
         } else {
             value_ = r.code_point;
@@ -549,8 +536,8 @@ constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
         else
             value_ = r.code_point;
         if (r.code_point2 != 0) {
-            pending_cp_     = r.code_point2;
-            has_pending_cp_ = true;
+            state_.code_point  = r.code_point2;
+            state_.has_pending = true;
         }
     } else if constexpr (C == codec::shift_jis) {
         auto r = detail::shift_jis_decode_one(current_, end_);
@@ -565,167 +552,13 @@ constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
         else
             value_ = r.code_point;
     } else if constexpr (C == codec::iso_2022_jp) {
-        // States: 0=ASCII, 1=Roman, 2=Katakana, 3=Lead_Byte, 4=Trail_Byte,
-        //         5=Escape_Start, 6=Escape
-        while (true) {
-            unsigned char byte;
-            if (pending_count_ > 0) {
-                byte = pending_[0];
-                if (pending_count_ > 1)
-                    pending_[0] = pending_[1];
-                --pending_count_;
-            } else if (current_ != end_) {
-                byte = static_cast<unsigned char>(*current_++);
-            } else {
-                switch (iso2022jp_state_) {
-                default: // 0=ASCII, 1=Roman, 2=Katakana, 3=Lead_Byte
-                    done_ = true;
-                    return;
-                case 4:
-                    iso2022jp_state_       = iso2022jp_output_state_;
-                    iso2022jp_output_flag_ = false;
-                    value_                 = error_result(whatwg_error::truncated_sequence);
-                    return;
-                case 5:
-                    iso2022jp_state_       = iso2022jp_output_state_;
-                    iso2022jp_output_flag_ = false;
-                    value_                 = error_result(whatwg_error::truncated_sequence);
-                    return;
-                case 6:
-                    pending_[0]            = iso2022jp_lead_;
-                    pending_count_         = 1;
-                    iso2022jp_lead_        = 0;
-                    iso2022jp_state_       = iso2022jp_output_state_;
-                    iso2022jp_output_flag_ = false;
-                    value_                 = error_result(whatwg_error::truncated_sequence);
-                    return;
-                }
-            }
-
-            switch (iso2022jp_state_) {
-            case 5:
-                if (byte == 0x24 || byte == 0x28) {
-                    iso2022jp_lead_  = byte;
-                    iso2022jp_state_ = 6;
-                    continue;
-                }
-                pending_[0]            = byte;
-                pending_count_         = 1;
-                iso2022jp_state_       = iso2022jp_output_state_;
-                iso2022jp_output_flag_ = false;
-                value_                 = error_result(whatwg_error::invalid_byte);
-                return;
-
-            case 6: {
-                auto lead       = iso2022jp_lead_;
-                iso2022jp_lead_ = 0;
-                int new_state   = -1;
-                if (lead == 0x28) {
-                    if (byte == 0x42)
-                        new_state = 0;
-                    else if (byte == 0x4A)
-                        new_state = 1;
-                    else if (byte == 0x49)
-                        new_state = 2;
-                } else {
-                    if (byte == 0x40 || byte == 0x42)
-                        new_state = 3;
-                }
-                if (new_state < 0) {
-                    pending_[0]            = lead;
-                    pending_[1]            = byte;
-                    pending_count_         = 2;
-                    iso2022jp_state_       = iso2022jp_output_state_;
-                    iso2022jp_output_flag_ = false;
-                    value_                 = error_result(whatwg_error::invalid_byte);
-                    return;
-                }
-                iso2022jp_output_state_ = new_state;
-                iso2022jp_state_        = new_state;
-                if (iso2022jp_output_flag_) {
-                    iso2022jp_output_flag_ = false;
-                    value_                 = error_result(whatwg_error::invalid_byte);
-                    return;
-                }
-                iso2022jp_output_flag_ = true;
-                continue;
-            }
-
-            case 3:
-                if (byte == 0x1B) {
-                    iso2022jp_state_ = 5;
-                    continue;
-                }
-                if (byte >= 0x21 && byte <= 0x7E) {
-                    iso2022jp_lead_  = byte;
-                    iso2022jp_state_ = 4;
-                    continue;
-                }
-                iso2022jp_state_       = iso2022jp_output_state_;
-                iso2022jp_output_flag_ = false;
-                value_                 = error_result(whatwg_error::invalid_byte);
-                return;
-
-            case 4: {
-                if (byte == 0x1B) {
-                    iso2022jp_state_ = 5;
-                    continue;
-                }
-                iso2022jp_state_       = iso2022jp_output_state_;
-                iso2022jp_output_flag_ = false;
-                if (byte >= 0x21 && byte <= 0x7E) {
-                    int  pointer = ((static_cast<int>(iso2022jp_lead_) - 0x21) * 94) + (static_cast<int>(byte) - 0x21);
-                    auto cp      = detail::tables::shift_jis[pointer];
-                    if (cp != 0) {
-                        value_ = cp;
-                        return;
-                    }
-                }
-                value_ = error_result(whatwg_error::invalid_byte);
-                return;
-            }
-
-            default: // 0=ASCII, 1=Roman, 2=Katakana
-                if (byte == 0x1B) {
-                    iso2022jp_state_ = 5;
-                    continue;
-                }
-                if (byte == 0x0E || byte == 0x0F) {
-                    iso2022jp_output_flag_ = false;
-                    value_                 = error_result(whatwg_error::invalid_byte);
-                    return;
-                }
-                iso2022jp_output_flag_ = false;
-                if (iso2022jp_state_ == 0) {
-                    if (byte <= 0x7F)
-                        value_ = static_cast<char32_t>(byte);
-                    else
-                        value_ = error_result(whatwg_error::invalid_byte);
-                    return;
-                }
-                if (iso2022jp_state_ == 1) {
-                    if (byte == 0x5C) {
-                        value_ = U'\x00A5';
-                        return;
-                    }
-                    if (byte == 0x7E) {
-                        value_ = U'\x203E';
-                        return;
-                    }
-                    if (byte <= 0x7F)
-                        value_ = static_cast<char32_t>(byte);
-                    else
-                        value_ = error_result(whatwg_error::invalid_byte);
-                    return;
-                }
-                // Katakana: 0x21-0x5F → U+FF61-U+FF9F
-                if (byte >= 0x21 && byte <= 0x5F)
-                    value_ = static_cast<char32_t>(0xFF61 + byte - 0x21);
-                else
-                    value_ = error_result(whatwg_error::invalid_byte);
-                return;
-            }
-        }
+        auto r = detail::iso2022jp_decode_one(state_, current_, end_);
+        if (r.done)
+            done_ = true;
+        else if (r.is_error)
+            value_ = error_result(r.error);
+        else
+            value_ = r.code_point;
     } else if constexpr (C == codec::euc_kr) {
         auto r = detail::euc_kr_decode_one(current_, end_);
         if (r.is_error)

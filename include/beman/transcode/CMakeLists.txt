@@ -44,6 +44,7 @@ else()
                     detail/whatwg_decode_select.hpp
                     detail/whatwg_encode_select.hpp
                     detail/gbk.hpp
+                    detail/iso2022jp.hpp
                     detail/shift_jis.hpp
                     detail/single_byte.hpp
                     detail/single_byte_decode_view.hpp

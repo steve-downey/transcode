@@ -13,6 +13,22 @@
 #endif
 namespace beman::transcoding::detail {
 
+// The decoder's state between calls.  A high surrogate not followed by a low
+// one leaves the two bytes that were read in its place: WHATWG re-processes
+// them as a fresh code unit, and an input iterator cannot back up to do that.
+struct utf16_decode_state {
+    unsigned char pending[2]{};
+    int           pending_count{0};
+
+    // Whether an exhausted input leaves nothing to emit.
+    constexpr bool at_end() const { return pending_count == 0; }
+
+    friend constexpr bool operator==(const utf16_decode_state& lhs, const utf16_decode_state& rhs) {
+        return lhs.pending_count == rhs.pending_count && lhs.pending[0] == rhs.pending[0] &&
+               lhs.pending[1] == rhs.pending[1];
+    }
+};
+
 struct utf16_decode_result {
     char32_t     codepoint{0xFFFD};
     int          bytes_consumed{0};

@@ -17,6 +17,24 @@
 #endif
 namespace beman::transcoding::detail {
 
+// The decoder's state between calls.  A four-byte sequence whose trailing
+// bytes turn out not to belong to it hands them back for re-processing, which
+// WHATWG spells as prepending to the stream and an input iterator cannot do by
+// backing up.
+struct gb18030_decode_state {
+    unsigned char replay[3]{};
+    int           replay_count{0};
+    int           replay_pos{0};
+
+    // Whether an exhausted input leaves nothing to emit.
+    constexpr bool at_end() const { return replay_pos >= replay_count; }
+
+    friend constexpr bool operator==(const gb18030_decode_state& lhs, const gb18030_decode_state& rhs) {
+        return lhs.replay_count == rhs.replay_count && lhs.replay_pos == rhs.replay_pos &&
+               lhs.replay[0] == rhs.replay[0] && lhs.replay[1] == rhs.replay[1] && lhs.replay[2] == rhs.replay[2];
+    }
+};
+
 struct gb18030_decode_result {
     char32_t      code_point{0xFFFD};
     whatwg_error  error{};

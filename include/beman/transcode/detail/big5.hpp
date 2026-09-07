@@ -14,6 +14,20 @@
 #endif
 namespace beman::transcoding::detail {
 
+// The decoder's state between calls.  Four Big5 pointers decode to two code
+// points, and a view yields one value per step, so the second waits here.
+struct big5_decode_state {
+    char32_t code_point{0};
+    bool     has_pending{false};
+
+    // Whether an exhausted input leaves nothing to emit.
+    constexpr bool at_end() const { return !has_pending; }
+
+    friend constexpr bool operator==(const big5_decode_state& lhs, const big5_decode_state& rhs) {
+        return lhs.has_pending == rhs.has_pending && lhs.code_point == rhs.code_point;
+    }
+};
+
 struct big5_decode_result {
     char32_t     code_point{0xFFFD};
     char32_t     code_point2{0};
