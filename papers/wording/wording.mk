@@ -10,6 +10,8 @@ WORDING_MD := \
 	wording/transcode.custom.reqs.md \
 	wording/transcode.custom.decode.md \
 	wording/transcode.custom.encode.md \
+	wording/transcode.pipeline.md \
+	wording/transcode.string.md \
 	wording/null.term.syn.md \
 	wording/null.term.sentinel.md \
 	wording/null.term.view.md \
