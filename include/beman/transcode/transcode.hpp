@@ -83,6 +83,16 @@ import beman.transcode;
 
     // \rSec3[transcode.whatwg.encode.iterator]{Class `whatwg_encode_view::iterator`}
 
+    // \rSec2[transcode.custom.reqs]{Codec requirements}
+
+    // \rSec2[transcode.custom.decode]{Class template `decode_view`}
+
+    // \rSec3[transcode.custom.decode.iterator]{Class `decode_view::iterator`}
+
+    // \rSec2[transcode.custom.encode]{Class template `encode_view`}
+
+    // \rSec3[transcode.custom.encode.iterator]{Class `encode_view::iterator`}
+
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)
 

@@ -7,6 +7,9 @@ WORDING_MD := \
 	wording/transcode.codec.md \
 	wording/transcode.whatwg.decode.md \
 	wording/transcode.whatwg.encode.md \
+	wording/transcode.custom.reqs.md \
+	wording/transcode.custom.decode.md \
+	wording/transcode.custom.encode.md \
 	wording/null.term.syn.md \
 	wording/null.term.sentinel.md \
 	wording/null.term.view.md \
