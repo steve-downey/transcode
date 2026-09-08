@@ -52,9 +52,9 @@ order the compiler needs and need not match.
 | `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp`, done 2026-09-07 |
 | `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, its closures `whatwg_decode<C>` / `whatwg_decode_or_error<C>`, and its `enable_borrowed_range` specialization | `whatwg_decode_view.hpp`, done 2026-09-08 |
 | `transcode.whatwg.encode` | 2 | Encoding views | `whatwg_encode_view`, likewise | `whatwg_encode_view.hpp`, done 2026-09-08 |
-| `transcode.custom.reqs` | 2 | Codec requirements | `decode_codec`, `encode_codec`, `flushable_decode_codec`, `random_access_decode_codec_type`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp` |
-| `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp` |
-| `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp` |
+| `transcode.custom.reqs` | 2 | Codec requirements | `decode_codec`, `encode_codec`, `flushable_decode_codec`, `random_access_decode_codec_type`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp`, done 2026-09-08 |
+| `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp`, done 2026-09-08 |
+| `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp`, done 2026-09-08 |
 | `transcode.pipeline` | 2 | Transcoding pipelines | `transcode`, `pluggable_transcode` | `transcode_view.hpp` |
 | `transcode.string` | 2 | Eager transcoding | `transcode_string`, both overloads | `transcode_string.hpp` |
 | `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers |

@@ -90,6 +90,8 @@ enum class codec {
 
 constexpr optional<codec> get_encoding(string_view label) noexcept;
 
+// @[transcode.custom.reqs]{- .sref}@, codec requirements
+
 struct decode_result {
   char32_t code_point{};
   whatwg_error error{};
@@ -101,6 +103,8 @@ struct encode_result {
   int count{0};
   bool is_error{false};
 };
+
+// @[transcode.custom.reqs]{- .sref}@, codec requirements
 
 template<typename C>
 concept decode_codec = semiregular<C> && requires(C& c, const unsigned char*& iter,
@@ -208,60 +212,33 @@ template<codec C, input_range R, transcode_error_kind E>
 inline constexpr bool enable_borrowed_range<whatwg_encode_view<C, R, E>> =
     borrowed_range<R>;
 
-template<random_access_decode_codec_type Codec, ranges::random_access_range R,
-         transcode_error_kind E = transcode_error_kind::replacement>
-  requires legacy_byte_range<R>
-class random_access_decode_view
-    : public ranges::view_interface<random_access_decode_view<Codec, R, E>> {
-public:
-  constexpr random_access_decode_view(R base, Codec codec);
-
-  constexpr const R& base() const& noexcept;
-  constexpr R base() &&;
-
-  constexpr iterator begin();
-  constexpr iterator begin() const
-    requires $const-iterator-compatible-range$<R>;
-  constexpr iterator end();
-  constexpr iterator end() const
-    requires $const-iterator-compatible-range$<R> && ranges::range<const R>;
-  constexpr auto size() const
-    requires ranges::sized_range<R>;
-};
+// @[transcode.custom.decode]{- .sref}@, class template decode_view
 
 template<decode_codec Codec, ranges::input_range R,
          transcode_error_kind E = transcode_error_kind::replacement>
   requires legacy_byte_range<R>
 class decode_view : public ranges::view_interface<decode_view<Codec, R, E>> {
+  R $base$;      // exposition only
+  Codec $codec$; // exposition only
+
+  class $iterator$; // exposition only
+
 public:
+  // @[transcode.custom.decode]{- .sref}@, construction and access
   constexpr explicit decode_view(R base, Codec codec = {});
 
   constexpr const R& base() const& noexcept;
   constexpr R base() &&;
 
-  constexpr iterator begin();
-  constexpr iterator begin() const
+  constexpr $iterator$ begin();
+  constexpr $iterator$ begin() const
     requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-  constexpr iterator end()
+  constexpr $iterator$ end()
     requires ranges::forward_range<R> && ranges::common_range<R>;
-  constexpr iterator end() const
+  constexpr $iterator$ end() const
     requires ranges::forward_range<const R> && ranges::common_range<const R> &&
              $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
   constexpr default_sentinel_t end() const;
-};
-
-template<decode_codec Codec, transcode_error_kind E = transcode_error_kind::replacement>
-struct decode_closure {
-  Codec codec_;
-
-  template<legacy_byte_range R> constexpr auto operator()(R&& r) const;
-
-  template<legacy_byte_range R>
-  constexpr friend auto operator|(R&& r, const decode_closure& self);
-
-  template<typename R>
-    requires is_array_v<remove_cvref_t<R>>
-  friend auto operator|(R&&, const decode_closure&);
 };
 
 template<decode_codec Codec> constexpr decode_closure<Codec> decode(Codec codec = {});
@@ -282,39 +259,33 @@ template<decode_codec Codec>
 decode_or_error_closure decode_or_error_closure =
     decode_closure<Codec, transcode_error_kind::expected>;
 
+// @[transcode.custom.encode]{- .sref}@, class template encode_view
+
 template<encode_codec Codec, ranges::input_range R,
          transcode_error_kind E = transcode_error_kind::replacement>
   requires unicode_scalar_range<R>
 class encode_view : public ranges::view_interface<encode_view<Codec, R, E>> {
+  R $base$;      // exposition only
+  Codec $codec$; // exposition only
+
+  class $iterator$; // exposition only
+
 public:
+  // @[transcode.custom.encode]{- .sref}@, construction and access
   constexpr explicit encode_view(R base, Codec codec = {});
 
   constexpr const R& base() const& noexcept;
   constexpr R base() &&;
 
-  constexpr iterator begin();
-  constexpr iterator begin() const
+  constexpr $iterator$ begin();
+  constexpr $iterator$ begin() const
     requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-  constexpr iterator end()
+  constexpr $iterator$ end()
     requires ranges::forward_range<R> && ranges::common_range<R>;
-  constexpr iterator end() const
+  constexpr $iterator$ end() const
     requires ranges::forward_range<const R> && ranges::common_range<const R> &&
              $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
   constexpr default_sentinel_t end() const;
-};
-
-template<encode_codec Codec, transcode_error_kind E = transcode_error_kind::replacement>
-struct encode_closure {
-  Codec codec_;
-
-  template<unicode_scalar_range R> constexpr auto operator()(R&& r) const;
-
-  template<unicode_scalar_range R>
-  constexpr friend auto operator|(R&& r, const encode_closure& self);
-
-  template<typename R>
-    requires is_array_v<remove_cvref_t<R>>
-  friend auto operator|(R&&, const encode_closure&);
 };
 
 template<encode_codec Codec> constexpr encode_closure<Codec> encode(Codec codec = {});
@@ -588,6 +559,10 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
                                                              const char* to);
 ```
 
+[#]{.pnum} *Remarks*: What a codec's `decode_one` returns.  `is_error` says whether the decode failed.  When it did, `error` says why and `code_point` is U+FFFD REPLACEMENT CHARACTER; when it did not, `code_point` is the decoded Unicode scalar value and `error` is unspecified.
+
+[#]{.pnum} *Remarks*: What a codec's `encode_one` returns.  `is_error` says whether the encode failed -- the encoding has no representation for that scalar value. When it did not, `count` is the number of bytes written and `bytes[0]` through `bytes[count - 1]` are the encoded form; when it did, `count` is zero and the view substitutes or reports the error as its error kind says.
+
 [#]{.pnum} *Remarks*: `whatwg_decode_view<C, R, E>` presents the bytes of `R` as the Unicode scalar values the encoding `C` decodes them to, one element per decoded scalar value.  A byte sequence the encoding does not allow is a decoding error, reported as `E` says: as U+FFFD REPLACEMENT CHARACTER when `E` is `transcode_error_kind::replacement`, and as an `unexpected` holding a `whatwg_error` when it is `transcode_error_kind::expected`.  Decoding is lazy: an element is decoded when the iterator reaches it.
 
 [#]{.pnum} The view models `random_access_range` when `C` names an encoding that decodes one byte to one scalar value and `R` models `random_access_range`.  How an implementation achieves that is not specified; it is a property of the view rather than a second view.
@@ -616,86 +591,22 @@ constexpr auto size() const;
 
 [#]{.pnum} *Constraints*: `R` models `sized_range`.
 
+[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg_decode_view` ([transcode.whatwg.decode]{- .sref}) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error kind and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.
+
+[#]{.pnum} The view models `random_access_range` when `Codec` models `random_access_decode_codec_type` and `R` models `random_access_range`.
+
 ```cpp
-static constexpr iterator terminal();
+static constexpr $iterator$ $terminal$();
 ```
 
 [#]{.pnum} *Constraints*: `R` models `forward_range`.
 
+[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg_encode_view` ([transcode.whatwg.encode]{- .sref}) with the codec supplied as a value rather than named by an enumerator: it presents the Unicode scalar values of `R` as the bytes `Codec` encodes them to, reports an encoding error as `E` says, and encodes lazily.  Each element of `R` is required to be a Unicode scalar value, which is a precondition and not a constraint.
+
 ```cpp
-constexpr iterator operator++(int);
+static constexpr $iterator$ $terminal$();
 ```
 
 [#]{.pnum} *Constraints*: `R` models `forward_range`.
-
-```cpp
-constexpr void operator++(int);
-```
-
-[#]{.pnum} *Constraints*: `ranges::forward_range<R>` is `false`.
-
-```cpp
-constexpr iterator begin() const;
-```
-
-[#]{.pnum} *Constraints*: `R` models `$const-iterator-compatible-range$` and `R` models `$const-sentinel-compatible-range$`.
-
-```cpp
-constexpr iterator end();
-```
-
-[#]{.pnum} *Constraints*: `R` models `forward_range` and `R` models `common_range`.
-
-```cpp
-constexpr iterator end() const;
-```
-
-[#]{.pnum} *Constraints*:
-
-- [#.#]{.pnum} `R` models `forward_range`,
-- [#.#]{.pnum} `R` models `common_range`,
-- [#.#]{.pnum} `R` models `$const-iterator-compatible-range$`,
-- [#.#]{.pnum} `R` models `$const-sentinel-compatible-range$`.
-
-```cpp
-static constexpr iterator terminal();
-```
-
-[#]{.pnum} *Constraints*: `R` models `forward_range`.
-
-```cpp
-constexpr iterator operator++(int);
-```
-
-[#]{.pnum} *Constraints*: `R` models `forward_range`.
-
-```cpp
-constexpr void operator++(int);
-```
-
-[#]{.pnum} *Constraints*: `ranges::forward_range<R>` is `false`.
-
-```cpp
-constexpr iterator begin() const;
-```
-
-[#]{.pnum} *Constraints*: `R` models `$const-iterator-compatible-range$` and `R` models `$const-sentinel-compatible-range$`.
-
-```cpp
-constexpr iterator end();
-```
-
-[#]{.pnum} *Constraints*: `R` models `forward_range` and `R` models `common_range`.
-
-```cpp
-constexpr iterator end() const;
-```
-
-[#]{.pnum} *Constraints*:
-
-- [#.#]{.pnum} `R` models `forward_range`,
-- [#.#]{.pnum} `R` models `common_range`,
-- [#.#]{.pnum} `R` models `$const-iterator-compatible-range$`,
-- [#.#]{.pnum} `R` models `$const-sentinel-compatible-range$`.
 
 :::
