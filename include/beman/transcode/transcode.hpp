@@ -93,6 +93,10 @@ import beman.transcode;
 
     // \rSec3[transcode.custom.encode.iterator]{Class `encode_view::iterator`}
 
+    // \rSec2[transcode.pipeline]{Transcoding pipelines}
+
+    // \rSec2[transcode.string]{Eager transcoding}
+
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)
 
