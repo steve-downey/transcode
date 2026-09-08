@@ -1,6 +1,6 @@
 ::: wording
 
-## Transcoding pipelines [transcode.pipeline]{- .sref} {-}
+## Transcoding pipelines [transcode.pipeline] {-}
 
 ```cpp
 template<codec From, codec To> inline constexpr $unspecified$ transcode;
@@ -17,6 +17,6 @@ constexpr $see below$ pluggable_transcode(From from, To to);
 
 [#]{.pnum} *Returns*: A range adaptor object over `from` and `to`.  Given a subexpression `E` that models `legacy_byte_range`, `pluggable_transcode(from, to)(E)` and `E | pluggable_transcode(from, to)` are each expression-equivalent to `E | decode(from) | encode(to)`.
 
-[#]{.pnum} *Remarks*: This is `transcode` ([transcode.pipeline]{- .sref}) with codecs supplied as values rather than named by enumerators.
+[#]{.pnum} *Remarks*: This is `transcode` ([transcode.pipeline]) with codecs supplied as values rather than named by enumerators.
 
 :::

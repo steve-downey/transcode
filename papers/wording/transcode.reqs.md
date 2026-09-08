@@ -1,6 +1,6 @@
 ::: wording
 
-## Range requirements [transcode.reqs]{- .sref} {-}
+## Range requirements [transcode.reqs] {-}
 
 ```cpp
 template<typename R>

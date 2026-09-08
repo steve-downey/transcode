@@ -1,6 +1,6 @@
 ::: wording
 
-## Codec requirements [transcode.custom.reqs]{- .sref} {-}
+## Codec requirements [transcode.custom.reqs] {-}
 
 ```cpp
 template<typename C>

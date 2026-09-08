@@ -291,10 +291,15 @@ fragment.
 
 ### Open
 
-- **U2 — `--base-heading-level` on the command line.**  Still absent at
-  `1b4e10f`; `render --help` lists `--backend`, `--validate`, `--paper`,
-  `--split`, `--root` and `-o`, and nothing else.  Not blocking: Step 10 can
-  accept flat headings or post-process, and the plan says which it did.
+- **U2 — `--base-heading-level` on the command line.**  Still absent.
+  `render --help` lists `--backend`, `--validate`, `--paper`, `--split`,
+  `--root` and `-o`, and nothing else.  **Step 10 accepted flat headings**: the
+  clauses are `##`, which is the level the paper's own sections use, so they
+  are siblings of "Design" rather than children of "Wording".  The table of
+  contents reads as a clause list under the Wording heading, which is close
+  enough to right that spending an upstream flag on it was not worth another
+  cross-repository dependency.  `toc-depth: 2` is what makes it read that way;
+  a nested rendering would need the flag *and* `toc-depth: 3`.
 - **U3 — namespace mapping is automatic.**  Nothing to do; recorded so no step
   goes looking for a mapping option that does not exist.
 - **specgen#74 — an enumerator table is two columns flat, and only the
@@ -304,12 +309,23 @@ fragment.
   thing in the same order as an authored `\item` list, and Step 10 can decide
   whether the paper wants the draft's shape badly enough to wait for it.
 - **U6 — every generated clause heading warns at paper-build time.**  An mpark
-  warning, not a specgen finding: `stable name <x> not found`, once per clause,
-  now six of them (`transcode.errors`, `transcode.reqs`, `null.term.syn`,
-  `null.term.sentinel`, `null.term.view`, `null.term.adaptor`).  It is what a
-  stable name that is not in the draft yet looks like, so it will be one per
-  clause the phase adds.  **Gates Step 10's** warning-free build, and is the
-  only external item still gating anything.
+  warning, not a specgen finding: `stable name <x> not found`, once per clause.
+  It is what a stable name that is not in the draft yet looks like, so it is
+  one per clause the phase adds -- seventeen by Step 10.
+
+  **Worked around downstream in Step 10, and still open upstream.**  The
+  warning was the visible half; the other half is that mpark emits a link
+  anyway, so every clause heading and every cross-reference in the published
+  paper pointed at a `c++draft` page that does not exist.  `generate.sh` now
+  drops the `.sref` class from names under this paper's own two stable-name
+  roots, after rendering and before the fragments are committed, which leaves
+  `[transcode.iconv]` -- what the draft itself prints.  It is keyed on the
+  roots on purpose: a citation of a clause that *is* in the draft keeps its
+  `.sref` and still resolves.
+
+  Filed as [specgen#89](https://github.com/steve-downey/specgen/issues/89),
+  where the fix is a render option for a document whose clauses are new.  The
+  `sed` comes out when that lands.  Step 10's build is warning-free.
 
 
 ## Risks

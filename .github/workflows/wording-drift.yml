@@ -1,0 +1,128 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# The drift gate.
+#
+# The paper's wording clauses are generated from the marked-up headers by
+# beman.specgen (see papers/wording/README.md).  Two things can put the
+# committed fragments out of step with the headers, and this job fails on
+# either: a pull request that edits a spec-facing header without running
+# `make wording`, and a pull request that edits a fragment by hand.  Both look
+# identical to `make wording-check` -- it regenerates everything and diffs.
+#
+# It is a separate workflow rather than a step in the Makefile matrix because
+# it needs a toolchain that matrix does not have: specgen links LLVM's Clang
+# front end, and the beman containers ship no LLVM development packages.  The
+# install below is specgen's own CI recipe, copied deliberately -- if it drifts
+# there, this breaks, which is the correct failure.
+name: Wording Drift
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'include/**'
+      - 'papers/wording/**'
+      - 'papers/Makefile'
+      - '.github/workflows/wording-drift.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '45 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{format('{0}:{1}:wording', github.repository, github.ref)}}
+  cancel-in-progress: true
+
+jobs:
+  wording-check:
+    name: Wording matches the headers
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/bemanproject/infra-containers-gcc:16
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The official release binaries ship the CMake package configs and a
+      # shared libclang-cpp; LLVM itself is static there, but libclang-cpp
+      # re-exports the LLVM symbols, so a libLLVM.so shim pointing at it
+      # satisfies the front end's `clang-cpp LLVM` link.
+      - name: Install LLVM/Clang 23 (dev)
+        run: |
+          set -eux
+          mkdir -p /opt/llvm23
+          curl -sSL \
+            https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.0/LLVM-23.1.0-Linux-X64.tar.xz \
+            | tar -xJ -C /opt/llvm23 --strip-components=1
+          ln -s /opt/llvm23/lib/libclang-cpp.so.23.1 /usr/lib64/libclang-cpp.so.23.1
+          ln -s /opt/llvm23/lib/libclang-cpp.so.23.1 /usr/lib64/libLLVM.so
+          test -f /opt/llvm23/lib/cmake/clang/ClangConfig.cmake
+
+      # The ref is committed rather than written here, so that the revision the
+      # fragments were generated with is a fact in the tree a developer can read
+      # and reproduce, not a line in a workflow only CI sees.
+      - name: Read the required specgen revision
+        id: specgen-ref
+        run: |
+          set -eux
+          ref="$(grep -v '^#' papers/wording/specgen-ref | grep -v '^$' | head -1)"
+          test -n "$ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout beman.specgen
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: steve-downey/specgen
+          ref: ${{ steps.specgen-ref.outputs.ref }}
+          path: .specgen-src
+
+      # Through specgen's own preset, which is where its dependency bootstrap
+      # lives (`CMAKE_PROJECT_TOP_LEVEL_INCLUDES`); a bare `cmake -S -B` builds
+      # a configuration nothing else uses and fails differently.
+      - name: Build and install specgen
+        run: |
+          set -eux
+          cmake --preset gcc-release \
+            -DClang_DIR=/opt/llvm23/lib/cmake/clang \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/.specgen-install"
+          cmake --build --preset gcc-release --target install
+          "$GITHUB_WORKSPACE/.specgen-install/bin/specgen" --version
+        working-directory: .specgen-src
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.11.6"
+
+      - name: Configure environment
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          make venv
+
+      # `make wording-check` regenerates into a scratch directory and diffs, so
+      # a failure prints the drift itself rather than only reporting that there
+      # is some.
+      - name: Check the wording against the headers
+        run: |
+          set -eux
+          source .venv/bin/activate
+          export PATH="$GITHUB_WORKSPACE/.specgen-install/bin:$PATH"
+          make wording-check
+
+      # A finding is a clause that says something about an entity the reader
+      # cannot see, or an entity in the synopsis that nothing describes. The
+      # fragments can be byte-identical and still be wrong in that way, so this
+      # is a second question and not a re-run of the first.
+      - name: Validate the generated wording
+        run: |
+          set -eux
+          source .venv/bin/activate
+          export PATH="$GITHUB_WORKSPACE/.specgen-install/bin:$PATH"
+          if papers/wording/generate.sh --validate 2>&1 | tee /dev/stderr | grep -q '^specgen:'; then
+            echo "::error::specgen reported findings against the generated wording"
+            exit 1
+          fi

@@ -1,6 +1,6 @@
 ::: wording
 
-## iconv adaptors [transcode.iconv]{- .sref} {-}
+## iconv adaptors [transcode.iconv] {-}
 
 ```cpp
 const R& base() const& noexcept;
@@ -92,7 +92,7 @@ inline iconv_functions make_real_iconv_fns() noexcept;
 inline $see below$ iconv_transcode(const char* from, const char* to, span<char> buf);
 ```
 
-[#]{.pnum} *Returns*: A range adaptor object.  Given a subexpression `E` that models `legacy_byte_range`, `iconv_transcode(from, to, buf)(E)` and `E | iconv_transcode(from, to, buf)` are each expression-equivalent to an `iconv_transcode_view` ([transcode.iconv]{- .sref}) over `E`, `make_real_iconv_fns()`, `from`, `to` and `buf`.
+[#]{.pnum} *Returns*: A range adaptor object.  Given a subexpression `E` that models `legacy_byte_range`, `iconv_transcode(from, to, buf)(E)` and `E | iconv_transcode(from, to, buf)` are each expression-equivalent to an `iconv_transcode_view` ([transcode.iconv]) over `E`, `make_real_iconv_fns()`, `from`, `to` and `buf`.
 
 [#]{.pnum} *Remarks*: `buf` is the caller's, and every iterator the adaptor produces converts into it.  Two ranges adapted with the same buffer must not be iterated at the same time.
 
@@ -109,7 +109,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to,
                              IconvFns fns);
 ```
 
-[#]{.pnum} *Returns*: A `Container` holding the bytes of `source` converted from `from` to `to` by `fns`.  Input the conversion does not accept is skipped, as it is by `iconv_transcode_view` ([transcode.iconv]{- .sref}).  The result is empty when the conversion descriptor cannot be opened -- which is what `iconv_open` failing means, and is not distinguishable here from an empty input.
+[#]{.pnum} *Returns*: A `Container` holding the bytes of `source` converted from `from` to `to` by `fns`.  Input the conversion does not accept is skipped, as it is by `iconv_transcode_view` ([transcode.iconv]).  The result is empty when the conversion descriptor cannot be opened -- which is what `iconv_open` failing means, and is not distinguishable here from an empty input.
 
 ```cpp
 template<typename Container = string, legacy_byte_range R>
@@ -156,7 +156,7 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
 
 [#]{.pnum} *Returns*: A `Container` holding the converted bytes, or the first `iconv_error` the conversion reported.
 
-[#]{.pnum} *Remarks*: This is the eager form of `iconv_transcode_or_error` ([transcode.iconv]{- .sref}): it stops at the first failure rather than skipping it, which is the difference between a conversion a program wants to know about and one it wants to get through.
+[#]{.pnum} *Remarks*: This is the eager form of `iconv_transcode_or_error` ([transcode.iconv]): it stops at the first failure rather than skipping it, which is the difference between a conversion a program wants to know about and one it wants to get through.
 
 ```cpp
 template<typename Container = string, legacy_byte_range R>
@@ -172,7 +172,7 @@ return iconv_transcode_to_or_error<Container>(forward<R>(source), from, to,
                                               make_real_iconv_fns());
 ```
 
-### Classes `iconv_transcode_view::iterator` and `iconv_transcode_or_error_view::iterator` [transcode.iconv.iterator]{- .sref} {-}
+### Classes `iconv_transcode_view::iterator` and `iconv_transcode_or_error_view::iterator` [transcode.iconv.iterator] {-}
 
 ```cpp
 iterator($iterator$&&) noexcept;
@@ -210,7 +210,7 @@ $iterator$& operator++();
 
 [#]{.pnum} *Returns*: `*this`.
 
-[#]{.pnum} *Remarks*: Input the conversion does not accept is skipped one byte at a time -- what POSIX reports as `EILSEQ` -- so the range ends where the input does rather than at the first byte a converter refuses.  A program that needs to know *that* it happened uses `iconv_transcode_or_error` ([transcode.iconv]{- .sref}).
+[#]{.pnum} *Remarks*: Input the conversion does not accept is skipped one byte at a time -- what POSIX reports as `EILSEQ` -- so the range ends where the input does rather than at the first byte a converter refuses.  A program that needs to know *that* it happened uses `iconv_transcode_or_error` ([transcode.iconv]).
 
 ```cpp
 void operator++(int);

@@ -1,6 +1,6 @@
 ::: wording
 
-## `views::null_term` [null.term.adaptor]{- .sref} {-}
+## `views::null_term` [null.term.adaptor] {-}
 
 ```cpp
 inline constexpr $unspecified$ null_term;

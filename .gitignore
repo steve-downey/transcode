@@ -71,6 +71,14 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# `parts/` above comes from the Python template, where it is buildout's
+# top-level artifact directory, but the pattern is unanchored and so matches
+# any `parts/` at any depth. `papers/parts/` holds the authored tail of the
+# paper -- the sections that have to read after the generated wording -- and
+# without this the paper would not build from a fresh clone, silently.
+!papers/parts/
+!papers/parts/**
+
 # PyInstaller
 #   Usually these files are written by a python script from a template
 #   before PyInstaller builds the exe, so as to inject date/other infos into it.

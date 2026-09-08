@@ -131,6 +131,24 @@ done <<HEADERS
 $(spec_headers)
 HEADERS
 
+# mpark's `.sref` means "a section that is already in the working draft": the
+# filter looks the name up in a database built from eel.is and, for a name it
+# does not find, warns once and emits a link to a c++draft page that does not
+# exist.  Every stable name specgen renders here is a clause *this paper adds*,
+# so every one of them is that case -- a warning per clause at paper-build time
+# and a dead link per cross-reference in the published text.
+#
+# Dropping the class leaves `[transcode.iconv]`, which is what the draft itself
+# prints and what a new clause should read as.  It is keyed on this paper's two
+# stable-name roots on purpose: a citation of a clause that *is* in the draft
+# keeps its `.sref` and still resolves.
+#
+# This is a downstream patch over generated output, and it comes out when
+# specgen can be told that a document's own clauses are new
+# (steve-downey/specgen#89).  Until then it lives here rather than in the
+# committed fragments, so `make wording-check` regenerates the same bytes.
+sed -i -E 's/\[((transcode|null\.term)[a-z0-9.]*)\]\{- \.sref\}/[\1]/g' "$out_dir"/*.md
+
 # The manifest is document order, and document order is the order pandoc has
 # to concatenate the fragments in, so it is what papers/Makefile consumes.
 {

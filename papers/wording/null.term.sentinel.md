@@ -1,6 +1,6 @@
 ::: wording
 
-## Class `null_sentinel_t` [null.term.sentinel]{- .sref} {-}
+## Class `null_sentinel_t` [null.term.sentinel] {-}
 
 ```cpp
 template<input_iterator I>
