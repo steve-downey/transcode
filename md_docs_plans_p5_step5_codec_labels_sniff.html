@@ -113,7 +113,21 @@ What is different here</h1>
 </ul>
 <h1><a class="anchor" id="autotoc_md329"></a>
 Acceptance</h1>
-<p>As Step 4, for <code>papers/wording/transcode.codec.md</code>. </p>
+<p>As Step 4, for <code>papers/wording/transcode.codec.md</code>.</p>
+<hr  />
+<h1><a class="anchor" id="autotoc_md331"></a>
+Outcome (2026-09-07)</h1>
+<p>All three clauses are written, and <code>--validate</code> reports nothing about any of their entities.</p>
+<ul>
+<li><p class="startli">**<code>[transcode.codec]</code>** — a <code>\ref</code> group header and one <em>Remarks</em> on the enumeration, saying that each enumerator names the encoding of the same name in the WHATWG Encoding Standard and that the table is not restated here. W2's question &ndash; how the normative reference is spelled &ndash; is answered in <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code> where W2 is: named in prose in the wording, a dated [intro.refs] entry in the paper, and whether SG16 accepts a normative reference to a living standard at all is a question for the paper's prose.</p>
+<p class="startli">The clause repeats all 39 enumerators above that one paragraph, because a documented entity renders its declaration. The draft would print the declaration once, in the synopsis, and give the clause the prose alone; a one-line <code>\verbatim-itemdecl</code> (<code>enum class codec;</code>) would do that here at the price of one authored spelling. Left as it is, and left to Step 10 to judge with the whole paper in front of it &ndash; it is a presentation question, and it is the same question for every long declaration in the phase.</p>
+</li>
+<li>**<code>[transcode.codec.label]</code>** — <code>get_encoding</code> moved out of the generated <code><a class="el" href="labels_8hpp.html">detail/labels.hpp</a></code> into a hand-written <code><a class="el" href="label_8hpp.html">label.hpp</a></code>, which is what this step's plan preferred: a generator that emits specification markup is a generator with two jobs, and the one thing a generated file must never need is an edit. <code>tools/generate_labels.py</code> now emits the table and nothing else, and its test says so rather than asserting the function is in there. The generated header also stopped including <code><a class="el" href="whatwg__decode__view_8hpp.html">whatwg_decode_view.hpp</a></code> for the sake of the <code>codec</code> enum, which is now all it includes.</li>
+<li>**<code>[transcode.codec.sniff]</code>** — a <em>Returns</em> itemization over the three byte order marks, and a <em>Remarks</em> saying what the function deliberately does not do: the fallback half of WHATWG §8.2 is a question about the document and its transport, and the mark is left in the range because a decode view strips a leading U+FEFF itself.</li>
+</ul>
+<p>Both functions carry their markup on the <b>definition</b>, not the declaration: a docblock on a function declaration is an error, because the definition is what places a function's wording (design §3.3). In a followed header both are in the same file, so this is easy to get wrong and loud when you do.</p>
+<p><code>get_encoding</code> moving is the only change to the library, and it is a file move: no signature, no name, no namespace. <code><a class="el" href="label_8hpp.html">label.hpp</a></code> joins the synopsis region in <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code> next to <code><a class="el" href="codec_8hpp.html">codec.hpp</a></code>, and <code><a class="el" href="labels_8hpp.html">detail/labels.hpp</a></code> leaves the implementation list, since <code><a class="el" href="label_8hpp.html">label.hpp</a></code> includes it.</p>
+<p>Step 6 is next, and is the largest of the markup steps. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

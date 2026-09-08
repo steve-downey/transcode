@@ -40,8 +40,10 @@ var NAVTREEINDEX4 =
 "koi8__r_8hpp_source.html":[55,0,2,0,0,0,0,18],
 "koi8__u_8hpp.html":[55,0,2,0,0,0,0,19],
 "koi8__u_8hpp_source.html":[55,0,2,0,0,0,0,19],
+"label_8hpp.html":[55,0,2,0,0,13],
+"label_8hpp.html#a66a54f73e921a9aa3ccdf21aa982e3ec":[55,0,2,0,0,13,0],
+"label_8hpp_source.html":[55,0,2,0,0,13],
 "labels_8hpp.html":[55,0,2,0,0,0,8],
-"labels_8hpp.html#a66a54f73e921a9aa3ccdf21aa982e3ec":[55,0,2,0,0,0,8,0],
 "labels_8hpp_source.html":[55,0,2,0,0,0,8],
 "macintosh_8hpp.html":[55,0,2,0,0,0,0,20],
 "macintosh_8hpp_source.html":[55,0,2,0,0,0,0,20],
@@ -247,7 +249,5 @@ var NAVTREEINDEX4 =
 "md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md222":[19,0],
 "md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md223":[19,1],
 "md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md224":[19,1,0],
-"md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md225":[19,1,1],
-"md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md226":[19,1,2],
-"md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md227":[19,2]
+"md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md225":[19,1,1]
 };

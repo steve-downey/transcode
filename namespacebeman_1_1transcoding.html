@@ -301,8 +301,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a8bcc307540cf9e3e29fd507e9da670cb"><td class="memTemplParams" colspan="2">template&lt;decode_codec Codec&gt; </td></tr>
 <tr class="memitem:a8bcc307540cf9e3e29fd507e9da670cb"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1decode__closure.html">decode_closure</a>&lt; Codec, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a8bcc307540cf9e3e29fd507e9da670cb">decode_or_error</a> (Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>={})</td></tr>
 <tr class="separator:a8bcc307540cf9e3e29fd507e9da670cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66a54f73e921a9aa3ccdf21aa982e3ec"><td class="memItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a66a54f73e921a9aa3ccdf21aa982e3ec">get_encoding</a> (std::string_view label) noexcept</td></tr>
-<tr class="separator:a66a54f73e921a9aa3ccdf21aa982e3ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb7b318ba17a0e44907744ff34cf98d7"><td class="memTemplParams" colspan="2">template&lt;encode_codec Codec&gt; </td></tr>
 <tr class="memitem:acb7b318ba17a0e44907744ff34cf98d7"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">encode_closure</a>&lt; Codec &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#acb7b318ba17a0e44907744ff34cf98d7">encode</a> (Codec <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>={})</td></tr>
 <tr class="separator:acb7b318ba17a0e44907744ff34cf98d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -333,6 +331,8 @@ Functions</h2></td></tr>
 <tr class="separator:aab66a3b96e24d01f79bc11a5b9731dcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b9d1350ae333361ebeca4ed71a3d2cd"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a0b9d1350ae333361ebeca4ed71a3d2cd">iconv_transcode_or_error</a> (const char *from, const char *to, std::span&lt; char &gt; buf)</td></tr>
 <tr class="separator:a0b9d1350ae333361ebeca4ed71a3d2cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66a54f73e921a9aa3ccdf21aa982e3ec"><td class="memItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a66a54f73e921a9aa3ccdf21aa982e3ec">get_encoding</a> (std::string_view label) noexcept</td></tr>
+<tr class="separator:a66a54f73e921a9aa3ccdf21aa982e3ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a603156a9d20e68760ab8a23fb1e64f70"><td class="memTemplParams" colspan="2">template&lt;std::contiguous_iterator I&gt; </td></tr>
 <tr class="memitem:a603156a9d20e68760ab8a23fb1e64f70"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a603156a9d20e68760ab8a23fb1e64f70">null_term_view</a> (I) -&gt; <a class="el" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a>&lt; I &gt;</td></tr>
 <tr class="memdesc:a603156a9d20e68760ab8a23fb1e64f70"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <br /></td></tr>
@@ -557,6 +557,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section remark"><dt>Remarks</dt><dd>Each enumerator names the encoding of the same name in the WHATWG Encoding Standard, whose table of encodings is normative and is not restated here: an encoding is what that standard says it is, and a specification that copied the list would be a second one to keep current. <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79">codec::replacement</a></code> is that standard's <code>replacement</code> encoding, which decodes any non-empty input to a single U+FFFD REPLACEMENT CHARACTER, and <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa0d8c71b93188d250d8368cac870134ae">codec::x_user_defined</a></code> its <code>x-user-defined</code>. </dd></dl>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3" name="a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3"></a>utf_8&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79" name="a20dfb324ebd26c6127d014520f93005aaf5300127f646a4550bc4a04fbe393e79"></a>replacement&#160;</td><td class="fielddoc"></td></tr>
@@ -824,6 +825,8 @@ template&lt;encode_codec Codec&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>The <code>codec</code> whose WHATWG label set contains <code>label</code>, and <code>nullopt</code> if no encoding has that label. Leading and trailing ASCII whitespace is ignored and the comparison is ASCII case-insensitive, which is the Encoding Standard's "get an encoding" algorithm. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>An encoding's labels are the alternative names a document may spell it with &ndash; <code>latin1</code>, <code>iso-8859-1</code> and <code>windows-1252</code> are all labels of <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa00b1d00a5438928d45b2ccf9c82ead4e">codec::windows_1252</a></code> &ndash; so a lookup that fails is a name no encoding claims, not an encoding that cannot be represented. </dd></dl>
 
 </div>
 </div>
@@ -1267,6 +1270,8 @@ template&lt;legacy_byte_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>The encoding <code>r</code> begins with a byte order mark for: \item <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3">codec::utf_8</a></code>, if <code>r</code> begins with <code>EF BB BF</code>; \item <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa0f4291507e17c4c6d550ebdd51087c65">codec::utf_16be</a></code>, if <code>r</code> begins with <code>FE FF</code>; \item <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa8995e63b559f0f74f3efa7dc973dd2a8">codec::utf_16le</a></code>, if <code>r</code> begins with <code>FF FE</code>; \item <code>nullopt</code> otherwise. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This is the byte order mark half of the Encoding Standard's "decide the fallback encoding" step: what to do when there is no mark is a question about the document and its transport, which a library cannot answer. The mark itself is not consumed &ndash; a decode view strips a leading U+FEFF for the UTF codecs on its own &ndash; so the range can be passed on unchanged. </dd></dl>
 
 </div>
 </div>
