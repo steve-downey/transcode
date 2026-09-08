@@ -140,9 +140,15 @@ Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
 <tr class="memitem:a86be99d08004d5af5d390d52bfdc325d"><td class="memItemLeft" align="right" valign="top">R&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html#a86be99d08004d5af5d390d52bfdc325d">base_</a></td></tr>
+<tr class="memdesc:a86be99d08004d5af5d390d52bfdc325d"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a86be99d08004d5af5d390d52bfdc325d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt;<br />
+requires legacy_byte_range&lt;R&gt;<br />
+class beman::transcoding::whatwg_decode_view&lt; C, R, E &gt;</div><dl class="section remark"><dt>Remarks</dt><dd><code><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">whatwg_decode_view</a>&lt;C, R, E&gt;</code> presents the bytes of <code>R</code> as the Unicode scalar values the encoding <code>C</code> decodes them to, one element per decoded scalar value. A byte sequence the encoding does not allow is a decoding error, reported as <code>E</code> says: as U+FFFD REPLACEMENT CHARACTER when <code>E</code> is <code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218af5300127f646a4550bc4a04fbe393e79">transcode_error_kind::replacement</a></code>, and as an <code>unexpected</code> holding a <code>whatwg_error</code> when it is <code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a></code>. Decoding is lazy: an element is decoded when the iterator reaches it.</dd></dl>
+<p>The view models <code>random_access_range</code> when <code>C</code> names an encoding that decodes one byte to one scalar value and <code>R</code> models <code>random_access_range</code>. How an implementation achieves that is not specified; it is a property of the view rather than a second view. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a52b78814deed6b966dc4f593aba204a6" name="a52b78814deed6b966dc4f593aba204a6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a52b78814deed6b966dc4f593aba204a6">&#9670;&#160;</a></span>whatwg_decode_view()</h2>
 
@@ -197,6 +203,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -224,6 +231,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -274,6 +282,9 @@ requires detail::const_iterator_compatible_range&lt;R&gt; &amp;&amp; detail::con
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>An <code>$iterator$</code> that compares equal to an iterator that has decoded every element of <code>$base$</code>. </dd>
+<dd>
+An <code>$iterator$</code> that compares equal to an iterator that has decoded every element of <code>$base$</code>. </dd></dl>
 
 </div>
 </div>
@@ -380,6 +391,8 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>\expos </p>
 
 </div>
 </div>

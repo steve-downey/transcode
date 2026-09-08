@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p5_step9_iconv.html','')
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p5-step9-iconv</code> <b>Depends on:</b> Step 8 <b>Read first:</b> <code><a class="el" href="p5-step4-errors-concepts-null-term_8md.html">docs/plans/p5-step4-errors-concepts-null-term.md</a></code> ("the markup loop")</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md349"></a>
+<h1><a class="anchor" id="autotoc_md351"></a>
 Goal</h1>
 <p>Wording for <code>[transcode.iconv]</code> — or a recorded decision that the iconv adaptors are described in the paper but not proposed as wording.</p>
-<h1><a class="anchor" id="autotoc_md350"></a>
+<h1><a class="anchor" id="autotoc_md352"></a>
 What is different here</h1>
 <ul>
 <li><b>Decide the scope question first, and record it.</b> The paper's "Headers" section currently lists <code>iconv_transcode</code> in <code>&lt;transcode&gt;</code>, but iconv is a POSIX interface, is not <code>constexpr</code>, and its behaviour is implementation-defined across glibc, musl and the BSDs — the paper says so itself. Standardizing a view over it means specifying "whatever the
@@ -112,7 +112,7 @@ What is different here</h1>
 <li><b>If wording is written</b>, the error model is <code>iconv_error</code>, not <code>whatwg_error</code>, and <code><a class="el" href="p2728-alignment_8md.html">docs/p2728-alignment.md</a></code> plus the standing memo on unifying the <code>_or_error</code> pairs under one error-kind enum are directly relevant: do not specify two error vocabularies without saying why in the design section.</li>
 <li><b>Tests use <code>iconv_mock.hpp</code></b>, so the wording cannot lean on any particular platform's tables; it can only say what the POSIX interface guarantees.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md351"></a>
+<h1><a class="anchor" id="autotoc_md353"></a>
 Acceptance</h1>
 <ul>
 <li>Either <code>papers/wording/transcode.iconv.md</code> exists and validates, or <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code> records the decision not to propose wording, with the reasoning, and the paper says so where the API surface table claims iconv support.</li>

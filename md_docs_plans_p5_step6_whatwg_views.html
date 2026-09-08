@@ -114,7 +114,21 @@ What is different here</h1>
 </ul>
 <h1><a class="anchor" id="autotoc_md336"></a>
 Acceptance</h1>
-<p>As Step 4, for <code>papers/wording/transcode.whatwg.decode.md</code> and <code>transcode.whatwg.encode.md</code>. </p>
+<p>As Step 4, for <code>papers/wording/transcode.whatwg.decode.md</code> and <code>transcode.whatwg.encode.md</code>.</p>
+<hr  />
+<h1><a class="anchor" id="autotoc_md338"></a>
+Outcome (2026-09-08)</h1>
+<p>Both clauses are written, and <code>--validate</code> reports nothing about either view, its iterator, or its adaptor objects. The document's findings go from 133 to 79: what remains is Steps 7-9's, and one of the two entities the count blames on this clause was the <code>detail::</code> qualifier W1 took away.</p>
+<p><b>W1 is carried out.</b> <code>random_access_whatwg_decode_view</code> and its encode twin are <code>\omit</code>ted, and each clause says instead that the view models <code>random_access_range</code> when the codec decodes one byte to one scalar value and the base range does. That is a design claim, so it belongs in the paper's design section as well; Step 10 puts it there. It also removed the last surviving <code>detail::</code> qualifier from the document, which reached the wording through those two views' requires-clauses &ndash; the outline predicted exactly that.</p>
+<p><b>A view's iterator is exposition-only, declared and not defined.</b> </p><pre class="fragment">class $iterator$; // exposition only
+</pre><p> which is [range.transform.view]'s shape and the only one that keeps a view's private state, and the implementation types it names, out of the header synopsis. It needed specgen#80: <code>\expos</code> did not reach a nested class, so the class was dropped as an ordinary private member while every <code>begin</code>, <code>end</code> and <code>operator++</code> signature went on naming it &ndash; and nothing reported that, because the private-member check does not look at a nested class. The iterator's own members are exposition with it, so an extracted body says <code>$value$</code>.</p>
+<p><b>The closure types are omitted and the adaptor objects masked.</b> Each clause names <code>whatwg_decode&lt;C&gt;</code> / <code>whatwg_encode&lt;C&gt;</code> and their <code>_or_error</code> twins as <code>inline constexpr $unspecified$</code>, with the expression-equivalence the draft writes for a range adaptor object. The pre-unification aliases are <code>\omit</code>ted: they are transition spellings, not API.</p>
+<p><b>Bodies carry the wording where the body is the specification.</b> <code>\returns-equiv</code> on <code>base()</code> and <code>operator*</code>, <code>\effects-equiv</code> on the post-increments; authored prose everywhere the body is a state machine, which is every <code>load()</code>-driven operation. Step 3's pushdown is what made that a choice rather than a hazard: the bodies that remain in the views are the ones worth extracting.</p>
+<p>Two things for the steps that follow:</p>
+<ul>
+<li>A clause's sub-structure can be a <code>\rSec3</code> inside the same fragment, which is how each iterator got its own subclause without adding a fragment or moving a stable name.</li>
+<li>The findings that remain are all <code>encode_view</code> / <code>decode_view</code> &ndash; the <em>pluggable</em> views, Step 7 &ndash; plus the iconv surface, Step 9. </li>
+</ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

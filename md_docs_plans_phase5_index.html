@@ -99,12 +99,12 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase5_index.html',''); 
   <div class="headertitle"><div class="title">Phase 5: Specification Wording from the Headers </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md509"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md511"></a>
 Context</h1>
 <p><code>papers/transcode-view.md</code> (D4246R0) has an abstract, motivation, comparison tables, design rationale and a P2728 comparison. It has no <b>Wording</b>. Writing that wording by hand would create a second source of truth for the API that drifts from <code>include/</code> on the first refactor.</p>
 <p><code>beman.specgen</code> (<code>~/src/specgen/main</code>, installed as <code>~/.local/bin/specgen</code>, 0.1.0) exists to close that gap: it lowers a marked-up C++26 header to a semantic IR and renders draft LaTeX, mpark/wg21 markdown, or org. Phase 5 adopts it: the wording clauses of the paper are <b>generated from the shipping headers</b> and transcluded into the paper by the mpark/wg21 build, and any drift between them is a build failure.</p>
 <p>Read <code>~/src/specgen/main/docs/user-guide.md</code> (markup vocabulary, commands, diagnostics) and <code>~/src/specgen/main/docs/architecture.md</code> (§1 input contract, §3.4 synopsis extraction, §3.5 namespace mapping, §9 validation) before executing any step.</p>
-<h1><a class="anchor" id="autotoc_md510"></a>
+<h1><a class="anchor" id="autotoc_md512"></a>
 Measurements taken before planning (2026-09-03)</h1>
 <p>These are facts from running the installed <code>specgen 0.1.0</code> against this worktree, not estimates. They are what the steps below are sized against.</p>
 <ul>
@@ -121,7 +121,7 @@ Measurements taken before planning (2026-09-03)</h1>
 <li>The mpark backend emits <code>::: wording</code> divs with headings <code>## Title [stable.name]{- .sref} {-}</code>, starting at heading level 2 (<code>base_heading_level = 2</code>, not exposed on the command line).</li>
 <li>specgen's own corpus has no header that uses a <code>std::</code> sub-namespace, so the <code>ranges::</code> leakage finding above is an <b>upstream gap</b>, not a transcode defect. See "External dependencies".</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md511"></a>
+<h1><a class="anchor" id="autotoc_md513"></a>
 Decisions</h1>
 <p><b>D1 — One specgen document per proposed standard header.</b> The paper proposes <code>&lt;transcode&gt;</code> and <code>&lt;null_term&gt;</code>. Each maps to exactly one spec-facing header in this repo, and that header is what specgen is run over.</p>
 <p><b>How a document reaches more than one file, settled 2026-09-07.</b> specgen used to process only declarations located in the main file, which would have made this decision "put the whole of `&lt;transcode&gt;` in one 3,500-line file". It does not: a gathered <code>.syn</code> region now gathers the declarations of the headers <code>#include</code>d inside it (specgen#77, PR #78), so <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code> stays the umbrella it already was and the sixteen component headers stay where they are. The region is the statement of which includes are the specification surface; <code>detail/</code> includes sit outside it. This is D7 again &ndash; the tool renders what the library writes &ndash; and it is why Step 3's task 4 cost a rewrite of one umbrella rather than a rewrite of the library. Confirmed working on 2026-09-05: <code>&lt;null_term&gt;</code> renders a real gathered <code>[null.term.syn]</code> beside its per-class clauses, validating clean. The fallback this decision carried &ndash; one document per header family with a hand-authored <code>[transcode.syn]</code> &ndash; is retired; it existed because a deduction guide corrupted the gathered region (specgen#22), and that is fixed.</p>
@@ -132,7 +132,7 @@ Decisions</h1>
 <p><b>D6 — No <code>--paper</code> mode.</b> <code>--paper</code> wraps everything in <code>::: add</code> and underlines it. This paper adds whole new clauses; an authored editing instruction ("Add a new clause [transcode] as follows:") reads better than several hundred underlined lines. The switch is one flag if that judgement changes.</p>
 <p><b>D7 — <code>detail::</code> never appears in a spec-visible signature, and the headers do not move to achieve that.</b> A <code>detail::</code> name reaching the wording is a real finding: the published text must not name something the reader cannot see. What was wrong in the original decision is the remedy it accepted. It said such a name "either moves out of `detail` ... or is marked `\expos`", and relocating a helper out of <code>detail</code> changes name lookup, ADL and the library's effective public surface — a real change to the library, taken on for a documentation tool. It was recorded as the single largest source of the refactoring in Step 3, which is the clearest sign it was pointed the wrong way.</p>
 <p>The rule now: a <code>detail::</code> name in a spec-visible signature renders exposition-only or <code>unspecified</code>, and the header keeps the spelling it wants. <code>\expos</code> covers it, and since specgen#36 it reaches entities declared in an included <code>detail/</code> header too. Measured on 2026-09-05: marking the six concepts <code>\expos</code> in the headers that declare them takes the qualifier findings from nine to three, with nothing moved and nothing renamed. The three survivors are class-head constraints (N6) and wait for specgen#48. The pattern of a synopsis plus out-of-line definitions is all a spec-facing header should have to be.</p>
-<h1><a class="anchor" id="autotoc_md512"></a>
+<h1><a class="anchor" id="autotoc_md514"></a>
 Step index</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -163,7 +163,7 @@ Step index</h1>
 <p>Steps 4-9 are the same loop nine times: mark up a clause, regenerate, drive <code>--validate</code> findings for that clause to zero, commit headers and fragments together. They are separated by clause so a step is reviewable and so a mid-phase stop still leaves the paper buildable.</p>
 <p><b>Step 3's task 4 is landed</b> (2026-09-07): <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code> is the document for <code>&lt;transcode&gt;</code>, the sixteen component headers stay where they are, and <code>[transcode.syn]</code> is a generated 1,160-line header synopsis holding all of them. Step 3b's remainder &ndash; the stateful codec pushdown &ndash; landed with it. See <code><a class="el" href="p5-step3-spec-header-shape_8md.html">docs/plans/p5-step3-spec-header-shape.md</a></code>, "Outcome".</p>
 <p><b>Step 4 is landed</b> (2026-09-06), all three clauses, at the price of two upstream fixes: <code>[transcode.errors]</code> needed specgen to be able to specify an enumeration at all, and <code>[null.term.adaptor]</code> needed a folded-in declaration's description to reach its clause. Both are merged (specgen #70 and #71); see <code><a class="el" href="p5-step4-errors-concepts-null-term_8md.html">docs/plans/p5-step4-errors-concepts-null-term.md</a></code>, "Outcome".</p>
-<h1><a class="anchor" id="autotoc_md513"></a>
+<h1><a class="anchor" id="autotoc_md515"></a>
 Standing conventions</h1>
 <ul>
 <li>Branch and worktree per step, rooted from <code>main</code>, per <code>CLAUDE.md</code>.</li>
@@ -174,7 +174,7 @@ Standing conventions</h1>
 <li>Markup is <code>//!</code> and <code>/*! */</code> only, with one exception: a gathered header synopsis is closed by a <code>/// END [x.syn]</code> fence, which specgen requires and which nothing else in the repo spells. <code>/** */</code> stays unused, and <code>///</code> is reserved for that fence alone, so no comment is ambiguous between Doxygen and specgen.</li>
 <li>Docblock lines stay under 119 columns so <code>ReflowComments</code> never touches them.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md514"></a>
+<h1><a class="anchor" id="autotoc_md516"></a>
 External dependencies (work in &lt;tt&gt;~/src/specgen/main&lt;/tt&gt;)</h1>
 <p>These are upstream changes to specgen. They are tracked here because they gate transcode steps, but they are executed in the specgen repository.</p>
 <p><b>Re-measured 2026-09-07</b> against specgen at <code>1b4e10f</code>. <b>Every defect this project has filed is closed</b>, including the two Step 4 filed &ndash; #68 (an enumeration produced no wording) and #69 (a folded-in declaration's description was dropped), fixed by specgen PRs #70 and #71, both merged. The same round brought one change of specgen's own, #72, which sizes each sentinel to the text that replaces it; it moves no fragment of this paper.</p>
@@ -187,10 +187,10 @@ in wording but is not a documented entity", 4 unmarked private members. <b>No qu
 <li><b>N8 closed</b> (#55, <code>5b04bf2</code>, apply the declaration masks inside a gathered region). <code>views::null_term</code> drops its <code>\omit</code> and renders <code>inline constexpr $unspecified$ null_term;</code> in the header synopsis, which is what the draft writes. <code>[null.term.adaptor]</code> is unblocked; only its prose is outstanding, and that is authorship, not tooling.</li>
 </ul>
 <p>The same round also tightened the template head's namespace drop (<code>fa9af1c</code>), so <code>template&lt;std::contiguous_iterator I&gt;</code> renders as <code>template&lt;contiguous_iterator I&gt;</code>. That is the draft's spelling, and it moved the committed fragments &ndash; regenerated and committed here, which is D2 working as intended.</p>
-<h2><a class="anchor" id="autotoc_md515"></a>
+<h2><a class="anchor" id="autotoc_md517"></a>
 The gathered-region pattern</h2>
 <p><b>Five</b> defects turned out to be one shape: a marker or a check that works at namespace scope and is skipped for a declaration folded into a gathered region. N3 (#34, a routed member's description), N7 (#45, coverage checking), N8 (#55, declaration masks), the class-head half of N6 (#48), and #69 (a namespace entity's whole description). All five are fixed. Each of the first four was recorded here as the last of them, which is the reason to keep the shape written down rather than the count: Steps 5-9 gather <code>&lt;transcode&gt;</code>, a far larger surface than <code>&lt;null_term&gt;</code>, and the failure mode is silent. A dropped entity has an empty roster, so coverage has nothing to report about it, and a clean <code>--validate</code> does not prove an authored paragraph arrived. Read the fragment.</p>
-<h2><a class="anchor" id="autotoc_md516"></a>
+<h2><a class="anchor" id="autotoc_md518"></a>
 Closed</h2>
 <ul>
 <li><b>U1 / U9 — leakage checker discriminator.</b> #3-era fix, <code>b1054dd</code>.</li>

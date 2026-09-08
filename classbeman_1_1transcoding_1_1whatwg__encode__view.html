@@ -140,9 +140,16 @@ Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
 <tr class="memitem:a5169e901c2584cfe1f9059d61b442475"><td class="memItemLeft" align="right" valign="top">R&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view.html#a5169e901c2584cfe1f9059d61b442475">base_</a></td></tr>
+<tr class="memdesc:a5169e901c2584cfe1f9059d61b442475"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a5169e901c2584cfe1f9059d61b442475"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> C, std::ranges::input_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt;<br />
+requires detail::whatwg_encode_input&lt;C, R&gt;<br />
+class beman::transcoding::whatwg_encode_view&lt; C, R, E &gt;</div><dl class="section remark"><dt>Remarks</dt><dd><code><a class="el" href="classbeman_1_1transcoding_1_1whatwg__encode__view.html">whatwg_encode_view</a>&lt;C, R, E&gt;</code> presents the Unicode scalar values of <code>R</code> as the bytes the encoding <code>C</code> encodes them to, one element per byte. A scalar value the encoding cannot represent is an encoding error, reported as <code>E</code> says: as &lsquo;&rsquo;?'<code>when</code>E<code>is</code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218af5300127f646a4550bc4a04fbe393e79">transcode_error_kind::replacement</a><code>, and as an</code>unexpected<code>holding</code><a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba41a389ed570cf4bd17e392adceb1bf31">whatwg_error::unmapped_codepoint</a><code>when it is </code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a>`. Encoding is lazy, and one input element can produce several output elements.</dd></dl>
+<p>Each element of <code>R</code> is required to be a Unicode scalar value. That is a precondition, not a constraint: <code>unicode_scalar_range</code> \iref{transcode.reqs} is a requirement on the range's type, and a <code>char32_t</code> holding a surrogate or a value above U+10FFFF is not diagnosed.</p>
+<p><code>C</code> is required to be an encoding the WHATWG Encoding Standard defines an encoder for. It defines none for <code>utf_16be</code>, <code>utf_16le</code>, <code>replacement</code> or <code>x_user_defined</code>, and the view does not accept them. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aaed53d3f0616a0aeea50192076d468e5" name="aaed53d3f0616a0aeea50192076d468e5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaed53d3f0616a0aeea50192076d468e5">&#9670;&#160;</a></span>whatwg_encode_view()</h2>
 
@@ -197,6 +204,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -224,6 +232,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -274,6 +283,9 @@ requires detail::const_iterator_compatible_range&lt;R&gt; &amp;&amp; detail::con
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>An <code>$iterator$</code> that compares equal to an iterator that has encoded every element of <code>$base$</code>. </dd>
+<dd>
+An <code>$iterator$</code> that compares equal to an iterator that has encoded every element of <code>$base$</code>. </dd></dl>
 
 </div>
 </div>
@@ -380,6 +392,8 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>\expos </p>
 
 </div>
 </div>
