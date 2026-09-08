@@ -50,8 +50,8 @@ order the compiler needs and need not match.
 | `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp`, done 2026-09-07 |
 | `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `label.hpp`, done 2026-09-07 |
 | `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp`, done 2026-09-07 |
-| `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, its closures `whatwg_decode<C>` / `whatwg_decode_or_error<C>`, and its `enable_borrowed_range` specialization | `whatwg_decode_view.hpp` |
-| `transcode.whatwg.encode` | 2 | Encoding views | `whatwg_encode_view`, likewise | `whatwg_encode_view.hpp` |
+| `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, its closures `whatwg_decode<C>` / `whatwg_decode_or_error<C>`, and its `enable_borrowed_range` specialization | `whatwg_decode_view.hpp`, done 2026-09-08 |
+| `transcode.whatwg.encode` | 2 | Encoding views | `whatwg_encode_view`, likewise | `whatwg_encode_view.hpp`, done 2026-09-08 |
 | `transcode.custom.reqs` | 2 | Codec requirements | `decode_codec`, `encode_codec`, `flushable_decode_codec`, `random_access_decode_codec_type`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp` |
 | `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp` |
 | `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp` |
@@ -93,6 +93,7 @@ so no step has to decide twice.
 | `null_term_view::ptr_` | `$ptr$` | the view's state, which the wording refers to |
 | `detail::legacy_byte_type` | `$legacy-byte-type$` | a real conjunct of `legacy_byte_range`; the draft would spell it out.  Marked in Step 4 |
 | every view's `base_`, `codec_`, `buf_`, iterator state | exposition names | the wording describes what they hold |
+| a view's nested `iterator` | `class $iterator$;` | `\expos` with bare `\seebelow`, which renders the declaration and leaves the state out of the synopsis -- [range.transform.view]'s shape.  Needed specgen#80 |
 | the closure types (`whatwg_decode_closure` and the seven others) | ideally `unspecified` | unblocked 2026-09-05; specgen#24 fixed |
 | `detail::const_iterator_compatible_range`, `detail::const_sentinel_compatible_range` | `$const-iterator-compatible-range$`, `$const-sentinel-compatible-range$` | the const-compatibility chain the views constrain `begin`/`end` on |
 | `detail::random_access_decode_codec`, `detail::random_access_encode_codec` | `$random-access-decode-codec$`, `$random-access-encode-codec$` | which codecs are O(1) per element; a property of the specification, not of the tables |
@@ -148,7 +149,11 @@ worth recording because Steps 6 and 7 inherit it.
 ## Decisions this outline settles
 
 **W1 — the `random_access_` view specializations are not separate specified
-entities.**  They exist so a single-byte codec gets O(1) indexing.  That is a
+entities.**  *Carried out in Step 6 (2026-09-08): both are `\omit`ted, and each
+view's clause says instead that it models `random_access_range` when the codec
+decodes one byte to one scalar value and the base range does.  That also
+removed the last `detail::` qualifier from the document, which was reaching the
+wording through those views' requires-clauses.*  They exist so a single-byte codec gets O(1) indexing.  That is a
 property of the view, not a second view: the specification says
 `whatwg_decode_view<C, R>` models `random_access_range` when `C` is a
 single-byte codec and `R` models `random_access_range`, and an implementation

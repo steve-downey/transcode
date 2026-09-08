@@ -5,6 +5,8 @@ WORDING_MD := \
 	wording/transcode.errors.md \
 	wording/transcode.reqs.md \
 	wording/transcode.codec.md \
+	wording/transcode.whatwg.decode.md \
+	wording/transcode.whatwg.encode.md \
 	wording/null.term.syn.md \
 	wording/null.term.sentinel.md \
 	wording/null.term.view.md \

@@ -60,6 +60,7 @@
 #endif
 namespace beman::transcoding {
 
+//! \omit
 template <codec C, std::ranges::random_access_range R, transcode_error_kind E = transcode_error_kind::replacement>
     requires unicode_scalar_range<R> && detail::random_access_encode_codec<C>
 class random_access_whatwg_encode_view
@@ -190,30 +191,59 @@ class random_access_whatwg_encode_view
 // expected<char, whatwg_error>, yielding unmapped_codepoint on failure.
 // ---------------------------------------------------------------------------
 
+// \ref{transcode.whatwg.encode}, encoding views
+
+//! \remarks `whatwg_encode_view<C, R, E>` presents the Unicode scalar values
+//! of `R` as the bytes the encoding `C` encodes them to, one element per byte.
+//! A scalar value the encoding cannot represent is an encoding error, reported
+//! as `E` says: as `'?'` when `E` is `transcode_error_kind::replacement`, and
+//! as an `unexpected` holding `whatwg_error::unmapped_codepoint` when it is
+//! `transcode_error_kind::expected`.  Encoding is lazy, and one input element
+//! can produce several output elements.
+//!
+//! Each element of `R` is required to be a Unicode scalar value.  That is a
+//! precondition, not a constraint: `unicode_scalar_range` \iref{transcode.reqs}
+//! is a requirement on the range's type, and a `char32_t` holding a surrogate
+//! or a value above U+10FFFF is not diagnosed.
+//!
+//! `C` is required to be an encoding the WHATWG Encoding Standard defines an
+//! encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or
+//! `x_user_defined`, and the view does not accept them.
 template <codec C, std::ranges::input_range R, transcode_error_kind E = transcode_error_kind::replacement>
     requires detail::whatwg_encode_input<C, R>
 class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view<C, R, E>> {
+    //! \expos
     R base_;
 
+    //! \expos
+    //! \seebelow
     class iterator {
         using base_iter = detail::compatible_iterator_t<R>;
         using base_sent = detail::compatible_sentinel_t<R>;
         using result_t =
             std::conditional_t<E == transcode_error_kind::expected, std::expected<char, whatwg_error>, char>;
 
+        //! \expos
         base_iter current_{};
+        //! \expos
         base_sent end_{};
-        result_t  buf_[8]{};
-        int       len_{0};
-        int       pos_{0};
-        bool      done_{false};
+        //! \expos
+        result_t buf_[8]{};
+        //! \expos
+        int len_{0};
+        //! \expos
+        int pos_{0};
+        //! \expos
+        bool done_{false};
         // What this codec's encode remembers between calls, and nothing for the
         // codecs that remember nothing.
+        //! \expos
         [[no_unique_address]] detail::encode_state_t<C> state_{};
 
         // Report a code point this codec cannot encode: one error element under
         // `expected`, and the codec's own replacement bytes otherwise -- which
         // differ in length, so this cannot be a value mapping.
+        //! \expos
         constexpr void emit_error(whatwg_error e, const char* replacement, int count) {
             if constexpr (E == transcode_error_kind::expected) {
                 buf_[0] = result_t(std::unexpect, e);
@@ -226,15 +256,18 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
             pos_ = 0;
         }
 
+        //! \expos
         constexpr void emit_error(whatwg_error e, std::initializer_list<char> replacement) {
             emit_error(e, replacement.begin(), static_cast<int>(replacement.size()));
         }
 
+        //! \expos
         constexpr void load();
 
       public:
         constexpr iterator() = default;
 
+        //! \expos
         static constexpr iterator terminal()
             requires std::ranges::forward_range<R>
         {
@@ -250,8 +283,11 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
         using difference_type   = std::ptrdiff_t;
         using reference         = result_t;
 
+        // \ref{transcode.whatwg.encode.iterator}, iterator operations
         constexpr iterator(base_iter current, base_sent end);
 
+        //! \returns The iterator into `R` this iterator reads from, positioned
+        //! at the first scalar value it has not yet encoded.
         constexpr const base_iter& base() const noexcept { return current_; }
 
         constexpr auto      operator*() const;
@@ -275,10 +311,13 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
     };
 
   public:
+    // \ref{transcode.whatwg.encode}, construction and access
     constexpr explicit whatwg_encode_view(R base);
 
+    //! \returns-equiv
     constexpr const R& base() const& noexcept { return base_; }
-    constexpr R        base() && { return std::move(base_); }
+    //! \returns-equiv
+    constexpr R base() && { return std::move(base_); }
 
     constexpr iterator begin();
     constexpr iterator begin() const
@@ -291,6 +330,7 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
     constexpr std::default_sentinel_t end() const;
 };
 
+//! \omit
 template <codec C, transcode_error_kind E = transcode_error_kind::replacement>
 struct whatwg_encode_closure {
     template <typename R>
@@ -324,20 +364,34 @@ struct whatwg_encode_closure {
     }
 };
 
+//! \seebelow
+//! \remarks The name `whatwg_encode<C>` denotes a range adaptor object.  Given
+//! a subexpression `E` that models `unicode_scalar_range`, the expression
+//! `whatwg_encode<C>(E)` and `E | whatwg_encode<C>` are each
+//! expression-equivalent to a `whatwg_encode_view<C, views::all_t<decltype((E))>>`
+//! over `E`.  An `E` of array type is ill-formed.
 template <codec C>
 inline constexpr auto whatwg_encode = whatwg_encode_closure<C, transcode_error_kind::replacement>{};
 
+//! \seebelow
+//! \remarks `whatwg_encode_or_error<C>` is `whatwg_encode<C>` with
+//! `transcode_error_kind::expected`: the view it adapts to has value type
+//! `expected<char, whatwg_error>`, and an encoding error is the error rather
+//! than `'?'`.
 template <codec C>
 inline constexpr auto whatwg_encode_or_error = whatwg_encode_closure<C, transcode_error_kind::expected>{};
 
 // The names the paired views had before they were unified.
+//! \omit
 template <codec C, std::ranges::input_range R>
 using whatwg_encode_or_error_view = whatwg_encode_view<C, R, transcode_error_kind::expected>;
 
+//! \omit
 template <codec C, std::ranges::random_access_range R>
 using random_access_whatwg_encode_or_error_view =
     random_access_whatwg_encode_view<C, R, transcode_error_kind::expected>;
 
+//! \omit
 template <codec C>
 using whatwg_encode_or_error_closure = whatwg_encode_closure<C, transcode_error_kind::expected>;
 
@@ -364,16 +418,21 @@ namespace beman::transcoding {
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \effects Initializes `$base$` with `std::move(base)`.
 constexpr whatwg_encode_view<C, R, E>::whatwg_encode_view(R base) : base_(std::move(base)) {}
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \returns An `$iterator$` over `$base$`, positioned at the first byte of
+//! its first encoded element.
 constexpr auto whatwg_encode_view<C, R, E>::begin() -> iterator {
     return iterator(std::ranges::begin(base_), std::ranges::end(base_));
 }
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \returns An `$iterator$` over `$base$`, positioned at the first byte of
+//! its first encoded element.
 constexpr auto whatwg_encode_view<C, R, E>::begin() const -> iterator
     requires detail::const_iterator_compatible_range<R> && detail::const_sentinel_compatible_range<R>
 {
@@ -382,6 +441,8 @@ constexpr auto whatwg_encode_view<C, R, E>::begin() const -> iterator
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \returns An `$iterator$` that compares equal to an iterator that has
+//! encoded every element of `$base$`.
 constexpr auto whatwg_encode_view<C, R, E>::end() -> iterator
     requires std::ranges::forward_range<R> && std::ranges::common_range<R>
 {
@@ -390,12 +451,15 @@ constexpr auto whatwg_encode_view<C, R, E>::end() -> iterator
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \returns `default_sentinel`.
 constexpr std::default_sentinel_t whatwg_encode_view<C, R, E>::end() const {
     return std::default_sentinel;
 }
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \returns An `$iterator$` that compares equal to an iterator that has
+//! encoded every element of `$base$`.
 constexpr auto whatwg_encode_view<C, R, E>::end() const -> iterator
     requires std::ranges::forward_range<const R> && std::ranges::common_range<const R> &&
              detail::const_iterator_compatible_range<R> && detail::const_sentinel_compatible_range<R>
@@ -534,6 +598,8 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \effects Initializes `$current$` with `std::move(current)` and `$end$`
+//! with `std::move(end)`, then encodes the first element.
 constexpr whatwg_encode_view<C, R, E>::iterator::iterator(base_iter current, base_sent end)
     : current_(std::move(current)), end_(std::move(end)) {
     load();
@@ -541,12 +607,20 @@ constexpr whatwg_encode_view<C, R, E>::iterator::iterator(base_iter current, bas
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \returns The byte at the current position of the encoded element, or the
+//! error the encoding of that element produced.
 constexpr auto whatwg_encode_view<C, R, E>::iterator::operator*() const {
     return this->buf_[this->pos_];
 }
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \effects Advances to the next byte of the encoded element, encoding the
+//! next element of the base range when the current one is exhausted; if no
+//! element remains, makes `*this` equal to `end()`.  When `C` is a
+//! stateful encoding, exhausting the base range also emits whatever the
+//! encoding owes to return to its initial state.
+//! \returns `*this`.
 constexpr auto whatwg_encode_view<C, R, E>::iterator::operator++() -> iterator& {
     if (++pos_ < len_)
         return *this;
@@ -556,6 +630,7 @@ constexpr auto whatwg_encode_view<C, R, E>::iterator::operator++() -> iterator& 
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \effects-equiv
 constexpr auto whatwg_encode_view<C, R, E>::iterator::operator++(int) -> iterator
     requires std::ranges::forward_range<R>
 {
@@ -566,6 +641,7 @@ constexpr auto whatwg_encode_view<C, R, E>::iterator::operator++(int) -> iterato
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires detail::whatwg_encode_input<C, R>
+//! \effects-equiv
 constexpr void whatwg_encode_view<C, R, E>::iterator::operator++(int)
     requires(!std::ranges::forward_range<R>)
 {
