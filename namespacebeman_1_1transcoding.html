@@ -116,12 +116,14 @@ Namespaces</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1decode__closure.html">decode_closure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="structbeman_1_1transcoding_1_1decode__closure.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1decode__result.html">decode_result</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__view.html">decode_view</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__closure.html">encode_closure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="structbeman_1_1transcoding_1_1encode__closure.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1encode__result.html">encode_result</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,6 +148,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1pluggable__transcode__closure.html">pluggable_transcode_closure</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">random_access_decode_view</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="classbeman_1_1transcoding_1_1random__access__decode__view.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html">random_access_whatwg_decode_view</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html#details">More...</a><br /></td></tr>
@@ -424,6 +427,9 @@ template&lt;encode_codec Codec&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>An <code>$iterator$</code> that compares equal to an iterator that has encoded every element of <code>$base$</code>. </dd>
+<dd>
+An <code>$iterator$</code> that compares equal to an iterator that has encoded every element of <code>$base$</code>. </dd></dl>
 
 </div>
 </div>
@@ -448,6 +454,9 @@ template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_ra
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>An <code>$iterator$</code> that compares equal to an iterator that has decoded every element of <code>$base$</code>. </dd>
+<dd>
+An <code>$iterator$</code> that compares equal to an iterator that has decoded every element of <code>$base$</code>. </dd></dl>
 
 </div>
 </div>
@@ -737,6 +746,7 @@ template&lt;decode_codec Codec&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd>A range adaptor object over <code>codec</code>. Given a subexpression <code>E</code> that models <code>legacy_byte_range</code>, <code>decode(codec)(E)</code> and <code>E | decode(codec)</code> are each expression-equivalent to a <code><a class="el" href="classbeman_1_1transcoding_1_1decode__view.html">decode_view</a>&lt;Codec, views::all_t&lt;decltype((E))&gt;&gt;</code> over <code>E</code> and a copy of <code>codec</code>. An <code>E</code> of array type is ill-formed. </dd></dl>
 
 </div>
 </div>
@@ -765,6 +775,7 @@ template&lt;decode_codec Codec&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd><code>decode(codec)</code> with <code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a></code>: the view it adapts to has value type <code>expected&lt;char32_t, whatwg_error&gt;</code>, and a decoding error is the error rather than U+FFFD. </dd></dl>
 
 </div>
 </div>
@@ -793,6 +804,7 @@ template&lt;encode_codec Codec&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd>A range adaptor object over <code>codec</code>. Given a subexpression <code>E</code> that models <code>unicode_scalar_range</code>, <code>encode(codec)(E)</code> and <code>E | encode(codec)</code> are each expression-equivalent to an <code><a class="el" href="classbeman_1_1transcoding_1_1encode__view.html">encode_view</a>&lt;Codec, views::all_t&lt;decltype((E))&gt;&gt;</code> over <code>E</code> and a copy of <code>codec</code>. </dd></dl>
 
 </div>
 </div>
@@ -821,6 +833,7 @@ template&lt;encode_codec Codec&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd><code>encode(codec)</code> with <code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a></code>: the view it adapts to has value type <code>expected&lt;char, whatwg_error&gt;</code>, and an encoding error is the error rather than &lsquo;&rsquo;?'`. </dd></dl>
 
 </div>
 </div>

@@ -99,11 +99,11 @@ $(document).ready(function(){initNavTree('md_docs_wording_outline.html',''); ini
   <div class="headertitle"><div class="title">wording-outline </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md606"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md608"></a>
 Wording outline</h1>
 <p>The clause tree the paper's wording is generated into, and the map from it back to the headers. This is the contract the markup steps (<code>docs/plans/p5-step4-*</code> through <code>p5-step9-*</code>) follow: a stable name, a title, a depth and an expos/omit decision are settled here once, because each of them is simultaneously a clause identifier, a fragment filename, an <code>{- .sref}</code> span and an ordering key. Changing one later renames a file, a heading and a cross-reference at once.</p>
 <p>See <code><a class="el" href="phase5-index_8md.html">docs/plans/phase5-index.md</a></code> for the plan, its decisions D1-D7, and the upstream specgen items U1-U9 referenced below, whose state was re-measured on 2026-09-04 (see the index).</p>
-<h2><a class="anchor" id="autotoc_md607"></a>
+<h2><a class="anchor" id="autotoc_md609"></a>
 How the tree maps onto fragments</h2>
 <p><code>--split</code> writes one fragment per <b>top-level</b> section, so fragment granularity is decided by which <code>\rSec</code> markers are shallowest in a header, not by the clause numbering the paper prints. Two consequences:</p>
 <ul>
@@ -111,7 +111,7 @@ How the tree maps onto fragments</h2>
 <li>The umbrella clause <code>[transcode]</code> is <b>not</b> generated. A <code>\rSec1</code> wrapping everything would collapse the whole header into a single fragment, and a <code>\rSec</code> section with no declarations under it renders as a bare heading (observed in Step 1). The umbrella, and <code>[transcode.general]</code>, are authored in the paper around the generated clauses.</li>
 </ul>
 <p>Heading level follows from mpark's fixed <code>base_heading_level = 2</code> (index U2): <code>\rSec2</code> prints as <code>##</code>, <code>\rSec3</code> as <code>###</code>.</p>
-<h2><a class="anchor" id="autotoc_md608"></a>
+<h2><a class="anchor" id="autotoc_md610"></a>
 &lt;tt&gt;&lt;transcode&gt;&lt;/tt&gt;</h2>
 <p>Generated from <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code>, which is the umbrella of <code>#include</code>s it always was: specgen follows the headers included inside its <code>\rSec2[transcode.syn]</code> region (index D1), so the component headers are the document without being one file. Fragment order is the order of the <code>\rSec</code> markers in <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code>, which is the order below; the <em>synopsis</em> reads in include order, which is the order the compiler needs and need not match.</p>
 <table class="markdownTable">
@@ -136,11 +136,11 @@ How the tree maps onto fragments</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>transcode.whatwg.encode</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Encoding views   </td><td class="markdownTableBodyNone"><code>whatwg_encode_view</code>, likewise   </td><td class="markdownTableBodyNone"><code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code>, done 2026-09-08    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>transcode.custom.reqs</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Codec requirements   </td><td class="markdownTableBodyNone"><code>decode_codec</code>, <code>encode_codec</code>, <code>flushable_decode_codec</code>, <code>random_access_decode_codec_type</code>, <code>decode_result</code>, <code>encode_result</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="codec__concepts_8hpp.html">codec_concepts.hpp</a></code>, <code><a class="el" href="codec__result_8hpp.html">codec_result.hpp</a></code>    </td></tr>
+<td class="markdownTableBodyNone"><code>transcode.custom.reqs</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Codec requirements   </td><td class="markdownTableBodyNone"><code>decode_codec</code>, <code>encode_codec</code>, <code>flushable_decode_codec</code>, <code>random_access_decode_codec_type</code>, <code>decode_result</code>, <code>encode_result</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="codec__concepts_8hpp.html">codec_concepts.hpp</a></code>, <code><a class="el" href="codec__result_8hpp.html">codec_result.hpp</a></code>, done 2026-09-08    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>transcode.custom.decode</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Class template <code>decode_view</code>   </td><td class="markdownTableBodyNone"><code>decode_view</code>, <code>decode</code>, <code>decode_or_error</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="decode__view_8hpp.html">decode_view.hpp</a></code>    </td></tr>
+<td class="markdownTableBodyNone"><code>transcode.custom.decode</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Class template <code>decode_view</code>   </td><td class="markdownTableBodyNone"><code>decode_view</code>, <code>decode</code>, <code>decode_or_error</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="decode__view_8hpp.html">decode_view.hpp</a></code>, done 2026-09-08    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>transcode.custom.encode</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Class template <code>encode_view</code>   </td><td class="markdownTableBodyNone"><code>encode_view</code>, <code>encode</code>, <code>encode_or_error</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="encode__view_8hpp.html">encode_view.hpp</a></code>    </td></tr>
+<td class="markdownTableBodyNone"><code>transcode.custom.encode</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Class template <code>encode_view</code>   </td><td class="markdownTableBodyNone"><code>encode_view</code>, <code>encode</code>, <code>encode_or_error</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="encode__view_8hpp.html">encode_view.hpp</a></code>, done 2026-09-08    </td></tr>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>transcode.pipeline</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">Transcoding pipelines   </td><td class="markdownTableBodyNone"><code>transcode</code>, <code>pluggable_transcode</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="transcode__view_8hpp.html">transcode_view.hpp</a></code>    </td></tr>
 <tr class="markdownTableRowEven">
@@ -149,7 +149,7 @@ How the tree maps onto fragments</h2>
 <td class="markdownTableBodyNone"><code>transcode.iconv</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone">iconv adaptors   </td><td class="markdownTableBodyNone"><code>iconv_functions</code>, the two views, the closures, <code>iconv_transcode</code>, <code>iconv_transcode_or_error</code>, <code>iconv_transcode_to</code>, <code>iconv_transcode_into</code>, <code>iconv_transcode_to_or_error</code>   </td><td class="markdownTableBodyNone">the four <code>iconv_*.hpp</code> headers   </td></tr>
 </table>
 <p><code>transcode.custom.*</code> rather than <code>transcode.decode</code> / <code>transcode.encode</code> for the codec-parameterized family: the WHATWG views are what most readers reach for, so they get the short names, and grouping the extension point under one prefix says what it is for. It also keeps <code>transcode.codec.*</code> (the enumeration and its lookups) from colliding with the codec <em>requirements</em>, which are a different subject entirely.</p>
-<h2><a class="anchor" id="autotoc_md609"></a>
+<h2><a class="anchor" id="autotoc_md611"></a>
 &lt;tt&gt;&lt;null_term&gt;&lt;/tt&gt;</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -164,10 +164,10 @@ How the tree maps onto fragments</h2>
 <td class="markdownTableBodyNone"><code>null.term.adaptor</code>   </td><td class="markdownTableBodyNone">2   </td><td class="markdownTableBodyNone"><code>views::null_term</code>   </td><td class="markdownTableBodyNone">the range adaptor object   </td><td class="markdownTableBodyNone">done 2026-09-06; <code>$unspecified$</code> in the synopsis, routed prose in the clause   </td></tr>
 </table>
 <p>Step 1 generates <code>null.term</code> (the root, un-gathered) and <code>null.term.view</code>. <code>null.term.sentinel</code> landed with the gathered region, and <code>null.term.adaptor</code> in Step 4: its declaration is folded into the synopsis and a <code>\ref{null.term.adaptor}</code> group header routes its prose to the clause, which is what specgen#69 made possible.</p>
-<h2><a class="anchor" id="autotoc_md610"></a>
+<h2><a class="anchor" id="autotoc_md612"></a>
 Exposition-only, omitted, and not proposed</h2>
 <p>The three ways a declaration stays out of the wording, decided per entity here so no step has to decide twice.</p>
-<h3><a class="anchor" id="autotoc_md611"></a>
+<h3><a class="anchor" id="autotoc_md613"></a>
 Exposition-only (&lt;tt&gt;\expos&lt;/tt&gt;)</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -189,7 +189,7 @@ Exposition-only (&lt;tt&gt;\expos&lt;/tt&gt;)</h3>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>detail::whatwg_encode_codec</code>, <code>detail::whatwg_encode_input</code>   </td><td class="markdownTableBodyNone"><code>$whatwg-encode-codec$</code>, <code>$whatwg-encode-input$</code>   </td><td class="markdownTableBodyNone">WHATWG defines no encoder for some codecs; the constraint says which   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md612"></a>
+<h3><a class="anchor" id="autotoc_md614"></a>
 Omitted (&lt;tt&gt;\omit&lt;/tt&gt;)</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -209,20 +209,20 @@ Omitted (&lt;tt&gt;\omit&lt;/tt&gt;)</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>iconv_error_rc</code>   </td><td class="markdownTableBodyNone">a POSIX return-value constant, not API   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md613"></a>
+<h3><a class="anchor" id="autotoc_md615"></a>
 Not proposed at all</h3>
 <ul>
 <li><code>decode_to</code>, <code>encode_to</code>, <code>decode_into</code>, <code>encode_into</code> (<code><a class="el" href="bulk__transcode_8hpp.html">detail/bulk_transcode.hpp</a></code>). The header says so itself, and the paper's API surface table agrees: its bulk rows are <code>v | ranges::to&lt;&gt;()</code> and <code>ranges::copy(v, out)</code>, which are the standard's own facilities. Nothing to specify.</li>
 <li><code>make_real_iconv_fns</code>, and <code>iconv_functions</code> as an injection seam. The injection exists so the tests can run without the platform's iconv tables (<code>tests/beman/transcode/iconv_mock.hpp</code>); whether it is API at all is part of Step 9's scope question.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md614"></a>
+<h2><a class="anchor" id="autotoc_md616"></a>
 The &lt;tt&gt;detail::&lt;/tt&gt; audit (Step 3 task 3)</h2>
 <p>After Step 3, <code>specgen render --validate</code> reports <b>no</b> <code>detail</code> leakage in any specification header. Two chains got there differently, and the difference is worth recording because Steps 6 and 7 inherit it.</p>
 <ul>
 <li><code>detail::random_access_decode_codec</code> and <code>detail::random_access_encode_codec</code> appeared in the <code>random_access_*</code> views' requires-clauses. W1 omits those views, and Step 3 moved the concepts themselves into <code><a class="el" href="whatwg__decode__select_8hpp.html">detail/whatwg_decode_select.hpp</a></code> and <code><a class="el" href="whatwg__encode__select_8hpp.html">detail/whatwg_encode_select.hpp</a></code>, out of the specification headers entirely. Nothing left to decide.</li>
 <li><code>detail::const_iterator_compatible_range</code> and <code>const_sentinel_compatible_range</code> constrain every <code>begin() const</code> and <code>end() const</code>, so they are genuinely part of what the specification says. They are <b>exposition-only in the wording</b>, but they cannot be rendered that way yet: <code>\expos</code> works on a concept (verified) and not on the alias template and class template the concept is defined in terms of (index U8). They therefore stay in <code><a class="el" href="range__traits_8hpp.html">detail/range_traits.hpp</a></code> for now, and <b>Step 6 chooses</b> between restating the concept in the specification header without helper aliases so a single <code>\expos</code> covers it, and waiting for U8. Whichever it picks, the constraint is authored <code>\constraints</code> prose on the affected members rather than derived from the requires-clause.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md615"></a>
+<h2><a class="anchor" id="autotoc_md617"></a>
 Decisions this outline settles</h2>
 <p><b>W1 — the <code>random_access_</code> view specializations are not separate specified entities.</b> <em>Carried out in Step 6 (2026-09-08): both are <code>\omit</code>ted, and each view's clause says instead that it models <code>random_access_range</code> when the codec decodes one byte to one scalar value and the base range does. That also removed the last <code>detail::</code> qualifier from the document, which was reaching the wording through those views' requires-clauses.</em> They exist so a single-byte codec gets O(1) indexing. That is a property of the view, not a second view: the specification says <code>whatwg_decode_view&lt;C, R&gt;</code> models <code>random_access_range</code> when <code>C</code> is a single-byte codec and <code>R</code> models <code>random_access_range</code>, and an implementation gets there however it likes. Omitting them also removes <code>detail::random_access_decode_codec</code> from every spec-visible signature, which D7 requires anyway. The alternative — specifying eight view templates instead of four — doubles the clause for no reader benefit. If SG16 wants the distinction visible, it comes back as a <em>Remarks</em> paragraph, not as a type.</p>
 <p><b>W2 — the WHATWG enumeration is specified by reference.</b> <code>enum class codec</code> has 39 enumerators; the wording says each names the WHATWG encoding of the corresponding name and cites the Encoding Standard, rather than restating a table that is normative somewhere else and changes there.</p>
@@ -233,7 +233,7 @@ Decisions this outline settles</h2>
 <li><b>In the paper, and in the eventual working draft</b>, it is a normative reference in the [intro.refs] sense: an entry naming the Encoding Standard, its URL, and the version it was read at. A living standard has no edition to cite, so the entry carries a date, and the paper says which snapshot <code>docs/whatwg/</code> was downloaded from. Step 10 writes that entry. Whether a normative reference to a living standard is acceptable at all is SG16's to answer, and it is a question about the paper's prose rather than something the wording can settle.</li>
 </ul>
 <p><b>W3 — <code>&lt;null_term&gt;</code> stays a separate header.</b> It is the paper's position already, and <code>views::null_term</code> has nothing to do with encodings; it is a range adaptor over a C string that this proposal happens to need.</p>
-<h2><a class="anchor" id="autotoc_md616"></a>
+<h2><a class="anchor" id="autotoc_md618"></a>
 Open, and deliberately not settled here</h2>
 <ul>
 <li><strike><b>The <code>_or_error</code> split.</b></strike> Settled in P5-Step 3c, before the clauses were written. Each family is one view template parameterized on <code>transcode_error_kind</code>, so <code>transcode.whatwg.decode</code>, <code>transcode.whatwg.encode</code>, <code>transcode.custom.decode</code> and <code>transcode.custom.encode</code> each specify <b>one</b> class template and two closure objects rather than two of each. <code>transcode.errors</code> gains <code>transcode_error_kind</code>, and its wording must not fix an underlying type for either enum (P2728 R13).</li>

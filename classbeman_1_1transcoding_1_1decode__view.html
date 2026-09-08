@@ -140,11 +140,18 @@ Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
 <tr class="memitem:a83de7ddac1fb353bee4cfbe60af9effe"><td class="memItemLeft" align="right" valign="top">R&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__view.html#a83de7ddac1fb353bee4cfbe60af9effe">base_</a></td></tr>
+<tr class="memdesc:a83de7ddac1fb353bee4cfbe60af9effe"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a83de7ddac1fb353bee4cfbe60af9effe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab4011b2a646bf4c1ed14a381d1b78e37"><td class="memItemLeft" align="right" valign="top">Codec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1decode__view.html#ab4011b2a646bf4c1ed14a381d1b78e37">codec_</a></td></tr>
+<tr class="memdesc:ab4011b2a646bf4c1ed14a381d1b78e37"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:ab4011b2a646bf4c1ed14a381d1b78e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;decode_codec Codec, std::ranges::input_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt;<br />
+requires legacy_byte_range&lt;R&gt;<br />
+class beman::transcoding::decode_view&lt; Codec, R, E &gt;</div><dl class="section remark"><dt>Remarks</dt><dd><code><a class="el" href="classbeman_1_1transcoding_1_1decode__view.html">decode_view</a>&lt;Codec, R, E&gt;</code> is <code><a class="el" href="classbeman_1_1transcoding_1_1whatwg__decode__view.html">whatwg_decode_view</a></code> \iref{transcode.whatwg.decode} with the codec supplied as a value rather than named by an enumerator: it presents the bytes of <code>R</code> as the Unicode scalar values <code>Codec</code> decodes them to, reports a decoding error as <code>E</code> says, and decodes lazily. Everything that clause says about the value type, the error kind and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.</dd></dl>
+<p>The view models <code>random_access_range</code> when <code>Codec</code> models <code>random_access_decode_codec_type</code> and <code>R</code> models <code>random_access_range</code>. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a201b728dc359f492bfa985682bda8025" name="a201b728dc359f492bfa985682bda8025"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a201b728dc359f492bfa985682bda8025">&#9670;&#160;</a></span>decode_view()</h2>
 
@@ -208,6 +215,7 @@ template&lt;decode_codec Codec, std::ranges::input_range R, <a class="el" href="
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -235,6 +243,7 @@ template&lt;decode_codec Codec, std::ranges::input_range R, <a class="el" href="
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -394,6 +403,8 @@ template&lt;decode_codec Codec, std::ranges::input_range R, <a class="el" href="
 </table>
 </div><div class="memdoc">
 
+<p>\expos </p>
+
 </div>
 </div>
 <a id="ab4011b2a646bf4c1ed14a381d1b78e37" name="ab4011b2a646bf4c1ed14a381d1b78e37"></a>
@@ -417,6 +428,8 @@ template&lt;decode_codec Codec, std::ranges::input_range R, <a class="el" href="
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>\expos </p>
 
 </div>
 </div>

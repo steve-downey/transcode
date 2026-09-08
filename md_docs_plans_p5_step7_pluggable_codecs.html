@@ -113,7 +113,17 @@ What is different here</h1>
 </ul>
 <h1><a class="anchor" id="autotoc_md343"></a>
 Acceptance</h1>
-<p>As Step 4, for <code>papers/wording/transcode.codec.reqs.md</code>, <code>transcode.decode.md</code>, <code>transcode.encode.md</code>. </p>
+<p>As Step 4, for <code>papers/wording/transcode.codec.reqs.md</code>, <code>transcode.decode.md</code>, <code>transcode.encode.md</code>.</p>
+<hr  />
+<h1><a class="anchor" id="autotoc_md345"></a>
+Outcome (2026-09-08)</h1>
+<p>All three clauses are written and <code>--validate</code> reports nothing about any of their entities. The document's findings go from 79 to 22, and every one of the 22 belongs to Step 8's pipeline closures or Step 9's iconv surface.</p>
+<p><b>The clause names are the outline's</b>, not this plan's. This document was written before Step 2 settled <code>transcode.custom.*</code> for the codec-parameterized family (<code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code>, "`transcode.custom.*` rather than
+`transcode.decode` / `transcode.encode`"), so its Goal and Acceptance still say <code>transcode.codec.reqs</code>, <code>transcode.decode</code> and <code>transcode.encode</code>. The outline is the contract; these are <code>[transcode.custom.reqs]</code>, <code>[transcode.custom.decode]</code> and <code>[transcode.custom.encode]</code>.</p>
+<p>**<code>[transcode.custom.reqs]</code> is a requirements clause**, and the four concepts are the contract a user-written codec satisfies: what <code>decode_one</code> reads and advances, that it is called only with a non-empty range, that a codec is a value and keeps its own state, what <code>decode_byte</code> means and what it buys, when <code>flush()</code> is called and what <code>nullopt</code> means from it. <code>decode_result</code> and <code>encode_result</code> are described by their classes' own paragraphs, which needed specgen#82: a public data member is specification, and both §9 checks used to say otherwise.</p>
+<p><b>The views cross-reference rather than repeat.</b> <code>decode_view</code> is <code>whatwg_decode_view</code> with the codec supplied as a value rather than named by an enumerator, and its clause says so with an <code>\iref</code> instead of a second copy of the same three paragraphs. Where the difference is real it is stated: the random-access property is a property of the <em>codec</em> here (<code>random_access_decode_codec_type</code>) rather than of the enumerator, and <code>flushable_decode_codec</code> gives the pluggable decode an end-of-input step the WHATWG views have no equivalent of.</p>
+<p>The rest is the Step 6 pattern, unchanged: <code>\omit</code> on the <code>random_access_</code> specialization and the closure struct, <code>\expos</code> with bare <code>\seebelow</code> on each nested iterator, <code>\seebelow</code> on the factory functions so they return <em>see below</em>, <code>\returns-equiv</code> and <code>\effects-equiv</code> where the body is the specification, authored prose everywhere <code>load()</code> drives it.</p>
+<p>Steps 8 and 9 are what remain before the paper is assembled. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

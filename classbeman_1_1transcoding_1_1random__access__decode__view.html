@@ -105,6 +105,9 @@ $(document).ready(function(){initNavTree('classbeman_1_1transcoding_1_1random__a
 </div><!--header-->
 <div class="contents">
 
+<p>\omit  
+ <a href="classbeman_1_1transcoding_1_1random__access__decode__view.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="decode__view_8hpp_source.html">decode_view.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for beman::transcoding::random_access_decode_view&lt; Codec, R, E &gt;:</div>
@@ -144,7 +147,11 @@ Private Attributes</h2></td></tr>
 <tr class="memitem:a03f4078788fbc94715cd8900b0f9db99"><td class="memItemLeft" align="right" valign="top">Codec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html#a03f4078788fbc94715cd8900b0f9db99">codec_</a></td></tr>
 <tr class="separator:a03f4078788fbc94715cd8900b0f9db99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;random_access_decode_codec_type Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> E = transcode_error_kind::replacement&gt;<br />
+requires legacy_byte_range&lt;R&gt;<br />
+class beman::transcoding::random_access_decode_view&lt; Codec, R, E &gt;</div><p>\omit </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ae4e5a12a9b81f1dd8fc7283c4ffcb32b" name="ae4e5a12a9b81f1dd8fc7283c4ffcb32b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae4e5a12a9b81f1dd8fc7283c4ffcb32b">&#9670;&#160;</a></span>random_access_decode_view()</h2>
 
@@ -286,6 +293,7 @@ requires detail::const_iterator_compatible_range&lt;R&gt;</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>\effects Initializes <code>$base$</code> with <code>std::move(base)</code> and <code>$codec$</code> with <code>codec</code>. </p>
 
 </div>
 </div>
