@@ -124,243 +124,37 @@ concept flushable_decode_codec = decode_codec<C> && requires(C& c) {
   { c.flush() } -> same_as<optional<decode_result>>;
 };
 
-template<codec C, ranges::random_access_range R,
-         transcode_error_kind E = transcode_error_kind::replacement>
-  requires legacy_byte_range<R> && $random-access-decode-codec$<C>
-class random_access_whatwg_decode_view
-    : public ranges::view_interface<random_access_whatwg_decode_view<C, R, E>> {
-public:
-  constexpr explicit random_access_whatwg_decode_view(R base);
-
-  constexpr const R& base() const& noexcept;
-  constexpr R base() &&;
-
-  constexpr iterator begin();
-
-  constexpr iterator begin() const
-    requires $const-iterator-compatible-range$<R>;
-
-  constexpr iterator end();
-
-  constexpr iterator end() const
-    requires $const-iterator-compatible-range$<R> && ranges::range<const R>;
-
-  constexpr auto size() const
-    requires ranges::sized_range<R>;
-};
+// @[transcode.whatwg.decode]{- .sref}@, decoding views
 
 template<codec C, ranges::input_range R,
          transcode_error_kind E = transcode_error_kind::replacement>
   requires legacy_byte_range<R>
 class whatwg_decode_view : public ranges::view_interface<whatwg_decode_view<C, R, E>> {
+  R $base$; // exposition only
+
+  class $iterator$; // exposition only
+
 public:
+  // @[transcode.whatwg.decode]{- .sref}@, construction and access
   constexpr explicit whatwg_decode_view(R base);
 
   constexpr const R& base() const& noexcept;
   constexpr R base() &&;
 
-  constexpr iterator begin();
-  constexpr iterator begin() const
+  constexpr $iterator$ begin();
+  constexpr $iterator$ begin() const
     requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-  constexpr iterator end()
+  constexpr $iterator$ end()
     requires ranges::forward_range<R> && ranges::common_range<R>;
-  constexpr iterator end() const
+  constexpr $iterator$ end() const
     requires ranges::forward_range<const R> && ranges::common_range<const R> &&
              $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
   constexpr default_sentinel_t end() const;
 };
 
-template<codec C, transcode_error_kind E = transcode_error_kind::replacement>
-struct whatwg_decode_closure {
-  template<legacy_byte_range R> constexpr auto operator()(R&& r) const;
+template<codec C> inline constexpr $unspecified$ whatwg_decode;
 
-  template<legacy_byte_range R>
-  constexpr friend auto operator|(R&& r, const whatwg_decode_closure& self);
-
-  template<typename R>
-    requires is_array_v<remove_cvref_t<R>>
-  friend auto operator|(R&&, const whatwg_decode_closure&);
-};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode =
-    whatwg_decode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_decode_or_error =
-    whatwg_decode_closure<C, transcode_error_kind::expected>{};
-
-template<codec C, ranges::input_range R>
-whatwg_decode_or_error_view whatwg_decode_or_error_view =
-    whatwg_decode_view<C, R, transcode_error_kind::expected>;
-
-template<codec C, ranges::random_access_range R>
-random_access_whatwg_decode_or_error_view random_access_whatwg_decode_or_error_view =
-    random_access_whatwg_decode_view<C, R, transcode_error_kind::expected>;
-
-template<codec C>
-whatwg_decode_or_error_closure whatwg_decode_or_error_closure =
-    whatwg_decode_closure<C, transcode_error_kind::expected>;
+template<codec C> inline constexpr $unspecified$ whatwg_decode_or_error;
 
 template<codec C, random_access_range R, transcode_error_kind E>
   requires legacy_byte_range<R> && detail::$random-access-decode-codec$<C>
@@ -372,238 +166,37 @@ template<codec C, input_range R, transcode_error_kind E>
 inline constexpr bool enable_borrowed_range<whatwg_decode_view<C, R, E>> =
     borrowed_range<R>;
 
-template<codec C, ranges::random_access_range R,
-         transcode_error_kind E = transcode_error_kind::replacement>
-  requires unicode_scalar_range<R> && $random-access-encode-codec$<C>
-class random_access_whatwg_encode_view
-    : public ranges::view_interface<random_access_whatwg_encode_view<C, R, E>> {
-public:
-  constexpr explicit random_access_whatwg_encode_view(R base);
-
-  constexpr const R& base() const& noexcept;
-  constexpr R base() &&;
-
-  constexpr iterator begin();
-
-  constexpr iterator begin() const
-    requires $const-iterator-compatible-range$<R>;
-
-  constexpr iterator end();
-
-  constexpr iterator end() const
-    requires $const-iterator-compatible-range$<R> && ranges::range<const R>;
-
-  constexpr auto size() const
-    requires ranges::sized_range<R>;
-};
+// @[transcode.whatwg.encode]{- .sref}@, encoding views
 
 template<codec C, ranges::input_range R,
          transcode_error_kind E = transcode_error_kind::replacement>
   requires $whatwg-encode-input$<C, R>
 class whatwg_encode_view : public ranges::view_interface<whatwg_encode_view<C, R, E>> {
+  R $base$; // exposition only
+
+  class $iterator$; // exposition only
+
 public:
+  // @[transcode.whatwg.encode]{- .sref}@, construction and access
   constexpr explicit whatwg_encode_view(R base);
 
   constexpr const R& base() const& noexcept;
   constexpr R base() &&;
 
-  constexpr iterator begin();
-  constexpr iterator begin() const
+  constexpr $iterator$ begin();
+  constexpr $iterator$ begin() const
     requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-  constexpr iterator end()
+  constexpr $iterator$ end()
     requires ranges::forward_range<R> && ranges::common_range<R>;
-  constexpr iterator end() const
+  constexpr $iterator$ end() const
     requires ranges::forward_range<const R> && ranges::common_range<const R> &&
              $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
   constexpr default_sentinel_t end() const;
 };
 
-template<codec C, transcode_error_kind E = transcode_error_kind::replacement>
-struct whatwg_encode_closure {
-  template<typename R>
-    requires $whatwg-encode-input$<C, R>
-  constexpr auto operator()(R&& r) const;
+template<codec C> inline constexpr $unspecified$ whatwg_encode;
 
-  template<unicode_scalar_range R>
-    requires(!$whatwg-encode-codec$<C>)
-  constexpr auto operator()(R&&) const;
-
-  template<typename R>
-    requires $whatwg-encode-input$<C, R>
-  constexpr friend auto operator|(R&& r, const whatwg_encode_closure& self);
-
-  template<unicode_scalar_range R>
-    requires(!$whatwg-encode-codec$<C>)
-  constexpr friend auto operator|(R&& r, const whatwg_encode_closure& self);
-
-  template<typename R>
-    requires is_array_v<remove_cvref_t<R>>
-  friend auto operator|(R&&, const whatwg_encode_closure&);
-};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode =
-    whatwg_encode_closure<C, transcode_error_kind::replacement>{};
-
-template<codec C>
-inline constexpr auto whatwg_encode_or_error =
-    whatwg_encode_closure<C, transcode_error_kind::expected>{};
-
-template<codec C, ranges::input_range R>
-whatwg_encode_or_error_view whatwg_encode_or_error_view =
-    whatwg_encode_view<C, R, transcode_error_kind::expected>;
-
-template<codec C, ranges::random_access_range R>
-random_access_whatwg_encode_or_error_view random_access_whatwg_encode_or_error_view =
-    random_access_whatwg_encode_view<C, R, transcode_error_kind::expected>;
-
-template<codec C>
-whatwg_encode_or_error_closure whatwg_encode_or_error_closure =
-    whatwg_encode_closure<C, transcode_error_kind::expected>;
+template<codec C> inline constexpr $unspecified$ whatwg_encode_or_error;
 
 template<codec C, random_access_range R, transcode_error_kind E>
   requires unicode_scalar_range<R> && detail::$random-access-encode-codec$<C>
@@ -995,75 +588,15 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
                                                              const char* to);
 ```
 
-```cpp
-constexpr iterator operator++(int);
-```
+[#]{.pnum} *Remarks*: `whatwg_decode_view<C, R, E>` presents the bytes of `R` as the Unicode scalar values the encoding `C` decodes them to, one element per decoded scalar value.  A byte sequence the encoding does not allow is a decoding error, reported as `E` says: as U+FFFD REPLACEMENT CHARACTER when `E` is `transcode_error_kind::replacement`, and as an `unexpected` holding a `whatwg_error` when it is `transcode_error_kind::expected`.  Decoding is lazy: an element is decoded when the iterator reaches it.
 
-[#]{.pnum} *Constraints*: `R` models `forward_range`.
+[#]{.pnum} The view models `random_access_range` when `C` names an encoding that decodes one byte to one scalar value and `R` models `random_access_range`.  How an implementation achieves that is not specified; it is a property of the view rather than a second view.
 
-```cpp
-constexpr void operator++(int);
-```
+[#]{.pnum} *Remarks*: `whatwg_encode_view<C, R, E>` presents the Unicode scalar values of `R` as the bytes the encoding `C` encodes them to, one element per byte. A scalar value the encoding cannot represent is an encoding error, reported as `E` says: as `'?'` when `E` is `transcode_error_kind::replacement`, and as an `unexpected` holding `whatwg_error::unmapped_codepoint` when it is `transcode_error_kind::expected`.  Encoding is lazy, and one input element can produce several output elements.
 
-[#]{.pnum} *Constraints*: `ranges::forward_range<R>` is `false`.
+[#]{.pnum} Each element of `R` is required to be a Unicode scalar value.  That is a precondition, not a constraint: `unicode_scalar_range` ([transcode.reqs]{- .sref}) is a requirement on the range's type, and a `char32_t` holding a surrogate or a value above U+10FFFF is not diagnosed.
 
-```cpp
-constexpr iterator begin() const;
-```
-
-[#]{.pnum} *Constraints*: `R` models `$const-iterator-compatible-range$` and `R` models `$const-sentinel-compatible-range$`.
-
-```cpp
-constexpr iterator end();
-```
-
-[#]{.pnum} *Constraints*: `R` models `forward_range` and `R` models `common_range`.
-
-```cpp
-constexpr iterator end() const;
-```
-
-[#]{.pnum} *Constraints*:
-
-- [#.#]{.pnum} `R` models `forward_range`,
-- [#.#]{.pnum} `R` models `common_range`,
-- [#.#]{.pnum} `R` models `$const-iterator-compatible-range$`,
-- [#.#]{.pnum} `R` models `$const-sentinel-compatible-range$`.
-
-```cpp
-constexpr iterator operator++(int);
-```
-
-[#]{.pnum} *Constraints*: `R` models `forward_range`.
-
-```cpp
-constexpr void operator++(int);
-```
-
-[#]{.pnum} *Constraints*: `ranges::forward_range<R>` is `false`.
-
-```cpp
-constexpr iterator begin() const;
-```
-
-[#]{.pnum} *Constraints*: `R` models `$const-iterator-compatible-range$` and `R` models `$const-sentinel-compatible-range$`.
-
-```cpp
-constexpr iterator end();
-```
-
-[#]{.pnum} *Constraints*: `R` models `forward_range` and `R` models `common_range`.
-
-```cpp
-constexpr iterator end() const;
-```
-
-[#]{.pnum} *Constraints*:
-
-- [#.#]{.pnum} `R` models `forward_range`,
-- [#.#]{.pnum} `R` models `common_range`,
-- [#.#]{.pnum} `R` models `$const-iterator-compatible-range$`,
-- [#.#]{.pnum} `R` models `$const-sentinel-compatible-range$`.
+[#]{.pnum} `C` is required to be an encoding the WHATWG Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and the view does not accept them.
 
 ```cpp
 constexpr iterator begin() const;

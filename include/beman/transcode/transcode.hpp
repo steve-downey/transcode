@@ -75,6 +75,14 @@ import beman.transcode;
 
     // \rSec3[transcode.codec.sniff]{Byte order mark sniffing}
 
+    // \rSec2[transcode.whatwg.decode]{Decoding views}
+
+    // \rSec3[transcode.whatwg.decode.iterator]{Class `whatwg_decode_view::iterator`}
+
+    // \rSec2[transcode.whatwg.encode]{Encoding views}
+
+    // \rSec3[transcode.whatwg.encode.iterator]{Class `whatwg_encode_view::iterator`}
+
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)
 
