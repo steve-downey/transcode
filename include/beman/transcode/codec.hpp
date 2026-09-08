@@ -7,6 +7,15 @@
 
 namespace beman::transcoding {
 
+// \ref{transcode.codec}, encodings
+
+//! \remarks Each enumerator names the encoding of the same name in the WHATWG
+//! Encoding Standard, whose table of encodings is normative and is not
+//! restated here: an encoding is what that standard says it is, and a
+//! specification that copied the list would be a second one to keep current.
+//! `codec::replacement` is that standard's `replacement` encoding, which
+//! decodes any non-empty input to a single U+FFFD REPLACEMENT CHARACTER, and
+//! `codec::x_user_defined` its `x-user-defined`.
 enum class codec {
     utf_8,
     replacement,

@@ -17,16 +17,22 @@
 #endif
 namespace beman::transcoding {
 
-// Detects encoding by examining a BOM at the start of the byte range.
-// WHATWG Encoding Standard §8.2 "Determining the fallback encoding".
-// Returns:
-//   codec::utf_8     if the range begins with EF BB BF
-//   codec::utf_16be  if the range begins with FE FF
-//   codec::utf_16le  if the range begins with FF FE
-//   std::nullopt     otherwise
+// \ref{transcode.codec.sniff}, byte order mark sniffing
+
 template <legacy_byte_range R>
 constexpr std::optional<codec> sniff_encoding(R&& r) noexcept;
 
+//! \returns The encoding `r` begins with a byte order mark for:
+//! \item `codec::utf_8`, if `r` begins with `EF BB BF`;
+//! \item `codec::utf_16be`, if `r` begins with `FE FF`;
+//! \item `codec::utf_16le`, if `r` begins with `FF FE`;
+//! \item `nullopt` otherwise.
+//! \remarks This is the byte order mark half of the Encoding Standard's
+//! "decide the fallback encoding" step: what to do when there is no mark is a
+//! question about the document and its transport, which a library cannot
+//! answer.  The mark itself is not consumed -- a decode view strips a leading
+//! U+FEFF for the UTF codecs on its own -- so the range can be passed on
+//! unchanged.
 template <legacy_byte_range R>
 constexpr std::optional<codec> sniff_encoding(R&& r) noexcept {
     auto it  = std::ranges::begin(r);

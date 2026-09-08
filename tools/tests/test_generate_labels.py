@@ -65,10 +65,18 @@ def test_render_labels_hpp_has_guard() -> None:
     assert "INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP" in hpp
 
 
-def test_render_labels_hpp_has_function() -> None:
+def test_render_labels_hpp_is_table_only() -> None:
+    """The generator emits the table and nothing else.
+
+    `get_encoding` is hand-written, in `label.hpp`, because it is specification
+    and carries specification markup: a generator that emitted that markup
+    would be a generator with two jobs, and the one thing this generator's
+    output must never need is an edit.
+    """
     entries = parse_encodings_json(ENCODINGS_JSON)
     hpp = render_labels_hpp(entries)
-    assert "get_encoding" in hpp
+    assert "label_table" in hpp
+    assert "get_encoding" not in hpp
 
 
 def test_render_labels_hpp_has_utf8_entry() -> None:

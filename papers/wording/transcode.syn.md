@@ -41,6 +41,8 @@ concept unicode_scalar_range =
     ranges::input_range<R> && !is_array_v<remove_cvref_t<R>> &&
     same_as<remove_cv_t<ranges::range_value_t<R>>, char32_t>;
 
+// @[transcode.codec]{- .sref}@, encodings
+
 enum class codec {
   utf_8,
   replacement,
@@ -83,6 +85,10 @@ enum class codec {
   iso_2022_jp,
   euc_kr,
 };
+
+// @[transcode.codec.label]{- .sref}@, label lookup
+
+constexpr optional<codec> get_encoding(string_view label) noexcept;
 
 struct decode_result {
   char32_t code_point{};
@@ -773,6 +779,8 @@ optional<string> transcode_string(span<const char> src, string_view from_label,
 template<codec C> u32string transcode_decode_all(span<const char> src);
 
 template<codec C> string transcode_encode_all(u32string_view src);
+
+// @[transcode.codec.sniff]{- .sref}@, byte order mark sniffing
 
 template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) noexcept;
 

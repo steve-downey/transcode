@@ -47,9 +47,9 @@ order the compiler needs and need not match.
 | `transcode.syn` | 2 | Header `<transcode>` synopsis | everything below, gathered | `transcode.hpp`'s region and the sixteen headers included in it, done 2026-09-07 |
 | `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error`, `transcode_error_kind` | `error.hpp` routes to it, done 2026-09-06 |
 | `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` routes to it, done 2026-09-06 |
-| `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp` |
-| `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `detail/labels.hpp` |
-| `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp` |
+| `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp`, done 2026-09-07 |
+| `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `label.hpp`, done 2026-09-07 |
+| `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp`, done 2026-09-07 |
 | `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, its closures `whatwg_decode<C>` / `whatwg_decode_or_error<C>`, and its `enable_borrowed_range` specialization | `whatwg_decode_view.hpp` |
 | `transcode.whatwg.encode` | 2 | Encoding views | `whatwg_encode_view`, likewise | `whatwg_encode_view.hpp` |
 | `transcode.custom.reqs` | 2 | Codec requirements | `decode_codec`, `encode_codec`, `flushable_decode_codec`, `random_access_decode_codec_type`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp` |
@@ -106,7 +106,7 @@ so no step has to decide twice.
 | the `_or_error_view` / `_or_error_closure` alias templates | transition spellings for the pre-unification names, not API |
 | `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; index U4 no longer applies |
 | `detail::null_term_fn`, `detail::null_term_adaptor` | the adaptor object's type is unspecified |
-| `detail::label_entry`, `label_table` | generated data behind `get_encoding` |
+| `detail::label_entry`, `label_table` | generated data behind `get_encoding`, and all `tools/generate_labels.py` emits since Step 5 |
 | `detail::iconv_guard`, `iconv_input_buf` | RAII plumbing |
 | `iconv_error_rc` | a POSIX return-value constant, not API |
 
@@ -161,9 +161,23 @@ distinction visible, it comes back as a *Remarks* paragraph, not as a type.
 **W2 — the WHATWG enumeration is specified by reference.**  `enum class codec`
 has 39 enumerators; the wording says each names the WHATWG encoding of the
 corresponding name and cites the Encoding Standard, rather than restating a
-table that is normative somewhere else and changes there.  How a normative
-reference to a living standard is spelled is a question for SG16, and Step 5
-records the answer.
+table that is normative somewhere else and changes there.
+
+*Step 5's answer to how the reference is spelled* (2026-09-07), in two parts,
+because the question has two halves:
+
+- **In the generated wording**, the standard is named in prose -- "the WHATWG
+  Encoding Standard" -- and nothing else.  specgen's `\iref` points at a stable
+  name in this draft and there is none to point at; a bibliography key is the
+  paper's and would not survive into the working draft.
+- **In the paper, and in the eventual working draft**, it is a normative
+  reference in the [intro.refs] sense: an entry naming the Encoding Standard,
+  its URL, and the version it was read at.  A living standard has no edition to
+  cite, so the entry carries a date, and the paper says which snapshot
+  `docs/whatwg/` was downloaded from.  Step 10 writes that entry.  Whether a
+  normative reference to a living standard is acceptable at all is SG16's to
+  answer, and it is a question about the paper's prose rather than something
+  the wording can settle.
 
 **W3 — `<null_term>` stays a separate header.**  It is the paper's position
 already, and `views::null_term` has nothing to do with encodings; it is a range

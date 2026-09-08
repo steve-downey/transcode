@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/detail/labels.hpp>
-#include <beman/transcode/detail/labels.hpp>
+#include <beman/transcode/label.hpp>
+#include <beman/transcode/label.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
 
