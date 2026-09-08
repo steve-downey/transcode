@@ -12,6 +12,7 @@ WORDING_MD := \
 	wording/transcode.custom.encode.md \
 	wording/transcode.pipeline.md \
 	wording/transcode.string.md \
+	wording/transcode.iconv.md \
 	wording/null.term.syn.md \
 	wording/null.term.sentinel.md \
 	wording/null.term.view.md \

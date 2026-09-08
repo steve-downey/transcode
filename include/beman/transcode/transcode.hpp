@@ -97,6 +97,11 @@ import beman.transcode;
 
     // \rSec2[transcode.string]{Eager transcoding}
 
+    // \rSec2[transcode.iconv]{iconv adaptors}
+
+    // \rSec3[transcode.iconv.iterator]{Classes `iconv_transcode_view::iterator` and
+    // `iconv_transcode_or_error_view::iterator`}
+
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)
 

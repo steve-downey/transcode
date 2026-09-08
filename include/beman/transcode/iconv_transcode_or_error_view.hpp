@@ -58,26 +58,25 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
     class iterator {
         using base_iter = std::ranges::iterator_t<R>;
         using base_sent = std::ranges::sentinel_t<R>;
-        using result_t  = std::expected<char, iconv_error>;
 
         //! \expos
-        iconv_t         handle_;
+        iconv_t handle_;
         //! \expos
         IconvFns fns_;
         //! \expos
         std::span<char> buffer_;
         //! \expos
-        char*           output_pos_;
+        char* output_pos_;
         //! \expos
-        char*           output_end_;
-        char            staging_[64];
-        size_t          staging_len_{0};
-        base_iter       current_;
-        base_sent       end_;
-        bool            done_;
-        bool            flushed_{false};
-        bool            has_error_{false};
-        iconv_error     error_value_{};
+        char*       output_end_;
+        char        staging_[64];
+        size_t      staging_len_{0};
+        base_iter   current_;
+        base_sent   end_;
+        bool        done_;
+        bool        flushed_{false};
+        bool        has_error_{false};
+        iconv_error error_value_{};
 
         //! \expos
         void load();
@@ -88,9 +87,9 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
 
       public:
         using iterator_concept = std::input_iterator_tag;
-        using value_type       = result_t;
+        using value_type       = std::expected<char, iconv_error>;
         using difference_type  = std::ptrdiff_t;
-        using reference        = result_t;
+        using reference        = std::expected<char, iconv_error>;
 
         // \ref{transcode.iconv.iterator}, iterator operations
         iterator(const iterator&)            = delete;
@@ -104,13 +103,14 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
         //! after the last byte handed to the conversion.
         const base_iter& base() const noexcept { return current_; }
 
-        result_t  operator*() const;
-        iterator& operator++();
-        void      operator++(int);
+        std::expected<char, iconv_error> operator*() const;
+        iterator&                        operator++();
+        void                             operator++(int);
 
         friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
+    // \ref{transcode.iconv}, construction and access
     explicit iconv_transcode_or_error_view(
         R base, IconvFns fns, const char* from, const char* to, std::span<char> buf);
 
@@ -120,7 +120,6 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
     R base() && { return std::move(base_); }
 
     iterator                begin();
-    //! \returns `default_sentinel`.
     std::default_sentinel_t end() const;
 };
 
@@ -146,6 +145,7 @@ auto iconv_transcode_or_error_view<IconvFns, R>::begin() -> iterator {
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \returns `default_sentinel`.
 std::default_sentinel_t iconv_transcode_or_error_view<IconvFns, R>::end() const {
     return std::default_sentinel;
 }
@@ -375,7 +375,7 @@ template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 //! \returns The converted byte at the current position of the output buffer,
 //! or the `iconv_error` the conversion reported there.
-auto iconv_transcode_or_error_view<IconvFns, R>::iterator::operator*() const -> result_t {
+std::expected<char, iconv_error> iconv_transcode_or_error_view<IconvFns, R>::iterator::operator*() const {
     if (has_error_)
         return std::unexpected(error_value_);
     return *output_pos_;

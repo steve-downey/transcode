@@ -160,11 +160,6 @@ template<codec C> inline constexpr $unspecified$ whatwg_decode;
 
 template<codec C> inline constexpr $unspecified$ whatwg_decode_or_error;
 
-template<codec C, random_access_range R, transcode_error_kind E>
-  requires legacy_byte_range<R> && detail::$random-access-decode-codec$<C>
-inline constexpr bool enable_borrowed_range<random_access_whatwg_decode_view<C, R, E>> =
-    borrowed_range<R>;
-
 template<codec C, input_range R, transcode_error_kind E>
   requires legacy_byte_range<R>
 inline constexpr bool enable_borrowed_range<whatwg_decode_view<C, R, E>> =
@@ -202,13 +197,8 @@ template<codec C> inline constexpr $unspecified$ whatwg_encode;
 
 template<codec C> inline constexpr $unspecified$ whatwg_encode_or_error;
 
-template<codec C, random_access_range R, transcode_error_kind E>
-  requires unicode_scalar_range<R> && detail::$random-access-encode-codec$<C>
-inline constexpr bool enable_borrowed_range<random_access_whatwg_encode_view<C, R, E>> =
-    borrowed_range<R>;
-
 template<codec C, input_range R, transcode_error_kind E>
-  requires detail::$whatwg-encode-input$<C, R>
+  requires $whatwg-encode-input$<C, R>
 inline constexpr bool enable_borrowed_range<whatwg_encode_view<C, R, E>> =
     borrowed_range<R>;
 
@@ -357,19 +347,6 @@ public:
   default_sentinel_t end() const;
 };
 
-template<typename IconvFns>
-struct iconv_transcode_closure {
-  IconvFns fns_;
-  const char* from_;
-  const char* to_;
-  span<char> buffer_;
-
-  template<legacy_byte_range R> auto operator()(R&& r) const;
-
-  template<legacy_byte_range R>
-  friend auto operator|(R&& r, const iconv_transcode_closure& self);
-};
-
 template<typename IconvFns, ranges::input_range R>
   requires legacy_byte_range<R>
 class iconv_transcode_or_error_view
@@ -383,6 +360,7 @@ class iconv_transcode_or_error_view
 public:
   class $iterator$; // exposition only
 
+  // @[transcode.iconv]{- .sref}@, construction and access
   explicit iconv_transcode_or_error_view(R base, IconvFns fns, const char* from,
                                          const char* to, span<char> buf);
 
@@ -398,17 +376,6 @@ inline iconv_functions make_real_iconv_fns() noexcept;
 inline auto iconv_transcode(const char* from, const char* to, span<char> buf);
 
 inline auto iconv_transcode_or_error(const char* from, const char* to, span<char> buf);
-
-template<typename IconvFns>
-struct iconv_guard {
-  iconv_t handle;
-  IconvFns fns;
-  ~iconv_guard();
-};
-
-template<legacy_byte_range R>
-//! \omit
-iconv_input_buf materialize_iconv_input(R&& source);
 
 // @[transcode.iconv]{- .sref}@, eager conversion
 

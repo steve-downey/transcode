@@ -380,6 +380,7 @@ using whatwg_decode_or_error_closure = whatwg_decode_closure<C, transcode_error_
 
 namespace std::ranges {
 
+//! \omit
 template <beman::transcoding::codec C, random_access_range R, beman::transcoding::transcode_error_kind E>
     requires beman::transcoding::legacy_byte_range<R> && beman::transcoding::detail::random_access_decode_codec<C>
 inline constexpr bool enable_borrowed_range<beman::transcoding::random_access_whatwg_decode_view<C, R, E>> =

@@ -67,7 +67,8 @@ struct iconv_functions {
 //! `EILSEQ`, `EINVAL` and `E2BIG` say *that* a byte sequence is not valid,
 //! not why, so the WHATWG error vocabulary the other views use would be
 //! claiming knowledge the OS does not return.
-//! \remarks The output buffer is the caller's, and is not owned by the view.
+//!
+//! The output buffer is the caller's, and is not owned by the view.
 //! Its contents between two increments are unspecified, and the program must
 //! keep it alive for the lifetime of every iterator the view produces.
 template <typename IconvFns, std::ranges::input_range R>
@@ -92,29 +93,29 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         using base_sent = std::ranges::sentinel_t<R>;
 
         //! \expos
-        iconv_t         handle_;
+        iconv_t handle_;
         //! \expos
         IconvFns fns_;
         //! \expos
         std::span<char> buffer_;
         //! \expos
-        char*           output_pos_;
+        char* output_pos_;
         //! \expos
-        char*           output_end_;
+        char* output_end_;
         // Accumulates unconsumed input bytes across load() calls so that
         // multi-byte sequences can be assembled before passing to iconv.
         //! \expos
-        char      staging_[64];
+        char staging_[64];
         //! \expos
-        size_t    staging_len_{0};
+        size_t staging_len_{0};
         //! \expos
         base_iter current_;
         //! \expos
         base_sent end_;
         //! \expos
-        bool      done_;
+        bool done_;
         //! \expos
-        bool      flushed_{false};
+        bool flushed_{false};
 
         // Fills output_pos_/output_end_ with the next batch of converted bytes.
         // Handles EINVAL (incomplete sequence) by accumulating more input, and
@@ -162,7 +163,6 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
     R base() && { return std::move(base_); }
 
     iterator                begin();
-    //! \returns `default_sentinel`.
     std::default_sentinel_t end() const;
 };
 
@@ -192,6 +192,7 @@ auto iconv_transcode_view<IconvFns, R>::begin() -> iterator {
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \returns `default_sentinel`.
 std::default_sentinel_t iconv_transcode_view<IconvFns, R>::end() const {
     return std::default_sentinel;
 }
@@ -411,8 +412,8 @@ void iconv_transcode_view<IconvFns, R>::iterator::operator++(int) {
 // Stores the callable set, encoding pair, and output buffer so that
 // operator| can construct the view lazily:
 //   auto v = input | iconv_transcode_closure<iconv_functions>{fns, "UTF-8", "UTF-32LE", buf};
-template <typename IconvFns>
 //! \omit
+template <typename IconvFns>
 struct iconv_transcode_closure {
     IconvFns        fns_;
     const char*     from_;

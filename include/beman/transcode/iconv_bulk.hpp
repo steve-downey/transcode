@@ -28,8 +28,8 @@ namespace beman::transcoding {
 
 namespace detail {
 
-template <typename IconvFns>
 //! \omit
+template <typename IconvFns>
 struct iconv_guard {
     iconv_t  handle;
     IconvFns fns;
@@ -46,8 +46,8 @@ struct iconv_input_buf {
     size_t            size;
 };
 
-template <legacy_byte_range R>
 //! \omit
+template <legacy_byte_range R>
 iconv_input_buf materialize_iconv_input(R&& source) {
     using range_t = std::remove_cvref_t<R>;
     if constexpr (std::ranges::contiguous_range<range_t> && std::ranges::sized_range<range_t>) {
@@ -78,10 +78,10 @@ iconv_input_buf materialize_iconv_input(R&& source) {
 
 //! \returns A `Container` holding the bytes of `source` converted from `from`
 //! to `to` by `fns`.  Input the conversion does not accept is skipped, as it
-//! is by `iconv_transcode_view` \iref{transcode.iconv}.
-//! \returns An empty `Container` if the conversion descriptor cannot be
-//! opened -- which is what `iconv_open` failing means, and is not
-//! distinguishable here from an empty input.
+//! is by `iconv_transcode_view` \iref{transcode.iconv}.  The result is empty
+//! when the conversion descriptor cannot be opened -- which is what
+//! `iconv_open` failing means, and is not distinguishable here from an empty
+//! input.
 template <typename Container = std::string, typename IconvFns, legacy_byte_range R>
 Container iconv_transcode_to(R&& source, const char* from, const char* to, IconvFns fns) {
     auto input = detail::materialize_iconv_input(std::forward<R>(source));

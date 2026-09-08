@@ -57,7 +57,8 @@ order the compiler needs and need not match.
 | `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp`, done 2026-09-08 |
 | `transcode.pipeline` | 2 | Transcoding pipelines | `transcode`, `pluggable_transcode` | `transcode_view.hpp`, done 2026-09-08 |
 | `transcode.string` | 2 | Eager transcoding | `transcode_string`, both overloads | `transcode_string.hpp`, done 2026-09-08 |
-| `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers |
+| `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers, done 2026-09-08 |
+| `transcode.iconv.iterator` | 3 | The two iconv iterators | `iconv_transcode_view::$iterator$`, `iconv_transcode_or_error_view::$iterator$` | the same headers, done 2026-09-08 |
 
 `transcode.custom.*` rather than `transcode.decode` / `transcode.encode` for the
 codec-parameterized family: the WHATWG views are what most readers reach for, so
@@ -103,7 +104,7 @@ so no step has to decide twice.
 
 | Entity | Why |
 |---|---|
-| `random_access_whatwg_decode_view` and the encode and pluggable equivalents | decision W1 below |
+| `random_access_whatwg_decode_view` and the encode and pluggable equivalents, and the `enable_borrowed_range` specializations written for them | decision W1 below |
 | the `_or_error_view` / `_or_error_closure` alias templates | transition spellings for the pre-unification names, not API |
 | `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; index U4 no longer applies |
 | `detail::null_term_fn`, `detail::null_term_adaptor` | the adaptor object's type is unspecified |
@@ -118,10 +119,13 @@ so no step has to decide twice.
   surface table agrees: its bulk rows are `v | ranges::to<>()` and
   `ranges::copy(v, out)`, which are the standard's own facilities.  Nothing to
   specify.
-- `make_real_iconv_fns`, and `iconv_functions` as an injection seam.  The
-  injection exists so the tests can run without the platform's iconv tables
-  (`tests/beman/transcode/iconv_mock.hpp`); whether it is API at all is part of
-  Step 9's scope question.
+- ~~`make_real_iconv_fns`, and `iconv_functions` as an injection seam.~~
+  Settled in Step 9: both are proposed.  `iconv_functions` is what makes the
+  view testable without the platform's iconv tables
+  (`tests/beman/transcode/iconv_mock.hpp`), and a seam that only the library's
+  own tests can reach is a seam the library is keeping to itself.  It is
+  specified as a named requirement on the template parameter, and
+  `make_real_iconv_fns` as the function that supplies the platform's.
 
 ## The `detail::` audit (Step 3 task 3)
 
@@ -198,6 +202,29 @@ adaptor over a C string that this proposal happens to need.
   objects rather than two of each.  `transcode.errors` gains
   `transcode_error_kind`, and its wording must not fix an underlying type for
   either enum (P2728 R13).
-- **Whether iconv is proposed at all** — Step 9's scope question, which is why
-  `transcode.iconv` is listed last and is the only clause the paper can drop
-  without renumbering anything else.
+- ~~**Whether iconv is proposed at all**~~  Settled in Step 9: **iconv is
+  proposed**, with full wording, and no feature-test-macro condition.  The
+  argument for dropping it was that POSIX `iconv` is implementation-defined
+  across glibc, musl and the BSDs, so specifying a view over it specifies
+  "whatever the implementation's iconv does".  That is true and it is not
+  disqualifying: the wording says what the *adaptor* guarantees -- one
+  descriptor per `begin`, closed by the iterator that owns it, input the
+  conversion refuses skipped or surfaced -- and leaves the conversion itself to
+  the implementation, exactly as `<locale>` leaves the locale's own tables to
+  it.  The leak-freedom is the whole point of proposing it: the C interface
+  hands out a descriptor that a program must remember to close, and a range
+  adaptor is where that stops being the program's problem.  `transcode.iconv`
+  is still listed last, and it is still the one clause the paper can drop
+  without renumbering anything else, which is what makes it a clean question to
+  put to SG16 rather than one to settle silently.
+- **Two error vocabularies.**  `transcode.iconv` reports `iconv_error` while
+  every other clause reports `whatwg_error`, and Step 3c's unification does not
+  merge them: it unified the *view* pairs on `transcode_error_kind`, which is
+  orthogonal to what an error *is*.  They stay separate because the failures
+  are not the same failures.  `whatwg_error` names what the Encoding Standard
+  says went wrong in a byte sequence the library itself decoded;
+  `iconv_error` names what POSIX reported -- `EILSEQ`, `EINVAL`, `E2BIG`, or a
+  descriptor that would not open -- about a conversion the library did not
+  perform.  A single enumeration would have to either drop the distinction or
+  carry both sets, and the second is two vocabularies with one name.  See
+  `docs/p2728-alignment.md`.
