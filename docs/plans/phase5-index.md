@@ -201,10 +201,12 @@ qualifier finding anywhere**: `detail::` still reaches no spec-facing header's
 wording.  The three headers Step 4 marked up -- `error.hpp`, `concepts.hpp`,
 `null_term.hpp` -- validate clean, at zero.
 
-**Note for anyone regenerating**: the committed fragments require a specgen with
-**PR #78** (a document reaches the headers it includes), which is what makes
-`transcode.hpp` a document at all, and at or after `b746da6` (#70 and #71
-merged) for the two clauses Step 4 wrote.  0.1.0 at `b90faa7` cannot generate
+**Note for anyone regenerating**: the committed fragments require a specgen at
+or after `c881026`, which is where a document reaches the headers it includes
+(specgen#77) -- what makes `transcode.hpp` a document at all.  An installed
+specgen from that commit or later regenerates every fragment byte for byte,
+with no `SPECGEN=` override; an older one renders `[transcode.syn]` as an empty
+heading.  0.1.0 at `b90faa7` cannot generate
 `transcode.errors.md` or `null.term.adaptor.md` at all and reports them stale.
 A specgen installed from current `main` regenerates every committed fragment
 byte for byte, so no `SPECGEN=` override is needed.

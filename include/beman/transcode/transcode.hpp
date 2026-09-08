@@ -35,6 +35,7 @@ import beman.transcode;
     #include <beman/transcode/error.hpp>
     #include <beman/transcode/concepts.hpp>
     #include <beman/transcode/codec.hpp>
+    #include <beman/transcode/label.hpp>
     #include <beman/transcode/codec_result.hpp>
     #include <beman/transcode/codec_concepts.hpp>
     #include <beman/transcode/whatwg_decode_view.hpp>
@@ -58,7 +59,6 @@ import beman.transcode;
     #include <beman/transcode/detail/single_byte_decode_view.hpp>
     #include <beman/transcode/detail/single_byte_encode_view.hpp>
     #include <beman/transcode/detail/bulk_transcode.hpp>
-    #include <beman/transcode/detail/labels.hpp>
     #include <beman/transcode/detail/table_codec.hpp>
 
     // The clauses.  Each is a heading and nothing else: the declarations are in
@@ -68,6 +68,12 @@ import beman.transcode;
     // \rSec2[transcode.errors]{Error types}
 
     // \rSec2[transcode.reqs]{Range requirements}
+
+    // \rSec2[transcode.codec]{Encodings}
+
+    // \rSec3[transcode.codec.label]{Label lookup}
+
+    // \rSec3[transcode.codec.sniff]{Byte order mark sniffing}
 
 #endif // BEMAN_TRANSCODE_USE_MODULES() &&
        // !defined(BEMAN_TRANSCODE_INCLUDED_FROM_INTERFACE_UNIT)

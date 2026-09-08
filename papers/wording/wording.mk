@@ -4,6 +4,7 @@ WORDING_MD := \
 	wording/transcode.syn.md \
 	wording/transcode.errors.md \
 	wording/transcode.reqs.md \
+	wording/transcode.codec.md \
 	wording/null.term.syn.md \
 	wording/null.term.sentinel.md \
 	wording/null.term.view.md \

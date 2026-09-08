@@ -23,6 +23,7 @@ else()
                     config.hpp
                     codec_concepts.hpp
                     codec_result.hpp
+                    label.hpp
                     concepts.hpp
                     decode_view.hpp
                     encode_view.hpp

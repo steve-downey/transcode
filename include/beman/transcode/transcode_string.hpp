@@ -5,7 +5,7 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/detail/labels.hpp>
+#include <beman/transcode/label.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()

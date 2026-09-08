@@ -4,19 +4,9 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
 
-#include <beman/transcode/config.hpp>
+#include <beman/transcode/codec.hpp>
 
-#include <beman/transcode/whatwg_decode_view.hpp>
-
-#if !BEMAN_TRANSCODE_USE_MODULES()
-    #include <algorithm>
-    #include <optional>
-    #include <string_view>
-
-#endif
-namespace beman::transcoding {
-
-namespace detail {
+namespace beman::transcoding::detail {
 
 struct label_entry {
     const char* label;
@@ -254,39 +244,6 @@ inline constexpr label_entry label_table[] = {
     {"x-x-big5", codec::big5},
 };
 
-} // namespace detail
-
-// Returns the canonical codec for a WHATWG label, or nullopt for unknown.
-// Case-insensitive; strips leading/trailing ASCII whitespace per WHATWG spec.
-constexpr std::optional<codec> get_encoding(std::string_view label) noexcept {
-    // Strip ASCII whitespace from both ends (\t \n \f \r \x20).
-    auto is_ws = [](char c) noexcept { return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r'; };
-    while (!label.empty() && is_ws(label.front()))
-        label.remove_prefix(1);
-    while (!label.empty() && is_ws(label.back()))
-        label.remove_suffix(1);
-
-    if (label.empty())
-        return std::nullopt;
-
-    // ASCII-lowercase the label into a fixed-size buffer (longest label < 64).
-    char buf[64];
-    if (label.size() >= sizeof(buf))
-        return std::nullopt;
-    for (std::size_t i = 0; i < label.size(); ++i) {
-        char c = label[i];
-        buf[i] = (c >= 'A' && c <= 'Z') ? static_cast<char>(c + 32) : c;
-    }
-    std::string_view lower{buf, label.size()};
-
-    // Binary search the sorted table.
-    const auto* it = std::ranges::lower_bound(
-        detail::label_table, lower, {}, [](const detail::label_entry& e) { return std::string_view{e.label}; });
-    if (it != std::end(detail::label_table) && std::string_view{it->label} == lower)
-        return it->value;
-    return std::nullopt;
-}
-
-} // namespace beman::transcoding
+} // namespace beman::transcoding::detail
 
 #endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
