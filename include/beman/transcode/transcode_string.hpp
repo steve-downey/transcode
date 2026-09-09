@@ -17,14 +17,10 @@
 #endif
 namespace beman::transcoding {
 
-// Decode bytes from `from` codec and re-encode to `to` codec.
-// Decode errors yield U+FFFD; unmapped encode codepoints yield '?'.
-// Returns empty string when `to` has no encoder
-// (replacement, x_user_defined, UTF-16BE/LE).
+// \ref{transcode.string}, eager transcoding
+
 std::string transcode_string(std::span<const char> src, codec from, codec to);
 
-// Label-based overload: looks up WHATWG labels for `from_label` and `to_label`.
-// Returns nullopt if either label is unknown.
 std::optional<std::string>
 transcode_string(std::span<const char> src, std::string_view from_label, std::string_view to_label);
 
@@ -70,6 +66,15 @@ std::string transcode_encode_all(std::u32string_view src) {
 // Out-of-line definition: transcode_string
 // ---------------------------------------------------------------------------
 
+//! \returns The bytes of `src`, decoded as `from` and re-encoded as `to`.
+//! Errors are substituted rather than reported: a byte sequence `from` does
+//! not allow decodes to U+FFFD, and a scalar value `to` cannot represent
+//! encodes to `'?'`.  The result is empty when `to` names an encoding the
+//! WHATWG Encoding Standard defines no encoder for.
+//! \remarks This is `transcode` \iref{transcode.pipeline} run to completion
+//! into a `string`, which is what a caller who wants the whole result and not
+//! a view writes.  `src | transcode<From, To> | ranges::to<string>()` is the
+//! same thing with the codecs known at compile time.
 inline std::string transcode_string(std::span<const char> src, codec from, codec to) {
     std::u32string intermediate;
     switch (from) {
@@ -313,6 +318,12 @@ inline std::string transcode_string(std::span<const char> src, codec from, codec
     return result;
 }
 
+//! \returns `transcode_string(src, *get_encoding(from_label),
+//! *get_encoding(to_label))`, and `nullopt` if either label names no encoding
+//! \iref{transcode.codec.label}.
+//! \remarks This is the overload a program uses when the encodings are a
+//! runtime choice -- a `Content-Type` header, a command-line option -- which
+//! is what labels are for.
 inline std::optional<std::string>
 transcode_string(std::span<const char> src, std::string_view from_label, std::string_view to_label) {
     auto from = get_encoding(from_label);

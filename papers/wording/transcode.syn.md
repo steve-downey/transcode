@@ -302,38 +302,14 @@ template<encode_codec Codec>
 encode_or_error_closure encode_or_error_closure =
     encode_closure<Codec, transcode_error_kind::expected>;
 
-template<codec From, codec To>
-struct transcode_closure {
-  template<legacy_byte_range R> constexpr auto operator()(R&& r) const;
+// @[transcode.pipeline]{- .sref}@, transcoding pipelines
 
-  template<legacy_byte_range R>
-  constexpr friend auto operator|(R&& r, const transcode_closure& self);
-
-  template<typename R>
-    requires is_array_v<remove_cvref_t<R>>
-  friend auto operator|(R&&, const transcode_closure&);
-};
-
-template<codec From, codec To>
-inline constexpr auto transcode = transcode_closure<From, To>{};
-
-template<decode_codec From, encode_codec To>
-struct pluggable_transcode_closure {
-  From from_;
-  To to_;
-
-  template<legacy_byte_range R> constexpr auto operator()(R&& r) const;
-
-  template<legacy_byte_range R>
-  constexpr friend auto operator|(R&& r, const pluggable_transcode_closure& self);
-
-  template<typename R>
-    requires is_array_v<remove_cvref_t<R>>
-  friend auto operator|(R&&, const pluggable_transcode_closure&);
-};
+template<codec From, codec To> inline constexpr $unspecified$ transcode;
 
 template<decode_codec From, encode_codec To>
 constexpr pluggable_transcode_closure<From, To> pluggable_transcode(From from, To to);
+
+// @[transcode.string]{- .sref}@, eager transcoding
 
 string transcode_string(span<const char> src, codec from, codec to);
 
