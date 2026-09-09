@@ -22,10 +22,19 @@
 #endif
 namespace beman::transcoding {
 
+// \ref{transcode.iconv}, iconv adaptors
+
+//! \omit
 inline constexpr size_t iconv_error_rc = static_cast<size_t>(-1);
 
-// iconv_functions bundles the three POSIX iconv lifecycle callables.
-// Inject a mock implementation in tests to avoid OS libc dependencies.
+//! \remarks The three POSIX `iconv` entry points a view calls, as a value the
+//! program supplies.  `open` opens a conversion descriptor, `convert`
+//! converts, and `close` closes it; each has the signature and the semantics
+//! POSIX gives the function of the same name.  The views take this as a
+//! template parameter rather than calling `::iconv` directly so that a program
+//! can supply a different implementation of the same interface -- another
+//! library's, or a test's -- and `make_real_iconv_fns` is the one bound to the
+//! platform's.
 struct iconv_functions {
     iconv_t (*open)(const char* tocode, const char* fromcode);
     size_t (*convert)(iconv_t cd, char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft);
@@ -41,42 +50,83 @@ struct iconv_functions {
 //
 // The caller provides an external output buffer (std::span<char>) to avoid
 // internal heap allocation.
+//! \remarks `iconv_transcode_view<IconvFns, R>` presents the bytes of `R`
+//! converted from the encoding named by `from` to the encoding named by `to`,
+//! one element per output byte, using the `iconv` implementation `IconvFns`
+//! names.  Conversion is lazy and proceeds in batches: the view converts into
+//! the caller's buffer, yields those bytes, and converts again.
+//!
+//! What the encoding names mean, which pairs convert, and what a conversion
+//! does with input the source encoding does not allow are the implementation's
+//! `iconv`'s, not this specification's.  That is the point of the adaptor: it
+//! gives an interface a program already has a ranges shape and a lifetime, and
+//! it does not restate a table it does not own.
+//!
+//! A conversion failure is reported as `iconv_error`
+//! \iref{transcode.errors}, which is the granularity POSIX reports at:
+//! `EILSEQ`, `EINVAL` and `E2BIG` say *that* a byte sequence is not valid,
+//! not why, so the WHATWG error vocabulary the other views use would be
+//! claiming knowledge the OS does not return.
+//!
+//! The output buffer is the caller's, and is not owned by the view.
+//! Its contents between two increments are unspecified, and the program must
+//! keep it alive for the lifetime of every iterator the view produces.
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_view<IconvFns, R>> {
-    R               base_;
-    IconvFns        fns_;
-    const char*     from_;
-    const char*     to_;
+    //! \expos
+    R base_;
+    //! \expos
+    IconvFns fns_;
+    //! \expos
+    const char* from_;
+    //! \expos
+    const char* to_;
+    //! \expos
     std::span<char> buffer_;
 
   public:
+    //! \expos
+    //! \seebelow
     class iterator {
         using base_iter = std::ranges::iterator_t<R>;
         using base_sent = std::ranges::sentinel_t<R>;
 
-        iconv_t         handle_;
-        IconvFns        fns_;
+        //! \expos
+        iconv_t handle_;
+        //! \expos
+        IconvFns fns_;
+        //! \expos
         std::span<char> buffer_;
-        char*           output_pos_;
-        char*           output_end_;
+        //! \expos
+        char* output_pos_;
+        //! \expos
+        char* output_end_;
         // Accumulates unconsumed input bytes across load() calls so that
         // multi-byte sequences can be assembled before passing to iconv.
-        char      staging_[64];
-        size_t    staging_len_{0};
+        //! \expos
+        char staging_[64];
+        //! \expos
+        size_t staging_len_{0};
+        //! \expos
         base_iter current_;
+        //! \expos
         base_sent end_;
-        bool      done_;
-        bool      flushed_{false};
+        //! \expos
+        bool done_;
+        //! \expos
+        bool flushed_{false};
 
         // Fills output_pos_/output_end_ with the next batch of converted bytes.
         // Handles EINVAL (incomplete sequence) by accumulating more input, and
         // E2BIG/EILSEQ by yielding partial output or skipping one staging byte.
         // Sets done_ = true when all input and staging bytes are exhausted.
+        //! \expos
         void load();
 
         // Only iconv_transcode_view::begin() may construct an iterator.
         friend class iconv_transcode_view;
+        //! \expos
         iterator(iconv_t handle, IconvFns fns, std::span<char> buffer, base_iter current, base_sent end);
 
       public:
@@ -85,6 +135,7 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         using difference_type  = std::ptrdiff_t;
         using reference        = char;
 
+        // \ref{transcode.iconv.iterator}, iterator operations
         iterator(const iterator&)            = delete;
         iterator& operator=(const iterator&) = delete;
 
@@ -92,6 +143,8 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         iterator& operator=(iterator&&) noexcept;
         ~iterator();
 
+        //! \returns The iterator into `R` this iterator reads from, positioned
+        //! after the last byte handed to the conversion.
         const base_iter& base() const noexcept { return current_; }
 
         char      operator*() const;
@@ -101,10 +154,13 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
     };
 
+    // \ref{transcode.iconv}, construction and access
     explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to, std::span<char> buf);
 
+    //! \returns-equiv
     const R& base() const& noexcept { return base_; }
-    R        base() && { return std::move(base_); }
+    //! \returns-equiv
+    R base() && { return std::move(base_); }
 
     iterator                begin();
     std::default_sentinel_t end() const;
@@ -116,18 +172,27 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \effects Initializes the view with `std::move(base)`, `std::move(fns)`,
+//! `from`, `to` and `buf`.  No conversion descriptor is opened: `begin` opens
+//! one.
 iconv_transcode_view<IconvFns, R>::iconv_transcode_view(
     R base, IconvFns fns, const char* from, const char* to, std::span<char> buf)
     : base_(std::move(base)), fns_(std::move(fns)), from_(from), to_(to), buffer_(buf) {}
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \returns An `$iterator$` over `$base$` holding a conversion descriptor
+//! opened by `$fns$.open($to$, $from$)`.
+//! \remarks Each call opens a descriptor, so a view converts once per `begin`.
+//! The iterator owns the descriptor and closes it, which is what makes the
+//! adaptor leak-free where the POSIX interface is not.
 auto iconv_transcode_view<IconvFns, R>::begin() -> iterator {
     return iterator(fns_.open(to_, from_), fns_, buffer_, std::ranges::begin(base_), std::ranges::end(base_));
 }
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \returns `default_sentinel`.
 std::default_sentinel_t iconv_transcode_view<IconvFns, R>::end() const {
     return std::default_sentinel;
 }
@@ -251,6 +316,11 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \effects Takes over `other`'s conversion descriptor and leaves `other`
+//! holding none.
+//! \remarks The iterator is move-only.  A conversion descriptor is an
+//! OS-owned handle that cannot be duplicated, so copying one would either
+//! close it twice or leak it.
 iconv_transcode_view<IconvFns, R>::iterator::iterator(iterator&& other) noexcept
     : handle_(other.handle_),
       fns_(std::move(other.fns_)),
@@ -271,6 +341,9 @@ iconv_transcode_view<IconvFns, R>::iterator::iterator(iterator&& other) noexcept
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \effects Closes the descriptor `*this` holds, if any, then takes over
+//! `other`'s and leaves `other` holding none.
+//! \returns `*this`.
 auto iconv_transcode_view<IconvFns, R>::iterator::operator=(iterator&& other) noexcept -> iterator& {
     if (this != &other) {
         if (handle_ != (iconv_t)-1)
@@ -296,6 +369,7 @@ auto iconv_transcode_view<IconvFns, R>::iterator::operator=(iterator&& other) no
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \effects Closes the conversion descriptor, if `*this` holds one.
 iconv_transcode_view<IconvFns, R>::iterator::~iterator() {
     if (handle_ != (iconv_t)-1)
         fns_.close(handle_);
@@ -303,12 +377,22 @@ iconv_transcode_view<IconvFns, R>::iterator::~iterator() {
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \returns The converted byte at the current position of the output buffer.
 char iconv_transcode_view<IconvFns, R>::iterator::operator*() const {
     return *output_pos_;
 }
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \effects Advances to the next converted byte, converting more input when
+//! the buffer is exhausted; if no input and no unconverted bytes remain, makes
+//! `*this` equal to `default_sentinel`.
+//! \returns `*this`.
+//! \remarks Input the conversion does not accept is skipped one byte at a
+//! time -- what POSIX reports as `EILSEQ` -- so the range ends where the input
+//! does rather than at the first byte a converter refuses.  A program that
+//! needs to know *that* it happened uses `iconv_transcode_or_error`
+//! \iref{transcode.iconv}.
 auto iconv_transcode_view<IconvFns, R>::iterator::operator++() -> iterator& {
     ++output_pos_;
     if (output_pos_ == output_end_)
@@ -318,6 +402,7 @@ auto iconv_transcode_view<IconvFns, R>::iterator::operator++() -> iterator& {
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \effects-equiv
 void iconv_transcode_view<IconvFns, R>::iterator::operator++(int) {
     ++*this;
 }
@@ -327,6 +412,7 @@ void iconv_transcode_view<IconvFns, R>::iterator::operator++(int) {
 // Stores the callable set, encoding pair, and output buffer so that
 // operator| can construct the view lazily:
 //   auto v = input | iconv_transcode_closure<iconv_functions>{fns, "UTF-8", "UTF-32LE", buf};
+//! \omit
 template <typename IconvFns>
 struct iconv_transcode_closure {
     IconvFns        fns_;

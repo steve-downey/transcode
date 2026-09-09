@@ -531,6 +531,17 @@ enum class iconv_error {
 };
 ```
 
+Two error vocabularies in one header wants a defence, so here it is.
+They are separate because the failures are not the same failures.
+`whatwg_error` names what the Encoding Standard says went wrong in a byte sequence this library decoded, and every one of its enumerators corresponds to a step in an algorithm the paper specifies.
+`iconv_error` names what POSIX reported about a conversion this library did not perform: `EILSEQ`, `EINVAL`, `E2BIG`, and a descriptor that would not open.
+A single enumeration would have to either drop that distinction — reporting `invalid_byte` for a failure whose meaning is "the platform's tables say so", with no algorithm behind it a reader can consult — or carry both sets under one name, which is two vocabularies wearing one.
+Nothing composes them, either: the `iconv` adaptor is byte↔byte and does not appear in a `decode | encode` pipeline, so no expression ever has to reconcile the two.
+
+Note that this is orthogonal to the unification of the `_or_error` views.
+Those pairs collapsed into one view template parameterized on `transcode_error_kind`, which selects whether errors are *reported* or replaced.
+What an error *is* remains the codec family's own question.
+
 ### Concepts
 
 Two concepts constrain the input ranges:
@@ -1033,6 +1044,19 @@ valuable comparison point, but its POSIX dependency gives it a different
 standardization path. The author's recommendation is to keep it in this paper
 through SG16 design review, where the shared interface can be considered as a
 whole, and split the wording only if the group wants separate progression.
+Wording for it is included accordingly, as [transcode.iconv], written last and
+resting on nothing the other clauses need, so removing it renumbers nothing.
+
+The objection to specifying it is that POSIX `iconv` is implementation-defined
+across glibc, musl and the BSDs, so a view over it specifies whatever the
+platform does. That is true, and the wording does not pretend otherwise: what
+it specifies is what the *adaptor* guarantees -- one conversion descriptor per
+`begin`, closed by the iterator that owns it, and input the conversion refuses
+either skipped or surfaced as an `iconv_error` -- and it leaves the conversion
+to the implementation, as `<locale>` leaves a locale's tables to it. That
+guarantee is the reason to propose it at all: the C interface hands a program a
+descriptor it must remember to close, and an adaptor is where that stops being
+the program's problem.
 
 ## References
 

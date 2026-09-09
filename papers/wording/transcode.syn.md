@@ -160,11 +160,6 @@ template<codec C> inline constexpr $unspecified$ whatwg_decode;
 
 template<codec C> inline constexpr $unspecified$ whatwg_decode_or_error;
 
-template<codec C, random_access_range R, transcode_error_kind E>
-  requires legacy_byte_range<R> && detail::$random-access-decode-codec$<C>
-inline constexpr bool enable_borrowed_range<random_access_whatwg_decode_view<C, R, E>> =
-    borrowed_range<R>;
-
 template<codec C, input_range R, transcode_error_kind E>
   requires legacy_byte_range<R>
 inline constexpr bool enable_borrowed_range<whatwg_decode_view<C, R, E>> =
@@ -202,13 +197,8 @@ template<codec C> inline constexpr $unspecified$ whatwg_encode;
 
 template<codec C> inline constexpr $unspecified$ whatwg_encode_or_error;
 
-template<codec C, random_access_range R, transcode_error_kind E>
-  requires unicode_scalar_range<R> && detail::$random-access-encode-codec$<C>
-inline constexpr bool enable_borrowed_range<random_access_whatwg_encode_view<C, R, E>> =
-    borrowed_range<R>;
-
 template<codec C, input_range R, transcode_error_kind E>
-  requires detail::$whatwg-encode-input$<C, R>
+  requires $whatwg-encode-input$<C, R>
 inline constexpr bool enable_borrowed_range<whatwg_encode_view<C, R, E>> =
     borrowed_range<R>;
 
@@ -324,7 +314,7 @@ template<codec C> string transcode_encode_all(u32string_view src);
 
 template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) noexcept;
 
-inline constexpr size_t iconv_error_rc = static_cast<size_t>(-1);
+// @[transcode.iconv]{- .sref}@, iconv adaptors
 
 struct iconv_functions {
   iconv_t (*open)(const char* tocode, const char* fromcode);
@@ -337,154 +327,48 @@ template<typename IconvFns, ranges::input_range R>
   requires legacy_byte_range<R>
 class iconv_transcode_view
     : public ranges::view_interface<iconv_transcode_view<IconvFns, R>> {
+  R $base$;            // exposition only
+  IconvFns $fns$;      // exposition only
+  const char* $from$;  // exposition only
+  const char* $to$;    // exposition only
+  span<char> $buffer$; // exposition only
+
 public:
-  class iterator {
-    using base_iter = ranges::iterator_t<R>;
-    using base_sent = ranges::sentinel_t<R>;
+  class $iterator$; // exposition only
 
-    iconv_t handle_;
-    IconvFns fns_;
-    span<char> buffer_;
-    char* output_pos_;
-    char* output_end_;
-    // Accumulates unconsumed input bytes across load() calls so that
-    // multi-byte sequences can be assembled before passing to iconv.
-    char staging_[64];
-    size_t staging_len_{0};
-    base_iter current_;
-    base_sent end_;
-    bool done_;
-    bool flushed_{false};
-
-    // Fills output_pos_/output_end_ with the next batch of converted bytes.
-    // Handles EINVAL (incomplete sequence) by accumulating more input, and
-    // E2BIG/EILSEQ by yielding partial output or skipping one staging byte.
-    // Sets done_ = true when all input and staging bytes are exhausted.
-    void load();
-
-    // Only iconv_transcode_view::begin() may construct an iterator.
-    friend class iconv_transcode_view;
-    iterator(iconv_t handle, IconvFns fns, span<char> buffer, base_iter current,
-             base_sent end);
-
-  public:
-    using iterator_concept = input_iterator_tag;
-    using value_type = char;
-    using difference_type = ptrdiff_t;
-    using reference = char;
-
-    iterator(const iterator&) = delete;
-    iterator& operator=(const iterator&) = delete;
-
-    iterator(iterator&&) noexcept;
-    iterator& operator=(iterator&&) noexcept;
-    ~iterator();
-
-    const base_iter& base() const noexcept { return current_; }
-
-    char operator*() const;
-    iterator& operator++();
-    void operator++(int);
-
-    friend bool operator==(const iterator& it, default_sentinel_t) { return it.done_; }
-  };
-
+  // @[transcode.iconv]{- .sref}@, construction and access
   explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to,
                                 span<char> buf);
 
   const R& base() const& noexcept;
   R base() &&;
 
-  iterator begin();
+  $iterator$ begin();
   default_sentinel_t end() const;
-};
-
-template<typename IconvFns>
-struct iconv_transcode_closure {
-  IconvFns fns_;
-  const char* from_;
-  const char* to_;
-  span<char> buffer_;
-
-  template<legacy_byte_range R> auto operator()(R&& r) const;
-
-  template<legacy_byte_range R>
-  friend auto operator|(R&& r, const iconv_transcode_closure& self);
 };
 
 template<typename IconvFns, ranges::input_range R>
   requires legacy_byte_range<R>
 class iconv_transcode_or_error_view
     : public ranges::view_interface<iconv_transcode_or_error_view<IconvFns, R>> {
+  R $base$;            // exposition only
+  IconvFns $fns$;      // exposition only
+  const char* $from$;  // exposition only
+  const char* $to$;    // exposition only
+  span<char> $buffer$; // exposition only
+
 public:
-  class iterator {
-    using base_iter = ranges::iterator_t<R>;
-    using base_sent = ranges::sentinel_t<R>;
-    using result_t = expected<char, iconv_error>;
+  class $iterator$; // exposition only
 
-    iconv_t handle_;
-    IconvFns fns_;
-    span<char> buffer_;
-    char* output_pos_;
-    char* output_end_;
-    char staging_[64];
-    size_t staging_len_{0};
-    base_iter current_;
-    base_sent end_;
-    bool done_;
-    bool flushed_{false};
-    bool has_error_{false};
-    iconv_error error_value_{};
-
-    void load();
-
-    friend class iconv_transcode_or_error_view;
-    iterator(iconv_t handle, IconvFns fns, span<char> buffer, base_iter current,
-             base_sent end);
-
-  public:
-    using iterator_concept = input_iterator_tag;
-    using value_type = result_t;
-    using difference_type = ptrdiff_t;
-    using reference = result_t;
-
-    iterator(const iterator&) = delete;
-    iterator& operator=(const iterator&) = delete;
-
-    iterator(iterator&&) noexcept;
-    iterator& operator=(iterator&&) noexcept;
-    ~iterator();
-
-    const base_iter& base() const noexcept { return current_; }
-
-    result_t operator*() const;
-    iterator& operator++();
-    void operator++(int);
-
-    friend bool operator==(const iterator& it, default_sentinel_t) { return it.done_; }
-  };
-
+  // @[transcode.iconv]{- .sref}@, construction and access
   explicit iconv_transcode_or_error_view(R base, IconvFns fns, const char* from,
                                          const char* to, span<char> buf);
 
   const R& base() const& noexcept;
   R base() &&;
 
-  iterator begin();
+  $iterator$ begin();
   default_sentinel_t end() const;
-};
-
-template<typename IconvFns>
-struct iconv_transcode_or_error_closure {
-  IconvFns fns_;
-  const char* from_;
-  const char* to_;
-  span<char> buffer_;
-
-  template<legacy_byte_range R> auto operator()(R&& r) const;
-
-  template<legacy_byte_range R>
-  friend auto operator|(R&& r, const iconv_transcode_or_error_closure& self);
 };
 
 inline iconv_functions make_real_iconv_fns() noexcept;
@@ -493,20 +377,7 @@ inline auto iconv_transcode(const char* from, const char* to, span<char> buf);
 
 inline auto iconv_transcode_or_error(const char* from, const char* to, span<char> buf);
 
-template<typename IconvFns>
-struct iconv_guard {
-  iconv_t handle;
-  IconvFns fns;
-  ~iconv_guard();
-};
-
-struct iconv_input_buf {
-  vector<char> storage;
-  char* data;
-  size_t size;
-};
-
-template<legacy_byte_range R> iconv_input_buf materialize_iconv_input(R&& source);
+// @[transcode.iconv]{- .sref}@, eager conversion
 
 template<typename Container = string, typename IconvFns, legacy_byte_range R>
 Container iconv_transcode_to(R&& source, const char* from, const char* to,
@@ -584,5 +455,17 @@ static constexpr $iterator$ $terminal$();
 ```
 
 [#]{.pnum} *Constraints*: `R` models `forward_range`.
+
+[#]{.pnum} *Remarks*: The three POSIX `iconv` entry points a view calls, as a value the program supplies.  `open` opens a conversion descriptor, `convert` converts, and `close` closes it; each has the signature and the semantics POSIX gives the function of the same name.  The views take this as a template parameter rather than calling `::iconv` directly so that a program can supply a different implementation of the same interface -- another library's, or a test's -- and `make_real_iconv_fns` is the one bound to the platform's.
+
+[#]{.pnum} *Remarks*: `iconv_transcode_view<IconvFns, R>` presents the bytes of `R` converted from the encoding named by `from` to the encoding named by `to`, one element per output byte, using the `iconv` implementation `IconvFns` names.  Conversion is lazy and proceeds in batches: the view converts into the caller's buffer, yields those bytes, and converts again.
+
+[#]{.pnum} What the encoding names mean, which pairs convert, and what a conversion does with input the source encoding does not allow are the implementation's `iconv`'s, not this specification's.  That is the point of the adaptor: it gives an interface a program already has a ranges shape and a lifetime, and it does not restate a table it does not own.
+
+[#]{.pnum} A conversion failure is reported as `iconv_error` ([transcode.errors]{- .sref}), which is the granularity POSIX reports at: `EILSEQ`, `EINVAL` and `E2BIG` say *that* a byte sequence is not valid, not why, so the WHATWG error vocabulary the other views use would be claiming knowledge the OS does not return.
+
+[#]{.pnum} The output buffer is the caller's, and is not owned by the view. Its contents between two increments are unspecified, and the program must keep it alive for the lifetime of every iterator the view produces.
+
+[#]{.pnum} *Remarks*: `iconv_transcode_or_error_view<IconvFns, R>` is `iconv_transcode_view` ([transcode.iconv]{- .sref}) with the errors reported rather than skipped: its value type is `expected<char, iconv_error>`, and a conversion failure is an element holding the `iconv_error` POSIX reported rather than input the range passes over.
 
 :::

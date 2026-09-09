@@ -28,6 +28,7 @@ namespace beman::transcoding {
 
 namespace detail {
 
+//! \omit
 template <typename IconvFns>
 struct iconv_guard {
     iconv_t  handle;
@@ -38,12 +39,14 @@ struct iconv_guard {
     }
 };
 
+//! \omit
 struct iconv_input_buf {
     std::vector<char> storage;
     char*             data;
     size_t            size;
 };
 
+//! \omit
 template <legacy_byte_range R>
 iconv_input_buf materialize_iconv_input(R&& source) {
     using range_t = std::remove_cvref_t<R>;
@@ -71,6 +74,14 @@ iconv_input_buf materialize_iconv_input(R&& source) {
 // iconv-compatible callables in `fns`. Invalid sequences are replaced with '?'.
 // Stateful encodings are flushed after all input is consumed.
 // IconvFns enables dependency injection for testing (see iconv_mock.hpp).
+// \ref{transcode.iconv}, eager conversion
+
+//! \returns A `Container` holding the bytes of `source` converted from `from`
+//! to `to` by `fns`.  Input the conversion does not accept is skipped, as it
+//! is by `iconv_transcode_view` \iref{transcode.iconv}.  The result is empty
+//! when the conversion descriptor cannot be opened -- which is what
+//! `iconv_open` failing means, and is not distinguishable here from an empty
+//! input.
 template <typename Container = std::string, typename IconvFns, legacy_byte_range R>
 Container iconv_transcode_to(R&& source, const char* from, const char* to, IconvFns fns) {
     auto input = detail::materialize_iconv_input(std::forward<R>(source));
@@ -150,6 +161,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
 
 // iconv_transcode_to<Container>(source, from, to)
 // Overload using real iconv (no dependency injection).
+//! \returns-equiv
 template <typename Container = std::string, legacy_byte_range R>
 Container iconv_transcode_to(R&& source, const char* from, const char* to) {
     return iconv_transcode_to<Container>(std::forward<R>(source), from, to, make_real_iconv_fns());
@@ -160,6 +172,9 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to) {
 // Transcodes source bytes from `from` to `to` and writes each output char to
 // the output iterator. Invalid sequences are replaced with '?'. Uses a fixed
 // temporary buffer internally. Returns the advanced output iterator.
+//! \effects Converts the bytes of `source` from `from` to `to` by `fns` and
+//! writes them through `output`.
+//! \returns The value of `output` after the last byte written.
 template <typename IconvFns, legacy_byte_range R, std::output_iterator<char> Output>
 Output iconv_transcode_into(R&& source, const char* from, const char* to, Output output, IconvFns fns) {
     auto input = detail::materialize_iconv_input(std::forward<R>(source));
@@ -214,6 +229,7 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
 
 // iconv_transcode_into(source, from, to, output)
 // Overload using real iconv.
+//! \returns-equiv
 template <legacy_byte_range R, std::output_iterator<char> Output>
 Output iconv_transcode_into(R&& source, const char* from, const char* to, Output output) {
     return iconv_transcode_into(std::forward<R>(source), from, to, std::move(output), make_real_iconv_fns());
@@ -223,6 +239,12 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
 //
 // Like iconv_transcode_to but returns std::unexpected on the first invalid or
 // incomplete sequence instead of inserting a replacement character.
+//! \returns A `Container` holding the converted bytes, or the first
+//! `iconv_error` the conversion reported.
+//! \remarks This is the eager form of `iconv_transcode_or_error`
+//! \iref{transcode.iconv}: it stops at the first failure rather than skipping
+//! it, which is the difference between a conversion a program wants to know
+//! about and one it wants to get through.
 template <typename Container = std::string, typename IconvFns, legacy_byte_range R>
 std::expected<Container, iconv_error>
 iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvFns fns) {
@@ -281,6 +303,7 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
 
 // iconv_transcode_to_or_error<Container>(source, from, to)
 // Overload using real iconv.
+//! \returns-equiv
 template <typename Container = std::string, legacy_byte_range R>
 std::expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source, const char* from, const char* to) {
     return iconv_transcode_to_or_error<Container>(std::forward<R>(source), from, to, make_real_iconv_fns());
