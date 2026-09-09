@@ -134,17 +134,26 @@ Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
 <tr class="memitem:abd36dfa0c35ddaf0ccade11a1e61a20c"><td class="memItemLeft" align="right" valign="top">R&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html#abd36dfa0c35ddaf0ccade11a1e61a20c">base_</a></td></tr>
+<tr class="memdesc:abd36dfa0c35ddaf0ccade11a1e61a20c"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:abd36dfa0c35ddaf0ccade11a1e61a20c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7371bb3b3d79d44acd4cfc58c9c65556"><td class="memItemLeft" align="right" valign="top">IconvFns&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html#a7371bb3b3d79d44acd4cfc58c9c65556">fns_</a></td></tr>
+<tr class="memdesc:a7371bb3b3d79d44acd4cfc58c9c65556"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a7371bb3b3d79d44acd4cfc58c9c65556"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ab5e1a310291e6a550391632c2b2066"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html#a3ab5e1a310291e6a550391632c2b2066">from_</a></td></tr>
+<tr class="memdesc:a3ab5e1a310291e6a550391632c2b2066"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a3ab5e1a310291e6a550391632c2b2066"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50ebf5768c3e229dff24a9307ce3be1b"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html#a50ebf5768c3e229dff24a9307ce3be1b">to_</a></td></tr>
+<tr class="memdesc:a50ebf5768c3e229dff24a9307ce3be1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a50ebf5768c3e229dff24a9307ce3be1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab189fc1c8f79a99899cd1691d1d3a27"><td class="memItemLeft" align="right" valign="top">std::span&lt; char &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html#aab189fc1c8f79a99899cd1691d1d3a27">buffer_</a></td></tr>
+<tr class="memdesc:aab189fc1c8f79a99899cd1691d1d3a27"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:aab189fc1c8f79a99899cd1691d1d3a27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;typename IconvFns, std::ranges::input_range R&gt;<br />
+requires legacy_byte_range&lt;R&gt;<br />
+class beman::transcoding::iconv_transcode_or_error_view&lt; IconvFns, R &gt;</div><dl class="section remark"><dt>Remarks</dt><dd><code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html">iconv_transcode_or_error_view</a>&lt;IconvFns, R&gt;</code> is <code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a></code> \iref{transcode.iconv} with the errors reported rather than skipped: its value type is <code>expected&lt;char, iconv_error&gt;</code>, and a conversion failure is an element holding the <code>iconv_error</code> POSIX reported rather than input the range passes over. </dd></dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a8e1b085621b3b904878820bf8e4b4b78" name="a8e1b085621b3b904878820bf8e4b4b78"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8e1b085621b3b904878820bf8e4b4b78">&#9670;&#160;</a></span>iconv_transcode_or_error_view()</h2>
 
@@ -227,6 +236,7 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -254,6 +264,7 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -314,6 +325,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
 </table>
 </div><div class="memdoc">
 
+<p>\expos </p>
+
 </div>
 </div>
 <a id="aab189fc1c8f79a99899cd1691d1d3a27" name="aab189fc1c8f79a99899cd1691d1d3a27"></a>
@@ -337,6 +350,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>\expos </p>
 
 </div>
 </div>
@@ -362,6 +377,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
 </table>
 </div><div class="memdoc">
 
+<p>\expos </p>
+
 </div>
 </div>
 <a id="a3ab5e1a310291e6a550391632c2b2066" name="a3ab5e1a310291e6a550391632c2b2066"></a>
@@ -386,6 +403,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
 </table>
 </div><div class="memdoc">
 
+<p>\expos </p>
+
 </div>
 </div>
 <a id="a50ebf5768c3e229dff24a9307ce3be1b" name="a50ebf5768c3e229dff24a9307ce3be1b"></a>
@@ -409,6 +428,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>\expos </p>
 
 </div>
 </div>

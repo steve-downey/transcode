@@ -116,8 +116,30 @@ What is different here</h1>
 Acceptance</h1>
 <ul>
 <li>Either <code>papers/wording/transcode.iconv.md</code> exists and validates, or <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code> records the decision not to propose wording, with the reasoning, and the paper says so where the API surface table claims iconv support.</li>
-<li><code>make wording-check</code>, <code>make lint</code>, <code>make test</code> green. </li>
+<li><code>make wording-check</code>, <code>make lint</code>, <code>make test</code> green.</li>
 </ul>
+<hr  />
+<h1><a class="anchor" id="autotoc_md359"></a>
+Outcome (2026-09-08)</h1>
+<p><b>iconv is proposed</b>, with full wording and no feature-test-macro condition. <code>papers/wording/transcode.iconv.md</code> exists and validates, and with it the document's findings reach <b>zero</b> &ndash; every clause in the tree is generated, and nothing in <code>&lt;transcode&gt;</code> is undescribed.</p>
+<p>The scope question is settled in <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code> and argued in the paper, in the design section and in "Questions for SG16". The short of it: the objection is that POSIX <code>iconv</code> is implementation-defined across glibc, musl and the BSDs, so a view over it specifies whatever the platform does. True, and not disqualifying. The wording specifies what the <em>adaptor</em> guarantees &ndash; one conversion descriptor per <code>begin</code>, closed by the iterator that owns it, and refused input either skipped or surfaced as an <code>iconv_error</code> &ndash; and leaves the conversion to the implementation, as <code>&lt;locale&gt;</code> leaves a locale's tables to it. That guarantee is the reason to propose it: the C interface hands a program a descriptor it must remember to close, and an adaptor is where that stops being the program's problem.</p>
+<p><b>Two error vocabularies, on purpose.</b> <code>iconv_error</code> is not merged into <code>whatwg_error</code>, and the paper says why rather than leaving it to be noticed. Step 3c unified the <code>_or_error</code> <em>views</em> on <code>transcode_error_kind</code>, which selects whether errors are reported or replaced; what an error <em>is</em> remains the codec family's question. <code>whatwg_error</code> names a step in an algorithm this paper specifies; <code>iconv_error</code> names what POSIX reported about a conversion this library did not perform. Nothing composes them either &ndash; the iconv adaptor is byte-to-byte and never appears in a <code>decode | encode</code> pipeline &ndash; so no expression has to reconcile the two.</p>
+<h2><a class="anchor" id="autotoc_md360"></a>
+Four markup faults, all of them placement</h2>
+<p>The clause was mostly written when this step started; what was wrong was where the markers sat.</p>
+<ul>
+<li>**<code>\omit</code> above the <code>struct</code>, not above the <code>template</code>.** Three closures and <code>iconv_guard</code> carried <code>//! \omit</code> wedged <em>between</em> <code>template &lt;typename IconvFns&gt;</code> and <code>struct X {</code>, where it attaches to nothing and the whole type renders anyway. A docblock goes above the entire declaration, template head included. The same fault put a literal <code>//! \omit</code> line into the synopsis for <code>materialize_iconv_input</code>.</li>
+<li>**<code>\returns</code> on the declaration, not the definition.** Step 5's lesson, hit twice more: <code>end()</code>'s wording sat in the class body.</li>
+<li><b>No <code>\ref</code> group on <code>iconv_transcode_or_error_view</code>.</b> Its constructor, <code>begin</code> and <code>end</code> fell through to <code>[transcode.iconv.iterator]</code> &ndash; the clause that happened to be open &ndash; because nothing routed them back. A member's group is written beside its declaration or it inherits whatever precedes it.</li>
+<li><b>Wording that named a private alias.</b> <code>result_t operator*() const</code> named a member of an exposition-only iterator that no reader can resolve. The alias is gone; the type is spelled.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md361"></a>
+W1 reaches the borrowed-range specializations</h2>
+<p><code>random_access_whatwg_decode_view</code> and its encode twin are not separately specified entities, and neither are the <code>enable_borrowed_range</code> partial specializations <em>written for them</em>. Omitting the views without omitting their specializations left two declarations in the synopsis naming views that are not there.</p>
+<h2><a class="anchor" id="autotoc_md362"></a>
+One specgen defect, the last one standing</h2>
+<p>An exposition-only use kept a bare <code>detail::</code> when its qualifier was written in full &ndash; which an <code>enable_borrowed_range</code> specialization, declared in <code>namespace <a class="el" href="namespacestd_1_1ranges.html">std::ranges</a></code>, has no way to avoid. The same entity written <code>detail::X</code> from inside the namespace rendered correctly, so one concept came out two ways in one synopsis. The head of <code>beman::transcoding::detail::</code> is droppable and the whole of it is not, so the dropper stripped the head alone, and that partial edit &ndash; nested inside the range the exposition-only use wanted deleted &ndash; won the design 3.4 overlap watermark and suppressed the deletion it sat inside.</p>
+<p>specgen <a href="https://github.com/steve-downey/specgen/issues/86">#86</a>, fixed in <a href="https://github.com/steve-downey/specgen/pull/87">PR #87</a>. The first attempt stopped the dropper descending into any non-droppable namespace qualifier, which regressed <code>std::ranges::probe_t</code> to keep its <code>std::</code>; whether a prefix should go is not a property of the qualifier but of what the name turned into, so the filter belongs where the two edit sources meet. <b>The wording committed here needs that PR merged</b>: with the installed specgen, <code>[transcode.syn]</code> still carries one <code>detail::</code> and one finding. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

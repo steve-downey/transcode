@@ -134,8 +134,10 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1iconv__functions.html">iconv_functions</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1iconv__transcode__closure.html">iconv_transcode_closure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="structbeman_1_1transcoding_1_1iconv__transcode__closure.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html">iconv_transcode_or_error_closure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html">iconv_transcode_or_error_view</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -372,6 +374,7 @@ Variables</h2></td></tr>
 <tr class="memitem:a82f706c2813d6a4b7ec40aeb51af5ae6"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1single__byte__encode__closure.html">single_byte_encode_closure</a>&lt; C &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a82f706c2813d6a4b7ec40aeb51af5ae6">single_byte_encode</a> {}</td></tr>
 <tr class="separator:a82f706c2813d6a4b7ec40aeb51af5ae6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51c614ab370846ad687e12691645601e"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a51c614ab370846ad687e12691645601e">iconv_error_rc</a> = static_cast&lt;size_t&gt;(-1)</td></tr>
+<tr class="memdesc:a51c614ab370846ad687e12691645601e"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <br /></td></tr>
 <tr class="separator:a51c614ab370846ad687e12691645601e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd0d40bb9a9bf664c3f2573d5f941311"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1null__sentinel__t.html">null_sentinel_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311">null_sentinel</a> {}</td></tr>
 <tr class="separator:afd0d40bb9a9bf664c3f2573d5f941311"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -906,6 +909,8 @@ template&lt;encode_codec Codec&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd>A range adaptor object. Given a subexpression <code>E</code> that models <code>legacy_byte_range</code>, <code>iconv_transcode(from, to, buf)(E)</code> and <code>E | iconv_transcode(from, to, buf)</code> are each expression-equivalent to an <code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a></code> \iref{transcode.iconv} over <code>E</code>, <code><a class="el" href="namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b">make_real_iconv_fns()</a></code>, <code>from</code>, <code>to</code> and <code>buf</code>. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd><code>buf</code> is the caller's, and every iterator the adaptor produces converts into it. Two ranges adapted with the same buffer must not be iterated at the same time. </dd></dl>
 
 </div>
 </div>
@@ -948,6 +953,7 @@ template&lt;legacy_byte_range R, std::output_iterator&lt; char &gt; Output&gt; <
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -996,6 +1002,7 @@ template&lt;typename IconvFns , legacy_byte_range R, std::output_iterator&lt; ch
         </tr>
       </table>
 </div><div class="memdoc">
+<p>\effects Converts the bytes of <code>source</code> from <code>from</code> to <code>to</code> by <code>fns</code> and writes them through <code>output</code>. </p><dl class="section return"><dt>Returns</dt><dd>The value of <code>output</code> after the last byte written. </dd></dl>
 
 </div>
 </div>
@@ -1038,6 +1045,7 @@ template&lt;typename IconvFns , legacy_byte_range R, std::output_iterator&lt; ch
   </tr>
 </table>
 </div><div class="memdoc">
+<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd><code>iconv_transcode(from, to, buf)</code> with the errors reported rather than skipped: the view it adapts to has value type <code>expected&lt;char, iconv_error&gt;</code>. </dd></dl>
 
 </div>
 </div>
@@ -1074,6 +1082,7 @@ template&lt;typename Container  = std::string, legacy_byte_range R&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -1116,6 +1125,7 @@ template&lt;typename Container  = std::string, typename IconvFns , legacy_byte_r
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>A <code>Container</code> holding the bytes of <code>source</code> converted from <code>from</code> to <code>to</code> by <code>fns</code>. Input the conversion does not accept is skipped, as it is by <code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a></code> \iref{transcode.iconv}. The result is empty when the conversion descriptor cannot be opened &ndash; which is what <code>iconv_open</code> failing means, and is not distinguishable here from an empty input. </dd></dl>
 
 </div>
 </div>
@@ -1152,6 +1162,7 @@ template&lt;typename Container  = std::string, legacy_byte_range R&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -1194,6 +1205,8 @@ template&lt;typename Container  = std::string, typename IconvFns , legacy_byte_r
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>A <code>Container</code> holding the converted bytes, or the first <code>iconv_error</code> the conversion reported. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This is the eager form of <code>iconv_transcode_or_error</code> \iref{transcode.iconv}: it stops at the first failure rather than skipping it, which is the difference between a conversion a program wants to know about and one it wants to get through. </dd></dl>
 
 </div>
 </div>
@@ -1219,6 +1232,7 @@ template&lt;typename Container  = std::string, typename IconvFns , legacy_byte_r
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>An <code><a class="el" href="structbeman_1_1transcoding_1_1iconv__functions.html">iconv_functions</a></code> whose members are the implementation's <code>iconv_open</code>, <code>iconv</code> and <code>iconv_close</code>. </dd></dl>
 
 </div>
 </div>
@@ -1422,6 +1436,8 @@ template&lt;legacy_byte_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>\omit </p>
 
 </div>
 </div>

@@ -1,7 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"iconv__real_8hpp.html#a0b9d1350ae333361ebeca4ed71a3d2cd":[55,0,2,0,0,10,1],
-"iconv__real_8hpp.html#a8052302218d5a4ad20fe0e26e198765b":[55,0,2,0,0,10,2],
 "iconv__real_8hpp.html#aab66a3b96e24d01f79bc11a5b9731dcb":[55,0,2,0,0,10,0],
 "iconv__real_8hpp_source.html":[55,0,2,0,0,10],
 "iconv__transcode__or__error__view_8hpp.html":[55,0,2,0,0,11],
@@ -249,5 +247,7 @@ var NAVTREEINDEX4 =
 "md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md222":[19,0],
 "md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md223":[19,1],
 "md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md224":[19,1,0],
-"md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md225":[19,1,1]
+"md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md225":[19,1,1],
+"md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md226":[19,1,2],
+"md_docs_plans_p4_step1_pluggable_encode.html#autotoc_md227":[19,2]
 };

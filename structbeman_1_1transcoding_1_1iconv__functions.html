@@ -114,7 +114,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a8a8cb4569ed9d79f8d45af61aed5185d"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1iconv__functions.html#a8a8cb4569ed9d79f8d45af61aed5185d">close</a> )(iconv_t cd)</td></tr>
 <tr class="separator:a8a8cb4569ed9d79f8d45af61aed5185d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><dl class="section remark"><dt>Remarks</dt><dd>The three POSIX <code>iconv</code> entry points a view calls, as a value the program supplies. <code>open</code> opens a conversion descriptor, <code>convert</code> converts, and <code>close</code> closes it; each has the signature and the semantics POSIX gives the function of the same name. The views take this as a template parameter rather than calling <code>::iconv</code> directly so that a program can supply a different implementation of the same interface &ndash; another library's, or a test's &ndash; and <code>make_real_iconv_fns</code> is the one bound to the platform's. </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="a8a8cb4569ed9d79f8d45af61aed5185d" name="a8a8cb4569ed9d79f8d45af61aed5185d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8a8cb4569ed9d79f8d45af61aed5185d">&#9670;&#160;</a></span>close</h2>
 

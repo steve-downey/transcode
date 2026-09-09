@@ -134,17 +134,29 @@ Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
 <tr class="memitem:a63d1723fd1bb4fbb87aa136a42f005e1"><td class="memItemLeft" align="right" valign="top">R&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html#a63d1723fd1bb4fbb87aa136a42f005e1">base_</a></td></tr>
+<tr class="memdesc:a63d1723fd1bb4fbb87aa136a42f005e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a63d1723fd1bb4fbb87aa136a42f005e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acdf7dd8f4b5897f6aac56e779d775703"><td class="memItemLeft" align="right" valign="top">IconvFns&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html#acdf7dd8f4b5897f6aac56e779d775703">fns_</a></td></tr>
+<tr class="memdesc:acdf7dd8f4b5897f6aac56e779d775703"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:acdf7dd8f4b5897f6aac56e779d775703"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f37e4142fa20d09b32a3cb69e1d6022"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html#a5f37e4142fa20d09b32a3cb69e1d6022">from_</a></td></tr>
+<tr class="memdesc:a5f37e4142fa20d09b32a3cb69e1d6022"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a5f37e4142fa20d09b32a3cb69e1d6022"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae3feadcf01fdb9ad10af6d5c7fdfdaac"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html#ae3feadcf01fdb9ad10af6d5c7fdfdaac">to_</a></td></tr>
+<tr class="memdesc:ae3feadcf01fdb9ad10af6d5c7fdfdaac"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:ae3feadcf01fdb9ad10af6d5c7fdfdaac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0af5b26406c8847e50cf42a8ef9fae0e"><td class="memItemLeft" align="right" valign="top">std::span&lt; char &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html#a0af5b26406c8847e50cf42a8ef9fae0e">buffer_</a></td></tr>
+<tr class="memdesc:a0af5b26406c8847e50cf42a8ef9fae0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a0af5b26406c8847e50cf42a8ef9fae0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;typename IconvFns, std::ranges::input_range R&gt;<br />
+requires legacy_byte_range&lt;R&gt;<br />
+class beman::transcoding::iconv_transcode_view&lt; IconvFns, R &gt;</div><dl class="section remark"><dt>Remarks</dt><dd><code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a>&lt;IconvFns, R&gt;</code> presents the bytes of <code>R</code> converted from the encoding named by <code>from</code> to the encoding named by <code>to</code>, one element per output byte, using the <code>iconv</code> implementation <code>IconvFns</code> names. Conversion is lazy and proceeds in batches: the view converts into the caller's buffer, yields those bytes, and converts again.</dd></dl>
+<p>What the encoding names mean, which pairs convert, and what a conversion does with input the source encoding does not allow are the implementation's <code>iconv</code>'s, not this specification's. That is the point of the adaptor: it gives an interface a program already has a ranges shape and a lifetime, and it does not restate a table it does not own.</p>
+<p>A conversion failure is reported as <code>iconv_error</code> \iref{transcode.errors}, which is the granularity POSIX reports at: <code>EILSEQ</code>, <code>EINVAL</code> and <code>E2BIG</code> say <em>that</em> a byte sequence is not valid, not why, so the WHATWG error vocabulary the other views use would be claiming knowledge the OS does not return.</p>
+<p>The output buffer is the caller's, and is not owned by the view. Its contents between two increments are unspecified, and the program must keep it alive for the lifetime of every iterator the view produces. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a3051d8be05a7b8991ec78c2feb3f53bb" name="a3051d8be05a7b8991ec78c2feb3f53bb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3051d8be05a7b8991ec78c2feb3f53bb">&#9670;&#160;</a></span>iconv_transcode_view()</h2>
 
@@ -227,6 +239,7 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -254,6 +267,7 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>-equiv </dd></dl>
 
 </div>
 </div>
@@ -314,6 +328,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
 </table>
 </div><div class="memdoc">
 
+<p>\expos </p>
+
 </div>
 </div>
 <a id="a0af5b26406c8847e50cf42a8ef9fae0e" name="a0af5b26406c8847e50cf42a8ef9fae0e"></a>
@@ -337,6 +353,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>\expos </p>
 
 </div>
 </div>
@@ -362,6 +380,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
 </table>
 </div><div class="memdoc">
 
+<p>\expos </p>
+
 </div>
 </div>
 <a id="a5f37e4142fa20d09b32a3cb69e1d6022" name="a5f37e4142fa20d09b32a3cb69e1d6022"></a>
@@ -386,6 +406,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
 </table>
 </div><div class="memdoc">
 
+<p>\expos </p>
+
 </div>
 </div>
 <a id="ae3feadcf01fdb9ad10af6d5c7fdfdaac" name="ae3feadcf01fdb9ad10af6d5c7fdfdaac"></a>
@@ -409,6 +431,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>\expos </p>
 
 </div>
 </div>
