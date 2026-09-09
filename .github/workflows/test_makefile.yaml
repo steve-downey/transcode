@@ -73,6 +73,16 @@ jobs:
         run: |
           source .venv/bin/activate
           make coverage
+      # The per-pull-request half of the wording drift gate. It hashes the
+      # headers the paper's wording is generated from and fails when they have
+      # moved without a regeneration, which needs no specgen and takes no time.
+      # The other half -- regenerate everything and diff -- does need one, and
+      # is the manual Wording Drift workflow.
+      - name: Wording inputs
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          make wording-inputs-check
       - name: Lint
         shell: bash
         run: |

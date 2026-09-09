@@ -71,8 +71,20 @@ make drift between the headers and the paper a CI failure.
 
 The paper builds, in HTML and PDF, with its Wording section in the right place
 and every clause in `docs/wording-outline.md` present and in outline order --
-23 of them, checked mechanically rather than by eye.  `make wording-check` is
-a CI job.
+23 of them, checked mechanically rather than by eye.
+
+**Two corrections to what this section first claimed.**
+
+`make wording-check` did not pass when it was written.  Adding `README.md` and
+`specgen-ref` to `papers/wording/` broke it: the check regenerates into a
+scratch directory and diffs, a scratch directory holds only output, and the two
+authored files came back as "Only in papers/wording", which it reports as
+stale.  It was last run *before* those files existed and was not run again.  The
+diff now excludes the authored files, from a list `generate.sh` owns and shares
+with its own cleanup.
+
+And `wording-check` is not a CI job.  It was, briefly; see the drift gate
+below.
 
 **Heading levels: flat, deliberately** (task 3).  U2's
 `--base-heading-level` is still absent upstream, and the clauses come out at
@@ -149,21 +161,45 @@ They are public API in a `detail/`-pathed file that Step 3's promotion passed
 over.  Recorded in full in `docs/wording-outline.md`; the fix is a header
 promotion plus a `[transcode.bulk]` clause, which is a step of its own.
 
-### The drift gate
+### The drift gate, and the workflow that did not survive
 
-`.github/workflows/wording-drift.yml`, a separate workflow rather than a step
-in the Makefile matrix, because it needs a toolchain that matrix does not have:
-specgen links Clang's front end and the beman containers ship no LLVM
-development packages.  The install is specgen's own CI recipe, copied
-deliberately -- if it drifts there this breaks, which is the correct failure.
-It runs `make wording-check` and then `--validate`, because those are two
-different questions: the fragments can be byte-identical to what the headers
-generate and still describe an entity the reader cannot see.
+The first attempt was a workflow that installed LLVM, built specgen from
+`papers/wording/specgen-ref`, and ran `make wording-check` and `--validate` on
+every pull request.  It was written, pushed, and removed, and it failed twice
+over before it was.
 
-The specgen revision is committed, in `papers/wording/specgen-ref`, so that
-what generated the fragments is a fact in the tree rather than a line in a
-workflow.  It names a branch today, which is right while the two repositories
-move together; it should become a SHA when they stop.
+**It does not work.**  specgen built and ran, then died on
+`/usr/include/wchar.h: fatal error: 'stddef.h' file not found` -- a specgen
+built against an unpacked LLVM tarball derives its resource directory from the
+running binary's path rather than from the LLVM it links, so Clang's own
+builtin headers are not found.  The parse tail would need `-resource-dir` or
+`SPECGEN_GCC_TOOLCHAIN`.  It works on a developer machine because Clang finds
+the system GCC by itself, which is exactly the kind of difference that only
+shows up in a container.
+
+**It should not work.**  CodeQL raised three high-severity
+`actions/cache-poisoning/poisonable-step` alerts against it, and they are
+right: checking out a second repository at a ref read from a file, building it,
+and running it, in a job that can write the default-branch Actions cache, is
+executing someone's code with this repository's privileges.
+
+**And it costs too much anyway.**  An LLVM download and a from-source build of
+a tool this repository does not otherwise depend on is not a reasonable price
+for a check on a paper.
+
+What runs on every pull request instead is `make wording-inputs-check`, a step
+in the Makefile workflow.  It hashes the document extent -- each root plus the
+headers included inside its gathered region -- against a committed
+`inputs.sha256`, needs no specgen, and takes no measurable time.  It catches a
+header edited without regenerating, which is the drift that actually happens.
+It cannot catch a fragment stale in a way the headers do not show; `make
+wording-check` answers that, locally, before a revision goes out.
+
+The specgen revision stays committed in `papers/wording/specgen-ref`, so what
+generated the fragments is a fact in the tree.  It names a branch today, which
+is right while the two repositories move together; it should become a SHA when
+they stop.  A released specgen binary, or a container with one in it, is what
+would make the strong check affordable and safe at the same time.
 
 `papers/wording/README.md` -- Step 1 task 6, which never landed -- says the
 fragments are generated, how to regenerate them, and what the gate checks.
