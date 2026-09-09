@@ -22,12 +22,12 @@ Regenerating needs a `specgen` on `PATH`, built from the revision named in
 so run `make compile` first in a fresh worktree, or point
 `BEMAN_TRANSCODE_BUILD_INCLUDE` at a directory that has it.
 
-## The drift gate, in two halves
+## The drift gate
 
-specgen is not cheap to obtain in CI -- it links LLVM's Clang front end, so a
-job that runs `wording-check` downloads LLVM and builds a tool from source on
-every push. That is not a reasonable price for a check on a paper, so the gate
-is split.
+specgen is not available in CI at a reasonable price. It links LLVM's Clang
+front end, so a job that runs `wording-check` downloads LLVM and builds a tool
+this repository does not otherwise depend on, on every push. A workflow that
+did exactly that was written, run, and removed; what it taught is below.
 
 **`make wording-inputs-check` runs on every pull request**, as a step in the
 Makefile workflow. It needs no specgen: it hashes the headers the wording is
@@ -38,18 +38,35 @@ A header that changed without a regeneration fails.
 
 What it cannot say is that the wording is *right*. It says the fragments were
 generated from these headers and not from others, which is the staleness
-question and not the correctness one. It also over-reports by construction: an
-edit that changes no wording at all still needs a regeneration to say so.
+question and not the correctness one. It over-reports by construction, too: an
+edit that changes no wording still needs a regeneration to say so. That is the
+trade for a check that costs nothing.
 
-**`make wording-check` is the real check**, and it runs on demand --
-`.github/workflows/wording-drift.yml`, from the Actions tab. It regenerates
-every fragment and diffs, then validates. Run it before a paper revision goes
-out, and whenever `specgen-ref` changes. When a specgen becomes cheap to obtain
--- a released binary, a container -- putting the `pull_request` trigger back on
-that workflow is the whole change.
+**`make wording-check` is the real check, and it is local.** Run it before a
+paper revision goes out, and whenever `specgen-ref` changes. It regenerates
+every fragment and diffs; `papers/wording/generate.sh --validate` then answers
+the other question, whether a clause describes an entity the reader cannot see.
 
-`inputs.sha256` is generated. So is `wording.mk`. `README.md` and `specgen-ref`
-are not, and both `wording-check` and `generate.sh`'s own cleanup know it.
+### If you try to put it back in CI
+
+Two things sank it, and both are worth knowing before the next attempt.
+
+**The parse fails.** specgen builds and runs, then dies on
+`/usr/include/wchar.h: fatal error: 'stddef.h' file not found`. A specgen built
+against an unpacked LLVM tarball does not find Clang's own builtin headers: the
+resource directory is derived from the running binary's path, not from the LLVM
+it links. The parse tail needs `-resource-dir` pointing into that install, or
+`SPECGEN_GCC_TOOLCHAIN`, or both. It works on a developer machine because Clang
+finds the system GCC by itself.
+
+**CodeQL rejects the shape.** Checking out a second repository at a ref read
+from a file, building it, and running it, in a job that can write the Actions
+cache, is `actions/cache-poisoning/poisonable-step` -- three high-severity
+alerts, and correctly so: a specgen revision is code, and this repository would
+be executing it with default-branch privileges.
+
+A released specgen binary, or a container image with one in it, avoids both at
+once. That is the thing to wait for.
 
 ## What is committed and why
 
@@ -59,6 +76,11 @@ in a pull request instead of only as a different PDF. `wording.mk` is generated
 too: it lists the fragments in document order, which is the order
 `papers/Makefile` hands them to pandoc, which is the order they appear in the
 paper.
+
+`inputs.sha256` is generated too. `README.md` and `specgen-ref` are not:
+`generate.sh --authored` is the one list saying which is which, and both its own
+cleanup and `wording-check`'s diff read it, so a third authored file breaks
+neither.
 
 `generate.sh` also strips mpark's `.sref` class from stable names under this
 paper's own roots. Those clauses are not in the working draft, so `.sref` warns
