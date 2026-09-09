@@ -146,8 +146,12 @@ as "Not proposed at all" the day *after* the commit that proposed them, citing
 a header that says the opposite.  Step 3 then kept
 `detail/bulk_transcode.hpp` outside the gathered region on that authority.
 They are public API in a `detail/`-pathed file that Step 3's promotion passed
-over.  Recorded in full in `docs/wording-outline.md`; the fix is a header
-promotion plus a `[transcode.bulk]` clause, which is a step of its own.
+over.  Recorded in full in `docs/wording-outline.md`.
+
+**Settled immediately after, and no longer outstanding**: they are proposed.
+The header is promoted to `include/beman/transcode/bulk_transcode.hpp`, inside
+the gathered region, and `[transcode.bulk]` specifies all eight functions.  The
+paper needed no change -- it had been right all along.
 
 ### The drift gate
 

@@ -105,7 +105,12 @@ HEADERS
 ir_dir=$(mktemp -d)
 trap 'rm -rf "$ir_dir"' EXIT INT TERM
 
-rm -f "$out_dir"/*.md "$out_dir/wording.mk"
+# Clear out the previous run's fragments, so a clause that stops being
+# generated stops being committed.  Not a blanket `*.md`: README.md lives here
+# too and is authored, and a wildcard that eats it leaves the directory
+# undocumented and the deletion buried in a diff full of regenerated files.
+find "$out_dir" -maxdepth 1 -name '*.md' ! -name 'README.md' -delete
+rm -f "$out_dir/wording.mk"
 
 manifest=$ir_dir/manifest
 : >"$manifest"

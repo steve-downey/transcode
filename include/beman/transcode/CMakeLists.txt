@@ -19,6 +19,7 @@ else()
         PUBLIC
             FILE_SET HEADERS
                 FILES
+                    bulk_transcode.hpp
                     codec.hpp
                     config.hpp
                     codec_concepts.hpp
@@ -36,7 +37,6 @@ else()
                     transcode_string.hpp
                     transcode_view.hpp
                     detail/big5.hpp
-                    detail/bulk_transcode.hpp
                     detail/euc_jp.hpp
                     detail/euc_kr.hpp
                     detail/labels.hpp
