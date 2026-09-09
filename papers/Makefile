@@ -27,11 +27,22 @@ include wg21/flat.mk
 # make's prerequisite merging.
 -include wording/wording.mk
 
-$(OUTDIR)/transcode-view.html: transcode-view.md $(WORDING_MD) $(DEPS) | $(OUTDIR)
+# Everything that has to read *after* the wording lives in parts/tail.md:
+# Acknowledgements, Prior Art, Relationship to Other Proposals, References and
+# the explicit `::: {#refs}` div citeproc fills.  Prerequisite order is
+# document order, so a section cannot be both authored in transcode-view.md and
+# printed after the generated clauses -- it has to be in a later file.
+# `flat.mk` globs `papers/*.md` and would build any sibling .md as a paper of
+# its own, which is why this one is in a subdirectory.
+PAPER_TAIL := parts/tail.md
+
+PAPER_SRC := transcode-view.md $(WORDING_MD) $(PAPER_TAIL)
+
+$(OUTDIR)/transcode-view.html: $(PAPER_SRC) $(DEPS) | $(OUTDIR)
 	$(PANDOC)
 
-$(OUTDIR)/transcode-view.latex: transcode-view.md $(WORDING_MD) $(DEPS) | $(OUTDIR)
+$(OUTDIR)/transcode-view.latex: $(PAPER_SRC) $(DEPS) | $(OUTDIR)
 	$(PANDOC)
 
-$(OUTDIR)/transcode-view.pdf: transcode-view.md $(WORDING_MD) $(DEPS) | $(OUTDIR)
+$(OUTDIR)/transcode-view.pdf: $(PAPER_SRC) $(DEPS) | $(OUTDIR)
 	$(PANDOC)

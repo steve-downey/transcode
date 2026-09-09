@@ -1,6 +1,6 @@
 ::: wording
 
-## Class template `encode_view` [transcode.custom.encode]{- .sref} {-}
+## Class template `encode_view` [transcode.custom.encode] {-}
 
 ```cpp
 constexpr const R& base() const& noexcept;
@@ -81,7 +81,7 @@ template<encode_codec Codec> constexpr $see below$ encode_or_error(Codec codec =
 
 [#]{.pnum} *Returns*: `encode(codec)` with `transcode_error_kind::expected`: the view it adapts to has value type `expected<char, whatwg_error>`, and an encoding error is the error rather than `'?'`.
 
-### Class `encode_view::iterator` [transcode.custom.encode.iterator]{- .sref} {-}
+### Class `encode_view::iterator` [transcode.custom.encode.iterator] {-}
 
 ```cpp
 constexpr iterator(base_iter current, base_sent end, Codec codec);

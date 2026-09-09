@@ -1,9 +1,9 @@
 ::: wording
 
-## Header `<transcode>` synopsis [transcode.syn]{- .sref} {-}
+## Header `<transcode>` synopsis [transcode.syn] {-}
 
 ```cpp
-// @[transcode.errors]{- .sref}@, error types
+// @[transcode.errors]@, error types
 
 enum class whatwg_error {
   invalid_byte,
@@ -25,7 +25,7 @@ enum class transcode_error_kind {
   expected,
 };
 
-// @[transcode.reqs]{- .sref}@, range requirements
+// @[transcode.reqs]@, range requirements
 
 template<typename T>
 concept $legacy-byte-type$ =
@@ -41,7 +41,7 @@ concept unicode_scalar_range =
     ranges::input_range<R> && !is_array_v<remove_cvref_t<R>> &&
     same_as<remove_cv_t<ranges::range_value_t<R>>, char32_t>;
 
-// @[transcode.codec]{- .sref}@, encodings
+// @[transcode.codec]@, encodings
 
 enum class codec {
   utf_8,
@@ -86,11 +86,11 @@ enum class codec {
   euc_kr,
 };
 
-// @[transcode.codec.label]{- .sref}@, label lookup
+// @[transcode.codec.label]@, label lookup
 
 constexpr optional<codec> get_encoding(string_view label) noexcept;
 
-// @[transcode.custom.reqs]{- .sref}@, codec requirements
+// @[transcode.custom.reqs]@, codec requirements
 
 struct decode_result {
   char32_t code_point{};
@@ -104,7 +104,7 @@ struct encode_result {
   bool is_error{false};
 };
 
-// @[transcode.custom.reqs]{- .sref}@, codec requirements
+// @[transcode.custom.reqs]@, codec requirements
 
 template<typename C>
 concept decode_codec = semiregular<C> && requires(C& c, const unsigned char*& iter,
@@ -128,7 +128,7 @@ concept flushable_decode_codec = decode_codec<C> && requires(C& c) {
   { c.flush() } -> same_as<optional<decode_result>>;
 };
 
-// @[transcode.whatwg.decode]{- .sref}@, decoding views
+// @[transcode.whatwg.decode]@, decoding views
 
 template<codec C, ranges::input_range R,
          transcode_error_kind E = transcode_error_kind::replacement>
@@ -139,7 +139,7 @@ class whatwg_decode_view : public ranges::view_interface<whatwg_decode_view<C, R
   class $iterator$; // exposition only
 
 public:
-  // @[transcode.whatwg.decode]{- .sref}@, construction and access
+  // @[transcode.whatwg.decode]@, construction and access
   constexpr explicit whatwg_decode_view(R base);
 
   constexpr const R& base() const& noexcept;
@@ -165,7 +165,7 @@ template<codec C, input_range R, transcode_error_kind E>
 inline constexpr bool enable_borrowed_range<whatwg_decode_view<C, R, E>> =
     borrowed_range<R>;
 
-// @[transcode.whatwg.encode]{- .sref}@, encoding views
+// @[transcode.whatwg.encode]@, encoding views
 
 template<codec C, ranges::input_range R,
          transcode_error_kind E = transcode_error_kind::replacement>
@@ -176,7 +176,7 @@ class whatwg_encode_view : public ranges::view_interface<whatwg_encode_view<C, R
   class $iterator$; // exposition only
 
 public:
-  // @[transcode.whatwg.encode]{- .sref}@, construction and access
+  // @[transcode.whatwg.encode]@, construction and access
   constexpr explicit whatwg_encode_view(R base);
 
   constexpr const R& base() const& noexcept;
@@ -202,7 +202,7 @@ template<codec C, input_range R, transcode_error_kind E>
 inline constexpr bool enable_borrowed_range<whatwg_encode_view<C, R, E>> =
     borrowed_range<R>;
 
-// @[transcode.custom.decode]{- .sref}@, class template decode_view
+// @[transcode.custom.decode]@, class template decode_view
 
 template<decode_codec Codec, ranges::input_range R,
          transcode_error_kind E = transcode_error_kind::replacement>
@@ -214,7 +214,7 @@ class decode_view : public ranges::view_interface<decode_view<Codec, R, E>> {
   class $iterator$; // exposition only
 
 public:
-  // @[transcode.custom.decode]{- .sref}@, construction and access
+  // @[transcode.custom.decode]@, construction and access
   constexpr explicit decode_view(R base, Codec codec = {});
 
   constexpr const R& base() const& noexcept;
@@ -249,7 +249,7 @@ template<decode_codec Codec>
 decode_or_error_closure decode_or_error_closure =
     decode_closure<Codec, transcode_error_kind::expected>;
 
-// @[transcode.custom.encode]{- .sref}@, class template encode_view
+// @[transcode.custom.encode]@, class template encode_view
 
 template<encode_codec Codec, ranges::input_range R,
          transcode_error_kind E = transcode_error_kind::replacement>
@@ -261,7 +261,7 @@ class encode_view : public ranges::view_interface<encode_view<Codec, R, E>> {
   class $iterator$; // exposition only
 
 public:
-  // @[transcode.custom.encode]{- .sref}@, construction and access
+  // @[transcode.custom.encode]@, construction and access
   constexpr explicit encode_view(R base, Codec codec = {});
 
   constexpr const R& base() const& noexcept;
@@ -292,14 +292,14 @@ template<encode_codec Codec>
 encode_or_error_closure encode_or_error_closure =
     encode_closure<Codec, transcode_error_kind::expected>;
 
-// @[transcode.pipeline]{- .sref}@, transcoding pipelines
+// @[transcode.pipeline]@, transcoding pipelines
 
 template<codec From, codec To> inline constexpr $unspecified$ transcode;
 
 template<decode_codec From, encode_codec To>
 constexpr pluggable_transcode_closure<From, To> pluggable_transcode(From from, To to);
 
-// @[transcode.string]{- .sref}@, eager transcoding
+// @[transcode.string]@, eager transcoding
 
 string transcode_string(span<const char> src, codec from, codec to);
 
@@ -310,11 +310,11 @@ template<codec C> u32string transcode_decode_all(span<const char> src);
 
 template<codec C> string transcode_encode_all(u32string_view src);
 
-// @[transcode.codec.sniff]{- .sref}@, byte order mark sniffing
+// @[transcode.codec.sniff]@, byte order mark sniffing
 
 template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) noexcept;
 
-// @[transcode.iconv]{- .sref}@, iconv adaptors
+// @[transcode.iconv]@, iconv adaptors
 
 struct iconv_functions {
   iconv_t (*open)(const char* tocode, const char* fromcode);
@@ -336,7 +336,7 @@ class iconv_transcode_view
 public:
   class $iterator$; // exposition only
 
-  // @[transcode.iconv]{- .sref}@, construction and access
+  // @[transcode.iconv]@, construction and access
   explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to,
                                 span<char> buf);
 
@@ -360,7 +360,7 @@ class iconv_transcode_or_error_view
 public:
   class $iterator$; // exposition only
 
-  // @[transcode.iconv]{- .sref}@, construction and access
+  // @[transcode.iconv]@, construction and access
   explicit iconv_transcode_or_error_view(R base, IconvFns fns, const char* from,
                                          const char* to, span<char> buf);
 
@@ -377,7 +377,7 @@ inline auto iconv_transcode(const char* from, const char* to, span<char> buf);
 
 inline auto iconv_transcode_or_error(const char* from, const char* to, span<char> buf);
 
-// @[transcode.iconv]{- .sref}@, eager conversion
+// @[transcode.iconv]@, eager conversion
 
 template<typename Container = string, typename IconvFns, legacy_byte_range R>
 Container iconv_transcode_to(R&& source, const char* from, const char* to,
@@ -416,7 +416,7 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
 
 [#]{.pnum} *Remarks*: `whatwg_encode_view<C, R, E>` presents the Unicode scalar values of `R` as the bytes the encoding `C` encodes them to, one element per byte. A scalar value the encoding cannot represent is an encoding error, reported as `E` says: as `'?'` when `E` is `transcode_error_kind::replacement`, and as an `unexpected` holding `whatwg_error::unmapped_codepoint` when it is `transcode_error_kind::expected`.  Encoding is lazy, and one input element can produce several output elements.
 
-[#]{.pnum} Each element of `R` is required to be a Unicode scalar value.  That is a precondition, not a constraint: `unicode_scalar_range` ([transcode.reqs]{- .sref}) is a requirement on the range's type, and a `char32_t` holding a surrogate or a value above U+10FFFF is not diagnosed.
+[#]{.pnum} Each element of `R` is required to be a Unicode scalar value.  That is a precondition, not a constraint: `unicode_scalar_range` ([transcode.reqs]) is a requirement on the range's type, and a `char32_t` holding a surrogate or a value above U+10FFFF is not diagnosed.
 
 [#]{.pnum} `C` is required to be an encoding the WHATWG Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and the view does not accept them.
 
@@ -438,7 +438,7 @@ constexpr auto size() const;
 
 [#]{.pnum} *Constraints*: `R` models `sized_range`.
 
-[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg_decode_view` ([transcode.whatwg.decode]{- .sref}) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error kind and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.
+[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg_decode_view` ([transcode.whatwg.decode]) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error kind and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.
 
 [#]{.pnum} The view models `random_access_range` when `Codec` models `random_access_decode_codec_type` and `R` models `random_access_range`.
 
@@ -448,7 +448,7 @@ static constexpr $iterator$ $terminal$();
 
 [#]{.pnum} *Constraints*: `R` models `forward_range`.
 
-[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg_encode_view` ([transcode.whatwg.encode]{- .sref}) with the codec supplied as a value rather than named by an enumerator: it presents the Unicode scalar values of `R` as the bytes `Codec` encodes them to, reports an encoding error as `E` says, and encodes lazily.  Each element of `R` is required to be a Unicode scalar value, which is a precondition and not a constraint.
+[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg_encode_view` ([transcode.whatwg.encode]) with the codec supplied as a value rather than named by an enumerator: it presents the Unicode scalar values of `R` as the bytes `Codec` encodes them to, reports an encoding error as `E` says, and encodes lazily.  Each element of `R` is required to be a Unicode scalar value, which is a precondition and not a constraint.
 
 ```cpp
 static constexpr $iterator$ $terminal$();
@@ -462,10 +462,10 @@ static constexpr $iterator$ $terminal$();
 
 [#]{.pnum} What the encoding names mean, which pairs convert, and what a conversion does with input the source encoding does not allow are the implementation's `iconv`'s, not this specification's.  That is the point of the adaptor: it gives an interface a program already has a ranges shape and a lifetime, and it does not restate a table it does not own.
 
-[#]{.pnum} A conversion failure is reported as `iconv_error` ([transcode.errors]{- .sref}), which is the granularity POSIX reports at: `EILSEQ`, `EINVAL` and `E2BIG` say *that* a byte sequence is not valid, not why, so the WHATWG error vocabulary the other views use would be claiming knowledge the OS does not return.
+[#]{.pnum} A conversion failure is reported as `iconv_error` ([transcode.errors]), which is the granularity POSIX reports at: `EILSEQ`, `EINVAL` and `E2BIG` say *that* a byte sequence is not valid, not why, so the WHATWG error vocabulary the other views use would be claiming knowledge the OS does not return.
 
 [#]{.pnum} The output buffer is the caller's, and is not owned by the view. Its contents between two increments are unspecified, and the program must keep it alive for the lifetime of every iterator the view produces.
 
-[#]{.pnum} *Remarks*: `iconv_transcode_or_error_view<IconvFns, R>` is `iconv_transcode_view` ([transcode.iconv]{- .sref}) with the errors reported rather than skipped: its value type is `expected<char, iconv_error>`, and a conversion failure is an element holding the `iconv_error` POSIX reported rather than input the range passes over.
+[#]{.pnum} *Remarks*: `iconv_transcode_or_error_view<IconvFns, R>` is `iconv_transcode_view` ([transcode.iconv]) with the errors reported rather than skipped: its value type is `expected<char, iconv_error>`, and a conversion failure is an element holding the `iconv_error` POSIX reported rather than input the range passes over.
 
 :::

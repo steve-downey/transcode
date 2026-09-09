@@ -1,6 +1,6 @@
 ::: wording
 
-## Encoding views [transcode.whatwg.encode]{- .sref} {-}
+## Encoding views [transcode.whatwg.encode] {-}
 
 ```cpp
 constexpr const R& base() const& noexcept;
@@ -81,7 +81,7 @@ template<codec C> inline constexpr $unspecified$ whatwg_encode_or_error;
 
 [#]{.pnum} *Remarks*: `whatwg_encode_or_error<C>` is `whatwg_encode<C>` with `transcode_error_kind::expected`: the view it adapts to has value type `expected<char, whatwg_error>`, and an encoding error is the error rather than `'?'`.
 
-### Class `whatwg_encode_view::iterator` [transcode.whatwg.encode.iterator]{- .sref} {-}
+### Class `whatwg_encode_view::iterator` [transcode.whatwg.encode.iterator] {-}
 
 ```cpp
 constexpr iterator(base_iter current, base_sent end);

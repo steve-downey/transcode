@@ -1,6 +1,6 @@
 ::: wording
 
-## Encodings [transcode.codec]{- .sref} {-}
+## Encodings [transcode.codec] {-}
 
 ```cpp
 enum class codec {
@@ -49,7 +49,7 @@ enum class codec {
 
 [#]{.pnum} *Remarks*: Each enumerator names the encoding of the same name in the WHATWG Encoding Standard, whose table of encodings is normative and is not restated here: an encoding is what that standard says it is, and a specification that copied the list would be a second one to keep current. `codec::replacement` is that standard's `replacement` encoding, which decodes any non-empty input to a single U+FFFD REPLACEMENT CHARACTER, and `codec::x_user_defined` its `x-user-defined`.
 
-### Label lookup [transcode.codec.label]{- .sref} {-}
+### Label lookup [transcode.codec.label] {-}
 
 ```cpp
 constexpr optional<codec> get_encoding(string_view label) noexcept;
@@ -59,7 +59,7 @@ constexpr optional<codec> get_encoding(string_view label) noexcept;
 
 [#]{.pnum} *Remarks*: An encoding's labels are the alternative names a document may spell it with -- `latin1`, `iso-8859-1` and `windows-1252` are all labels of `codec::windows_1252` -- so a lookup that fails is a name no encoding claims, not an encoding that cannot be represented.
 
-### Byte order mark sniffing [transcode.codec.sniff]{- .sref} {-}
+### Byte order mark sniffing [transcode.codec.sniff] {-}
 
 ```cpp
 template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) noexcept;

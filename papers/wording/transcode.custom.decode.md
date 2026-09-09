@@ -1,6 +1,6 @@
 ::: wording
 
-## Class template `decode_view` [transcode.custom.decode]{- .sref} {-}
+## Class template `decode_view` [transcode.custom.decode] {-}
 
 ```cpp
 constexpr const R& base() const& noexcept;
@@ -81,7 +81,7 @@ template<decode_codec Codec> constexpr $see below$ decode_or_error(Codec codec =
 
 [#]{.pnum} *Returns*: `decode(codec)` with `transcode_error_kind::expected`: the view it adapts to has value type `expected<char32_t, whatwg_error>`, and a decoding error is the error rather than U+FFFD.
 
-### Class `decode_view::iterator` [transcode.custom.decode.iterator]{- .sref} {-}
+### Class `decode_view::iterator` [transcode.custom.decode.iterator] {-}
 
 ```cpp
 constexpr iterator(base_iter current, base_sent end, Codec codec);

@@ -1,6 +1,6 @@
 ::: wording
 
-## Error types [transcode.errors]{- .sref} {-}
+## Error types [transcode.errors] {-}
 
 ```cpp
 enum class whatwg_error {

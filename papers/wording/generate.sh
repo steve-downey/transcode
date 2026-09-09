@@ -40,6 +40,8 @@ usage() {
 
 out_dir=
 validate=0
+inputs_only=0
+authored_only=0
 while [ $# -gt 0 ]; do
     case $1 in
     --out)
@@ -51,6 +53,8 @@ while [ $# -gt 0 ]; do
         shift
         ;;
     --validate) validate=1 ;;
+    --inputs) inputs_only=1 ;;
+    --authored) authored_only=1 ;;
     -h | --help)
         usage
         exit 0
@@ -63,6 +67,26 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+# The files in this directory that are *not* output.  Two things need to know:
+# the cleanup below, which would otherwise delete them, and `make
+# wording-check`, which diffs this directory against a scratch directory that
+# only ever holds output and would otherwise report them missing.  One list, so
+# a third authored file breaks neither.  `--authored` is how the Makefile reads
+# it.
+authored_files() {
+    cat <<'FILES'
+generate.sh
+README.md
+specgen-ref
+inputs.sha256
+FILES
+}
+
+if [ "$authored_only" -eq 1 ]; then
+    authored_files
+    exit 0
+fi
+
 script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 repo_root=$(CDPATH='' cd -- "$script_dir/../.." && pwd)
 [ -n "$out_dir" ] || out_dir=$script_dir
@@ -70,6 +94,68 @@ mkdir -p "$out_dir"
 out_dir=$(CDPATH='' cd -- "$out_dir" && pwd)
 out_parent=$(dirname -- "$out_dir")
 out_name=$(basename -- "$out_dir")
+
+# The document extent, as specgen defines it (its docs/decisions/document-extent
+# ADR): a document is its root file plus the headers `#include`d *inside* the
+# gathered `.syn` region.  An include outside the region is implementation and
+# cannot reach the wording, so it is not part of the extent and a change to it
+# cannot make the fragments stale.
+#
+# Printing the list is what makes a staleness check possible without the tool:
+# `--inputs` hashes exactly the files the wording is generated from.
+document_files() {
+    while IFS='|' read -r header root; do
+        [ -n "$header" ] || continue
+        printf '%s\n' "$header"
+        awk -v root="$root" '
+            index($0, "\\rSec") && index($0, "[" root "]") { inside = 1; next }
+            index($0, "END [" root "]") { inside = 0 }
+            inside && match($0, /#include <beman\/transcode\/[^>]*>/) {
+                inc = substr($0, RSTART, RLENGTH)
+                sub(/^#include </, "", inc)
+                sub(/>$/, "", inc)
+                print "include/" inc
+            }
+        ' "$repo_root/$header"
+    done <<HEADERS
+$(spec_headers)
+HEADERS
+}
+
+# The hashes of everything the wording is generated from, sorted in the C
+# locale so the file is stable across filesystems *and* machines -- a collating
+# order that ignores punctuation puts codec_concepts.hpp before codec.hpp, and
+# the C locale puts `.` before `_`, so an unpinned sort makes this file depend
+# on the developer's environment and fail in a container that has none.  Committed as papers/wording/inputs.sha256, which
+# is what `make wording-inputs-check` compares against -- a gate that says "the
+# fragments were generated from different headers than these", which is the
+# question CI can answer without a specgen to answer the stronger one.
+wording_input_hashes() {
+    (
+        cd "$repo_root" || exit 1
+        document_files | LC_ALL=C sort -u | xargs --no-run-if-empty sha256sum
+    )
+}
+
+# The spec-facing headers, one specgen document each, in the order their
+# clauses appear in the paper.  Each line is
+#
+#     <header path relative to the repository root>|<root fragment name>
+#
+# where the root fragment holds whatever is outside every \rSec section --
+# the header synopsis.  Adding a clause means adding markup to a header, and
+# adding a header means adding a line here.
+spec_headers() {
+    cat <<'HEADERS'
+include/beman/transcode/transcode.hpp|transcode.syn
+include/beman/transcode/null_term.hpp|null.term.syn
+HEADERS
+}
+
+if [ "$inputs_only" -eq 1 ]; then
+    wording_input_hashes
+    exit 0
+fi
 
 specgen=${SPECGEN:-specgen}
 command -v "$specgen" >/dev/null 2>&1 || {
@@ -87,25 +173,21 @@ build_include=${BEMAN_TRANSCODE_BUILD_INCLUDE:-$repo_root/.build/build-system/in
 [ -d "$build_include" ] && clang_args="$clang_args -I $build_include"
 [ -z "${SPECGEN_GCC_TOOLCHAIN:-}" ] || clang_args="$clang_args --gcc-toolchain=$SPECGEN_GCC_TOOLCHAIN"
 
-# The spec-facing headers, one specgen document each, in the order their
-# clauses appear in the paper.  Each line is
-#
-#     <header path relative to the repository root>|<root fragment name>
-#
-# where the root fragment holds whatever is outside every \rSec section --
-# the header synopsis.  Adding a clause means adding markup to a header, and
-# adding a header means adding a line here.
-spec_headers() {
-    cat <<'HEADERS'
-include/beman/transcode/transcode.hpp|transcode.syn
-include/beman/transcode/null_term.hpp|null.term.syn
-HEADERS
-}
 
 ir_dir=$(mktemp -d)
 trap 'rm -rf "$ir_dir"' EXIT INT TERM
 
-rm -f "$out_dir"/*.md "$out_dir/wording.mk"
+# Clear out the previous run's fragments, so a clause that stops being
+# generated stops being committed.  Not a blanket `*.md`: the authored files
+# live here too, and a wildcard that eats one leaves the directory
+# undocumented and the deletion buried in a diff full of regenerated files.
+# The script's own arguments are consumed by now, so `set --` is free.
+set --
+for authored in $(authored_files); do
+    set -- "$@" ! -name "$authored"
+done
+find "$out_dir" -maxdepth 1 -name '*.md' "$@" -delete
+rm -f "$out_dir/wording.mk"
 
 manifest=$ir_dir/manifest
 : >"$manifest"
@@ -130,6 +212,26 @@ while IFS='|' read -r header root; do
 done <<HEADERS
 $(spec_headers)
 HEADERS
+
+# mpark's `.sref` means "a section that is already in the working draft": the
+# filter looks the name up in a database built from eel.is and, for a name it
+# does not find, warns once and emits a link to a c++draft page that does not
+# exist.  Every stable name specgen renders here is a clause *this paper adds*,
+# so every one of them is that case -- a warning per clause at paper-build time
+# and a dead link per cross-reference in the published text.
+#
+# Dropping the class leaves `[transcode.iconv]`, which is what the draft itself
+# prints and what a new clause should read as.  It is keyed on this paper's two
+# stable-name roots on purpose: a citation of a clause that *is* in the draft
+# keeps its `.sref` and still resolves.
+#
+# This is a downstream patch over generated output, and it comes out when
+# specgen can be told that a document's own clauses are new
+# (steve-downey/specgen#89).  Until then it lives here rather than in the
+# committed fragments, so `make wording-check` regenerates the same bytes.
+sed -i -E 's/\[((transcode|null\.term)[a-z0-9.]*)\]\{- \.sref\}/[\1]/g' "$out_dir"/*.md
+
+wording_input_hashes >"$out_dir/inputs.sha256"
 
 # The manifest is document order, and document order is the order pandoc has
 # to concatenate the fragments in, so it is what papers/Makefile consumes.

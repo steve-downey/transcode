@@ -51,10 +51,14 @@ order the compiler needs and need not match.
 | `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `label.hpp`, done 2026-09-07 |
 | `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp`, done 2026-09-07 |
 | `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, its closures `whatwg_decode<C>` / `whatwg_decode_or_error<C>`, and its `enable_borrowed_range` specialization | `whatwg_decode_view.hpp`, done 2026-09-08 |
+| `transcode.whatwg.decode.iterator` | 3 | Class `whatwg_decode_view::iterator` | the iterator operations | `whatwg_decode_view.hpp`, done 2026-09-08 |
 | `transcode.whatwg.encode` | 2 | Encoding views | `whatwg_encode_view`, likewise | `whatwg_encode_view.hpp`, done 2026-09-08 |
+| `transcode.whatwg.encode.iterator` | 3 | Class `whatwg_encode_view::iterator` | likewise | `whatwg_encode_view.hpp`, done 2026-09-08 |
 | `transcode.custom.reqs` | 2 | Codec requirements | `decode_codec`, `encode_codec`, `flushable_decode_codec`, `random_access_decode_codec_type`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp`, done 2026-09-08 |
 | `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp`, done 2026-09-08 |
+| `transcode.custom.decode.iterator` | 3 | Class `decode_view::iterator` | the iterator operations | `decode_view.hpp`, done 2026-09-08 |
 | `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp`, done 2026-09-08 |
+| `transcode.custom.encode.iterator` | 3 | Class `encode_view::iterator` | likewise | `encode_view.hpp`, done 2026-09-08 |
 | `transcode.pipeline` | 2 | Transcoding pipelines | `transcode`, `pluggable_transcode` | `transcode_view.hpp`, done 2026-09-08 |
 | `transcode.string` | 2 | Eager transcoding | `transcode_string`, both overloads | `transcode_string.hpp`, done 2026-09-08 |
 | `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers, done 2026-09-08 |
@@ -114,11 +118,38 @@ so no step has to decide twice.
 
 ### Not proposed at all
 
-- `decode_to`, `encode_to`, `decode_into`, `encode_into`
+- ~~`decode_to`, `encode_to`, `decode_into`, `encode_into`
   (`detail/bulk_transcode.hpp`).  The header says so itself, and the paper's API
   surface table agrees: its bulk rows are `v | ranges::to<>()` and
   `ranges::copy(v, out)`, which are the standard's own facilities.  Nothing to
-  specify.
+  specify.~~
+
+  **Wrong, found in Step 10, and not yet acted on.**  Both halves of that
+  justification are false, and were false when they were written.  The header
+  says the *opposite* -- "They are proposed, and the paper specifies them as
+  those pipelines" -- and the paper's API surface table marks all four with a
+  tick in the WHATWG and pluggable columns; the `n/a` rows are *bulk transcode*,
+  which is byte-to-byte and a different operation.  The paper's "Bulk conversion
+  to owned storage" section argues the case and concludes "However, we propose
+  the names", and "Questions for SG16" asks the group to keep them.  All of that
+  is commit `c3ced80` (2026-09-02), a day *before* this outline (`e82bcd1`,
+  2026-09-03) recorded the opposite without noting that it was reversing
+  anything.
+
+  Step 3 then propagated the error: `transcode.hpp` keeps
+  `detail/bulk_transcode.hpp` outside the gathered region and cites this
+  section as the reason, so four functions the paper proposes have no wording.
+  They are public API -- `beman::transcoding::decode_to`, not
+  `detail::decode_to` -- living in a `detail/`-pathed file that Step 3's
+  promotion of the specification headers (`6abdda0`) passed over, because this
+  line said not to.
+
+  Fixing it is a header promotion plus a `[transcode.bulk]` clause, which is a
+  step of its own and not paper assembly.  **It is deliberately not done here**:
+  the alternative is to reverse a decision the paper argues for in five places,
+  and that is a scope call, not a transcription fix.  Whichever way it goes, the
+  paper, this outline, the header comment and `transcode.hpp`'s region must end
+  up saying the same thing.
 - ~~`make_real_iconv_fns`, and `iconv_functions` as an injection seam.~~
   Settled in Step 9: both are proposed.  `iconv_functions` is what makes the
   view testable without the platform's iconv tables

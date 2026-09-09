@@ -1,0 +1,13 @@
+# The beman.specgen revision that generates the committed wording fragments.
+#
+# `make wording-check` regenerates every fragment and diffs it against what is
+# committed, so the answer depends on which specgen ran.  CI checks out exactly
+# this ref; a developer regenerating locally should have a specgen built from
+# it, or `make wording` will produce a diff that is the tool's and not theirs.
+#
+# A branch name tracks specgen's head, which is right while the two repositories
+# are moving together and wrong the moment a specgen change lands that this
+# paper has not adopted.  Pin a commit SHA here instead as soon as the pair
+# stops moving together -- the file is read verbatim by `git checkout`, so a SHA
+# works with no other change.
+main

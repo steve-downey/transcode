@@ -1,10 +1,10 @@
 ::: wording
 
-## Header `<null_term>` synopsis [null.term.syn]{- .sref} {-}
+## Header `<null_term>` synopsis [null.term.syn] {-}
 
 ```cpp
 struct null_sentinel_t {
-  // @[null.term.sentinel]{- .sref}@, comparison
+  // @[null.term.sentinel]@, comparison
   template<input_iterator I>
     requires requires(I i) {
       { *i == 0 };
@@ -26,7 +26,7 @@ public:
   constexpr null_sentinel_t end() const;
 };
 
-// @[null.term.adaptor]{- .sref}@, range adaptor object
+// @[null.term.adaptor]@, range adaptor object
 
 inline constexpr $unspecified$ null_term;
 ```

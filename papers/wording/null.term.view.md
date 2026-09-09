@@ -1,6 +1,6 @@
 ::: wording
 
-## Class template `null_term_view` [null.term.view]{- .sref} {-}
+## Class template `null_term_view` [null.term.view] {-}
 
 ```cpp
 constexpr explicit null_term_view(I ptr);
