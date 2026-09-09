@@ -41,6 +41,7 @@ usage() {
 out_dir=
 validate=0
 inputs_only=0
+authored_only=0
 while [ $# -gt 0 ]; do
     case $1 in
     --out)
@@ -53,6 +54,7 @@ while [ $# -gt 0 ]; do
         ;;
     --validate) validate=1 ;;
     --inputs) inputs_only=1 ;;
+    --authored) authored_only=1 ;;
     -h | --help)
         usage
         exit 0
@@ -64,6 +66,26 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
+
+# The files in this directory that are *not* output.  Two things need to know:
+# the cleanup below, which would otherwise delete them, and `make
+# wording-check`, which diffs this directory against a scratch directory that
+# only ever holds output and would otherwise report them missing.  One list, so
+# a third authored file breaks neither.  `--authored` is how the Makefile reads
+# it.
+authored_files() {
+    cat <<'FILES'
+generate.sh
+README.md
+specgen-ref
+inputs.sha256
+FILES
+}
+
+if [ "$authored_only" -eq 1 ]; then
+    authored_files
+    exit 0
+fi
 
 script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 repo_root=$(CDPATH='' cd -- "$script_dir/../.." && pwd)
@@ -153,10 +175,15 @@ ir_dir=$(mktemp -d)
 trap 'rm -rf "$ir_dir"' EXIT INT TERM
 
 # Clear out the previous run's fragments, so a clause that stops being
-# generated stops being committed.  Not a blanket `*.md`: README.md lives here
-# too and is authored, and a wildcard that eats it leaves the directory
+# generated stops being committed.  Not a blanket `*.md`: the authored files
+# live here too, and a wildcard that eats one leaves the directory
 # undocumented and the deletion buried in a diff full of regenerated files.
-find "$out_dir" -maxdepth 1 -name '*.md' ! -name 'README.md' -delete
+# The script's own arguments are consumed by now, so `set --` is free.
+set --
+for authored in $(authored_files); do
+    set -- "$@" ! -name "$authored"
+done
+find "$out_dir" -maxdepth 1 -name '*.md' "$@" -delete
 rm -f "$out_dir/wording.mk"
 
 manifest=$ir_dir/manifest

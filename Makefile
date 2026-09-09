@@ -220,8 +220,9 @@ bash zsh: ## Run bash or zsh with the venv activated
 # What lives in papers/wording/ without being generated into it.  `wording-check`
 # regenerates into a scratch directory and diffs, and a scratch directory holds
 # only output, so every authored file here has to be named or the check reports
-# it missing and calls the fragments stale.
-WORDING_AUTHORED := generate.sh README.md specgen-ref inputs.sha256
+# it missing and calls the fragments stale.  The list is generate.sh's, because
+# its cleanup needs the same one and two copies would drift.
+WORDING_AUTHORED := $(shell papers/wording/generate.sh --authored)
 
 .PHONY: wording
 wording: ## Regenerate the paper's wording fragments from the header markup
