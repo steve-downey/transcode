@@ -134,22 +134,6 @@ wording_input_hashes() {
     )
 }
 
-specgen=${SPECGEN:-specgen}
-command -v "$specgen" >/dev/null 2>&1 || {
-    echo "generate.sh: '$specgen' not found on PATH." >&2
-    echo "  beman.specgen builds it; see ~/src/specgen/main/docs/building.md." >&2
-    echo "  Set SPECGEN=<path> to use a build tree copy." >&2
-    exit 1
-}
-
-# The parse tail, in one place.  --no-compile-commands keeps generation
-# independent of whatever build database happens to be lying around: the
-# wording must not change because someone reconfigured their build tree.
-clang_args="-std=c++2c -I $repo_root/include"
-build_include=${BEMAN_TRANSCODE_BUILD_INCLUDE:-$repo_root/.build/build-system/include}
-[ -d "$build_include" ] && clang_args="$clang_args -I $build_include"
-[ -z "${SPECGEN_GCC_TOOLCHAIN:-}" ] || clang_args="$clang_args --gcc-toolchain=$SPECGEN_GCC_TOOLCHAIN"
-
 # The spec-facing headers, one specgen document each, in the order their
 # clauses appear in the paper.  Each line is
 #
@@ -169,6 +153,22 @@ if [ "$inputs_only" -eq 1 ]; then
     wording_input_hashes
     exit 0
 fi
+
+specgen=${SPECGEN:-specgen}
+command -v "$specgen" >/dev/null 2>&1 || {
+    echo "generate.sh: '$specgen' not found on PATH." >&2
+    echo "  beman.specgen builds it; see ~/src/specgen/main/docs/building.md." >&2
+    echo "  Set SPECGEN=<path> to use a build tree copy." >&2
+    exit 1
+}
+
+# The parse tail, in one place.  --no-compile-commands keeps generation
+# independent of whatever build database happens to be lying around: the
+# wording must not change because someone reconfigured their build tree.
+clang_args="-std=c++2c -I $repo_root/include"
+build_include=${BEMAN_TRANSCODE_BUILD_INCLUDE:-$repo_root/.build/build-system/include}
+[ -d "$build_include" ] && clang_args="$clang_args -I $build_include"
+[ -z "${SPECGEN_GCC_TOOLCHAIN:-}" ] || clang_args="$clang_args --gcc-toolchain=$SPECGEN_GCC_TOOLCHAIN"
 
 
 ir_dir=$(mktemp -d)
