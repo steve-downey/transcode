@@ -113,7 +113,19 @@ What is different here</h1>
 </ul>
 <h1><a class="anchor" id="autotoc_md350"></a>
 Acceptance</h1>
-<p>As Step 4, for <code>papers/wording/transcode.pipeline.md</code> and <code>transcode.string.md</code>. </p>
+<p>As Step 4, for <code>papers/wording/transcode.pipeline.md</code> and <code>transcode.string.md</code>.</p>
+<hr  />
+<h1><a class="anchor" id="autotoc_md352"></a>
+Outcome (2026-09-08)</h1>
+<p>Both clauses are written and <code>--validate</code> reports nothing about either. The document's findings go from 22 to 16, and all sixteen are Step 9's: the iconv views, their closures, and the one <code>detail::</code> qualifier left in the document, which is <code>iconv_input_buf</code> reaching a signature there.</p>
+<p><b>A pipeline is specified as a composition</b>, which is what it is: <code>transcode&lt;From, To&gt;</code> is expression-equivalent to <code>E | whatwg_decode&lt;From&gt; | whatwg_encode&lt;To&gt;</code>, and the clause says so rather than restating what decoding and encoding do. The error behaviour follows from the parts and is stated as following from them: a byte sequence <code>From</code> does not allow decodes to U+FFFD, and it is that U+FFFD which then gets encoded, so a transcode never drops an element for a decode error.</p>
+<p><code>pluggable_transcode</code> is the same sentence with codecs supplied as values, and its clause is an <code>\iref</code> to the one above rather than a second copy.</p>
+<p>**<code>transcode_string</code> is the eager form**, and its wording says what it is for: the same pipeline run to completion into a <code>string</code>. The label overload is the one a program uses when the encodings are a runtime choice &ndash; a <code>Content-Type</code> header, a command-line option &ndash; which is what labels are for, and its <code>nullopt</code> is the label lookup's, cross-referenced rather than restated.</p>
+<p>Two markup notes worth carrying to Step 9:</p>
+<ul>
+<li>A second element of the same kind on one declaration is a <em>warning</em>, not an error, and both are kept &ndash; so a duplicate <code>\remarks</code> silently produces two <em>Remarks</em> paragraphs. A blank <code>//!</code> line is how one element gets two paragraphs.</li>
+<li>The closure types are <code>\omit</code>ted here as everywhere else, which is what makes <code>operator|</code> and <code>operator()</code> stop being coverage findings. Step 9's iconv closures are the last two. </li>
+</ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

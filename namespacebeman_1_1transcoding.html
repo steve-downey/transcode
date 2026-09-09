@@ -146,6 +146,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1pluggable__transcode__closure.html">pluggable_transcode_closure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="structbeman_1_1transcoding_1_1pluggable__transcode__closure.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1random__access__decode__view.html">random_access_decode_view</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="classbeman_1_1transcoding_1_1random__access__decode__view.html#details">More...</a><br /></td></tr>
@@ -167,6 +168,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1table__codec.html">table_codec</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1transcode__closure.html">transcode_closure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="structbeman_1_1transcoding_1_1transcode__closure.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbeman_1_1transcoding_1_1whatwg__decode__closure.html">whatwg_decode_closure</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <a href="structbeman_1_1transcoding_1_1whatwg__decode__closure.html#details">More...</a><br /></td></tr>
@@ -1277,6 +1279,8 @@ template&lt;decode_codec From, encode_codec To&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd>A range adaptor object over <code>from</code> and <code>to</code>. Given a subexpression <code>E</code> that models <code>legacy_byte_range</code>, <code>pluggable_transcode(from, to)(E)</code> and <code>E | pluggable_transcode(from, to)</code> are each expression-equivalent to <code>E | decode(from) | encode(to)</code>. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This is <code>transcode</code> \iref{transcode.pipeline} with codecs supplied as values rather than named by enumerators. </dd></dl>
 
 </div>
 </div>
@@ -1349,6 +1353,8 @@ template&lt;legacy_byte_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>The bytes of <code>src</code>, decoded as <code>from</code> and re-encoded as <code>to</code>. Errors are substituted rather than reported: a byte sequence <code>from</code> does not allow decodes to U+FFFD, and a scalar value <code>to</code> cannot represent encodes to &lsquo;&rsquo;?'<code>. The result is empty when</code>to` names an encoding the WHATWG Encoding Standard defines no encoder for. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This is <code>transcode</code> \iref{transcode.pipeline} run to completion into a <code>string</code>, which is what a caller who wants the whole result and not a view writes. <code>src | transcode&lt;From, To&gt; | ranges::to&lt;string&gt;()</code> is the same thing with the codecs known at compile time. </dd></dl>
 
 </div>
 </div>
@@ -1391,6 +1397,8 @@ template&lt;legacy_byte_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd><code>transcode_string(src, *get_encoding(from_label), *get_encoding(to_label))</code>, and <code>nullopt</code> if either label names no encoding \iref{transcode.codec.label}. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This is the overload a program uses when the encodings are a runtime choice &ndash; a <code>Content-Type</code> header, a command-line option &ndash; which is what labels are for. </dd></dl>
 
 </div>
 </div>
@@ -1508,6 +1516,8 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
+<p>\seebelow </p><dl class="section remark"><dt>Remarks</dt><dd>The name <code>transcode&lt;From, To&gt;</code> denotes a range adaptor object. Given a subexpression <code>E</code> that models <code>legacy_byte_range</code>, <code>transcode&lt;From, To&gt;(E)</code> and <code>E | transcode&lt;From, To&gt;</code> are each expression-equivalent to <code>E | whatwg_decode&lt;From&gt; | whatwg_encode&lt;To&gt;</code>. An <code>E</code> of array type is ill-formed.</dd></dl>
+<p>The composition is the specification: the pipeline decodes and re-encodes one element at a time, and it is lazy because its parts are. A scalar value <code>To</code> cannot represent is an encoding error, reported as <code>whatwg_encode</code> reports one; a byte sequence <code>From</code> does not allow is a decoding error, and the U+FFFD it decodes to is what gets encoded. </p>
 
 </div>
 </div>
