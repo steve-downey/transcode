@@ -217,16 +217,44 @@ bash zsh: venv
 bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
+# What lives in papers/wording/ without being generated into it.  `wording-check`
+# regenerates into a scratch directory and diffs, and a scratch directory holds
+# only output, so every authored file here has to be named or the check reports
+# it missing and calls the fragments stale.
+WORDING_AUTHORED := generate.sh README.md specgen-ref inputs.sha256
+
 .PHONY: wording
 wording: ## Regenerate the paper's wording fragments from the header markup
 	papers/wording/generate.sh
+
+.PHONY: wording-inputs-check
+wording-inputs-check: ## Fail if a spec-facing header changed without `make wording`
+	@scratch=$$(mktemp); \
+	trap 'rm -f "$$scratch"' EXIT; \
+	papers/wording/generate.sh --inputs >"$$scratch"; \
+	if diff -u papers/wording/inputs.sha256 "$$scratch"; then \
+		echo "wording inputs are unchanged since the fragments were generated"; \
+	else \
+		echo "" >&2; \
+		echo "A header the wording is generated from has changed, and the" >&2; \
+		echo "committed fragments were generated from the older one." >&2; \
+		echo "" >&2; \
+		echo "Run 'make wording' and commit the result -- that regenerates the" >&2; \
+		echo "fragments and this file together.  It needs a specgen on PATH;" >&2; \
+		echo "see papers/wording/README.md." >&2; \
+		echo "" >&2; \
+		echo "This check does not read the fragments.  It says the inputs moved," >&2; \
+		echo "not that the wording is wrong -- an edit that changes no wording" >&2; \
+		echo "still needs a regeneration to say so." >&2; \
+		exit 1; \
+	fi
 
 .PHONY: wording-check
 wording-check: ## Fail if the committed wording fragments are not what the headers generate
 	@scratch=$$(mktemp -d); \
 	trap 'rm -rf "$$scratch"' EXIT; \
 	papers/wording/generate.sh --out "$$scratch/wording"; \
-	if diff -ru --exclude=generate.sh papers/wording "$$scratch/wording"; then \
+	if diff -ru $(WORDING_AUTHORED:%=--exclude=%) papers/wording "$$scratch/wording"; then \
 		echo "wording fragments are up to date"; \
 	else \
 		echo "wording fragments are stale: run 'make wording' and commit the result" >&2; \

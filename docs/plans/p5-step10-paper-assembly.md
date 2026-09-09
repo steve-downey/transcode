@@ -71,8 +71,24 @@ make drift between the headers and the paper a CI failure.
 
 The paper builds, in HTML and PDF, with its Wording section in the right place
 and every clause in `docs/wording-outline.md` present and in outline order --
-23 of them, checked mechanically rather than by eye.  `make wording-check` is
-a CI job.
+23 of them, checked mechanically rather than by eye.
+
+**Two corrections to what this section first claimed**, both made in Step 11.
+
+`make wording-check` did not pass when this was written.  Adding `README.md`
+and `specgen-ref` to `papers/wording/` broke it: the check regenerates into a
+scratch directory and diffs, a scratch directory holds only output, and the two
+authored files came back as "Only in papers/wording", which the check reports as
+stale.  It was last run *before* those files existed and was not run again.  The
+diff now excludes the authored files by name.
+
+And `wording-check` is not a per-pull-request CI job, because specgen is not
+cheap to obtain in CI -- it links LLVM's Clang front end, so the job downloads
+LLVM and builds a tool from source on every push.  The gate is split instead:
+`make wording-inputs-check` runs on every pull request and needs no specgen,
+hashing the document extent to catch a header that moved without a
+regeneration; `wording-check` itself is a manual workflow for the stronger
+question.  See `papers/wording/README.md`.
 
 **Heading levels: flat, deliberately** (task 3).  U2's
 `--base-heading-level` is still absent upstream, and the clauses come out at
@@ -155,14 +171,21 @@ paper needed no change -- it had been right all along.
 
 ### The drift gate
 
-`.github/workflows/wording-drift.yml`, a separate workflow rather than a step
-in the Makefile matrix, because it needs a toolchain that matrix does not have:
-specgen links Clang's front end and the beman containers ship no LLVM
-development packages.  The install is specgen's own CI recipe, copied
-deliberately -- if it drifts there this breaks, which is the correct failure.
-It runs `make wording-check` and then `--validate`, because those are two
-different questions: the fragments can be byte-identical to what the headers
-generate and still describe an entity the reader cannot see.
+`.github/workflows/wording-drift.yml` runs `make wording-check` and then
+`--validate`, because those are two different questions: the fragments can be
+byte-identical to what the headers generate and still describe an entity the
+reader cannot see.  The install is specgen's own CI recipe, copied deliberately
+-- if it drifts there this breaks, which is the correct failure.
+
+It is **manual**, not per-pull-request.  Building specgen means downloading
+LLVM and compiling a tool this repository does not otherwise depend on, and
+that is not a reasonable price for a check on a paper.  What runs on every pull
+request is `make wording-inputs-check`, a step in the Makefile workflow that
+hashes the document extent -- each root plus the headers included inside its
+gathered region -- against a committed `inputs.sha256`.  It catches a header
+edited without regenerating, which is the drift that actually happens; it
+cannot catch a fragment that is stale in a way the headers do not show, which
+is what the manual job is for.
 
 The specgen revision is committed, in `papers/wording/specgen-ref`, so that
 what generated the fragments is a fact in the tree rather than a line in a

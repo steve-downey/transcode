@@ -1,34 +1,33 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# The drift gate.
+# The full wording check: regenerate every fragment from the headers and diff,
+# then validate the result.
 #
-# The paper's wording clauses are generated from the marked-up headers by
-# beman.specgen (see papers/wording/README.md).  Two things can put the
-# committed fragments out of step with the headers, and this job fails on
-# either: a pull request that edits a spec-facing header without running
-# `make wording`, and a pull request that edits a fragment by hand.  Both look
-# identical to `make wording-check` -- it regenerates everything and diffs.
+# This is NOT run on pull requests, because it needs a specgen, and a specgen
+# needs LLVM's Clang front end -- an LLVM download and a from-source build of a
+# tool this repository does not otherwise depend on, on every push. That is not
+# a reasonable price for a check on a paper.
 #
-# It is a separate workflow rather than a step in the Makefile matrix because
-# it needs a toolchain that matrix does not have: specgen links LLVM's Clang
-# front end, and the beman containers ship no LLVM development packages.  The
-# install below is specgen's own CI recipe, copied deliberately -- if it drifts
-# there, this breaks, which is the correct failure.
-name: Wording Drift
+# The per-pull-request gate is `make wording-inputs-check`, a step in the
+# Makefile workflow. It needs no specgen: it hashes the headers the wording is
+# generated from and fails when they have moved without a regeneration. It
+# cannot tell you the wording is *right* -- only that it was generated from
+# these headers and not from others. This workflow answers the stronger
+# question, on demand.
+#
+# Run it from the Actions tab before a paper revision goes out, or whenever the
+# specgen revision in papers/wording/specgen-ref changes. To make it automatic
+# once a specgen is cheap to obtain -- a released binary, a container -- add
+# the `pull_request` and `schedule` triggers back.
+name: Wording Drift (manual)
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    paths:
-      - 'include/**'
-      - 'papers/wording/**'
-      - 'papers/Makefile'
-      - '.github/workflows/wording-drift.yml'
   workflow_dispatch:
-  schedule:
-    - cron: '45 4 * * 1'
+    inputs:
+      specgen-ref:
+        description: 'specgen revision to build (default: papers/wording/specgen-ref)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -50,7 +49,8 @@ jobs:
       # The official release binaries ship the CMake package configs and a
       # shared libclang-cpp; LLVM itself is static there, but libclang-cpp
       # re-exports the LLVM symbols, so a libLLVM.so shim pointing at it
-      # satisfies the front end's `clang-cpp LLVM` link.
+      # satisfies the front end's `clang-cpp LLVM` link. This is specgen's own
+      # CI recipe; if it drifts there, this breaks, which is correct.
       - name: Install LLVM/Clang 23 (dev)
         run: |
           set -eux
@@ -62,14 +62,17 @@ jobs:
           ln -s /opt/llvm23/lib/libclang-cpp.so.23.1 /usr/lib64/libLLVM.so
           test -f /opt/llvm23/lib/cmake/clang/ClangConfig.cmake
 
-      # The ref is committed rather than written here, so that the revision the
-      # fragments were generated with is a fact in the tree a developer can read
-      # and reproduce, not a line in a workflow only CI sees.
+      # The ref is committed rather than written here, so the revision the
+      # fragments were generated with is a fact in the tree a developer can
+      # read and reproduce, not a line in a workflow only CI sees.
       - name: Read the required specgen revision
         id: specgen-ref
         run: |
           set -eux
-          ref="$(grep -v '^#' papers/wording/specgen-ref | grep -v '^$' | head -1)"
+          ref="${{ inputs.specgen-ref }}"
+          if [ -z "$ref" ]; then
+            ref="$(grep -v '^#' papers/wording/specgen-ref | grep -v '^$' | head -1)"
+          fi
           test -n "$ref"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
 

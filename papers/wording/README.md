@@ -12,18 +12,44 @@ docblock beside the definition, and reaches the paper from there.
 ## Regenerating
 
 ```sh
-make wording          # rewrite the fragments from the headers
-make wording-check    # fail if the committed fragments are not what the headers generate
+make wording               # rewrite the fragments from the headers
+make wording-check         # fail if the fragments are not what the headers generate
+make wording-inputs-check  # fail if a header moved without a regeneration
 ```
-
-`make wording-check` is the drift gate, and it runs in CI
-(`.github/workflows/wording-drift.yml`). It fails on a header edited without
-regenerating, and on a fragment edited by hand -- both are the same diff to it.
 
 Regenerating needs a `specgen` on `PATH`, built from the revision named in
 `specgen-ref`. It also needs the build tree's generated `config_generated.hpp`,
 so run `make compile` first in a fresh worktree, or point
 `BEMAN_TRANSCODE_BUILD_INCLUDE` at a directory that has it.
+
+## The drift gate, in two halves
+
+specgen is not cheap to obtain in CI -- it links LLVM's Clang front end, so a
+job that runs `wording-check` downloads LLVM and builds a tool from source on
+every push. That is not a reasonable price for a check on a paper, so the gate
+is split.
+
+**`make wording-inputs-check` runs on every pull request**, as a step in the
+Makefile workflow. It needs no specgen: it hashes the headers the wording is
+generated from -- each document root plus the headers `#include`d inside its
+gathered `.syn` region, which is exactly the document extent -- and compares
+them against `inputs.sha256`, which `make wording` writes beside the fragments.
+A header that changed without a regeneration fails.
+
+What it cannot say is that the wording is *right*. It says the fragments were
+generated from these headers and not from others, which is the staleness
+question and not the correctness one. It also over-reports by construction: an
+edit that changes no wording at all still needs a regeneration to say so.
+
+**`make wording-check` is the real check**, and it runs on demand --
+`.github/workflows/wording-drift.yml`, from the Actions tab. It regenerates
+every fragment and diffs, then validates. Run it before a paper revision goes
+out, and whenever `specgen-ref` changes. When a specgen becomes cheap to obtain
+-- a released binary, a container -- putting the `pull_request` trigger back on
+that workflow is the whole change.
+
+`inputs.sha256` is generated. So is `wording.mk`. `README.md` and `specgen-ref`
+are not, and both `wording-check` and `generate.sh`'s own cleanup know it.
 
 ## What is committed and why
 

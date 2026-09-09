@@ -40,6 +40,7 @@ usage() {
 
 out_dir=
 validate=0
+inputs_only=0
 while [ $# -gt 0 ]; do
     case $1 in
     --out)
@@ -51,6 +52,7 @@ while [ $# -gt 0 ]; do
         shift
         ;;
     --validate) validate=1 ;;
+    --inputs) inputs_only=1 ;;
     -h | --help)
         usage
         exit 0
@@ -70,6 +72,45 @@ mkdir -p "$out_dir"
 out_dir=$(CDPATH='' cd -- "$out_dir" && pwd)
 out_parent=$(dirname -- "$out_dir")
 out_name=$(basename -- "$out_dir")
+
+# The document extent, as specgen defines it (its docs/decisions/document-extent
+# ADR): a document is its root file plus the headers `#include`d *inside* the
+# gathered `.syn` region.  An include outside the region is implementation and
+# cannot reach the wording, so it is not part of the extent and a change to it
+# cannot make the fragments stale.
+#
+# Printing the list is what makes a staleness check possible without the tool:
+# `--inputs` hashes exactly the files the wording is generated from.
+document_files() {
+    while IFS='|' read -r header root; do
+        [ -n "$header" ] || continue
+        printf '%s\n' "$header"
+        awk -v root="$root" '
+            index($0, "\\rSec") && index($0, "[" root "]") { inside = 1; next }
+            index($0, "END [" root "]") { inside = 0 }
+            inside && match($0, /#include <beman\/transcode\/[^>]*>/) {
+                inc = substr($0, RSTART, RLENGTH)
+                sub(/^#include </, "", inc)
+                sub(/>$/, "", inc)
+                print "include/" inc
+            }
+        ' "$repo_root/$header"
+    done <<HEADERS
+$(spec_headers)
+HEADERS
+}
+
+# The hashes of everything the wording is generated from, sorted so the file is
+# stable across filesystems.  Committed as papers/wording/inputs.sha256, which
+# is what `make wording-inputs-check` compares against -- a gate that says "the
+# fragments were generated from different headers than these", which is the
+# question CI can answer without a specgen to answer the stronger one.
+wording_input_hashes() {
+    (
+        cd "$repo_root" || exit 1
+        document_files | sort -u | xargs --no-run-if-empty sha256sum
+    )
+}
 
 specgen=${SPECGEN:-specgen}
 command -v "$specgen" >/dev/null 2>&1 || {
@@ -101,6 +142,12 @@ include/beman/transcode/transcode.hpp|transcode.syn
 include/beman/transcode/null_term.hpp|null.term.syn
 HEADERS
 }
+
+if [ "$inputs_only" -eq 1 ]; then
+    wording_input_hashes
+    exit 0
+fi
+
 
 ir_dir=$(mktemp -d)
 trap 'rm -rf "$ir_dir"' EXIT INT TERM
@@ -153,6 +200,8 @@ HEADERS
 # (steve-downey/specgen#89).  Until then it lives here rather than in the
 # committed fragments, so `make wording-check` regenerates the same bytes.
 sed -i -E 's/\[((transcode|null\.term)[a-z0-9.]*)\]\{- \.sref\}/[\1]/g' "$out_dir"/*.md
+
+wording_input_hashes >"$out_dir/inputs.sha256"
 
 # The manifest is document order, and document order is the order pandoc has
 # to concatenate the fragments in, so it is what papers/Makefile consumes.
