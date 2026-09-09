@@ -232,7 +232,10 @@ wording: ## Regenerate the paper's wording fragments from the header markup
 wording-inputs-check: ## Fail if a spec-facing header changed without `make wording`
 	@scratch=$$(mktemp); \
 	trap 'rm -f "$$scratch"' EXIT; \
-	papers/wording/generate.sh --inputs >"$$scratch"; \
+	papers/wording/generate.sh --inputs >"$$scratch" || { \
+		echo "wording-inputs-check: generate.sh --inputs failed; see above" >&2; \
+		exit 2; \
+	}; \
 	if diff -u papers/wording/inputs.sha256 "$$scratch"; then \
 		echo "wording inputs are unchanged since the fragments were generated"; \
 	else \
@@ -254,7 +257,10 @@ wording-inputs-check: ## Fail if a spec-facing header changed without `make word
 wording-check: ## Fail if the committed wording fragments are not what the headers generate
 	@scratch=$$(mktemp -d); \
 	trap 'rm -rf "$$scratch"' EXIT; \
-	papers/wording/generate.sh --out "$$scratch/wording"; \
+	papers/wording/generate.sh --out "$$scratch/wording" || { \
+		echo "wording-check: generate.sh failed; see above" >&2; \
+		exit 2; \
+	}; \
 	if diff -ru $(WORDING_AUTHORED:%=--exclude=%) papers/wording "$$scratch/wording"; then \
 		echo "wording fragments are up to date"; \
 	else \
