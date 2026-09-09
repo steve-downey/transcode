@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p5_step3b_codec_pushdown
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p5-step3b-codec-pushdown</code> <b>Depends on:</b> Step 3 <b>Read first:</b> <code><a class="el" href="phase5-index_8md.html">docs/plans/phase5-index.md</a></code>, <code><a class="el" href="p5-step3-spec-header-shape_8md.html">docs/plans/p5-step3-spec-header-shape.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md312"></a>
+<h1><a class="anchor" id="autotoc_md317"></a>
 Goal</h1>
 <p>Take the codec implementation out of the two WHATWG view headers, so that the specification headers are thin enough for D1's one-document-per-proposed-header shape (Step 3 task 4), and so that the headers read like specification rather than like a decoder.</p>
-<h1><a class="anchor" id="autotoc_md313"></a>
+<h1><a class="anchor" id="autotoc_md318"></a>
 What was done</h1>
 <p>The per-table branch collapse. Each of the four <code>iterator::load()</code> bodies dispatched on the codec with 27 near-identical branches — one per single-byte table, differing only in which table they named. The selection function that turns them into one branch already existed and simply was not used here. With <code>detail::single_byte_table_codec</code> and a reference-returning <code>detail::single_byte_decode_table()</code>, all four collapse to a single branch:</p>
 <ul>
@@ -112,15 +112,15 @@ What was done</h1>
 <li><code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code> 1,246 → 1,141 lines</li>
 </ul>
 <p>The collapse was verified by matching branch bodies modulo the table name rather than by eye, which is how the one non-uniform branch was found: in <code>whatwg_decode_or_error_view</code>'s <code>load()</code>, <code>windows_1252</code> calls <code>std::unreachable()</code> on a decode error, because the windows-1252 table has no holes and a byte can never fail to map. It is kept verbatim ahead of the general branch. Folding it in would replace undefined behaviour with an error return — defensible, but a semantic decision rather than a mechanical one, so it is left for whoever wants to make it deliberately.</p>
-<h1><a class="anchor" id="autotoc_md314"></a>
+<h1><a class="anchor" id="autotoc_md319"></a>
 What was not done, and the order to do it in</h1>
 <p>The stateful codecs — ISO-2022-JP (156 lines per <code>load()</code>), UTF-16 (57), and GB18030's replay buffer (51) — are still inline. Extracting them means giving each a decoder object that owns the state the iterator currently holds (<code>iso2022jp_state_</code>, <code>iso2022jp_output_state_</code>, <code>iso2022jp_output_flag_</code>, <code>iso2022jp_lead_</code>, <code>pending_</code>, <code>pending_count_</code>, <code>gb_replay_*</code>), and teaching the iterator's <code>operator==</code> to compare it. That is real work, and it is worth doing.</p>
 <p><b>But not before the <code>_or_error</code> unification.</b> <code>whatwg_decode_view</code>'s <code>load()</code> and <code>whatwg_decode_or_error_view</code>'s <code>load()</code> are 306 and 328 lines, and <b>71% of their lines are identical</b>; they differ only in whether a failure becomes <code>U+FFFD</code> or <code>unexpected(error)</code>. <code><a class="el" href="p2728-alignment_8md.html">docs/p2728-alignment.md</a></code> has an open action item to unify each view with its <code>_or_error</code> twin under one error-kind-parameterized template, which deletes one of the two copies outright. Extracting the state machines first means extracting them twice and then throwing half the work away.</p>
 <p>So the order is: unify the <code>_or_error</code> pairs, then extract the state machines from the one remaining <code>load()</code> per direction. The unification is also what Steps 6 and 7 need settled before they write those clauses (<code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code>, "Open, and deliberately not settled here"), so it is on the critical path either way.</p>
-<h1><a class="anchor" id="autotoc_md315"></a>
+<h1><a class="anchor" id="autotoc_md320"></a>
 What this means for Step 3 task 4</h1>
 <p>Nothing is blocked. The merge into one document per proposed header was already recorded as waiting on the pushdown, and the pushdown now waits on the unification. None of it gates the markup steps: <code>load()</code> is a private member, private members are filtered out of every synopsis, and no clause extracts a private body. Steps 4 through 9 can proceed against the headers as they stand.</p>
-<h1><a class="anchor" id="autotoc_md316"></a>
+<h1><a class="anchor" id="autotoc_md321"></a>
 Acceptance</h1>
 <ul>
 <li><code>make test</code> green (711 of 711 at the time of writing).</li>

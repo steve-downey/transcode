@@ -101,21 +101,21 @@ $(document).ready(function(){initNavTree('md_docs_plans_p5_step5_codec_labels_sn
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p5-step5-codec-labels-sniff</code> <b>Depends on:</b> Step 4 <b>Read first:</b> <code><a class="el" href="p5-step4-errors-concepts-null-term_8md.html">docs/plans/p5-step4-errors-concepts-null-term.md</a></code> ("the markup loop")</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md327"></a>
+<h1><a class="anchor" id="autotoc_md332"></a>
 Goal</h1>
 <p>Wording for <code>[transcode.codec]</code>: the <code>codec</code> enumeration, the label lookup <code>get_encoding</code>, and <code>sniff_encoding</code>.</p>
-<h1><a class="anchor" id="autotoc_md328"></a>
+<h1><a class="anchor" id="autotoc_md333"></a>
 What is different here</h1>
 <ul>
 <li><b>The enumeration has 39 enumerators and is normatively the WHATWG list.</b> The wording should not restate the table; it should say that each enumerator names the WHATWG encoding of the corresponding name and cite the standard. The paper's bibliography already has <code>@whatwg-encoding</code>; specgen's <code>\iref{stable.name}</code> is for standard subclauses, so a citation to a non-ISO document belongs in authored prose in the paper around the clause, not inside a generated element. Decide and record how a normative reference to WHATWG is spelled; Step 10 has to render it.</li>
 <li>**<code><a class="el" href="labels_8hpp.html">detail/labels.hpp</a></code> is generated** by <code>tools/generate_labels.py</code> and must not be hand-edited (<code>CLAUDE.md</code>). If <code>get_encoding</code>'s declaration needs markup, it needs it in the <em>generator template</em>, not the output — or <code>get_encoding</code> moves to a hand-written header that includes the generated table. Prefer the move: a generator that emits specification markup is a generator with two jobs.</li>
 <li>**<code>sniff_encoding</code> returns <code>optional&lt;codec&gt;</code>** and is specified against WHATWG §8.2. It is a good candidate for <code>\returns-equiv</code> if the body is a single return, and a good candidate for an authored table of BOM → codec otherwise.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md329"></a>
+<h1><a class="anchor" id="autotoc_md334"></a>
 Acceptance</h1>
 <p>As Step 4, for <code>papers/wording/transcode.codec.md</code>.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md331"></a>
+<h1><a class="anchor" id="autotoc_md336"></a>
 Outcome (2026-09-07)</h1>
 <p>All three clauses are written, and <code>--validate</code> reports nothing about any of their entities.</p>
 <ul>

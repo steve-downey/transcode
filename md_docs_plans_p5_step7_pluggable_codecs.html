@@ -101,21 +101,21 @@ $(document).ready(function(){initNavTree('md_docs_plans_p5_step7_pluggable_codec
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p5-step7-pluggable-codecs</code> <b>Depends on:</b> Step 6 <b>Read first:</b> <code><a class="el" href="p5-step4-errors-concepts-null-term_8md.html">docs/plans/p5-step4-errors-concepts-null-term.md</a></code> ("the markup loop")</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md341"></a>
+<h1><a class="anchor" id="autotoc_md346"></a>
 Goal</h1>
 <p>Wording for <code>[transcode.codec.reqs]</code>, <code>[transcode.decode]</code> and <code>[transcode.encode]</code>: the <code>decode_codec</code> / <code>encode_codec</code> / <code>flushable_decode_codec</code> / <code>random_access_decode_codec_type</code> concepts, the <code>decode_result</code> / <code>encode_result</code> structs, and the codec-parameterized views.</p>
-<h1><a class="anchor" id="autotoc_md342"></a>
+<h1><a class="anchor" id="autotoc_md347"></a>
 What is different here</h1>
 <ul>
 <li><b>The concepts are the extension point, so their wording is the contract a user-written codec must satisfy.</b> This is a <em>Requirements</em> clause in the draft's sense: what <code>decode_one(iter, sentinel)</code> must return, what <code>flush()</code> means, when <code>decode_byte(byte)</code> may be called. The existing negative compile tests are the specification's test suite; every constraint they pin should be a sentence here.</li>
 <li>**<code>decode_result</code> and <code>encode_result</code>** (<code>detail/codec_result.hpp</code>) are part of that contract and so are specification, not detail — Step 3 task 1 should already have moved them. If it did not, do it here.</li>
 <li><b>The pluggable views are structurally parallel to the WHATWG views</b> but parameterized on a codec <em>object</em> rather than an enumerator. Where the wording is genuinely the same, say so by cross-reference (<code>\iref</code>) rather than duplicating paragraphs; where it is not, the difference is worth a sentence in the paper's design section too.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md343"></a>
+<h1><a class="anchor" id="autotoc_md348"></a>
 Acceptance</h1>
 <p>As Step 4, for <code>papers/wording/transcode.codec.reqs.md</code>, <code>transcode.decode.md</code>, <code>transcode.encode.md</code>.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md345"></a>
+<h1><a class="anchor" id="autotoc_md350"></a>
 Outcome (2026-09-08)</h1>
 <p>All three clauses are written and <code>--validate</code> reports nothing about any of their entities. The document's findings go from 79 to 22, and every one of the 22 belongs to Step 8's pipeline closures or Step 9's iconv surface.</p>
 <p><b>The clause names are the outline's</b>, not this plan's. This document was written before Step 2 settled <code>transcode.custom.*</code> for the codec-parameterized family (<code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code>, "`transcode.custom.*` rather than

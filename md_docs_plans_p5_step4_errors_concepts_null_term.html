@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p5_step4_errors_concepts
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p5-step4-errors-concepts-null-term</code> <b>Depends on:</b> Steps 1 and 3 <b>Read first:</b> <code><a class="el" href="phase5-index_8md.html">docs/plans/phase5-index.md</a></code>, <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code>, <code>~/src/specgen/main/docs/user-guide.md</code> (element vocabulary, placement markers)</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md319"></a>
+<h1><a class="anchor" id="autotoc_md324"></a>
 Goal</h1>
 <p>Write the first real wording markup, for the three smallest clauses: <code>[transcode.errors]</code>, <code>[transcode.reqs]</code>, <code>[null.term]</code>. This step also establishes the markup loop that Steps 5-9 repeat, so it is written out here once and referred to afterwards.</p>
-<h1><a class="anchor" id="autotoc_md320"></a>
+<h1><a class="anchor" id="autotoc_md325"></a>
 The markup loop</h1>
 <p>Steps 4 through 9 are all the same six moves. Later step documents say only what is different.</p>
 <ol type="1">
@@ -115,7 +115,7 @@ The markup loop</h1>
 <li><b>Drive validation to zero for this clause</b>: <code>specgen render --from-ir &lt;ir&gt; --backend mpark --validate</code>. Coverage errors mean a declaration has no home; leakage errors mean the wording names something the reader cannot see. Both are real; fix the header, not the report. There is no allowed exception: U1 landed upstream on 2026-09-04, so the <code>ranges</code> findings that used to be excused no longer occur.</li>
 <li><b>Commit headers and <code>papers/wording/*.md</code> together.</b> A commit where they disagree fails <code>make wording-check</code>, which is the point.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md321"></a>
+<h1><a class="anchor" id="autotoc_md326"></a>
 What is different here</h1>
 <ul>
 <li>**<code>whatwg_error</code> and <code>iconv_error</code>** are enumerations; their wording is a table of enumerator meanings rather than per-function elements. Check whether a two-column <code>\lib2dtab2</code> is the right rendering for "enumerator / meaning" before hand-rolling prose.</li>
@@ -128,7 +128,7 @@ What is different here</h1>
 </li>
 <li>This step is also where the **<code>constify()</code> consteval discipline meets the wording**: every element that says an operation is usable in constant evaluation should have the corresponding consteval test already, per <code>CLAUDE.md</code>. Where it does not, add it here rather than writing wording the tests do not back.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md322"></a>
+<h1><a class="anchor" id="autotoc_md327"></a>
 Acceptance</h1>
 <ul>
 <li><code>papers/wording/transcode.errors.md</code>, <code>transcode.reqs.md</code> and <code>null.term.md</code> exist and are non-empty.</li>
@@ -137,7 +137,7 @@ Acceptance</h1>
 <li>The paper builds and the three clauses appear in it.</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md324"></a>
+<h1><a class="anchor" id="autotoc_md329"></a>
 Outcome (2026-09-06)</h1>
 <p>All three clauses are written and generated. Two of them had no representable form in specgen when the step started; both gaps were filed and fixed upstream rather than worked around here, so nothing in this step is a header problem and no header was changed to suit the tool (D7).</p>
 <ul>

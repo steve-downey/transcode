@@ -101,14 +101,14 @@ $(document).ready(function(){initNavTree('md_docs_plans_p5_step2_wording_outline
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p5-step2-wording-outline</code> <b>Depends on:</b> nothing (do it in parallel with Step 1) <b>Read first:</b> <code><a class="el" href="phase5-index_8md.html">docs/plans/phase5-index.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md298"></a>
+<h1><a class="anchor" id="autotoc_md303"></a>
 Goal</h1>
 <p>Decide the clause tree once, in a document, so that nine markup steps do not each invent a stable name. No code changes.</p>
-<h1><a class="anchor" id="autotoc_md299"></a>
+<h1><a class="anchor" id="autotoc_md304"></a>
 Context for executing agent</h1>
 <p>specgen's <code>\rSec&lt;depth&gt;[stable.name]{Title}</code> markers are what build the document tree, <code>--split</code> names one fragment per top-level section from its stable name, and the mpark backend renders each stable name as a <code>{- .sref}</code> span. The names are therefore simultaneously the clause identifiers in the paper, the fragment filenames, and the ordering key of the transclusion list. Changing one later renames a file and a heading and a cross-reference at once.</p>
 <p>The names must also read like the working draft's. Look at how <code>[range.adaptors]</code>, <code>[text.encoding]</code> and <code>[char.traits]</code> are spelled before inventing anything.</p>
-<h1><a class="anchor" id="autotoc_md300"></a>
+<h1><a class="anchor" id="autotoc_md305"></a>
 Tasks</h1>
 <ol type="1">
 <li>Write <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code> containing, for each proposed clause: stable name, title, depth, the header it is generated from, and the entities it covers. Proposed starting point, to be argued with rather than accepted:</li>
@@ -152,7 +152,7 @@ Tasks</h1>
 <li>Cross-check the outline against the paper's existing "API Surface
    Comparison" table: every ✅ in the WHATWG, pluggable and iconv columns must land in some clause, or be explicitly listed as not-proposed.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md301"></a>
+<h1><a class="anchor" id="autotoc_md306"></a>
 Acceptance</h1>
 <ul>
 <li><code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code> exists, is linked from <code><a class="el" href="phase5-index_8md.html">docs/plans/phase5-index.md</a></code>, and every row names a header and a set of entities.</li>

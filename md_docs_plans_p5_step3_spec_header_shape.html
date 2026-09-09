@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p5_step3_spec_header_sha
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p5-step3-spec-header-shape</code> (expect several sub-branches) <b>Depends on:</b> Step 2 (the outline says what belongs where) <b>Read first:</b> <code><a class="el" href="phase5-index_8md.html">docs/plans/phase5-index.md</a></code>, <code>~/src/specgen/main/docs/architecture.md</code> §1, §3.4, §3.5, §9</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md304"></a>
+<h1><a class="anchor" id="autotoc_md309"></a>
 Goal</h1>
 <p>Make each spec-facing header's set of main-file declarations equal to the specification surface of the standard header it stands for, so that specgen's synopsis <em>is</em> the synopsis and its coverage roster <em>is</em> the API. This is the refactoring the phase depends on and the only step that changes semantics-free C++ at scale.</p>
-<h1><a class="anchor" id="autotoc_md305"></a>
+<h1><a class="anchor" id="autotoc_md310"></a>
 Context for executing agent</h1>
 <p>specgen processes only declarations whose location is in the <b>main file</b>. Anything reached through <code>#include</code> is invisible: it does not enter the synopsis, the coverage roster, or the leakage report. That single rule is the lever. Implementation that moves into <code>detail/</code> headers disappears from the wording for free; implementation left in the spec-facing header must be individually <code>\omit</code>ted or <code>\expos</code>ed, forever.</p>
 <p>Three concrete problems in today's layout:</p>
@@ -113,7 +113,7 @@ Context for executing agent</h1>
 <li><b>Implementation lives in spec-facing headers.</b> <code><a class="el" href="whatwg__decode__view_8hpp.html">whatwg_decode_view.hpp</a></code> is 1,772 lines, of which the <code>namespace detail</code> block (the <code>random_access_decode_codec</code> concept, <code>random_access_decode_table()</code>, the table selection machinery) and the ~800-line <code>iterator::load()</code> codec state machines are implementation. <code><a class="el" href="whatwg__encode__view_8hpp.html">whatwg_encode_view.hpp</a></code> (1,323 lines) has the same shape. Every one of those is a declaration specgen must be told to ignore, and every <code>detail::</code> qualifier they leave in a spec-visible signature is a leakage error (index D7).</li>
 <li><b>The umbrella declares nothing.</b> <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code> is includes only, so there is no document whose root fragment is the <code>&lt;transcode&gt;</code> synopsis (index D1).</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md306"></a>
+<h1><a class="anchor" id="autotoc_md311"></a>
 Tasks</h1>
 <p>Work header family by header family; each is its own commit and can be its own branch. After each, <code>make test</code> and <code>make wording-check</code> must still pass.</p>
 <ol type="1">
@@ -123,7 +123,7 @@ Tasks</h1>
 <li><b>Make the umbrella a real document.</b> <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code> becomes the spec-facing header for <code>&lt;transcode&gt;</code>: it carries the <code>\rSec2[transcode.syn]</code> gathered-synopsis region (architecture §3.4 — the region runs to a matching <code>/// END [transcode.syn]</code> fence) and the clause markers, with the family headers included beneath it. Decide here, and record, whether the entities themselves move into <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code> (D1's preferred shape: one document, one synopsis) or stay in family headers with a gathered synopsis assembled per family (D1's fallback). Prefer the former; the measurement to make the call is how many lines the spec-facing surface is once (1) and (2) are done. Index U4 (a deduction guide corrupts a gathered <code>.syn</code> region) does not apply: <code>null_term_view</code>'s is the only deduction guide in the library, and it is in the other header.</li>
 <li><b>Keep the parse working.</b> <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code> must still parse standalone for specgen, which needs <code>-I .build/build-system/include</code> for <code>config_generated.hpp</code>. Verify with the Step 1 script, not by eye.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md307"></a>
+<h1><a class="anchor" id="autotoc_md312"></a>
 Outcome, and what is deferred</h1>
 <p>Tasks 1 and 3 are done and verified; task 2 is half done; task 4 is deferred, for a reason task 2 measured.</p>
 <ul>
@@ -135,7 +135,7 @@ Outcome, and what is deferred</h1>
 <p class="startli">Running it on the real library is what found three defects the tool's own corpus could not: a late-instantiated member arriving as a top-level declaration (a private member's body in the synopsis), a function definition folded in with its body, and a body whose spliced range was then re-edited by a qualifier drop. All three are fixed in PR #78.</p>
 </li>
 </ul>
-<h1><a class="anchor" id="autotoc_md308"></a>
+<h1><a class="anchor" id="autotoc_md313"></a>
 Acceptance</h1>
 <ul>
 <li><code>make test</code> green at every commit, including the negative compile tests.</li>
@@ -145,7 +145,7 @@ Acceptance</h1>
 <li><code>render --validate</code> on each spec-facing header reports <b>no <code>detail</code> leakage findings</b>. Coverage findings are expected and are Steps 4-9's work; <code>ranges</code> findings are index U1's known noise.</li>
 <li><code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code> updated with the promoted/exposed/omitted decision for every entity.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md309"></a>
+<h1><a class="anchor" id="autotoc_md314"></a>
 Notes</h1>
 <ul>
 <li>Header moves are the kind of change that quietly breaks the benchmark tree and the installtest. Grep <code>benchmark/</code>, <code>installtest/</code>, <code>tools/</code>, <code>tests/</code> for the old paths, not just <code>include/</code>.</li>
