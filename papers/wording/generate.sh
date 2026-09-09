@@ -122,15 +122,18 @@ $(spec_headers)
 HEADERS
 }
 
-# The hashes of everything the wording is generated from, sorted so the file is
-# stable across filesystems.  Committed as papers/wording/inputs.sha256, which
+# The hashes of everything the wording is generated from, sorted in the C
+# locale so the file is stable across filesystems *and* machines -- a collating
+# order that ignores punctuation puts codec_concepts.hpp before codec.hpp, and
+# the C locale puts `.` before `_`, so an unpinned sort makes this file depend
+# on the developer's environment and fail in a container that has none.  Committed as papers/wording/inputs.sha256, which
 # is what `make wording-inputs-check` compares against -- a gate that says "the
 # fragments were generated from different headers than these", which is the
 # question CI can answer without a specgen to answer the stronger one.
 wording_input_hashes() {
     (
         cd "$repo_root" || exit 1
-        document_files | sort -u | xargs --no-run-if-empty sha256sum
+        document_files | LC_ALL=C sort -u | xargs --no-run-if-empty sha256sum
     )
 }
 
