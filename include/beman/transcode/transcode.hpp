@@ -44,6 +44,7 @@ import beman.transcode;
     #include <beman/transcode/encode_view.hpp>
     #include <beman/transcode/transcode_view.hpp>
     #include <beman/transcode/transcode_string.hpp>
+    #include <beman/transcode/bulk_transcode.hpp>
     #include <beman/transcode/sniff.hpp>
     #include <beman/transcode/iconv_transcode_view.hpp>
     #include <beman/transcode/iconv_transcode_or_error_view.hpp>
@@ -52,13 +53,11 @@ import beman.transcode;
 
     /// END [transcode.syn]
 
-    // Implementation.  The single-byte views, the bulk helpers, the generated
-    // label table and the table-driven codec engine are not proposed
-    // (docs/wording-outline.md, "Not proposed at all"), and being outside the
-    // region is how they say so.
+    // Implementation.  The single-byte views, the generated label table and the
+    // table-driven codec engine are not proposed (docs/wording-outline.md,
+    // "Not proposed at all"), and being outside the region is how they say so.
     #include <beman/transcode/detail/single_byte_decode_view.hpp>
     #include <beman/transcode/detail/single_byte_encode_view.hpp>
-    #include <beman/transcode/detail/bulk_transcode.hpp>
     #include <beman/transcode/detail/table_codec.hpp>
 
     // The clauses.  Each is a heading and nothing else: the declarations are in
@@ -96,6 +95,8 @@ import beman.transcode;
     // \rSec2[transcode.pipeline]{Transcoding pipelines}
 
     // \rSec2[transcode.string]{Eager transcoding}
+
+    // \rSec2[transcode.bulk]{Eager bulk conversion}
 
     // \rSec2[transcode.iconv]{iconv adaptors}
 

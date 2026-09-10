@@ -61,6 +61,7 @@ order the compiler needs and need not match.
 | `transcode.custom.encode.iterator` | 3 | Class `encode_view::iterator` | likewise | `encode_view.hpp`, done 2026-09-08 |
 | `transcode.pipeline` | 2 | Transcoding pipelines | `transcode`, `pluggable_transcode` | `transcode_view.hpp`, done 2026-09-08 |
 | `transcode.string` | 2 | Eager transcoding | `transcode_string`, both overloads | `transcode_string.hpp`, done 2026-09-08 |
+| `transcode.bulk` | 2 | Eager bulk conversion | `decode_to`, `encode_to`, `decode_into`, `encode_into`, each in a WHATWG and a pluggable form | `bulk_transcode.hpp`, done 2026-09-08 |
 | `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers, done 2026-09-08 |
 | `transcode.iconv.iterator` | 3 | The two iconv iterators | `iconv_transcode_view::$iterator$`, `iconv_transcode_or_error_view::$iterator$` | the same headers, done 2026-09-08 |
 
@@ -113,43 +114,37 @@ so no step has to decide twice.
 | `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; index U4 no longer applies |
 | `detail::null_term_fn`, `detail::null_term_adaptor` | the adaptor object's type is unspecified |
 | `detail::label_entry`, `label_table` | generated data behind `get_encoding`, and all `tools/generate_labels.py` emits since Step 5 |
+| `detail::transcode_decode_all`, `detail::transcode_encode_all` | the loops `transcode_string` runs; they rendered in the synopsis as bare names until Step 11 `\omit`ted them, because the leakage check keys on a rendered qualifier and these had none |
 | `detail::iconv_guard`, `iconv_input_buf` | RAII plumbing |
 | `iconv_error_rc` | a POSIX return-value constant, not API |
 
 ### Not proposed at all
 
-- ~~`decode_to`, `encode_to`, `decode_into`, `encode_into`
-  (`detail/bulk_transcode.hpp`).  The header says so itself, and the paper's API
-  surface table agrees: its bulk rows are `v | ranges::to<>()` and
-  `ranges::copy(v, out)`, which are the standard's own facilities.  Nothing to
-  specify.~~
+- ~~`decode_to`, `encode_to`, `decode_into`, `encode_into`.~~  **Settled: they
+  are proposed**, and `[transcode.bulk]` specifies them.  This entry was wrong
+  from the day it was written and stayed wrong for five days.  Both halves of
+  its justification were false: the header said the *opposite* ("They are
+  proposed"), and the paper's API surface table ticks all four in the WHATWG
+  and pluggable columns -- the `n/a` rows it cited are *bulk transcode*, which
+  is byte-to-byte and a different operation.  The paper argues the case in
+  "Bulk conversion to owned storage" and concludes "However, we propose the
+  names"; that is commit `c3ced80` (2026-09-02), a day before this outline
+  (`e82bcd1`) recorded the opposite without noting it was reversing anything.
 
-  **Wrong, found in Step 10, and not yet acted on.**  Both halves of that
-  justification are false, and were false when they were written.  The header
-  says the *opposite* -- "They are proposed, and the paper specifies them as
-  those pipelines" -- and the paper's API surface table marks all four with a
-  tick in the WHATWG and pluggable columns; the `n/a` rows are *bulk transcode*,
-  which is byte-to-byte and a different operation.  The paper's "Bulk conversion
-  to owned storage" section argues the case and concludes "However, we propose
-  the names", and "Questions for SG16" asks the group to keep them.  All of that
-  is commit `c3ced80` (2026-09-02), a day *before* this outline (`e82bcd1`,
-  2026-09-03) recorded the opposite without noting that it was reversing
-  anything.
+  The cost of the error was that Step 3's promotion of the specification
+  headers passed over `bulk_transcode.hpp` on this line's authority, leaving
+  eight public functions -- `beman::transcoding::decode_to`, not
+  `detail::decode_to` -- in a `detail/`-pathed file, and `transcode.hpp` kept
+  it outside the gathered region citing this section.  The header is now
+  `include/beman/transcode/bulk_transcode.hpp`, inside the region, and its
+  wording is generated like everything else.
 
-  Step 3 then propagated the error: `transcode.hpp` keeps
-  `detail/bulk_transcode.hpp` outside the gathered region and cites this
-  section as the reason, so four functions the paper proposes have no wording.
-  They are public API -- `beman::transcoding::decode_to`, not
-  `detail::decode_to` -- living in a `detail/`-pathed file that Step 3's
-  promotion of the specification headers (`6abdda0`) passed over, because this
-  line said not to.
+  The reason to propose them is not that they do much.  Each is one line, and
+  `ranges::to` and `ranges::copy` already do the work.  It is that converting a
+  buffer to a container is the operation people come for, and withholding the
+  name they will look for only moves the question to every code review that
+  ever uses this library.
 
-  Fixing it is a header promotion plus a `[transcode.bulk]` clause, which is a
-  step of its own and not paper assembly.  **It is deliberately not done here**:
-  the alternative is to reverse a decision the paper argues for in five places,
-  and that is a scope call, not a transcription fix.  Whichever way it goes, the
-  paper, this outline, the header comment and `transcode.hpp`'s region must end
-  up saying the same thing.
 - ~~`make_real_iconv_fns`, and `iconv_functions` as an injection seam.~~
   Settled in Step 9: both are proposed.  `iconv_functions` is what makes the
   view testable without the platform's iconv tables

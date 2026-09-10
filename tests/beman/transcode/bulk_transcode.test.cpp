@@ -4,7 +4,7 @@
 // encode_into, and for the ranges::to and ranges::copy pipelines each one
 // names. Both spellings are proposed, so both are covered here.
 
-#include <beman/transcode/detail/bulk_transcode.hpp>
+#include <beman/transcode/bulk_transcode.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
 

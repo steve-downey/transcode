@@ -225,10 +225,19 @@ HEADERS
 # stable-name roots on purpose: a citation of a clause that *is* in the draft
 # keeps its `.sref` and still resolves.
 #
-# This is a downstream patch over generated output, and it comes out when
-# specgen can be told that a document's own clauses are new
-# (steve-downey/specgen#89).  Until then it lives here rather than in the
-# committed fragments, so `make wording-check` regenerates the same bytes.
+# This is a downstream patch over generated output.  specgen#89 asked for a way
+# to say a document's own clauses are new, and it landed as `render
+# --new-root <name>`, which drops the class for a whole stable-name subtree --
+# `--new-root transcode` covers `transcode.whatwg.decode.iterator` three
+# segments down.  It is not enough here: the flag is last-wins rather than
+# repeatable, and this paper proposes *two* headers, whose `<transcode>`
+# document cross-references `[null.term.adaptor]`.  Passing both names silently
+# keeps only the second.
+#
+# So this comes out when steve-downey/specgen#94 lands and `--new-root` can be
+# given twice.  Adopting it for one root and keeping this for the other would
+# leave two mechanisms doing one job.  Until then it lives here rather than in
+# the committed fragments, so `make wording-check` regenerates the same bytes.
 sed -i -E 's/\[((transcode|null\.term)[a-z0-9.]*)\]\{- \.sref\}/[\1]/g' "$out_dir"/*.md
 
 wording_input_hashes >"$out_dir/inputs.sha256"

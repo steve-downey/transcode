@@ -15,18 +15,27 @@ namespace beman::transcoding {
 // Pluggable codecs adopt WHATWG error semantics as the common framework;
 // custom codec decode_one() and encode_one() return these values directly.
 //! \remarks An operation that fails to decode or to encode reports one of
-//! these values.  The enumerators have the following meanings:
-//! \item `invalid_byte` -- the input holds a byte the encoding does not allow
-//! in that position.
-//! \item `truncated_sequence` -- the input ends in the middle of a sequence.
-//! \item `overlong_encoding` -- the sequence encodes a value that a shorter
-//! sequence also encodes.
-//! \item `surrogate_code_point` -- the sequence encodes a surrogate code
-//! point, which is not a Unicode scalar value.
-//! \item `out_of_range` -- the sequence encodes a value greater than the
-//! largest Unicode scalar value.
-//! \item `unmapped_codepoint` -- the encoding has no representation for the
-//! Unicode scalar value being encoded.
+//! these values.  The enumerators have the meanings in the following table.
+//! \libtab2[transcode.errors.whatwg]{Enum class `whatwg_error`}
+//! \column Constant
+//! \column Meaning
+//! \row `invalid_byte`
+//! \cell the input holds a byte the encoding does not allow in that
+//! position.
+//! \row `truncated_sequence`
+//! \cell the input ends in the middle of a sequence.
+//! \row `overlong_encoding`
+//! \cell the sequence encodes a value that a shorter sequence also encodes.
+//! \row `surrogate_code_point`
+//! \cell the sequence encodes a surrogate code point, which is not a Unicode
+//! scalar value.
+//! \row `out_of_range`
+//! \cell the sequence encodes a value greater than the largest Unicode scalar
+//! value.
+//! \row `unmapped_codepoint`
+//! \cell the encoding has no representation for the Unicode scalar value
+//! being encoded.
+//! \endlibtab2
 enum class whatwg_error {
     invalid_byte,
     truncated_sequence,
@@ -43,13 +52,18 @@ enum class whatwg_error {
 // The OS cannot distinguish WHY a byte sequence is invalid, only that it is.
 //! \remarks An `iconv` conversion that fails reports one of these values,
 //! which are the three failures POSIX `iconv` distinguishes.  The enumerators
-//! have the following meanings:
-//! \item `invalid_sequence` -- the input is not valid in the source encoding,
-//! or has no representation in the destination encoding (`EILSEQ`).
-//! \item `incomplete_sequence` -- the input ends in the middle of a multibyte
-//! sequence (`EINVAL`).
-//! \item `output_full` -- the conversion has no room left to write its result
-//! (`E2BIG`).
+//! have the meanings in the following table.
+//! \libtab2[transcode.errors.iconv]{Enum class `iconv_error`}
+//! \column Constant
+//! \column Meaning
+//! \row `invalid_sequence`
+//! \cell the input is not valid in the source encoding, or has no
+//! representation in the destination encoding (`EILSEQ`).
+//! \row `incomplete_sequence`
+//! \cell the input ends in the middle of a multibyte sequence (`EINVAL`).
+//! \row `output_full`
+//! \cell the conversion has no room left to write its result (`E2BIG`).
+//! \endlibtab2
 enum class iconv_error {
     invalid_sequence,
     incomplete_sequence,
@@ -65,13 +79,18 @@ enum class iconv_error {
 //   replacement — substitute U+FFFD on decode, '?' on encode
 //   expected    — the value type becomes expected<T, whatwg_error>
 //! \remarks A view's error kind says how it reports a failure of the codec it
-//! drives.  The enumerators have the following meanings:
-//! \item `replacement` -- a failure to decode yields U+FFFD REPLACEMENT
-//! CHARACTER and a failure to encode yields `'?'`, and the view's value type
-//! is the codec's own.
-//! \item `expected` -- the view's value type is
-//! `expected<T, whatwg_error>`, and a failure yields an `unexpected` holding
-//! the error that occurred.
+//! drives.  The enumerators have the meanings in the following table.
+//! \libtab2[transcode.errors.kind]{Enum class `transcode_error_kind`}
+//! \column Constant
+//! \column Meaning
+//! \row `replacement`
+//! \cell a failure to decode yields U+FFFD REPLACEMENT CHARACTER and a
+//! failure to encode yields `'?'`, and the view's value type is the codec's
+//! own.
+//! \row `expected`
+//! \cell the view's value type is `expected<T, whatwg_error>`, and a failure
+//! yields an `unexpected` holding the error that occurred.
+//! \endlibtab2
 enum class transcode_error_kind {
     replacement,
     expected,

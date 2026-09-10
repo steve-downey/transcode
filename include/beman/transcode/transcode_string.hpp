@@ -30,9 +30,11 @@ transcode_string(std::span<const char> src, std::string_view from_label, std::st
 
 namespace detail {
 
+//! \omit
 template <codec C>
 std::u32string transcode_decode_all(std::span<const char> src);
 
+//! \omit
 template <codec C>
 std::string transcode_encode_all(std::u32string_view src);
 

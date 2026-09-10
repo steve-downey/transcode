@@ -13,14 +13,17 @@ enum class whatwg_error {
 };
 ```
 
-[#]{.pnum} *Remarks*: An operation that fails to decode or to encode reports one of these values.  The enumerators have the following meanings:
+[#]{.pnum} *Remarks*: An operation that fails to decode or to encode reports one of these values.  The enumerators have the meanings in the following table.
 
-- [#.#]{.pnum} `invalid_byte` -- the input holds a byte the encoding does not allow in that position.
-- [#.#]{.pnum} `truncated_sequence` -- the input ends in the middle of a sequence.
-- [#.#]{.pnum} `overlong_encoding` -- the sequence encodes a value that a shorter sequence also encodes.
-- [#.#]{.pnum} `surrogate_code_point` -- the sequence encodes a surrogate code point, which is not a Unicode scalar value.
-- [#.#]{.pnum} `out_of_range` -- the sequence encodes a value greater than the largest Unicode scalar value.
-- [#.#]{.pnum} `unmapped_codepoint` -- the encoding has no representation for the Unicode scalar value being encoded.
+| Constant | Meaning |
+|---|---|
+| `invalid_byte` | the input holds a byte the encoding does not allow in that position. |
+| `truncated_sequence` | the input ends in the middle of a sequence. |
+| `overlong_encoding` | the sequence encodes a value that a shorter sequence also encodes. |
+| `surrogate_code_point` | the sequence encodes a surrogate code point, which is not a Unicode scalar value. |
+| `out_of_range` | the sequence encodes a value greater than the largest Unicode scalar value. |
+| `unmapped_codepoint` | the encoding has no representation for the Unicode scalar value being encoded. |
+: [Enum class `whatwg_error`]{#transcode.errors.whatwg}
 
 ```cpp
 enum class iconv_error {
@@ -30,11 +33,14 @@ enum class iconv_error {
 };
 ```
 
-[#]{.pnum} *Remarks*: An `iconv` conversion that fails reports one of these values, which are the three failures POSIX `iconv` distinguishes.  The enumerators have the following meanings:
+[#]{.pnum} *Remarks*: An `iconv` conversion that fails reports one of these values, which are the three failures POSIX `iconv` distinguishes.  The enumerators have the meanings in the following table.
 
-- [#.#]{.pnum} `invalid_sequence` -- the input is not valid in the source encoding, or has no representation in the destination encoding (`EILSEQ`).
-- [#.#]{.pnum} `incomplete_sequence` -- the input ends in the middle of a multibyte sequence (`EINVAL`).
-- [#.#]{.pnum} `output_full` -- the conversion has no room left to write its result (`E2BIG`).
+| Constant | Meaning |
+|---|---|
+| `invalid_sequence` | the input is not valid in the source encoding, or has no representation in the destination encoding (`EILSEQ`). |
+| `incomplete_sequence` | the input ends in the middle of a multibyte sequence (`EINVAL`). |
+| `output_full` | the conversion has no room left to write its result (`E2BIG`). |
+: [Enum class `iconv_error`]{#transcode.errors.iconv}
 
 ```cpp
 enum class transcode_error_kind {
@@ -43,9 +49,12 @@ enum class transcode_error_kind {
 };
 ```
 
-[#]{.pnum} *Remarks*: A view's error kind says how it reports a failure of the codec it drives.  The enumerators have the following meanings:
+[#]{.pnum} *Remarks*: A view's error kind says how it reports a failure of the codec it drives.  The enumerators have the meanings in the following table.
 
-- [#.#]{.pnum} `replacement` -- a failure to decode yields U+FFFD REPLACEMENT CHARACTER and a failure to encode yields `'?'`, and the view's value type is the codec's own.
-- [#.#]{.pnum} `expected` -- the view's value type is `expected<T, whatwg_error>`, and a failure yields an `unexpected` holding the error that occurred.
+| Constant | Meaning |
+|---|---|
+| `replacement` | a failure to decode yields U+FFFD REPLACEMENT CHARACTER and a failure to encode yields `'?'`, and the view's value type is the codec's own. |
+| `expected` | the view's value type is `expected<T, whatwg_error>`, and a failure yields an `unexpected` holding the error that occurred. |
+: [Enum class `transcode_error_kind`]{#transcode.errors.kind}
 
 :::

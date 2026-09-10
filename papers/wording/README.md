@@ -86,8 +86,11 @@ neither.
 paper's own roots. Those clauses are not in the working draft, so `.sref` warns
 once each at paper-build time and links every cross-reference to a `c++draft`
 page that does not exist. That is
-[specgen#89](https://github.com/steve-downey/specgen/issues/89), and the strip
-comes out when it lands.
+[specgen#94](https://github.com/steve-downey/specgen/issues/94): the flag that
+does this upstream, `render --new-root`, landed for
+[#89](https://github.com/steve-downey/specgen/issues/89) but takes only one
+name, and this paper proposes two headers whose documents cross-reference each
+other. The strip comes out when the flag can be given twice.
 
 ## Adding a clause
 
