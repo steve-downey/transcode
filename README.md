@@ -279,7 +279,7 @@ single-pass byte→byte conversion and exposes it as a first-class bulk operatio
 `char32_t`).  `views::null_term` produces a range of `char`, which is a
 different type; adapting the two requires a reinterpret step.
 
-⁴ **Pluggable codecs are identified by C++ type**, not by name.  There is no
+⁴ **Pluggable codecs are identified by C++ type.**  There is no
 runtime name-to-codec registry by design — codec selection happens at
 compile time through the type system.  Runtime transcode is similarly outside
 the model: you compose `decode(codec_a{}) | encode(codec_b{})` at compile time.
@@ -335,12 +335,12 @@ look up a WHATWG codec by its IANA name or any of its aliases.  Where WHATWG goe
 further is in nailing down the *exact algorithm and data tables* for each codec.
 This matters most for encodings where there was historical diverging practice:
 different implementations of "Shift_JIS" or "Big5" could disagree on edge cases,
-unmapped byte values, or error recovery.  The WHATWG standard eliminates that
-ambiguity by specifying precisely what every byte sequence means.
+unmapped byte values, or error recovery.  The WHATWG standard says what every
+byte sequence means.
 
 **`std::text_encoding`** (P1885) provides IANA charset names as a C++ vocabulary
-type.  It identifies WHICH encoding a text uses but does not define HOW to
-decode or encode; it is purely for labeling.  The explicit WHATWG API in
+type.  It says which encoding a text is in; it does not say how to decode or
+encode it.  It is purely for labeling.  The explicit WHATWG API in
 `beman.transcode` reflects the tighter algorithmic specification but does not
 supersede `std::text_encoding`; the two serve different roles.
 
@@ -358,8 +358,8 @@ most C and C++ programs doing encoding conversion today), the
 `beman.transcode` provides:
 
 - **Compile-time WHATWG dispatch** via `codec::utf_8`, `codec::shift_jis`, etc. —
-  enum constants used as non-type template parameters for zero-overhead codec
-  selection and fully constexpr-capable decoding
+  enum constants used as non-type template parameters, so there is no
+  per-element dispatch and decoding runs at compile time
 - **Runtime label resolution** via `get_encoding("utf-8")` and
   `transcode_string(data, "shift_jis", "utf-8")` — for cases where the encoding
   name comes from user input, HTTP headers, or HTML meta tags
@@ -389,8 +389,7 @@ The comparison puts it in context against mature, production-optimized projects:
 | Raw `iconv()` (glibc, 4 KB buffer) | 334 µs | 163 MiB/s | Block API, looping over 4 KB |
 | `iconv_transcode_view` (this library) | 351 µs | 155 MiB/s | Batched range adaptor over iconv |
 
-The ~3x gap between beman.transcode and simdutf is the cost of scalar
-byte-at-a-time iteration vs SIMD bulk processing.  That is the price of a portable
+The ~3x gap between beman.transcode and simdutf is the price of a portable
 scalar decoder that also runs at compile time.
 SIMD backends could be plugged in behind the same range interface in the future
 without changing user code.

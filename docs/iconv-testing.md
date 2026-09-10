@@ -1,41 +1,76 @@
 # Testing C++ Range Adapters over `iconv`
 
-If the goal is purely to test the C++ range adapter (the view) that wraps the `iconv` C API, you don't need megabytes of WPT JSON data. A small set of vectors aimed at the boundary conditions of the `iconv` state machine is enough.
+Testing the range adapter that wraps the `iconv` C API is a different job from
+testing a codec.  It does not need megabytes of WPT JSON.  A small set of
+vectors aimed at the boundary conditions of the `iconv` state machine is enough.
 
-Because a C++ view (especially a lazy or chunked one) must translate range iteration into `char**` buffer manipulations, your tests must verify that the view correctly interprets `iconv`'s return values and manages its internal buffers across iterations.
+The view has to translate range iteration into `char**` buffer manipulation, so
+what the tests have to pin down is whether it reads `iconv`'s return values
+correctly and carries its internal buffers across iterations intact.
 
 ## 1. The `iconv` View Boundary Conditions
 
-The POSIX `iconv` function communicates state via its return value (returning `(size_t)-1`) and `errno`. Your C++ view iterator must handle these precisely. We will use simple UTF-8 to UTF-16 (or UTF-32) conversions to trigger these states.
+POSIX `iconv` communicates state through its return value (`(size_t)-1`) and
+`errno`.  There are four cases the iterator has to get right.  Simple UTF-8 to
+UTF-16 or UTF-32 conversions trigger all of them.
 
 ### A. Buffer Exhaustion (`E2BIG`)
-If your view processes data in chunks, `iconv` will return `E2BIG` when the output buffer fills up before the input is consumed.
-* **Test Vector:** A long, valid string (e.g., 100 repetitions of `A`).
-* **View Expectation:** The iterator must yield the converted characters from the filled buffer, and upon the next increment, resume passing the *unconsumed* input pointer back into `iconv` without dropping characters.
+
+A view that processes data in chunks will see `E2BIG` when the output buffer
+fills before the input is consumed.
+
+* **Test vector:** a long valid string, say 100 repetitions of `A`.
+* **Expected:** the iterator yields the converted characters from the filled
+  buffer, and on the next increment resumes by passing the *unconsumed* input
+  pointer back into `iconv`.  No characters dropped.
 
 ### B. The Split Multi-byte Sequence (`EINVAL`)
-This is the test a range adapter is most likely to fail. If the underlying data source provides bytes in chunks (e.g., reading from a socket or file), a multi-byte character might be sliced exactly in half at the chunk boundary. `iconv` will stop and return `EINVAL`.
-* **Test Vector:** The UTF-8 sequence for "𝄞" (U+1D11E): `0xF0 0x9D 0x84 0x9E`.
-* **Procedure:** Feed the view an input range that yields `0xF0 0x9D` on the first iteration, and `0x84 0x9E` on the second.
-* **View Expectation:** The view must cache the leftover bytes, prepend them to the next chunk it pulls from the underlying range, and successfully yield the code point without throwing an error.
+
+This is the test a range adapter is most likely to fail.  When the underlying
+data source delivers bytes in chunks — a socket, a file — a multi-byte
+character can be sliced in half at the chunk boundary, and `iconv` stops with
+`EINVAL`.
+
+* **Test vector:** the UTF-8 sequence for "𝄞" (U+1D11E), `0xF0 0x9D 0x84 0x9E`.
+* **Procedure:** feed the view an input range that yields `0xF0 0x9D` on the
+  first iteration and `0x84 0x9E` on the second.
+* **Expected:** the view caches the leftover bytes, prepends them to the next
+  chunk it pulls from the underlying range, and yields the code point.  No
+  error.
 
 ### C. Invalid Byte Sequences (`EILSEQ`)
-The view must keep going past malformed data, according to the C++ API design (either throwing, returning a `std::expected` error state, or yielding a replacement character).
-* **Test Vector:** `0xFF 0xFF`.
-* **View Expectation:** The view evaluates `errno == EILSEQ`. It must not infinite-loop. It should advance the input pointer past the bad bytes (usually by 1) if it is designed to emit replacement characters, or immediately halt the range and bubble up the error.
+
+The view keeps going past malformed data, per the C++ API design: a replacement
+character, or a `std::expected` error state.
+
+* **Test vector:** `0xFF 0xFF`.
+* **Expected:** the view sees `errno == EILSEQ` and does not infinite-loop.  It
+  either advances the input pointer past the bad bytes (usually by one) and
+  emits a replacement character, or halts the range and surfaces the error.
 
 ### D. End-of-Range Stateful Flush
-Legacy encodings use shift states. When a sequence ends, `iconv` requires a final call with `inbuf == nullptr` to flush any reset bytes (like switching back to ASCII) into the output buffer.
-* **Test Vector:** ISO-2022-JP encoding of "あ" (`0x1B 0x24 0x42 0x24 0x22`).
-* **View Expectation:** When the underlying input range reaches `std::ranges::end`, the view's iterator must make the flush call to `iconv`. If the flush produces additional bytes, the iterator must yield them before finally marking itself as equal to the sentinel/end iterator.
+
+Legacy encodings use shift states.  At the end of a sequence `iconv` needs a
+final call with `inbuf == nullptr` to flush the reset bytes — switching back to
+ASCII, say — into the output buffer.
+
+* **Test vector:** ISO-2022-JP encoding of "あ", `0x1B 0x24 0x42 0x24 0x22`.
+* **Expected:** when the underlying input range reaches `std::ranges::end`, the
+  iterator makes the flush call.  If the flush produces bytes, the iterator
+  yields them before it compares equal to the sentinel.
 
 ---
 
 ## 2. Mocking `iconv` for Deterministic View Testing
 
-Relying on the system's `iconv` for unit testing the *view logic* can be risky because system implementations vary in how strictly they handle `EILSEQ` or undocumented encodings.
+Testing *view logic* against the system `iconv` is unreliable, because system
+implementations vary in how strictly they handle `EILSEQ` and in which
+encodings they know about at all.
 
-The view therefore takes its three `iconv` entry points through the `iconv_functions` struct, so a test can substitute its own. `tests/beman/transcode/iconv_mock.hpp` is that substitute: it exercises the API contract without depending on the platform's tables.
+The view therefore takes its three `iconv` entry points through the
+`iconv_functions` struct, so a test can substitute its own.
+`tests/beman/transcode/iconv_mock.hpp` is that substitute: it exercises the API
+contract without depending on the platform's tables.
 
 ```cpp
 #include <cerrno>
@@ -44,7 +79,7 @@ The view therefore takes its three `iconv` entry points through the `iconv_funct
 #include <string_view>
 #include <vector>
 
-namespace whatwg::codec::tests {
+namespace beman::transcoding::tests {
 
 // A mock signature matching the POSIX iconv API
 size_t mock_iconv(void* /*cd*/,
@@ -81,14 +116,16 @@ size_t mock_iconv(void* /*cd*/,
     return 0; // Success
 }
 
-} // namespace whatwg::codec::tests
+} // namespace beman::transcoding::tests
 ```
 
 ---
 
 ## 3. Testing Execution Plan
 
-To test the view, you will:
-1.  **Define your C++26 View:** E.g., `auto transcoded = input_bytes | views::iconv_transcode("UTF-8", "UTF-16");`
-2.  **Pass chunked inputs:** Use `std::views::chunk` on your test vectors before piping them into your transcode view to artificially force `EINVAL` across chunk boundaries.
-3.  **Constrain the output:** Use a tiny static buffer inside your test loop to artificially force `E2BIG`, verifying the view iterator doesn't drop state between increments.
+Three steps.  Build the pipeline —
+`auto transcoded = input_bytes | views::iconv_transcode("UTF-8", "UTF-16");`.
+Force `EINVAL` across chunk boundaries by running the test vectors through
+`std::views::chunk` before piping them into the transcode view.  Force `E2BIG`
+with a tiny static buffer in the test loop, which is what shows whether the
+iterator drops state between increments.

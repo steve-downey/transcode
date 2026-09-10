@@ -31,16 +31,13 @@ What this proposal inherits is that work.
 
 We propose a set of transcoding facilities for text between character encodings, centered on separate WHATWG decode and encode adaptors, eager bulk decode and encode helpers, a convenience composed transcoder, and an `iconv`-based adaptor for broader encoding support.
 
-Character encoding conversion is a fundamental operation when processing text from external sources — network protocols, file formats, legacy databases, and user input.
-The current standard library offers no direct support for this operation.
-Existing solutions require manual buffer management, explicit error handling at every step, and careful attention to encoding-specific edge cases.
-This proposal provides lazy, composable range views that decode byte sequences to Unicode scalar values, encode Unicode back to bytes, and compose in pipelines, with well-defined error handling semantics.
-It also provides eager bulk operations that collect into containers or write into output iterators when a concrete result is more convenient than a view pipeline.
+The views are lazy and compose in pipelines: decode byte sequences to Unicode scalar values, encode Unicode back to bytes.
+The eager bulk operations collect into containers or write through output iterators, for when a concrete result is more convenient than a view pipeline.
 
-The design follows the WHATWG Encoding Standard [@whatwg-encoding] for codec semantics, ensuring compatibility with web platform behavior.
+Codec semantics follow the WHATWG Encoding Standard [@whatwg-encoding]: the same byte-to-scalar mappings and the same error recovery the browsers implement.
 For encodings not covered by WHATWG, an optional `iconv`-based adaptor provides access to the platform's native transcoding capabilities.
 
-**The wording in this revision is generated from the reference implementation's headers**, by a tool that reads the shipping declarations and renders them as draft clauses.
+The wording in this revision is generated from the reference implementation's headers, by a tool that reads the shipping declarations and renders them as draft clauses.
 It is not a transcription, and it is not maintained alongside the code: a header that changes without the wording changing with it fails the implementation's CI.
 That is a claim a reviewer can check rather than take, and checking it is a `make` target.
 
@@ -322,19 +319,11 @@ encode_into<C>(r, out)  is  ranges::copy(r | whatwg_encode<C>, out)
 
 ### The Status Quo
 
-C++ has no standard facility for character encoding conversion. Programs must choose between:
+`mbstowcs`, `iconv`, and `std::codecvt` are covered above, and the comparison
+tables show what each of them costs at the call site.
+The remaining option is to take a dependency: ICU, Boost.Text, and the like are capable, and heavyweight enough that not every project can afford one.
 
-- **`mbstowcs`/`wcstombs`**: Depends on global locale state, uses non-portable `wchar_t`, provides no error recovery, and supports only the locale's encoding.
-
-- **`iconv`**: POSIX-only, requires manual buffer management, handle cleanup, and retry loops.
-  Error handling requires checking `errno` and manually advancing past invalid bytes.
-
-- **`std::codecvt`**: Deprecated in C++17, removed in C++26.
-  Was never widely used due to its complexity and poor integration with streams.
-
-- **ICU, Boost.Text, or other libraries**: Capable but heavyweight dependencies that may not be appropriate for all projects.
-
-None of these integrate with the ranges library.
+None of the four integrate with the ranges library.
 Converting between encodings requires extracting data from one container, passing it through a conversion API, and collecting into another container — losing the composability that makes ranges effective.
 
 ### Why WHATWG?
@@ -342,7 +331,7 @@ Converting between encodings requires extracting data from one container, passin
 The WHATWG Encoding Standard defines precise behavior for every legacy encoding encountered on the web.
 It gives exact byte-to-scalar mappings for all byte values, including every error case, and the Web Platform Tests [@wpt-encoding] pin that behavior across all major browsers.
 
-There is a principled objection to this: WHATWG is a web specification, and it makes web-compatible choices that a general text library would not.
+The objection is real. WHATWG is a web specification, and it makes web-compatible choices that a general text library would not.
 It conflates distinct UTF-8 error conditions, it strips BOMs, and its label table exists to parse HTML `<meta>` tags.
 However, those choices are the ones that four browser engines already agree on, tested, for the encodings that legacy data is actually written in.
 A general specification with no implementations to agree with would be worse.
@@ -360,7 +349,7 @@ Given only a pointer into the middle of a byte stream, it is impossible to deter
 Even with a known character boundary, stepping backward is impossible without external state.
 The byte sequence `0x81 0x81 0x81 0x40` could decode as either two ideographic commas followed by '@', or one comma followed by an ideographic space — depending on how many `0x81` bytes preceded it from the string's start.
 
-This is not a limitation of the implementation but an inherent property of these encodings.
+The encodings are like that. The implementation has no choice.
 The WHATWG state machines are designed as forward-only decoders, resetting their state at each character boundary.
 Bidirectional iteration would require caching all byte offsets during forward traversal.
 
@@ -508,7 +497,7 @@ enum class whatwg_error {
 #### Relationship to `utf_transcoding_error` (P2728)
 
 P2728 (beman.utf_view) defines `utf_transcoding_error` for its `_or_error` views.
-The two enumerations are not the same type, but most values correspond directly:
+The two enumerations are distinct types. Most values correspond directly:
 
 | `whatwg_error` | `utf_transcoding_error` (P2728) | Notes |
 |---|---|---|
@@ -539,10 +528,10 @@ Two error vocabularies in one header wants a defence, so here it is.
 They are separate because the failures are not the same failures.
 `whatwg_error` names what the Encoding Standard says went wrong in a byte sequence this library decoded, and every one of its enumerators corresponds to a step in an algorithm the paper specifies.
 `iconv_error` names what POSIX reported about a conversion this library did not perform: `EILSEQ`, `EINVAL`, `E2BIG`, and a descriptor that would not open.
-A single enumeration would have to either drop that distinction — reporting `invalid_byte` for a failure whose meaning is "the platform's tables say so", with no algorithm behind it a reader can consult — or carry both sets under one name, which is two vocabularies wearing one.
+A single enumeration would have to either drop that distinction — reporting `invalid_byte` for a failure whose meaning is "the platform's tables say so", with no algorithm behind it a reader can consult — or carry both sets, which is two vocabularies with one name.
 Nothing composes them, either: the `iconv` adaptor is byte↔byte and does not appear in a `decode | encode` pipeline, so no expression ever has to reconcile the two.
 
-Note that this is orthogonal to the unification of the `_or_error` views.
+Note that this is separate from the unification of the `_or_error` views.
 Those pairs collapsed into one view template parameterized on `transcode_error_kind`, which selects whether errors are *reported* or replaced.
 What an error *is* remains the codec family's own question.
 
@@ -748,12 +737,7 @@ u8s | whatwg_decode<codec::utf_8>;  // Error: char8_t implies UTF-8
 
 ### Template Parameter vs Runtime Selection
 
-The codec is a template parameter rather than a constructor argument.
-This was chosen because:
-
-1. **Performance**: The compiler can inline codec-specific logic and eliminate dispatch overhead.
-2. **Constexpr**: Runtime codec selection would prevent compile-time transcoding.
-3. **Type safety**: Different codecs have different error characteristics that callers may want to handle differently.
+Making the codec a template parameter buys inlined codec logic, no dispatch per element, and `constexpr` transcoding.
 
 The cost is real, and it is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter can not be spelled from a runtime string.
 However, the dispatch has to happen exactly once, at the point where the label is resolved, and it is a `switch` over an enumeration.
@@ -764,7 +748,7 @@ Paying for dispatch on every code point instead would give up `constexpr` decodi
 
 Unicode scalar values are represented as single `char32_t` values. This simplifies composition, since a `char32_t` stream can be fed to any encoder without reparsing, and makes individual code point inspection trivial.
 
-The type is an interchange representation, not a trusted validation boundary.
+The type is an interchange representation. Nothing about `char32_t` validates what it holds.
 Decode views produce scalar values before an encoder sees them; a range of
 `char32_t` supplied from outside a decode pipeline must already satisfy the
 Unicode scalar value domain.
@@ -811,16 +795,14 @@ A `normalize_view<form>` is an obvious future addition, but not part of this pro
 The reference implementation does not hand-transcribe encoding tables or conformance fixtures.
 Instead, it stores pristine upstream source material for both the WHATWG Encoding Standard indexes [@whatwg-encoding] and the relevant Web Platform Tests (WPT) [@wpt-encoding] under version control, together with provenance metadata and checksums.
 
-This serves three purposes:
-
-- It keeps the implementation tied to the same normative and de facto-interoperability sources that define browser behavior.
-- It makes source updates auditable during review, because regenerated artifacts can be compared against the exact upstream inputs that produced them.
-- It avoids network access during normal builds and test runs; regeneration is an explicit maintenance step rather than a hidden part of compilation.
+Keeping the upstream bytes ties the implementation to the same normative and de facto-interoperability sources that define browser behavior.
+It also makes source updates auditable during review, because regenerated artifacts can be compared against the exact upstream inputs that produced them.
+And it avoids network access during normal builds and test runs; regeneration is an explicit maintenance step rather than a hidden part of compilation.
 
 ### Python Preprocessing for Tables and Conformance Vectors
 
 The project uses small Python helpers to transform upstream WHATWG and WPT data into C++-friendly artifacts.
-The generators are checked in and unit-tested.
+The generators are checked in.
 
 For codec tables, Python scripts download the WHATWG index files, record provenance, and generate checked-in lookup tables for single-byte and multibyte codecs.
 This avoids manually maintaining large arrays of code points while keeping the generated results reviewable and deterministic.
@@ -900,24 +882,23 @@ Or combined into `<ranges>` additions.
 
 This paper asks SG16 to treat the named bulk helpers as part of the proposed
 surface. They add no semantics beyond the pipelines they name, but they make
-the common operation discoverable. The author's recommendation is to keep
-them.
+the common operation discoverable. I recommend keeping them.
 
 The paper also asks whether the `iconv` adaptor belongs in the same proposal as
 the portable WHATWG facilities. It is useful implementation experience and a
 valuable comparison point, but its POSIX dependency gives it a different
-standardization path. The author's recommendation is to keep it in this paper
-through SG16 design review, where the shared interface can be considered as a
-whole, and split the wording only if the group wants separate progression.
+standardization path. I would keep it in this paper through SG16 design review,
+where the shared interface can be considered as a whole, and split the wording
+only if the group wants separate progression.
 Wording for it is included accordingly, as [transcode.iconv], written last and
 resting on nothing the other clauses need, so removing it renumbers nothing.
 
 The objection to specifying it is that POSIX `iconv` is implementation-defined
 across glibc, musl and the BSDs, so a view over it specifies whatever the
 platform does. That is true, and the wording does not pretend otherwise: what
-it specifies is what the *adaptor* guarantees -- one conversion descriptor per
+it specifies is what the *adaptor* guarantees — one conversion descriptor per
 `begin`, closed by the iterator that owns it, and input the conversion refuses
-either skipped or surfaced as an `iconv_error` -- and it leaves the conversion
+either skipped or surfaced as an `iconv_error` — and it leaves the conversion
 to the implementation, as `<locale>` leaves a locale's tables to it. That
 guarantee is the reason to propose it at all: the C interface hands a program a
 descriptor it must remember to close, and an adaptor is where that stops being
@@ -925,16 +906,11 @@ the program's problem.
 
 ## Wording
 
-The clauses in this section are **generated from the reference
-implementation's headers** by `beman.specgen`, and transcluded into this paper
-by its build.
-They are not transcribed by hand.
-A header that changes without the wording changing with it fails the reference
-implementation's CI, so what follows is what the implementation declares, not a
-description of it written alongside.
-The generator, the marked-up headers and the check are all in the repository
-cited in [Prior Art](#prior-art); a reviewer can regenerate this section and
-diff it.
+These clauses are generated, as the abstract says, and transcluded into this
+paper by its build.
+The generator, the marked-up headers and the drift check are all in the
+repository cited in [Prior Art](#prior-art); a reviewer can regenerate this
+section and diff it.
 
 Wording is relative to the current working draft.
 
