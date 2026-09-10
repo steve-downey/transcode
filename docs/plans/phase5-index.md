@@ -291,9 +291,15 @@ fragment.
 
 ### Open
 
-- **U2 — `--base-heading-level` on the command line.**  Still absent.
-  `render --help` lists `--backend`, `--validate`, `--paper`, `--split`,
-  `--root` and `-o`, and nothing else.  **Step 10 accepted flat headings**: the
+- **U2 — `--base-heading-level` on the command line.**  Still absent, and
+  **filed at last as
+  [specgen#97](https://github.com/steve-downey/specgen/issues/97)** on
+  2026-09-10.  This entry tracked it from the first measuring round without
+  ever reaching specgen's tracker, which is why it is the one U-item here that
+  cited no issue number.  The option exists in all three backends'
+  `Options` -- `mpark`'s and `org`'s `base_heading_level`, LaTeX's
+  `base_section_depth` -- and the CLI passes `paper_mode` and `new_roots`
+  through to the backend while leaving these at their defaults.  **Step 10 accepted flat headings**: the
   clauses are `##`, which is the level the paper's own sections use, so they
   are siblings of "Design" rather than children of "Wording".  The table of
   contents reads as a clause list under the Wording heading, which is close
