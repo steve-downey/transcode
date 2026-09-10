@@ -147,7 +147,7 @@ Benchmarks provided</h2>
 </ul>
 <h2><a class="anchor" id="autotoc_md6"></a>
 Expected comparison</h2>
-<p><code>simdutf</code> routinely achieves 3–20× the throughput of scalar implementations on multibyte-heavy text, and often saturates memory bandwidth on ASCII-heavy text. The gap measured here quantifies the "mechanical sympathy cost" of using standard C++ range composition instead of hand-tuned SIMD intrinsics.</p>
+<p>Measured against this library, <code>simdutf</code> runs about 3× faster on ASCII-heavy text and about 5× on multibyte-heavy text; see the Performance section of the top-level README for the numbers. That gap is what standard C++ range composition costs against hand-tuned SIMD intrinsics.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md8"></a>
 &lt;tt&gt;encoding_rs&lt;/tt&gt; baseline (optional — requires Rust/Cargo)</h1>

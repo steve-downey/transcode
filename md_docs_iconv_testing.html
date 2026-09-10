@@ -99,40 +99,44 @@ $(document).ready(function(){initNavTree('md_docs_iconv_testing.html',''); initR
   <div class="headertitle"><div class="title">Testing C++ Range Adapters over <code>iconv</code> </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>If the goal is purely to test the C++ range adapter (the view) that wraps the <code>iconv</code> C API, you don't need megabytes of WPT JSON data. A small set of vectors aimed at the boundary conditions of the <code>iconv</code> state machine is enough.</p>
-<p>Because a C++ view (especially a lazy or chunked one) must translate range iteration into <code>char**</code> buffer manipulations, your tests must verify that the view correctly interprets <code>iconv</code>'s return values and manages its internal buffers across iterations.</p>
+<div class="textblock"><p>Testing the range adapter that wraps the <code>iconv</code> C API is a different job from testing a codec. It does not need megabytes of WPT JSON. A small set of vectors aimed at the boundary conditions of the <code>iconv</code> state machine is enough.</p>
+<p>The view has to translate range iteration into <code>char**</code> buffer manipulation, so what the tests have to pin down is whether it reads <code>iconv</code>'s return values correctly and carries its internal buffers across iterations intact.</p>
 <h1><a class="anchor" id="autotoc_md58"></a>
 1. The &lt;tt&gt;iconv&lt;/tt&gt; View Boundary Conditions</h1>
-<p>The POSIX <code>iconv</code> function communicates state via its return value (returning <code>(size_t)-1</code>) and <code>errno</code>. Your C++ view iterator must handle these precisely. We will use simple UTF-8 to UTF-16 (or UTF-32) conversions to trigger these states.</p>
+<p>POSIX <code>iconv</code> communicates state through its return value (<code>(size_t)-1</code>) and <code>errno</code>. There are four cases the iterator has to get right. Simple UTF-8 to UTF-16 or UTF-32 conversions trigger all of them.</p>
 <h2><a class="anchor" id="autotoc_md59"></a>
 A. Buffer Exhaustion (&lt;tt&gt;E2BIG&lt;/tt&gt;)</h2>
-<p>If your view processes data in chunks, <code>iconv</code> will return <code>E2BIG</code> when the output buffer fills up before the input is consumed.</p><ul>
-<li><b>Test Vector:</b> A long, valid string (e.g., 100 repetitions of <code>A</code>).</li>
-<li><b>View Expectation:</b> The iterator must yield the converted characters from the filled buffer, and upon the next increment, resume passing the <em>unconsumed</em> input pointer back into <code>iconv</code> without dropping characters.</li>
+<p>A view that processes data in chunks will see <code>E2BIG</code> when the output buffer fills before the input is consumed.</p>
+<ul>
+<li><b>Test vector:</b> a long valid string, say 100 repetitions of <code>A</code>.</li>
+<li><b>Expected:</b> the iterator yields the converted characters from the filled buffer, and on the next increment resumes by passing the <em>unconsumed</em> input pointer back into <code>iconv</code>. No characters dropped.</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md60"></a>
 B. The Split Multi-byte Sequence (&lt;tt&gt;EINVAL&lt;/tt&gt;)</h2>
-<p>This is the test a range adapter is most likely to fail. If the underlying data source provides bytes in chunks (e.g., reading from a socket or file), a multi-byte character might be sliced exactly in half at the chunk boundary. <code>iconv</code> will stop and return <code>EINVAL</code>.</p><ul>
-<li><b>Test Vector:</b> The UTF-8 sequence for "𝄞" (U+1D11E): <code>0xF0 0x9D 0x84 0x9E</code>.</li>
-<li><b>Procedure:</b> Feed the view an input range that yields <code>0xF0 0x9D</code> on the first iteration, and <code>0x84 0x9E</code> on the second.</li>
-<li><b>View Expectation:</b> The view must cache the leftover bytes, prepend them to the next chunk it pulls from the underlying range, and successfully yield the code point without throwing an error.</li>
+<p>This is the test a range adapter is most likely to fail. When the underlying data source delivers bytes in chunks — a socket, a file — a multi-byte character can be sliced in half at the chunk boundary, and <code>iconv</code> stops with <code>EINVAL</code>.</p>
+<ul>
+<li><b>Test vector:</b> the UTF-8 sequence for "𝄞" (U+1D11E), <code>0xF0 0x9D 0x84 0x9E</code>.</li>
+<li><b>Procedure:</b> feed the view an input range that yields <code>0xF0 0x9D</code> on the first iteration and <code>0x84 0x9E</code> on the second.</li>
+<li><b>Expected:</b> the view caches the leftover bytes, prepends them to the next chunk it pulls from the underlying range, and yields the code point. No error.</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md61"></a>
 C. Invalid Byte Sequences (&lt;tt&gt;EILSEQ&lt;/tt&gt;)</h2>
-<p>The view must keep going past malformed data, according to the C++ API design (either throwing, returning a <code>std::expected</code> error state, or yielding a replacement character).</p><ul>
-<li><b>Test Vector:</b> <code>0xFF 0xFF</code>.</li>
-<li><b>View Expectation:</b> The view evaluates <code>errno == EILSEQ</code>. It must not infinite-loop. It should advance the input pointer past the bad bytes (usually by 1) if it is designed to emit replacement characters, or immediately halt the range and bubble up the error.</li>
+<p>The view keeps going past malformed data, per the C++ API design: a replacement character, or a <code>std::expected</code> error state.</p>
+<ul>
+<li><b>Test vector:</b> <code>0xFF 0xFF</code>.</li>
+<li><b>Expected:</b> the view sees <code>errno == EILSEQ</code> and does not infinite-loop. It either advances the input pointer past the bad bytes (usually by one) and emits a replacement character, or halts the range and surfaces the error.</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md62"></a>
 D. End-of-Range Stateful Flush</h2>
-<p>Legacy encodings use shift states. When a sequence ends, <code>iconv</code> requires a final call with <code>inbuf == nullptr</code> to flush any reset bytes (like switching back to ASCII) into the output buffer.</p><ul>
-<li><b>Test Vector:</b> ISO-2022-JP encoding of "あ" (<code>0x1B 0x24 0x42 0x24 0x22</code>).</li>
-<li><b>View Expectation:</b> When the underlying input range reaches <code>std::ranges::end</code>, the view's iterator must make the flush call to <code>iconv</code>. If the flush produces additional bytes, the iterator must yield them before finally marking itself as equal to the sentinel/end iterator.</li>
+<p>Legacy encodings use shift states. At the end of a sequence <code>iconv</code> needs a final call with <code>inbuf == nullptr</code> to flush the reset bytes — switching back to ASCII, say — into the output buffer.</p>
+<ul>
+<li><b>Test vector:</b> ISO-2022-JP encoding of "あ", <code>0x1B 0x24 0x42 0x24 0x22</code>.</li>
+<li><b>Expected:</b> when the underlying input range reaches <code>std::ranges::end</code>, the iterator makes the flush call. If the flush produces bytes, the iterator yields them before it compares equal to the sentinel.</li>
 </ul>
 <hr  />
 <h1><a class="anchor" id="autotoc_md64"></a>
 2. Mocking &lt;tt&gt;iconv&lt;/tt&gt; for Deterministic View Testing</h1>
-<p>Relying on the system's <code>iconv</code> for unit testing the <em>view logic</em> can be risky because system implementations vary in how strictly they handle <code>EILSEQ</code> or undocumented encodings.</p>
+<p>Testing <em>view logic</em> against the system <code>iconv</code> is unreliable, because system implementations vary in how strictly they handle <code>EILSEQ</code> and in which encodings they know about at all.</p>
 <p>The view therefore takes its three <code>iconv</code> entry points through the <code>iconv_functions</code> struct, so a test can substitute its own. <code>tests/beman/transcode/iconv_mock.hpp</code> is that substitute: it exercises the API contract without depending on the platform's tables.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;cerrno&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
@@ -140,7 +144,7 @@ D. End-of-Range Stateful Flush</h2>
 <div class="line"><span class="preprocessor">#include &lt;string_view&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">namespace </span>whatwg::codec::tests {</div>
+<div class="line"><span class="keyword">namespace </span>beman::transcoding::tests {</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// A mock signature matching the POSIX iconv API</span></div>
 <div class="line"><span class="keywordtype">size_t</span> mock_iconv(<span class="keywordtype">void</span>* <span class="comment">/*cd*/</span>,</div>
@@ -177,15 +181,11 @@ D. End-of-Range Stateful Flush</h2>
 <div class="line">    <span class="keywordflow">return</span> 0; <span class="comment">// Success</span></div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">} <span class="comment">// namespace whatwg::codec::tests</span></div>
+<div class="line">} <span class="comment">// namespace beman::transcoding::tests</span></div>
 </div><!-- fragment --><hr  />
 <h1><a class="anchor" id="autotoc_md66"></a>
 3. Testing Execution Plan</h1>
-<p>To test the view, you will:</p><ol type="1">
-<li><b>Define your C++26 View:</b> E.g., <code>auto transcoded = input_bytes | views::iconv_transcode("UTF-8", "UTF-16");</code></li>
-<li><b>Pass chunked inputs:</b> Use <code>std::views::chunk</code> on your test vectors before piping them into your transcode view to artificially force <code>EINVAL</code> across chunk boundaries.</li>
-<li><b>Constrain the output:</b> Use a tiny static buffer inside your test loop to artificially force <code>E2BIG</code>, verifying the view iterator doesn't drop state between increments. </li>
-</ol>
+<p>Three steps. Build the pipeline — <code>auto transcoded = input_bytes | views::iconv_transcode("UTF-8", "UTF-16");</code>. Force <code>EINVAL</code> across chunk boundaries by running the test vectors through <code>std::views::chunk</code> before piping them into the transcode view. Force <code>E2BIG</code> with a tiny static buffer in the test loop, which is what shows whether the iterator drops state between increments. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
