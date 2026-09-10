@@ -48,10 +48,10 @@ make bench-simdutf
 
 ### Expected comparison
 
-`simdutf` routinely achieves 3–20× the throughput of scalar implementations on
-multibyte-heavy text, and often saturates memory bandwidth on ASCII-heavy text.
-The gap measured here quantifies the "mechanical sympathy cost" of using
-standard C++ range composition instead of hand-tuned SIMD intrinsics.
+Measured against this library, `simdutf` runs about 3× faster on ASCII-heavy
+text and about 5× on multibyte-heavy text; see the Performance section of the
+top-level README for the numbers.  That gap is what standard C++ range
+composition costs against hand-tuned SIMD intrinsics.
 
 ---
 
