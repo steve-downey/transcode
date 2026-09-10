@@ -109,7 +109,7 @@ What is different here</h1>
 <ul>
 <li><b>The composed views are specified in terms of the views they compose.</b> <code>transcode&lt;From, To&gt;</code> is <code>whatwg_decode&lt;From&gt; | whatwg_encode&lt;To&gt;</code>; that is exactly what <code>\effects-equiv</code> or a <em>Returns: Equivalent to:</em> element should say, and it is the cheapest correct wording in the phase. Resist writing it out longhand.</li>
 <li>**<code>transcode_string</code> is eager and allocates**, so its wording needs <em>Complexity</em> and <em>Throws</em> elements that the lazy views do not. It is also the one entry point that takes runtime labels, so its precondition on an unknown label (and the <code>optional</code> overload's behaviour) has to be explicit.</li>
-<li>**<code><a class="el" href="bulk__transcode_8hpp.html">detail/bulk_transcode.hpp</a></code>** holds the fast paths. They are unobservable and should be <code>\omit</code>ted, with a <em>Remarks</em> or a design-section sentence noting that a bulk implementation is permitted — the wording must not accidentally require an element-at-a-time implementation.</li>
+<li>**<code>detail/bulk_transcode.hpp</code>** holds the fast paths. They are unobservable and should be <code>\omit</code>ted, with a <em>Remarks</em> or a design-section sentence noting that a bulk implementation is permitted — the wording must not accidentally require an element-at-a-time implementation.</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md355"></a>
 Acceptance</h1>

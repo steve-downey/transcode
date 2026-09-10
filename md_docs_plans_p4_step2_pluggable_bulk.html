@@ -106,7 +106,7 @@ Goal</h1>
 <p>Add <code>decode_to</code>, <code>encode_to</code>, <code>decode_into</code>, <code>encode_into</code> overloads that accept pluggable codec objects (not just the WHATWG <code>codec</code> enum).</p>
 <h1><a class="anchor" id="autotoc_md235"></a>
 Context for Executing Agent</h1>
-<p>The existing bulk operations in <code><a class="el" href="bulk__transcode_8hpp.html">include/beman/transcode/detail/bulk_transcode.hpp</a></code> (lines 59-116) are template functions constrained on <code>codec C</code> (the WHATWG enum). They use <code>whatwg_decode&lt;C&gt;</code> / <code>whatwg_encode&lt;C&gt;</code> internally.</p>
+<p>The existing bulk operations in <code>include/beman/transcode/detail/bulk_transcode.hpp</code> (lines 59-116) are template functions constrained on <code>codec C</code> (the WHATWG enum). They use <code>whatwg_decode&lt;C&gt;</code> / <code>whatwg_encode&lt;C&gt;</code> internally.</p>
 <p>The pluggable versions are additional overloads constrained on <code>decode_codec</code> / <code>encode_codec</code> concepts, using <code>decode(codec)</code> / <code>encode(codec)</code> from Step 1.</p>
 <h2><a class="anchor" id="autotoc_md236"></a>
 Signature difference</h2>
@@ -118,7 +118,7 @@ Fast path opportunity</h2>
 <h1><a class="anchor" id="autotoc_md238"></a>
 Deliverables</h1>
 <ul>
-<li>Modify <code><a class="el" href="bulk__transcode_8hpp.html">include/beman/transcode/detail/bulk_transcode.hpp</a></code>:<ul>
+<li>Modify <code>include/beman/transcode/detail/bulk_transcode.hpp</code>:<ul>
 <li><code>decode_to(Codec, R&amp;&amp;) → std::vector&lt;char32_t&gt;</code> (constrained on <code>decode_codec</code>)</li>
 <li><code>encode_to(Codec, R&amp;&amp;) → Container</code> (constrained on <code>encode_codec</code>)</li>
 <li><code>decode_into(Codec, R&amp;&amp;, Output)</code> (constrained on <code>decode_codec</code>)</li>

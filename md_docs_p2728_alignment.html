@@ -154,7 +154,7 @@ Where &lt;tt&gt;beman.transcode&lt;/tt&gt; already follows the model</h2>
 <li><b>Raw arrays are rejected</b> with a targeted diagnostic (same null-terminator rationale as P2728 §10.1).</li>
 <li>**<code>enable_borrowed_range</code>** is specialized to mirror the base range, and the iterators hold <code>current_</code>/<code>end_</code> with <b>no parent back-pointer</b> — the R12 direction.</li>
 <li>**<code>begin()</code> is not cached** (P2728 §10.3).</li>
-<li><b>Lazy views are kept separate from bulk paths</b> (<code><a class="el" href="bulk__transcode_8hpp.html">detail/bulk_transcode.hpp</a></code>, <code><a class="el" href="iconv__bulk_8hpp.html">iconv_bulk.hpp</a></code>) — the structure SG9 is drifting toward for SIMD/throughput.</li>
+<li><b>Lazy views are kept separate from bulk paths</b> (<code>detail/bulk_transcode.hpp</code>, <code><a class="el" href="iconv__bulk_8hpp.html">iconv_bulk.hpp</a></code>) — the structure SG9 is drifting toward for SIMD/throughput.</li>
 <li><b>Strongest iterator category per codec</b> — single-byte codecs get a dedicated <code>random_access_whatwg_decode_view</code> rather than a uniform floor.</li>
 <li><b>Same-codec transcode is not a no-op</b> (it sanitizes) — README §6.2 mirrors P2728 §6.2.</li>
 </ul>

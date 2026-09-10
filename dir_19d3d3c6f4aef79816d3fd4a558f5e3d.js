@@ -1,6 +1,7 @@
 var dir_19d3d3c6f4aef79816d3fd4a558f5e3d =
 [
     [ "detail", "dir_9d798d0e78a5d20e3b6770198d219460.html", "dir_9d798d0e78a5d20e3b6770198d219460" ],
+    [ "bulk_transcode.hpp", "bulk__transcode_8hpp.html", null ],
     [ "codec.hpp", "codec_8hpp.html", "codec_8hpp" ],
     [ "codec_concepts.hpp", "codec__concepts_8hpp.html", "codec__concepts_8hpp" ],
     [ "codec_result.hpp", "codec__result_8hpp.html", "codec__result_8hpp" ],
