@@ -40,7 +40,7 @@ what is different.
    `specgen render --from-ir <ir> --backend mpark --validate`.  Coverage errors
    mean a declaration has no home; leakage errors mean the wording names
    something the reader cannot see.  Both are real; fix the header, not the
-   report.  There is no allowed exception: U1 landed upstream on 2026-09-04,
+   report.  There is no allowed exception: specgen#3 landed upstream on 2026-09-04,
    so the `ranges` findings that used to be excused no longer occur.
 6. **Commit headers and `papers/wording/*.md` together.**  A commit where they
    disagree fails `make wording-check`, which is the point.
@@ -92,7 +92,7 @@ what is different.
 - `papers/wording/transcode.errors.md`, `transcode.reqs.md` and `null.term.md`
   exist and are non-empty.
 - `--validate` on the affected headers: no coverage findings, no `detail`
-  leakage findings, and no `ranges` noise -- U1 is fixed, so the clean bar is
+  leakage findings, and no `ranges` noise -- specgen#3 is fixed, so the clean bar is
   absolute.
 - `make wording-check`, `make lint`, `make test` green.
 - The paper builds and the three clauses appear in it.
@@ -104,7 +104,7 @@ what is different.
 All three clauses are written and generated.  Two of them had no representable
 form in specgen when the step started; both gaps were filed and fixed upstream
 rather than worked around here, so nothing in this step is a header problem and
-no header was changed to suit the tool (D7).
+no header was changed to suit the tool ([detail-in-wording](../decisions.md#detail-in-wording)).
 
 - **`[transcode.reqs]` — done.**  `concepts.hpp` carries the `\rSec2` marker,
   `\expos` on `detail::legacy_byte_type`, and a *Remarks* on each concept.  The

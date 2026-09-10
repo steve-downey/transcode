@@ -42,10 +42,10 @@ Three concrete problems in today's layout:
    machines are implementation.  `whatwg_encode_view.hpp` (1,323 lines) has the
    same shape.  Every one of those is a declaration specgen must be told to
    ignore, and every `detail::` qualifier they leave in a spec-visible signature
-   is a leakage error (index D7).
+   is a leakage error ([detail-in-wording](../decisions.md#detail-in-wording)).
 3. **The umbrella declares nothing.**  `transcode.hpp` is includes only, so
    there is no document whose root fragment is the `<transcode>` synopsis
-   (index D1).
+   ([document-unit](../decisions.md#document-unit)).
 
 ## Tasks
 
@@ -80,11 +80,11 @@ branch.  After each, `make test` and `make wording-check` must still pass.
    gathered-synopsis region (architecture §3.4 — the region runs to a matching
    `/// END [transcode.syn]` fence) and the clause markers, with the family
    headers included beneath it.  Decide here, and record, whether the entities
-   themselves move into `transcode.hpp` (D1's preferred shape: one document, one
+   themselves move into `transcode.hpp` ([document-unit](../decisions.md#document-unit)'s preferred shape: one document, one
    synopsis) or stay in family headers with a gathered synopsis assembled per
-   family (D1's fallback).  Prefer the former; the measurement to make the call
+   family ([document-unit](../decisions.md#document-unit)'s fallback).  Prefer the former; the measurement to make the call
    is how many lines the spec-facing surface is once (1) and (2) are done.
-   Index U4 (a deduction guide corrupts a gathered `.syn` region) does not
+   specgen#22 (a deduction guide corrupts a gathered `.syn` region) does not
    apply: `null_term_view`'s is the only deduction guide in the library, and it
    is in the other header.
 5. **Keep the parse working.**  `transcode.hpp` must still parse standalone for
@@ -111,14 +111,14 @@ for a reason task 2 measured.
 - **Task 4, done 2026-09-07 — and not by merging.**  The measurement the
   deferral was waiting for came out at ~3,460 lines of declarations across
   sixteen headers once the pushdown landed, which specgen can handle.  But the
-  merge was never the point: what D1 needs is one *document* per proposed
+  merge was never the point: what [document-unit](../decisions.md#document-unit) needs is one *document* per proposed
   header, and "document" meant "file" only because the tool said so.  specgen
   now follows the headers `#include`d inside a gathered `.syn` region
   (specgen#77, PR #78), so `transcode.hpp` carries the region and the component
   headers stay exactly where they are.  Nothing moved, no include site changed,
   and `[transcode.syn]` is a generated 1,160-line synopsis of all sixteen.
 
-  That is D7 for the second time: the answer to "the tool cannot see what the
+  That is [detail-in-wording](../decisions.md#detail-in-wording) for the second time: the answer to "the tool cannot see what the
   library writes" is to fix the tool, not the library.  The first time cost six
   `\expos` comments instead of a refactor; this time it cost one upstream
   feature instead of a 3,500-line header.
@@ -138,7 +138,7 @@ for a reason task 2 measured.
 - `specgen generate --emit-ir include/beman/transcode/transcode.hpp ...` exits 0.
 - `render --validate` on each spec-facing header reports **no `detail` leakage
   findings**.  Coverage findings are expected and are Steps 4-9's work; `ranges`
-  findings are index U1's known noise.
+  findings are specgen#3's known noise.
 - `docs/wording-outline.md` updated with the promoted/exposed/omitted decision
   for every entity.
 

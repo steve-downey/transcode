@@ -9,7 +9,7 @@
 ## Goal
 
 Take the codec implementation out of the two WHATWG view headers, so that the
-specification headers are thin enough for D1's one-document-per-proposed-header
+specification headers are thin enough for [document-unit](../decisions.md#document-unit)'s one-document-per-proposed-header
 shape (Step 3 task 4), and so that the headers read like specification rather
 than like a decoder.
 

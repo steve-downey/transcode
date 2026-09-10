@@ -92,7 +92,7 @@ where the markers sat.
   a member of an exposition-only iterator that no reader can resolve.  The
   alias is gone; the type is spelled.
 
-### W1 reaches the borrowed-range specializations
+### [random-access-specialization](../decisions.md#random-access-specialization) reaches the borrowed-range specializations
 
 `random_access_whatwg_decode_view` and its encode twin are not separately
 specified entities, and neither are the `enable_borrowed_range` partial
