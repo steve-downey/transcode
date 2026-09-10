@@ -306,9 +306,30 @@ string transcode_string(span<const char> src, codec from, codec to);
 optional<string> transcode_string(span<const char> src, string_view from_label,
                                   string_view to_label);
 
-template<codec C> u32string transcode_decode_all(span<const char> src);
+// @[transcode.bulk]@, eager bulk conversion
 
-template<codec C> string transcode_encode_all(u32string_view src);
+template<codec C, legacy_byte_range R> constexpr vector<char32_t> decode_to(R&& source);
+
+template<codec C, typename Container = string, unicode_scalar_range R>
+constexpr Container encode_to(R&& source);
+
+template<codec C, legacy_byte_range R, output_iterator<char32_t> Output>
+constexpr void decode_into(R&& source, Output output);
+
+template<codec C, unicode_scalar_range R, output_iterator<char> Output>
+constexpr void encode_into(R&& source, Output output);
+
+template<decode_codec Codec, legacy_byte_range R>
+constexpr vector<char32_t> decode_to(Codec codec, R&& source);
+
+template<encode_codec Codec, typename Container = string, unicode_scalar_range R>
+constexpr Container encode_to(Codec codec, R&& source);
+
+template<decode_codec Codec, legacy_byte_range R, output_iterator<char32_t> Output>
+constexpr void decode_into(Codec codec, R&& source, Output output);
+
+template<encode_codec Codec, unicode_scalar_range R, output_iterator<char> Output>
+constexpr void encode_into(Codec codec, R&& source, Output output);
 
 // @[transcode.codec.sniff]@, byte order mark sniffing
 
