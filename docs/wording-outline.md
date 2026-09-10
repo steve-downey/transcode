@@ -10,9 +10,9 @@ simultaneously a clause identifier, a fragment filename, an `{- .sref}` span and
 an ordering key.  Changing one later renames a file, a heading and a
 cross-reference at once.
 
-See `docs/plans/phase5-index.md` for the plan, its decisions D1-D7, and the
-upstream specgen items U1-U9 referenced below, whose state was re-measured
-on 2026-09-04 (see the index).
+See [`docs/decisions.md`](decisions.md) for the questions this phase has
+settled and `docs/plans/phase5-index.md` for the plan and the state of the
+`beman.specgen` defects the steps below depend on.
 
 ## How the tree maps onto fragments
 
@@ -29,14 +29,14 @@ by the clause numbering the paper prints.  Two consequences:
   (observed in Step 1).  The umbrella, and `[transcode.general]`, are authored
   in the paper around the generated clauses.
 
-Heading level follows from mpark's fixed `base_heading_level = 2` (index U2):
+Heading level follows from mpark's fixed `base_heading_level = 2` ([clause-heading-level](decisions.md#clause-heading-level)):
 `\rSec2` prints as `##`, `\rSec3` as `###`.
 
 ## `<transcode>`
 
 Generated from `transcode.hpp`, which is the umbrella of `#include`s it always
 was: specgen follows the headers included inside its `\rSec2[transcode.syn]`
-region (index D1), so the component headers are the document without being one
+region ([document-unit](decisions.md#document-unit)), so the component headers are the document without being one
 file.  Fragment order is the order of the `\rSec` markers in `transcode.hpp`,
 which is the order below; the *synopsis* reads in include order, which is the
 order the compiler needs and need not match.
@@ -109,9 +109,9 @@ so no step has to decide twice.
 
 | Entity | Why |
 |---|---|
-| `random_access_whatwg_decode_view` and the encode and pluggable equivalents, and the `enable_borrowed_range` specializations written for them | decision W1 below |
+| `random_access_whatwg_decode_view` and the encode and pluggable equivalents, and the `enable_borrowed_range` specializations written for them | decision [random-access-specialization](decisions.md#random-access-specialization) below |
 | the `_or_error_view` / `_or_error_closure` alias templates | transition spellings for the pre-unification names, not API |
-| `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; index U4 no longer applies |
+| `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; specgen#22 no longer applies |
 | `detail::null_term_fn`, `detail::null_term_adaptor` | the adaptor object's type is unspecified |
 | `detail::label_entry`, `label_table` | generated data behind `get_encoding`, and all `tools/generate_labels.py` emits since Step 5 |
 | `detail::transcode_decode_all`, `detail::transcode_encode_all` | the loops `transcode_string` runs; they rendered in the synopsis as bare names until Step 11 `\omit`ted them, because the leakage check keys on a rendered qualifier and these had none |
@@ -160,7 +160,7 @@ specification header.  Two chains got there differently, and the difference is
 worth recording because Steps 6 and 7 inherit it.
 
 - `detail::random_access_decode_codec` and `detail::random_access_encode_codec`
-  appeared in the `random_access_*` views' requires-clauses.  W1 omits those
+  appeared in the `random_access_*` views' requires-clauses.  [random-access-specialization](decisions.md#random-access-specialization) omits those
   views, and Step 3 moved the concepts themselves into
   `detail/whatwg_decode_select.hpp` and `detail/whatwg_encode_select.hpp`, out
   of the specification headers entirely.  Nothing left to decide.
@@ -169,54 +169,26 @@ worth recording because Steps 6 and 7 inherit it.
   `end() const`, so they are genuinely part of what the specification says.
   They are **exposition-only in the wording**, but they cannot be rendered that
   way yet: `\expos` works on a concept (verified) and not on the alias template
-  and class template the concept is defined in terms of (index U8).  They
+  and class template the concept is defined in terms of (specgen#23).  They
   therefore stay in `detail/range_traits.hpp` for now, and **Step 6 chooses**
   between restating the concept in the specification header without helper
-  aliases so a single `\expos` covers it, and waiting for U8.  Whichever it
+  aliases so a single `\expos` covers it, and waiting for specgen#23.  Whichever it
   picks, the constraint is authored `\constraints` prose on the affected
   members rather than derived from the requires-clause.
 
 ## Decisions this outline settles
 
-**W1 — the `random_access_` view specializations are not separate specified
-entities.**  *Carried out in Step 6 (2026-09-08): both are `\omit`ted, and each
-view's clause says instead that it models `random_access_range` when the codec
-decodes one byte to one scalar value and the base range does.  That also
-removed the last `detail::` qualifier from the document, which was reaching the
-wording through those views' requires-clauses.*  They exist so a single-byte codec gets O(1) indexing.  That is a
-property of the view, not a second view: the specification says
-`whatwg_decode_view<C, R>` models `random_access_range` when `C` is a
-single-byte codec and `R` models `random_access_range`, and an implementation
-gets there however it likes.  Omitting them also removes
-`detail::random_access_decode_codec` from every spec-visible signature, which
-D7 requires anyway.  The alternative — specifying eight view templates instead
-of four — doubles the clause for no reader benefit.  If SG16 wants the
-distinction visible, it comes back as a *Remarks* paragraph, not as a type.
+Three, and they live in the decision log with the rest:
 
-**W2 — the WHATWG enumeration is specified by reference.**  `enum class codec`
-has 39 enumerators; the wording says each names the WHATWG encoding of the
-corresponding name and cites the Encoding Standard, rather than restating a
-table that is normative somewhere else and changes there.
-
-*Step 5's answer to how the reference is spelled* (2026-09-07), in two parts,
-because the question has two halves:
-
-- **In the generated wording**, the standard is named in prose -- "the WHATWG
-  Encoding Standard" -- and nothing else.  specgen's `\iref` points at a stable
-  name in this draft and there is none to point at; a bibliography key is the
-  paper's and would not survive into the working draft.
-- **In the paper, and in the eventual working draft**, it is a normative
-  reference in the [intro.refs] sense: an entry naming the Encoding Standard,
-  its URL, and the version it was read at.  A living standard has no edition to
-  cite, so the entry carries a date, and the paper says which snapshot
-  `docs/whatwg/` was downloaded from.  Step 10 writes that entry.  Whether a
-  normative reference to a living standard is acceptable at all is SG16's to
-  answer, and it is a question about the paper's prose rather than something
-  the wording can settle.
-
-**W3 — `<null_term>` stays a separate header.**  It is the paper's position
-already, and `views::null_term` has nothing to do with encodings; it is a range
-adaptor over a C string that this proposal happens to need.
+- **[random-access-specialization](decisions.md#random-access-specialization)** --
+  the `random_access_` view specializations are not separate specified
+  entities.  Carried out in Step 6, and reached further than it had been
+  applied in Step 9.
+- **[encoding-standard-reference](decisions.md#encoding-standard-reference)** --
+  the WHATWG enumeration is specified by reference, named in prose in the
+  wording and carried as an [intro.refs] entry in the paper.
+- **[null-term-header](decisions.md#null-term-header)** -- `<null_term>` stays a
+  separate header.
 
 ## Open, and deliberately not settled here
 
