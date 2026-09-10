@@ -145,6 +145,24 @@ wording_input_hashes() {
 # where the root fragment holds whatever is outside every \rSec section --
 # the header synopsis.  Adding a clause means adding markup to a header, and
 # adding a header means adding a line here.
+# The paper's own stable-name roots.  Every clause under one of them is a clause
+# this paper *adds*, so its name is not in the srefs database mpark's `.sref`
+# looks up: rendering it as an sref warns once per clause at paper-build time
+# and links every cross-reference in the published text to a c++draft page that
+# does not exist.  `--new-root` drops the class for a whole subtree at any
+# depth, and is given once per root because a document cross-references the
+# other header's clauses -- `[transcode.reqs]` cites `[null.term.adaptor]`.
+#
+# A citation of a clause that *is* in the draft is under neither root, keeps
+# its `.sref`, and still resolves.  That is the whole reason this is a list of
+# roots rather than a blanket strip.
+paper_roots() {
+    cat <<'ROOTS'
+transcode
+null.term
+ROOTS
+}
+
 spec_headers() {
     cat <<'HEADERS'
 include/beman/transcode/transcode.hpp|transcode.syn
@@ -174,6 +192,11 @@ build_include=${BEMAN_TRANSCODE_BUILD_INCLUDE:-$repo_root/.build/build-system/in
 [ -z "${SPECGEN_GCC_TOOLCHAIN:-}" ] || clang_args="$clang_args --gcc-toolchain=$SPECGEN_GCC_TOOLCHAIN"
 
 
+new_root_args=""
+for paper_root in $(paper_roots); do
+    new_root_args="$new_root_args --new-root $paper_root"
+done
+
 ir_dir=$(mktemp -d)
 trap 'rm -rf "$ir_dir"' EXIT INT TERM
 
@@ -200,9 +223,10 @@ while IFS='|' read -r header root; do
     "$specgen" generate --emit-ir "$repo_root/$header" --no-compile-commands \
         -o "$ir" -- $clang_args
     (
-        cd "$out_parent" &&
-            "$specgen" render --from-ir "$ir" --backend mpark \
-                --split "$out_name" --root "$root"
+        cd "$out_parent" || exit 1
+        # shellcheck disable=SC2086 # new_root_args is a deliberate argument list
+        "$specgen" render --from-ir "$ir" --backend mpark \
+            --split "$out_name" --root "$root" $new_root_args
     ) >>"$manifest"
     if [ "$validate" -eq 1 ]; then
         echo "== $header" >&2
@@ -212,33 +236,6 @@ while IFS='|' read -r header root; do
 done <<HEADERS
 $(spec_headers)
 HEADERS
-
-# mpark's `.sref` means "a section that is already in the working draft": the
-# filter looks the name up in a database built from eel.is and, for a name it
-# does not find, warns once and emits a link to a c++draft page that does not
-# exist.  Every stable name specgen renders here is a clause *this paper adds*,
-# so every one of them is that case -- a warning per clause at paper-build time
-# and a dead link per cross-reference in the published text.
-#
-# Dropping the class leaves `[transcode.iconv]`, which is what the draft itself
-# prints and what a new clause should read as.  It is keyed on this paper's two
-# stable-name roots on purpose: a citation of a clause that *is* in the draft
-# keeps its `.sref` and still resolves.
-#
-# This is a downstream patch over generated output.  specgen#89 asked for a way
-# to say a document's own clauses are new, and it landed as `render
-# --new-root <name>`, which drops the class for a whole stable-name subtree --
-# `--new-root transcode` covers `transcode.whatwg.decode.iterator` three
-# segments down.  It is not enough here: the flag is last-wins rather than
-# repeatable, and this paper proposes *two* headers, whose `<transcode>`
-# document cross-references `[null.term.adaptor]`.  Passing both names silently
-# keeps only the second.
-#
-# So this comes out when steve-downey/specgen#94 lands and `--new-root` can be
-# given twice.  Adopting it for one root and keeping this for the other would
-# leave two mechanisms doing one job.  Until then it lives here rather than in
-# the committed fragments, so `make wording-check` regenerates the same bytes.
-sed -i -E 's/\[((transcode|null\.term)[a-z0-9.]*)\]\{- \.sref\}/[\1]/g' "$out_dir"/*.md
 
 wording_input_hashes >"$out_dir/inputs.sha256"
 
