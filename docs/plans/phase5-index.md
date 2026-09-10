@@ -300,27 +300,17 @@ fragment.
   enough to right that spending an upstream flag on it was not worth another
   cross-repository dependency.  `toc-depth: 2` is what makes it read that way;
   a nested rendering would need the flag *and* `toc-depth: 3`.
-- **specgen#93 — a documented enumerator is reported as a foreign name when a
-  generated table shares its spelling.**  Filed 2026-09-09, against the
-  bare-name leakage check that landed in specgen `8caa569`.  The check
-  text-matches names declared outside the run, and
-  `detail::tables::windows_1252` and `codec::windows_1252` are two entities
-  with one spelling -- so `--validate` reports three errors against this
-  document, one of them on the `codec` enumeration's own declaration and one on
-  a *qualified* `codec::windows_1252` in prose.  **Not worked around**: the
-  offered fixit is `\expos` on the table, which silences it and asserts that a
-  generated file this document deliberately does not reach is an
-  exposition-only part of the specification.  `make wording-check` is
-  unaffected -- the fragments are byte-identical -- and CI does not run
-  `--validate`, so this blocks nothing but the claim of zero findings.
-- **specgen#94 — `--new-root` takes one name.**  Filed 2026-09-09.  The fix for
-  U6 landed as `--new-root` (specgen `6f5927b`), and it covers a whole
-  stable-name subtree, but the flag is last-wins rather than repeatable, so a
-  paper proposing *two* headers cannot name both roots.  `<transcode>`
-  cross-references `[null.term.adaptor]`, so one name is not enough.
-  `generate.sh` keeps its `sed` until the flag repeats: adopting `--new-root`
-  for one root and keeping the `sed` for the other would leave two mechanisms
-  doing one job.
+- ~~**specgen#93 — a documented enumerator is reported as a foreign name when a
+  generated table shares its spelling.**~~  **Closed.**  Filed 2026-09-09 against
+  the bare-name leakage check in specgen `8caa569`, which text-matched names
+  declared outside the run and so could not tell `codec::windows_1252` from
+  `detail::tables::windows_1252`.  `--validate` is back to **zero findings**
+  over this document, and nothing was marked `\expos` to get there.
+- ~~**specgen#94 — `--new-root` takes one name.**~~  **Closed and adopted.**
+  The flag repeats now, so `generate.sh` renders with `--new-root transcode
+  --new-root null.term` and the `sed` that stripped the `.sref` class is gone.
+  The fragments came out byte-identical to what the `sed` produced, which is
+  the check that the two mechanisms agreed before one replaced the other.
 - **U3 — namespace mapping is automatic.**  Nothing to do; recorded so no step
   goes looking for a mapping option that does not exist.
 - ~~**specgen#74 — an enumerator table is two columns flat.**~~  **Closed and
@@ -344,9 +334,11 @@ fragment.
   roots on purpose: a citation of a clause that *is* in the draft keeps its
   `.sref` and still resolves.
 
-  Filed as [specgen#89](https://github.com/steve-downey/specgen/issues/89),
-  where the fix is a render option for a document whose clauses are new.  The
-  `sed` comes out when that lands.  Step 10's build is warning-free.
+  Filed as [specgen#89](https://github.com/steve-downey/specgen/issues/89) and
+  fixed upstream as `render --new-root`, which needed a second round
+  ([#94](https://github.com/steve-downey/specgen/issues/94)) before it could
+  take both of this paper's roots.  **The `sed` is gone**; `generate.sh` passes
+  the roots instead.  The build is warning-free either way.
 
 
 ## Risks

@@ -82,15 +82,17 @@ paper.
 cleanup and `wording-check`'s diff read it, so a third authored file breaks
 neither.
 
-`generate.sh` also strips mpark's `.sref` class from stable names under this
-paper's own roots. Those clauses are not in the working draft, so `.sref` warns
-once each at paper-build time and links every cross-reference to a `c++draft`
-page that does not exist. That is
-[specgen#94](https://github.com/steve-downey/specgen/issues/94): the flag that
-does this upstream, `render --new-root`, landed for
-[#89](https://github.com/steve-downey/specgen/issues/89) but takes only one
-name, and this paper proposes two headers whose documents cross-reference each
-other. The strip comes out when the flag can be given twice.
+`generate.sh` renders with `--new-root` once per stable-name root this paper
+owns, `transcode` and `null.term`. Those clauses are not in the working draft,
+so rendering their names as mpark `.sref` spans warns once per clause at
+paper-build time and links every cross-reference in the published text to a
+`c++draft` page that does not exist. `--new-root` drops the class for a whole
+subtree at any depth; a citation of a clause that *is* in the draft is under
+neither root, keeps its `.sref`, and still resolves.
+
+Both roots are passed because the documents cross-reference each other --
+`[transcode.reqs]` cites `[null.term.adaptor]`. Adding a third proposed header
+means adding its root to `paper_roots` beside its entry in `spec_headers`.
 
 ## Adding a clause
 
