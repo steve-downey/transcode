@@ -300,14 +300,35 @@ fragment.
   enough to right that spending an upstream flag on it was not worth another
   cross-repository dependency.  `toc-depth: 2` is what makes it read that way;
   a nested rendering would need the flag *and* `toc-depth: 3`.
+- **specgen#93 — a documented enumerator is reported as a foreign name when a
+  generated table shares its spelling.**  Filed 2026-09-09, against the
+  bare-name leakage check that landed in specgen `8caa569`.  The check
+  text-matches names declared outside the run, and
+  `detail::tables::windows_1252` and `codec::windows_1252` are two entities
+  with one spelling -- so `--validate` reports three errors against this
+  document, one of them on the `codec` enumeration's own declaration and one on
+  a *qualified* `codec::windows_1252` in prose.  **Not worked around**: the
+  offered fixit is `\expos` on the table, which silences it and asserts that a
+  generated file this document deliberately does not reach is an
+  exposition-only part of the specification.  `make wording-check` is
+  unaffected -- the fragments are byte-identical -- and CI does not run
+  `--validate`, so this blocks nothing but the claim of zero findings.
+- **specgen#94 — `--new-root` takes one name.**  Filed 2026-09-09.  The fix for
+  U6 landed as `--new-root` (specgen `6f5927b`), and it covers a whole
+  stable-name subtree, but the flag is last-wins rather than repeatable, so a
+  paper proposing *two* headers cannot name both roots.  `<transcode>`
+  cross-references `[null.term.adaptor]`, so one name is not enough.
+  `generate.sh` keeps its `sed` until the flag repeats: adopting `--new-root`
+  for one root and keeping the `sed` for the other would leave two mechanisms
+  doing one job.
 - **U3 — namespace mapping is automatic.**  Nothing to do; recorded so no step
   goes looking for a mapping option that does not exist.
-- **specgen#74 — an enumerator table is two columns flat, and only the
-  two-dimensional table exists.**  Filed 2026-09-07.  `\lib2dtab2` is a
-  row-heading column plus two columns; [fs.enum.file.type] prints Constant and
-  Meaning and nothing else.  Not blocking: `[transcode.errors]` says the same
-  thing in the same order as an authored `\item` list, and Step 10 can decide
-  whether the paper wants the draft's shape badly enough to wait for it.
+- ~~**specgen#74 — an enumerator table is two columns flat.**~~  **Closed and
+  adopted.**  `\libtab2` landed upstream (specgen `93c248c`), and all three
+  enumerations in `[transcode.errors]` now print a Constant/Meaning table --
+  [fs.enum.file.type]'s shape, which is what an enumeration's meanings look
+  like in the draft.  The `\item` list they used while the two-dimensional
+  table was the only one is gone.
 - **U6 — every generated clause heading warns at paper-build time.**  An mpark
   warning, not a specgen finding: `stable name <x> not found`, once per clause.
   It is what a stable name that is not in the draft yet looks like, so it is
