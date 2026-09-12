@@ -189,10 +189,15 @@ for a complete working example.
 
 If your code already uses `iconv` (or uses a library that does), the iconv
 range adaptor is the interoperability path.  On most POSIX systems, `iconv` is
-the system's encoding engine: glibc, musl, ICU, and platform-specific
+the system's encoding engine: glibc, musl, and platform-specific
 implementations all expose the same `iconv_open`/`iconv`/`iconv_close` API.
 Any encoding your system supports is available through this view, with no need
 to reimplement the codec.
+
+ICU is not one of them.  It is a transcoding backend of comparable reach, but
+its converter API is the `ucnv_*` family, so reaching it through this view
+would need an adaptor implementing `iconv_functions` against `ucnv_open` and
+`ucnv_convertEx`.  Nothing here does that today.
 
 The raw `iconv` API requires manual buffer allocation, pointer arithmetic, error
 code inspection, and careful resource cleanup.  The range adaptor handles all of
