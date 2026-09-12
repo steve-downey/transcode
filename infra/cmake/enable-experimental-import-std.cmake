@@ -191,4 +191,38 @@ elseif(CMAKE_VERSION VERSION_EQUAL "4.3.3")
     set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
         "451f2fe2-a8a2-47c3-bc32-94786d8fc91b"
     )
+elseif(CMAKE_VERSION VERSION_EQUAL "4.4.0")
+    set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
+        "2d856d6d-53e8-488b-a17f-d486d2cac317"
+    )
+elseif(CMAKE_VERSION VERSION_EQUAL "4.4.1")
+    set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
+        "2d856d6d-53e8-488b-a17f-d486d2cac317"
+    )
+elseif(CMAKE_VERSION VERSION_EQUAL "4.4.2")
+    set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
+        "2d856d6d-53e8-488b-a17f-d486d2cac317"
+    )
+else()
+    # An unlisted CMake leaves CMAKE_EXPERIMENTAL_CXX_IMPORT_STD unset, and the
+    # only symptom is a generate-step failure much later saying `import std`
+    # support "was not provided" -- which reads as a toolchain problem and is
+    # not one.  This list fell three releases behind the pinned
+    # cmake==4.4.2 in pyproject.toml and made BEMAN_TRANSCODE_USE_MODULES=ON
+    # unconfigurable, without anything noticing, because nothing builds that
+    # way by default.
+    #
+    # Say so at configure time instead.  The gate is a per-release UUID, so a
+    # new CMake always needs a new entry; the value is compiled into the
+    # binary, and `strings $(command -v cmake) | grep -A1
+    # CMAKE_EXPERIMENTAL_CXX_IMPORT_STD` will print it.
+    if(BEMAN_TRANSCODE_USE_MODULES)
+        message(
+            WARNING
+            "No CMAKE_EXPERIMENTAL_CXX_IMPORT_STD UUID is known for CMake "
+            "${CMAKE_VERSION}, so `import std` cannot be enabled and the "
+            "module build will fail at generate time. Add an entry to "
+            "infra/cmake/enable-experimental-import-std.cmake."
+        )
+    endif()
 endif()
