@@ -19,7 +19,9 @@ namespace beman::transcoding {
 
 // \ref{transcode.string}, eager transcoding
 
-std::string transcode_string(std::span<const char> src, codec from, codec to);
+constexpr bool has_whatwg_encoder(codec encoding) noexcept;
+
+std::optional<std::string> transcode_string(std::span<const char> src, codec from, codec to);
 
 std::optional<std::string>
 transcode_string(std::span<const char> src, std::string_view from_label, std::string_view to_label);
@@ -65,19 +67,30 @@ std::string transcode_encode_all(std::u32string_view src) {
 } // namespace detail
 
 // ---------------------------------------------------------------------------
-// Out-of-line definition: transcode_string
+// Out-of-line definitions: public API
 // ---------------------------------------------------------------------------
 
-//! \returns The bytes of `src`, decoded as `from` and re-encoded as `to`.
+//! \returns `true` if the WHATWG Encoding Standard defines an encoder for
+//! `encoding`, and `false` otherwise.
+constexpr bool has_whatwg_encoder(codec encoding) noexcept {
+    return encoding != codec::utf_16be && encoding != codec::utf_16le && encoding != codec::replacement &&
+           encoding != codec::x_user_defined;
+}
+
+//! \returns `nullopt` if the WHATWG Encoding Standard defines no encoder for
+//! `to`; otherwise, the bytes of `src`, decoded as `from` and re-encoded as
+//! `to`.
 //! Errors are substituted rather than reported: a byte sequence `from` does
 //! not allow decodes to U+FFFD, and a scalar value `to` cannot represent
-//! encodes to `'?'`.  The result is empty when `to` names an encoding the
-//! WHATWG Encoding Standard defines no encoder for.
+//! encodes to `'?'`.
 //! \remarks This is `transcode` \iref{transcode.pipeline} run to completion
 //! into a `string`, which is what a caller who wants the whole result and not
 //! a view writes.  `src | transcode<From, To> | ranges::to<string>()` is the
 //! same thing with the codecs known at compile time.
-inline std::string transcode_string(std::span<const char> src, codec from, codec to) {
+inline std::optional<std::string> transcode_string(std::span<const char> src, codec from, codec to) {
+    if (!has_whatwg_encoder(to))
+        return std::nullopt;
+
     std::u32string intermediate;
     switch (from) {
     case codec::utf_8:
@@ -313,8 +326,11 @@ inline std::string transcode_string(std::span<const char> src, codec from, codec
     case codec::euc_kr:
         result = detail::transcode_encode_all<codec::euc_kr>(u32v);
         break;
-    default:
-        break; // replacement, x_user_defined: no encoder defined
+    case codec::utf_16be:
+    case codec::utf_16le:
+    case codec::replacement:
+    case codec::x_user_defined:
+        return std::nullopt;
     }
 
     return result;
@@ -322,7 +338,7 @@ inline std::string transcode_string(std::span<const char> src, codec from, codec
 
 //! \returns `transcode_string(src, *get_encoding(from_label),
 //! *get_encoding(to_label))`, and `nullopt` if either label names no encoding
-//! \iref{transcode.codec.label}.
+//! \iref{transcode.codec.label} or the target encoding has no WHATWG encoder.
 //! \remarks This is the overload a program uses when the encodings are a
 //! runtime choice -- a `Content-Type` header, a command-line option -- which
 //! is what labels are for.

@@ -86,3 +86,20 @@ TEST_CASE("transcode_string label: empty label returns nullopt", "[transcode_str
     CHECK(!transcode_string(std::span<const char>(src), "", "utf-8").has_value());
     CHECK(!transcode_string(std::span<const char>(src), "utf-8", "").has_value());
 }
+
+TEST_CASE("transcode_string label: empty input yields an engaged empty result", "[transcode_string][label]") {
+    std::span<const char> empty{};
+    auto                  result = transcode_string(empty, "utf-8", "utf-8");
+
+    REQUIRE(result.has_value());
+    CHECK(result->empty());
+}
+
+TEST_CASE("transcode_string label: decode-only targets return nullopt", "[transcode_string][label]") {
+    std::string src = "hello";
+
+    CHECK_FALSE(transcode_string(std::span<const char>(src), "utf-8", "utf-16be").has_value());
+    CHECK_FALSE(transcode_string(std::span<const char>(src), "utf-8", "utf-16le").has_value());
+    CHECK_FALSE(transcode_string(std::span<const char>(src), "utf-8", "replacement").has_value());
+    CHECK_FALSE(transcode_string(std::span<const char>(src), "utf-8", "x-user-defined").has_value());
+}

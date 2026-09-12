@@ -389,7 +389,7 @@ And three utility entry points:
 
 - **`transcode<From, To>`**: Convenience composition of `whatwg_decode<From>` followed by `whatwg_encode<To>`, for `To` codecs that have a WHATWG encoder.
 
-- **`transcode_string(source, from, to)`**: Eager convenience helper for runtime-selected WHATWG transcoding by codec or by label. If the target codec has no WHATWG encoder, the result is empty.
+- **`transcode_string(source, from, to)`**: Eager convenience helper for runtime-selected WHATWG transcoding by codec or by label. It returns an engaged `optional<string>` containing the converted bytes, including an empty string for an empty input, or `nullopt` if the target codec has no WHATWG encoder.
 
 - **`null_term_view` / `views::null_term`**: Adapts a pointer to a null-terminated string into a range.
   This enables `views::null_term(cstr) | whatwg_decode<codec::utf_8>`.
