@@ -88,11 +88,18 @@ jobs:
         run: |
           source .venv/bin/activate
           make lint
-      - name: Manual Lint
-        shell: bash
-        run: |
-          source .venv/bin/activate
-          make lint
+      # There was a "Manual Lint" step here that ran `make lint`, which the
+      # Lint step above had just run -- a second full pre-commit pass over the
+      # whole repository for no additional signal.
+      #
+      # `make lint-manual` is what it meant to call, but that runs
+      # `pre-commit run --hook-stage manual -a`, and no hook in
+      # .pre-commit-config.yaml declares `stages: [manual]`, so the manual
+      # stage is the same set again. Renaming the step would have kept the
+      # duplicate and spelled it better.
+      #
+      # Restore it when a hook is registered for the manual stage -- the two
+      # commented-out candidates are markdownlint-cli2 and beman-tidy.
       - name: Test Install
         shell: bash
         run: |

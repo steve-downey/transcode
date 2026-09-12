@@ -279,6 +279,9 @@ lint: ## Run all configured tools in pre-commit and mypy
 
 .PHONY: lint-manual
 lint-manual: venv
+# No hook in .pre-commit-config.yaml declares `stages: [manual]` today, so this
+# currently runs the same set as `lint`.  It is kept as the entry point for the
+# manual stage, not because it adds anything yet.
 lint-manual: ## Run all manual tools in pre-commit
 	$(PRE_COMMIT) run --hook-stage manual -a
 
