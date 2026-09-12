@@ -173,17 +173,23 @@ concept decode_codec = std::semiregular<C> &&
     };
 ```
 
-For single-byte table-lookup codecs, use the provided `table_codec` template:
+A type that satisfies it composes with `decode(codec)` and
+`decode_or_error(codec)` exactly as the built-in codecs do, including
+`constexpr` decoding:
 
 ```cpp
-inline constexpr std::array<char32_t, 128> my_table = { /* upper 128 codepoints */ };
-using my_codec = beman::transcoding::table_codec<my_table>;
-
 auto decoded = input | beman::transcoding::decode(my_codec{});
 ```
 
 See [`examples/custom_single_byte_decoder.cpp`](examples/custom_single_byte_decoder.cpp)
-for a complete working example.
+for a complete working example, in both error modes.
+
+There is a `table_codec<Table>` template for the case where the upper half of a
+single-byte encoding is a plain 128-entry lookup, and the built-in single-byte
+codecs are built on it — but it lives in
+`<beman/transcode/detail/table_codec.hpp>` and is **not part of the proposed
+interface**.  Use it if it suits you and you are willing to track an
+implementation detail; the concept above is the supported extension point.
 
 ### iconv Range Adaptor — System Encoding Support
 
