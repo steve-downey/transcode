@@ -193,15 +193,15 @@ elseif(CMAKE_VERSION VERSION_EQUAL "4.3.3")
     )
 elseif(CMAKE_VERSION VERSION_EQUAL "4.4.0")
     set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-        "2d856d6d-53e8-488b-a17f-d486d2cac317"
+        "f35a9ac6-8463-4d38-8eec-5d6008153e7d"
     )
 elseif(CMAKE_VERSION VERSION_EQUAL "4.4.1")
     set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-        "2d856d6d-53e8-488b-a17f-d486d2cac317"
+        "f35a9ac6-8463-4d38-8eec-5d6008153e7d"
     )
 elseif(CMAKE_VERSION VERSION_EQUAL "4.4.2")
     set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-        "2d856d6d-53e8-488b-a17f-d486d2cac317"
+        "f35a9ac6-8463-4d38-8eec-5d6008153e7d"
     )
 else()
     # An unlisted CMake leaves CMAKE_EXPERIMENTAL_CXX_IMPORT_STD unset, and the
@@ -213,9 +213,9 @@ else()
     # way by default.
     #
     # Say so at configure time instead.  The gate is a per-release UUID, so a
-    # new CMake always needs a new entry; the value is compiled into the
-    # binary, and `strings $(command -v cmake) | grep -A1
-    # CMAKE_EXPERIMENTAL_CXX_IMPORT_STD` will print it.
+    # new CMake always needs a new entry.  Use the activation value documented
+    # for CxxImportStd in that CMake release; other experimental features have
+    # different UUIDs and may appear beside it in the binary.
     if(BEMAN_TRANSCODE_USE_MODULES)
         message(
             WARNING
