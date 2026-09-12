@@ -68,45 +68,80 @@ them at the keyboard.
 | C-01 | **Require `forward_range`.**  The docblock's promise that the mark is not consumed becomes true, rather than being rewritten to admit that it is. |
 | C-06 | **Specify the precondition and value-initialize.**  A reachable terminator and a lifetime requirement become `\expects`; `ptr_` stops being indeterminate. |
 | C-07 | **Return `optional`.**  The `codec` overload of `transcode_string` returns `optional<string>` and rejects an encoder-less target before decoding, so it agrees with the label overload and empty output means empty output. |
-| S-01 | **Reopened — see the note below.**  The provisional decision was "keep the precondition, drop the promises."  It rests on a reading of which spec layer performs surrogate substitution, and that reading is being checked before Step 6 runs. |
+| S-01 | **Drop the precondition; specify UTF-32 input validation.**  A `char32_t` that is not a Unicode scalar value yields U+FFFD in replacement mode and the corresponding error in `expected` mode, and the validation happens once, above codec dispatch.  See "S-01, resolved" below; this reverses the provisional decision. |
+| C-08 (new) | **Validate above dispatch.**  The surrogate and out-of-range checks exist only for UTF-8; the other thirty-nine codecs misreport the same input as `unmapped_codepoint`.  Fixed by the same change as S-01. |
 | S-03 | **Document the reservation.**  U+FFFD is reserved as the unmapped-byte signal, the extensibility cost is stated, and the question of a better signal goes to SG16 rather than being answered here. |
 
 C-07 is source-breaking: it changes a return type.  That is cheap now and
 expensive after LEWG review, which is the argument for doing it in this phase
 rather than the next.
 
-### S-01 is reopened
+### S-01, resolved
 
-The decision above was made on the reading that WHATWG's encoder algorithm
-takes scalar values, so a surrogate is outside its domain and this library
-should say so.  That reading may be wrong in a way that matters.
+The first decision here was "keep the precondition, drop the promises."  It was
+wrong, and the way it was wrong is worth recording, because the same mistake is
+easy to make again.
 
-WHATWG specifies the encoder as taking a *code point* stream, and per Infra a
-code point includes surrogates.  But `TextEncoder` is declared
-`encode(optional USVString input)`, and Web IDL's DOMString-to-USVString
-conversion replaces each lone surrogate with U+FFFD *before* the encoder
-algorithm ever runs.  So the substitution is specified -- the question is
-whether it is specified as part of the encoding facility or as coercion in the
-JavaScript binding.
+It rested on a true premise: WHATWG's encoders do take scalar values, and the
+Encoding Standard enforces it in *process an item* (§4.1) with `Assert:
+encoderDecoder is not an encoder instance or item is not a surrogate`, plus a
+second assertion that an encoder never runs in `"replacement"` mode -- so the
+U+FFFD branch is structurally unreachable on the encode path.
 
-If it is part of the facility, then surrogate-to-U+FFFD is defined behaviour
-this library should implement and specify, the WPT vectors in
-`tests/beman/transcode/wpt_encoder_surrogates.test.cpp` are normative rather
-than inapplicable, and it is the precondition that has to go.  That is the
-opposite of the decision recorded above, and it would mean the implementation
-was right all along and only the wording was wrong.
+The error was inferring from that that surrogate substitution is a JavaScript
+binding artifact this library need not honour.  It is not.  It is Infra's
+*convert a string into a scalar value string* (§4.7), and **three** separate
+specifications invoke it above the codec: Web IDL for
+`TextEncoder.encode(optional USVString input)`; the Encoding Standard itself in
+§7.6 for `TextEncoderStream`, whose note says outright that "lone surrogates
+will be replaced with U+FFFD"; and HTML in *create an entry*, for form names
+and values.  URL's *percent-encode after encoding* takes a scalar value string
+as a typed precondition.  Every entry point launders; none feeds a surrogate
+in.  A library that offers the entry point owns the conversion.
 
-The cases may also split.  A value above U+10FFFF is not a Unicode code point
-at all, so no conversion is defined for it in any layer -- and `char32_t` can
-hold one where a JavaScript string cannot, so C++ faces an input the web
-platform never has to answer for.  Surrogates and out-of-range values may
-therefore need different answers, which would also settle whether
-`whatwg_error::surrogate_code_point` and `out_of_range` are reachable on
-encode at all.
+The encoder-layer reading also fails on its own terms.  Encoding §8.1.2 selects
+by range, and U+D800 falls inside the `U+0800 to U+FFFF` row -- so a "total"
+encoder would emit `ED A0 80`, which Unicode D92 calls ill-formed and C10 says
+"must never be generated."  The reading that makes the encoder total produces
+the one output that is definitely non-conformant.
 
-This is being researched against the Encoding Standard, Infra, Web IDL, the
-Unicode Standard and the WPT source before Step 6 runs.  Step 6 is on hold; no
-other step depends on it.
+So the behaviour is defined, the implementation already implements it, and the
+wording is what was wrong.  The library validates its `char32_t` input as
+UTF-32 and substitutes U+FFFD -- which is P2728's model too, attributed there
+to the UTF-32 decode step, since `char32_t` in and bytes out is two operations
+and WHATWG specifies only the second.
+
+Two things fell out of settling it:
+
+- **C-08.**  The surrogate and out-of-range checks live inside the
+  `if constexpr (C == codec::utf_8)` branch of `whatwg_encode_view::load()`.
+  Every other codec reaches `emit_error(whatwg_error::unmapped_codepoint,
+  {'?'})` instead (`whatwg_encode_view.hpp:499`, `:524`, `:535`, `:546`,
+  `:557`, `:568`), so U+D800 through `windows_1252` is reported as "the
+  encoding has no representation for the Unicode scalar value being encoded" --
+  which is wrong twice over.  A defect under either answer to S-01.
+- **D-15.**  `error.hpp:79` and `:86-89`, `encode_view.hpp:229` and
+  `papers/transcode-view.md:371` all say an encode failure yields `'?'`.
+  `whatwg_encode<codec::utf_8>` emits `EF BF BD`.
+
+Two things also came off the list.  **Noncharacters are not in play** -- per
+Infra §4.6 a noncharacter is not a surrogate, so U+FFFE and U+FDD0–U+FDEF *are*
+scalar values and encode normally; the library correctly says nothing about
+them.  And **there is no divergence between WHATWG's UTF-8 decoder and
+Unicode's U+FFFD guidance**: Encoding §8.1.1 says the constraints "match 'Best
+Practices for Using U+FFFD'… No other behavior is permitted," while Unicode
+§3.9.6 says it "does not require this practice for conformance."  WHATWG
+mandates what Unicode recommends, so "conforms to WHATWG decode" is the
+stronger claim and should be stated as such rather than as two co-equal ones.
+
+Values above U+10FFFF remain genuinely undecided *by the standards* -- Infra
+caps a code point at U+10FFFF, so such a value is not a code point, not a
+surrogate, and has no conversion defined anywhere.  `char32_t` can hold one and
+a JavaScript string cannot, so this is a case C++ has to answer for itself.
+Step 6 treats it uniformly with surrogates rather than splitting: both are one
+comparison away from valid, and putting undefined behaviour one value from
+defined behaviour with nothing in the type system to mark the boundary buys
+nothing.
 
 ## The wording gate, and why it is revised first
 
@@ -145,7 +180,7 @@ being a merge blocker for a tree that is knowingly mid-phase.
 | 3 | `p6-step3-iconv-lossy-skip` | C-04, S-02 | Steps 0, 2 |
 | 4 | `p6-step4-null-term-precondition` | C-06 | Step 0 |
 | 5 | `p6-step5-transcode-string-result` | C-07 | Step 0 |
-| 6 | `p6-step6-scalar-precondition` | S-01 | Step 0 |
+| 6 | `p6-step6-utf32-validation` | S-01, C-08, D-15 | Step 0 |
 | 7 | `p6-step7-fffd-reservation` | S-03 | Step 0 |
 | 8 | `p6-step8-paper-and-wording` | P-01, P-02, S-04, S-05, D-01 – D-04 | Steps 1–7 |
 | 10 | `p6-step10-verification` | open verification work | all |
@@ -207,6 +242,8 @@ glibc iconv **and at least one other implementation**.
   paper's Error Handling section as hand-written prose, not only as generated
   wording.  Step 8 owns that prose; Step 2 must not assume regeneration covers
   it.
-- **Step 6 removes tests.**  Deleting coverage to match a narrowed contract is
-  correct here and looks like regression in a diff.  The commit message
-  enumerates what went and why.
+- **Step 6 changes behaviour for thirty-nine codecs.**  It was scoped as a
+  wording-only step and is not one: moving validation above codec dispatch
+  changes which error `whatwg_encode_or_error` reports for a surrogate on every
+  codec but UTF-8.  That is the fix, but it is a behavioural diff and wants
+  the coverage to match.
