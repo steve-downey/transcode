@@ -603,10 +603,11 @@ The WHATWG headers are portable to MSVC.  Configuring the reference package
 also requires a separately supplied compatible `iconv` implementation because
 its CMake build currently finds `Iconv` unconditionally.
 
-`libc++` with Clang 20+ has a known upstream problem: a constraint recursion
-crash (`depends on itself`) when `std::expected` is used within `std::vector`
-combined with our iterators.  The configure probe above should catch it as a
-failure rather than letting it surface mid-build.
+A previously tested Clang/`libc++` combination failed with a constraint
+recursion (`depends on itself`) when `std::expected` was used within
+`std::vector` together with these iterators.  That combination is not in CI.
+The configure probe rejects a toolchain whose basic `expected`/`vector`
+interaction is unusable; it does not claim to certify the whole build.
 
 An earlier version of this table listed Clang 18 and 17.  Those rows were not
 merely untested: `CMakeLists.txt` refused any Clang below 19 outright, so the
