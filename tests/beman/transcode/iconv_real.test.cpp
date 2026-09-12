@@ -95,6 +95,29 @@ TEST_CASE("real iconv E2BIG: long input with small buffer", "[transcoding::iconv
     }
 }
 
+TEST_CASE("real iconv reports output_full when the buffer cannot hold one UTF-32 code unit",
+          "[transcoding::iconv_real]") {
+    std::string input = "A";
+
+    for (std::size_t size : {std::size_t{0}, std::size_t{1}, iconv_min_buffer_size - 1}) {
+        std::vector<char> buffer(size);
+        auto              view = input | iconv_transcode_or_error("UTF-8", "UTF-32LE", std::span(buffer));
+        auto              it   = view.begin();
+        REQUIRE(it != view.end());
+        auto result = *it;
+        REQUIRE_FALSE(result.has_value());
+        CHECK(result.error() == iconv_error::output_full);
+        ++it;
+        CHECK(it == view.end());
+    }
+
+    std::array<char, iconv_min_buffer_size> buffer{};
+    std::vector<char>                       output;
+    for (char c : input | iconv_transcode("UTF-8", "UTF-32LE", std::span(buffer)))
+        output.push_back(c);
+    CHECK(output == std::vector<char>{'A', 0, 0, 0});
+}
+
 TEST_CASE("real iconv split multi-byte: U+1D11E (4-byte UTF-8)", "[transcoding::iconv_real]") {
     // Scenario B from iconv-testing.md: 𝄞 (U+1D11E) = F0 9D 84 9E in UTF-8.
     // The view must accumulate all 4 bytes before iconv can decode them.
@@ -164,10 +187,10 @@ TEST_CASE("real iconv ISO-2022-JP flush with or_error view", "[transcoding::icon
 }
 
 TEST_CASE("real iconv ISO-2022-JP flush with small buffer", "[transcoding::iconv_real]") {
-    // Force E2BIG by using a tiny buffer, verifying flush still works.
-    std::vector<char>   input{'\xE3', '\x81', '\x82'};
-    std::array<char, 3> buf{};
-    std::vector<char>   output;
+    // Force E2BIG with the minimum supported buffer, verifying flush still works.
+    std::vector<char>                       input{'\xE3', '\x81', '\x82'};
+    std::array<char, iconv_min_buffer_size> buf{};
+    std::vector<char>                       output;
     for (char c : input | iconv_transcode("UTF-8", "ISO-2022-JP", std::span(buf)))
         output.push_back(c);
     std::vector<unsigned char> expected{0x1B, 0x24, 0x42, 0x24, 0x22, 0x1B, 0x28, 0x42};

@@ -27,11 +27,11 @@ namespace beman::transcoding {
 //! \row `overlong_encoding`
 //! \cell the sequence encodes a value that a shorter sequence also encodes.
 //! \row `surrogate_code_point`
-//! \cell the sequence encodes a surrogate code point, which is not a Unicode
-//! scalar value.
+//! \cell a byte sequence decodes to, or a UTF-32 input code unit holds, a
+//! surrogate code point, which is not a Unicode scalar value.
 //! \row `out_of_range`
-//! \cell the sequence encodes a value greater than the largest Unicode scalar
-//! value.
+//! \cell a byte sequence decodes to, or a UTF-32 input code unit holds, a value
+//! greater than the largest Unicode scalar value.
 //! \row `unmapped_codepoint`
 //! \cell the encoding has no representation for the Unicode scalar value
 //! being encoded.
@@ -48,11 +48,13 @@ enum class whatwg_error {
 // iconv_error — error categories that map to POSIX iconv errno values.
 // Used only by iconv_transcode_or_error_view and iconv_transcode_to_or_error.
 // Kept separate from whatwg_error because iconv reports at the OS level:
-// EILSEQ (invalid_sequence), EINVAL (incomplete_sequence), E2BIG (output_full).
+// EILSEQ (invalid_sequence), EINVAL (incomplete_sequence), E2BIG (output_full),
+// descriptor-open failure, and errors outside the POSIX conversion model.
 // The OS cannot distinguish WHY a byte sequence is invalid, only that it is.
 //! \remarks An `iconv` conversion that fails reports one of these values,
-//! which are the three failures POSIX `iconv` distinguishes.  The enumerators
-//! have the meanings in the following table.
+//! which include the three failures POSIX `iconv` distinguishes and failures
+//! at the boundary of that model.  The enumerators have the meanings in the
+//! following table.
 //! \libtab2[transcode.errors.iconv]{Enum class `iconv_error`}
 //! \column Constant
 //! \column Meaning
@@ -63,11 +65,20 @@ enum class whatwg_error {
 //! \cell the input ends in the middle of a multibyte sequence (`EINVAL`).
 //! \row `output_full`
 //! \cell the conversion has no room left to write its result (`E2BIG`).
+//! \row `open_failed`
+//! \cell the conversion descriptor could not be opened; `iconv_open` uses
+//! `EINVAL` for an unsupported conversion pair, so this condition is kept
+//! distinct from an incomplete input sequence.
+//! \row `system_error`
+//! \cell the conversion failed with an error POSIX does not specify for
+//! `iconv`.
 //! \endlibtab2
 enum class iconv_error {
     invalid_sequence,
     incomplete_sequence,
     output_full,
+    open_failed,
+    system_error,
 };
 
 // transcode_error_kind — how a view reports a codec failure, as a template
@@ -76,7 +87,8 @@ enum class iconv_error {
 // bool so that kinds beyond these two can be added, such as one that also
 // surfaces the offending input bytes.
 //
-//   replacement — substitute U+FFFD on decode, '?' on encode
+//   replacement — substitute U+FFFD on decode and for ill-formed UTF-32;
+//                 substitute '?' when an encoder cannot represent a scalar
 //   expected    — the value type becomes expected<T, whatwg_error>
 //! \remarks A view's error kind says how it reports a failure of the codec it
 //! drives.  The enumerators have the meanings in the following table.
@@ -84,9 +96,10 @@ enum class iconv_error {
 //! \column Constant
 //! \column Meaning
 //! \row `replacement`
-//! \cell a failure to decode yields U+FFFD REPLACEMENT CHARACTER and a
-//! failure to encode yields `'?'`, and the view's value type is the codec's
-//! own.
+//! \cell a failure to decode yields U+FFFD REPLACEMENT CHARACTER.  Ill-formed
+//! UTF-32 input is first replaced with U+FFFD and then encoded normally; when
+//! an encoder cannot represent a scalar value, the encode view yields `'?'`.
+//! The view's value type is the codec's own.
 //! \row `expected`
 //! \cell the view's value type is `expected<T, whatwg_error>`, and a failure
 //! yields an `unexpected` holding the error that occurred.

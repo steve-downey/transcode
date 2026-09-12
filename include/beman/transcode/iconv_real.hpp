@@ -28,6 +28,7 @@ inline iconv_functions make_real_iconv_fns() noexcept { return {::iconv_open, ::
 //! \remarks `buf` is the caller's, and every iterator the adaptor produces
 //! converts into it.  Two ranges adapted with the same buffer must not be
 //! iterated at the same time.
+//! \expects `buf.size() >= iconv_min_buffer_size` is `true`.
 inline auto iconv_transcode(const char* from, const char* to, std::span<char> buf) {
     return iconv_transcode_closure<iconv_functions>{make_real_iconv_fns(), from, to, buf};
 }

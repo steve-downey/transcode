@@ -55,6 +55,7 @@ else()
                     detail/utf8.hpp
                     detail/utf8_encode.hpp
                     detail/utf16.hpp
+                    detail/utf32.hpp
                     detail/x_user_defined.hpp
                     detail/tables/big5.hpp
                     detail/tables/euc_jp_jis0212.hpp

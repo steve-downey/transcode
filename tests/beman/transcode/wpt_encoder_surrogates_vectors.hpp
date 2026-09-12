@@ -2,6 +2,7 @@
 // GENERATED — do not edit. Regenerate: uv run tools/generate_wpt_vectors.py
 //
 // Source: docs/wpt/textencoder-utf16-surrogates.any.js
+// These are USVString coercion cases, not WHATWG encoder cases.
 // WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding
 // License: W3C 3-Clause BSD License
 

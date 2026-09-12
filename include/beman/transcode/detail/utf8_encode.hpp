@@ -5,25 +5,18 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/error.hpp>
-
 namespace beman::transcoding::detail {
 
 struct utf8_encode_result {
-    char         bytes[4]{};
-    int          count{};
-    whatwg_error error{};
-    bool         is_error{false};
+    char bytes[4]{};
+    int  count{};
 };
 
 constexpr utf8_encode_result utf8_encode_one(char32_t cp);
 
 constexpr utf8_encode_result utf8_encode_one(char32_t cp) {
-    if (cp >= 0xD800 && cp <= 0xDFFF)
-        return {{}, 0, whatwg_error::surrogate_code_point, true};
-    if (cp > 0x10FFFF)
-        return {{}, 0, whatwg_error::out_of_range, true};
-
+    // The encode views validate their UTF-32 input before codec dispatch, so
+    // this encoder receives only Unicode scalar values.
     utf8_encode_result r{};
     if (cp < 0x80) {
         r.bytes[0] = static_cast<char>(cp);

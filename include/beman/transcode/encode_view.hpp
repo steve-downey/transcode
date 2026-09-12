@@ -8,6 +8,7 @@
 #include <beman/transcode/codec_concepts.hpp>
 #include <beman/transcode/concepts.hpp>
 #include <beman/transcode/detail/range_traits.hpp>
+#include <beman/transcode/detail/utf32.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <array>
@@ -27,10 +28,12 @@ namespace beman::transcoding {
 
 //! \remarks `encode_view<Codec, R, E>` is `whatwg_encode_view`
 //! \iref{transcode.whatwg.encode} with the codec supplied as a value rather
-//! than named by an enumerator: it presents the Unicode scalar values of `R`
-//! as the bytes `Codec` encodes them to, reports an encoding error as `E`
-//! says, and encodes lazily.  Each element of `R` is required to be a Unicode
-//! scalar value, which is a precondition and not a constraint.
+//! than named by an enumerator: it validates the `char32_t` elements of `R` as
+//! UTF-32, presents the resulting scalar values as the bytes `Codec` encodes
+//! them to, reports an error as `E` says, and encodes lazily.  Ill-formed
+//! UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in
+//! replacement mode and is reported without calling the codec in expected
+//! mode.  A custom codec therefore receives only Unicode scalar values.
 template <encode_codec Codec, std::ranges::input_range R, transcode_error_kind E = transcode_error_kind::replacement>
     requires unicode_scalar_range<R>
 class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>> {
@@ -61,6 +64,8 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
         int pos_{0};
         //! \expos
         bool is_error_{false};
+        //! \expos
+        whatwg_error error_{};
         //! \expos
         bool done_{false};
 
@@ -160,7 +165,7 @@ constexpr encode_closure<Codec> encode(Codec codec = {}) {
 //! \seebelow
 //! \returns `encode(codec)` with `transcode_error_kind::expected`: the view it
 //! adapts to has value type `expected<char, whatwg_error>`, and an encoding
-//! error is the error rather than `'?'`.
+//! or UTF-32 validation error is reported rather than replaced.
 template <encode_codec Codec>
 constexpr encode_closure<Codec, transcode_error_kind::expected> encode_or_error(Codec codec = {}) {
     return {codec};
@@ -207,9 +212,20 @@ constexpr void encode_view<Codec, R, E>::iterator::load() {
         done_ = true;
         return;
     }
-    auto r = codec_.encode_one(*current_++);
+    const auto validation = detail::validate_utf32(static_cast<char32_t>(*current_++));
+    if constexpr (E == transcode_error_kind::expected) {
+        if (validation.is_error) {
+            is_error_ = true;
+            error_    = validation.error;
+            len_      = 1;
+            pos_      = 0;
+            return;
+        }
+    }
+    auto r = codec_.encode_one(validation.code_point);
     if (r.is_error) {
         is_error_ = true;
+        error_    = whatwg_error::unmapped_codepoint;
         len_      = 1;
     } else {
         is_error_ = false;
@@ -226,9 +242,9 @@ template <encode_codec Codec, std::ranges::input_range R, transcode_error_kind E
 //! error the encoding of that element produced.
 constexpr auto encode_view<Codec, R, E>::iterator::operator*() const -> result_t {
     if (is_error_) {
-        // The lossy encoder substitutes '?'; the expected one reports why.
+        // A codec failure substitutes '?'; the expected view reports why.
         if constexpr (E == transcode_error_kind::expected)
-            return result_t(std::unexpect, whatwg_error::unmapped_codepoint);
+            return result_t(std::unexpect, error_);
         else
             return '?';
     }
