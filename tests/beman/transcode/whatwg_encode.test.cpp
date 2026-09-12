@@ -114,6 +114,38 @@ TEST_CASE("whatwg_encode windows_1252 unmapped codepoint yields question mark", 
     CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'?'});
 }
 
+TEST_CASE("whatwg_encode validates UTF-32 before single-byte encoding", "[transcoding::whatwg_encode]") {
+    std::vector<char32_t> cps{static_cast<char32_t>(0xD800)};
+    CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'?'});
+}
+
+TEST_CASE("whatwg_encode encodes substituted U+FFFD through a CJK codec", "[transcoding::whatwg_encode]") {
+    std::vector<char32_t> cps{static_cast<char32_t>(0x110000)};
+    CHECK(collect(cps | whatwg_encode<codec::gb18030>) ==
+          std::vector<char>{static_cast<char>(0x84), '\x31', static_cast<char>(0xA4), '\x37'});
+}
+
+TEST_CASE("whatwg_encode encodes substituted U+FFFD through stateful ISO-2022-JP", "[transcoding::whatwg_encode]") {
+    std::vector<char32_t> cps{U'\x3000', static_cast<char32_t>(0xD800), U'\x3000'};
+    CHECK(collect(cps | whatwg_encode<codec::iso_2022_jp>) == std::vector<char>{'\x1B',
+                                                                                '\x24',
+                                                                                '\x42',
+                                                                                '\x21',
+                                                                                '\x21',
+                                                                                '\x1B',
+                                                                                '\x28',
+                                                                                '\x42',
+                                                                                '?',
+                                                                                '\x1B',
+                                                                                '\x24',
+                                                                                '\x42',
+                                                                                '\x21',
+                                                                                '\x21',
+                                                                                '\x1B',
+                                                                                '\x28',
+                                                                                '\x42'});
+}
+
 TEST_CASE("whatwg_encode iso_8859_2 A-ogonek", "[transcoding::whatwg_encode]") {
     // U+0104 (Latin capital A with ogonek) -> 0xA1 in iso-8859-2
     std::vector<char32_t> cps{U'\x0104'};
@@ -139,6 +171,16 @@ TEST_CASE("whatwg_encode windows_1252 consteval", "[transcoding::whatwg_encode]"
         return *(sp | whatwg_encode<codec::windows_1252>).begin();
     };
     CHECK(constify(encode_euro()) == '\x80');
+}
+
+TEST_CASE("whatwg_encode UTF-32 validation is consteval", "[transcoding::whatwg_encode]") {
+    using beman::transcoding::tests::constify;
+    constexpr auto encode_surrogate = []() consteval {
+        constexpr char32_t        cps[] = {static_cast<char32_t>(0xD800)};
+        std::span<const char32_t> sp(cps, 1);
+        return *(sp | whatwg_encode<codec::windows_1252>).begin();
+    };
+    CHECK(constify(encode_surrogate()) == '?');
 }
 
 // ---------------------------------------------------------------------------

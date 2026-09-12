@@ -70,10 +70,10 @@ Applications requiring strict UTF validation should prefer P2728 for that portio
 ### API Surface Comparison
 
 The three implementation families in this proposal have matching API
-surfaces for every operation their encoding model supports.  The P2728R13
+surfaces for every operation their encoding model supports.  The P2728
 column shows the parallel design in the proposed standard UTF transcoding views.
 
-| API | WHATWG | Pluggable codec | iconv | P2728R13 |
+| API | WHATWG | Pluggable codec | iconv | P2728 |
 |-----|--------|-----------------|-------|----------|
 | **Codec identity** | `codec::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
 | **Decode view** | `whatwg_decode<C>` | `decode(codec)` | `iconv_transcode(f,t,buf)` | `views::to_utf32` |
@@ -89,7 +89,7 @@ column shows the parallel design in the proposed standard UTF transcoding views.
 | **Bulk transcode → output iter** | n/a ² | n/a ² | `iconv_transcode_into(range,f,t,out)` | n/a ² |
 | **Null-terminated input** | `views::null_term(ptr)` | `views::null_term(ptr)` | `views::null_term(ptr)` | n/a ³ |
 | **Runtime label lookup** | `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
-| **Runtime transcode** | `transcode_string(src,from,to)` | n/a ⁴ | `iconv_transcode_to(r,f,t)` | n/a ⁵ |
+| **Runtime transcode** | `optional<string> transcode_string(src,from,to)` | n/a ⁴ | `iconv_transcode_to(r,f,t)` | n/a ⁵ |
 | **BOM sniffing** | `sniff_encoding(range)` | n/a ⁶ | n/a ⁶ | n/a ⁷ |
 | **Error type** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
 | **Output element type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
@@ -123,9 +123,10 @@ determined by the character types (`char8_t`, `char16_t`, `char32_t`), so
 runtime label lookup and runtime transcode are outside its model.
 
 ⁶ **BOM sniffing is a property of the byte stream.**
-`sniff_encoding()` examines the first bytes of a stream to detect UTF-8/16/32
-BOMs and returns the appropriate `codec` enum value.  This is a WHATWG-specific
-facility; pluggable codecs and iconv operate on already-identified encodings.
+`sniff_encoding()` examines the first bytes of a stream to detect UTF-8,
+UTF-16BE or UTF-16LE BOMs and returns the appropriate `codec` enum value.  This
+is a WHATWG-specific facility; pluggable codecs and iconv operate on
+already-identified encodings.
 
 ⁷ **P2728 operates on in-memory typed data** where the encoding is known from
 the type.  BOM detection is an I/O concern; a separate endian-converting view

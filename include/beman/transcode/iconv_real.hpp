@@ -17,8 +17,11 @@ namespace beman::transcoding {
 
 //! \returns An `iconv_functions` whose members are the implementation's
 //! `iconv_open`, `iconv` and `iconv_close`.
+//! \remarks The facilities in this subclause are provided only by an
+//! implementation that supplies an `iconv` conversion facility.
 inline iconv_functions make_real_iconv_fns() noexcept { return {::iconv_open, ::iconv, ::iconv_close}; }
 
+//! \expects `buf.size() >= iconv_min_buffer_size` is `true`.
 //! \seebelow
 //! \returns A range adaptor object.  Given a subexpression `E` that models
 //! `legacy_byte_range`, `iconv_transcode(from, to, buf)(E)` and

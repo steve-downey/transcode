@@ -20,6 +20,7 @@ namespace beman::transcoding {
 // \ref{transcode.codec.sniff}, byte order mark sniffing
 
 template <legacy_byte_range R>
+    requires std::ranges::forward_range<R>
 constexpr std::optional<codec> sniff_encoding(R&& r) noexcept;
 
 //! \returns The encoding `r` begins with a byte order mark for:
@@ -33,7 +34,16 @@ constexpr std::optional<codec> sniff_encoding(R&& r) noexcept;
 //! answer.  The mark itself is not consumed -- a decode view strips a leading
 //! U+FEFF for the UTF codecs on its own -- so the range can be passed on
 //! unchanged.
+//!
+//! `R` is required to be a `forward_range` for that last sentence to be true.
+//! Examining the mark means advancing an iterator over it, and on a
+//! single-pass range those bytes are not there afterwards: sniffing a stream
+//! and then decoding it would drop the prefix, and sniffing a stream with no
+//! mark -- the common case -- would drop the first two bytes of the document.
+//! Nothing in the signature would say so.  A caller holding an `input_range`
+//! has to materialize enough of it to look twice.
 template <legacy_byte_range R>
+    requires std::ranges::forward_range<R>
 constexpr std::optional<codec> sniff_encoding(R&& r) noexcept {
     auto it  = std::ranges::begin(r);
     auto end = std::ranges::end(r);

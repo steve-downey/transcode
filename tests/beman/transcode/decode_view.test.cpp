@@ -37,6 +37,16 @@ inline constexpr std::array<char32_t, 128> sparse_table = [] {
 
 using sparse_codec = table_codec<sparse_table>;
 
+// A custom mapping that collides with the random-access codec's reserved
+// "decodes to nothing" signal.
+inline constexpr std::array<char32_t, 128> replacement_sentinel_table = [] {
+    std::array<char32_t, 128> t{};
+    t[0xFE - 0x80] = U'\xFFFD';
+    return t;
+}();
+
+using replacement_sentinel_codec = table_codec<replacement_sentinel_table>;
+
 // A stateful codec: XORs each byte with incrementing state
 struct xor_codec {
     int counter = 0;
@@ -123,6 +133,21 @@ TEST_CASE("decode_or_error_view: reports errors", "[decode_view]") {
     auto r = *it;
     CHECK(!r.has_value());
     CHECK(r.error() == whatwg_error::invalid_byte);
+}
+
+TEST_CASE("decode views reserve U+FFFD as the high-byte error signal", "[decode_view]") {
+    std::vector<unsigned char> src{0xFE};
+
+    auto replacement = src | decode(replacement_sentinel_codec{});
+    CHECK(*replacement.begin() == U'\xFFFD');
+
+    auto expected = src | decode_or_error(replacement_sentinel_codec{});
+    auto result   = *expected.begin();
+
+    // This intentionally pins the current mode asymmetry pending SG16's
+    // decision about the random-access codec extension point.
+    CHECK(!result.has_value());
+    CHECK(result.error() == whatwg_error::invalid_byte);
 }
 
 // ---------------------------------------------------------------------------

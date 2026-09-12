@@ -9,10 +9,11 @@
 #include <beman/transcode/error.hpp>
 
 #include <iconv.h>
+#include <cassert>
+#include <cerrno>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <algorithm>
-    #include <cerrno>
     #include <iterator>
     #include <memory>
     #include <ranges>
@@ -27,6 +28,18 @@ namespace beman::transcoding {
 //! \omit
 inline constexpr size_t iconv_error_rc = static_cast<size_t>(-1);
 
+//! \remarks The smallest output buffer accepted by `iconv_transcode_view`.
+//! An `iconv` implementation can still report `E2BIG` without producing a
+//! byte when a destination encoding needs a larger indivisible output unit.
+inline constexpr size_t iconv_min_buffer_size = 4;
+
+namespace detail {
+
+//! \omit
+enum class iconv_flush_state { not_started, in_progress, done };
+
+} // namespace detail
+
 //! \remarks The three POSIX `iconv` entry points a view calls, as a value the
 //! program supplies.  `open` opens a conversion descriptor, `convert`
 //! converts, and `close` closes it; each has the signature and the semantics
@@ -35,6 +48,12 @@ inline constexpr size_t iconv_error_rc = static_cast<size_t>(-1);
 //! can supply a different implementation of the same interface -- another
 //! library's, or a test's -- and `make_real_iconv_fns` is the one bound to the
 //! platform's.
+//!
+//! The facilities in this subclause are provided only by an implementation
+//! that supplies an `iconv` conversion facility.  The type `iconv_t` in this
+//! subclause is implementation-defined and denotes the handle type of that
+//! facility's conversion descriptors.  On a POSIX implementation, it is the
+//! type POSIX specifies as `iconv_t`.
 struct iconv_functions {
     iconv_t (*open)(const char* tocode, const char* fromcode);
     size_t (*convert)(iconv_t cd, char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft);
@@ -115,7 +134,9 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
         //! \expos
         bool done_;
         //! \expos
-        bool flushed_{false};
+        detail::iconv_flush_state flush_state_{detail::iconv_flush_state::not_started};
+        //! \expos
+        bool stop_after_output_{false};
 
         // Fills output_pos_/output_end_ with the next batch of converted bytes.
         // Handles EINVAL (incomplete sequence) by accumulating more input, and
@@ -172,12 +193,15 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \expects `buf.size() >= iconv_min_buffer_size` is `true`.
 //! \effects Initializes the view with `std::move(base)`, `std::move(fns)`,
 //! `from`, `to` and `buf`.  No conversion descriptor is opened: `begin` opens
 //! one.
 iconv_transcode_view<IconvFns, R>::iconv_transcode_view(
     R base, IconvFns fns, const char* from, const char* to, std::span<char> buf)
-    : base_(std::move(base)), fns_(std::move(fns)), from_(from), to_(to), buffer_(buf) {}
+    : base_(std::move(base)), fns_(std::move(fns)), from_(from), to_(to), buffer_(buf) {
+    assert(buf.size() >= iconv_min_buffer_size);
+}
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
@@ -221,10 +245,15 @@ iconv_transcode_view<IconvFns, R>::iterator::iterator(
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 void iconv_transcode_view<IconvFns, R>::iterator::load() {
+    if (stop_after_output_) {
+        done_ = true;
+        return;
+    }
+
     char*  out_ptr = buffer_.data();
     size_t outleft = buffer_.size();
 
-    while (outleft > 0) {
+    while (flush_state_ == detail::iconv_flush_state::not_started && outleft > 0) {
         if constexpr (std::contiguous_iterator<base_iter> && std::sized_sentinel_for<base_sent, base_iter>) {
             if (staging_len_ == 0 && current_ != end_) {
                 const auto* raw_ptr   = reinterpret_cast<const char*>(std::to_address(current_));
@@ -239,8 +268,14 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
                         break;
                     continue;
                 }
-                if (errno == E2BIG)
+                if (errno == E2BIG) {
+                    if (out_ptr == buffer_.data()) {
+                        assert(false && "iconv output buffer cannot hold one conversion unit");
+                        done_ = true;
+                        return;
+                    }
                     break;
+                }
                 if (errno == EINVAL) {
                     if (inleft > 0 && inleft <= sizeof(staging_)) {
                         std::copy_n(in_ptr, inleft, staging_);
@@ -249,14 +284,23 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
                     }
                     break;
                 }
-                // EILSEQ: skip one byte
-                if (current_ != end_)
-                    ++current_;
-                if (current_ == end_ && staging_len_ == 0)
-                    break;
-                continue;
+                if (errno == EILSEQ) {
+                    if (current_ != end_)
+                        ++current_;
+                    if (current_ == end_ && staging_len_ == 0)
+                        break;
+                    continue;
+                }
+                if (out_ptr != buffer_.data())
+                    stop_after_output_ = true;
+                else
+                    done_ = true;
+                break;
             }
         }
+
+        if (done_)
+            break;
 
         // Slow path: fill staging from non-contiguous input or drain residue.
         while (staging_len_ < sizeof(staging_) && current_ != end_) {
@@ -279,8 +323,14 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
                 break;
             continue;
         }
-        if (errno == E2BIG)
+        if (errno == E2BIG) {
+            if (out_ptr == buffer_.data()) {
+                assert(false && "iconv output buffer cannot hold one conversion unit");
+                done_ = true;
+                return;
+            }
             break;
+        }
         if (errno == EINVAL) {
             if (current_ == end_) {
                 staging_len_ = 0;
@@ -288,30 +338,61 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
             }
             continue;
         }
-        // EILSEQ: skip one staging byte.
-        if (staging_len_ > 0) {
-            std::copy_n(staging_ + 1, staging_len_ - 1, staging_);
-            --staging_len_;
+        if (errno == EILSEQ) {
+            if (staging_len_ > 0) {
+                std::copy_n(staging_ + 1, staging_len_ - 1, staging_);
+                --staging_len_;
+            }
+            if (staging_len_ == 0 && current_ == end_)
+                break;
+            continue;
         }
-        if (staging_len_ == 0 && current_ == end_)
-            break;
+        if (out_ptr != buffer_.data())
+            stop_after_output_ = true;
+        else
+            done_ = true;
+        break;
     }
 
     output_pos_ = buffer_.data();
     output_end_ = out_ptr;
 
-    if (output_pos_ == output_end_) {
-        if (!flushed_) {
-            flushed_          = true;
-            char*  flush_out  = buffer_.data();
-            size_t flush_left = buffer_.size();
-            fns_.convert(handle_, nullptr, nullptr, &flush_out, &flush_left);
-            output_pos_ = buffer_.data();
-            output_end_ = flush_out;
-        }
+    if (output_pos_ != output_end_ || done_)
+        return;
+
+    if (flush_state_ == detail::iconv_flush_state::done) {
+        done_ = true;
+        return;
+    }
+
+    flush_state_      = detail::iconv_flush_state::in_progress;
+    char*  flush_out  = buffer_.data();
+    size_t flush_left = buffer_.size();
+    size_t rc         = fns_.convert(handle_, nullptr, nullptr, &flush_out, &flush_left);
+    output_pos_       = buffer_.data();
+    output_end_       = flush_out;
+
+    if (rc != iconv_error_rc) {
+        flush_state_ = detail::iconv_flush_state::done;
         if (output_pos_ == output_end_)
             done_ = true;
+        return;
     }
+
+    if (errno == E2BIG) {
+        if (output_pos_ == output_end_) {
+            assert(false && "iconv output buffer cannot hold one flush unit");
+            flush_state_ = detail::iconv_flush_state::done;
+            done_        = true;
+        }
+        return;
+    }
+
+    flush_state_ = detail::iconv_flush_state::done;
+    if (output_pos_ != output_end_)
+        stop_after_output_ = true;
+    else
+        done_ = true;
 }
 
 template <typename IconvFns, std::ranges::input_range R>
@@ -331,7 +412,8 @@ iconv_transcode_view<IconvFns, R>::iterator::iterator(iterator&& other) noexcept
       current_(std::move(other.current_)),
       end_(std::move(other.end_)),
       done_(other.done_),
-      flushed_(other.flushed_) {
+      flush_state_(other.flush_state_),
+      stop_after_output_(other.stop_after_output_) {
     for (size_t i = 0; i < other.staging_len_; ++i)
         staging_[i] = other.staging_[i];
     other.handle_      = (iconv_t)-1;
@@ -359,7 +441,8 @@ auto iconv_transcode_view<IconvFns, R>::iterator::operator=(iterator&& other) no
         current_           = std::move(other.current_);
         end_               = std::move(other.end_);
         done_              = other.done_;
-        flushed_           = other.flushed_;
+        flush_state_       = other.flush_state_;
+        stop_after_output_ = other.stop_after_output_;
         other.handle_      = (iconv_t)-1;
         other.done_        = true;
         other.staging_len_ = 0;

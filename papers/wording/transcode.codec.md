@@ -62,7 +62,9 @@ constexpr optional<codec> get_encoding(string_view label) noexcept;
 ### Byte order mark sniffing [transcode.codec.sniff] {-}
 
 ```cpp
-template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) noexcept;
+template<legacy_byte_range R>
+  requires ranges::forward_range<R>
+constexpr optional<codec> sniff_encoding(R&& r) noexcept;
 ```
 
 [#]{.pnum} *Returns*: The encoding `r` begins with a byte order mark for:
@@ -73,5 +75,7 @@ template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) no
 - [#.#]{.pnum} `nullopt` otherwise.
 
 [#]{.pnum} *Remarks*: This is the byte order mark half of the Encoding Standard's "decide the fallback encoding" step: what to do when there is no mark is a question about the document and its transport, which a library cannot answer.  The mark itself is not consumed -- a decode view strips a leading U+FEFF for the UTF codecs on its own -- so the range can be passed on unchanged.
+
+[#]{.pnum} `R` is required to be a `forward_range` for that last sentence to be true. Examining the mark means advancing an iterator over it, and on a single-pass range those bytes are not there afterwards: sniffing a stream and then decoding it would drop the prefix, and sniffing a stream with no mark -- the common case -- would drop the first two bytes of the document. Nothing in the signature would say so.  A caller holding an `input_range` has to materialize enough of it to look twice.
 
 :::

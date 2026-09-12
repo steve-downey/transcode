@@ -37,6 +37,19 @@ inline constexpr std::array<char32_t, 128> sparse_table = [] {
 
 using sparse_codec = table_codec<sparse_table>;
 
+struct replacement_aware_codec {
+    constexpr encode_result encode_one(char32_t cp) {
+        encode_result result{};
+        if (cp == U'\xFFFD') {
+            result.bytes[0] = 'R';
+            result.count    = 1;
+        } else {
+            result.is_error = true;
+        }
+        return result;
+    }
+};
+
 // ---------------------------------------------------------------------------
 // encode_view basic tests
 // ---------------------------------------------------------------------------
@@ -66,6 +79,14 @@ TEST_CASE("encode_view: unmapped codepoint yields replacement byte '?'", "[encod
         result.push_back(c);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == '?');
+}
+
+TEST_CASE("encode_view: custom codecs receive U+FFFD for ill-formed UTF-32", "[encode_view]") {
+    std::u32string src{static_cast<char32_t>(0xD800)};
+    std::string    result;
+    for (char c : src | encode(replacement_aware_codec{}))
+        result.push_back(c);
+    CHECK(result == "R");
 }
 
 TEST_CASE("encode_view: empty input produces empty output", "[encode_view]") {
@@ -114,6 +135,14 @@ TEST_CASE("encode_or_error_view: unmapped codepoint yields unexpected", "[encode
     auto r = *it;
     CHECK(!r.has_value());
     CHECK(r.error() == whatwg_error::unmapped_codepoint);
+}
+
+TEST_CASE("encode_or_error_view: custom codecs do not receive ill-formed UTF-32", "[encode_view]") {
+    std::u32string src{static_cast<char32_t>(0x110000)};
+    auto           view = src | encode_or_error(replacement_aware_codec{});
+    auto           r    = *view.begin();
+    REQUIRE(!r.has_value());
+    CHECK(r.error() == whatwg_error::out_of_range);
 }
 
 TEST_CASE("encode_or_error_view: sparse table unmapped yields unexpected", "[encode_view]") {
@@ -178,6 +207,15 @@ TEST_CASE("encode_view: constexpr encode view iteration", "[encode_view]") {
         return *view.begin();
     }();
     CHECK(constify(first_byte) == 'H');
+}
+
+TEST_CASE("encode_view: constexpr UTF-32 validation", "[encode_view]") {
+    constexpr auto replacement = [] {
+        std::array<char32_t, 1> src{static_cast<char32_t>(0xD800)};
+        auto                    view = src | encode(replacement_aware_codec{});
+        return *view.begin();
+    }();
+    CHECK(constify(replacement) == 'R');
 }
 
 TEST_CASE("encode_view: constexpr round-trip", "[encode_view]") {

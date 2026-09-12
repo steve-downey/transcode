@@ -79,7 +79,7 @@ template<codec C> inline constexpr $unspecified$ whatwg_encode;
 template<codec C> inline constexpr $unspecified$ whatwg_encode_or_error;
 ```
 
-[#]{.pnum} *Remarks*: `whatwg_encode_or_error<C>` is `whatwg_encode<C>` with `transcode_error_kind::expected`: the view it adapts to has value type `expected<char, whatwg_error>`, and an encoding error is the error rather than `'?'`.
+[#]{.pnum} *Remarks*: `whatwg_encode_or_error<C>` is `whatwg_encode<C>` with `transcode_error_kind::expected`: the view it adapts to has value type `expected<char, whatwg_error>`, and validation and encoding errors are reported rather than replaced.
 
 ### Class `whatwg_encode_view::iterator` [transcode.whatwg.encode.iterator] {-}
 

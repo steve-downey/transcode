@@ -18,6 +18,8 @@ enum class iconv_error {
   invalid_sequence,
   incomplete_sequence,
   output_full,
+  open_failed,
+  system_error,
 };
 
 enum class transcode_error_kind {
@@ -301,7 +303,9 @@ constexpr pluggable_transcode_closure<From, To> pluggable_transcode(From from, T
 
 // @[transcode.string]@, eager transcoding
 
-string transcode_string(span<const char> src, codec from, codec to);
+constexpr bool has_whatwg_encoder(codec encoding) noexcept;
+
+optional<string> transcode_string(span<const char> src, codec from, codec to);
 
 optional<string> transcode_string(span<const char> src, string_view from_label,
                                   string_view to_label);
@@ -333,9 +337,13 @@ constexpr void encode_into(Codec codec, R&& source, Output output);
 
 // @[transcode.codec.sniff]@, byte order mark sniffing
 
-template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) noexcept;
+template<legacy_byte_range R>
+  requires ranges::forward_range<R>
+constexpr optional<codec> sniff_encoding(R&& r) noexcept;
 
 // @[transcode.iconv]@, iconv adaptors
+
+inline constexpr size_t iconv_min_buffer_size = 4;
 
 struct iconv_functions {
   iconv_t (*open)(const char* tocode, const char* fromcode);
@@ -431,15 +439,19 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
 
 [#]{.pnum} *Remarks*: What a codec's `encode_one` returns.  `is_error` says whether the encode failed -- the encoding has no representation for that scalar value. When it did not, `count` is the number of bytes written and `bytes[0]` through `bytes[count - 1]` are the encoded form; when it did, `count` is zero and the view substitutes or reports the error as its error kind says.
 
-[#]{.pnum} *Remarks*: `whatwg_decode_view<C, R, E>` presents the bytes of `R` as the Unicode scalar values the encoding `C` decodes them to, one element per decoded scalar value.  A byte sequence the encoding does not allow is a decoding error, reported as `E` says: as U+FFFD REPLACEMENT CHARACTER when `E` is `transcode_error_kind::replacement`, and as an `unexpected` holding a `whatwg_error` when it is `transcode_error_kind::expected`.  Decoding is lazy: an element is decoded when the iterator reaches it.
+[#]{.pnum} *Remarks*: `whatwg_decode_view<C, R, E>` presents the bytes of `R` as the Unicode scalar values the encoding `C` decodes them to, one element per decoded scalar value.  A byte sequence the encoding does not allow is a decoding error, reported as `E` says: as U+FFFD REPLACEMENT CHARACTER when `E` is `transcode_error_kind::replacement`, and as an `unexpected` holding a `whatwg_error` when it is `transcode_error_kind::expected`.  Decoding is lazy: an element is decoded when the iterator reaches it.  Every `char32_t` value the view presents is a Unicode scalar value.
 
 [#]{.pnum} The view models `random_access_range` when `C` names an encoding that decodes one byte to one scalar value and `R` models `random_access_range`.  How an implementation achieves that is not specified; it is a property of the view rather than a second view.
 
-[#]{.pnum} *Remarks*: `whatwg_encode_view<C, R, E>` presents the Unicode scalar values of `R` as the bytes the encoding `C` encodes them to, one element per byte. A scalar value the encoding cannot represent is an encoding error, reported as `E` says: as `'?'` when `E` is `transcode_error_kind::replacement`, and as an `unexpected` holding `whatwg_error::unmapped_codepoint` when it is `transcode_error_kind::expected`.  Encoding is lazy, and one input element can produce several output elements.
-
-[#]{.pnum} Each element of `R` is required to be a Unicode scalar value.  That is a precondition, not a constraint: `unicode_scalar_range` ([transcode.reqs]) is a requirement on the range's type, and a `char32_t` holding a surrogate or a value above U+10FFFF is not diagnosed.
+[#]{.pnum} *Remarks*: `whatwg_encode_view<C, R, E>` validates the `char32_t` elements of `R` as UTF-32 and presents them as the bytes the encoding `C` encodes them to, one element per byte.  In replacement mode, an ill-formed UTF-32 code unit is replaced with U+FFFD and that scalar value is encoded normally; in expected mode it yields an `unexpected` holding `whatwg_error::surrogate_code_point` or `whatwg_error::out_of_range`.  A scalar value the encoding cannot represent yields `'?'` in replacement mode and `whatwg_error::unmapped_codepoint` in expected mode.  Encoding is lazy, and one input element can produce several output elements.
 
 [#]{.pnum} `C` is required to be an encoding the WHATWG Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and the view does not accept them.
+
+```cpp
+constexpr value_type operator*() const;
+```
+
+[#]{.pnum} *Remarks*: When `E` is `transcode_error_kind::expected`, a byte whose value is `0x80` or above and for which `decode_byte` returns U+FFFD is reported as `whatwg_error::invalid_byte`.  When `E` is `transcode_error_kind::replacement`, the same byte and codec yield U+FFFD. This is a consequence of the U+FFFD reservation required by `random_access_decode_codec_type` ([transcode.custom.reqs]).
 
 ```cpp
 constexpr iterator begin() const;
@@ -459,7 +471,7 @@ constexpr auto size() const;
 
 [#]{.pnum} *Constraints*: `R` models `sized_range`.
 
-[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg_decode_view` ([transcode.whatwg.decode]) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error kind and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.
+[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg_decode_view` ([transcode.whatwg.decode]) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error kind and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.  Every `char32_t` value the view presents is a Unicode scalar value.
 
 [#]{.pnum} The view models `random_access_range` when `Codec` models `random_access_decode_codec_type` and `R` models `random_access_range`.
 
@@ -469,7 +481,7 @@ static constexpr $iterator$ $terminal$();
 
 [#]{.pnum} *Constraints*: `R` models `forward_range`.
 
-[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg_encode_view` ([transcode.whatwg.encode]) with the codec supplied as a value rather than named by an enumerator: it presents the Unicode scalar values of `R` as the bytes `Codec` encodes them to, reports an encoding error as `E` says, and encodes lazily.  Each element of `R` is required to be a Unicode scalar value, which is a precondition and not a constraint.
+[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg_encode_view` ([transcode.whatwg.encode]) with the codec supplied as a value rather than named by an enumerator: it validates the `char32_t` elements of `R` as UTF-32, presents the resulting scalar values as the bytes `Codec` encodes them to, reports an error as `E` says, and encodes lazily.  Ill-formed UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in replacement mode and is reported without calling the codec in expected mode.  A custom codec therefore receives only Unicode scalar values.
 
 ```cpp
 static constexpr $iterator$ $terminal$();
@@ -478,6 +490,8 @@ static constexpr $iterator$ $terminal$();
 [#]{.pnum} *Constraints*: `R` models `forward_range`.
 
 [#]{.pnum} *Remarks*: The three POSIX `iconv` entry points a view calls, as a value the program supplies.  `open` opens a conversion descriptor, `convert` converts, and `close` closes it; each has the signature and the semantics POSIX gives the function of the same name.  The views take this as a template parameter rather than calling `::iconv` directly so that a program can supply a different implementation of the same interface -- another library's, or a test's -- and `make_real_iconv_fns` is the one bound to the platform's.
+
+[#]{.pnum} The facilities in this subclause are provided only by an implementation that supplies an `iconv` conversion facility.  The type `iconv_t` in this subclause is implementation-defined and denotes the handle type of that facility's conversion descriptors.  On a POSIX implementation, it is the type POSIX specifies as `iconv_t`.
 
 [#]{.pnum} *Remarks*: `iconv_transcode_view<IconvFns, R>` presents the bytes of `R` converted from the encoding named by `from` to the encoding named by `to`, one element per output byte, using the `iconv` implementation `IconvFns` names.  Conversion is lazy and proceeds in batches: the view converts into the caller's buffer, yields those bytes, and converts again.
 

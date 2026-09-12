@@ -17,6 +17,6 @@ concept unicode_scalar_range =
     same_as<remove_cv_t<ranges::range_value_t<R>>, char32_t>;
 ```
 
-[#]{.pnum} *Remarks*: `unicode_scalar_range` constrains the type of a range and not its values.  That each element of the range is a Unicode scalar value is a precondition of every operation that encodes it, not a property this concept can require.
+[#]{.pnum} *Remarks*: `unicode_scalar_range` constrains the type of a range and not its values.  Its `char32_t` elements are interpreted as UTF-32 code units by an encode operation: a code unit that is not a Unicode scalar value is replaced with U+FFFD or reported as an error, according to the operation's error kind.
 
 :::

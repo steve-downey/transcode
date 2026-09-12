@@ -76,8 +76,13 @@ jobs:
       # The per-pull-request half of the wording drift gate. It hashes the
       # headers the paper's wording is generated from and fails when they have
       # moved without a regeneration, which needs no specgen and takes no time.
-      # The other half -- regenerate everything and diff -- does need one, and
-      # is the manual Wording Drift workflow.
+      # A header named in papers/wording/PENDING is allowed to be ahead; the
+      # wording_pending job below is what keeps such an entry from becoming
+      # permanent.
+      #
+      # The other half -- regenerate everything and diff -- does need a
+      # specgen, and has no workflow: one was written, run, and removed, for
+      # the reasons in papers/wording/README.md. `make wording-check` is local.
       - name: Wording inputs
         shell: bash
         run: |
@@ -105,3 +110,23 @@ jobs:
         run: |
           source .venv/bin/activate
           make testinstall
+
+  # A pending entry is a deferred regeneration, which is fine in the middle of
+  # a series of changes and not fine indefinitely. Deliberately not run on
+  # pull_request or on push: a series lands on main one change at a time, so
+  # failing there would defeat the exemption it is meant to police.
+  #
+  # The nightly is the right place. It blocks nobody's merge, and a red nightly
+  # is the signal that an entry has outlived the work it was added for. Run it
+  # by hand before tagging or publishing a paper revision -- `make
+  # wording-pending-check` is the same check.
+  wording_pending:
+    name: No deferred wording regeneration
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check for a deferred regeneration
+        shell: bash
+        run: make wording-pending-check
