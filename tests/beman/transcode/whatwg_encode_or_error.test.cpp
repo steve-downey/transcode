@@ -121,6 +121,34 @@ TEST_CASE("whatwg_encode_or_error windows_1252 unmapped codepoint", "[transcodin
     CHECK(result[0].error() == whatwg_error::unmapped_codepoint);
 }
 
+TEST_CASE("whatwg_encode_or_error validates UTF-32 before single-byte encoding",
+          "[transcoding::whatwg_encode_or_error]") {
+    std::vector<char32_t> cps{static_cast<char32_t>(0xD800)};
+    auto                  result = collect_or_error(cps | whatwg_encode_or_error<codec::windows_1252>);
+    REQUIRE(result.size() == 1);
+    CHECK(!result[0].has_value());
+    CHECK(result[0].error() == whatwg_error::surrogate_code_point);
+}
+
+TEST_CASE("whatwg_encode_or_error reports out-of-range UTF-32 uniformly across codec families",
+          "[transcoding::whatwg_encode_or_error]") {
+    std::vector<char32_t> cps{static_cast<char32_t>(0x110000)};
+
+    const auto single_byte = collect_or_error(cps | whatwg_encode_or_error<codec::windows_1252>);
+    const auto cjk         = collect_or_error(cps | whatwg_encode_or_error<codec::gb18030>);
+    const auto stateful    = collect_or_error(cps | whatwg_encode_or_error<codec::iso_2022_jp>);
+
+    REQUIRE(single_byte.size() == 1);
+    REQUIRE(cjk.size() == 1);
+    REQUIRE(stateful.size() == 1);
+    REQUIRE(!single_byte[0].has_value());
+    REQUIRE(!cjk[0].has_value());
+    REQUIRE(!stateful[0].has_value());
+    CHECK(single_byte[0].error() == whatwg_error::out_of_range);
+    CHECK(cjk[0].error() == whatwg_error::out_of_range);
+    CHECK(stateful[0].error() == whatwg_error::out_of_range);
+}
+
 TEST_CASE("whatwg_encode_or_error iso_8859_6 unmapped codepoint", "[transcoding::whatwg_encode_or_error]") {
     // U+00A3 (pound sign) is not in iso-8859-6 (Arabic)
     std::vector<char32_t> cps{U'\x00A3'};
@@ -138,6 +166,16 @@ TEST_CASE("whatwg_encode_or_error consteval", "[transcoding::whatwg_encode_or_er
         return (*(sp | whatwg_encode_or_error<codec::windows_1252>).begin()).value();
     };
     CHECK(constify(encode_euro()) == '\x80');
+}
+
+TEST_CASE("whatwg_encode_or_error UTF-32 validation is consteval", "[transcoding::whatwg_encode_or_error]") {
+    using beman::transcoding::tests::constify;
+    constexpr auto encode_surrogate = []() consteval {
+        constexpr char32_t        cps[] = {static_cast<char32_t>(0xD800)};
+        std::span<const char32_t> sp(cps, 1);
+        return (*(sp | whatwg_encode_or_error<codec::windows_1252>).begin()).error();
+    };
+    CHECK(constify(encode_surrogate()) == whatwg_error::surrogate_code_point);
 }
 
 // ---------------------------------------------------------------------------

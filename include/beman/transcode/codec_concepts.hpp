@@ -44,8 +44,9 @@ concept random_access_decode_codec_type = decode_codec<C> && requires(const C& c
 
 //! \remarks A type models `encode_codec` if it can encode one Unicode scalar
 //! value to bytes.  `c.encode_one(cp)` returns the encoded form of `cp`, or an
-//! error if the encoding has no representation for it.  `cp` is required to be
-//! a Unicode scalar value.
+//! error if the encoding has no representation for it.  An encode view
+//! validates its UTF-32 input before calling this function, so `cp` is always a
+//! Unicode scalar value.
 template <typename C>
 concept encode_codec = std::semiregular<C> && requires(C& c, char32_t cp) {
     { c.encode_one(cp) } -> std::same_as<encode_result>;

@@ -68,19 +68,18 @@ The two approaches serve non-overlapping problems:
   database column metadata, `iconv` string labels); the bytes are just bytes
   until you decode them
 
-The only Unicode scalar type this library uses is `char32_t`, as the decoded
-codepoint type.  Using `char32_t` for codepoints is the agreed pattern in WG21
-rather than introducing a distinct `code_point` type: since UTF-32 code units
-and Unicode code points are numerically identical, distinguishing them at the
-type level just introduces syntactic noise and "range casts" that alias without
-converting.
+The Unicode interchange type this library uses is `char32_t`, as the decoded
+codepoint and UTF-32 code-unit type.  Using `char32_t` for codepoints is the
+agreed pattern in WG21 rather than introducing a distinct `code_point` type:
+since valid UTF-32 code units and Unicode code points are numerically identical,
+distinguishing them at the type level just introduces syntactic noise and
+"range casts" that alias without converting.
 
-For encode views, `char32_t` is a representation of a Unicode scalar value, not
-a promise that every possible `char32_t` object is valid input.  This matches
-the WHATWG Encoding Standard's encoder hooks, which operate on I/O queues of
-scalar values.  The `unicode_scalar_range` concept checks the range's value
-type; callers that manufacture `char32_t` data directly remain responsible for
-not passing surrogates or values above U+10FFFF.
+The `unicode_scalar_range` concept checks the range's value type, not every
+value.  Encode views validate its `char32_t` elements as UTF-32: replacement
+mode substitutes U+FFFD for surrogates and values above U+10FFFF before encoding
+through the selected codec, while error-reporting mode reports the corresponding
+validation error.
 
 ## Core APIs
 
@@ -133,10 +132,10 @@ The WHATWG Encoding Standard does not define encoders for UTF-16BE or UTF-16LE;
 those codecs are exposed for byte-stream decoding, label lookup, and BOM
 sniffing, but not through `whatwg_encode` or `whatwg_encode_or_error`.
 
-Encode input has the semantic precondition that every `char32_t` denotes a
-Unicode scalar value.  Pipelines produced by this library's decode views satisfy
-that precondition before reaching an encoder; raw `char32_t` sources should be
-validated before being treated as text.
+Encode input is validated as UTF-32.  Every decoded value produced by this
+library is already a Unicode scalar value; raw `char32_t` sources receive the
+same replacement or error-reporting treatment when they contain an ill-formed
+code unit.
 
 ### Transcode — Any Encoding to Any Other
 

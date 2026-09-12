@@ -27,11 +27,11 @@ namespace beman::transcoding {
 //! \row `overlong_encoding`
 //! \cell the sequence encodes a value that a shorter sequence also encodes.
 //! \row `surrogate_code_point`
-//! \cell the sequence encodes a surrogate code point, which is not a Unicode
-//! scalar value.
+//! \cell a byte sequence decodes to, or a UTF-32 input code unit holds, a
+//! surrogate code point, which is not a Unicode scalar value.
 //! \row `out_of_range`
-//! \cell the sequence encodes a value greater than the largest Unicode scalar
-//! value.
+//! \cell a byte sequence decodes to, or a UTF-32 input code unit holds, a value
+//! greater than the largest Unicode scalar value.
 //! \row `unmapped_codepoint`
 //! \cell the encoding has no representation for the Unicode scalar value
 //! being encoded.
@@ -76,7 +76,8 @@ enum class iconv_error {
 // bool so that kinds beyond these two can be added, such as one that also
 // surfaces the offending input bytes.
 //
-//   replacement — substitute U+FFFD on decode, '?' on encode
+//   replacement — substitute U+FFFD on decode and for ill-formed UTF-32;
+//                 substitute '?' when an encoder cannot represent a scalar
 //   expected    — the value type becomes expected<T, whatwg_error>
 //! \remarks A view's error kind says how it reports a failure of the codec it
 //! drives.  The enumerators have the meanings in the following table.
@@ -84,9 +85,10 @@ enum class iconv_error {
 //! \column Constant
 //! \column Meaning
 //! \row `replacement`
-//! \cell a failure to decode yields U+FFFD REPLACEMENT CHARACTER and a
-//! failure to encode yields `'?'`, and the view's value type is the codec's
-//! own.
+//! \cell a failure to decode yields U+FFFD REPLACEMENT CHARACTER.  Ill-formed
+//! UTF-32 input is first replaced with U+FFFD and then encoded normally; when
+//! an encoder cannot represent a scalar value, the encode view yields `'?'`.
+//! The view's value type is the codec's own.
 //! \row `expected`
 //! \cell the view's value type is `expected<T, whatwg_error>`, and a failure
 //! yields an `unexpected` holding the error that occurred.

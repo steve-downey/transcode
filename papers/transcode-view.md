@@ -368,8 +368,9 @@ The proposal adds four user-facing adaptor families:
   Decode errors are replaced with U+FFFD.
 
 - **`whatwg_encode_view<C>` / `whatwg_encode<C>`**: Encodes a `char32_t` range to bytes.
-  Encode failures are replaced with `'?'`. The input range has the semantic
-  precondition that each `char32_t` value is a Unicode scalar value.
+  Input is validated as UTF-32: an ill-formed code unit is replaced with U+FFFD,
+  then encoded through `C`. A scalar value that `C` cannot represent is replaced
+  with `'?'`.
   The WHATWG UTF-16BE and UTF-16LE encodings are decode-only in this interface,
   matching the Encoding Standard's lack of UTF-16BE/LE encoders.
 
@@ -475,7 +476,7 @@ if (auto c = get_encoding(charset)) {
 
 Two WHATWG error handling strategies are provided:
 
-1. **Replacement mode** (`whatwg_decode`, `whatwg_encode`, and `transcode`): Invalid input sequences are replaced with U+FFFD on decode or `'?'` on encode.
+1. **Replacement mode** (`whatwg_decode`, `whatwg_encode`, and `transcode`): Invalid byte sequences decode to U+FFFD. Ill-formed UTF-32 input is replaced with U+FFFD before encoding, while a scalar value the target encoding cannot represent is replaced with `'?'`.
   This follows the WHATWG replacement model and is appropriate for most text processing where halting on errors is undesirable.
 
 2. **Inspection mode** (`whatwg_decode_or_error`, `whatwg_encode_or_error`): Each output element is `expected<T, whatwg_error>`.
@@ -488,8 +489,8 @@ enum class whatwg_error {
   invalid_byte,        // Byte not valid in this position
   truncated_sequence,  // End of input mid-character
   overlong_encoding,   // UTF-8 overlong sequence
-  surrogate_code_point,// UTF-8 encoded surrogate
-  out_of_range,        // Code point > U+10FFFF
+  surrogate_code_point,// Decoded or UTF-32 input value is a surrogate
+  out_of_range,        // Decoded or UTF-32 input value is above U+10FFFF
   unmapped_codepoint,  // Encode: no mapping exists
 };
 ```
@@ -559,9 +560,11 @@ where `$legacy-byte-type$` is an exposition-only concept satisfied by `char`,
 
 `unicode_scalar_range` is intentionally a type-level concept.  It identifies the
 library's scalar-value interchange representation, but it cannot prove that each
-`char32_t` object is a Unicode scalar value.  The encode adaptors therefore have
-a semantic precondition, matching WHATWG's encoder hooks: callers that construct
-`char32_t` ranges directly must not supply surrogates or values above U+10FFFF.
+`char32_t` object is a Unicode scalar value.  Encode adaptors therefore interpret
+their input as UTF-32 and perform the conversion to scalar values above codec
+dispatch, just as the Web Platform converts strings before invoking a WHATWG
+encoder.  Surrogates and values above U+10FFFF become U+FFFD in replacement mode
+or their corresponding errors in inspection mode.
 
 Raw arrays are explicitly rejected to prevent silent inclusion of null terminators.
 Use `views::null_term` for null-terminated strings or wrap counted byte buffers in `span`.
@@ -750,8 +753,9 @@ Unicode scalar values are represented as single `char32_t` values. This simplifi
 
 The type is an interchange representation. Nothing about `char32_t` validates what it holds.
 Decode views produce scalar values before an encoder sees them; a range of
-`char32_t` supplied from outside a decode pipeline must already satisfy the
-Unicode scalar value domain.
+`char32_t` supplied from outside a decode pipeline is validated as UTF-32 by
+the encode view. Ill-formed code units are replaced with U+FFFD or reported,
+according to the view's error kind, before the selected codec is invoked.
 
 UTF-32 is the wasteful choice. A `char32_t` per scalar is four bytes where UTF-8 would often use one — but these are lazy views, so nothing is stored unless a caller collects it, and a single code point is trivial to inspect. All other interchange types are worse.
 
@@ -812,7 +816,7 @@ That translation step is necessary because the authoritative tests are written f
 By converting them once into ordinary C++ data, the test suite can run as native unit tests without embedding a JavaScript engine or reimplementing the WPT harness at runtime.
 
 The generators are themselves unit-tested.
-That keeps the extraction logic honest: if WPT uses surrogate pairs, replacement characters, BOM-sensitive cases, fatal-mode expectations, or codec-specific fixture shapes, those parsing rules are validated independently from the transcoder under test.
+That keeps the extraction logic honest: if WPT uses surrogate pairs, replacement characters, BOM-sensitive cases, fatal-mode expectations, or codec-specific fixture shapes, those parsing rules are validated independently from the transcoder under test. For the `USVString` surrogate vectors, the Python parser combines surrogate pairs into one `char32_t` and leaves lone surrogates for the C++ view's UTF-32 validation. Consequently the astral vector is not a surrogate-validation case in C++, and a `char32_t` range cannot model a pair split across chunks.
 
 ## Testing
 
@@ -823,7 +827,9 @@ These tests provide:
 
 - Decode tests for each codec with representative byte sequences
 - Error handling tests verifying U+FFFD replacement behavior
-- Edge cases for truncated sequences, overlong UTF-8, surrogate encoding
+- Edge cases for truncated sequences, overlong UTF-8, and UTF-32 validation,
+  including vectors derived from WPT's `USVString` coercion test rather than
+  from a WHATWG encoder algorithm
 - BOM handling (tested but BOM is stripped before our views)
 
 Test vectors are extracted from WPT and converted to C++ data structures using the preprocessing pipeline described in Methods.

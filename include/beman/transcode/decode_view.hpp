@@ -109,7 +109,8 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 //! scalar values `Codec` decodes them to, reports a decoding error as `E`
 //! says, and decodes lazily.  Everything that clause says about the value
 //! type, the error kind and the laziness holds here, of a codec the program
-//! wrote rather than one the Encoding Standard defines.
+//! wrote rather than one the Encoding Standard defines.  Every `char32_t`
+//! value the view presents is a Unicode scalar value.
 //!
 //! The view models `random_access_range` when `Codec` models
 //! `random_access_decode_codec_type` and `R` models `random_access_range`.
