@@ -3,12 +3,16 @@
 #include <beman/transcode/iconv_bulk.hpp>
 #include <beman/transcode/iconv_bulk.hpp>
 
+#include <beman/transcode/whatwg_decode_view.hpp>
+
 #include <catch2/catch_all.hpp>
 
 #include <tests/beman/transcode/iconv_mock.hpp>
 
 #include <algorithm>
+#include <array>
 #include <iterator>
+#include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
@@ -55,28 +59,28 @@ TEST_CASE("iconv_transcode_to recovers from E2BIG", "[transcoding::iconv_bulk]")
 }
 
 // ---------------------------------------------------------------------------
-// iconv_transcode_to — EILSEQ handling (replaces with '?')
+// iconv_transcode_to — EILSEQ handling (skips invalid input)
 // ---------------------------------------------------------------------------
 
-TEST_CASE("iconv_transcode_to replaces EILSEQ bytes with '?'", "[transcoding::iconv_bulk]") {
-    // mock_iconv_eilseq always signals EILSEQ; every input byte is replaced.
+TEST_CASE("iconv_transcode_to skips EILSEQ bytes", "[transcoding::iconv_bulk]") {
+    // mock_iconv_eilseq always signals EILSEQ; every input byte is skipped.
     iconv_functions fns{mock_iconv_open, mock_iconv_eilseq, mock_iconv_close};
     std::string     input  = "ABC";
     auto            result = iconv_transcode_to<std::string>(std::span<const char>(input), "X", "X", fns);
-    CHECK(result == "???");
+    CHECK(result.empty());
 }
 
 // ---------------------------------------------------------------------------
 // iconv_transcode_to — EINVAL (incomplete sequence at end)
 // ---------------------------------------------------------------------------
 
-TEST_CASE("iconv_transcode_to replaces trailing incomplete sequence with '?'", "[transcoding::iconv_bulk]") {
+TEST_CASE("iconv_transcode_to skips trailing incomplete sequence", "[transcoding::iconv_bulk]") {
     // mock_iconv_pairwise: needs 2 bytes; returns EINVAL for a lone trailing byte.
     iconv_functions   fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
     std::vector<char> input{0x41, 0x42, 0x43}; // one complete pair + one orphan
     auto              result = iconv_transcode_to<std::string>(std::span<const char>(input), "X", "X", fns);
-    // Pair {0x41, 0x42} copied, orphan {0x43} replaced
-    CHECK(result == std::string{0x41, 0x42, '?'});
+    // Pair {0x41, 0x42} copied, orphan {0x43} skipped
+    CHECK(result == std::string{0x41, 0x42});
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +118,42 @@ TEST_CASE("iconv_transcode_to with real iconv UTF-8 to UTF-32LE", "[transcoding:
     CHECK(static_cast<unsigned char>(result[7]) == 0x00);
 }
 
+TEST_CASE("iconv_transcode_to skips invalid UTF-8 without producing malformed UTF-16LE", "[transcoding::iconv_bulk]") {
+    std::vector<char> input{'A', static_cast<char>(0xFF), 'B'};
+    auto              result = iconv_transcode_to<std::string>(input, "UTF-8", "UTF-16LE");
+
+    CHECK(result.size() % 2 == 0);
+    auto decoded = result | whatwg_decode<codec::utf_16le> | std::ranges::to<std::vector<char32_t>>();
+    CHECK(decoded == std::vector<char32_t>{U'A', U'B'});
+}
+
+TEST_CASE("eager and lazy lossy iconv conversions agree", "[transcoding::iconv_bulk]") {
+    std::vector<char>                       input{'A', static_cast<char>(0xFF), 'B'};
+    std::array<char, iconv_min_buffer_size> buffer{};
+
+    auto eager = iconv_transcode_to<std::string>(input, "UTF-8", "UTF-16LE");
+    auto lazy  = input | iconv_transcode("UTF-8", "UTF-16LE", std::span(buffer)) | std::ranges::to<std::string>();
+
+    CHECK(eager == lazy);
+}
+
+TEST_CASE("iconv_transcode_into matches iconv_transcode_to for invalid input", "[transcoding::iconv_bulk]") {
+    std::vector<char> input{'A', static_cast<char>(0xFF), 'B'};
+    auto              expected = iconv_transcode_to<std::vector<char>>(input, "UTF-8", "UTF-16LE");
+    std::vector<char> output;
+
+    iconv_transcode_into(input, "UTF-8", "UTF-16LE", std::back_inserter(output));
+
+    CHECK(output == expected);
+}
+
+TEST_CASE("iconv_transcode_to drops an incomplete UTF-8 tail", "[transcoding::iconv_bulk]") {
+    std::vector<char> input{'A', static_cast<char>(0xC2)};
+    auto              result = iconv_transcode_to<std::string>(input, "UTF-8", "UTF-16LE");
+
+    CHECK(result == std::string{'A', '\0'});
+}
+
 // ---------------------------------------------------------------------------
 // iconv_transcode_into
 // ---------------------------------------------------------------------------
@@ -126,12 +166,12 @@ TEST_CASE("iconv_transcode_into identity transcode", "[transcoding::iconv_bulk]"
     CHECK(output == std::vector<char>(input.begin(), input.end()));
 }
 
-TEST_CASE("iconv_transcode_into replaces EILSEQ with '?'", "[transcoding::iconv_bulk]") {
+TEST_CASE("iconv_transcode_into skips EILSEQ", "[transcoding::iconv_bulk]") {
     iconv_functions   fns{mock_iconv_open, mock_iconv_eilseq, mock_iconv_close};
     std::string       input = "AB";
     std::vector<char> output;
     iconv_transcode_into(std::span<const char>(input), "X", "X", std::back_inserter(output), fns);
-    CHECK(output == std::vector<char>{'?', '?'});
+    CHECK(output.empty());
 }
 
 TEST_CASE("iconv_transcode_into with E2BIG recovery", "[transcoding::iconv_bulk]") {
@@ -256,14 +296,14 @@ TEST_CASE("iconv_transcode_to_or_error returns system_error on unexpected flush 
 // iconv_transcode_into — EINVAL (incomplete sequence at end)
 // ---------------------------------------------------------------------------
 
-TEST_CASE("iconv_transcode_into replaces trailing incomplete sequence with '?'", "[transcoding::iconv_bulk]") {
+TEST_CASE("iconv_transcode_into skips trailing incomplete sequence", "[transcoding::iconv_bulk]") {
     // mock_iconv_pairwise: needs 2 bytes; returns EINVAL for a lone trailing byte.
     iconv_functions   fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
     std::vector<char> input{0x41, 0x42, 0x43}; // one complete pair + one orphan
     std::vector<char> output;
     iconv_transcode_into(std::span<const char>(input), "X", "X", std::back_inserter(output), fns);
-    // Pair {0x41, 0x42} copied, orphan {0x43} replaced
-    CHECK(output == std::vector<char>{0x41, 0x42, '?'});
+    // Pair {0x41, 0x42} copied, orphan {0x43} skipped
+    CHECK(output == std::vector<char>{0x41, 0x42});
 }
 
 // ---------------------------------------------------------------------------

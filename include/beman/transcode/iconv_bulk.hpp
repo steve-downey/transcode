@@ -71,7 +71,7 @@ iconv_input_buf materialize_iconv_input(R&& source) {
 // iconv_transcode_to<Container>(source, from, to, fns)
 //
 // Transcodes source bytes from encoding `from` to encoding `to` using the
-// iconv-compatible callables in `fns`. Invalid sequences are replaced with '?'.
+// iconv-compatible callables in `fns`. Invalid sequences are skipped.
 // Stateful encodings are flushed after all input is consumed.
 // IconvFns enables dependency injection for testing (see iconv_mock.hpp).
 // \ref{transcode.iconv}, eager conversion
@@ -115,28 +115,10 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
                     ++inp;
                     --inp_left;
                 }
-                if (out_left == 0) {
-                    auto used = static_cast<size_t>(out - out_buf.data());
-                    buf_size *= 2;
-                    out_buf.resize(buf_size);
-                    out      = out_buf.data() + used;
-                    out_left = buf_size - used;
-                }
-                *out++ = '?';
-                --out_left;
             } else if (errno == EINVAL) {
-                // Skip remaining incomplete bytes and insert replacement.
+                // Skip remaining incomplete bytes.
                 inp += inp_left;
                 inp_left = 0;
-                if (out_left == 0) {
-                    auto used = static_cast<size_t>(out - out_buf.data());
-                    buf_size *= 2;
-                    out_buf.resize(buf_size);
-                    out      = out_buf.data() + used;
-                    out_left = buf_size - used;
-                }
-                *out++ = '?';
-                --out_left;
             } else {
                 auto out_used = static_cast<size_t>(out - out_buf.data());
                 return Container(out_buf.data(), out_buf.data() + out_used);
@@ -175,7 +157,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to) {
 // iconv_transcode_into(source, from, to, output, fns)
 //
 // Transcodes source bytes from `from` to `to` and writes each output char to
-// the output iterator. Invalid sequences are replaced with '?'. Uses a fixed
+// the output iterator. Invalid sequences are skipped. Uses a fixed
 // temporary buffer internally. Returns the advanced output iterator.
 //! \effects Converts the bytes of `source` from `from` to `to` by `fns` and
 //! writes them through `output`.
@@ -213,12 +195,10 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
                     ++inp;
                     --inp_left;
                 }
-                *output++ = '?';
             } else if (errno == EINVAL) {
-                // Skip remaining incomplete bytes and insert replacement.
+                // Skip remaining incomplete bytes.
                 inp += inp_left;
-                inp_left  = 0;
-                *output++ = '?';
+                inp_left = 0;
             } else {
                 return output;
             }
@@ -250,7 +230,7 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
 // iconv_transcode_to_or_error<Container>(source, from, to, fns)
 //
 // Like iconv_transcode_to but returns std::unexpected on the first invalid or
-// incomplete sequence instead of inserting a replacement character.
+// incomplete sequence instead of skipping it.
 //! \returns A `Container` holding the converted bytes, or the first
 //! `iconv_error` the conversion reported.
 //! \remarks This is the eager form of `iconv_transcode_or_error`
