@@ -1,5 +1,21 @@
 # Handoff: Coverage Audit Complete — Ready for Phase 5 Planning
 
+> [!NOTE]
+> **Historical. Written at the end of Phase 4; superseded.**
+>
+> This described the state of the tree when Phase 4 finished and Phase 5 had
+> not started.  Phase 5 is done: the wording is generated from the headers and
+> the paper is at D4246R1.  Everything under "What Comes Next" has either
+> happened or been overtaken, and the `coverage-p4-audit` branch it asks you to
+> merge is long since merged and deleted.
+>
+> The numbers are a snapshot, not a target.  It reports 707 C++ tests; there
+> are 712 as of 2026-09-11.
+>
+> Kept because the coverage audit's per-file findings are still the best record
+> of which uncovered lines were judged unreachable and why.  For what to do
+> next, see `docs/plans/phase6-index.md`.
+
 ## Completed
 
 - **P4-Step 1: Pluggable Encode View** — done, merged to `main`
