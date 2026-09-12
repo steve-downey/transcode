@@ -574,20 +574,36 @@ You can disable building tests by setting CMake option `BEMAN_TRANSCODE_BUILD_TE
 
 ### Supported Platforms
 
-| Compiler   | Version | C++ Standards | Standard Library  |
-|------------|---------|---------------|-------------------|
-| GCC        | 16-13   | C++26-C++23   | libstdc++         |
-| Clang      | 22-19   | C++26-C++23   | libstdc++, libc++*|
-| Clang      | 18      | C++26-C++23   | libc++            |
-| Clang      | 18      | C++23         | libstdc++         |
-| Clang      | 17      | C++26-C++23   | libc++            |
-| AppleClang | latest  | C++26-C++23   | libc++            |
-| MSVC       | latest  | C++23         | MSVC STL          |
+Tested on every push, and nothing else is:
 
-\* `libc++` on Clang 20+ is currently excluded from the CI matrix, due to an
-upstream compiler bug: a constraint recursion crash (`depends on itself`) when
-`std::expected` is used within `std::vector` combined with our iterators.  We
-are tracking it upstream.
+| Compiler | Version | C++ Standards | Standard Library |
+|----------|---------|---------------|------------------|
+| GCC      | 16-13   | C++26-C++23   | libstdc++        |
+| Clang    | 22-19   | C++26-C++23   | libstdc++        |
+
+That is the whole of `.github/workflows/ci_tests.yml`.  Every row of that
+matrix selects `libstdc++`; there is no `libc++` job, and no Clang below 19.
+
+Other toolchains are not rejected by version.  Configuring probes for the two
+things this library actually needs — `std::expected` usable as a `std::vector`
+element, and `std::ranges::to` — and a toolchain that provides both will
+configure and, as far as we know, build.  AppleClang, MSVC with its own STL,
+and Clang with `libc++` are in that category: expected to work, not verified
+here.  Reports welcome.
+
+`libc++` with Clang 20+ has a known upstream problem: a constraint recursion
+crash (`depends on itself`) when `std::expected` is used within `std::vector`
+combined with our iterators.  The configure probe above should catch it as a
+failure rather than letting it surface mid-build.
+
+An earlier version of this table listed Clang 18 and 17.  Those rows were not
+merely untested: `CMakeLists.txt` refused any Clang below 19 outright, so the
+configurations the table advertised could not be configured at all.  The bound
+was really about libstdc++'s `std::expected` needing
+`__cpp_concepts >= 202002L`, which a version test cannot distinguish from a
+libc++ build of the same compiler, so it is now a capability probe.  Whether
+Clang 18 with `libc++` works is once again an open question rather than a
+foreclosed one; it is not claimed here until someone runs it.
 
 ## Development
 
