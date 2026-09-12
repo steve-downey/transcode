@@ -215,12 +215,41 @@ TEST_CASE("iconv_transcode_into returns unchanged iterator on open failure", "[t
     CHECK(output.empty());
 }
 
-TEST_CASE("iconv_transcode_to_or_error returns invalid_sequence on open failure", "[transcoding::iconv_bulk]") {
+TEST_CASE("iconv_transcode_to_or_error returns open_failed on open failure", "[transcoding::iconv_bulk]") {
     iconv_functions  fns{mock_iconv_open_fail, mock_iconv, mock_iconv_close};
     std::string_view input  = "ABC";
     auto             result = iconv_transcode_to_or_error<std::string>(input, "ASCII", "ASCII", fns);
     REQUIRE_FALSE(result.has_value());
-    CHECK(result.error() == iconv_error::invalid_sequence);
+    CHECK(result.error() == iconv_error::open_failed);
+}
+
+TEST_CASE("iconv_transcode_to_or_error returns system_error on unexpected errno", "[transcoding::iconv_bulk]") {
+    iconv_functions fns{mock_iconv_open, mock_iconv_system_error, mock_iconv_close};
+    std::string     input  = "A";
+    auto            result = iconv_transcode_to_or_error<std::string>(input, "ASCII", "ASCII", fns);
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error() == iconv_error::system_error);
+}
+
+TEST_CASE("lossy bulk operations terminate on unexpected errno", "[transcoding::iconv_bulk]") {
+    iconv_functions fns{mock_iconv_open, mock_iconv_system_error, mock_iconv_close};
+    std::string     input = "A";
+
+    CHECK(iconv_transcode_to<std::string>(input, "ASCII", "ASCII", fns).empty());
+
+    std::vector<char> output;
+    auto              final = iconv_transcode_into(input, "ASCII", "ASCII", std::back_inserter(output), fns);
+    CHECK(output.empty());
+    *final = 'B';
+    CHECK(output == std::vector<char>{'B'});
+}
+
+TEST_CASE("iconv_transcode_to_or_error returns system_error on unexpected flush errno", "[transcoding::iconv_bulk]") {
+    iconv_functions fns{mock_iconv_open, mock_iconv_flush_system_error, mock_iconv_close};
+    std::string     input;
+    auto            result = iconv_transcode_to_or_error<std::string>(input, "ASCII", "ASCII", fns);
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error() == iconv_error::system_error);
 }
 
 // ---------------------------------------------------------------------------

@@ -16,4 +16,6 @@ TEST_CASE("iconv_error enum values", "[transcoding::error]") {
     CHECK(iconv_error::invalid_sequence != iconv_error::incomplete_sequence);
     CHECK(iconv_error::incomplete_sequence != iconv_error::output_full);
     CHECK(iconv_error::output_full != iconv_error::invalid_sequence);
+    CHECK(iconv_error::open_failed != iconv_error::system_error);
+    CHECK(iconv_error::system_error != iconv_error::invalid_sequence);
 }

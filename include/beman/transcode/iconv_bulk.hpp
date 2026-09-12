@@ -11,11 +11,11 @@
 #include <beman/transcode/iconv_transcode_view.hpp>
 
 #include <iconv.h>
+#include <cerrno>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <algorithm>
     #include <array>
-    #include <cerrno>
     #include <expected>
     #include <iterator>
     #include <ranges>
@@ -81,7 +81,9 @@ iconv_input_buf materialize_iconv_input(R&& source) {
 //! is by `iconv_transcode_view` \iref{transcode.iconv}.  The result is empty
 //! when the conversion descriptor cannot be opened -- which is what
 //! `iconv_open` failing means, and is not distinguishable here from an empty
-//! input.
+//! input.  An unexpected system failure ends conversion and returns the bytes
+//! produced before the failure.  Use `iconv_transcode_to_or_error` when either
+//! distinction matters.
 template <typename Container = std::string, typename IconvFns, legacy_byte_range R>
 Container iconv_transcode_to(R&& source, const char* from, const char* to, IconvFns fns) {
     auto input = detail::materialize_iconv_input(std::forward<R>(source));
@@ -122,8 +124,8 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
                 }
                 *out++ = '?';
                 --out_left;
-            } else {
-                // EINVAL: skip remaining incomplete bytes, insert replacement
+            } else if (errno == EINVAL) {
+                // Skip remaining incomplete bytes and insert replacement.
                 inp += inp_left;
                 inp_left = 0;
                 if (out_left == 0) {
@@ -135,6 +137,9 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
                 }
                 *out++ = '?';
                 --out_left;
+            } else {
+                auto out_used = static_cast<size_t>(out - out_buf.data());
+                return Container(out_buf.data(), out_buf.data() + out_used);
             }
         }
     }
@@ -175,6 +180,11 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to) {
 //! \effects Converts the bytes of `source` from `from` to `to` by `fns` and
 //! writes them through `output`.
 //! \returns The value of `output` after the last byte written.
+//! \remarks If the conversion descriptor cannot be opened, no bytes are
+//! written and the unchanged iterator is returned.  This is not
+//! distinguishable from empty input; use `iconv_transcode_to_or_error` when
+//! the distinction matters.  An unexpected system failure similarly returns
+//! the iterator after the last byte successfully written.
 template <typename IconvFns, legacy_byte_range R, std::output_iterator<char> Output>
 Output iconv_transcode_into(R&& source, const char* from, const char* to, Output output, IconvFns fns) {
     auto input = detail::materialize_iconv_input(std::forward<R>(source));
@@ -204,11 +214,13 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
                     --inp_left;
                 }
                 *output++ = '?';
-            } else {
-                // EINVAL: skip remaining incomplete bytes, insert replacement
+            } else if (errno == EINVAL) {
+                // Skip remaining incomplete bytes and insert replacement.
                 inp += inp_left;
                 inp_left  = 0;
                 *output++ = '?';
+            } else {
+                return output;
             }
         }
     }
@@ -252,7 +264,7 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
 
     detail::iconv_guard<IconvFns> guard{fns.open(to, from), fns};
     if (guard.handle == (iconv_t)-1)
-        return std::unexpected(iconv_error::invalid_sequence);
+        return std::unexpected(iconv_error::open_failed);
 
     size_t buf_size = input.size * 4;
     buf_size        = std::max<size_t>(buf_size, 256);
@@ -274,9 +286,10 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
                 out_left = buf_size - used;
             } else if (errno == EILSEQ) {
                 return std::unexpected(iconv_error::invalid_sequence);
-            } else {
-                // EINVAL: incomplete sequence
+            } else if (errno == EINVAL) {
                 return std::unexpected(iconv_error::incomplete_sequence);
+            } else {
+                return std::unexpected(iconv_error::system_error);
             }
         }
     }
@@ -292,8 +305,12 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
             out_buf.resize(buf_size);
             out      = out_buf.data() + used;
             out_left = buf_size - used;
+        } else if (errno == EILSEQ) {
+            return std::unexpected(iconv_error::invalid_sequence);
+        } else if (errno == EINVAL) {
+            return std::unexpected(iconv_error::incomplete_sequence);
         } else {
-            break;
+            return std::unexpected(iconv_error::system_error);
         }
     }
 

@@ -48,11 +48,13 @@ enum class whatwg_error {
 // iconv_error — error categories that map to POSIX iconv errno values.
 // Used only by iconv_transcode_or_error_view and iconv_transcode_to_or_error.
 // Kept separate from whatwg_error because iconv reports at the OS level:
-// EILSEQ (invalid_sequence), EINVAL (incomplete_sequence), E2BIG (output_full).
+// EILSEQ (invalid_sequence), EINVAL (incomplete_sequence), E2BIG (output_full),
+// descriptor-open failure, and errors outside the POSIX conversion model.
 // The OS cannot distinguish WHY a byte sequence is invalid, only that it is.
 //! \remarks An `iconv` conversion that fails reports one of these values,
-//! which are the three failures POSIX `iconv` distinguishes.  The enumerators
-//! have the meanings in the following table.
+//! which include the three failures POSIX `iconv` distinguishes and failures
+//! at the boundary of that model.  The enumerators have the meanings in the
+//! following table.
 //! \libtab2[transcode.errors.iconv]{Enum class `iconv_error`}
 //! \column Constant
 //! \column Meaning
@@ -63,11 +65,20 @@ enum class whatwg_error {
 //! \cell the input ends in the middle of a multibyte sequence (`EINVAL`).
 //! \row `output_full`
 //! \cell the conversion has no room left to write its result (`E2BIG`).
+//! \row `open_failed`
+//! \cell the conversion descriptor could not be opened; `iconv_open` uses
+//! `EINVAL` for an unsupported conversion pair, so this condition is kept
+//! distinct from an incomplete input sequence.
+//! \row `system_error`
+//! \cell the conversion failed with an error POSIX does not specify for
+//! `iconv`.
 //! \endlibtab2
 enum class iconv_error {
     invalid_sequence,
     incomplete_sequence,
     output_full,
+    open_failed,
+    system_error,
 };
 
 // transcode_error_kind — how a view reports a codec failure, as a template
