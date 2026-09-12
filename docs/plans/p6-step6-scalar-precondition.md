@@ -5,6 +5,25 @@
 **Finding:** S-01
 **Read first:** `docs/plans/phase6-index.md`
 
+> [!WARNING]
+> **This step is on hold. Its decision is under review.**
+>
+> The phase index chose "keep the precondition, drop the promises."  That may
+> be backwards.  The WHATWG *encoder algorithm* takes a code point stream, but
+> `TextEncoder` is declared `encode(optional USVString input)`, and the Web IDL
+> DOMString-to-USVString conversion replaces a lone surrogate with U+FFFD
+> *before* the encoder runs.  If that conversion is part of the facility this
+> library is specifying, rather than an artifact of the JavaScript binding,
+> then surrogate-to-U+FFFD is **defined behaviour**, the WPT vectors below are
+> normative after all, and the precondition is the thing that is wrong.
+>
+> The cases may also split: a value above U+10FFFF is not a code point at all,
+> so no conversion is defined for it, and `char32_t` can hold one where a JS
+> string cannot.
+>
+> Do not execute this step until that is settled.  Everything below assumes the
+> original decision and is retained only so the reasoning is not lost.
+
 ---
 
 ## Goal

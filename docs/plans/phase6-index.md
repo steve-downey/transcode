@@ -68,12 +68,45 @@ them at the keyboard.
 | C-01 | **Require `forward_range`.**  The docblock's promise that the mark is not consumed becomes true, rather than being rewritten to admit that it is. |
 | C-06 | **Specify the precondition and value-initialize.**  A reachable terminator and a lifetime requirement become `\expects`; `ptr_` stops being indeterminate. |
 | C-07 | **Return `optional`.**  The `codec` overload of `transcode_string` returns `optional<string>` and rejects an encoder-less target before decoding, so it agrees with the label overload and empty output means empty output. |
-| S-01 | **Keep the precondition, drop the promises.**  A `char32_t` that is not a Unicode scalar value stays outside the contract.  The wording and tests that promise defined recovery for one go. |
+| S-01 | **Reopened — see the note below.**  The provisional decision was "keep the precondition, drop the promises."  It rests on a reading of which spec layer performs surrogate substitution, and that reading is being checked before Step 6 runs. |
 | S-03 | **Document the reservation.**  U+FFFD is reserved as the unmapped-byte signal, the extensibility cost is stated, and the question of a better signal goes to SG16 rather than being answered here. |
 
-Two of these are source-breaking -- C-07 changes a return type and S-01 deletes
-tests.  Both are cheap now and expensive after LEWG review, which is the
-argument for doing them in this phase rather than the next.
+C-07 is source-breaking: it changes a return type.  That is cheap now and
+expensive after LEWG review, which is the argument for doing it in this phase
+rather than the next.
+
+### S-01 is reopened
+
+The decision above was made on the reading that WHATWG's encoder algorithm
+takes scalar values, so a surrogate is outside its domain and this library
+should say so.  That reading may be wrong in a way that matters.
+
+WHATWG specifies the encoder as taking a *code point* stream, and per Infra a
+code point includes surrogates.  But `TextEncoder` is declared
+`encode(optional USVString input)`, and Web IDL's DOMString-to-USVString
+conversion replaces each lone surrogate with U+FFFD *before* the encoder
+algorithm ever runs.  So the substitution is specified -- the question is
+whether it is specified as part of the encoding facility or as coercion in the
+JavaScript binding.
+
+If it is part of the facility, then surrogate-to-U+FFFD is defined behaviour
+this library should implement and specify, the WPT vectors in
+`tests/beman/transcode/wpt_encoder_surrogates.test.cpp` are normative rather
+than inapplicable, and it is the precondition that has to go.  That is the
+opposite of the decision recorded above, and it would mean the implementation
+was right all along and only the wording was wrong.
+
+The cases may also split.  A value above U+10FFFF is not a Unicode code point
+at all, so no conversion is defined for it in any layer -- and `char32_t` can
+hold one where a JavaScript string cannot, so C++ faces an input the web
+platform never has to answer for.  Surrogates and out-of-range values may
+therefore need different answers, which would also settle whether
+`whatwg_error::surrogate_code_point` and `out_of_range` are reachable on
+encode at all.
+
+This is being researched against the Encoding Standard, Infra, Web IDL, the
+Unicode Standard and the WPT source before Step 6 runs.  Step 6 is on hold; no
+other step depends on it.
 
 ## The wording gate, and why it is revised first
 
