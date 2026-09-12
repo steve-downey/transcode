@@ -273,6 +273,12 @@ constexpr random_access_decode_view<Codec, R, E>::iterator::iterator(base_iter c
 
 template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, transcode_error_kind E>
     requires legacy_byte_range<R>
+//! \remarks When `E` is `transcode_error_kind::expected`, a byte whose value
+//! is `0x80` or above and for which `decode_byte` returns U+FFFD is reported
+//! as `whatwg_error::invalid_byte`.  When `E` is
+//! `transcode_error_kind::replacement`, the same byte and codec yield U+FFFD.
+//! This is a consequence of the U+FFFD reservation required by
+//! `random_access_decode_codec_type` \iref{transcode.custom.reqs}.
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator*() const -> value_type {
     const auto byte = static_cast<unsigned char>(*current_);
     char32_t   cp   = codec_.decode_byte(byte);

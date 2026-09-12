@@ -35,8 +35,10 @@ concept decode_codec =
 //! \remarks A type models `random_access_decode_codec_type` if each byte
 //! decodes to one scalar value independently of every other:
 //! `c.decode_byte(byte)` returns what `byte` alone decodes to, and U+FFFD if
-//! it decodes to nothing.  A view over such a codec is a
-//! `random_access_range`, since the *n*th element is the *n*th byte.
+//! it decodes to nothing.  For byte values `0x80` and above, U+FFFD is
+//! reserved as that "decodes to nothing" signal; the author of such a codec
+//! cannot map one of those bytes to U+FFFD itself.  A view over such a codec
+//! is a `random_access_range`, since the *n*th element is the *n*th byte.
 template <typename C>
 concept random_access_decode_codec_type = decode_codec<C> && requires(const C& c, unsigned char byte) {
     { c.decode_byte(byte) } -> std::same_as<char32_t>;

@@ -884,6 +884,17 @@ This paper asks SG16 to treat the named bulk helpers as part of the proposed
 surface. They add no semantics beyond the pipelines they name, but they make
 the common operation discoverable. I recommend keeping them.
 
+The random-access custom codec protocol reserves U+FFFD as the in-band signal
+that a byte `0x80` or above decodes to nothing. That keeps `decode_byte` cheap,
+but it prevents a custom codec from mapping such a byte to the actual U+FFFD
+scalar: replacement mode returns U+FFFD, while error-reporting mode calls the
+same value `invalid_byte`. Should the protocol retain that reservation? The
+alternatives are to return a result type from `decode_byte`, add a separate
+validity query, or keep and document the present restriction. This paper does
+not choose between them before SG16 review: no WHATWG single-byte codec needs
+the foreclosed mapping, and changing the indexed path for a hypothetical
+extension has a cost that the group should weigh explicitly.
+
 The paper also asks whether the `iconv` adaptor belongs in the same proposal as
 the portable WHATWG facilities. It is useful implementation experience and a
 valuable comparison point, but its POSIX dependency gives it a different
