@@ -43,9 +43,17 @@ return move($base$);
 ```
 
 ```cpp
+inline constexpr size_t iconv_min_buffer_size = 4;
+```
+
+[#]{.pnum} *Remarks*: The smallest output buffer accepted by `iconv_transcode_view`. An `iconv` implementation can still report `E2BIG` without producing a byte when a destination encoding needs a larger indivisible output unit.
+
+```cpp
 explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to,
                               span<char> buf);
 ```
+
+[#]{.pnum} *Preconditions*: `buf.size() >= iconv_min_buffer_size` is `true`.
 
 [#]{.pnum} *Effects*: Initializes the view with `std::move(base)`, `std::move(fns)`, `from`, `to` and `buf`.  No conversion descriptor is opened: `begin` opens one.
 
@@ -88,9 +96,13 @@ inline iconv_functions make_real_iconv_fns() noexcept;
 
 [#]{.pnum} *Returns*: An `iconv_functions` whose members are the implementation's `iconv_open`, `iconv` and `iconv_close`.
 
+[#]{.pnum} *Remarks*: The facilities in this subclause are provided only by an implementation that supplies an `iconv` conversion facility.
+
 ```cpp
 inline $see below$ iconv_transcode(const char* from, const char* to, span<char> buf);
 ```
+
+[#]{.pnum} *Preconditions*: `buf.size() >= iconv_min_buffer_size` is `true`.
 
 [#]{.pnum} *Returns*: A range adaptor object.  Given a subexpression `E` that models `legacy_byte_range`, `iconv_transcode(from, to, buf)(E)` and `E | iconv_transcode(from, to, buf)` are each expression-equivalent to an `iconv_transcode_view` ([transcode.iconv]) over `E`, `make_real_iconv_fns()`, `from`, `to` and `buf`.
 
@@ -109,7 +121,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to,
                              IconvFns fns);
 ```
 
-[#]{.pnum} *Returns*: A `Container` holding the bytes of `source` converted from `from` to `to` by `fns`.  Input the conversion does not accept is skipped, as it is by `iconv_transcode_view` ([transcode.iconv]).  The result is empty when the conversion descriptor cannot be opened -- which is what `iconv_open` failing means, and is not distinguishable here from an empty input.
+[#]{.pnum} *Returns*: A `Container` holding the bytes of `source` converted from `from` to `to` by `fns`.  Input the conversion does not accept is skipped, as it is by `iconv_transcode_view` ([transcode.iconv]).  The result is empty when the conversion descriptor cannot be opened -- which is what `iconv_open` failing means, and is not distinguishable here from an empty input.  An unexpected system failure ends conversion and returns the bytes produced before the failure.  Use `iconv_transcode_to_or_error` when either distinction matters.
 
 ```cpp
 template<typename Container = string, legacy_byte_range R>
@@ -132,6 +144,8 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
 [#]{.pnum} *Effects*: Converts the bytes of `source` from `from` to `to` by `fns` and writes them through `output`.
 
 [#]{.pnum} *Returns*: The value of `output` after the last byte written.
+
+[#]{.pnum} *Remarks*: If the conversion descriptor cannot be opened, no bytes are written and the unchanged iterator is returned.  This is not distinguishable from empty input; use `iconv_transcode_to_or_error` when the distinction matters.  An unexpected system failure similarly returns the iterator after the last byte successfully written.
 
 ```cpp
 template<legacy_byte_range R, output_iterator<char> Output>

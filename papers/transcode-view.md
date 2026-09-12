@@ -10,7 +10,6 @@ audience:
   - LEWG
 author:
   - name: Steve Downey
-    email: <sdowney@gmail.com>
     email: <sdowney2@bloomberg.net>
 toc: true
 toc-depth: 2
@@ -35,7 +34,8 @@ The views are lazy and compose in pipelines: decode byte sequences to Unicode sc
 The eager bulk operations collect into containers or write through output iterators, for when a concrete result is more convenient than a view pipeline.
 
 Codec semantics follow the WHATWG Encoding Standard [@whatwg-encoding]: the same byte-to-scalar mappings and the same error recovery the browsers implement.
-For encodings not covered by WHATWG, an optional `iconv`-based adaptor provides access to the platform's native transcoding capabilities.
+For encodings not covered by WHATWG, an `iconv`-based adaptor provides access to the platform's native transcoding capabilities where the implementation supplies that facility.
+The reference implementation currently requires `iconv` at package-configuration time, even though its WHATWG implementation is otherwise portable header-only source.
 
 The wording in this revision is generated from the reference implementation's headers, by a tool that reads the shipping declarations and renders them as draft clauses.
 It is not a transcription, and it is not maintained alongside the code: a header that changes without the wording changing with it fails the implementation's CI.
@@ -48,7 +48,7 @@ The registry says a document is "Shift_JIS"; it does not say what `0x81 0x40` de
 C answered with the multibyte functions and POSIX standardized `iconv`, and both work, as long as you do not care which implementation you get.
 glibc, musl, and the BSD and macOS libraries disagree about error recovery and about which encodings exist at all, and all of them depend on how the system was configured.
 C++ added `std::codecvt`, deprecated it in C++17, and removed it in C++26.
-It allocated on every call and dispatched through a virtual interface to do so; the C89 `mbstowcs` outruns it by roughly a factor of two.
+It allocated on every call and dispatched through a virtual interface to do so; in the accompanying benchmark, the C89 `mbstowcs` is faster.
 
 The WHATWG Encoding Standard specified the missing part, for exactly the encodings the web still carries.
 It gives the byte-to-scalar mapping for every byte value, says what each malformed sequence produces, and the Web Platform Tests [@wpt-encoding] pin all of it across the browser engines.
@@ -333,7 +333,7 @@ It gives exact byte-to-scalar mappings for all byte values, including every erro
 
 The objection is real. WHATWG is a web specification, and it makes web-compatible choices that a general text library would not.
 It conflates distinct UTF-8 error conditions, it strips BOMs, and its label table exists to parse HTML `<meta>` tags.
-However, those choices are the ones that four browser engines already agree on, tested, for the encodings that legacy data is actually written in.
+However, those choices are the ones that major browser engines already agree on, tested, for the encodings that legacy data is actually written in.
 A general specification with no implementations to agree with would be worse.
 
 Targeting it means a C++ program decodes a page the way the browser that fetched it did, and parses HTML and JSON with the same error handling.
@@ -522,13 +522,15 @@ enum class iconv_error {
   invalid_sequence,
   incomplete_sequence,
   output_full,
+  open_failed,
+  system_error,
 };
 ```
 
 Two error vocabularies in one header wants a defence, so here it is.
 They are separate because the failures are not the same failures.
 `whatwg_error` names what the Encoding Standard says went wrong in a byte sequence this library decoded, and every one of its enumerators corresponds to a step in an algorithm the paper specifies.
-`iconv_error` names what POSIX reported about a conversion this library did not perform: `EILSEQ`, `EINVAL`, `E2BIG`, and a descriptor that would not open.
+`iconv_error` names what the platform reported about a conversion this library did not perform: `EILSEQ`, `EINVAL`, `E2BIG`, a descriptor that would not open, or an unexpected system failure.
 A single enumeration would have to either drop that distinction — reporting `invalid_byte` for a failure whose meaning is "the platform's tables say so", with no algorithm behind it a reader can consult — or carry both sets, which is two vocabularies with one name.
 Nothing composes them, either: the `iconv` adaptor is byte↔byte and does not appear in a `decode | encode` pipeline, so no expression ever has to reconcile the two.
 
@@ -901,12 +903,14 @@ not choose between them before SG16 review: no WHATWG single-byte codec needs
 the foreclosed mapping, and changing the indexed path for a hypothetical
 extension has a cost that the group should weigh explicitly.
 
-The paper also asks whether the `iconv` adaptor belongs in the same proposal as
-the portable WHATWG facilities. It is useful implementation experience and a
-valuable comparison point, but its POSIX dependency gives it a different
-standardization path. I would keep it in this paper through SG16 design review,
-where the shared interface can be considered as a whole, and split the wording
-only if the group wants separate progression.
+Should the `iconv` adaptor remain in this proposal with the portable WHATWG
+facilities, or should it progress separately?  Its conversion-descriptor handle
+cannot be named entirely in ISO C++ terms without either introducing an opaque
+handle abstraction or moving the adaptor to a POSIX-conditional document.  It
+is useful implementation experience and a valuable comparison point, so I would
+keep it here through SG16 design review, where the shared interface can be
+considered as a whole, and split the wording only if the group wants separate
+progression.
 Wording for it is included accordingly, as [transcode.iconv], written last and
 resting on nothing the other clauses need, so removing it renumbers nothing.
 
@@ -955,7 +959,7 @@ Add the following macro to [version.syn], in the place the table's alphabetical
 order puts it:
 
 ```cpp
-#define __cpp_lib_transcode_view 20XXXXL // also in <transcode>, <null_term>
+#define __cpp_lib_transcode_view 202XXXL // also in <transcode>, <null_term>
 ```
 
 Add a new clause [transcode], "Text transcoding", as follows.

@@ -22,7 +22,7 @@ concept random_access_decode_codec_type =
     };
 ```
 
-[#]{.pnum} *Remarks*: A type models `random_access_decode_codec_type` if each byte decodes to one scalar value independently of every other: `c.decode_byte(byte)` returns what `byte` alone decodes to, and U+FFFD if it decodes to nothing.  A view over such a codec is a `random_access_range`, since the *n*th element is the *n*th byte.
+[#]{.pnum} *Remarks*: A type models `random_access_decode_codec_type` if each byte decodes to one scalar value independently of every other: `c.decode_byte(byte)` returns what `byte` alone decodes to, and U+FFFD if it decodes to nothing.  For byte values `0x80` and above, U+FFFD is reserved as that "decodes to nothing" signal; the author of such a codec cannot map one of those bytes to U+FFFD itself.  A view over such a codec is a `random_access_range`, since the *n*th element is the *n*th byte.
 
 ```cpp
 template<typename C>
@@ -31,7 +31,7 @@ concept encode_codec = semiregular<C> && requires(C& c, char32_t cp) {
 };
 ```
 
-[#]{.pnum} *Remarks*: A type models `encode_codec` if it can encode one Unicode scalar value to bytes.  `c.encode_one(cp)` returns the encoded form of `cp`, or an error if the encoding has no representation for it.  `cp` is required to be a Unicode scalar value.
+[#]{.pnum} *Remarks*: A type models `encode_codec` if it can encode one Unicode scalar value to bytes.  `c.encode_one(cp)` returns the encoded form of `cp`, or an error if the encoding has no representation for it.  An encode view validates its UTF-32 input before calling this function, so `cp` is always a Unicode scalar value.
 
 ```cpp
 template<typename C>

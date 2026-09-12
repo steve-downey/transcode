@@ -1,21 +1,24 @@
 # beman.transcode
 
-A C++23 header-only library for Unicode transcoding using ranges and views.
-Provides two transcoding backends with a shared pipeline-oriented interface:
+A C++23 library for Unicode transcoding using ranges and views.  Its WHATWG
+implementation is header-only; the reference package currently requires a
+platform `iconv` dependency as well.  It provides two transcoding backends with
+a shared pipeline-oriented interface:
 
 - **WHATWG codecs** — a compile-time-safe, constexpr-capable implementation of
   the [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/) exposing 40
-  codec identifiers (UTF-8, all ISO-8859 and Windows code pages, CJK multi-byte
-  encodings including GB18030, Big5, Shift-JIS, EUC-JP/KR, ISO-2022-JP)
+  codec identifiers (UTF-8, the WHATWG-listed ISO-8859 and Windows variants,
+  and CJK multi-byte encodings including GB18030, Big5, Shift-JIS, EUC-JP/KR,
+  and ISO-2022-JP)
 - **iconv range adaptor** — a C++ ranges wrapper around the POSIX/system `iconv`
   API, giving safe, composable access to whatever encodings the platform provides
 
-Most C and C++ code doing encoding conversion today uses `iconv` (directly, or
-through libraries that call it).  The iconv view gives that existing ecosystem a
-leak-free ranges interface, with no manual buffer management, composable with
-other range adaptors.  The WHATWG views provide a portable, header-only
-alternative with standardized error semantics for the
-codecs web and network protocols actually use.
+For code that already uses `iconv`, the iconv view gives that platform facility
+a leak-free ranges interface, with no manual buffer management, composable with
+other range adaptors.  The WHATWG views themselves are portable, header-only
+source with standardized error semantics for the codecs web and network
+protocols actually use, although the current CMake package does not build or
+install them separately from its required `iconv` dependency.
 
 Part of the [Beman Project](https://github.com/bemanproject), targeting C++29
 standardization.
@@ -54,7 +57,7 @@ This library operates on **byte-like types** (`char`, `signed char`,
 `unsigned char`, `std::byte`), the types you get from files, sockets, and
 memory-mapped I/O.  It deliberately does not use `char8_t`, `char16_t`, or
 `char32_t` as input types.  This is a different, complementary use case from
-the type-based encoding approach in [P2728](https://wg21.link/P2728) (Eddie
+the type-based encoding approach in [P2728R13](https://wg21.link/P2728R13) (Eddie
 Nolan's Unicode Transcoding paper), which uses distinct character types to
 statically track encoding at the type-system level.
 
@@ -187,11 +190,11 @@ for a complete working example.
 ### iconv Range Adaptor — System Encoding Support
 
 If your code already uses `iconv` (or uses a library that does), the iconv
-range adaptor is the interoperability path.  On most POSIX systems, `iconv` is
-the system's encoding engine: glibc, musl, ICU, and platform-specific
-implementations all expose the same `iconv_open`/`iconv`/`iconv_close` API.
-Any encoding your system supports is available through this view, with no need
-to reimplement the codec.
+range adaptor is the interoperability path.  On systems that provide it,
+implementations such as glibc, musl and GNU libiconv expose the same
+`iconv_open`/`iconv`/`iconv_close` API.  Any encoding that implementation
+advertises is available through this view, with no need to reimplement the
+codec.
 
 The raw `iconv` API requires manual buffer allocation, pointer arithmetic, error
 code inspection, and careful resource cleanup.  The range adaptor handles all of
@@ -213,7 +216,8 @@ handling, and resource cleanup, in
 
 An `_or_error` variant yields `std::expected<char, iconv_error>` instead of
 replacement characters, for applications that need to distinguish
-`invalid_sequence`, `incomplete_sequence`, and `output_full` conditions.
+`invalid_sequence`, `incomplete_sequence`, `output_full`, `open_failed`, and
+`system_error` conditions.
 
 Key design choices:
 - **External buffer**: caller provides the working `std::span<char>`; no hidden
@@ -232,13 +236,13 @@ iteration.  See the Performance section for measured overhead vs raw iconv.
 ### API Surface Matrix
 
 All three implementation families now have matching API surfaces for the
-operations their encoding model supports.  The P2728R12 (UTF transcoding)
+operations their encoding model supports.  The P2728 (UTF transcoding)
 column shows the parallel standard proposal for type-safe UTF-to-UTF conversion.
 
 Legend: ✅ implemented · n/a architectural model doesn't support this ·
 🔴 not yet implemented
 
-| API | WHATWG | Pluggable codec | iconv | P2728R12 |
+| API | WHATWG | Pluggable codec | iconv | P2728 |
 |-----|--------|-----------------|-------|----------|
 | **Codec identity** | `codec::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
 | **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(f,t,buf)` | ✅ `views::to_utf32` |
@@ -288,9 +292,10 @@ determined by the character types (`char8_t`, `char16_t`, `char32_t`), so
 runtime label lookup and runtime transcode are outside its model.
 
 ⁶ **BOM sniffing is a property of the byte stream.**
-`sniff_encoding()` examines the first bytes of a stream to detect UTF-8/16/32
-BOMs and returns the appropriate `codec` enum value.  This is a WHATWG-specific
-facility; pluggable codecs and iconv operate on already-identified encodings.
+`sniff_encoding()` examines the first bytes of a stream to detect UTF-8,
+UTF-16BE or UTF-16LE BOMs and returns the appropriate `codec` enum value.  This
+is a WHATWG-specific facility; pluggable codecs and iconv operate on
+already-identified encodings.
 
 ⁷ **P2728 operates on in-memory typed data** where the encoding is known from
 the type.  BOM detection is an I/O concern; a separate endian-converting view
@@ -350,9 +355,8 @@ implementation accepts `std::text_encoding` labels is purely quality-of-
 implementation; the standard does not require it.  It may become recommended
 practice for a compiler to identify an iconv function that interprets its
 `"literal"` and `"locale"` encodings, but this is not currently required.  If
-your codebase already uses iconv (or a library that wraps it — this includes
-most C and C++ programs doing encoding conversion today), the
-`iconv_transcode_view` accepts the same string labels you already have.
+your codebase already uses iconv, `iconv_transcode_view` accepts the same string
+labels you already have.
 
 `beman.transcode` provides:
 
@@ -576,12 +580,16 @@ You can disable building tests by setting CMake option `BEMAN_TRANSCODE_BUILD_TE
 | Clang      | 18      | C++23         | libstdc++         |
 | Clang      | 17      | C++26-C++23   | libc++            |
 | AppleClang | latest  | C++26-C++23   | libc++            |
-| MSVC       | latest  | C++23         | MSVC STL          |
+| MSVC†      | latest  | C++23         | MSVC STL          |
 
 \* `libc++` on Clang 20+ is currently excluded from the CI matrix, due to an
 upstream compiler bug: a constraint recursion crash (`depends on itself`) when
 `std::expected` is used within `std::vector` combined with our iterators.  We
 are tracking it upstream.
+
+† The WHATWG headers are portable to MSVC.  Configuring the reference package
+also requires a separately supplied compatible `iconv` implementation because
+its CMake build currently finds `Iconv` unconditionally.
 
 ## Development
 

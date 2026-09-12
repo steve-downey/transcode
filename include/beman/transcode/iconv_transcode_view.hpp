@@ -48,6 +48,12 @@ enum class iconv_flush_state { not_started, in_progress, done };
 //! can supply a different implementation of the same interface -- another
 //! library's, or a test's -- and `make_real_iconv_fns` is the one bound to the
 //! platform's.
+//!
+//! The facilities in this subclause are provided only by an implementation
+//! that supplies an `iconv` conversion facility.  The type `iconv_t` in this
+//! subclause is implementation-defined and denotes the handle type of that
+//! facility's conversion descriptors.  On a POSIX implementation, it is the
+//! type POSIX specifies as `iconv_t`.
 struct iconv_functions {
     iconv_t (*open)(const char* tocode, const char* fromcode);
     size_t (*convert)(iconv_t cd, char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft);
@@ -187,10 +193,10 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
+//! \expects `buf.size() >= iconv_min_buffer_size` is `true`.
 //! \effects Initializes the view with `std::move(base)`, `std::move(fns)`,
 //! `from`, `to` and `buf`.  No conversion descriptor is opened: `begin` opens
 //! one.
-//! \expects `buf.size() >= iconv_min_buffer_size` is `true`.
 iconv_transcode_view<IconvFns, R>::iconv_transcode_view(
     R base, IconvFns fns, const char* from, const char* to, std::span<char> buf)
     : base_(std::move(base)), fns_(std::move(fns)), from_(from), to_(to), buffer_(buf) {

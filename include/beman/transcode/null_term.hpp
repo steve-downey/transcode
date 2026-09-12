@@ -35,6 +35,7 @@ class null_term_view : public std::ranges::view_interface<null_term_view<I>> {
     I ptr_{};
 
   public:
+    // \ref{null.term.view}, construction and access
     //! \remarks The resulting view is singular. It may be assigned to and
     //! destroyed, but iterating it results in undefined behavior because the
     //! iterator returned by `begin()` has no reachable terminator.
