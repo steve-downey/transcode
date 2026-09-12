@@ -957,6 +957,38 @@ set_tests_properties(
     PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
 )
 
+# sniff_encoding requires forward_range; single-pass ranges must be rejected,
+# because examining the mark advances the iterator over it.
+add_library(beman.transcode.tests.sniff_reject_input_range_fail OBJECT)
+target_sources(
+    beman.transcode.tests.sniff_reject_input_range_fail
+    PRIVATE sniff_reject_input_range_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.sniff_reject_input_range_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.sniff_reject_input_range_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME sniff_reject_input_range_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.sniff_reject_input_range_fail --config
+        $<CONFIGURATION>
+)
+# Both GCC and Clang tie the failure to the constraint by name -- GCC with
+# "required for the satisfaction of 'forward_range<R>'", Clang with "does not
+# satisfy 'forward_range'".  Matching the bare concept name would also match
+# its appearance in the printed candidate signature, which proves nothing about
+# which constraint failed.
+set_tests_properties(
+    sniff_reject_input_range_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "satisf.*forward_range"
+)
+
 # Module integration test (only when modules are enabled)
 if(BEMAN_TRANSCODE_USE_MODULES)
     add_executable(beman.transcode.tests.module_integration)
