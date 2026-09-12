@@ -12,9 +12,10 @@ docblock beside the definition, and reaches the paper from there.
 ## Regenerating
 
 ```sh
-make wording               # rewrite the fragments from the headers
-make wording-check         # fail if the fragments are not what the headers generate
-make wording-inputs-check  # fail if a header moved without a regeneration
+make wording                # rewrite the fragments from the headers
+make wording-check          # fail if the fragments are not what the headers generate
+make wording-inputs-check   # fail if a header moved without a regeneration
+make wording-pending-check  # fail if a regeneration is still deferred
 ```
 
 Regenerating needs a `specgen` on `PATH`, built from the revision named in
@@ -41,6 +42,41 @@ generated from these headers and not from others, which is the staleness
 question and not the correctness one. It over-reports by construction, too: an
 edit that changes no wording still needs a regeneration to say so. That is the
 trade for a check that costs nothing.
+
+### Deferring a regeneration
+
+Over-reporting is cheap when a change is one commit and expensive when it is a
+series. Regenerating needs a specgen, specgen links LLVM's Clang front end, and
+a gate that demands one to fix a typo in a docblock is a gate people learn to
+resent. So the exemption is explicit rather than absent.
+
+`PENDING` names the headers that are knowingly ahead of the fragments, one
+repository-relative path per line, `#` for comments. The check then splits the
+difference three ways:
+
+- a header that changed and **is** listed is reported, and passes;
+- a header that changed and is **not** listed fails, exactly as before;
+- a header that is listed and did **not** change also fails, because an
+  exemption nobody notices is how this stops working.
+
+`make wording` empties the list: after a regeneration nothing is pending, and
+leaving that to memory is how the first stale entry would happen.
+
+The correctness check is untouched. `make wording-check` regenerates and diffs
+and **ignores `PENDING` entirely**, so a paper revision still cannot go out
+against stale wording. What is deferred is the staleness report, for a tree
+that is knowingly mid-revision — not the regeneration itself.
+
+`make wording-pending-check` fails when anything is listed. It runs nightly
+rather than per pull request, since a series lands on `main` one change at a
+time and failing there would defeat the point; run it by hand before tagging or
+publishing.
+
+The logic lives in `inputs-check.sh` rather than in the `Makefile` recipe, so
+it can be tested — `tools/tests/test_wording_inputs_check.py` covers the three
+cases above plus the ones that are easy to get wrong: a header entering or
+leaving the document extent, a comment on an entry, and an absent `PENDING`
+behaving exactly as an empty one.
 
 **`make wording-check` is the real check, and it is local.** Run it before a
 paper revision goes out, and whenever `specgen-ref` changes. It regenerates
@@ -77,10 +113,10 @@ too: it lists the fragments in document order, which is the order
 `papers/Makefile` hands them to pandoc, which is the order they appear in the
 paper.
 
-`inputs.sha256` is generated too. `README.md` and `specgen-ref` are not:
-`generate.sh --authored` is the one list saying which is which, and both its own
-cleanup and `wording-check`'s diff read it, so a third authored file breaks
-neither.
+`inputs.sha256` is generated too. `README.md`, `specgen-ref`,
+`inputs-check.sh` and `PENDING` are not: `generate.sh --authored` is the one
+list saying which is which, and both its own cleanup and `wording-check`'s diff
+read it, so a further authored file breaks neither.
 
 `generate.sh` renders with `--new-root` once per stable-name root this paper
 owns, `transcode` and `null.term`. Those clauses are not in the working draft,

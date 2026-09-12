@@ -230,27 +230,23 @@ wording: ## Regenerate the paper's wording fragments from the header markup
 
 .PHONY: wording-inputs-check
 wording-inputs-check: ## Fail if a spec-facing header changed without `make wording`
-	@scratch=$$(mktemp); \
-	trap 'rm -f "$$scratch"' EXIT; \
-	papers/wording/generate.sh --inputs >"$$scratch" || { \
-		echo "wording-inputs-check: generate.sh --inputs failed; see above" >&2; \
-		exit 2; \
-	}; \
-	if diff -u papers/wording/inputs.sha256 "$$scratch"; then \
-		echo "wording inputs are unchanged since the fragments were generated"; \
-	else \
+	papers/wording/inputs-check.sh
+
+.PHONY: wording-pending-check
+wording-pending-check: ## Fail if any regeneration is still deferred
+	@entries=$$(sed -e 's/#.*//' -e 's/[[:space:]]*$$//' papers/wording/PENDING | awk 'NF'); \
+	if [ -n "$$entries" ]; then \
 		echo "" >&2; \
-		echo "A header the wording is generated from has changed, and the" >&2; \
-		echo "committed fragments were generated from the older one." >&2; \
+		echo "papers/wording/PENDING is not empty:" >&2; \
 		echo "" >&2; \
-		echo "Run 'make wording' and commit the result -- that regenerates the" >&2; \
-		echo "fragments and this file together.  It needs a specgen on PATH;" >&2; \
-		echo "see papers/wording/README.md." >&2; \
+		printf '    %s\n' $$entries >&2; \
 		echo "" >&2; \
-		echo "This check does not read the fragments.  It says the inputs moved," >&2; \
-		echo "not that the wording is wrong -- an edit that changes no wording" >&2; \
-		echo "still needs a regeneration to say so." >&2; \
+		echo "A deferred regeneration is fine mid-series and is not fine here." >&2; \
+		echo "Run 'make wording' and commit the result before tagging or" >&2; \
+		echo "publishing a paper revision." >&2; \
 		exit 1; \
+	else \
+		echo "no wording regeneration is deferred"; \
 	fi
 
 .PHONY: wording-check

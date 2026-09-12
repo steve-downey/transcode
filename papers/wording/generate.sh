@@ -76,10 +76,37 @@ done
 authored_files() {
     cat <<'FILES'
 generate.sh
+inputs-check.sh
 README.md
 specgen-ref
 inputs.sha256
+PENDING
 FILES
+}
+
+# PENDING's header, which survives the truncation below.  A file whose only
+# content is a list of paths says nothing about why the paths are there, and
+# this one needs to say what putting a path in it means.
+pending_header() {
+    cat <<'HEADER'
+# Headers that are knowingly ahead of the committed wording fragments.
+#
+# One repository-relative path per line.  `#` starts a comment.
+#
+# A path here tells `make wording-inputs-check` that this header changed on
+# purpose and the regeneration is coming later in the series.  A path that is
+# not here and has changed anyway fails the check, which is the drift this gate
+# is for.
+#
+# An entry expires.  If a listed header turns out not to have changed, the
+# check fails on that too -- an exemption nobody notices is how a gate stops
+# working.  `make wording` empties this list, because after a regeneration
+# nothing is pending.
+#
+# This does not defer correctness, only the staleness report.
+# `make wording-check` regenerates and diffs, and ignores this file entirely,
+# so a paper revision still cannot go out against stale wording.
+HEADER
 }
 
 if [ "$authored_only" -eq 1 ]; then
@@ -89,6 +116,11 @@ fi
 
 script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 repo_root=$(CDPATH='' cd -- "$script_dir/../.." && pwd)
+# Whether this run is the real regeneration or `wording-check`'s scratch one.
+# Only the real one may empty PENDING: the scratch run is a comparison, and a
+# comparison that mutates the thing it is comparing against is not one.
+regenerating_in_place=0
+[ -n "$out_dir" ] || regenerating_in_place=1
 [ -n "$out_dir" ] || out_dir=$script_dir
 mkdir -p "$out_dir"
 out_dir=$(CDPATH='' cd -- "$out_dir" && pwd)
@@ -247,6 +279,13 @@ wording_input_hashes >"$out_dir/inputs.sha256"
     echo "WORDING_MD := \\"
     sed -e 's/^/\t/' -e 's/$/ \\/' -e '$ s/ \\$//' "$manifest"
 } >"$out_dir/wording.mk"
+
+# The fragments are now current, so nothing is pending.  Emptying the list here
+# rather than asking a contributor to remember is what keeps an exemption from
+# outliving the reason for it.
+if [ "$regenerating_in_place" -eq 1 ]; then
+    pending_header >"$script_dir/PENDING"
+fi
 
 if [ "$validate" -eq 1 ] && [ "$findings" -ne 0 ]; then
     echo "generate.sh: validation reported errors (see above)" >&2
