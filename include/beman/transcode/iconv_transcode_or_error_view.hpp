@@ -38,6 +38,9 @@ namespace beman::transcoding {
 //! rather than skipped: its value type is `expected<char, iconv_error>`, and a
 //! conversion failure is an element holding the `iconv_error` POSIX reported
 //! rather than input the range passes over.
+//! The buffer has no minimum-size precondition.  If it cannot hold one
+//! indivisible conversion or flush unit, the view reports
+//! `iconv_error::output_full`.
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_transcode_or_error_view<IconvFns, R>> {

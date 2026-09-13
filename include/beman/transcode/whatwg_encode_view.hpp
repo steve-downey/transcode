@@ -102,15 +102,11 @@ class random_access_whatwg_encode_view
                 if (validation.is_error)
                     return error_result(validation.error);
             }
-            const auto cp = validation.code_point;
-            if (cp < 0x80)
-                return static_cast<char>(cp);
-            const auto& table = detail::random_access_encode_table<C>();
-            for (int index = 0; index < 128; ++index) {
-                if (table[index] == cp)
-                    return static_cast<char>(0x80 + index);
-            }
-            return error_result(whatwg_error::unmapped_codepoint);
+            const auto  cp     = validation.code_point;
+            const auto& table  = detail::random_access_encode_table<C>();
+            const auto  result = detail::single_byte_encode_one(cp, table);
+            return result.is_error ? error_result(whatwg_error::unmapped_codepoint)
+                                   : value_type{static_cast<char>(result.byte)};
         }
 
         constexpr value_type operator[](difference_type n) const { return *(*this + n); }
@@ -508,23 +504,11 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
     const auto cp = validation.code_point;
 
     auto encode_single = [&](const char32_t (&table)[128]) {
-        if (cp < 0x80) {
-            this->buf_[0] = result_value{static_cast<char>(cp)};
-            len_          = 1;
-            pos_          = 0;
-            return;
-        }
-        int index = -1;
-        for (int i = 0; i < 128; ++i) {
-            if (table[i] == cp) {
-                index = i;
-                break;
-            }
-        }
-        if (index < 0) {
+        const auto result = detail::single_byte_encode_one(cp, table);
+        if (result.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
         } else {
-            this->buf_[0] = result_value{static_cast<char>(0x80 + index)};
+            this->buf_[0] = result_value{static_cast<char>(result.byte)};
             len_          = 1;
             pos_          = 0;
         }

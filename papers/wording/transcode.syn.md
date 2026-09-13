@@ -499,8 +499,8 @@ static constexpr $iterator$ $terminal$();
 
 [#]{.pnum} A conversion failure is reported as `iconv_error` ([transcode.errors]), which is the granularity POSIX reports at: `EILSEQ`, `EINVAL` and `E2BIG` say *that* a byte sequence is not valid, not why, so the WHATWG error vocabulary the other views use would be claiming knowledge the OS does not return.
 
-[#]{.pnum} The output buffer is the caller's, and is not owned by the view. Its contents between two increments are unspecified, and the program must keep it alive for the lifetime of every iterator the view produces.
+[#]{.pnum} The output buffer is the caller's, and is not owned by the view. Its contents between two increments are unspecified, and the program must keep it alive for the lifetime of every iterator the view produces. If `iconv` reports `E2BIG` without producing a byte, the range ends because its `char` value type has no error channel.  A program that needs to detect that condition uses `iconv_transcode_or_error`, which reports `iconv_error::output_full` instead.
 
-[#]{.pnum} *Remarks*: `iconv_transcode_or_error_view<IconvFns, R>` is `iconv_transcode_view` ([transcode.iconv]) with the errors reported rather than skipped: its value type is `expected<char, iconv_error>`, and a conversion failure is an element holding the `iconv_error` POSIX reported rather than input the range passes over.
+[#]{.pnum} *Remarks*: `iconv_transcode_or_error_view<IconvFns, R>` is `iconv_transcode_view` ([transcode.iconv]) with the errors reported rather than skipped: its value type is `expected<char, iconv_error>`, and a conversion failure is an element holding the `iconv_error` POSIX reported rather than input the range passes over. The buffer has no minimum-size precondition.  If it cannot hold one indivisible conversion or flush unit, the view reports `iconv_error::output_full`.
 
 :::

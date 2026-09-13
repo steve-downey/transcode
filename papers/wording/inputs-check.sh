@@ -38,6 +38,13 @@
 
 set -eu
 
+# `sort` and `comm` must use the same bytewise ordering.  In particular, some
+# UTF-8 locales order punctuation differently, which can make a C-sorted path
+# list look unsorted to `comm` and turn an allowed PENDING entry into a false
+# failure.
+LC_ALL=C
+export LC_ALL
+
 usage() {
     sed -n '4,37p' "$0" | sed 's/^# \{0,1\}//'
 }

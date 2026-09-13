@@ -90,6 +90,10 @@ struct iconv_functions {
 //! The output buffer is the caller's, and is not owned by the view.
 //! Its contents between two increments are unspecified, and the program must
 //! keep it alive for the lifetime of every iterator the view produces.
+//! If `iconv` reports `E2BIG` without producing a byte, the range ends because
+//! its `char` value type has no error channel.  A program that needs to detect
+//! that condition uses `iconv_transcode_or_error`, which reports
+//! `iconv_error::output_full` instead.
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_view<IconvFns, R>> {
@@ -270,7 +274,6 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
                 }
                 if (errno == E2BIG) {
                     if (out_ptr == buffer_.data()) {
-                        assert(false && "iconv output buffer cannot hold one conversion unit");
                         done_ = true;
                         return;
                     }
@@ -325,7 +328,6 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
         }
         if (errno == E2BIG) {
             if (out_ptr == buffer_.data()) {
-                assert(false && "iconv output buffer cannot hold one conversion unit");
                 done_ = true;
                 return;
             }
@@ -381,7 +383,6 @@ void iconv_transcode_view<IconvFns, R>::iterator::load() {
 
     if (errno == E2BIG) {
         if (output_pos_ == output_end_) {
-            assert(false && "iconv output buffer cannot hold one flush unit");
             flush_state_ = detail::iconv_flush_state::done;
             done_        = true;
         }

@@ -14,6 +14,11 @@ set(TEST_INCLUDE_DIR "${PROJECT_SOURCE_DIR}")
 # that configuration instead of compiling the header-mode suite with a module
 # configuration header.
 if(BEMAN_TRANSCODE_USE_MODULES)
+    message(
+        STATUS
+        "Module mode registers only beman.transcode.tests.module_integration; "
+        "the full header-mode suite is registered when BEMAN_TRANSCODE_USE_MODULES=OFF."
+    )
     add_executable(beman.transcode.tests.module_integration)
     target_sources(
         beman.transcode.tests.module_integration

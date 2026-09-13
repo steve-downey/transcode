@@ -39,6 +39,9 @@ inline auto iconv_transcode(const char* from, const char* to, std::span<char> bu
 //! \returns `iconv_transcode(from, to, buf)` with the errors reported rather
 //! than skipped: the view it adapts to has value type
 //! `expected<char, iconv_error>`.
+//! \remarks Unlike `iconv_transcode`, this adaptor accepts a buffer of any
+//! size.  If `iconv` reports `E2BIG` without producing output, the adapted view
+//! reports `iconv_error::output_full`.
 inline auto iconv_transcode_or_error(const char* from, const char* to, std::span<char> buf) {
     return iconv_transcode_or_error_closure<iconv_functions>{make_real_iconv_fns(), from, to, buf};
 }

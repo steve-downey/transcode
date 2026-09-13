@@ -11,6 +11,7 @@ files, so nothing here depends on the repository's real headers or on a specgen
 being installed.
 """
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -19,6 +20,8 @@ SCRIPT = Path(__file__).parent.parent.parent / "papers" / "wording" / "inputs-ch
 # Two plausible hash lines, in the `sha256sum` format the script parses.
 HEADER_A = "include/beman/transcode/error.hpp"
 HEADER_B = "include/beman/transcode/null_term.hpp"
+HEADER_COLLATION_A = "include/beman/transcode/codec.hpp"
+HEADER_COLLATION_B = "include/beman/transcode/codec_concepts.hpp"
 HASH_1 = "1" * 64
 HASH_2 = "2" * 64
 
@@ -33,6 +36,7 @@ def run_check(
     committed: str,
     current: str,
     pending: str | None = None,
+    env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Drive the script against three literal files and return the result."""
     committed_file = tmp_path / "inputs.sha256"
@@ -50,7 +54,7 @@ def run_check(
         pending_file = tmp_path / "PENDING"
         pending_file.write_text(pending)
         argv += ["--pending", str(pending_file)]
-    return subprocess.run(argv, capture_output=True, text=True, check=False)
+    return subprocess.run(argv, capture_output=True, text=True, check=False, env=env)
 
 
 def test_no_drift_passes(tmp_path: Path) -> None:
@@ -107,6 +111,28 @@ def test_listed_and_unlisted_together_fails(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert HEADER_B in result.stderr
     assert "Run 'make wording'" in result.stderr
+
+
+def test_path_collation_is_independent_of_callers_locale(tmp_path: Path) -> None:
+    """C-sorted paths must also be compared under the C locale."""
+    env = os.environ.copy()
+    env["LC_ALL"] = "en_US.UTF-8"
+    result = run_check(
+        tmp_path,
+        hashes(
+            (HASH_1, HEADER_COLLATION_A),
+            (HASH_1, HEADER_COLLATION_B),
+        ),
+        hashes(
+            (HASH_2, HEADER_COLLATION_A),
+            (HASH_2, HEADER_COLLATION_B),
+        ),
+        pending=f"{HEADER_COLLATION_A}\n{HEADER_COLLATION_B}\n",
+        env=env,
+    )
+    assert result.returncode == 0
+    assert "regeneration pending" in result.stdout
+    assert result.stderr == ""
 
 
 def test_comments_and_blank_lines_ignored(tmp_path: Path) -> None:

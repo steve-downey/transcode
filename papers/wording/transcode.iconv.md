@@ -115,6 +115,8 @@ inline $see below$ iconv_transcode_or_error(const char* from, const char* to,
 
 [#]{.pnum} *Returns*: `iconv_transcode(from, to, buf)` with the errors reported rather than skipped: the view it adapts to has value type `expected<char, iconv_error>`.
 
+[#]{.pnum} *Remarks*: Unlike `iconv_transcode`, this adaptor accepts a buffer of any size.  If `iconv` reports `E2BIG` without producing output, the adapted view reports `iconv_error::output_full`.
+
 ```cpp
 template<typename Container = string, typename IconvFns, legacy_byte_range R>
 Container iconv_transcode_to(R&& source, const char* from, const char* to,

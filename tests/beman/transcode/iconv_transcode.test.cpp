@@ -260,6 +260,38 @@ TEST_CASE("iconv_transcode_view output before E2BIG error", "[transcoding::iconv
     CHECK(!output.empty());
 }
 
+TEST_CASE("iconv_transcode_view no-output E2BIG terminates cleanly", "[transcoding::iconv_transcode]") {
+    std::array<char, 16> buf{};
+    auto                 collect = [](auto& view) {
+        std::vector<char> output;
+        for (char value : view)
+            output.push_back(value);
+        return output;
+    };
+
+    SECTION("contiguous input") {
+        std::vector<char> input{'A', 'B', 'C'};
+        iconv_functions   fns{mock_iconv_open, mock_iconv_shift_loop_e2big, mock_iconv_close};
+        auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+        CHECK(collect(view).empty());
+    }
+
+    SECTION("staged input") {
+        std::forward_list<char> input{'A', 'B', 'C'};
+        iconv_functions         fns{mock_iconv_open, mock_iconv_shift_loop_e2big, mock_iconv_close};
+        auto                    view =
+            iconv_transcode_view<iconv_functions, std::forward_list<char>>(input, fns, "X", "X", std::span(buf));
+        CHECK(collect(view).empty());
+    }
+
+    SECTION("flush") {
+        std::vector<char> input;
+        iconv_functions   fns{mock_iconv_open, mock_iconv_flush_e2big_zero_output, mock_iconv_close};
+        auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+        CHECK(collect(view).empty());
+    }
+}
+
 TEST_CASE("iconv_transcode_view EILSEQ multi-byte shift", "[transcoding::iconv_transcode]") {
     // mock_iconv_eilseq_multi_byte always returns EILSEQ with no output.
     // With 3+ staging bytes, triggers the byte-shifting loop (line 214-216).
