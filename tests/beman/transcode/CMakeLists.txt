@@ -5,6 +5,35 @@ find_package(Catch2 3 REQUIRED)
 # Common include path for test_utilities.hpp (tests/beman/transcode/test_utilities.hpp)
 set(TEST_INCLUDE_DIR "${PROJECT_SOURCE_DIR}")
 
+# The component-header tests below exercise header mode: each source includes
+# the header under test directly so that its self-containment is checked.  In
+# module mode those headers are compiled in the module purview after
+# `import std`; their standard-library includes are deliberately suppressed,
+# and consumers reach them by importing `beman.transcode` (directly or through
+# the <beman/transcode/transcode.hpp> shim).  Run the dedicated import test in
+# that configuration instead of compiling the header-mode suite with a module
+# configuration header.
+if(BEMAN_TRANSCODE_USE_MODULES)
+    add_executable(beman.transcode.tests.module_integration)
+    target_sources(
+        beman.transcode.tests.module_integration
+        PRIVATE module_integration.test.cpp
+    )
+    target_include_directories(
+        beman.transcode.tests.module_integration
+        PRIVATE ${TEST_INCLUDE_DIR}
+    )
+    target_link_libraries(
+        beman.transcode.tests.module_integration
+        PRIVATE beman::transcode Catch2::Catch2WithMain
+    )
+    add_test(
+        NAME beman.transcode.tests.module_integration
+        COMMAND beman.transcode.tests.module_integration
+    )
+    return()
+endif()
+
 add_executable(beman.transcode.tests.todo)
 target_sources(beman.transcode.tests.todo PRIVATE todo.test.cpp)
 target_link_libraries(
@@ -988,27 +1017,6 @@ set_tests_properties(
     sniff_reject_input_range_fail
     PROPERTIES PASS_REGULAR_EXPRESSION "satisf.*forward_range"
 )
-
-# Module integration test (only when modules are enabled)
-if(BEMAN_TRANSCODE_USE_MODULES)
-    add_executable(beman.transcode.tests.module_integration)
-    target_sources(
-        beman.transcode.tests.module_integration
-        PRIVATE module_integration.test.cpp
-    )
-    target_include_directories(
-        beman.transcode.tests.module_integration
-        PRIVATE ${TEST_INCLUDE_DIR}
-    )
-    target_link_libraries(
-        beman.transcode.tests.module_integration
-        PRIVATE beman::transcode Catch2::Catch2WithMain
-    )
-    add_test(
-        NAME beman.transcode.tests.module_integration
-        COMMAND beman.transcode.tests.module_integration
-    )
-endif()
 
 # ---------------------------------------------------------------------------
 # Pluggable codec protocol tests
