@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import beman.transcode;
-
 #include <catch2/catch_all.hpp>
 
 #include <string>
 #include <vector>
+
+import beman.transcode;
 
 using namespace beman::transcoding;
 
