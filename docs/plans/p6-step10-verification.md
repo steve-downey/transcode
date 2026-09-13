@@ -29,20 +29,23 @@ claim.
 
 ### Build matrix
 
-Fresh configure and build from a clean tree, not an incremental one:
+Fresh configure and build from clean, toolchain-specific build trees, not
+incremental ones.  The supported native matrix on this development machine is
+GCC 16 and Clang 22; keep build parallelism at two jobs:
 
 ```sh
-make realclean
-make test
+CMAKE_BUILD_PARALLEL_LEVEL=2 make TOOLCHAIN=gcc-16 test
+CMAKE_BUILD_PARALLEL_LEVEL=2 make TOOLCHAIN=clang-22 test
 ```
 
-Then each configuration that CI covers, and both module settings:
+Then each configuration that CI covers, and both module settings.  The commands
+below show the GCC 16 build tree; repeat the relevant checks for Clang 22:
 
 ```sh
-uv run cmake --build .build/build-system/ --config Debug
-uv run cmake --build .build/build-system/ --config Asan
-uv run cmake --build .build/build-system/ --config RelWithDebInfo
-uv run ctest --test-dir .build/build-system/ -C Debug --output-on-failure
+uv run cmake --build .build/build-gcc-16/ --config Debug
+uv run cmake --build .build/build-gcc-16/ --config Asan
+uv run cmake --build .build/build-gcc-16/ --config RelWithDebInfo
+uv run ctest --test-dir .build/build-gcc-16/ -C Debug --output-on-failure
 ```
 
 `BEMAN_TRANSCODE_USE_MODULES=ON` and `OFF` both configure, build and test.
@@ -79,17 +82,13 @@ and both are real.
 - `specgen` was unavailable, so full `make wording-check` never ran.  Step 8
   builds it; confirm here.
 
-### Cross-implementation iconv
+### Platform scope
 
-The review asks for the C-01 through C-05 regressions on "at least glibc iconv
-and one other implementation."  glibc is what the development machine has.
-musl in a container is the cheap second — Alpine, build, run the iconv tests.
-This matters more than it sounds: `papers/transcode-view.md:52` argues that
-glibc, musl and the BSD libraries disagree about error recovery, and Steps 2
-and 3 changed how the library handles exactly that disagreement.
-
-If a second implementation cannot be arranged, say so plainly in the report
-rather than leaving the item ticked.
+The project matrix is the installed, versioned GCC 16 and Clang 22 toolchains
+above, using the repository's toolchain files.  Containers and external images
+are outside the supported verification matrix and are strictly off limits.
+Record the review's request for a second iconv implementation as out of scope;
+do not turn Alpine, musl, or another unsupported platform into a release gate.
 
 ### Coverage
 
