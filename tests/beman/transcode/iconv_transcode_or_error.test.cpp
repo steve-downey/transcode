@@ -222,6 +222,32 @@ TEST_CASE("iconv_transcode_or_error_view reports an unexpected flush error",
     CHECK(result.front().error() == iconv_error::system_error);
 }
 
+TEST_CASE("iconv_transcode_or_error_view classifies input errors during flush",
+          "[transcoding::iconv_transcode_or_error]") {
+    std::vector<char>                       input;
+    std::array<char, iconv_min_buffer_size> buf{};
+
+    SECTION("EILSEQ") {
+        iconv_functions fns{mock_iconv_open, mock_iconv_flush_eilseq, mock_iconv_close};
+        auto            view =
+            iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+        auto result = collect(view);
+        REQUIRE(result.size() == 1);
+        REQUIRE_FALSE(result.front().has_value());
+        CHECK(result.front().error() == iconv_error::invalid_sequence);
+    }
+
+    SECTION("EINVAL") {
+        iconv_functions fns{mock_iconv_open, mock_iconv_flush_einval, mock_iconv_close};
+        auto            view =
+            iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+        auto result = collect(view);
+        REQUIRE(result.size() == 1);
+        REQUIRE_FALSE(result.front().has_value());
+        CHECK(result.front().error() == iconv_error::incomplete_sequence);
+    }
+}
+
 TEST_CASE("iconv_transcode_or_error_view reports a flush error after partial output",
           "[transcoding::iconv_transcode_or_error]") {
     std::vector<char>                       input;

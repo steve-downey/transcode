@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <beman/transcode/iconv_bulk.hpp>
-#include <beman/transcode/iconv_bulk.hpp>
 
 #include <beman/transcode/whatwg_decode_view.hpp>
 
@@ -290,6 +289,24 @@ TEST_CASE("iconv_transcode_to_or_error returns system_error on unexpected flush 
     auto            result = iconv_transcode_to_or_error<std::string>(input, "ASCII", "ASCII", fns);
     REQUIRE_FALSE(result.has_value());
     CHECK(result.error() == iconv_error::system_error);
+}
+
+TEST_CASE("iconv_transcode_to_or_error classifies input errors during flush", "[transcoding::iconv_bulk]") {
+    std::string input;
+
+    SECTION("EILSEQ") {
+        iconv_functions fns{mock_iconv_open, mock_iconv_flush_eilseq, mock_iconv_close};
+        auto            result = iconv_transcode_to_or_error<std::string>(input, "ASCII", "ASCII", fns);
+        REQUIRE_FALSE(result.has_value());
+        CHECK(result.error() == iconv_error::invalid_sequence);
+    }
+
+    SECTION("EINVAL") {
+        iconv_functions fns{mock_iconv_open, mock_iconv_flush_einval, mock_iconv_close};
+        auto            result = iconv_transcode_to_or_error<std::string>(input, "ASCII", "ASCII", fns);
+        REQUIRE_FALSE(result.has_value());
+        CHECK(result.error() == iconv_error::incomplete_sequence);
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -64,6 +64,22 @@ inline size_t mock_iconv_flush_system_error(iconv_t, char** in, size_t* inleft, 
     return mock_iconv((iconv_t)1, in, inleft, out, outleft);
 }
 
+inline size_t mock_iconv_flush_eilseq(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+    if (in == nullptr || *in == nullptr) {
+        errno = EILSEQ;
+        return (size_t)-1;
+    }
+    return mock_iconv((iconv_t)1, in, inleft, out, outleft);
+}
+
+inline size_t mock_iconv_flush_einval(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
+    if (in == nullptr || *in == nullptr) {
+        errno = EINVAL;
+        return (size_t)-1;
+    }
+    return mock_iconv((iconv_t)1, in, inleft, out, outleft);
+}
+
 // Writes one reset byte before reporting an unexpected error during flush.
 inline size_t
 mock_iconv_flush_output_then_system_error(iconv_t, char** in, size_t* inleft, char** out, size_t* outleft) {
