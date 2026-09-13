@@ -326,6 +326,7 @@ inline std::optional<std::string> transcode_string(std::span<const char> src, co
     case codec::euc_kr:
         result = detail::transcode_encode_all<codec::euc_kr>(u32v);
         break;
+    // Unreachable after has_whatwg_encoder(to); retained to keep the switch exhaustive.
     case codec::utf_16be:
     case codec::utf_16le:
     case codec::replacement:

@@ -208,6 +208,21 @@ TEST_CASE("iconv_transcode_or_error_view reports an unexpected error after parti
     CHECK(result[1].error() == iconv_error::system_error);
 }
 
+TEST_CASE("iconv_transcode_or_error_view reports an unexpected error after staged output",
+          "[transcoding::iconv_transcode_or_error]") {
+    std::forward_list<char>                 input{'A', 'B'};
+    std::array<char, iconv_min_buffer_size> buf{};
+    iconv_functions fns{mock_iconv_open, mock_iconv_output_then_system_error, mock_iconv_close};
+    auto            view =
+        iconv_transcode_or_error_view<iconv_functions, std::forward_list<char>>(input, fns, "X", "X", std::span(buf));
+
+    auto result = collect(view);
+    REQUIRE(result.size() == 2);
+    CHECK(result[0] == result_t{'A'});
+    REQUIRE_FALSE(result[1].has_value());
+    CHECK(result[1].error() == iconv_error::system_error);
+}
+
 TEST_CASE("iconv_transcode_or_error_view reports an unexpected flush error",
           "[transcoding::iconv_transcode_or_error]") {
     std::vector<char>                       input;
@@ -372,19 +387,35 @@ TEST_CASE("iconv_transcode_or_error_view output before E2BIG error", "[transcodi
     CHECK(result[1].value() == 'Y');
 }
 
+TEST_CASE("iconv_transcode_or_error_view staged output before E2BIG error",
+          "[transcoding::iconv_transcode_or_error]") {
+    std::forward_list<char> input{'X', 'Y', 'Z'};
+    std::array<char, 16>    buf{};
+    iconv_functions         fns{mock_iconv_open, mock_iconv_output_then_e2big, mock_iconv_close};
+    auto                    view =
+        iconv_transcode_or_error_view<iconv_functions, std::forward_list<char>>(input, fns, "X", "X", std::span(buf));
+
+    auto result = collect(view);
+    REQUIRE(result.size() == 3);
+    CHECK(result[0] == result_t{'X'});
+    CHECK(result[1] == result_t{'Y'});
+    CHECK(result[2] == result_t{'Z'});
+}
+
 TEST_CASE("iconv_transcode_or_error_view EILSEQ multi-byte shift", "[transcoding::iconv_transcode_or_error]") {
     // mock_iconv_shift_loop_eilseq always returns EILSEQ with no output.
-    // With 3+ staging bytes, triggers the byte-shifting loop (line 206-209).
-    std::vector<char>    input{'A', 'B', 'C'};
-    std::array<char, 16> buf{};
-    iconv_functions      fns{mock_iconv_open, mock_iconv_shift_loop_eilseq, mock_iconv_close};
-    auto                 view =
-        iconv_transcode_or_error_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    // Non-contiguous input fills staging and exercises its byte-shifting loop.
+    std::forward_list<char> input{'A', 'B', 'C'};
+    std::array<char, 16>    buf{};
+    iconv_functions         fns{mock_iconv_open, mock_iconv_shift_loop_eilseq, mock_iconv_close};
+    auto                    view =
+        iconv_transcode_or_error_view<iconv_functions, std::forward_list<char>>(input, fns, "X", "X", std::span(buf));
     auto result = collect(view);
-    // Should get invalid_sequence errors as staging bytes are shifted
-    REQUIRE(!result.empty());
-    CHECK(!result[0].has_value());
-    CHECK(result[0].error() == iconv_error::invalid_sequence);
+    REQUIRE(result.size() == 3);
+    for (const auto& item : result) {
+        REQUIRE_FALSE(item.has_value());
+        CHECK(item.error() == iconv_error::invalid_sequence);
+    }
 }
 
 TEST_CASE("iconv_transcode_or_error_view success with no output at end of input",

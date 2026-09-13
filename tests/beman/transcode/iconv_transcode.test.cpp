@@ -220,6 +220,18 @@ TEST_CASE("iconv_transcode_view terminates on an unexpected error with non-conti
     CHECK(view.begin() == view.end());
 }
 
+TEST_CASE("iconv_transcode_view yields staged output before an unexpected error", "[transcoding::iconv_transcode]") {
+    std::forward_list<char>                 input{'A', 'B'};
+    std::array<char, iconv_min_buffer_size> buf{};
+    iconv_functions fns{mock_iconv_open, mock_iconv_output_then_system_error, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::forward_list<char>>(input, fns, "X", "X", std::span(buf));
+
+    std::vector<char> output;
+    for (char c : view)
+        output.push_back(c);
+    CHECK(output == std::vector<char>{'A'});
+}
+
 TEST_CASE("iconv_transcode_view partial staging consume shifts correctly", "[transcoding::iconv_transcode]") {
     // mock_iconv_partial_consume consumes 1 byte, writes 1, returns EINVAL.
     // With 4-byte input, each pair of bytes produces output after accumulating.
@@ -294,11 +306,11 @@ TEST_CASE("iconv_transcode_view no-output E2BIG terminates cleanly", "[transcodi
 
 TEST_CASE("iconv_transcode_view EILSEQ multi-byte shift", "[transcoding::iconv_transcode]") {
     // mock_iconv_eilseq_multi_byte always returns EILSEQ with no output.
-    // With 3+ staging bytes, triggers the byte-shifting loop (line 214-216).
-    std::vector<char>    input{'A', 'B', 'C'};
-    std::array<char, 16> buf{};
-    iconv_functions      fns{mock_iconv_open, mock_iconv_eilseq_multi_byte, mock_iconv_close};
-    auto view = iconv_transcode_view<iconv_functions, std::vector<char>>(input, fns, "X", "X", std::span(buf));
+    // Non-contiguous input fills staging and exercises its byte-shifting loop.
+    std::forward_list<char> input{'A', 'B', 'C'};
+    std::array<char, 16>    buf{};
+    iconv_functions         fns{mock_iconv_open, mock_iconv_eilseq_multi_byte, mock_iconv_close};
+    auto view = iconv_transcode_view<iconv_functions, std::forward_list<char>>(input, fns, "X", "X", std::span(buf));
     std::vector<char> output;
     for (char c : view)
         output.push_back(c);
