@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <beman/transcode/iconv_bulk.hpp>
+#include <beman/transcode/iconv_bulk.hpp>
 
 #include <beman/transcode/whatwg_decode_view.hpp>
 

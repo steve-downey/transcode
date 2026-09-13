@@ -448,12 +448,6 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
 [#]{.pnum} `C` is required to be an encoding the WHATWG Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and the view does not accept them.
 
 ```cpp
-constexpr value_type operator*() const;
-```
-
-[#]{.pnum} *Remarks*: When `E` is `transcode_error_kind::expected`, a byte whose value is `0x80` or above and for which `decode_byte` returns U+FFFD is reported as `whatwg_error::invalid_byte`.  When `E` is `transcode_error_kind::replacement`, the same byte and codec yield U+FFFD. This is a consequence of the U+FFFD reservation required by `random_access_decode_codec_type` ([transcode.custom.reqs]).
-
-```cpp
 constexpr iterator begin() const;
 ```
 
@@ -471,9 +465,9 @@ constexpr auto size() const;
 
 [#]{.pnum} *Constraints*: `R` models `sized_range`.
 
-[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg_decode_view` ([transcode.whatwg.decode]) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error kind and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.  Every `char32_t` value the view presents is a Unicode scalar value.
+[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg_decode_view` ([transcode.whatwg.decode]) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error kind and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.  The view does not validate a successful `code_point`; the program-supplied `Codec` is responsible for returning Unicode scalar values as required by `decode_codec`.
 
-[#]{.pnum} The view models `random_access_range` when `Codec` models `random_access_decode_codec_type` and `R` models `random_access_range`.
+[#]{.pnum} The view models `random_access_range` when `Codec` models `random_access_decode_codec_type` and `R` models `random_access_range`. When it does, a byte whose value is `0x80` or above and for which `Codec::decode_byte` returns U+FFFD is reported as `whatwg_error::invalid_byte` in expected mode and yields U+FFFD in replacement mode.  This follows from the U+FFFD reservation required by `random_access_decode_codec_type` ([transcode.custom.reqs]).
 
 ```cpp
 static constexpr $iterator$ $terminal$();

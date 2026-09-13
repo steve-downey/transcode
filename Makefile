@@ -234,7 +234,11 @@ wording-inputs-check: ## Fail if a spec-facing header changed without `make word
 
 .PHONY: wording-pending-check
 wording-pending-check: ## Fail if any regeneration is still deferred
-	@entries=$$(sed -e 's/#.*//' -e 's/[[:space:]]*$$//' papers/wording/PENDING | awk 'NF'); \
+	@[ -r papers/wording/PENDING ] || { \
+		echo "papers/wording/PENDING is missing or unreadable" >&2; \
+		exit 2; \
+	}; \
+	entries=$$(sed -e 's/#.*//' -e 's/[[:space:]]*$$//' papers/wording/PENDING | awk 'NF'); \
 	if [ -n "$$entries" ]; then \
 		echo "" >&2; \
 		echo "papers/wording/PENDING is not empty:" >&2; \

@@ -109,11 +109,18 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 //! scalar values `Codec` decodes them to, reports a decoding error as `E`
 //! says, and decodes lazily.  Everything that clause says about the value
 //! type, the error kind and the laziness holds here, of a codec the program
-//! wrote rather than one the Encoding Standard defines.  Every `char32_t`
-//! value the view presents is a Unicode scalar value.
+//! wrote rather than one the Encoding Standard defines.  The view does not
+//! validate a successful `code_point`; the program-supplied `Codec` is
+//! responsible for returning Unicode scalar values as required by
+//! `decode_codec`.
 //!
 //! The view models `random_access_range` when `Codec` models
 //! `random_access_decode_codec_type` and `R` models `random_access_range`.
+//! When it does, a byte whose value is `0x80` or above and for which
+//! `Codec::decode_byte` returns U+FFFD is reported as
+//! `whatwg_error::invalid_byte` in expected mode and yields U+FFFD in
+//! replacement mode.  This follows from the U+FFFD reservation required by
+//! `random_access_decode_codec_type` \iref{transcode.custom.reqs}.
 template <decode_codec Codec, std::ranges::input_range R, transcode_error_kind E = transcode_error_kind::replacement>
     requires legacy_byte_range<R>
 class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>> {
@@ -274,12 +281,6 @@ constexpr random_access_decode_view<Codec, R, E>::iterator::iterator(base_iter c
 
 template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, transcode_error_kind E>
     requires legacy_byte_range<R>
-//! \remarks When `E` is `transcode_error_kind::expected`, a byte whose value
-//! is `0x80` or above and for which `decode_byte` returns U+FFFD is reported
-//! as `whatwg_error::invalid_byte`.  When `E` is
-//! `transcode_error_kind::replacement`, the same byte and codec yield U+FFFD.
-//! This is a consequence of the U+FFFD reservation required by
-//! `random_access_decode_codec_type` \iref{transcode.custom.reqs}.
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator*() const -> value_type {
     const auto byte = static_cast<unsigned char>(*current_);
     char32_t   cp   = codec_.decode_byte(byte);

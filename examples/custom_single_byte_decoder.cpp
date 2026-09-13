@@ -64,7 +64,7 @@ constexpr decode_result fractional_codec::decode_one(I& current, [[maybe_unused]
         return {static_cast<char32_t>(byte), {}, false};
 
     // 0x80-0xBE are the vulgar fractions n/64, which Unicode does not have as
-    // scalar values except for a handful.  This encoding keeps the two it can
+    // scalar values except for a handful.  This encoding keeps the three it can
     // represent exactly and rejects the rest, which is the interesting case:
     // a byte that is valid in the encoding and has no Unicode scalar value is
     // still a decode error, because decoding produces scalar values.
