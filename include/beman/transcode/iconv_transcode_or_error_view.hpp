@@ -10,10 +10,10 @@
 #include <beman/transcode/iconv_transcode_view.hpp>
 
 #include <iconv.h>
+#include <cerrno>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <algorithm>
-    #include <cerrno>
     #include <expected>
     #include <iterator>
     #include <memory>
@@ -38,6 +38,9 @@ namespace beman::transcoding {
 //! rather than skipped: its value type is `expected<char, iconv_error>`, and a
 //! conversion failure is an element holding the `iconv_error` POSIX reported
 //! rather than input the range passes over.
+//! The buffer has no minimum-size precondition.  If it cannot hold one
+//! indivisible conversion or flush unit, the view reports
+//! `iconv_error::output_full`.
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_transcode_or_error_view<IconvFns, R>> {
@@ -68,15 +71,18 @@ class iconv_transcode_or_error_view : public std::ranges::view_interface<iconv_t
         //! \expos
         char* output_pos_;
         //! \expos
-        char*       output_end_;
-        char        staging_[64];
-        size_t      staging_len_{0};
-        base_iter   current_;
-        base_sent   end_;
-        bool        done_;
-        bool        flushed_{false};
-        bool        has_error_{false};
-        iconv_error error_value_{};
+        char*                     output_end_;
+        char                      staging_[64];
+        size_t                    staging_len_{0};
+        base_iter                 current_;
+        base_sent                 end_;
+        bool                      done_{false};
+        detail::iconv_flush_state flush_state_{detail::iconv_flush_state::not_started};
+        bool                      has_error_{false};
+        bool                      terminal_error_{false};
+        bool                      pending_terminal_error_{false};
+        iconv_error               error_value_{};
+        iconv_error               pending_error_value_{};
 
         //! \expos
         void load();
@@ -165,20 +171,36 @@ iconv_transcode_or_error_view<IconvFns, R>::iterator::iterator(
       output_end_(buffer.data()),
 
       current_(std::move(current)),
-      end_(std::move(end)),
-      done_(handle == (iconv_t)-1) {
-    if (!done_)
+      end_(std::move(end)) {
+    if (handle_ == (iconv_t)-1) {
+        has_error_      = true;
+        terminal_error_ = true;
+        error_value_    = iconv_error::open_failed;
+    } else {
         load();
+    }
 }
 
 template <typename IconvFns, std::ranges::input_range R>
     requires legacy_byte_range<R>
 void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
-    char*  out_ptr = buffer_.data();
-    size_t outleft = buffer_.size();
+    if (pending_terminal_error_) {
+        pending_terminal_error_ = false;
+        has_error_              = true;
+        terminal_error_         = true;
+        error_value_            = pending_error_value_;
+        return;
+    }
+
+    char   zero_size_output;
+    char*  output_begin = buffer_.empty() ? &zero_size_output : buffer_.data();
+    char*  out_ptr      = output_begin;
+    size_t outleft      = buffer_.size();
 
     // Fast path: contiguous+sized input with empty staging — pass directly to iconv.
     if constexpr (std::contiguous_iterator<base_iter> && std::sized_sentinel_for<base_sent, base_iter>) {
+        if (flush_state_ != detail::iconv_flush_state::not_started)
+            goto do_flush;
         if (staging_len_ == 0 && current_ != end_) {
             const auto* raw_ptr   = reinterpret_cast<const char*>(std::to_address(current_));
             auto        remaining = static_cast<size_t>(end_ - current_);
@@ -189,7 +211,7 @@ void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
             current_ += static_cast<std::ptrdiff_t>(consumed);
 
             output_pos_ = buffer_.data();
-            output_end_ = out_ptr;
+            output_end_ = buffer_.empty() ? buffer_.data() : out_ptr;
 
             if (rc != iconv_error_rc) {
                 if (output_pos_ == output_end_ && current_ == end_)
@@ -199,11 +221,9 @@ void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
             if (errno == E2BIG) {
                 if (output_pos_ < output_end_)
                     return;
-                // No output: buffer too small for one conversion unit.
-                if (current_ != end_)
-                    ++current_;
-                has_error_   = true;
-                error_value_ = iconv_error::output_full;
+                has_error_      = true;
+                terminal_error_ = true;
+                error_value_    = iconv_error::output_full;
                 return;
             }
             if (errno == EINVAL) {
@@ -222,13 +242,23 @@ void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
                 }
                 return;
             }
-            // EILSEQ
-            if (output_pos_ < output_end_)
-                return; // yield output; invalid byte still at current_ for retry
-            if (current_ != end_)
-                ++current_;
-            has_error_   = true;
-            error_value_ = iconv_error::invalid_sequence;
+            if (errno == EILSEQ) {
+                if (output_pos_ < output_end_)
+                    return; // yield output; invalid byte still at current_ for retry
+                if (current_ != end_)
+                    ++current_;
+                has_error_   = true;
+                error_value_ = iconv_error::invalid_sequence;
+                return;
+            }
+            if (output_pos_ < output_end_) {
+                pending_terminal_error_ = true;
+                pending_error_value_    = iconv_error::system_error;
+            } else {
+                has_error_      = true;
+                terminal_error_ = true;
+                error_value_    = iconv_error::system_error;
+            }
             return;
         }
     }
@@ -239,7 +269,7 @@ void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
             staging_[staging_len_++] = static_cast<char>(*current_);
             ++current_;
         }
-        if (staging_len_ == 0) {
+        if (flush_state_ != detail::iconv_flush_state::not_started || staging_len_ == 0) {
             output_pos_ = output_end_ = buffer_.data();
             goto do_flush;
         }
@@ -253,7 +283,7 @@ void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
         staging_len_ = inleft;
 
         output_pos_ = buffer_.data();
-        output_end_ = out_ptr;
+        output_end_ = buffer_.empty() ? buffer_.data() : out_ptr;
 
         if (rc != iconv_error_rc) {
             if (output_pos_ == output_end_ && staging_len_ == 0 && current_ == end_)
@@ -281,30 +311,70 @@ void iconv_transcode_or_error_view<IconvFns, R>::iterator::load() {
             error_value_ = iconv_error::invalid_sequence;
             return;
         }
-        // E2BIG
-        if (output_pos_ < output_end_)
+        if (errno == E2BIG) {
+            if (output_pos_ < output_end_)
+                return;
+            has_error_      = true;
+            terminal_error_ = true;
+            error_value_    = iconv_error::output_full;
             return;
-        if (staging_len_ > 0) {
-            std::copy_n(staging_ + 1, staging_len_ - 1, staging_);
-            --staging_len_;
         }
-        has_error_   = true;
-        error_value_ = iconv_error::output_full;
+        if (output_pos_ < output_end_) {
+            pending_terminal_error_ = true;
+            pending_error_value_    = iconv_error::system_error;
+        } else {
+            has_error_      = true;
+            terminal_error_ = true;
+            error_value_    = iconv_error::system_error;
+        }
         return;
     }
 
 do_flush:
-    if (!flushed_) {
-        flushed_          = true;
-        char*  flush_out  = buffer_.data();
-        size_t flush_left = buffer_.size();
-        fns_.convert(handle_, nullptr, nullptr, &flush_out, &flush_left);
-        output_pos_ = buffer_.data();
-        output_end_ = flush_out;
+    if (flush_state_ == detail::iconv_flush_state::done) {
+        done_ = true;
+        return;
+    }
+
+    flush_state_      = detail::iconv_flush_state::in_progress;
+    char*  flush_out  = output_begin;
+    size_t flush_left = buffer_.size();
+    size_t rc         = fns_.convert(handle_, nullptr, nullptr, &flush_out, &flush_left);
+    output_pos_       = buffer_.data();
+    output_end_       = buffer_.empty() ? buffer_.data() : flush_out;
+
+    if (rc != iconv_error_rc) {
+        flush_state_ = detail::iconv_flush_state::done;
+        if (output_pos_ == output_end_)
+            done_ = true;
+        return;
+    }
+
+    if (errno == E2BIG) {
         if (output_pos_ < output_end_)
             return;
+        flush_state_    = detail::iconv_flush_state::done;
+        has_error_      = true;
+        terminal_error_ = true;
+        error_value_    = iconv_error::output_full;
+        return;
     }
-    done_ = true;
+
+    iconv_error flush_error = iconv_error::system_error;
+    if (errno == EILSEQ)
+        flush_error = iconv_error::invalid_sequence;
+    else if (errno == EINVAL)
+        flush_error = iconv_error::incomplete_sequence;
+
+    flush_state_ = detail::iconv_flush_state::done;
+    if (output_pos_ < output_end_) {
+        pending_terminal_error_ = true;
+        pending_error_value_    = flush_error;
+    } else {
+        has_error_      = true;
+        terminal_error_ = true;
+        error_value_    = flush_error;
+    }
 }
 
 template <typename IconvFns, std::ranges::input_range R>
@@ -321,9 +391,12 @@ iconv_transcode_or_error_view<IconvFns, R>::iterator::iterator(iterator&& other)
       current_(std::move(other.current_)),
       end_(std::move(other.end_)),
       done_(other.done_),
-      flushed_(other.flushed_),
+      flush_state_(other.flush_state_),
       has_error_(other.has_error_),
-      error_value_(other.error_value_) {
+      terminal_error_(other.terminal_error_),
+      pending_terminal_error_(other.pending_terminal_error_),
+      error_value_(other.error_value_),
+      pending_error_value_(other.pending_error_value_) {
     for (size_t i = 0; i < other.staging_len_; ++i)
         staging_[i] = other.staging_[i];
     other.handle_      = (iconv_t)-1;
@@ -349,16 +422,19 @@ auto iconv_transcode_or_error_view<IconvFns, R>::iterator::operator=(iterator&& 
         staging_len_ = other.staging_len_;
         for (size_t i = 0; i < other.staging_len_; ++i)
             staging_[i] = other.staging_[i];
-        current_           = std::move(other.current_);
-        end_               = std::move(other.end_);
-        done_              = other.done_;
-        flushed_           = other.flushed_;
-        has_error_         = other.has_error_;
-        error_value_       = other.error_value_;
-        other.handle_      = (iconv_t)-1;
-        other.done_        = true;
-        other.staging_len_ = 0;
-        other.has_error_   = false;
+        current_                = std::move(other.current_);
+        end_                    = std::move(other.end_);
+        done_                   = other.done_;
+        flush_state_            = other.flush_state_;
+        has_error_              = other.has_error_;
+        terminal_error_         = other.terminal_error_;
+        pending_terminal_error_ = other.pending_terminal_error_;
+        error_value_            = other.error_value_;
+        pending_error_value_    = other.pending_error_value_;
+        other.handle_           = (iconv_t)-1;
+        other.done_             = true;
+        other.staging_len_      = 0;
+        other.has_error_        = false;
     }
     return *this;
 }
@@ -390,6 +466,10 @@ template <typename IconvFns, std::ranges::input_range R>
 auto iconv_transcode_or_error_view<IconvFns, R>::iterator::operator++() -> iterator& {
     if (has_error_) {
         has_error_ = false;
+        if (terminal_error_) {
+            done_ = true;
+            return *this;
+        }
         load();
         return *this;
     }

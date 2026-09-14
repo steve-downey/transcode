@@ -939,7 +939,7 @@ _ENCODER_SURR_RE = re.compile(
 
 
 def parse_encoder_surrogates_vectors(content: str) -> list[dict[str, object]]:
-    """Parse the bad[] array from textencoder-utf16-surrogates.any.js."""
+    """Parse WPT's USVString coercion cases from textencoder-utf16-surrogates."""
     vectors: list[dict[str, object]] = []
     for m in _ENCODER_SURR_RE.finditer(content):
         input_str, expected_str, name = m.groups()
@@ -958,7 +958,7 @@ def parse_encoder_surrogates_vectors(content: str) -> list[dict[str, object]]:
 def render_encoder_surrogates_vectors_hpp(
     vectors: list[dict[str, object]], out_path: Path
 ) -> None:
-    """Generate the C++ header for WPT encoder surrogate round-trip vectors."""
+    """Generate UTF-32 validation vectors derived from WPT's USVString cases."""
     lines: list[str] = []
     lines.append("// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception")
     lines.append(
@@ -966,6 +966,7 @@ def render_encoder_surrogates_vectors_hpp(
     )
     lines.append("//")
     lines.append("// Source: docs/wpt/textencoder-utf16-surrogates.any.js")
+    lines.append("// These are USVString coercion cases, not WHATWG encoder cases.")
     lines.append(
         "// WPT: https://github.com/web-platform-tests/wpt/tree/master/encoding"
     )
@@ -1085,7 +1086,7 @@ def main() -> int:
 
     enc_surr_content = ENCODER_SURROGATES_JS.read_text()
     enc_surr_vectors = parse_encoder_surrogates_vectors(enc_surr_content)
-    print(f"Parsed {len(enc_surr_vectors)} encoder surrogate vectors")
+    print(f"Parsed {len(enc_surr_vectors)} USVString surrogate vectors")
     render_encoder_surrogates_vectors_hpp(
         enc_surr_vectors, TEST_DIR / "wpt_encoder_surrogates_vectors.hpp"
     )

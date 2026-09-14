@@ -3,17 +3,34 @@
 #include <beman/transcode/transcode_string.hpp>
 #include <beman/transcode/transcode_string.hpp>
 
+#include <tests/beman/transcode/test_utilities.hpp>
+
 #include <catch2/catch_all.hpp>
 
+#include <concepts>
+#include <optional>
 #include <span>
 #include <string>
 #include <vector>
 
 using namespace beman::transcoding;
+using beman::transcoding::tests::constify;
 
-TEST_CASE("transcode_string: empty input yields empty output", "[transcode_string]") {
+TEST_CASE("transcode_string: empty input yields an engaged empty result", "[transcode_string]") {
     std::span<const char> empty{};
-    CHECK(transcode_string(empty, codec::utf_8, codec::utf_8).empty());
+    auto                  result = transcode_string(empty, codec::utf_8, codec::utf_8);
+
+    STATIC_REQUIRE(std::same_as<decltype(result), std::optional<std::string>>);
+    REQUIRE(result.has_value());
+    CHECK(result->empty());
+}
+
+TEST_CASE("has_whatwg_encoder identifies the decode-only codecs", "[transcode_string]") {
+    CHECK(constify(has_whatwg_encoder(codec::utf_8)));
+    CHECK_FALSE(constify(has_whatwg_encoder(codec::utf_16be)));
+    CHECK_FALSE(constify(has_whatwg_encoder(codec::utf_16le)));
+    CHECK_FALSE(constify(has_whatwg_encoder(codec::replacement)));
+    CHECK_FALSE(constify(has_whatwg_encoder(codec::x_user_defined)));
 }
 
 TEST_CASE("transcode_string: UTF-8 identity round-trip", "[transcode_string]") {
@@ -56,8 +73,8 @@ TEST_CASE("transcode_string: ASCII preserved through shift_jis", "[transcode_str
 TEST_CASE("transcode_string: UTF-8 to GBK to UTF-8 round-trip (中)", "[transcode_string]") {
     // U+4E2D (中) in UTF-8: 0xE4 0xB8 0xAD; in GBK: 0xD6 0xD0
     std::string utf8{'\xE4', '\xB8', '\xAD'};
-    std::string gbk  = transcode_string(std::span<const char>(utf8), codec::utf_8, codec::gbk);
-    std::string back = transcode_string(std::span<const char>(gbk), codec::gbk, codec::utf_8);
+    std::string gbk  = transcode_string(std::span<const char>(utf8), codec::utf_8, codec::gbk).value();
+    std::string back = transcode_string(std::span<const char>(gbk), codec::gbk, codec::utf_8).value();
     CHECK(back == utf8);
 }
 
@@ -172,14 +189,13 @@ TEST_CASE("transcode_string: UTF-16BE decode ASCII", "[transcode_string][coverag
     CHECK(transcode_string(std::span<const char>(src), codec::utf_16be, codec::utf_8) == "hi");
 }
 
-TEST_CASE("transcode_string: UTF-16LE has no encoder", "[transcode_string][coverage]") {
+TEST_CASE("transcode_string: decode-only targets return nullopt", "[transcode_string][coverage]") {
     std::string src = "hi";
-    CHECK(transcode_string(std::span<const char>(src), codec::utf_8, codec::utf_16le).empty());
-}
 
-TEST_CASE("transcode_string: UTF-16BE has no encoder", "[transcode_string][coverage]") {
-    std::string src = "hi";
-    CHECK(transcode_string(std::span<const char>(src), codec::utf_8, codec::utf_16be).empty());
+    CHECK_FALSE(transcode_string(std::span<const char>(src), codec::utf_8, codec::utf_16be).has_value());
+    CHECK_FALSE(transcode_string(std::span<const char>(src), codec::utf_8, codec::utf_16le).has_value());
+    CHECK_FALSE(transcode_string(std::span<const char>(src), codec::utf_8, codec::replacement).has_value());
+    CHECK_FALSE(transcode_string(std::span<const char>(src), codec::utf_8, codec::x_user_defined).has_value());
 }
 
 // ---------------------------------------------------------------------------
@@ -209,18 +225,4 @@ TEST_CASE("transcode_string: ASCII identity through all CJK encode arms", "[tran
     CHECK(transcode_string(src, codec::utf_8, codec::euc_jp) == "abc");
     CHECK(transcode_string(src, codec::utf_8, codec::iso_2022_jp) == "abc");
     CHECK(transcode_string(src, codec::utf_8, codec::euc_kr) == "abc");
-}
-
-// ---------------------------------------------------------------------------
-// Coverage audit: default encode arm — replacement and x_user_defined have no encoder
-// ---------------------------------------------------------------------------
-
-TEST_CASE("transcode_string: to=replacement yields empty (no encoder defined)", "[transcode_string][coverage]") {
-    std::string src = "abc";
-    CHECK(transcode_string(std::span<const char>(src), codec::utf_8, codec::replacement).empty());
-}
-
-TEST_CASE("transcode_string: to=x_user_defined yields empty (no encoder defined)", "[transcode_string][coverage]") {
-    std::string src = "abc";
-    CHECK(transcode_string(std::span<const char>(src), codec::utf_8, codec::x_user_defined).empty());
 }

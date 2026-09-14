@@ -32,9 +32,13 @@ inline constexpr null_sentinel_t null_sentinel{};
 template <std::contiguous_iterator I>
 class null_term_view : public std::ranges::view_interface<null_term_view<I>> {
     //! \expos
-    I ptr_;
+    I ptr_{};
 
   public:
+    // \ref{null.term.view}, construction and access
+    //! \remarks The resulting view is singular. It may be assigned to and
+    //! destroyed, but iterating it results in undefined behavior because the
+    //! iterator returned by `begin()` has no reachable terminator.
     constexpr null_term_view() = default;
     constexpr explicit null_term_view(I ptr);
 
@@ -84,7 +88,9 @@ namespace views {
 //! expression-equivalent to `null_term_view(E)` when `E` has pointer type, and
 //! to `null_term_view(static_cast<const T*>(E))` when `E` has array type with
 //! element type `T`.  For any other type it is ill-formed, so that a range
-//! carrying no terminator is a diagnosed error and not a silent one.
+//! carrying no terminator is a diagnosed error and not a silent one. The
+//! precondition of `null_term_view`'s converting constructor applies to `E`
+//! after any array-to-pointer conversion.
 inline constexpr detail::null_term_adaptor null_term{};
 } // namespace views
 
@@ -98,6 +104,9 @@ inline constexpr detail::null_term_adaptor null_term{};
 
 // \rSec2[null.term.view]{Class template `null_term_view`}
 
+//! \expects There is an iterator `i` reachable from `ptr` by a finite sequence
+//! of applications of `++` such that `*i == 0`, and every element from `ptr`
+//! through `i`, inclusive, is within the lifetime of a single object.
 //! \effects Initializes `ptr_` with `ptr`.
 template <std::contiguous_iterator I>
 constexpr null_term_view<I>::null_term_view(I ptr) : ptr_(ptr) {}

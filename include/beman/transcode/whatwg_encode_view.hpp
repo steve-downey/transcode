@@ -46,6 +46,7 @@
 #include <beman/transcode/detail/shift_jis.hpp>
 #include <beman/transcode/detail/single_byte.hpp>
 #include <beman/transcode/detail/utf8_encode.hpp>
+#include <beman/transcode/detail/utf32.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
@@ -78,8 +79,9 @@ class random_access_whatwg_encode_view
         using value_type =
             std::conditional_t<E == transcode_error_kind::expected, std::expected<char, whatwg_error>, char>;
 
-        // A code point this codec cannot encode: the error itself under
-        // `expected`, and the '?' the lossy encoder substitutes otherwise.
+        // An ill-formed UTF-32 code unit or a scalar value this codec cannot
+        // encode: the error under `expected`, and the codec's encoding of
+        // U+FFFD or its '?' fallback otherwise.
         static constexpr value_type error_result(whatwg_error e) {
             if constexpr (E == transcode_error_kind::expected)
                 return value_type(std::unexpect, e);
@@ -95,15 +97,16 @@ class random_access_whatwg_encode_view
         constexpr const base_iter& base() const noexcept { return current_; }
 
         constexpr value_type operator*() const {
-            const auto cp = static_cast<char32_t>(*current_);
-            if (cp < 0x80)
-                return static_cast<char>(cp);
-            const auto& table = detail::random_access_encode_table<C>();
-            for (int index = 0; index < 128; ++index) {
-                if (table[index] == cp)
-                    return static_cast<char>(0x80 + index);
+            const auto validation = detail::validate_utf32(static_cast<char32_t>(*current_));
+            if constexpr (E == transcode_error_kind::expected) {
+                if (validation.is_error)
+                    return error_result(validation.error);
             }
-            return error_result(whatwg_error::unmapped_codepoint);
+            const auto  cp     = validation.code_point;
+            const auto& table  = detail::random_access_encode_table<C>();
+            const auto  result = detail::single_byte_encode_one(cp, table);
+            return result.is_error ? error_result(whatwg_error::unmapped_codepoint)
+                                   : value_type{static_cast<char>(result.byte)};
         }
 
         constexpr value_type operator[](difference_type n) const { return *(*this + n); }
@@ -187,24 +190,21 @@ class random_access_whatwg_encode_view
 };
 
 // ---------------------------------------------------------------------------
-// whatwg_encode_view — encodes char32_t codepoints to
-// expected<char, whatwg_error>, yielding unmapped_codepoint on failure.
+// whatwg_encode_view — validates char32_t UTF-32 code units and encodes the
+// resulting scalar values, optionally reporting validation or mapping errors.
 // ---------------------------------------------------------------------------
 
 // \ref{transcode.whatwg.encode}, encoding views
 
-//! \remarks `whatwg_encode_view<C, R, E>` presents the Unicode scalar values
-//! of `R` as the bytes the encoding `C` encodes them to, one element per byte.
-//! A scalar value the encoding cannot represent is an encoding error, reported
-//! as `E` says: as `'?'` when `E` is `transcode_error_kind::replacement`, and
-//! as an `unexpected` holding `whatwg_error::unmapped_codepoint` when it is
-//! `transcode_error_kind::expected`.  Encoding is lazy, and one input element
-//! can produce several output elements.
-//!
-//! Each element of `R` is required to be a Unicode scalar value.  That is a
-//! precondition, not a constraint: `unicode_scalar_range` \iref{transcode.reqs}
-//! is a requirement on the range's type, and a `char32_t` holding a surrogate
-//! or a value above U+10FFFF is not diagnosed.
+//! \remarks `whatwg_encode_view<C, R, E>` validates the `char32_t` elements of
+//! `R` as UTF-32 and presents them as the bytes the encoding `C` encodes them
+//! to, one element per byte.  In replacement mode, an ill-formed UTF-32 code
+//! unit is replaced with U+FFFD and that scalar value is encoded normally; in
+//! expected mode it yields an `unexpected` holding
+//! `whatwg_error::surrogate_code_point` or `whatwg_error::out_of_range`.  A
+//! scalar value the encoding cannot represent yields `'?'` in replacement
+//! mode and `whatwg_error::unmapped_codepoint` in expected mode.  Encoding is
+//! lazy, and one input element can produce several output elements.
 //!
 //! `C` is required to be an encoding the WHATWG Encoding Standard defines an
 //! encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or
@@ -240,9 +240,9 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
         //! \expos
         [[no_unique_address]] detail::encode_state_t<C> state_{};
 
-        // Report a code point this codec cannot encode: one error element under
-        // `expected`, and the codec's own replacement bytes otherwise -- which
-        // differ in length, so this cannot be a value mapping.
+        // Report a UTF-32 validation or codec mapping error: one error element
+        // under `expected`, and the supplied replacement bytes otherwise --
+        // which differ in length, so this cannot be a value mapping.
         //! \expos
         constexpr void emit_error(whatwg_error e, const char* replacement, int count) {
             if constexpr (E == transcode_error_kind::expected) {
@@ -287,7 +287,7 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
         constexpr iterator(base_iter current, base_sent end);
 
         //! \returns The iterator into `R` this iterator reads from, positioned
-        //! at the first scalar value it has not yet encoded.
+        //! at the first input element it has not yet encoded.
         constexpr const base_iter& base() const noexcept { return current_; }
 
         constexpr auto      operator*() const;
@@ -376,8 +376,8 @@ inline constexpr auto whatwg_encode = whatwg_encode_closure<C, transcode_error_k
 //! \seebelow
 //! \remarks `whatwg_encode_or_error<C>` is `whatwg_encode<C>` with
 //! `transcode_error_kind::expected`: the view it adapts to has value type
-//! `expected<char, whatwg_error>`, and an encoding error is the error rather
-//! than `'?'`.
+//! `expected<char, whatwg_error>`, and validation and encoding errors are
+//! reported rather than replaced.
 template <codec C>
 inline constexpr auto whatwg_encode_or_error = whatwg_encode_closure<C, transcode_error_kind::expected>{};
 
@@ -493,33 +493,36 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
         done_ = true;
         return;
     }
+    const auto validation = detail::validate_utf32(static_cast<char32_t>(*current_));
+    ++current_;
+    if constexpr (E == transcode_error_kind::expected) {
+        if (validation.is_error) {
+            this->emit_error(validation.error, {'?'});
+            return;
+        }
+    }
+    const auto cp = validation.code_point;
+
     auto encode_single = [&](const char32_t (&table)[128]) {
-        auto r = detail::single_byte_encode_one(current_, end_, table);
-        if (r.is_error) {
+        const auto result = detail::single_byte_encode_one(cp, table);
+        if (result.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
         } else {
-            this->buf_[0] = result_value{static_cast<char>(r.byte)};
+            this->buf_[0] = result_value{static_cast<char>(result.byte)};
             len_          = 1;
             pos_          = 0;
         }
     };
     if constexpr (C == codec::utf_8) {
-        auto r = detail::utf8_encode_one(static_cast<char32_t>(*current_));
-        ++current_;
-        if (r.is_error) {
-            // U+FFFD in UTF-8
-            this->emit_error(r.error, {'\xEF', '\xBF', '\xBD'});
-        } else {
-            for (int i = 0; i < r.count; ++i)
-                this->buf_[i] = result_value{r.bytes[i]};
-            len_ = r.count;
-        }
+        auto r = detail::utf8_encode_one(cp);
+        for (int i = 0; i < r.count; ++i)
+            this->buf_[i] = result_value{r.bytes[i]};
+        len_ = r.count;
         pos_ = 0;
     } else if constexpr (detail::random_access_encode_codec<C>) {
         encode_single(detail::random_access_encode_table<C>());
     } else if constexpr (C == codec::gbk) {
-        auto r = detail::gbk_encode_one(static_cast<char32_t>(*current_));
-        ++current_;
+        auto r = detail::gbk_encode_one(cp);
         if (r.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
         } else {
@@ -529,8 +532,7 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
         }
         pos_ = 0;
     } else if constexpr (C == codec::gb18030) {
-        auto r = detail::gb18030_encode_one(static_cast<char32_t>(*current_));
-        ++current_;
+        auto r = detail::gb18030_encode_one(cp);
         if (r.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
         } else {
@@ -540,8 +542,7 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
             pos_ = 0;
         }
     } else if constexpr (C == codec::big5) {
-        auto r = detail::big5_encode_one(static_cast<char32_t>(*current_));
-        ++current_;
+        auto r = detail::big5_encode_one(cp);
         if (r.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
         } else {
@@ -551,8 +552,7 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
         }
         pos_ = 0;
     } else if constexpr (C == codec::shift_jis) {
-        auto r = detail::shift_jis_encode_one(static_cast<char32_t>(*current_));
-        ++current_;
+        auto r = detail::shift_jis_encode_one(cp);
         if (r.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
         } else {
@@ -562,8 +562,7 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
         }
         pos_ = 0;
     } else if constexpr (C == codec::euc_jp) {
-        auto r = detail::euc_jp_encode_one(static_cast<char32_t>(*current_));
-        ++current_;
+        auto r = detail::euc_jp_encode_one(cp);
         if (r.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
         } else {
@@ -573,8 +572,7 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
         }
         pos_ = 0;
     } else if constexpr (C == codec::iso_2022_jp) {
-        auto r = detail::iso2022jp_encode_one(state_, static_cast<char32_t>(*current_));
-        ++current_;
+        auto r = detail::iso2022jp_encode_one(state_, cp);
         if (r.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, r.bytes, r.count);
         } else {
@@ -584,8 +582,7 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
             pos_ = 0;
         }
     } else if constexpr (C == codec::euc_kr) {
-        auto r = detail::euc_kr_encode_one(static_cast<char32_t>(*current_));
-        ++current_;
+        auto r = detail::euc_kr_encode_one(cp);
         if (r.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
         } else {

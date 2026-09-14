@@ -1,0 +1,17 @@
+# Headers that are knowingly ahead of the committed wording fragments.
+#
+# One repository-relative path per line.  `#` starts a comment.
+#
+# A path here tells `make wording-inputs-check` that this header changed on
+# purpose and the regeneration is coming later in the series.  A path that is
+# not here and has changed anyway fails the check, which is the drift this gate
+# is for.
+#
+# An entry expires.  If a listed header turns out not to have changed, the
+# check fails on that too -- an exemption nobody notices is how a gate stops
+# working.  `make wording` empties this list, because after a regeneration
+# nothing is pending.
+#
+# This does not defer correctness, only the staleness report.
+# `make wording-check` regenerates and diffs, and ignores this file entirely,
+# so a paper revision still cannot go out against stale wording.

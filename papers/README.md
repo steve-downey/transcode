@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Papers
 
-`transcode-view.md` is the WG21 paper (D4246R0, "Transcoding Text Views"). It is
+`transcode-view.md` is the WG21 paper (D4246R1, "Transcoding Text Views"). It is
 built by the vendored [mpark/wg21](https://github.com/mpark/wg21) framework in
 `wg21/`, in that framework's flat layout: sources here, output under
 `generated/`.

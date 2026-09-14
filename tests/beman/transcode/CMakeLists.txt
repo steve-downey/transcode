@@ -5,6 +5,40 @@ find_package(Catch2 3 REQUIRED)
 # Common include path for test_utilities.hpp (tests/beman/transcode/test_utilities.hpp)
 set(TEST_INCLUDE_DIR "${PROJECT_SOURCE_DIR}")
 
+# The component-header tests below exercise header mode: each source includes
+# the header under test directly so that its self-containment is checked.  In
+# module mode those headers are compiled in the module purview after
+# `import std`; their standard-library includes are deliberately suppressed,
+# and consumers reach them by importing `beman.transcode` (directly or through
+# the <beman/transcode/transcode.hpp> shim).  Run the dedicated import test in
+# that configuration instead of compiling the header-mode suite with a module
+# configuration header.
+if(BEMAN_TRANSCODE_USE_MODULES)
+    message(
+        STATUS
+        "Module mode registers only beman.transcode.tests.module_integration; "
+        "the full header-mode suite is registered when BEMAN_TRANSCODE_USE_MODULES=OFF."
+    )
+    add_executable(beman.transcode.tests.module_integration)
+    target_sources(
+        beman.transcode.tests.module_integration
+        PRIVATE module_integration.test.cpp
+    )
+    target_include_directories(
+        beman.transcode.tests.module_integration
+        PRIVATE ${TEST_INCLUDE_DIR}
+    )
+    target_link_libraries(
+        beman.transcode.tests.module_integration
+        PRIVATE beman::transcode Catch2::Catch2WithMain
+    )
+    add_test(
+        NAME beman.transcode.tests.module_integration
+        COMMAND beman.transcode.tests.module_integration
+    )
+    return()
+endif()
+
 add_executable(beman.transcode.tests.todo)
 target_sources(beman.transcode.tests.todo PRIVATE todo.test.cpp)
 target_link_libraries(
@@ -957,26 +991,37 @@ set_tests_properties(
     PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
 )
 
-# Module integration test (only when modules are enabled)
-if(BEMAN_TRANSCODE_USE_MODULES)
-    add_executable(beman.transcode.tests.module_integration)
-    target_sources(
-        beman.transcode.tests.module_integration
-        PRIVATE module_integration.test.cpp
-    )
-    target_include_directories(
-        beman.transcode.tests.module_integration
-        PRIVATE ${TEST_INCLUDE_DIR}
-    )
-    target_link_libraries(
-        beman.transcode.tests.module_integration
-        PRIVATE beman::transcode Catch2::Catch2WithMain
-    )
-    add_test(
-        NAME beman.transcode.tests.module_integration
-        COMMAND beman.transcode.tests.module_integration
-    )
-endif()
+# sniff_encoding requires forward_range; single-pass ranges must be rejected,
+# because examining the mark advances the iterator over it.
+add_library(beman.transcode.tests.sniff_reject_input_range_fail OBJECT)
+target_sources(
+    beman.transcode.tests.sniff_reject_input_range_fail
+    PRIVATE sniff_reject_input_range_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.sniff_reject_input_range_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.sniff_reject_input_range_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME sniff_reject_input_range_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.sniff_reject_input_range_fail --config
+        $<CONFIGURATION>
+)
+# Both GCC and Clang tie the failure to the constraint by name -- GCC with
+# "required for the satisfaction of 'forward_range<R>'", Clang with "does not
+# satisfy 'forward_range'".  Matching the bare concept name would also match
+# its appearance in the printed candidate signature, which proves nothing about
+# which constraint failed.
+set_tests_properties(
+    sniff_reject_input_range_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "satisf.*forward_range"
+)
 
 # ---------------------------------------------------------------------------
 # Pluggable codec protocol tests

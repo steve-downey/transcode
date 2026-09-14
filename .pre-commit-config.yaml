@@ -74,6 +74,10 @@ repos:
         entry: bash tools/run-gitleaks.sh
         language: system
         pass_filenames: false
+      - id: check-filenames
+        name: Reject option-like filenames
+        entry: bash tools/check-filenames.sh
+        language: system
       - id: shellcheck
         name: shellcheck
         entry: shellcheck

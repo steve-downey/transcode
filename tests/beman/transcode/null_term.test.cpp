@@ -13,6 +13,11 @@
 using namespace beman::transcoding;
 using beman::transcoding::tests::constify;
 
+TEST_CASE("default-constructed null_term_view has a null iterator", "[transcoding::null_term]") {
+    null_term_view<const char*> v;
+    CHECK(v.begin() == nullptr);
+}
+
 TEST_CASE("null_term over string literal", "[transcoding::null_term]") {
     auto              v = "hello" | views::null_term;
     std::vector<char> result;
@@ -28,6 +33,15 @@ TEST_CASE("null_term over char pointer", "[transcoding::null_term]") {
     for (char c : v)
         result.push_back(c);
     CHECK(result == std::vector<char>{'w', 'o', 'r', 'l', 'd'});
+}
+
+TEST_CASE("null_term stops at the first zero in an array", "[transcoding::null_term]") {
+    char              input[]{'a', 'b', '\0', 'c', '\0'};
+    auto              v = input | views::null_term;
+    std::vector<char> result;
+    for (char c : v)
+        result.push_back(c);
+    CHECK(result == std::vector<char>{'a', 'b'});
 }
 
 TEST_CASE("null_term over empty string", "[transcoding::null_term]") {
@@ -55,6 +69,11 @@ constexpr bool null_term_pointer_constexpr() {
     return n == 2;
 }
 
+constexpr bool null_term_default_constructed_constexpr() {
+    null_term_view<const char*> v;
+    return v.begin() == nullptr;
+}
+
 constexpr bool null_sentinel_compare_constexpr() {
     const char*     p = "abc";
     null_sentinel_t s = {};
@@ -63,6 +82,7 @@ constexpr bool null_sentinel_compare_constexpr() {
 
 TEST_CASE("null_term is usable in consteval context", "[transcoding::null_term]") {
     CHECK(constify(null_term_pointer_constexpr()));
+    CHECK(constify(null_term_default_constructed_constexpr()));
 }
 
 TEST_CASE("null_sentinel comparison is constexpr", "[transcoding::null_term]") {

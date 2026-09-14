@@ -109,10 +109,18 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 //! scalar values `Codec` decodes them to, reports a decoding error as `E`
 //! says, and decodes lazily.  Everything that clause says about the value
 //! type, the error kind and the laziness holds here, of a codec the program
-//! wrote rather than one the Encoding Standard defines.
+//! wrote rather than one the Encoding Standard defines.  The view does not
+//! validate a successful `code_point`; the program-supplied `Codec` is
+//! responsible for returning Unicode scalar values as required by
+//! `decode_codec`.
 //!
 //! The view models `random_access_range` when `Codec` models
 //! `random_access_decode_codec_type` and `R` models `random_access_range`.
+//! When it does, a byte whose value is `0x80` or above and for which
+//! `Codec::decode_byte` returns U+FFFD is reported as
+//! `whatwg_error::invalid_byte` in expected mode and yields U+FFFD in
+//! replacement mode.  This follows from the U+FFFD reservation required by
+//! `random_access_decode_codec_type` \iref{transcode.custom.reqs}.
 template <decode_codec Codec, std::ranges::input_range R, transcode_error_kind E = transcode_error_kind::replacement>
     requires legacy_byte_range<R>
 class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>> {

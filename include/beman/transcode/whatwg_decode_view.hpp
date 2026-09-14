@@ -198,7 +198,8 @@ class random_access_whatwg_decode_view
 //! decoding error, reported as `E` says: as U+FFFD REPLACEMENT CHARACTER when
 //! `E` is `transcode_error_kind::replacement`, and as an `unexpected` holding
 //! a `whatwg_error` when it is `transcode_error_kind::expected`.  Decoding is
-//! lazy: an element is decoded when the iterator reaches it.
+//! lazy: an element is decoded when the iterator reaches it.  Every `char32_t`
+//! value the view presents is a Unicode scalar value.
 //!
 //! The view models `random_access_range` when `C` names an encoding
 //! that decodes one byte to one scalar value and `R` models

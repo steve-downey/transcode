@@ -16,9 +16,10 @@ inline constexpr null_sentinel_t null_sentinel{};
 
 template<contiguous_iterator I>
 class null_term_view : public ranges::view_interface<null_term_view<I>> {
-  I $ptr$; // exposition only
+  I $ptr${}; // exposition only
 
 public:
+  // @[null.term.view]@, construction and access
   constexpr null_term_view() = default;
   constexpr explicit null_term_view(I ptr);
 

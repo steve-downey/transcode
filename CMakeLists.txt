@@ -19,13 +19,50 @@ if(
         FATAL_ERROR
         "GCC >= 13 is required. Found: ${CMAKE_CXX_COMPILER_VERSION}"
     )
-elseif(
-    CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
-    AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19"
+endif()
+
+# The standard-version flag for the capability probes below.  Written once
+# because getting it wrong is invisible: a probe compiled with the wrong flag
+# reports "not available" for a facility that is, and the diagnostic blames the
+# standard library.
+if(MSVC)
+    set(_beman_transcode_std_flag "/std:c++latest")
+else()
+    set(_beman_transcode_std_flag "-std=c++23")
+endif()
+
+include(CheckCXXSourceCompiles)
+
+# There used to be a `Clang < 19` fatal error here, with the reason in its own
+# message: "18 lacks __cpp_concepts >= 202002L needed by libstdc++
+# std::expected".  The reason names a *standard library* interaction, and a
+# compiler version test cannot see one -- so it also rejected Clang 18 and 17
+# against libc++, two configurations the support matrix in README.md claimed
+# and this check made impossible to try.
+#
+# Probe for the thing that is actually required, as the ranges::to check below
+# already does.  This is `std::expected` inside a `std::vector`, which is what
+# the _or_error views instantiate and what fails on the combination above.
+set(CMAKE_REQUIRED_FLAGS "${_beman_transcode_std_flag}")
+check_cxx_source_compiles(
+    "#include <expected>
+     #include <vector>
+     int main() {
+         std::vector<std::expected<char, int>> v{std::expected<char, int>{'x'}};
+         return v.empty() ? 1 : 0;
+     }"
+    BEMAN_TRANSCODE_HAS_USABLE_EXPECTED
 )
+unset(CMAKE_REQUIRED_FLAGS)
+
+if(NOT BEMAN_TRANSCODE_HAS_USABLE_EXPECTED)
     message(
         FATAL_ERROR
-        "Clang >= 19 is required (18 lacks __cpp_concepts >= 202002L needed by libstdc++ std::expected). Found: ${CMAKE_CXX_COMPILER_VERSION}"
+        "This project needs a working std::expected usable as a vector element. "
+        "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} with the selected "
+        "standard library does not provide one. The known case is Clang 18 or "
+        "earlier with libstdc++, whose std::expected requires "
+        "__cpp_concepts >= 202002L. Use a newer compiler, or select libc++."
     )
 endif()
 
@@ -64,8 +101,7 @@ endif()
 # Uses the standard feature-test macro rather than a compiler version check so that
 # third-party builds with patched toolchains or alternate standard libraries are handled
 # correctly.
-include(CheckCXXSourceCompiles)
-set(CMAKE_REQUIRED_FLAGS "-std=c++23")
+set(CMAKE_REQUIRED_FLAGS "${_beman_transcode_std_flag}")
 check_cxx_source_compiles(
     "#include <ranges>
      #if !defined(__cpp_lib_ranges_to_container) || __cpp_lib_ranges_to_container < 202202L

@@ -1,363 +1,136 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// A custom single-byte codec, implemented against the pluggable codec
+// protocol.
+//
+// This is the extension point the library offers for an encoding it does not
+// ship: satisfy `decode_codec` (and, if you want to encode, `encode_codec`),
+// and the same views, error handling and bulk helpers that serve the built-in
+// WHATWG codecs serve yours.  Nothing here is special-cased for this file.
+//
+// The encoding is invented, and deliberately not a pure table: bytes 0x80-0xBE
+// decode to a scalar chosen by arithmetic rather than by lookup.  A codec whose
+// upper half is a plain 128-entry table does not need to be written out like
+// this -- `table_codec` in <beman/transcode/detail/table_codec.hpp> already
+// does that -- but `table_codec` is an implementation detail of the built-in
+// codecs and is not part of the proposal, so an example of the *protocol*
+// should not lean on it.
+
+#include <beman/transcode/codec_concepts.hpp>
+#include <beman/transcode/codec_result.hpp>
+#include <beman/transcode/decode_view.hpp>
+#include <beman/transcode/error.hpp>
+
 #include <array>
 #include <cstddef>
-#include <numeric>
+#include <iterator>
 #include <span>
 #include <string>
-#include <string_view>
 
 namespace {
 
-void append_fraction(std::u32string& result, unsigned numerator, unsigned denominator) {
-    unsigned divisor = std::gcd(numerator, denominator);
-    numerator /= divisor;
-    denominator /= divisor;
+using beman::transcoding::decode_result;
+using beman::transcoding::whatwg_error;
 
-    auto append_unsigned = [&](unsigned value) {
-        std::string digits = std::to_string(value);
-        for (char digit : digits)
-            result.push_back(static_cast<char32_t>(digit));
-    };
+// The upper half of the encoding, for the bytes that are a straight mapping.
+// Zero means "this byte decodes to nothing", which is how the codec reports an
+// invalid byte below.
+inline constexpr std::array<char32_t, 64> upper_table = {
+    /* 0xC0 */ U'Ç', U'ü', U'é', U'â', U'ä', U'à', U'å', U'ç',
+    /* 0xC8 */ U'ê', U'ë', U'è', U'ï', U'î', U'ì', U'Ä', U'Å',
+    /* 0xD0 */ U'É', U'È', U'Ì', U'ô', U'ö', U'ò', U'û', U'ù',
+    /* 0xD8 */ U'ÿ', U'Ö', U'Ü', U'á', U'í', U'ó', U'ú', U'ñ',
+    /* 0xE0 */ U'£', U'¥', U'€', U'Ò', U'Ù', U'±', U'Õ', U'Á',
+    /* 0xE8 */ U'Í', U'©', U'®', U'Ô', U'Ó', U'Ú', U'Â', U'Ê',
+    /* 0xF0 */ U'õ', U'À', U'Ñ', U'¿', U'¡', U'«', U'»', U'ã',
+    /* 0xF8 */ U'Ã', U'ß', U'×', 0,    0,    0,    0,    0,
+};
 
-    append_unsigned(numerator);
-    result.push_back(U'/');
-    append_unsigned(denominator);
+// Models `decode_codec`.  One byte in, one scalar value out, and an error for a
+// byte the encoding does not define -- which the view turns into U+FFFD, or
+// into an `unexpected`, depending on which adaptor the caller reached for.
+struct fractional_codec {
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, S end) const;
+};
+
+template <std::input_iterator I, std::sentinel_for<I> S>
+constexpr decode_result fractional_codec::decode_one(I& current, [[maybe_unused]] S end) const {
+    const auto byte = static_cast<unsigned char>(*current);
+    ++current;
+
+    // ASCII, unchanged.
+    if (byte < 0x80)
+        return {static_cast<char32_t>(byte), {}, false};
+
+    // 0x80-0xBE are the vulgar fractions n/64, which Unicode does not have as
+    // scalar values except for a handful.  This encoding keeps the three it can
+    // represent exactly and rejects the rest, which is the interesting case:
+    // a byte that is valid in the encoding and has no Unicode scalar value is
+    // still a decode error, because decoding produces scalar values.
+    if (byte <= 0xBE) {
+        switch (byte - 0x80U + 1U) {
+        case 16:
+            return {U'¼', {}, false}; // 16/64 = 1/4
+        case 32:
+            return {U'½', {}, false}; // 32/64 = 1/2
+        case 48:
+            return {U'¾', {}, false}; // 48/64 = 3/4
+        default:
+            return {{}, whatwg_error::invalid_byte, true};
+        }
+    }
+
+    if (byte == 0xBF)
+        return {{}, whatwg_error::invalid_byte, true};
+
+    const char32_t cp = upper_table[byte - 0xC0U];
+    if (cp == 0)
+        return {{}, whatwg_error::invalid_byte, true};
+    return {cp, {}, false};
 }
 
-void append_custom_code_point(std::u32string& result, unsigned char byte) {
-    switch (byte) {
-    case 0x00:
-        result += U"\u00C7";
-        return;
-    case 0x01:
-        result += U"\u00FC";
-        return;
-    case 0x02:
-        result += U"\u00E9";
-        return;
-    case 0x03:
-        result += U"\u00E2";
-        return;
-    case 0x04:
-        result += U"\u00E4";
-        return;
-    case 0x05:
-        result += U"\u00E0";
-        return;
-    case 0x06:
-        result += U"\u00E5";
-        return;
-    case 0x07:
-        result += U"\u00E7";
-        return;
-    case 0x08:
-        result += U"\u00EA";
-        return;
-    case 0x09:
-        result += U"\u00EB";
-        return;
-    case 0x0A:
-        result += U"\u00E8";
-        return;
-    case 0x0B:
-        result += U"\u00EF";
-        return;
-    case 0x0C:
-        result += U"\u00EE";
-        return;
-    case 0x0D:
-        result += U"\u00EC";
-        return;
-    case 0x0E:
-        result += U"\u00C4";
-        return;
-    case 0x0F:
-        result += U"\u00C5";
-        return;
-    case 0x10:
-        result += U"\u00C9";
-        return;
-    case 0x11:
-        result += U"\u00C8";
-        return;
-    case 0x12:
-        result += U"\u00CC";
-        return;
-    case 0x13:
-        result += U"\u00F4";
-        return;
-    case 0x14:
-        result += U"\u00F6";
-        return;
-    case 0x15:
-        result += U"\u00F2";
-        return;
-    case 0x16:
-        result += U"\u00FB";
-        return;
-    case 0x17:
-        result += U"\u00F9";
-        return;
-    case 0x18:
-        result += U"\u00FF";
-        return;
-    case 0x19:
-        result += U"\u00D6";
-        return;
-    case 0x1A:
-        result += U"\u00DC";
-        return;
-    case 0x1B:
-        result += U"\u00E1";
-        return;
-    case 0x1C:
-        result += U"\u00ED";
-        return;
-    case 0x1D:
-        result += U"\u00F3";
-        return;
-    case 0x1E:
-        result += U"\u00FA";
-        return;
-    case 0x1F:
-        result += U"\u00F1";
-        return;
-    case 0x7F:
-        result += U"\u20AC";
-        return;
-    case 0xBF:
-        result += U"\u00D7";
-        return;
-    case 0xC0:
-        result += U"0)";
-        return;
-    case 0xC1:
-        result += U"1)";
-        return;
-    case 0xC2:
-        result += U"2)";
-        return;
-    case 0xC3:
-        result += U"3)";
-        return;
-    case 0xC4:
-        result += U"4)";
-        return;
-    case 0xC5:
-        result += U"5)";
-        return;
-    case 0xC6:
-        result += U"6)";
-        return;
-    case 0xC7:
-        result += U"7)";
-        return;
-    case 0xC8:
-        result += U"8)";
-        return;
-    case 0xC9:
-        result += U"9)";
-        return;
-    case 0xCA:
-        result += U"0";
-        return;
-    case 0xCB:
-        result += U"1";
-        return;
-    case 0xCC:
-        result += U"2";
-        return;
-    case 0xCD:
-        result += U"3";
-        return;
-    case 0xCE:
-        result += U"4";
-        return;
-    case 0xCF:
-        result += U"5";
-        return;
-    case 0xD0:
-        result += U"6";
-        return;
-    case 0xD1:
-        result += U"7";
-        return;
-    case 0xD2:
-        result += U"8";
-        return;
-    case 0xD3:
-        result += U"9";
-        return;
-    case 0xD4:
-        result += U"Up";
-        return;
-    case 0xD5:
-        result += U"Dn";
-        return;
-    case 0xD6:
-        result += U"\uE0D6";
-        return;
-    case 0xD7:
-        result += U"\uE0D7";
-        return;
-    case 0xD8:
-        result += U"\uE0D8";
-        return;
-    case 0xD9:
-        result += U"\uE0D9";
-        return;
-    case 0xDA:
-        result += U"\uE0DA";
-        return;
-    case 0xDB:
-        result += U"\uE0DB";
-        return;
-    case 0xDC:
-        result += U"\uE0DC";
-        return;
-    case 0xDD:
-        result += U"\uE0DD";
-        return;
-    case 0xDE:
-        result += U"\uE0DE";
-        return;
-    case 0xDF:
-        result += U"\uE0DF";
-        return;
-    case 0xE0:
-        result += U"\u00A3";
-        return;
-    case 0xE1:
-        result += U"\u00A5";
-        return;
-    case 0xE2:
-        result += U"\uE0E2";
-        return;
-    case 0xE3:
-        result += U"\u00D2";
-        return;
-    case 0xE4:
-        result += U"\u00D9";
-        return;
-    case 0xE5:
-        result += U"\u00B1";
-        return;
-    case 0xE6:
-        result += U"\uE0E6";
-        return;
-    case 0xE7:
-        result += U"\uE0E7";
-        return;
-    case 0xE8:
-        result += U"\uE0E8";
-        return;
-    case 0xE9:
-        result += U"\uE0E9";
-        return;
-    case 0xEA:
-        result += U"\u00D5";
-        return;
-    case 0xEB:
-        result += U"\u00C1";
-        return;
-    case 0xEC:
-        result += U"\u00CD";
-        return;
-    case 0xED:
-        result += U"\u0099";
-        return;
-    case 0xEE:
-        result += U"\u00A9";
-        return;
-    case 0xEF:
-        result += U"\u00AE";
-        return;
-    case 0xF0:
-        result += U"\u00D4";
-        return;
-    case 0xF1:
-        result += U"\uE0F1";
-        return;
-    case 0xF2:
-        result += U"\u00D3";
-        return;
-    case 0xF3:
-        result += U"\u00DA";
-        return;
-    case 0xF4:
-        result += U"\u00C2";
-        return;
-    case 0xF5:
-        result += U"\u00CA";
-        return;
-    case 0xF6:
-        result += U"\u00F5";
-        return;
-    case 0xF7:
-        result += U"\u00C0";
-        return;
-    case 0xF8:
-        result += U"\u00D1";
-        return;
-    case 0xF9:
-        result += U"\u00BF";
-        return;
-    case 0xFA:
-        result += U"\u00A1";
-        return;
-    case 0xFB:
-        result += U"\u00AB";
-        return;
-    case 0xFC:
-        result += U"\u00BB";
-        return;
-    case 0xFD:
-        result += U"\u00E3";
-        return;
-    case 0xFE:
-        result += U"\u00C3";
-        return;
-    case 0xFF:
-        result += U"\u00DF";
-        return;
-    default:
-        break;
-    }
+static_assert(beman::transcoding::decode_codec<fractional_codec>,
+              "fractional_codec must model decode_codec to be usable with decode()");
 
-    if (byte >= 0x20 && byte <= 0x7E) {
-        result.push_back(static_cast<char32_t>(byte));
-        return;
-    }
-
-    if (byte >= 0x80 && byte <= 0xBE) {
-        append_fraction(result, static_cast<unsigned>(byte) - 0x80U + 1U, 64U);
-        return;
-    }
-}
-
-std::u32string decode_custom_single_byte(std::span<const std::byte> input) {
+// Replacement mode: an undefined byte becomes U+FFFD and decoding continues.
+constexpr std::u32string decode_all(std::span<const std::byte> input) {
     std::u32string result;
-    for (std::byte byte : input)
-        append_custom_code_point(result, static_cast<unsigned char>(byte));
+    for (char32_t cp : input | beman::transcoding::decode(fractional_codec{}))
+        result.push_back(cp);
     return result;
 }
 
-bool matches_expected(const std::u32string& decoded) { return decoded == U"\u00C7A1/641/2\u00D7Up\u00A3\u00DF"; }
+// Inspection mode: the same pipeline, with each failure surfaced instead.
+constexpr std::size_t count_invalid(std::span<const std::byte> input) {
+    std::size_t invalid = 0;
+    for (auto r : input | beman::transcoding::decode_or_error(fractional_codec{})) {
+        if (!r.has_value())
+            ++invalid;
+    }
+    return invalid;
+}
+
+constexpr std::array<std::byte, 8> sample = {
+    std::byte{0xC0}, // U+00C7
+    std::byte{0x41}, // 'A'
+    std::byte{0x9F}, // 32/64 -> U+00BD
+    std::byte{0x80}, // 1/64  -> no scalar value, invalid
+    std::byte{0xBF}, // undefined
+    std::byte{0xE2}, // U+20AC
+    std::byte{0xFA}, // U+00D7
+    std::byte{0xFF}, // unassigned tail of the table, invalid
+};
+
+// The codec is constexpr, so the views over it are too.  This is the same
+// guarantee the built-in codecs give, and it comes from satisfying the concept
+// rather than from anything the library does for its own codecs.
+static_assert(decode_all(sample) == U"ÇA½��€×�");
+static_assert(count_invalid(sample) == 3);
 
 } // namespace
 
 int main() {
-    constexpr std::array<std::byte, 8> input = {
-        std::byte{0x00},
-        std::byte{0x41},
-        std::byte{0x80},
-        std::byte{0x9F},
-        std::byte{0xBF},
-        std::byte{0xD4},
-        std::byte{0xE0},
-        std::byte{0xFF},
-    };
-
-    return matches_expected(decode_custom_single_byte(input)) ? 0 : 1;
+    const std::u32string decoded = decode_all(sample);
+    return decoded == U"ÇA½��€×�" && count_invalid(sample) == 3 ? 0 : 1;
 }

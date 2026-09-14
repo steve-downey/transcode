@@ -32,6 +32,14 @@ by the clause numbering the paper prints.  Two consequences:
 Heading level follows from mpark's fixed `base_heading_level = 2` (index U2):
 `\rSec2` prints as `##`, `\rSec3` as `###`.
 
+Declaration-level descriptions remain beside their declarations in a synopsis.
+This is deliberate specgen behaviour, not accidental leakage: the descriptions
+of the view class templates explain what each declared type is, while their
+dedicated semantic clauses specify constructors, accessors and iterator
+operations.  `specgen render --validate` accepts that placement.  Moving those
+descriptions into the semantic clauses would leave the synopsis declarations
+undescribed rather than remove duplicated wording.
+
 ## `<transcode>`
 
 Generated from `transcode.hpp`, which is the umbrella of `#include`s it always

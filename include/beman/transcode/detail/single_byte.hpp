@@ -38,15 +38,11 @@ struct single_byte_encode_result {
     bool          is_error{false};
 };
 
-// Encode one codepoint to a single legacy byte.
+// Encode one validated code point to a single legacy byte.
 // ASCII (cp < 0x80) is a direct passthrough.
 // For cp >= 0x80: scans table[0..127] for table[i] == cp;
 // returns {0x80 + i, false} if found, {{}, true} if not.
-template <std::input_iterator I, std::sentinel_for<I> S>
-constexpr single_byte_encode_result
-single_byte_encode_one(I& current, [[maybe_unused]] S end, const char32_t (&table)[128]) {
-    auto cp = static_cast<char32_t>(*current);
-    ++current;
+constexpr single_byte_encode_result single_byte_encode_one(char32_t cp, const char32_t (&table)[128]) {
     if (cp < 0x80)
         return {static_cast<unsigned char>(cp), false};
     for (int i = 0; i < 128; ++i) {

@@ -17,8 +17,11 @@ namespace beman::transcoding {
 
 //! \returns An `iconv_functions` whose members are the implementation's
 //! `iconv_open`, `iconv` and `iconv_close`.
+//! \remarks The facilities in this subclause are provided only by an
+//! implementation that supplies an `iconv` conversion facility.
 inline iconv_functions make_real_iconv_fns() noexcept { return {::iconv_open, ::iconv, ::iconv_close}; }
 
+//! \expects `buf.size() >= iconv_min_buffer_size` is `true`.
 //! \seebelow
 //! \returns A range adaptor object.  Given a subexpression `E` that models
 //! `legacy_byte_range`, `iconv_transcode(from, to, buf)(E)` and
@@ -36,6 +39,9 @@ inline auto iconv_transcode(const char* from, const char* to, std::span<char> bu
 //! \returns `iconv_transcode(from, to, buf)` with the errors reported rather
 //! than skipped: the view it adapts to has value type
 //! `expected<char, iconv_error>`.
+//! \remarks Unlike `iconv_transcode`, this adaptor accepts a buffer of any
+//! size.  If `iconv` reports `E2BIG` without producing output, the adapted view
+//! reports `iconv_error::output_full`.
 inline auto iconv_transcode_or_error(const char* from, const char* to, std::span<char> buf) {
     return iconv_transcode_or_error_closure<iconv_functions>{make_real_iconv_fns(), from, to, buf};
 }
