@@ -15,6 +15,8 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 SCRIPT = Path(__file__).parent.parent.parent / "papers" / "wording" / "inputs-check.sh"
 
 # Two plausible hash lines, in the `sha256sum` format the script parses.
@@ -55,6 +57,18 @@ def run_check(
         pending_file.write_text(pending)
         argv += ["--pending", str(pending_file)]
     return subprocess.run(argv, capture_output=True, text=True, check=False, env=env)
+
+
+def require_locale(name: str) -> str:
+    """Return the installed spelling of name, or skip on minimal CI images."""
+    result = subprocess.run(
+        ["locale", "-a"], capture_output=True, text=True, check=True
+    )
+    normalized_name = name.lower().replace("-", "")
+    for installed in result.stdout.splitlines():
+        if installed.lower().replace("-", "") == normalized_name:
+            return installed
+    pytest.skip(f"{name} is not installed")
 
 
 def test_no_drift_passes(tmp_path: Path) -> None:
@@ -116,7 +130,7 @@ def test_listed_and_unlisted_together_fails(tmp_path: Path) -> None:
 def test_path_collation_is_independent_of_callers_locale(tmp_path: Path) -> None:
     """C-sorted paths must also be compared under the C locale."""
     env = os.environ.copy()
-    env["LC_ALL"] = "en_US.UTF-8"
+    env["LC_ALL"] = require_locale("en_US.UTF-8")
     result = run_check(
         tmp_path,
         hashes(

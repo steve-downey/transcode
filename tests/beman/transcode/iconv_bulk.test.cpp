@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <array>
 #include <iterator>
-#include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
@@ -123,7 +122,9 @@ TEST_CASE("iconv_transcode_to skips invalid UTF-8 without producing malformed UT
     auto              result = iconv_transcode_to<std::string>(input, "UTF-8", "UTF-16LE");
 
     CHECK(result.size() % 2 == 0);
-    auto decoded = result | whatwg_decode<codec::utf_16le> | std::ranges::to<std::vector<char32_t>>();
+    std::vector<char32_t> decoded;
+    for (char32_t code_point : result | whatwg_decode<codec::utf_16le>)
+        decoded.push_back(code_point);
     CHECK(decoded == std::vector<char32_t>{U'A', U'B'});
 }
 
@@ -131,8 +132,11 @@ TEST_CASE("eager and lazy lossy iconv conversions agree", "[transcoding::iconv_b
     std::vector<char>                       input{'A', static_cast<char>(0xFF), 'B'};
     std::array<char, iconv_min_buffer_size> buffer{};
 
-    auto eager = iconv_transcode_to<std::string>(input, "UTF-8", "UTF-16LE");
-    auto lazy  = input | iconv_transcode("UTF-8", "UTF-16LE", std::span(buffer)) | std::ranges::to<std::string>();
+    auto        eager     = iconv_transcode_to<std::string>(input, "UTF-8", "UTF-16LE");
+    auto        lazy_view = input | iconv_transcode("UTF-8", "UTF-16LE", std::span(buffer));
+    std::string lazy;
+    for (char byte : lazy_view)
+        lazy.push_back(byte);
 
     CHECK(eager == lazy);
 }
