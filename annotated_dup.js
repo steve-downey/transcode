@@ -1,5 +1,8 @@
 var annotated_dup =
 [
+    [ "anonymous_namespace{custom_single_byte_decoder.cpp}", "namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html", [
+      [ "fractional_codec", "structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec.html", "structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec" ]
+    ] ],
     [ "beman", "namespacebeman.html", [
       [ "transcoding", "namespacebeman_1_1transcoding.html", [
         [ "decode_closure", "structbeman_1_1transcoding_1_1decode__closure.html", "structbeman_1_1transcoding_1_1decode__closure" ],

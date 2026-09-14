@@ -300,9 +300,14 @@ Enumerations</h2></td></tr>
 <br />
  }</td></tr>
 <tr class="separator:a3823b84e4fc7b689f0b2b38741b30bab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aab196b86b3b7eea71d38ca7ca6e65730"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730">iconv_error</a> { <a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed">invalid_sequence</a>
+<tr class="memitem:aab196b86b3b7eea71d38ca7ca6e65730"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730">iconv_error</a> { <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed">invalid_sequence</a>
 , <a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82">incomplete_sequence</a>
 , <a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844">output_full</a>
+, <a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a93ac46772777323b172bbf1299ef96a6">open_failed</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a62a7db03dd9bee47b7f045580e5bfc7c">system_error</a>
+<br />
  }</td></tr>
 <tr class="separator:aab196b86b3b7eea71d38ca7ca6e65730"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a692fa6937eaeda0a1ceaeed075b35218"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218">transcode_error_kind</a> { <a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218af5300127f646a4550bc4a04fbe393e79">replacement</a>
@@ -354,11 +359,14 @@ Functions</h2></td></tr>
 <tr class="memitem:a603156a9d20e68760ab8a23fb1e64f70"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a603156a9d20e68760ab8a23fb1e64f70">null_term_view</a> (I) -&gt; <a class="el" href="classbeman_1_1transcoding_1_1null__term__view.html">null_term_view</a>&lt; I &gt;</td></tr>
 <tr class="memdesc:a603156a9d20e68760ab8a23fb1e64f70"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <br /></td></tr>
 <tr class="separator:a603156a9d20e68760ab8a23fb1e64f70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e96b2209ecc3472323642bbc8bc1322"><td class="memTemplParams" colspan="2">template&lt;legacy_byte_range R&gt; </td></tr>
-<tr class="memitem:a9e96b2209ecc3472323642bbc8bc1322"><td class="memTemplItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a9e96b2209ecc3472323642bbc8bc1322">sniff_encoding</a> (R &amp;&amp;r) noexcept</td></tr>
-<tr class="separator:a9e96b2209ecc3472323642bbc8bc1322"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56ed76d2fca064c209e690f3bfe595d6"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a56ed76d2fca064c209e690f3bfe595d6">transcode_string</a> (std::span&lt; const char &gt; src, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> from, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> to)</td></tr>
-<tr class="separator:a56ed76d2fca064c209e690f3bfe595d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e89b3b0584a5d1306413f8cfd4000f9"><td class="memTemplParams" colspan="2">template&lt;legacy_byte_range R&gt; <br />
+requires std::ranges::forward_range&lt;R&gt;</td></tr>
+<tr class="memitem:a5e89b3b0584a5d1306413f8cfd4000f9"><td class="memTemplItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a5e89b3b0584a5d1306413f8cfd4000f9">sniff_encoding</a> (R &amp;&amp;r) noexcept</td></tr>
+<tr class="separator:a5e89b3b0584a5d1306413f8cfd4000f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68679b5a8feb5e13bae2bd9cb925467b"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a68679b5a8feb5e13bae2bd9cb925467b">has_whatwg_encoder</a> (<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> encoding) noexcept</td></tr>
+<tr class="separator:a68679b5a8feb5e13bae2bd9cb925467b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f32051613fde52669da89f0c7c20a7c"><td class="memItemLeft" align="right" valign="top">std::optional&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a8f32051613fde52669da89f0c7c20a7c">transcode_string</a> (std::span&lt; const char &gt; src, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> from, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> to)</td></tr>
+<tr class="separator:a8f32051613fde52669da89f0c7c20a7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae36baae686b27c6b6bc50333f2616678"><td class="memItemLeft" align="right" valign="top">std::optional&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#ae36baae686b27c6b6bc50333f2616678">transcode_string</a> (std::span&lt; const char &gt; src, std::string_view from_label, std::string_view to_label)</td></tr>
 <tr class="separator:ae36baae686b27c6b6bc50333f2616678"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1554cf1fb18585527a6506d8afaca87f"><td class="memTemplParams" colspan="2">template&lt;decode_codec From, encode_codec To&gt; </td></tr>
@@ -376,6 +384,8 @@ Variables</h2></td></tr>
 <tr class="memitem:a51c614ab370846ad687e12691645601e"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a51c614ab370846ad687e12691645601e">iconv_error_rc</a> = static_cast&lt;size_t&gt;(-1)</td></tr>
 <tr class="memdesc:a51c614ab370846ad687e12691645601e"><td class="mdescLeft">&#160;</td><td class="mdescRight">\omit  <br /></td></tr>
 <tr class="separator:a51c614ab370846ad687e12691645601e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49fa4c4325f073aeceeb43c34600a236"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a49fa4c4325f073aeceeb43c34600a236">iconv_min_buffer_size</a> = 4</td></tr>
+<tr class="separator:a49fa4c4325f073aeceeb43c34600a236"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd0d40bb9a9bf664c3f2573d5f941311"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="structbeman_1_1transcoding_1_1null__sentinel__t.html">null_sentinel_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311">null_sentinel</a> {}</td></tr>
 <tr class="separator:afd0d40bb9a9bf664c3f2573d5f941311"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add5187cf1755a6aff167117a6d003f7a"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> From, <a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a> To&gt; </td></tr>
@@ -658,11 +668,13 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section remark"><dt>Remarks</dt><dd>An <code>iconv</code> conversion that fails reports one of these values, which are the three failures POSIX <code>iconv</code> distinguishes. The enumerators have the meanings in the following table. \libtab2[transcode.errors.iconv]{Enum class <code>iconv_error</code>} \column Constant \column Meaning \row <code>invalid_sequence</code> \cell the input is not valid in the source encoding, or has no representation in the destination encoding (<code>EILSEQ</code>). \row <code>incomplete_sequence</code> \cell the input ends in the middle of a multibyte sequence (<code>EINVAL</code>). \row <code>output_full</code> \cell the conversion has no room left to write its result (<code>E2BIG</code>). \endlibtab2 </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>An <code>iconv</code> conversion that fails reports one of these values, which include the three failures POSIX <code>iconv</code> distinguishes and failures at the boundary of that model. The enumerators have the meanings in the following table. \libtab2[transcode.errors.iconv]{Enum class <code>iconv_error</code>} \column Constant \column Meaning \row <code>invalid_sequence</code> \cell the input is not valid in the source encoding, or has no representation in the destination encoding (<code>EILSEQ</code>). \row <code>incomplete_sequence</code> \cell the input ends in the middle of a multibyte sequence (<code>EINVAL</code>). \row <code>output_full</code> \cell the conversion has no room left to write its result (<code>E2BIG</code>). \row <code>open_failed</code> \cell the conversion descriptor could not be opened; <code>iconv_open</code> uses <code>EINVAL</code> for an unsupported conversion pair, so this condition is kept distinct from an incomplete input sequence. \row <code>system_error</code> \cell the conversion failed with an error POSIX does not specify for <code>iconv</code>. \endlibtab2 </dd></dl>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed" name="aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed"></a>invalid_sequence&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82" name="aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82"></a>incomplete_sequence&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844" name="aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844"></a>output_full&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="aab196b86b3b7eea71d38ca7ca6e65730a93ac46772777323b172bbf1299ef96a6" name="aab196b86b3b7eea71d38ca7ca6e65730a93ac46772777323b172bbf1299ef96a6"></a>open_failed&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="aab196b86b3b7eea71d38ca7ca6e65730a62a7db03dd9bee47b7f045580e5bfc7c" name="aab196b86b3b7eea71d38ca7ca6e65730a62a7db03dd9bee47b7f045580e5bfc7c"></a>system_error&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -686,7 +698,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section remark"><dt>Remarks</dt><dd>A view's error kind says how it reports a failure of the codec it drives. The enumerators have the meanings in the following table. \libtab2[transcode.errors.kind]{Enum class <code>transcode_error_kind</code>} \column Constant \column Meaning \row <code>replacement</code> \cell a failure to decode yields U+FFFD REPLACEMENT CHARACTER and a failure to encode yields &lsquo;&rsquo;?'`, and the view's value type is the codec's own. \row <code>expected</code> \cell the view's value type is <code>expected&lt;T, whatwg_error&gt;</code>, and a failure yields an <code>unexpected</code> holding the error that occurred. \endlibtab2 </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>A view's error kind says how it reports a failure of the codec it drives. The enumerators have the meanings in the following table. \libtab2[transcode.errors.kind]{Enum class <code>transcode_error_kind</code>} \column Constant \column Meaning \row <code>replacement</code> \cell a failure to decode yields U+FFFD REPLACEMENT CHARACTER. Ill-formed UTF-32 input is first replaced with U+FFFD and then encoded normally; when an encoder cannot represent a scalar value, the encode view yields &lsquo;&rsquo;?'`. The view's value type is the codec's own. \row <code>expected</code> \cell the view's value type is <code>expected&lt;T, whatwg_error&gt;</code>, and a failure yields an <code>unexpected</code> holding the error that occurred. \endlibtab2 </dd></dl>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a692fa6937eaeda0a1ceaeed075b35218af5300127f646a4550bc4a04fbe393e79" name="a692fa6937eaeda0a1ceaeed075b35218af5300127f646a4550bc4a04fbe393e79"></a>replacement&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac" name="a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac"></a>expected&#160;</td><td class="fielddoc"></td></tr>
@@ -713,7 +725,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section remark"><dt>Remarks</dt><dd>An operation that fails to decode or to encode reports one of these values. The enumerators have the meanings in the following table. \libtab2[transcode.errors.whatwg]{Enum class <code>whatwg_error</code>} \column Constant \column Meaning \row <code>invalid_byte</code> \cell the input holds a byte the encoding does not allow in that position. \row <code>truncated_sequence</code> \cell the input ends in the middle of a sequence. \row <code>overlong_encoding</code> \cell the sequence encodes a value that a shorter sequence also encodes. \row <code>surrogate_code_point</code> \cell the sequence encodes a surrogate code point, which is not a Unicode scalar value. \row <code>out_of_range</code> \cell the sequence encodes a value greater than the largest Unicode scalar value. \row <code>unmapped_codepoint</code> \cell the encoding has no representation for the Unicode scalar value being encoded. \endlibtab2 </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>An operation that fails to decode or to encode reports one of these values. The enumerators have the meanings in the following table. \libtab2[transcode.errors.whatwg]{Enum class <code>whatwg_error</code>} \column Constant \column Meaning \row <code>invalid_byte</code> \cell the input holds a byte the encoding does not allow in that position. \row <code>truncated_sequence</code> \cell the input ends in the middle of a sequence. \row <code>overlong_encoding</code> \cell the sequence encodes a value that a shorter sequence also encodes. \row <code>surrogate_code_point</code> \cell a byte sequence decodes to, or a UTF-32 input code unit holds, a surrogate code point, which is not a Unicode scalar value. \row <code>out_of_range</code> \cell a byte sequence decodes to, or a UTF-32 input code unit holds, a value greater than the largest Unicode scalar value. \row <code>unmapped_codepoint</code> \cell the encoding has no representation for the Unicode scalar value being encoded. \endlibtab2 </dd></dl>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0" name="a3823b84e4fc7b689f0b2b38741b30baba12d0177520dedcc9c974f3b97f7a33e0"></a>invalid_byte&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a3823b84e4fc7b689f0b2b38741b30baba3c77c8fa3468fd7bfd6123cbcbc26a3e" name="a3823b84e4fc7b689f0b2b38741b30baba3c77c8fa3468fd7bfd6123cbcbc26a3e"></a>truncated_sequence&#160;</td><td class="fielddoc"></td></tr>
@@ -838,7 +850,7 @@ template&lt;encode_codec Codec&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd><code>encode(codec)</code> with <code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a></code>: the view it adapts to has value type <code>expected&lt;char, whatwg_error&gt;</code>, and an encoding error is the error rather than &lsquo;&rsquo;?'`. </dd></dl>
+<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd><code>encode(codec)</code> with <code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a></code>: the view it adapts to has value type <code>expected&lt;char, whatwg_error&gt;</code>, and an encoding or UTF-32 validation error is reported rather than replaced. </dd></dl>
 
 </div>
 </div>
@@ -867,6 +879,33 @@ template&lt;encode_codec Codec&gt; </div>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>The <code>codec</code> whose WHATWG label set contains <code>label</code>, and <code>nullopt</code> if no encoding has that label. Leading and trailing ASCII whitespace is ignored and the comparison is ASCII case-insensitive, which is the Encoding Standard's "get an encoding" algorithm. </dd></dl>
 <dl class="section remark"><dt>Remarks</dt><dd>An encoding's labels are the alternative names a document may spell it with &ndash; <code>latin1</code>, <code>iso-8859-1</code> and <code>windows-1252</code> are all labels of <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa00b1d00a5438928d45b2ccf9c82ead4e">codec::windows_1252</a></code> &ndash; so a lookup that fails is a name no encoding claims, not an encoding that cannot be represented. </dd></dl>
+
+</div>
+</div>
+<a id="a68679b5a8feb5e13bae2bd9cb925467b" name="a68679b5a8feb5e13bae2bd9cb925467b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68679b5a8feb5e13bae2bd9cb925467b">&#9670;&#160;</a></span>has_whatwg_encoder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool beman::transcoding::has_whatwg_encoder </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005a">codec</a>&#160;</td>
+          <td class="paramname"><em>encoding</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd><code>true</code> if the WHATWG Encoding Standard defines an encoder for <code>encoding</code>, and <code>false</code> otherwise. </dd></dl>
 
 </div>
 </div>
@@ -909,7 +948,7 @@ template&lt;encode_codec Codec&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd>A range adaptor object. Given a subexpression <code>E</code> that models <code>legacy_byte_range</code>, <code>iconv_transcode(from, to, buf)(E)</code> and <code>E | iconv_transcode(from, to, buf)</code> are each expression-equivalent to an <code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a></code> \iref{transcode.iconv} over <code>E</code>, <code><a class="el" href="namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b">make_real_iconv_fns()</a></code>, <code>from</code>, <code>to</code> and <code>buf</code>. </dd></dl>
+<p>\expects <code>buf.size() &gt;= iconv_min_buffer_size</code> is <code>true</code>. \seebelow </p><dl class="section return"><dt>Returns</dt><dd>A range adaptor object. Given a subexpression <code>E</code> that models <code>legacy_byte_range</code>, <code>iconv_transcode(from, to, buf)(E)</code> and <code>E | iconv_transcode(from, to, buf)</code> are each expression-equivalent to an <code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a></code> \iref{transcode.iconv} over <code>E</code>, <code><a class="el" href="namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b">make_real_iconv_fns()</a></code>, <code>from</code>, <code>to</code> and <code>buf</code>. </dd></dl>
 <dl class="section remark"><dt>Remarks</dt><dd><code>buf</code> is the caller's, and every iterator the adaptor produces converts into it. Two ranges adapted with the same buffer must not be iterated at the same time. </dd></dl>
 
 </div>
@@ -1003,6 +1042,7 @@ template&lt;typename IconvFns , legacy_byte_range R, std::output_iterator&lt; ch
       </table>
 </div><div class="memdoc">
 <p>\effects Converts the bytes of <code>source</code> from <code>from</code> to <code>to</code> by <code>fns</code> and writes them through <code>output</code>. </p><dl class="section return"><dt>Returns</dt><dd>The value of <code>output</code> after the last byte written. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>If the conversion descriptor cannot be opened, no bytes are written and the unchanged iterator is returned. This is not distinguishable from empty input; use <code>iconv_transcode_to_or_error</code> when the distinction matters. An unexpected system failure similarly returns the iterator after the last byte successfully written. </dd></dl>
 
 </div>
 </div>
@@ -1046,6 +1086,7 @@ template&lt;typename IconvFns , legacy_byte_range R, std::output_iterator&lt; ch
 </table>
 </div><div class="memdoc">
 <p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd><code>iconv_transcode(from, to, buf)</code> with the errors reported rather than skipped: the view it adapts to has value type <code>expected&lt;char, iconv_error&gt;</code>. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>Unlike <code>iconv_transcode</code>, this adaptor accepts a buffer of any size. If <code>iconv</code> reports <code>E2BIG</code> without producing output, the adapted view reports <code><a class="el" href="namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844">iconv_error::output_full</a></code>. </dd></dl>
 
 </div>
 </div>
@@ -1125,7 +1166,7 @@ template&lt;typename Container  = std::string, typename IconvFns , legacy_byte_r
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd>A <code>Container</code> holding the bytes of <code>source</code> converted from <code>from</code> to <code>to</code> by <code>fns</code>. Input the conversion does not accept is skipped, as it is by <code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a></code> \iref{transcode.iconv}. The result is empty when the conversion descriptor cannot be opened &ndash; which is what <code>iconv_open</code> failing means, and is not distinguishable here from an empty input. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A <code>Container</code> holding the bytes of <code>source</code> converted from <code>from</code> to <code>to</code> by <code>fns</code>. Input the conversion does not accept is skipped, as it is by <code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a></code> \iref{transcode.iconv}. The result is empty when the conversion descriptor cannot be opened &ndash; which is what <code>iconv_open</code> failing means, and is not distinguishable here from an empty input. An unexpected system failure ends conversion and returns the bytes produced before the failure. Use <code>iconv_transcode_to_or_error</code> when either distinction matters. </dd></dl>
 
 </div>
 </div>
@@ -1233,6 +1274,7 @@ template&lt;typename Container  = std::string, typename IconvFns , legacy_byte_r
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>An <code><a class="el" href="structbeman_1_1transcoding_1_1iconv__functions.html">iconv_functions</a></code> whose members are the implementation's <code>iconv_open</code>, <code>iconv</code> and <code>iconv_close</code>. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>The facilities in this subclause are provided only by an implementation that supplies an <code>iconv</code> conversion facility. </dd></dl>
 
 </div>
 </div>
@@ -1298,13 +1340,14 @@ template&lt;decode_codec From, encode_codec To&gt; </div>
 
 </div>
 </div>
-<a id="a9e96b2209ecc3472323642bbc8bc1322" name="a9e96b2209ecc3472323642bbc8bc1322"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9e96b2209ecc3472323642bbc8bc1322">&#9670;&#160;</a></span>sniff_encoding()</h2>
+<a id="a5e89b3b0584a5d1306413f8cfd4000f9" name="a5e89b3b0584a5d1306413f8cfd4000f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e89b3b0584a5d1306413f8cfd4000f9">&#9670;&#160;</a></span>sniff_encoding()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;legacy_byte_range R&gt; </div>
+template&lt;legacy_byte_range R&gt; <br />
+requires std::ranges::forward_range&lt;R&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1324,12 +1367,13 @@ template&lt;legacy_byte_range R&gt; </div>
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>The encoding <code>r</code> begins with a byte order mark for: \item <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa2d58586ca53bf1248a6349d97f865bf3">codec::utf_8</a></code>, if <code>r</code> begins with <code>EF BB BF</code>; \item <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa0f4291507e17c4c6d550ebdd51087c65">codec::utf_16be</a></code>, if <code>r</code> begins with <code>FE FF</code>; \item <code><a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa8995e63b559f0f74f3efa7dc973dd2a8">codec::utf_16le</a></code>, if <code>r</code> begins with <code>FF FE</code>; \item <code>nullopt</code> otherwise. </dd></dl>
-<dl class="section remark"><dt>Remarks</dt><dd>This is the byte order mark half of the Encoding Standard's "decide the fallback encoding" step: what to do when there is no mark is a question about the document and its transport, which a library cannot answer. The mark itself is not consumed &ndash; a decode view strips a leading U+FEFF for the UTF codecs on its own &ndash; so the range can be passed on unchanged. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This is the byte order mark half of the Encoding Standard's "decide the fallback encoding" step: what to do when there is no mark is a question about the document and its transport, which a library cannot answer. The mark itself is not consumed &ndash; a decode view strips a leading U+FEFF for the UTF codecs on its own &ndash; so the range can be passed on unchanged.</dd></dl>
+<p><code>R</code> is required to be a <code>forward_range</code> for that last sentence to be true. Examining the mark means advancing an iterator over it, and on a single-pass range those bytes are not there afterwards: sniffing a stream and then decoding it would drop the prefix, and sniffing a stream with no mark &ndash; the common case &ndash; would drop the first two bytes of the document. Nothing in the signature would say so. A caller holding an <code>input_range</code> has to materialize enough of it to look twice. </p>
 
 </div>
 </div>
-<a id="a56ed76d2fca064c209e690f3bfe595d6" name="a56ed76d2fca064c209e690f3bfe595d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56ed76d2fca064c209e690f3bfe595d6">&#9670;&#160;</a></span>transcode_string() <span class="overload">[1/2]</span></h2>
+<a id="a8f32051613fde52669da89f0c7c20a7c" name="a8f32051613fde52669da89f0c7c20a7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f32051613fde52669da89f0c7c20a7c">&#9670;&#160;</a></span>transcode_string() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1338,7 +1382,7 @@ template&lt;legacy_byte_range R&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::string beman::transcoding::transcode_string </td>
+          <td class="memname">std::optional&lt; std::string &gt; beman::transcoding::transcode_string </td>
           <td>(</td>
           <td class="paramtype">std::span&lt; const char &gt;&#160;</td>
           <td class="paramname"><em>src</em>, </td>
@@ -1367,8 +1411,7 @@ template&lt;legacy_byte_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd>The bytes of <code>src</code>, decoded as <code>from</code> and re-encoded as <code>to</code>. Errors are substituted rather than reported: a byte sequence <code>from</code> does not allow decodes to U+FFFD, and a scalar value <code>to</code> cannot represent encodes to &lsquo;&rsquo;?'<code>. The result is empty when</code>to` names an encoding the WHATWG Encoding Standard defines no encoder for. </dd></dl>
-<dl class="section remark"><dt>Remarks</dt><dd>This is <code>transcode</code> \iref{transcode.pipeline} run to completion into a <code>string</code>, which is what a caller who wants the whole result and not a view writes. <code>src | transcode&lt;From, To&gt; | ranges::to&lt;string&gt;()</code> is the same thing with the codecs known at compile time. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd><code>nullopt</code> if the WHATWG Encoding Standard defines no encoder for <code>to</code>; otherwise, the bytes of <code>src</code>, decoded as <code>from</code> and re-encoded as <code>to</code>. Errors are substituted rather than reported: a byte sequence <code>from</code> does not allow decodes to U+FFFD, and a scalar value <code>to</code> cannot represent encodes to &lsquo;&rsquo;?'<code>. \remarks This is</code>transcode<code>\iref{transcode.pipeline} run to completion into a</code>string<code>, which is what a caller who wants the whole result and not a view writes.</code>src | transcode&lt;From, To&gt; | ranges::to&lt;string&gt;()` is the same thing with the codecs known at compile time. </dd></dl>
 
 </div>
 </div>
@@ -1411,7 +1454,7 @@ template&lt;legacy_byte_range R&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd><code>transcode_string(src, *get_encoding(from_label), *get_encoding(to_label))</code>, and <code>nullopt</code> if either label names no encoding \iref{transcode.codec.label}. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd><code>transcode_string(src, *get_encoding(from_label), *get_encoding(to_label))</code>, and <code>nullopt</code> if either label names no encoding \iref{transcode.codec.label} or the target encoding has no WHATWG encoder. </dd></dl>
 <dl class="section remark"><dt>Remarks</dt><dd>This is the overload a program uses when the encodings are a runtime choice &ndash; a <code>Content-Type</code> header, a command-line option &ndash; which is what labels are for. </dd></dl>
 
 </div>
@@ -1438,6 +1481,29 @@ template&lt;legacy_byte_range R&gt; </div>
 </div><div class="memdoc">
 
 <p>\omit </p>
+
+</div>
+</div>
+<a id="a49fa4c4325f073aeceeb43c34600a236" name="a49fa4c4325f073aeceeb43c34600a236"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a49fa4c4325f073aeceeb43c34600a236">&#9670;&#160;</a></span>iconv_min_buffer_size</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t beman::transcoding::iconv_min_buffer_size = 4</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section remark"><dt>Remarks</dt><dd>The smallest output buffer accepted by <code><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">iconv_transcode_view</a></code>. An <code>iconv</code> implementation can still report <code>E2BIG</code> without producing a byte when a destination encoding needs a larger indivisible output unit. </dd></dl>
 
 </div>
 </div>
@@ -1633,7 +1699,7 @@ template&lt;<a class="el" href="namespacebeman_1_1transcoding.html#a20dfb324ebd2
   </tr>
 </table>
 </div><div class="memdoc">
-<p>\seebelow </p><dl class="section remark"><dt>Remarks</dt><dd><code>whatwg_encode_or_error&lt;C&gt;</code> is <code>whatwg_encode&lt;C&gt;</code> with <code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a></code>: the view it adapts to has value type <code>expected&lt;char, whatwg_error&gt;</code>, and an encoding error is the error rather than &lsquo;&rsquo;?'`. </dd></dl>
+<p>\seebelow </p><dl class="section remark"><dt>Remarks</dt><dd><code>whatwg_encode_or_error&lt;C&gt;</code> is <code>whatwg_encode&lt;C&gt;</code> with <code><a class="el" href="namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac">transcode_error_kind::expected</a></code>: the view it adapts to has value type <code>expected&lt;char, whatwg_error&gt;</code>, and validation and encoding errors are reported rather than replaced. </dd></dl>
 
 </div>
 </div>

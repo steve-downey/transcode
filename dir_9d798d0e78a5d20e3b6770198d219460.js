@@ -16,6 +16,7 @@ var dir_9d798d0e78a5d20e3b6770198d219460 =
     [ "single_byte_tables.hpp", "single__byte__tables_8hpp.html", null ],
     [ "table_codec.hpp", "table__codec_8hpp.html", "table__codec_8hpp" ],
     [ "utf16.hpp", "utf16_8hpp.html", null ],
+    [ "utf32.hpp", "utf32_8hpp.html", null ],
     [ "utf8.hpp", "utf8_8hpp.html", null ],
     [ "utf8_encode.hpp", "utf8__encode_8hpp.html", null ],
     [ "whatwg_decode_select.hpp", "whatwg__decode__select_8hpp.html", null ],

@@ -4,6 +4,7 @@ var hierarchy =
     [ "beman::transcoding::decode_result", "structbeman_1_1transcoding_1_1decode__result.html", null ],
     [ "beman::transcoding::encode_closure< Codec, E >", "structbeman_1_1transcoding_1_1encode__closure.html", null ],
     [ "beman::transcoding::encode_result", "structbeman_1_1transcoding_1_1encode__result.html", null ],
+    [ "anonymous_namespace{custom_single_byte_decoder.cpp}::fractional_codec", "structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec.html", null ],
     [ "beman::transcoding::full_table_codec< Table >", "structbeman_1_1transcoding_1_1full__table__codec.html", null ],
     [ "beman::transcoding::iconv_functions", "structbeman_1_1transcoding_1_1iconv__functions.html", null ],
     [ "beman::transcoding::iconv_transcode_closure< IconvFns >", "structbeman_1_1transcoding_1_1iconv__transcode__closure.html", null ],

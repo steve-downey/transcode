@@ -23,6 +23,7 @@ var classbeman_1_1transcoding_1_1encode__view_1_1iterator =
     [ "current_", "classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a9a785318f32a937a5c913e20b1fa7a52", null ],
     [ "done_", "classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#ae96b714998b6f2500561855819fcc54b", null ],
     [ "end_", "classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a1ffd10fa86ebcbf340cbe759cdf50c8c", null ],
+    [ "error_", "classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a524fe6cf2e5c7f01adf6611a7a644966", null ],
     [ "is_error_", "classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a77cd4691275f83d7cbb765127eb80467", null ],
     [ "len_", "classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a149bd44d873b0e2b1fac39bd12ec4645", null ],
     [ "pos_", "classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a195927978a55255645a2c5665e56baf9", null ]

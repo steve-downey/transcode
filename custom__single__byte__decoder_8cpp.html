@@ -97,18 +97,28 @@ $(document).ready(function(){initNavTree('custom__single__byte__decoder_8cpp.htm
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">custom_single_byte_decoder.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;array&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="codec__concepts_8hpp_source.html">beman/transcode/codec_concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="codec__result_8hpp_source.html">beman/transcode/codec_result.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="decode__view_8hpp_source.html">beman/transcode/decode_view.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="error_8hpp_source.html">beman/transcode/error.hpp</a>&gt;</code><br />
+<code>#include &lt;array&gt;</code><br />
 <code>#include &lt;cstddef&gt;</code><br />
-<code>#include &lt;numeric&gt;</code><br />
+<code>#include &lt;iterator&gt;</code><br />
 <code>#include &lt;span&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
-<code>#include &lt;string_view&gt;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec.html">anonymous_namespace{custom_single_byte_decoder.cpp}::fractional_codec</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html">anonymous_namespace{custom_single_byte_decoder.cpp}</a></td></tr>
@@ -116,16 +126,19 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a4d65b486afb2d4106f2ec0978fcd3758"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a4d65b486afb2d4106f2ec0978fcd3758">anonymous_namespace{custom_single_byte_decoder.cpp}::append_fraction</a> (std::u32string &amp;result, unsigned numerator, unsigned denominator)</td></tr>
-<tr class="separator:a4d65b486afb2d4106f2ec0978fcd3758"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ad1dbd5771b659db60af9441fc5ea9d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a7ad1dbd5771b659db60af9441fc5ea9d">anonymous_namespace{custom_single_byte_decoder.cpp}::append_custom_code_point</a> (std::u32string &amp;result, unsigned char byte)</td></tr>
-<tr class="separator:a7ad1dbd5771b659db60af9441fc5ea9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f50f955a599a74ab40ff93c21f57efb"><td class="memItemLeft" align="right" valign="top">std::u32string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a8f50f955a599a74ab40ff93c21f57efb">anonymous_namespace{custom_single_byte_decoder.cpp}::decode_custom_single_byte</a> (std::span&lt; const std::byte &gt; input)</td></tr>
-<tr class="separator:a8f50f955a599a74ab40ff93c21f57efb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa65d207b35d79d7392fa4e32c40261e2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#aa65d207b35d79d7392fa4e32c40261e2">anonymous_namespace{custom_single_byte_decoder.cpp}::matches_expected</a> (const std::u32string &amp;decoded)</td></tr>
-<tr class="separator:aa65d207b35d79d7392fa4e32c40261e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae968b247299b532f28fc256130ef2387"><td class="memItemLeft" align="right" valign="top">constexpr std::u32string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#ae968b247299b532f28fc256130ef2387">anonymous_namespace{custom_single_byte_decoder.cpp}::decode_all</a> (std::span&lt; const std::byte &gt; input)</td></tr>
+<tr class="separator:ae968b247299b532f28fc256130ef2387"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f1b37a52c118d4674bf3769fd2485df"><td class="memItemLeft" align="right" valign="top">constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a6f1b37a52c118d4674bf3769fd2485df">anonymous_namespace{custom_single_byte_decoder.cpp}::count_invalid</a> (std::span&lt; const std::byte &gt; input)</td></tr>
+<tr class="separator:a6f1b37a52c118d4674bf3769fd2485df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="custom__single__byte__decoder_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
 <tr class="separator:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:add28c05a0d7a77554e765f1fa3de892b"><td class="memItemLeft" align="right" valign="top">constexpr std::array&lt; char32_t, 64 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#add28c05a0d7a77554e765f1fa3de892b">anonymous_namespace{custom_single_byte_decoder.cpp}::upper_table</a></td></tr>
+<tr class="separator:add28c05a0d7a77554e765f1fa3de892b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8dacd65c4aa1ad71cc712a21e205bca9"><td class="memItemLeft" align="right" valign="top">constexpr std::array&lt; std::byte, 8 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a8dacd65c4aa1ad71cc712a21e205bca9">anonymous_namespace{custom_single_byte_decoder.cpp}::sample</a></td></tr>
+<tr class="separator:a8dacd65c4aa1ad71cc712a21e205bca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="ae66f6b31b5ad750f1fe042a706a4e3d4" name="ae66f6b31b5ad750f1fe042a706a4e3d4"></a>

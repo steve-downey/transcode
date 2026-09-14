@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['_7eiterator_0',['~iterator',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a2a0ecc7ffce554ab67b61f777b2d1ce3',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::~iterator()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a21313673263bc29ade9ae2d505d81f4c',1,'beman::transcoding::iconv_transcode_view::iterator::~iterator()']]]
+  ['whatwg_5fdecode_5fview_0',['whatwg_decode_view',['../classbeman_1_1transcoding_1_1whatwg__decode__view.html#a52b78814deed6b966dc4f593aba204a6',1,'beman::transcoding::whatwg_decode_view']]],
+  ['whatwg_5fencode_5fview_1',['whatwg_encode_view',['../classbeman_1_1transcoding_1_1whatwg__encode__view.html#aaed53d3f0616a0aeea50192076d468e5',1,'beman::transcoding::whatwg_encode_view']]]
 ];

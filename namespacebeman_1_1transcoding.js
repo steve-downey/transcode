@@ -91,7 +91,9 @@ var namespacebeman_1_1transcoding =
     [ "iconv_error", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730", [
       [ "invalid_sequence", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed", null ],
       [ "incomplete_sequence", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82", null ],
-      [ "output_full", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844", null ]
+      [ "output_full", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844", null ],
+      [ "open_failed", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a93ac46772777323b172bbf1299ef96a6", null ],
+      [ "system_error", "namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a62a7db03dd9bee47b7f045580e5bfc7c", null ]
     ] ],
     [ "transcode_error_kind", "namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218", [
       [ "replacement", "namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218af5300127f646a4550bc4a04fbe393e79", null ],
@@ -110,6 +112,7 @@ var namespacebeman_1_1transcoding =
     [ "encode", "namespacebeman_1_1transcoding.html#acb7b318ba17a0e44907744ff34cf98d7", null ],
     [ "encode_or_error", "namespacebeman_1_1transcoding.html#a4395a5c86a28d758f9352b819ea09c83", null ],
     [ "get_encoding", "namespacebeman_1_1transcoding.html#a66a54f73e921a9aa3ccdf21aa982e3ec", null ],
+    [ "has_whatwg_encoder", "namespacebeman_1_1transcoding.html#a68679b5a8feb5e13bae2bd9cb925467b", null ],
     [ "iconv_transcode", "namespacebeman_1_1transcoding.html#aab66a3b96e24d01f79bc11a5b9731dcb", null ],
     [ "iconv_transcode_into", "namespacebeman_1_1transcoding.html#a06d518f97b7706b182ba701e02be1da3", null ],
     [ "iconv_transcode_into", "namespacebeman_1_1transcoding.html#a43d5fe1038fd6241a6486baf3bb2a55c", null ],
@@ -121,10 +124,11 @@ var namespacebeman_1_1transcoding =
     [ "make_real_iconv_fns", "namespacebeman_1_1transcoding.html#a8052302218d5a4ad20fe0e26e198765b", null ],
     [ "null_term_view", "namespacebeman_1_1transcoding.html#a603156a9d20e68760ab8a23fb1e64f70", null ],
     [ "pluggable_transcode", "namespacebeman_1_1transcoding.html#a1554cf1fb18585527a6506d8afaca87f", null ],
-    [ "sniff_encoding", "namespacebeman_1_1transcoding.html#a9e96b2209ecc3472323642bbc8bc1322", null ],
-    [ "transcode_string", "namespacebeman_1_1transcoding.html#a56ed76d2fca064c209e690f3bfe595d6", null ],
+    [ "sniff_encoding", "namespacebeman_1_1transcoding.html#a5e89b3b0584a5d1306413f8cfd4000f9", null ],
+    [ "transcode_string", "namespacebeman_1_1transcoding.html#a8f32051613fde52669da89f0c7c20a7c", null ],
     [ "transcode_string", "namespacebeman_1_1transcoding.html#ae36baae686b27c6b6bc50333f2616678", null ],
     [ "iconv_error_rc", "namespacebeman_1_1transcoding.html#a51c614ab370846ad687e12691645601e", null ],
+    [ "iconv_min_buffer_size", "namespacebeman_1_1transcoding.html#a49fa4c4325f073aeceeb43c34600a236", null ],
     [ "null_sentinel", "namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311", null ],
     [ "single_byte_decode", "namespacebeman_1_1transcoding.html#aef322db207ff0a4583061027a96a7475", null ],
     [ "single_byte_encode", "namespacebeman_1_1transcoding.html#a82f706c2813d6a4b7ec40aeb51af5ae6", null ],

@@ -190,9 +190,12 @@ Private Attributes</h2></td></tr>
 <tr class="memitem:a95478d0b65423247d1dc79edd611d7d6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a95478d0b65423247d1dc79edd611d7d6">done_</a></td></tr>
 <tr class="memdesc:a95478d0b65423247d1dc79edd611d7d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
 <tr class="separator:a95478d0b65423247d1dc79edd611d7d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a22d525773d14d085f48456207a1b2e3c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a22d525773d14d085f48456207a1b2e3c">flushed_</a> {false}</td></tr>
-<tr class="memdesc:a22d525773d14d085f48456207a1b2e3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
-<tr class="separator:a22d525773d14d085f48456207a1b2e3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad786e5fa0f2359f06a0d3710d0ecb1d2"><td class="memItemLeft" align="right" valign="top">detail::iconv_flush_state&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#ad786e5fa0f2359f06a0d3710d0ecb1d2">flush_state_</a> {detail::iconv_flush_state::not_started}</td></tr>
+<tr class="memdesc:ad786e5fa0f2359f06a0d3710d0ecb1d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
+<tr class="separator:ad786e5fa0f2359f06a0d3710d0ecb1d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9808fe342175f00b6f5017ab6665498"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#ab9808fe342175f00b6f5017ab6665498">stop_after_output_</a> {false}</td></tr>
+<tr class="memdesc:ab9808fe342175f00b6f5017ab6665498"><td class="mdescLeft">&#160;</td><td class="mdescRight">\expos  <br /></td></tr>
+<tr class="separator:ab9808fe342175f00b6f5017ab6665498"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
@@ -787,8 +790,8 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
 
 </div>
 </div>
-<a id="a22d525773d14d085f48456207a1b2e3c" name="a22d525773d14d085f48456207a1b2e3c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a22d525773d14d085f48456207a1b2e3c">&#9670;&#160;</a></span>flushed_</h2>
+<a id="ad786e5fa0f2359f06a0d3710d0ecb1d2" name="ad786e5fa0f2359f06a0d3710d0ecb1d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad786e5fa0f2359f06a0d3710d0ecb1d2">&#9670;&#160;</a></span>flush_state_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -799,7 +802,7 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool <a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">beman::transcoding::iconv_transcode_view</a>&lt; IconvFns, R &gt;::iterator::flushed_ {false}</td>
+          <td class="memname">detail::iconv_flush_state <a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">beman::transcoding::iconv_transcode_view</a>&lt; IconvFns, R &gt;::iterator::flush_state_ {detail::iconv_flush_state::not_started}</td>
         </tr>
       </table>
   </td>
@@ -956,6 +959,32 @@ template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">size_t <a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">beman::transcoding::iconv_transcode_view</a>&lt; IconvFns, R &gt;::iterator::staging_len_ {0}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>\expos </p>
+
+</div>
+</div>
+<a id="ab9808fe342175f00b6f5017ab6665498" name="ab9808fe342175f00b6f5017ab6665498"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9808fe342175f00b6f5017ab6665498">&#9670;&#160;</a></span>stop_after_output_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename IconvFns , std::ranges::input_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classbeman_1_1transcoding_1_1iconv__transcode__view.html">beman::transcoding::iconv_transcode_view</a>&lt; IconvFns, R &gt;::iterator::stop_after_output_ {false}</td>
         </tr>
       </table>
   </td>

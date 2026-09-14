@@ -24,12 +24,15 @@ var classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator =
     [ "done_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#ae8ddcc530097423b3a275e1c714ee598", null ],
     [ "end_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#aea2fb4dd1fec260ff37e62fd1bd9c4c0", null ],
     [ "error_value_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a62b88503f5a8d47d75983b0b1a93ef1d", null ],
-    [ "flushed_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#ac493c2927fd7a0eff6b54db386cd0d21", null ],
+    [ "flush_state_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a5573c3af1867184c34331c82ead18b60", null ],
     [ "fns_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a2f5c75d19f2007feaf867ebbd38e7af5", null ],
     [ "handle_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3fcae46ebebc5e9e79e61bcfe1375f23", null ],
     [ "has_error_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3f5e8cf2c0a2c63c44d9bba7a5bc307f", null ],
     [ "output_end_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a14fcd7645df963630f86cebfc470ae17", null ],
     [ "output_pos_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#ae7eca2405ff8ebac36cd12a21e9ac497", null ],
+    [ "pending_error_value_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a66d1c9e568f1f664148299bfbb85b29c", null ],
+    [ "pending_terminal_error_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a71a5c331bb57eb37252f95a5053d7cd1", null ],
     [ "staging_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a6c10f7ac6844d0d1788699f197688540", null ],
-    [ "staging_len_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#acfb77138a798c93764b144e58ab2d953", null ]
+    [ "staging_len_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#acfb77138a798c93764b144e58ab2d953", null ],
+    [ "terminal_error_", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#aed5dd1c7679ccc3cb4a7df0ad32dcfc1", null ]
 ];

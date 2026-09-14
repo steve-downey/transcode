@@ -97,119 +97,148 @@ $(document).ready(function(){initNavTree('namespaceanonymous__namespace_02custom
 
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">anonymous_namespace{custom_single_byte_decoder.cpp} Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec.html">fractional_codec</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a4d65b486afb2d4106f2ec0978fcd3758"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a4d65b486afb2d4106f2ec0978fcd3758">append_fraction</a> (std::u32string &amp;result, unsigned numerator, unsigned denominator)</td></tr>
-<tr class="separator:a4d65b486afb2d4106f2ec0978fcd3758"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ad1dbd5771b659db60af9441fc5ea9d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a7ad1dbd5771b659db60af9441fc5ea9d">append_custom_code_point</a> (std::u32string &amp;result, unsigned char byte)</td></tr>
-<tr class="separator:a7ad1dbd5771b659db60af9441fc5ea9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f50f955a599a74ab40ff93c21f57efb"><td class="memItemLeft" align="right" valign="top">std::u32string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a8f50f955a599a74ab40ff93c21f57efb">decode_custom_single_byte</a> (std::span&lt; const std::byte &gt; input)</td></tr>
-<tr class="separator:a8f50f955a599a74ab40ff93c21f57efb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa65d207b35d79d7392fa4e32c40261e2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#aa65d207b35d79d7392fa4e32c40261e2">matches_expected</a> (const std::u32string &amp;decoded)</td></tr>
-<tr class="separator:aa65d207b35d79d7392fa4e32c40261e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae968b247299b532f28fc256130ef2387"><td class="memItemLeft" align="right" valign="top">constexpr std::u32string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#ae968b247299b532f28fc256130ef2387">decode_all</a> (std::span&lt; const std::byte &gt; input)</td></tr>
+<tr class="separator:ae968b247299b532f28fc256130ef2387"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f1b37a52c118d4674bf3769fd2485df"><td class="memItemLeft" align="right" valign="top">constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a6f1b37a52c118d4674bf3769fd2485df">count_invalid</a> (std::span&lt; const std::byte &gt; input)</td></tr>
+<tr class="separator:a6f1b37a52c118d4674bf3769fd2485df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:add28c05a0d7a77554e765f1fa3de892b"><td class="memItemLeft" align="right" valign="top">constexpr std::array&lt; char32_t, 64 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#add28c05a0d7a77554e765f1fa3de892b">upper_table</a></td></tr>
+<tr class="separator:add28c05a0d7a77554e765f1fa3de892b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8dacd65c4aa1ad71cc712a21e205bca9"><td class="memItemLeft" align="right" valign="top">constexpr std::array&lt; std::byte, 8 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a8dacd65c4aa1ad71cc712a21e205bca9">sample</a></td></tr>
+<tr class="separator:a8dacd65c4aa1ad71cc712a21e205bca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a7ad1dbd5771b659db60af9441fc5ea9d" name="a7ad1dbd5771b659db60af9441fc5ea9d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ad1dbd5771b659db60af9441fc5ea9d">&#9670;&#160;</a></span>append_custom_code_point()</h2>
+<a id="a6f1b37a52c118d4674bf3769fd2485df" name="a6f1b37a52c118d4674bf3769fd2485df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f1b37a52c118d4674bf3769fd2485df">&#9670;&#160;</a></span>count_invalid()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void anonymous_namespace{custom_single_byte_decoder.cpp}::append_custom_code_point </td>
-          <td>(</td>
-          <td class="paramtype">std::u32string &amp;&#160;</td>
-          <td class="paramname"><em>result</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned char&#160;</td>
-          <td class="paramname"><em>byte</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a4d65b486afb2d4106f2ec0978fcd3758" name="a4d65b486afb2d4106f2ec0978fcd3758"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d65b486afb2d4106f2ec0978fcd3758">&#9670;&#160;</a></span>append_fraction()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void anonymous_namespace{custom_single_byte_decoder.cpp}::append_fraction </td>
-          <td>(</td>
-          <td class="paramtype">std::u32string &amp;&#160;</td>
-          <td class="paramname"><em>result</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned&#160;</td>
-          <td class="paramname"><em>numerator</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned&#160;</td>
-          <td class="paramname"><em>denominator</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a8f50f955a599a74ab40ff93c21f57efb" name="a8f50f955a599a74ab40ff93c21f57efb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8f50f955a599a74ab40ff93c21f57efb">&#9670;&#160;</a></span>decode_custom_single_byte()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::u32string anonymous_namespace{custom_single_byte_decoder.cpp}::decode_custom_single_byte </td>
+          <td class="memname">constexpr std::size_t anonymous_namespace{custom_single_byte_decoder.cpp}::count_invalid </td>
           <td>(</td>
           <td class="paramtype">std::span&lt; const std::byte &gt;&#160;</td>
           <td class="paramname"><em>input</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="aa65d207b35d79d7392fa4e32c40261e2" name="aa65d207b35d79d7392fa4e32c40261e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa65d207b35d79d7392fa4e32c40261e2">&#9670;&#160;</a></span>matches_expected()</h2>
+<a id="ae968b247299b532f28fc256130ef2387" name="ae968b247299b532f28fc256130ef2387"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae968b247299b532f28fc256130ef2387">&#9670;&#160;</a></span>decode_all()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool anonymous_namespace{custom_single_byte_decoder.cpp}::matches_expected </td>
+          <td class="memname">constexpr std::u32string anonymous_namespace{custom_single_byte_decoder.cpp}::decode_all </td>
           <td>(</td>
-          <td class="paramtype">const std::u32string &amp;&#160;</td>
-          <td class="paramname"><em>decoded</em></td><td>)</td>
+          <td class="paramtype">std::span&lt; const std::byte &gt;&#160;</td>
+          <td class="paramname"><em>input</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a8dacd65c4aa1ad71cc712a21e205bca9" name="a8dacd65c4aa1ad71cc712a21e205bca9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8dacd65c4aa1ad71cc712a21e205bca9">&#9670;&#160;</a></span>sample</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr std::array&lt;std::byte, 8&gt; anonymous_namespace{custom_single_byte_decoder.cpp}::sample</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    std::byte{0xC0}, </div>
+<div class="line">    std::byte{0x41}, </div>
+<div class="line">    std::byte{0x9F}, </div>
+<div class="line">    std::byte{0x80}, </div>
+<div class="line">    std::byte{0xBF}, </div>
+<div class="line">    std::byte{0xE2}, </div>
+<div class="line">    std::byte{0xFA}, </div>
+<div class="line">    std::byte{0xFF}, </div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="add28c05a0d7a77554e765f1fa3de892b" name="add28c05a0d7a77554e765f1fa3de892b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add28c05a0d7a77554e765f1fa3de892b">&#9670;&#160;</a></span>upper_table</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr std::array&lt;char32_t, 64&gt; anonymous_namespace{custom_single_byte_decoder.cpp}::upper_table</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">     U<span class="stringliteral">&#39;Ç&#39;</span>, U<span class="stringliteral">&#39;ü&#39;</span>, U<span class="stringliteral">&#39;é&#39;</span>, U<span class="stringliteral">&#39;â&#39;</span>, U<span class="stringliteral">&#39;ä&#39;</span>, U<span class="stringliteral">&#39;à&#39;</span>, U<span class="stringliteral">&#39;å&#39;</span>, U<span class="stringliteral">&#39;ç&#39;</span>,</div>
+<div class="line">     U<span class="stringliteral">&#39;ê&#39;</span>, U<span class="stringliteral">&#39;ë&#39;</span>, U<span class="stringliteral">&#39;è&#39;</span>, U<span class="stringliteral">&#39;ï&#39;</span>, U<span class="stringliteral">&#39;î&#39;</span>, U<span class="stringliteral">&#39;ì&#39;</span>, U<span class="stringliteral">&#39;Ä&#39;</span>, U<span class="stringliteral">&#39;Å&#39;</span>,</div>
+<div class="line">     U<span class="stringliteral">&#39;É&#39;</span>, U<span class="stringliteral">&#39;È&#39;</span>, U<span class="stringliteral">&#39;Ì&#39;</span>, U<span class="stringliteral">&#39;ô&#39;</span>, U<span class="stringliteral">&#39;ö&#39;</span>, U<span class="stringliteral">&#39;ò&#39;</span>, U<span class="stringliteral">&#39;û&#39;</span>, U<span class="stringliteral">&#39;ù&#39;</span>,</div>
+<div class="line">     U<span class="stringliteral">&#39;ÿ&#39;</span>, U<span class="stringliteral">&#39;Ö&#39;</span>, U<span class="stringliteral">&#39;Ü&#39;</span>, U<span class="stringliteral">&#39;á&#39;</span>, U<span class="stringliteral">&#39;í&#39;</span>, U<span class="stringliteral">&#39;ó&#39;</span>, U<span class="stringliteral">&#39;ú&#39;</span>, U<span class="stringliteral">&#39;ñ&#39;</span>,</div>
+<div class="line">     U<span class="stringliteral">&#39;£&#39;</span>, U<span class="stringliteral">&#39;¥&#39;</span>, U<span class="stringliteral">&#39;€&#39;</span>, U<span class="stringliteral">&#39;Ò&#39;</span>, U<span class="stringliteral">&#39;Ù&#39;</span>, U<span class="stringliteral">&#39;±&#39;</span>, U<span class="stringliteral">&#39;Õ&#39;</span>, U<span class="stringliteral">&#39;Á&#39;</span>,</div>
+<div class="line">     U<span class="stringliteral">&#39;Í&#39;</span>, U<span class="stringliteral">&#39;©&#39;</span>, U<span class="stringliteral">&#39;®&#39;</span>, U<span class="stringliteral">&#39;Ô&#39;</span>, U<span class="stringliteral">&#39;Ó&#39;</span>, U<span class="stringliteral">&#39;Ú&#39;</span>, U<span class="stringliteral">&#39;Â&#39;</span>, U<span class="stringliteral">&#39;Ê&#39;</span>,</div>
+<div class="line">     U<span class="stringliteral">&#39;õ&#39;</span>, U<span class="stringliteral">&#39;À&#39;</span>, U<span class="stringliteral">&#39;Ñ&#39;</span>, U<span class="stringliteral">&#39;¿&#39;</span>, U<span class="stringliteral">&#39;¡&#39;</span>, U<span class="stringliteral">&#39;«&#39;</span>, U<span class="stringliteral">&#39;»&#39;</span>, U<span class="stringliteral">&#39;ã&#39;</span>,</div>
+<div class="line">     U<span class="stringliteral">&#39;Ã&#39;</span>, U<span class="stringliteral">&#39;ß&#39;</span>, U<span class="stringliteral">&#39;×&#39;</span>, 0,    0,    0,    0,    0,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->

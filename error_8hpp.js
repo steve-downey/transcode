@@ -3,7 +3,9 @@ var error_8hpp =
     [ "iconv_error", "error_8hpp.html#aab196b86b3b7eea71d38ca7ca6e65730", [
       [ "invalid_sequence", "error_8hpp.html#aab196b86b3b7eea71d38ca7ca6e65730a63800257a604293c60f727fec3eea3ed", null ],
       [ "incomplete_sequence", "error_8hpp.html#aab196b86b3b7eea71d38ca7ca6e65730ab8b778cf20c2928a875181c4056d9a82", null ],
-      [ "output_full", "error_8hpp.html#aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844", null ]
+      [ "output_full", "error_8hpp.html#aab196b86b3b7eea71d38ca7ca6e65730aefef0bd65ad4ef2af1b0447312f78844", null ],
+      [ "open_failed", "error_8hpp.html#aab196b86b3b7eea71d38ca7ca6e65730a93ac46772777323b172bbf1299ef96a6", null ],
+      [ "system_error", "error_8hpp.html#aab196b86b3b7eea71d38ca7ca6e65730a62a7db03dd9bee47b7f045580e5bfc7c", null ]
     ] ],
     [ "transcode_error_kind", "error_8hpp.html#a692fa6937eaeda0a1ceaeed075b35218", [
       [ "replacement", "error_8hpp.html#a692fa6937eaeda0a1ceaeed075b35218af5300127f646a4550bc4a04fbe393e79", null ],
