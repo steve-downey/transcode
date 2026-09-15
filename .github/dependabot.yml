@@ -21,13 +21,10 @@ updates:
           - "github/*"
     schedule:
       interval: "daily"
+  # The Python tools live in pyproject.toml's dependency-groups, which the uv
+  # ecosystem already reads. A pip entry for the same directory parses the same
+  # file and opens a duplicate pull request for every update.
   - package-ecosystem: "uv"
-
     directory: "/"
     schedule:
       interval: "daily"
-  - package-ecosystem: pip
-
-    directory: /
-    schedule:
-      interval: daily
