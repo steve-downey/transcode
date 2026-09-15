@@ -101,28 +101,54 @@ runs:
 
         encoded_base_branch="$(jq -rn --arg branch "$BASE_BRANCH" '$branch | @uri')"
         active_rules='[]'
+        rules_error=''
         if rules_response="$(gh api \
           "repos/$GITHUB_REPOSITORY/rules/branches/$encoded_base_branch" \
-          2>/dev/null)"; then
+          2>"$RUNNER_TEMP/rules.err")"; then
           active_rules="$rules_response"
+        else
+          rules_error="$(tr '\n' ' ' < "$RUNNER_TEMP/rules.err")"
         fi
         has_ruleset_checks="$({ jq -r \
           'any(.[]; .type == "required_status_checks" and
             ((.parameters.required_status_checks // []) | length > 0))' \
           <<< "$active_rules"; } 2>/dev/null || echo false)"
         has_classic_checks=false
+        classic_error=''
         if classic_protection="$(gh api \
           "repos/$GITHUB_REPOSITORY/branches/$encoded_base_branch/protection" \
-          2>/dev/null)"; then
+          2>"$RUNNER_TEMP/classic.err")"; then
           has_classic_checks="$({ jq -r \
             '((.required_status_checks.checks //
               .required_status_checks.contexts // []) | length) > 0' \
             <<< "$classic_protection"; } 2>/dev/null || echo false)"
+        else
+          classic_error="$(tr '\n' ' ' < "$RUNNER_TEMP/classic.err")"
         fi
 
         if [[ "$has_ruleset_checks" != true && "$has_classic_checks" != true ]]; then
           echo "The target branch has no required status checks." >&2
           echo "Configure required checks before allowing automatic merges." >&2
+          echo >&2
+          echo "What the workflow token can see for '$BASE_BRANCH':" >&2
+          if [[ -n "$rules_error" ]]; then
+            echo "  Ruleset query failed: $rules_error" >&2
+          else
+            echo "  Active rules: $({ jq -r \
+              'if length == 0 then "none"
+               else [.[] | "\(.type)(params: \(.parameters != null))"]
+                 | join(", ") end' \
+              <<< "$active_rules"; } 2>/dev/null || echo "unparseable")" >&2
+          fi
+          if [[ -n "$classic_error" ]]; then
+            echo "  Classic protection query failed: $classic_error" >&2
+          fi
+          echo >&2
+          echo "A ruleset is invisible here unless its enforcement status is" >&2
+          echo "Active -- Evaluate and Disabled rulesets are not returned. The" >&2
+          echo "workflow token also cannot read classic branch protection," >&2
+          echo "which has no permission scope available to GITHUB_TOKEN, so" >&2
+          echo "required checks must come from a ruleset." >&2
           exit 1
         fi
 

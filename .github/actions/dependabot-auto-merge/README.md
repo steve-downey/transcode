@@ -26,6 +26,13 @@ Before enabling the workflow:
    - `Analyze (c-cpp)`
    - `CodeQL`
 
+Set the ruleset's enforcement status to **Active**. The Action reads required
+checks from `GET /repos/{owner}/{repo}/rules/branches/{branch}`, which returns
+only active rules, so a ruleset left on **Evaluate** or **Disabled** reads as
+absent. Classic branch protection is not a workable alternative here: reading
+it requires the `administration` permission, which is not available to a
+workflow's `GITHUB_TOKEN`.
+
 The Action deliberately fails without both settings. Without required status
 checks, GitHub can merge a pull request immediately when auto-merge is enabled.
 If branch protection also requires a review, the pull request remains queued
