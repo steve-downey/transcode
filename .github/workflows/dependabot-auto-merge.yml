@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+name: Dependabot auto-merge
+
+on: # zizmor: ignore[dangerous-triggers] trusted base only; never executes PR code
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions: {}
+
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    name: Enable auto-merge
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.base.ref == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to enable native auto-merge.
+      pull-requests: write # Required to update the pull request.
+    steps:
+      - name: Apply Dependabot auto-merge policy
+        # The self-repository syntax loads the Action from the trusted workflow
+        # revision. This job never checks out or executes pull request code.
+        uses: $/.github/actions/dependabot-auto-merge
+        with:
+          github-token: ${{ github.token }}
+          allowed-update-types: >-
+            version-update:semver-patch,version-update:semver-minor
+          merge-method: merge

@@ -1,0 +1,123 @@
+name: Dependabot auto-merge
+description: Enable native auto-merge for Dependabot updates allowed by policy
+
+inputs:
+  github-token:
+    description: Token with contents:write and pull-requests:write permissions
+    required: true
+  allowed-update-types:
+    description: Comma-separated Dependabot update types eligible for auto-merge
+    required: false
+    default: version-update:semver-patch,version-update:semver-minor
+  merge-method:
+    description: Merge method to use (merge, squash, or rebase)
+    required: false
+    default: merge
+
+outputs:
+  dependency-names:
+    description: Comma-separated dependencies updated by the pull request
+    value: ${{ steps.metadata.outputs.dependency-names }}
+  eligible:
+    description: Whether the update type is allowed by policy
+    value: ${{ steps.policy.outputs.eligible }}
+  update-type:
+    description: Highest semantic-version change in the pull request
+    value: ${{ steps.metadata.outputs.update-type }}
+
+runs:
+  using: composite
+  steps:
+    - name: Fetch verified Dependabot metadata
+      id: metadata
+      uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+      with:
+        github-token: ${{ inputs.github-token }}
+
+    - name: Evaluate update policy
+      id: policy
+      shell: bash
+      env:
+        ALLOWED_UPDATE_TYPES: ${{ inputs.allowed-update-types }}
+        DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+        UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+      run: |
+        eligible=false
+        IFS=',' read -ra allowed_types <<< "$ALLOWED_UPDATE_TYPES"
+
+        for allowed_type in "${allowed_types[@]}"; do
+          allowed_type="${allowed_type#"${allowed_type%%[![:space:]]*}"}"
+          allowed_type="${allowed_type%"${allowed_type##*[![:space:]]}"}"
+          if [[ "$UPDATE_TYPE" == "$allowed_type" ]]; then
+            eligible=true
+            break
+          fi
+        done
+
+        echo "eligible=$eligible" >> "$GITHUB_OUTPUT"
+        if [[ "$eligible" == true ]]; then
+          echo "Eligible: $DEPENDENCY_NAMES ($UPDATE_TYPE)" >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "Manual review required: $DEPENDENCY_NAMES ($UPDATE_TYPE)" \
+            >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    - name: Verify repository safety settings
+      if: steps.policy.outputs.eligible == 'true'
+      shell: bash
+      env:
+        BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: |
+        if [[ "$GITHUB_EVENT_NAME" != pull_request_target ]]; then
+          echo "This action must run from a pull_request_target workflow." >&2
+          exit 1
+        fi
+
+        if ! gh api "repos/$GITHUB_REPOSITORY" --jq '.allow_auto_merge' \
+          | grep -qx true; then
+          echo "Repository auto-merge is disabled." >&2
+          echo "Enable Settings > General > Pull Requests > Allow auto-merge." >&2
+          exit 1
+        fi
+
+        encoded_base_branch="$(jq -rn --arg branch "$BASE_BRANCH" '$branch | @uri')"
+        active_rules="$(gh api \
+          "repos/$GITHUB_REPOSITORY/rules/branches/$encoded_base_branch")"
+        has_ruleset_checks="$({ jq -r \
+          'any(.[]; .type == "required_status_checks" and
+            ((.parameters.required_status_checks // []) | length > 0))' \
+          <<< "$active_rules"; } 2>/dev/null || echo false)"
+        has_classic_checks=false
+        if classic_protection="$(gh api \
+          "repos/$GITHUB_REPOSITORY/branches/$encoded_base_branch/protection" \
+          2>/dev/null)"; then
+          has_classic_checks="$(jq -r \
+            '((.required_status_checks.checks //
+              .required_status_checks.contexts // []) | length) > 0' \
+            <<< "$classic_protection")"
+        fi
+
+        if [[ "$has_ruleset_checks" != true && "$has_classic_checks" != true ]]; then
+          echo "The target branch has no required status checks." >&2
+          echo "Configure required checks before allowing automatic merges." >&2
+          exit 1
+        fi
+
+    - name: Enable auto-merge
+      if: steps.policy.outputs.eligible == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        MERGE_METHOD: ${{ inputs.merge-method }}
+        PR_URL: ${{ github.event.pull_request.html_url }}
+      run: |
+        case "$MERGE_METHOD" in
+          merge|squash|rebase) ;;
+          *)
+            echo "Unsupported merge method: $MERGE_METHOD" >&2
+            exit 1
+            ;;
+        esac
+
+        gh pr merge --auto "--$MERGE_METHOD" "$PR_URL"
