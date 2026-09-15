@@ -13,7 +13,8 @@ containing a major update is not eligible.
 
 Before enabling the workflow:
 
-1. In **Settings > General > Pull Requests**, enable **Allow auto-merge**.
+1. In **Settings > General > Pull Requests**, enable **Allow auto-merge** and
+   ensure the selected merge method is allowed.
 2. Add a branch protection rule or ruleset for the default branch that requires
    these status checks to pass before merging:
 
