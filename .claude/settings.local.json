@@ -138,7 +138,25 @@
       "Bash(g++-13 -std=c++23 -dM -E -x c++ -)",
       "Bash(.build/build-system/tests/beman/transcode/Asan/beman.transcode.tests.pluggable_bulk)",
       "Bash(uv run *)",
-      "Bash(.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.pluggable 'Bulk via')"
+      "Bash(.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.pluggable 'Bulk via')",
+      "Bash(grep -iE '\\\\.py$')",
+      "Bash(echo \"exit=$?\")",
+      "Bash(pandoc -f html -t gfm --wrap=none P2728R13.html -o P2728R13.md)",
+      "Bash(echo \"pandoc exit=$?\")",
+      "Bash(ls -la P2728R13.md)",
+      "Bash(wc -l P2728R13.md)",
+      "Bash(head -c 300 err.txt)",
+      "Bash(grep -nE '^#{1,4} ' P2728R13.md)",
+      "Bash(cd /home/sdowney/.claude/projects/-home-sdowney-src-transcode-transcode-git/memory/)",
+      "Bash(cat MEMORY.md)",
+      "Bash(gh pr create --base main --head docs/p2728-alignment --title 'docs: add P2728 UTF-transcoding alignment tracking doc' --body ' *)",
+      "Bash(make lint *)",
+      "Bash(grep -nA6 '^lint:' Makefile)",
+      "Bash(gh pr create --base main --head docs/voice-cleanup --title 'docs: remove machine-generated docs; voice-edit paper; fix mock typo' --body ' *)",
+      "Bash(timeout 300 make)",
+      "Bash(timeout 600 make generated/D4246R0.html)",
+      "Bash(timeout 600 make transcode-view.html)",
+      "Bash(timeout 300 make base-check.html)"
     ]
   }
 }
