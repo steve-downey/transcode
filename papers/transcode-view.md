@@ -39,7 +39,30 @@ The reference implementation currently requires `iconv` at package-configuration
 
 The wording in this revision is generated from the reference implementation's headers, by a tool that reads the shipping declarations and renders them as draft clauses.
 It is not a transcription, and it is not maintained alongside the code: a header that changes without the wording changing with it fails the implementation's CI.
-That is a claim a reviewer can check rather than take, and checking it is a `make` target.
+The check is a `make` target, so a reviewer need not take the claim on faith.
+
+## Changes since R0
+
+- Wording, generated from the reference implementation's headers and gated
+  against drift by CI. R0 proposed a design and specified none of it.
+- The `iconv` adaptor is specified rather than promised: `iconv_transcode` and
+  `iconv_transcode_or_error` over caller-provided staging storage, with
+  [transcode.iconv] written last and resting on nothing the other clauses need.
+- Named bulk helpers `decode_to` / `encode_to` / `decode_into` / `encode_into`,
+  each specified as the pipeline it names.
+- `transcode_string`, for runtime-selected transcoding by codec or by label.
+- BOM handling reversed. R0 put it out of scope; the UTF decoders now strip a
+  leading BOM that matches the selected codec, matching the Web Platform Tests,
+  and `sniff_encoding` examines the stream when the codec is not yet known.
+- UTF-16BE and UTF-16LE are decode-only, matching the Encoding Standard's lack
+  of UTF-16BE/LE encoders.
+- Encode input is validated as UTF-32 above codec dispatch.
+- The `_or_error` view pairs collapsed into one view template parameterized on
+  `transcode_error_kind`.
+- A correspondence table between `whatwg_error` and P2728's
+  `utf_transcoding_error`.
+- Editorially: a Context and Motivation section, and an abstract that answers
+  the objection rather than restating the design.
 
 ## Context and Motivation
 
@@ -292,14 +315,13 @@ std::vector<char32_t> decode_utf8(
 
 :::
 
-There is a principled reason not to propose `decode_to` / `encode_to` /
-`decode_into` / `encode_into`. The views satisfy the range concepts that
-`std::ranges::to` and `std::ranges::copy` require, so the standard algorithms
-already do the job, and a second spelling should have to pay for itself.
-It does not pay in speed: there is no measurable difference between a named
-`decode_to` and the equivalent `view | ranges::to` composition.
+We propose `decode_to` / `encode_to` / `decode_into` / `encode_into`, and they
+add nothing the views do not already do. The views satisfy the range concepts
+that `std::ranges::to` and `std::ranges::copy` require, so the standard
+algorithms already do the job, and there is no measurable difference in speed
+between a named `decode_to` and the equivalent `view | ranges::to` composition.
 
-However, we propose the names. Converting a buffer to a container is the
+The names are worth having anyway. Converting a buffer to a container is the
 operation users come for, and `decode_to<codec::utf_8>(input)` is what they
 look for first. Withholding the name only moves the question to every code
 review and every committee discussion of this facility. Each helper is a
@@ -333,12 +355,17 @@ It gives exact byte-to-scalar mappings for all byte values, including every erro
 
 The objection is real. WHATWG is a web specification, and it makes web-compatible choices that a general text library would not.
 It conflates distinct UTF-8 error conditions, it strips BOMs, and its label table exists to parse HTML `<meta>` tags.
-However, those choices are the ones that major browser engines already agree on, tested, for the encodings that legacy data is actually written in.
+However, those choices are the ones that major browser engines already agree on and test, for the encodings that legacy data is actually written in.
 A general specification with no implementations to agree with would be worse.
 
 Targeting it means a C++ program decodes a page the way the browser that fetched it did, and parses HTML and JSON with the same error handling.
 
 ### Why Forward-Only Iterators?
+
+The proposed decode, encode, and `iconv` transcode views all model `input_range`.
+That is the strongest category that can be implemented uniformly across all supported encodings, and the stateful multibyte codecs are what hold it there.
+The WHATWG decode and encode views preserve stronger properties when the codec and base range permit it: const-qualified iteration is supported for const-compatible bases, `common_range` and `borrowed_range` propagate from the base when implementable, and indexed codecs lift to `random_access_range`.
+The eager bulk helpers are layered on top of those pipelines when callers want collected results.
 
 Legacy multibyte encodings like Shift_JIS, Big5, and GB18030 are fundamentally forward-only.
 Unlike UTF-8, where lead and continuation bytes occupy disjoint ranges, legacy encodings have overlapping byte values that can serve as either lead or trail bytes depending on context.
@@ -349,14 +376,8 @@ Given only a pointer into the middle of a byte stream, it is impossible to deter
 Even with a known character boundary, stepping backward is impossible without external state.
 The byte sequence `0x81 0x81 0x81 0x40` could decode as either two ideographic commas followed by '@', or one comma followed by an ideographic space — depending on how many `0x81` bytes preceded it from the string's start.
 
+WHATWG's state machines are designed as forward-only decoders, resetting their state at each character boundary, and bidirectional iteration would require caching all byte offsets during forward traversal.
 The encodings are like that. The implementation has no choice.
-The WHATWG state machines are designed as forward-only decoders, resetting their state at each character boundary.
-Bidirectional iteration would require caching all byte offsets during forward traversal.
-
-Therefore, the proposed decode, encode, and `iconv` transcode views all model `input_range`.
-That is the strongest category that can be implemented uniformly across all supported encodings, especially for stateful multibyte codecs.
-The WHATWG decode and encode views preserve stronger properties when the codec and base range permit it: const-qualified iteration is supported for const-compatible bases, `common_range` and `borrowed_range` propagate from the base when implementable, and indexed codecs lift to `random_access_range`.
-The eager bulk helpers are layered on top of those pipelines when callers want collected results.
 
 ## Design
 
@@ -393,7 +414,7 @@ And three utility entry points:
 - **`transcode_string(source, from, to)`**: Eager convenience helper for runtime-selected WHATWG transcoding by codec or by label. It returns an engaged `optional<string>` containing the converted bytes, including an empty string for an empty input, or `nullopt` if the target codec has no WHATWG encoder.
 
 - **`null_term_view` / `views::null_term`**: Adapts a pointer to a null-terminated string into a range.
-  This enables `views::null_term(cstr) | whatwg_decode<codec::utf_8>`.
+  `views::null_term(cstr) | whatwg_decode<codec::utf_8>` then composes.
 
 ### Codec Enumeration
 
@@ -463,7 +484,7 @@ static_assert(get_encoding("x-sjis") == codec::shift_jis);
 static_assert(get_encoding("unknown") == std::nullopt);
 ```
 
-This enables runtime dispatch when parsing external metadata:
+Runtime dispatch on external metadata follows:
 
 ```cpp
 std::string_view charset = parse_content_type(headers);
@@ -534,7 +555,7 @@ They are separate because the failures are not the same failures.
 A single enumeration would have to either drop that distinction — reporting `invalid_byte` for a failure whose meaning is "the platform's tables say so", with no algorithm behind it a reader can consult — or carry both sets, which is two vocabularies with one name.
 Nothing composes them, either: the `iconv` adaptor is byte↔byte and does not appear in a `decode | encode` pipeline, so no expression ever has to reconcile the two.
 
-Note that this is separate from the unification of the `_or_error` views.
+This is separate from the unification of the `_or_error` views.
 Those pairs collapsed into one view template parameterized on `transcode_error_kind`, which selects whether errors are *reported* or replaced.
 What an error *is* remains the codec family's own question.
 
@@ -578,7 +599,7 @@ Similarly, `wchar_t` is rejected due to its platform-dependent size.
 
 All views are `constexpr`-enabled.
 Decoding and encoding tables are compile-time constants.
-This enables:
+Decoding therefore runs in a constant expression:
 
 ```cpp
 constexpr auto decoded = []() consteval {
@@ -611,12 +632,12 @@ auto v4 = bytes | transcode<codec::shift_jis, codec::utf_8>;
 
 ### Range Properties and Const Support
 
-All of the views are valid `input_range`s, but the WHATWG views preserve stronger range properties when possible instead of flattening everything to the weakest category.
+All of the views are valid `input_range`s, and the WHATWG views preserve stronger range properties where they can.
 
 - **Const iteration**: `whatwg_decode`, `whatwg_encode`, and their `_or_error` variants support `begin() const` and `end() const` when the underlying range supports compatible const iteration.
   This includes owning views after construction.
 
-- **`common_range` and `borrowed_range`**: These properties are preserved from the base range when the codec machinery can support them.
+- **`common_range` and `borrowed_range`**: These properties are preserved from the base range when the codec can support them.
 
 - **Indexed codecs**: Single-byte and other indexed codecs can provide `random_access_range` behavior for both regular and `_or_error` WHATWG views.
   Stateful codecs such as UTF-8 and ISO-2022-JP remain forward-only or input-only where required by their decoding model.
@@ -719,9 +740,9 @@ The views take the bytes as they arrive, with no conversion step first.
 
 Rejecting `char8_t` inconveniences anyone holding a `u8string` that is not in
 fact UTF-8, which does happen when a codebase uses `u8string` as its default
-string type. Accepting it would mean accepting a type whose purpose is to state
-an encoding, and then ignoring what it states. Such a caller can use `as_bytes`
-and make that reinterpretation visible.
+string type. However, accepting it would mean accepting a type whose purpose is
+to state an encoding, and then ignoring what it states. Such a caller can use
+`as_bytes` and make that reinterpretation visible.
 
 ```cpp
 // All of these work:
@@ -759,7 +780,7 @@ Decode views produce scalar values before an encoder sees them; a range of
 the encode view. Ill-formed code units are replaced with U+FFFD or reported,
 according to the view's error kind, before the selected codec is invoked.
 
-UTF-32 is the wasteful choice. A `char32_t` per scalar is four bytes where UTF-8 would often use one — but these are lazy views, so nothing is stored unless a caller collects it, and a single code point is trivial to inspect. All other interchange types are worse.
+UTF-32 is the wasteful choice. A `char32_t` per scalar is four bytes where UTF-8 would often use one. However, these are lazy views, so nothing is stored unless a caller collects it, and a single code point is trivial to inspect. All other interchange types are worse.
 
 ### Separation of Decode and Encode
 
@@ -835,7 +856,7 @@ These tests provide:
 - BOM handling (tested but BOM is stripped before our views)
 
 Test vectors are extracted from WPT and converted to C++ data structures using the preprocessing pipeline described in Methods.
-This enables automated verification that the implementation matches browser behavior while keeping the executable tests entirely within the native C++ test harness.
+The implementation is checked against browser behavior automatically, with the executable tests entirely within the native C++ test harness.
 
 ### Negative Compile Tests
 
@@ -886,11 +907,7 @@ This proposal adds new headers and does not modify existing standard library com
 
 Or combined into `<ranges>` additions.
 
-## Questions for SG16
-
-This paper asks SG16 to treat the named bulk helpers as part of the proposed
-surface. They add no semantics beyond the pipelines they name, but they make
-the common operation discoverable. I recommend keeping them.
+## Open Question for SG16
 
 The random-access custom codec protocol reserves U+FFFD as the in-band signal
 that a byte `0x80` or above decodes to nothing. That keeps `decode_byte` cheap,
@@ -903,16 +920,40 @@ not choose between them before SG16 review: no WHATWG single-byte codec needs
 the foreclosed mapping, and changing the indexed path for a hypothetical
 extension has a cost that the group should weigh explicitly.
 
-Should the `iconv` adaptor remain in this proposal with the portable WHATWG
-facilities, or should it progress separately?  Its conversion-descriptor handle
-cannot be named entirely in ISO C++ terms without either introducing an opaque
-handle abstraction or moving the adaptor to a POSIX-conditional document.  It
-is useful implementation experience and a valuable comparison point, so I would
-keep it here through SG16 design review, where the shared interface can be
-considered as a whole, and split the wording only if the group wants separate
-progression.
-Wording for it is included accordingly, as [transcode.iconv], written last and
-resting on nothing the other clauses need, so removing it renumbers nothing.
+## Summary of the Design
+
+The decisions embodied in the design, and in the wording that follows:
+
+- **Decode and encode are separate adaptors**, composed by pipe.
+  `transcode<From, To>` is the composed convenience for when the intermediate
+  `char32_t` stream is not observed.
+- **The codec is a template parameter.** Codec logic inlines, nothing
+  dispatches per element, and transcoding runs at compile time. Runtime
+  selection happens once, where the label is resolved, through `get_encoding`
+  and `transcode_string`.
+- **`char32_t` is the interchange type.** Nothing about it validates what it
+  holds, so a `char32_t` range from outside a decode pipeline is validated as
+  UTF-32 by the encode view.
+- **Input is byte-like or it is rejected**: `char`, `signed char`,
+  `unsigned char`, `std::byte`. `char8_t`, `wchar_t` and raw arrays do not
+  participate.
+- **Errors come in two vocabularies**, `whatwg_error` and `iconv_error`,
+  because the failures are not the same failures. Whether an error is reported
+  or replaced is one view template parameterized on `transcode_error_kind`.
+- **The views model `input_range`** and preserve more where the codec and base
+  permit, up to `random_access_range` for indexed codecs.
+- **Four named bulk helpers are proposed**, specified as the pipelines they
+  name. They add no semantics beyond those pipelines; they make the common
+  operation discoverable.
+
+The `iconv` adaptor is proposed here, with the portable WHATWG facilities,
+rather than on its own. Its conversion-descriptor handle cannot be named
+entirely in ISO C++ terms without either introducing an opaque handle
+abstraction or moving the adaptor to a POSIX-conditional document. It is useful
+implementation experience and a valuable comparison point, and the shared
+interface is best considered as a whole, so it belongs here through SG16 design
+review. Its wording is [transcode.iconv], written last and resting on nothing
+the other clauses need, so splitting it later renumbers nothing.
 
 The objection to specifying it is that POSIX `iconv` is implementation-defined
 across glibc, musl and the BSDs, so a view over it specifies whatever the
