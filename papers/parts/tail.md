@@ -105,9 +105,13 @@ are outside its model.
 
 ² **WHATWG and pluggable codecs compose decode and encode.**  The named bulk
 helpers forward to `view | ranges::to<Container>()` and
-`ranges::copy(view, output)`. There is no separate bulk transcode helper:
-transcode remains `decode | encode` composed with `|`. iconv performs
-single-pass byte→byte conversion and exposes it as a first-class bulk operation.
+`ranges::copy(view, output)`, and a bulk transcode is `decode | encode`
+composed with `|` and collected the same way, so there is no separate
+compile-time-selected helper for it.  `transcode_string` is the eager
+transcoder, and it is in the *Runtime transcode* row below rather than this
+one because its codecs are values and not template parameters, which is the
+reason it exists.  iconv performs single-pass byte→byte conversion and exposes
+it as a first-class bulk operation.
 
 ³ **P2728 operates on typed Unicode character types** (`char8_t`, `char16_t`,
 `char32_t`); `views::null_term` produces a range of `char`.  Bridging the two
@@ -140,23 +144,21 @@ composition with `|`.
 
 - WHATWG Encoding Standard [@whatwg-encoding]
 - Web Platform Tests [@wpt-encoding]
-- Beman.Transcode reference implementation: <https://github.com/bemanproject/transcode>
-
-The framework resolves `N`/`P`-numbered citations from wg21.link on its own.
-Everything else is a manual reference, which mpark/wg21 takes as a
-`references` metadata block rather than a `bibliography` file.
+- Reference implementation: <https://github.com/steve-downey/transcode>.
+  The library is `beman.transcode`; it has not been published under the Beman
+  project's organization yet, so that is where the code is.
 
 ---
 references:
   - id: whatwg-encoding
     citation-label: WHATWG-Encoding
     type: webpage
-    title: "Encoding Standard"
+    title: "Encoding Standard (Living Standard, commit a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a, last updated 21 May 2026)"
     author:
       - literal: "WHATWG"
-    issued: { year: 2026 }
-    URL: "https://encoding.spec.whatwg.org/"
-    note: "Living Standard. Index data retrieved 2026-05-23."
+    issued: { year: 2026, month: 5, day: 21 }
+    URL: "https://encoding.spec.whatwg.org/commit-snapshots/a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a/"
+    note: "Living Standard. The living document is at https://encoding.spec.whatwg.org/; this entry pins the commit the wording and the generated index data are written against. Index data retrieved 2026-05-23."
   - id: wpt-encoding
     citation-label: WPT-Encoding
     type: webpage

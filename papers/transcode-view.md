@@ -70,7 +70,9 @@ IANA registered names for character sets before anyone had specified what the na
 The registry says a document is "Shift_JIS"; it does not say what `0x81 0x40` decodes to.
 C answered with the multibyte functions and POSIX standardized `iconv`, and both work, as long as you do not care which implementation you get.
 glibc, musl, and the BSD and macOS libraries disagree about error recovery and about which encodings exist at all, and all of them depend on how the system was configured.
-C++ added `std::codecvt`, deprecated it in C++17, and removed it in C++26.
+C++ added `std::codecvt` in `<locale>`, and the `<codecvt>` header's Unicode conversion facets on top of it.
+`<codecvt>` — `codecvt_utf8`, `codecvt_utf16`, `codecvt_utf8_utf16` — was deprecated in C++17 and removed in C++26 [@P2871R3], and the `char16_t` and `char32_t` facet specializations deprecated in C++20 went with it [@P2873R3].
+`std::codecvt` itself is still in `<locale>`; what was removed is everything in the pair that converted Unicode.
 It allocated on every call and dispatched through a virtual interface to do so; in the accompanying benchmark, the C89 `mbstowcs` is faster.
 
 The WHATWG Encoding Standard specified the missing part, for exactly the encodings the web still carries.
@@ -374,7 +376,10 @@ Consider Shift_JIS: the byte `0x81` is valid both as a lead byte starting a two-
 Given only a pointer into the middle of a byte stream, it is impossible to determine whether you are at a character boundary without scanning from the beginning.
 
 Even with a known character boundary, stepping backward is impossible without external state.
-The byte sequence `0x81 0x81 0x81 0x40` could decode as either two ideographic commas followed by '@', or one comma followed by an ideographic space — depending on how many `0x81` bytes preceded it from the string's start.
+Take the byte sequence `0x81 0x81 0x81 0x40`.
+Read from a character boundary it is `0x81 0x81` and `0x81 0x40`: ＝ (U+FF1D FULLWIDTH EQUALS SIGN) then 　 (U+3000 IDEOGRAPHIC SPACE).
+Read one byte late — the first `0x81` having been the trail byte of a character that began before it — what is left is `0x81 0x81` and a lone `0x40`: ＝ then '@'.
+Same four bytes, different text, and which reading applies depends on how many `0x81` bytes preceded them from the string's start.
 
 WHATWG's state machines are designed as forward-only decoders, resetting their state at each character boundary, and bidirectional iteration would require caching all byte offsets during forward traversal.
 The encodings are like that. The implementation has no choice.
@@ -395,8 +400,12 @@ The proposal adds four user-facing adaptor families:
   The WHATWG UTF-16BE and UTF-16LE encodings are decode-only in this interface,
   matching the Encoding Standard's lack of UTF-16BE/LE encoders.
 
-- **`whatwg_decode_or_error_view<C>` / `whatwg_decode_or_error<C>`** and **`whatwg_encode_or_error_view<C>` / `whatwg_encode_or_error<C>`**:
+- **`whatwg_decode_or_error<C>` / `whatwg_encode_or_error<C>`**:
   Error-reporting variants yielding `expected<T, whatwg_error>`.
+  These are adaptor objects rather than separate view templates: each is the
+  view above with a different `transcode_error_kind`, so
+  `whatwg_decode_or_error<C>` produces
+  `whatwg_decode_view<C, R, transcode_error_kind::expected>`.
 
 - **`iconv_transcode_view` / `iconv_transcode(from, to, buf)`** and **`iconv_transcode_or_error_view` / `iconv_transcode_or_error(from, to, buf)`**:
   Runtime-selected transcoding through the platform `iconv` implementation, using caller-provided staging storage.
@@ -589,6 +598,14 @@ dispatch, just as the Web Platform converts strings before invoking a WHATWG
 encoder.  Surrogates and values above U+10FFFF become U+FFFD in replacement mode
 or their corresponding errors in inspection mode.
 
+The two are not symmetric: `legacy_byte_range` requires `ranges::range`, where
+`unicode_scalar_range` requires `ranges::input_range`.
+Nothing in the proposal reaches the weaker requirement — every view constrained
+on `legacy_byte_range` constrains its base on `input_range` as well, and the
+bulk helpers forward to those views — so aligning the two on `input_range`
+would change no program.
+It is called out because the two declarations side by side invite the question.
+
 Raw arrays are explicitly rejected to prevent silent inclusion of null terminators.
 Use `views::null_term` for null-terminated strings or wrap counted byte buffers in `span`.
 
@@ -765,7 +782,7 @@ u8s | whatwg_decode<codec::utf_8>;  // Error: char8_t implies UTF-8
 
 Making the codec a template parameter buys inlined codec logic, no dispatch per element, and `constexpr` transcoding.
 
-The cost is real, and it is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter can not be spelled from a runtime string.
+The cost is real, and it is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter cannot be spelled from a runtime string.
 However, the dispatch has to happen exactly once, at the point where the label is resolved, and it is a `switch` over an enumeration.
 `get_encoding` and `transcode_string` provide that dispatch, and runtime selection can be layered further via `variant` or `any`.
 Paying for dispatch on every code point instead would give up `constexpr` decoding for all callers to spare one `switch` for some of them.
@@ -853,7 +870,8 @@ These tests provide:
 - Edge cases for truncated sequences, overlong UTF-8, and UTF-32 validation,
   including vectors derived from WPT's `USVString` coercion test rather than
   from a WHATWG encoder algorithm
-- BOM handling (tested but BOM is stripped before our views)
+- BOM handling: the UTF decoders strip a leading BOM that matches the selected
+  codec, and the WPT vectors for that are what pin it
 
 Test vectors are extracted from WPT and converted to C++ data structures using the preprocessing pipeline described in Methods.
 The implementation is checked against browser behavior automatically, with the executable tests entirely within the native C++ test harness.
@@ -971,7 +989,7 @@ the program's problem.
 These clauses are generated, as the abstract says, and transcluded into this
 paper by its build.
 The generator, the marked-up headers and the drift check are all in the
-repository cited in [Prior Art](#prior-art); a reviewer can regenerate this
+repository cited in [References](#references); a reviewer can regenerate this
 section and diff it.
 
 Wording is relative to the current working draft.
@@ -988,7 +1006,8 @@ Add the following to the normative references in [intro.refs]:
 
 [*Note*: the Encoding Standard is a Living Standard, so a normative reference
 to it has to name what it is a reference *to*.
-The wording below is written against the commit cited in
+The wording below is written against commit
+`a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a` (21 May 2026), the commit cited in
 [@whatwg-encoding], and the reference implementation's codec tables and
 conformance vectors are generated from that same snapshot.
 Whether the standard cites a dated snapshot, a commit, or the living document
