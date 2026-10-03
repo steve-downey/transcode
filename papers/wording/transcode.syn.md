@@ -491,11 +491,11 @@ static constexpr $iterator$ $terminal$();
 
 [#]{.pnum} *Remarks*: The three POSIX `iconv` entry points a view calls, as a value the program supplies.  `open` opens a conversion descriptor, `convert` converts, and `close` closes it; each has the signature and the semantics POSIX gives the function of the same name.  The views take this as a template parameter rather than calling `::iconv` directly so that a program can supply a different implementation of the same interface -- another library's, or a test's -- and `make_real_iconv_fns` is the one bound to the platform's.
 
-[#]{.pnum} The facilities in this subclause are provided only by an implementation that supplies an `iconv` conversion facility.  The type `iconv_t` in this subclause is implementation-defined and denotes the handle type of that facility's conversion descriptors.  On a POSIX implementation, it is the type POSIX specifies as `iconv_t`.
+[#]{.pnum} The facilities in this subclause are provided only when a POSIX-conforming `iconv` interface, including the required constants and typedefs, is available.  The interface may be supplied by the operating system or by a third-party library.  The type `iconv_t` is the type supplied by that interface and denotes its conversion descriptors.
 
 [#]{.pnum} *Remarks*: `iconv_transcode_view<IconvFns, R>` presents the bytes of `R` converted from the encoding named by `from` to the encoding named by `to`, one element per output byte, using the `iconv` implementation `IconvFns` names.  Conversion is lazy and proceeds in batches: the view converts into the caller's buffer, yields those bytes, and converts again.
 
-[#]{.pnum} What the encoding names mean, which pairs convert, and what a conversion does with input the source encoding does not allow are the implementation's `iconv`'s, not this specification's.  That is the point of the adaptor: it gives an interface a program already has a ranges shape and a lifetime, and it does not restate a table it does not own.
+[#]{.pnum} What the encoding names mean, which pairs convert, and what a conversion does with input the source encoding does not allow are determined by the supplied `iconv` interface, not this specification.  That is the point of the adaptor: it gives an interface a program already has a ranges shape and a lifetime, and it does not restate a table it does not own.
 
 [#]{.pnum} A conversion failure is reported as `iconv_error` ([transcode.errors]), which is the granularity POSIX reports at: `EILSEQ`, `EINVAL` and `E2BIG` say *that* a byte sequence is not valid, not why, so the WHATWG error vocabulary the other views use would be claiming knowledge the OS does not return.
 
