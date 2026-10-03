@@ -94,9 +94,7 @@ default_sentinel_t end() const;
 inline iconv_functions make_real_iconv_fns() noexcept;
 ```
 
-[#]{.pnum} *Returns*: An `iconv_functions` whose members are the implementation's `iconv_open`, `iconv` and `iconv_close`.
-
-[#]{.pnum} *Remarks*: The facilities in this subclause are provided only by an implementation that supplies an `iconv` conversion facility.
+[#]{.pnum} *Returns*: An `iconv_functions` whose members are the `iconv_open`, `iconv` and `iconv_close` functions supplied by the available POSIX-conforming `iconv` interface.
 
 ```cpp
 inline $see below$ iconv_transcode(const char* from, const char* to, span<char> buf);

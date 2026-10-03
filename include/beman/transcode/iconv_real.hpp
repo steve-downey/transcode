@@ -15,10 +15,9 @@
 #endif
 namespace beman::transcoding {
 
-//! \returns An `iconv_functions` whose members are the implementation's
-//! `iconv_open`, `iconv` and `iconv_close`.
-//! \remarks The facilities in this subclause are provided only by an
-//! implementation that supplies an `iconv` conversion facility.
+//! \returns An `iconv_functions` whose members are the `iconv_open`, `iconv`
+//! and `iconv_close` functions supplied by the available POSIX-conforming
+//! `iconv` interface.
 inline iconv_functions make_real_iconv_fns() noexcept { return {::iconv_open, ::iconv, ::iconv_close}; }
 
 //! \expects `buf.size() >= iconv_min_buffer_size` is `true`.

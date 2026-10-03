@@ -49,11 +49,11 @@ enum class iconv_flush_state { not_started, in_progress, done };
 //! library's, or a test's -- and `make_real_iconv_fns` is the one bound to the
 //! platform's.
 //!
-//! The facilities in this subclause are provided only by an implementation
-//! that supplies an `iconv` conversion facility.  The type `iconv_t` in this
-//! subclause is implementation-defined and denotes the handle type of that
-//! facility's conversion descriptors.  On a POSIX implementation, it is the
-//! type POSIX specifies as `iconv_t`.
+//! The facilities in this subclause are provided only when a POSIX-conforming
+//! `iconv` interface, including the required constants and typedefs, is
+//! available.  The interface may be supplied by the operating system or by a
+//! third-party library.  The type `iconv_t` is the type supplied by that
+//! interface and denotes its conversion descriptors.
 struct iconv_functions {
     iconv_t (*open)(const char* tocode, const char* fromcode);
     size_t (*convert)(iconv_t cd, char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft);
@@ -76,10 +76,10 @@ struct iconv_functions {
 //! the caller's buffer, yields those bytes, and converts again.
 //!
 //! What the encoding names mean, which pairs convert, and what a conversion
-//! does with input the source encoding does not allow are the implementation's
-//! `iconv`'s, not this specification's.  That is the point of the adaptor: it
-//! gives an interface a program already has a ranges shape and a lifetime, and
-//! it does not restate a table it does not own.
+//! does with input the source encoding does not allow are determined by the
+//! supplied `iconv` interface, not this specification.  That is the point of
+//! the adaptor: it gives an interface a program already has a ranges shape and
+//! a lifetime, and it does not restate a table it does not own.
 //!
 //! A conversion failure is reported as `iconv_error`
 //! \iref{transcode.errors}, which is the granularity POSIX reports at:
