@@ -62,10 +62,10 @@ constexpr optional<codec> get_encoding(string_view label) noexcept;
 ### Byte order mark sniffing [transcode.codec.sniff] {-}
 
 ```cpp
-template<legacy_byte_range R>
-  requires ranges::forward_range<R>
-constexpr optional<codec> sniff_encoding(R&& r) noexcept;
+template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) noexcept;
 ```
+
+[#]{.pnum} *Constraints*: `R` models `forward_range`.
 
 [#]{.pnum} *Returns*: The encoding `r` begins with a byte order mark for:
 

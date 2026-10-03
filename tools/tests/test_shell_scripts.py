@@ -147,3 +147,20 @@ def test_generate_in_place_run_clears_pending_entries(tmp_path: Path) -> None:
     contents = pending.read_text()
     assert contents.startswith("# Headers that are knowingly ahead")
     assert "keep this marker" not in contents
+
+
+def test_generate_failure_preserves_previous_wording(tmp_path: Path) -> None:
+    script, pending, specgen = wording_repository(tmp_path)
+    wording = script.parent / "transcode.syn.md"
+    manifest = script.parent / "wording.mk"
+    wording.write_text("last good wording\n")
+    manifest.write_text("last good manifest\n")
+    write_executable(specgen, "#!/bin/sh\nexit 1\n")
+    env = os.environ.copy()
+    env["SPECGEN"] = str(specgen)
+
+    result = run_script(script, env=env)
+    assert result.returncode != 0
+    assert wording.read_text() == "last good wording\n"
+    assert manifest.read_text() == "last good manifest\n"
+    assert pending.read_text() == "keep this marker\n"

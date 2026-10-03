@@ -223,10 +223,24 @@ bash zsh: ## Run bash or zsh with the venv activated
 # it missing and calls the fragments stale.  The list is generate.sh's, because
 # its cleanup needs the same one and two copies would drift.
 WORDING_AUTHORED := $(shell papers/wording/generate.sh --authored)
+WORDING_BUILD_INCLUDE := $(abspath $(_build_path))/include
+WORDING_GCC_TOOLCHAIN := $(SPECGEN_GCC_TOOLCHAIN)
+ifeq ($(strip $(WORDING_GCC_TOOLCHAIN)),)
+ifneq ($(filter gcc-%,$(TOOLCHAIN)),)
+WORDING_GXX := $(shell command -v g++-$(patsubst gcc-%,%,$(TOOLCHAIN)) 2>/dev/null)
+WORDING_GCC_TOOLCHAIN := $(shell \
+	libstdcpp=`$(WORDING_GXX) -print-file-name=libstdc++.so 2>/dev/null`; \
+	libstdcpp=`readlink -f "$$libstdcpp"`; \
+	libdir=`dirname "$$libstdcpp"`; \
+	dirname "$$libdir")
+endif
+endif
+WORDING_ENV = BEMAN_TRANSCODE_BUILD_INCLUDE="$(WORDING_BUILD_INCLUDE)" \
+	$(if $(WORDING_GCC_TOOLCHAIN),SPECGEN_GCC_TOOLCHAIN="$(WORDING_GCC_TOOLCHAIN)")
 
 .PHONY: wording
-wording: ## Regenerate the paper's wording fragments from the header markup
-	papers/wording/generate.sh
+wording: $(_build_path)/CMakeCache.txt ## Regenerate the paper's wording fragments from the header markup
+	$(WORDING_ENV) papers/wording/generate.sh
 
 .PHONY: wording-inputs-check
 wording-inputs-check: ## Fail if a spec-facing header changed without `make wording`
@@ -254,10 +268,10 @@ wording-pending-check: ## Fail if any regeneration is still deferred
 	fi
 
 .PHONY: wording-check
-wording-check: ## Fail if the committed wording fragments are not what the headers generate
+wording-check: $(_build_path)/CMakeCache.txt ## Fail if the committed wording fragments are not what the headers generate
 	@scratch=$$(mktemp -d); \
 	trap 'rm -rf "$$scratch"' EXIT; \
-	papers/wording/generate.sh --out "$$scratch/wording" || { \
+	$(WORDING_ENV) papers/wording/generate.sh --out "$$scratch/wording" || { \
 		echo "wording-check: generate.sh failed; see above" >&2; \
 		exit 2; \
 	}; \
@@ -269,8 +283,8 @@ wording-check: ## Fail if the committed wording fragments are not what the heade
 	fi
 
 .PHONY: wording-validate
-wording-validate: ## Report specgen's wording validation findings for each spec-facing header
-	papers/wording/generate.sh --validate
+wording-validate: $(_build_path)/CMakeCache.txt ## Report specgen's wording validation findings for each spec-facing header
+	$(WORDING_ENV) papers/wording/generate.sh --validate
 
 .PHONY: lint
 lint: venv mypy clang-tidy
