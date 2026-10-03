@@ -229,20 +229,15 @@ for paper_root in $(paper_roots); do
     new_root_args="$new_root_args --new-root $paper_root"
 done
 
-ir_dir=$(mktemp -d)
-trap 'rm -rf "$ir_dir"' EXIT INT TERM
-
-# Clear out the previous run's fragments, so a clause that stops being
-# generated stops being committed.  Not a blanket `*.md`: the authored files
-# live here too, and a wildcard that eats one leaves the directory
-# undocumented and the deletion buried in a diff full of regenerated files.
-# The script's own arguments are consumed by now, so `set --` is free.
-set --
-for authored in $(authored_files); do
-    set -- "$@" ! -name "$authored"
-done
-find "$out_dir" -maxdepth 1 -name '*.md' "$@" -delete
-rm -f "$out_dir/wording.mk"
+# Generate away from the destination.  In particular, do not remove the last
+# good wording before Clang has successfully parsed every document.  Rendering
+# below uses the destination's basename so the manifest still contains the
+# paths that papers/Makefile expects after the staged files are installed.
+stage_parent=$(mktemp -d "$out_parent/.wording-generate.XXXXXX")
+stage_dir=$stage_parent/$out_name
+ir_dir=$stage_parent/ir
+mkdir -p "$stage_dir" "$ir_dir"
+trap 'rm -rf "$stage_parent"' EXIT INT TERM
 
 manifest=$ir_dir/manifest
 : >"$manifest"
@@ -255,7 +250,7 @@ while IFS='|' read -r header root; do
     "$specgen" generate --emit-ir "$repo_root/$header" --no-compile-commands \
         -o "$ir" -- $clang_args
     (
-        cd "$out_parent" || exit 1
+        cd "$stage_parent" || exit 1
         # shellcheck disable=SC2086 # new_root_args is a deliberate argument list
         "$specgen" render --from-ir "$ir" --backend mpark \
             --split "$out_name" --root "$root" $new_root_args
@@ -269,7 +264,7 @@ done <<HEADERS
 $(spec_headers)
 HEADERS
 
-wording_input_hashes >"$out_dir/inputs.sha256"
+wording_input_hashes >"$stage_dir/inputs.sha256"
 
 # The manifest is document order, and document order is the order pandoc has
 # to concatenate the fragments in, so it is what papers/Makefile consumes.
@@ -278,16 +273,28 @@ wording_input_hashes >"$out_dir/inputs.sha256"
     echo "# The paper's wording fragments, in document order."
     echo "WORDING_MD := \\"
     sed -e 's/^/\t/' -e 's/$/ \\/' -e '$ s/ \\$//' "$manifest"
-} >"$out_dir/wording.mk"
+} >"$stage_dir/wording.mk"
+
+if [ "$validate" -eq 1 ] && [ "$findings" -ne 0 ]; then
+    echo "generate.sh: validation reported errors (see above)" >&2
+    exit 1
+fi
+
+# Every fallible generation step has succeeded.  Remove generated fragments
+# left by the previous run, then install the complete staged result.  Authored
+# Markdown files are excluded explicitly because they share this directory.
+# The script's own arguments are consumed by now, so `set --` is free.
+set --
+for authored in $(authored_files); do
+    set -- "$@" ! -name "$authored"
+done
+find "$out_dir" -maxdepth 1 -name '*.md' "$@" -delete
+rm -f "$out_dir/wording.mk"
+find "$stage_dir" -maxdepth 1 -type f -exec cp {} "$out_dir/" \;
 
 # The fragments are now current, so nothing is pending.  Emptying the list here
 # rather than asking a contributor to remember is what keeps an exemption from
 # outliving the reason for it.
 if [ "$regenerating_in_place" -eq 1 ]; then
     pending_header >"$script_dir/PENDING"
-fi
-
-if [ "$validate" -eq 1 ] && [ "$findings" -ne 0 ]; then
-    echo "generate.sh: validation reported errors (see above)" >&2
-    exit 1
 fi

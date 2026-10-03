@@ -20,8 +20,11 @@ make wording-pending-check  # fail if a regeneration is still deferred
 
 Regenerating needs a `specgen` on `PATH`, built from the revision named in
 `specgen-ref`. It also needs the build tree's generated `config_generated.hpp`,
-so run `make compile` first in a fresh worktree, or point
-`BEMAN_TRANSCODE_BUILD_INCLUDE` at a directory that has it.
+which the Make targets configure and locate for the selected `TOOLCHAIN`. When
+running `generate.sh` directly, configure first and point
+`BEMAN_TRANSCODE_BUILD_INCLUDE` at that build tree's include directory. The
+Make targets also derive `SPECGEN_GCC_TOOLCHAIN` for a `gcc-*` toolchain so
+specgen's embedded Clang can find that GCC installation's standard library.
 
 ## The drift gate
 

@@ -448,6 +448,12 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
 [#]{.pnum} `C` is required to be an encoding the WHATWG Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and the view does not accept them.
 
 ```cpp
+template<typename R> constexpr auto operator()(R&& r) const;
+```
+
+[#]{.pnum} *Constraints*: `$whatwg-encode-input$<C, R>` is satisfied.
+
+```cpp
 constexpr iterator begin() const;
 ```
 
