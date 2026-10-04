@@ -540,7 +540,9 @@ testinstall: install
 testinstall: CONFIG=RelWithDebInfo
 testinstall: ## Test the installed package
 	-$(RM) -rf installtest/.build
-	$(CMAKE) -S installtest -B installtest/.build -G "Ninja Multi-Config" -DCMAKE_PREFIX_PATH=$(abspath $(INSTALL_PREFIX))
+	$(CMAKE) -S installtest -B installtest/.build -G "Ninja Multi-Config" \
+		-DCMAKE_PREFIX_PATH=$(abspath $(INSTALL_PREFIX)) \
+		-DCMAKE_TOOLCHAIN_FILE=$(_local_toolchain)
 	$(CMAKE) --build  installtest/.build --target test --config="RelWithDebInfo"
 
 .PHONY: clean-testinstall
