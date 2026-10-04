@@ -159,8 +159,10 @@ TEST_CASE("iconv_transcode_view resumes a flush after E2BIG", "[transcoding::ico
         output.push_back(c);
 
     CHECK(flush_calls == 2);
-    std::vector<char> expected(iconv_min_buffer_size, 0x0E);
-    expected.push_back(0x0F);
+    // Sized and then patched rather than push_back onto a full vector: at -O3
+    // GCC 16 reports a false -Warray-bounds on that reallocating push_back.
+    std::vector<char> expected(iconv_min_buffer_size + 1, 0x0E);
+    expected.back() = 0x0F;
     CHECK(output == expected);
 }
 

@@ -12,10 +12,13 @@ namespace beman::transcoding::bench {
 template <typename T>
 void volatile_sink(const T& value) {
     // Write the address to a volatile pointer to prevent DCE of value's
-    // computation. The volatile read-back silences "set but not used".
+    // computation. The volatile read-back silences "set but not used", and
+    // clearing it afterwards keeps the static from holding the address of a
+    // caller's local once this returns (-Wdangling-pointer).
     static const T* volatile p;
     p = &value;
     (void)p;
+    p = nullptr;
 }
 
 // Count elements in a range. Returns the count as the benchmark result,
