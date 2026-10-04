@@ -1,0 +1,17 @@
+#+STARTUP: showeverything
+
+#+BIBLIOGRAPHY: wg21.bib
+
+* Heading 1
+
+Refer to [cite:@P1255R12].
+
+
+[cite/n:@N4919]
+
+
+* References
+
+#+cite_export: basic author author-year
+
+#+PRINT_BIBLIOGRAPHY:

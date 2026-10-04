@@ -1,0 +1,99 @@
+
+
+\usepackage{amssymb,graphicx,stackengine,xcolor}
+\protected\def\ucr{\scalebox{1}{\stackinset{c}{}{c}{-.2pt}{%
+      \textcolor{white}{\sffamily\bfseries\small ?}}{%
+      \rotatebox{45}{$\blacksquare$}}}}
+
+\newenvironment{wording}{
+  \chapterstyle{cppstd}
+  \newcounter{scratchChapter}\setcounter{scratchChapter}{\value{chapter}}
+  \settocdepth{part}
+  \renewcommand\thesection{\ucr.\arabic{section}}
+  \renewcommand\thesubsection{\makebox{$\ucr$}.\makebox{$\ucr$}.\arabic{subsection}}
+} {
+  \setcounter{chapter}{\value{scratchChapter}}
+  \settocdepth{section}
+
+}
+
+
+\newenvironment{cmptbl}
+  {%
+    \begin{tabular}{l|l}
+  }
+  {%
+  \end{tabular}
+  }
+
+\newenvironment{cmptblbeforehead}
+  {%
+  \begin{minipage}[t]{0.49\columnwidth}
+  }
+  {%
+  \end{minipage}
+  }
+
+\newenvironment{cmptblafterhead}
+  {%
+  \begin{minipage}[t]{0.49\columnwidth}
+  }
+  {%
+  \end{minipage}
+  }
+
+\newenvironment{cmptblbefore}
+  {%
+  \begin{minipage}[t]{0.49\columnwidth}
+  }
+  {%
+  \end{minipage}
+  }
+
+\newenvironment{cmptblafter}
+  {%
+  \begin{minipage}[t]{0.49\columnwidth}
+  }
+  {%
+  \end{minipage}
+  }
+
+\newenvironment{cmptblcell}
+  {%
+  \begin{minipage}[t]{0.49\columnwidth}
+  }
+  {%
+  \end{minipage}
+  }
+
+\newenvironment{docinfo}
+  {%
+  \begin{flushright}
+    \begin{minipage}[t]{0.5\columnwidth}
+  }
+  {%
+    \end{minipage}
+  \end{flushright}
+  }
+
+\newcommand*{\docnumber}[1]{\def\thedocnumber{#1}}
+\newcommand*{\audience}[1]{\def\theaudience{#1}}
+\newcommand*{\target}[1]{\def\thetarget{#1}}
+\newcommand*{\category}[1]{\def\thecategory{#1}}
+\newcommand*{\email}[1]{\def\theemail{#1}}
+
+\renewcommand{\maketitle}{%
+  \null \vskip 1em%
+  {\center \LARGE \thetitle  \par}%
+  \begin{flushright}%
+    \begin{tabular}{ll}%
+      Document \#:&\thedocnumber\\%
+      Date:       &\thedate\\%
+      Audience:   &\theaudience\\%
+      Reply-to:   &\theauthor\ \textless\href{mailto:\theemail}{\theemail}\textgreater%
+
+
+
+    \end{tabular}%
+  \end{flushright}%
+}

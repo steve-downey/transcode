@@ -1,0 +1,241 @@
+#+title: WG21 Org-mode
+#+date: {{{modification-time(%Y-%m-%d, VC)}}}
+#+author: Steve Downey
+#+email: sdowney@sdowney.org
+#+DOCNUMBER: DnnnnRi
+#+AUDIENCE: LEWG
+#+SOURCE_REPO: https://github.com/steve-downey/wg21org
+#+MACRO: filename (eval (wg21-git-string "ls-files" ( buffer-file-name)))
+#+source_file: {{{filename}}}
+#+MACRO: gitver (eval (wg21-git-string "describe" "--always" "--long" "--all" "--dirty" "--tags"))
+#+source_version: {{{gitver}}}
+
+#+org-export-with-smart-quotes: nil
+#+org-export-with-emphasize: t
+#+org-export-with-special-strings: t
+#+org-export-with-fixed-width: t
+#+org-export-with-timestamps: t
+#+org-export-preserve-breaks: nil
+#+org-export-with-sub-superscripts: nil
+#+org-export-with-archived-trees: headline
+#+org-export-with-author: t
+#+org-export-headline-levels: 3
+
+#+org-export-with-broken-links: nil
+#+org-export-with-clocks: nil
+#+org-export-with-creator: nil
+#+org-export-with-drawers: (not "LOGBOOK")
+#+org-export-with-date: t
+#+org-export-with-entities: t
+
+#+org-export-with-email: nil
+#+org-export-with-footnotes: t
+#+org-export-with-inlinetasks: t
+#+org-export-with-section-numbers: t
+#+org-export-with-planning: nil
+#+org-export-with-priority: nil
+#+org-export-with-properties: nil
+#+org-export-with-statistics-cookies: t
+#+org-export-with-tags: t
+
+#+org-export-with-tasks: t
+#+org-export-with-latex: t
+#+org-export-timestamp-file: t
+#+org-export-with-title: n
+#+org-export-with-toc: nil
+#+org-export-with-todo: t
+#+org-export-with-tables: t
+
+#+org-html-link-use-abs-url: nil
+#+org-html-postamble: nil
+#+org-html-preamble: t
+#+org-html-scripts: n
+#+org-html-style: nil
+#+org-html5-fancy: t
+#+org-html-self-link-headlines: t
+
+#+html_doctype: xhtml5
+#+html_container: div
+#+html_link_home:
+#+html_link_up:
+#+html_mathjax:
+#+html_head:
+#+html_head_extra:
+#+infojs_opt:
+
+#+select_tags: export
+#+exclude_tags: noexport
+
+#+STARTUP: showall
+
+#+select_tags: export
+#+language: en
+#+exclude_tags: noexport
+#+creator: Emacs 28.0.60 (Org mode 9.4.6)
+#+HTML_DOCTYPE: html5
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:nil html-preamble:t
+#+OPTIONS: html-scripts:t html-style:nil html5-fancy:t tex:t
+
+
+#+LATEX_COMPILER: lualatex
+#+LATEX_CLASS: memoir
+#+LATEX_CLASS_OPTIONS: [a4paper,10pt,oneside,openany,final,article]
+#+LATEX_HEADER: \include{common.tex}
+#+LATEX_HEADER: \usepackage{fontspec}
+#+LATEX_HEADER: \setromanfont{Source Serif Pro}
+#+LATEX_HEADER: \setsansfont{Source Sans Pro}
+#+LATEX_HEADER: \setmonofont{Source Code Pro}
+#+LATEX_HEADER:\newfontfamily\unifont[Ligatures=TeX]{DejaVu Sans Mono}
+#+LATEX_HEADER: \setlength{\parindent}{0in}
+#+latex_engraved_theme: modus-operandi
+
+
+#+begin_abstract
+Abstract: Making emacs org-mode more usable for writing WG21 papers.
+#+end_abstract
+
+* Delete blocks and text
+#+begin_removedblock
+Remove this terrible old stuff.
+#+end_removedblock
+And the bad +word+ from this sentence.
+
+* Insert blocks and text
+#+begin_addedblock
+Add this wonderful new text
+#+end_addedblock
+And put this cool _word_ in.
+
+
+* Comparison Table
+#+begin_cmptbl
+#+begin_cmptblcell before
+*Before*
+#+end_cmptblcell
+#+begin_cmptblcell after
+*After*
+#+end_cmptblcell
+#+begin_cmptblcell before
+#+begin_src C++
+int a = 1 + 2 + 3;
+#+end_src
+#+end_cmptblcell
+#+begin_cmptblcell after
+#+begin_src C++
+int a = cool_sum({1, 2, 3});
+#+end_src
+#+end_cmptblcell
+
+#+begin_cmptblcell before
+#+begin_src C++
+template <class Ref, class CRef>
+concept readable_references =
+    is_lvalue_reference_v<Ref> &&
+    is_object_v<remove_reference_t<Ref>> &&
+    is_lvalue_reference_v<CRef> &&
+    is_object_v<remove_reference_t<CRef>> &&
+    convertible_to<add_pointer_t<CRef>,
+                   const remove_reference_t<Ref>*>;
+
+template <class T>
+concept nullable_object =
+    is_object_v<T> &&
+    requires(T& t, const T& ct) {
+    bool(t);
+    bool(ct);
+    ,*(t);
+    ,*(ct);
+};
+#+end_src
+#+end_cmptblcell
+#+begin_cmptblcell after
+#+begin_src C++
+template <class Ref, class CRef>
+concept readable_references =
+    is_lvalue_reference_v<Ref> &&
+    is_object_v<remove_reference_t<Ref>> &&
+    is_lvalue_reference_v<CRef> &&
+    is_object_v<remove_reference_t<CRef>> &&
+    convertible_to<add_pointer_t<CRef>,
+                   const remove_reference_t<Ref>*>;
+
+template <class T>
+concept nullable_object =
+    is_object_v<T> &&
+    requires(T& t, const T& ct) {
+    bool(t);
+    bool(ct);
+    ,*(t);
+    ,*(ct);
+};
+#+end_src
+#+end_cmptblcell
+#+end_cmptbl
+
+
+# \begin{cmptbl}
+#   \begin{cmptblbefore}
+# int a = cool\_sum(\{1, 2, 3\});
+#   \end{cmptblbefore}
+# &
+#     \begin{cmptblafter}
+# int a = 1 + 2 + 3;
+#     \end{cmptblafter}
+# \end{cmptbl}
+
+
+# #+begin_cmptbl
+# #+begin_cmptblbeforehead
+# *Before*
+# #+end_cmptblbeforehead
+# #+BEGIN_EXPORT latex
+#   &
+# #+END_EXPORT
+# #+begin_cmptblafterhead
+# *After*
+# #+end_cmptblafterhead
+
+# #+begin_cmptblbefore
+# #+begin_src C++
+# int a = 1 + 2 + 3;
+# #+end_src
+# #+end_cmptblbefore
+# #+BEGIN_EXPORT latex
+#   &
+# #+END_EXPORT
+
+# #+begin_cmptblafter
+# #+begin_src C++
+# int a = cool_sum({1, 2, 3});
+# #+end_src
+# #+end_cmptblafter
+
+# #+begin_cmptblbefore
+# #+begin_src C++
+# int a = 1 + 2 + 3 + 4 + 5 + 6;
+# #+end_src
+# #+end_cmptblbefore
+# #+BEGIN_EXPORT latex
+#   &
+# #+END_EXPORT
+
+# #+begin_cmptblafter
+# #+begin_src C++
+# int a = cool_sum({1, 2, 3, 4, 5, 6});
+# #+end_src
+# #+end_cmptblafter
+# #+end_cmptbl
+
+
+* Difference
+#+begin_SRC diff
+-before
++after
+#+end_SRC
+
+
+
+# Local Variables:
+# org-html-htmlize-output-type: css
+# org-org-html-wrap-src-lines: nil
+# End:
