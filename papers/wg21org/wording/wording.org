@@ -4,7 +4,6 @@
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.syn}
 
 #+begin_codeblock
 // \ref{transcode.errors}, error types
@@ -557,7 +556,6 @@ The output buffer is the caller's, and is not owned by the view. Its contents be
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.errors}
 
 #+begin_itemdecl
 enum class whatwg_error {
@@ -636,7 +634,6 @@ enum class transcode_error_kind {
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.reqs}
 
 #+begin_itemdecl
 template<typename R>
@@ -665,7 +662,6 @@ concept unicode_scalar_range =
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.codec}
 
 #+begin_itemdecl
 enum class codec {
@@ -721,7 +717,6 @@ enum class codec {
 :CUSTOM_ID: transcode.codec.label
 :UNNUMBERED: t
 :END:
-#+latex: \label{transcode.codec.label}
 
 #+begin_itemdecl
 constexpr optional<codec> get_encoding(string_view label) noexcept;
@@ -740,7 +735,6 @@ constexpr optional<codec> get_encoding(string_view label) noexcept;
 :CUSTOM_ID: transcode.codec.sniff
 :UNNUMBERED: t
 :END:
-#+latex: \label{transcode.codec.sniff}
 
 #+begin_itemdecl
 template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) noexcept;
@@ -773,7 +767,6 @@ template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) no
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.whatwg.decode}
 
 #+begin_itemdecl
 constexpr const R& base() const& noexcept;
@@ -885,7 +878,6 @@ template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_decode_or_
 :CUSTOM_ID: transcode.whatwg.decode.iterator
 :UNNUMBERED: t
 :END:
-#+latex: \label{transcode.whatwg.decode.iterator}
 
 #+begin_itemdecl
 constexpr iterator(base_iter current, base_sent end);
@@ -959,7 +951,6 @@ constexpr void operator++(int);
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.whatwg.encode}
 
 #+begin_itemdecl
 constexpr const R& base() const& noexcept;
@@ -1071,7 +1062,6 @@ template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_encode_or_
 :CUSTOM_ID: transcode.whatwg.encode.iterator
 :UNNUMBERED: t
 :END:
-#+latex: \label{transcode.whatwg.encode.iterator}
 
 #+begin_itemdecl
 constexpr iterator(base_iter current, base_sent end);
@@ -1141,7 +1131,6 @@ constexpr void operator++(int);
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.custom.reqs}
 
 #+begin_itemdecl
 template<typename C>
@@ -1199,7 +1188,6 @@ concept flushable_decode_codec = decode_codec<C> && requires(C& c) {
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.custom.decode}
 
 #+begin_itemdecl
 constexpr const R& base() const& noexcept;
@@ -1311,7 +1299,6 @@ template<decode_codec Codec> constexpr @\seebelow@ decode_or_error(Codec codec =
 :CUSTOM_ID: transcode.custom.decode.iterator
 :UNNUMBERED: t
 :END:
-#+latex: \label{transcode.custom.decode.iterator}
 
 #+begin_itemdecl
 constexpr iterator(base_iter current, base_sent end, Codec codec);
@@ -1385,7 +1372,6 @@ constexpr void operator++(int);
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.custom.encode}
 
 #+begin_itemdecl
 constexpr const R& base() const& noexcept;
@@ -1497,7 +1483,6 @@ template<encode_codec Codec> constexpr @\seebelow@ encode_or_error(Codec codec =
 :CUSTOM_ID: transcode.custom.encode.iterator
 :UNNUMBERED: t
 :END:
-#+latex: \label{transcode.custom.encode.iterator}
 
 #+begin_itemdecl
 constexpr iterator(base_iter current, base_sent end, Codec codec);
@@ -1549,7 +1534,6 @@ constexpr void operator++(int);
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.pipeline}
 
 #+begin_itemdecl
 template<codec From, codec To> inline constexpr @\placeholder{unspecified}@ transcode;
@@ -1582,7 +1566,6 @@ constexpr @\seebelow@ pluggable_transcode(From from, To to);
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.string}
 
 #+begin_itemdecl
 constexpr bool has_whatwg_encoder(codec encoding) noexcept;
@@ -1623,7 +1606,6 @@ optional<string> transcode_string(span<const char> src, string_view from_label,
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.bulk}
 
 #+begin_itemdecl
 template<codec C, legacy_byte_range R> constexpr vector<char32_t> decode_to(R&& source);
@@ -1746,7 +1728,6 @@ ranges::copy(forward<R>(source) | encode(codec), output);
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{transcode.iconv}
 
 #+begin_itemdecl
 const R& base() const& noexcept;
@@ -1993,7 +1974,6 @@ return iconv_transcode_to_or_error<Container>(forward<R>(source), from, to,
 :CUSTOM_ID: transcode.iconv.iterator
 :UNNUMBERED: t
 :END:
-#+latex: \label{transcode.iconv.iterator}
 
 #+begin_itemdecl
 iterator(@\exposidnc{iterator}@&&) noexcept;
@@ -2129,7 +2109,6 @@ void operator++(int);
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{null.term.syn}
 
 #+begin_codeblock
 struct null_sentinel_t {
@@ -2167,7 +2146,6 @@ inline constexpr @\placeholder{unspecified}@ null_term;
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{null.term.sentinel}
 
 #+begin_itemdecl
 template<input_iterator I>
@@ -2188,7 +2166,6 @@ friend constexpr bool operator==(const I& it, null_sentinel_t);
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{null.term.view}
 
 #+begin_itemdecl
 constexpr null_term_view() = default;
@@ -2236,7 +2213,6 @@ constexpr null_sentinel_t end() const;
 :UNNUMBERED: t
 :WG21_WORDING: t
 :END:
-#+latex: \label{null.term.adaptor}
 
 #+begin_itemdecl
 inline constexpr @\placeholder{unspecified}@ null_term;
