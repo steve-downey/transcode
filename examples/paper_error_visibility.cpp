@@ -5,65 +5,49 @@
 #include <string_view>
 #include <vector>
 
-bool before(std::string_view input) {
-    bool                  has_errors = false;
-    std::vector<char32_t> result;
-    std::size_t           index = 0;
-    while (index < input.size()) {
-        unsigned char byte = static_cast<unsigned char>(input[index]);
-        char32_t      code_point{};
-        int           extra = 0;
-        if (byte < 0x80) {
-            code_point = byte;
-        } else if ((byte & 0xE0) == 0xC0) {
-            code_point = byte & 0x1F;
-            extra      = 1;
-        } else if ((byte & 0xF0) == 0xE0) {
-            code_point = byte & 0x0F;
-            extra      = 2;
-        } else if ((byte & 0xF8) == 0xF0) {
-            code_point = byte & 0x07;
-            extra      = 3;
-        } else {
-            has_errors = true;
-            result.push_back(U'\xFFFD');
-            ++index;
-            continue;
-        }
-        if (index + static_cast<std::size_t>(extra) >= input.size()) {
-            has_errors = true;
-            result.push_back(U'\xFFFD');
-            break;
-        }
-        for (int continuation = 0; continuation != extra; ++continuation) {
-            unsigned char next = static_cast<unsigned char>(input[++index]);
-            if ((next & 0xC0) != 0x80) {
-                has_errors = true;
-                code_point = U'\xFFFD';
-                break;
-            }
-            code_point = (code_point << 6) | (next & 0x3F);
-        }
-        result.push_back(code_point);
-        ++index;
-    }
-    return has_errors;
+using namespace beman::transcoding;
+
+void log_warning(const char*) {}
+void log_warning(whatwg_error) {}
+void process(char32_t) {}
+
+void before_example() {
+    // clang-format off
+// 2fb71234-33f5-4fff-bf7b-9afcec8afcbd
+// No standard way to detect errors
+// during transcoding. Either:
+// 1. Errors are silently replaced
+// 2. Exceptions thrown mid-stream
+// 3. Custom state machine required
+
+bool has_errors = false;
+std::vector<char32_t> result;
+// ... complex manual decoding with
+// error tracking interspersed ...
+if (has_errors) {
+  log_warning("Invalid UTF-8 detected");
+}
+// 2fb71234-33f5-4fff-bf7b-9afcec8afcbd end
+    // clang-format on
 }
 
-bool after(std::string_view input) {
-    bool has_errors = false;
-    for (auto result : input | beman::transcoding::whatwg_decode_or_error<beman::transcoding::codec::utf_8>) {
-        if (!result.has_value()) {
-            has_errors = true;
-        }
-    }
-    return has_errors;
+void after_example(std::string_view input) {
+    // clang-format off
+// d9624e97-0a08-46c1-99c3-04a729a7324b
+for (auto r : input
+    | whatwg_decode_or_error<codec::utf_8>) {
+  if (r.has_value()) {
+    process(*r);
+  } else {
+    log_warning(r.error());
+    process(U'\xFFFD');
+  }
+}
+// d9624e97-0a08-46c1-99c3-04a729a7324b end
+    // clang-format on
 }
 
 int main() {
-    constexpr char   input_bytes[] = {'A', static_cast<char>(0xFF), 'B'};
-    std::string_view input{input_bytes, sizeof(input_bytes)};
-    bool             manual = before(input);
-    bool             view   = after(input);
-    return manual == view ? 0 : 1;
+    before_example();
+    after_example("Hello");
 }

@@ -8,6 +8,7 @@ set(ALL_EXAMPLES
     paper_iconv_view
     paper_from_cstring
     paper_error_visibility
+    paper_bulk_conversion
 )
 message("Examples to be built: ${ALL_EXAMPLES}")
 

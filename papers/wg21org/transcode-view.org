@@ -140,51 +140,11 @@ option when the bytes are what you were sent.
 *After: ~whatwg_decode~*
 #+end_cmptblcell
 #+begin_cmptblcell before
-#+begin_src cpp
-std::vector<char32_t> decode_utf8(
-    std::string_view input) {
-  std::vector<char32_t> result;
-  size_t i = 0;
-  while (i < input.size()) {
-    unsigned char b = input[i];
-    char32_t cp; int extra;
-    if (b < 0x80) { cp = b; extra = 0; }
-    else if ((b & 0xE0) == 0xC0)
-      { cp = b & 0x1F; extra = 1; }
-    else if ((b & 0xF0) == 0xE0)
-      { cp = b & 0x0F; extra = 2; }
-    else if ((b & 0xF8) == 0xF0)
-      { cp = b & 0x07; extra = 3; }
-    else { result.push_back(U'\xFFFD');
-           ++i; continue; }
-    if (i + extra >= input.size()) {
-      result.push_back(U'\xFFFD'); break;
-    }
-    for (int j = 0; j < extra; ++j) {
-      unsigned char c = input[++i];
-      if ((c & 0xC0) != 0x80) {
-        cp = U'\xFFFD'; break;
-      }
-      cp = (cp << 6) | (c & 0x3F);
-    }
-    // Missing: overlong, surrogate checks
-    result.push_back(cp);
-    ++i;
-  }
-  return result;
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_decode_utf8.cpp::80d8fd24-5a96-46d0-8cb3-ab433f9aeaf7]] :lines 2- :src cpp :end "80d8fd24-5a96-46d0-8cb3-ab433f9aeaf7 end"
 #+end_cmptblcell
 
 #+begin_cmptblcell after
-#+begin_src cpp
-std::vector<char32_t> decode_utf8(
-    std::string_view input) {
-  return input
-    | whatwg_decode<codec::utf_8>
-    | std::ranges::to<std::vector>();
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_decode_utf8.cpp::352e080f-46ee-46de-8da4-9280c42866e4]] :lines 2- :src cpp :end "352e080f-46ee-46de-8da4-9280c42866e4 end"
 #+end_cmptblcell
 #+end_cmptbl
 
@@ -198,63 +158,11 @@ std::vector<char32_t> decode_utf8(
 *After: decode then encode*
 #+end_cmptblcell
 #+begin_cmptblcell before
-#+begin_src cpp
-std::string shift_jis_to_utf8(
-    std::string_view input) {
-  iconv_t cd = iconv_open("UTF-8",
-                          "SHIFT_JIS");
-  if (cd == (iconv_t)-1)
-    throw std::runtime_error("iconv_open");
-
-  std::string result;
-  result.resize(input.size() * 4);
-
-  char* inbuf = const_cast<char*>(
-                  input.data());
-  size_t inleft = input.size();
-  char* outbuf = result.data();
-  size_t outleft = result.size();
-
-  while (inleft > 0) {
-    size_t r = iconv(cd, &inbuf, &inleft,
-                     &outbuf, &outleft);
-    if (r == (size_t)-1) {
-      if (errno == E2BIG) {
-        size_t used = outbuf - result.data();
-        result.resize(result.size() * 2);
-        outbuf = result.data() + used;
-        outleft = result.size() - used;
-      } else if (errno == EILSEQ) {
-        // Skip invalid byte
-        ++inbuf; --inleft;
-        // Append replacement char
-        *outbuf++ = '\xEF';
-        *outbuf++ = '\xBF';
-        *outbuf++ = '\xBD';
-        outleft -= 3;
-      } else {
-        iconv_close(cd);
-        throw std::runtime_error("iconv");
-      }
-    }
-  }
-  result.resize(outbuf - result.data());
-  iconv_close(cd);
-  return result;
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_shift_jis_to_utf8.cpp::ca504c43-4e44-4ee7-89f0-672cac1e1050]] :lines 2- :src cpp :end "ca504c43-4e44-4ee7-89f0-672cac1e1050 end"
 #+end_cmptblcell
 
 #+begin_cmptblcell after
-#+begin_src cpp
-std::string shift_jis_to_utf8(
-    std::string_view input) {
-  return input
-    | whatwg_decode<codec::shift_jis>
-    | whatwg_encode<codec::utf_8>
-    | std::ranges::to<std::string>();
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_shift_jis_to_utf8.cpp::307799ab-fe64-4f57-9d10-063361239a41]] :lines 2- :src cpp :end "307799ab-fe64-4f57-9d10-063361239a41 end"
 #+end_cmptblcell
 #+end_cmptbl
 
@@ -268,36 +176,11 @@ std::string shift_jis_to_utf8(
 *After: ~views::null_term~*
 #+end_cmptblcell
 #+begin_cmptblcell before
-#+begin_src cpp
-std::wstring from_cstring(const char* s) {
-  // Assumes locale is set correctly
-  std::setlocale(LC_ALL, "");
-  size_t len = std::mbstowcs(nullptr, s, 0);
-  if (len == (size_t)-1)
-    throw std::runtime_error("mbstowcs");
-  std::wstring result(len, L'\0');
-  std::mbstowcs(result.data(), s, len + 1);
-  return result;
-  // Problems:
-  // - Global locale state
-  // - wchar_t is not portable
-  // - No error recovery
-  // - Two passes required
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_from_cstring.cpp::0be53424-b002-4662-90f0-93f262a2dae1]] :lines 2- :src cpp :end "0be53424-b002-4662-90f0-93f262a2dae1 end"
 #+end_cmptblcell
 
 #+begin_cmptblcell after
-#+begin_src cpp
-auto from_cstring(const char* s) {
-  return views::null_term(s)
-    | whatwg_decode<codec::utf_8>;
-  // Returns lazy view of char32_t
-  // No global state
-  // Portable Unicode scalars
-  // Single pass, errors yield U+FFFD
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_from_cstring.cpp::742abae0-4d08-4faf-9db8-759404fd46d9]] :lines 2- :src cpp :end "742abae0-4d08-4faf-9db8-759404fd46d9 end"
 #+end_cmptblcell
 #+end_cmptbl
 
@@ -311,35 +194,11 @@ auto from_cstring(const char* s) {
 *After: ~_or_error~*
 #+end_cmptblcell
 #+begin_cmptblcell before
-#+begin_src cpp
-// No standard way to detect errors
-// during transcoding. Either:
-// 1. Errors are silently replaced
-// 2. Exceptions thrown mid-stream
-// 3. Custom state machine required
-
-bool has_errors = false;
-std::vector<char32_t> result;
-// ... complex manual decoding with
-// error tracking interspersed ...
-if (has_errors) {
-  log_warning("Invalid UTF-8 detected");
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_error_visibility.cpp::2fb71234-33f5-4fff-bf7b-9afcec8afcbd]] :lines 2- :src cpp :end "2fb71234-33f5-4fff-bf7b-9afcec8afcbd end"
 #+end_cmptblcell
 
 #+begin_cmptblcell after
-#+begin_src cpp
-for (auto r : input
-    | whatwg_decode_or_error<codec::utf_8>) {
-  if (r.has_value()) {
-    process(*r);
-  } else {
-    log_warning(r.error());
-    process(U'\xFFFD');
-  }
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_error_visibility.cpp::d9624e97-0a08-46c1-99c3-04a729a7324b]] :lines 2- :src cpp :end "d9624e97-0a08-46c1-99c3-04a729a7324b end"
 #+end_cmptblcell
 #+end_cmptbl
 
@@ -353,26 +212,11 @@ for (auto r : input
 *After: ~decode_to~*
 #+end_cmptblcell
 #+begin_cmptblcell before
-#+begin_src cpp
-std::vector<char32_t> decode_utf8(
-    std::string_view input) {
-  std::vector<char32_t> result;
-  for (char32_t cp : input
-      | whatwg_decode<codec::utf_8>) {
-    result.push_back(cp);
-  }
-  return result;
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_bulk_conversion.cpp::b63db4b8-c004-42ab-8c9e-6a4fbba64f52]] :lines 2- :src cpp :end "b63db4b8-c004-42ab-8c9e-6a4fbba64f52 end"
 #+end_cmptblcell
 
 #+begin_cmptblcell after
-#+begin_src cpp
-std::vector<char32_t> decode_utf8(
-    std::string_view input) {
-  return decode_to<codec::utf_8>(input);
-}
-#+end_src
+#+transclude: [[file:../../examples/paper_bulk_conversion.cpp::04be596b-c72b-4cc4-9ebd-5966c7e92502]] :lines 2- :src cpp :end "04be596b-c72b-4cc4-9ebd-5966c7e92502 end"
 #+end_cmptblcell
 #+end_cmptbl
 

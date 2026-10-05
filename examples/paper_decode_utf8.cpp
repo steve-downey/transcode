@@ -2,61 +2,69 @@
 
 #include <beman/transcode/transcode.hpp>
 
+#include <ranges>
 #include <string_view>
 #include <vector>
 
-std::vector<char32_t> before(std::string_view input) {
-    std::vector<char32_t> result;
-    std::size_t           index = 0;
-    while (index < input.size()) {
-        unsigned char byte = static_cast<unsigned char>(input[index]);
-        char32_t      code_point{};
-        int           extra = 0;
-        if (byte < 0x80) {
-            code_point = byte;
-        } else if ((byte & 0xE0) == 0xC0) {
-            code_point = byte & 0x1F;
-            extra      = 1;
-        } else if ((byte & 0xF0) == 0xE0) {
-            code_point = byte & 0x0F;
-            extra      = 2;
-        } else if ((byte & 0xF8) == 0xF0) {
-            code_point = byte & 0x07;
-            extra      = 3;
-        } else {
-            result.push_back(U'\xFFFD');
-            ++index;
-            continue;
-        }
-        if (index + static_cast<std::size_t>(extra) >= input.size()) {
-            result.push_back(U'\xFFFD');
-            break;
-        }
-        for (int continuation = 0; continuation != extra; ++continuation) {
-            unsigned char next = static_cast<unsigned char>(input[++index]);
-            if ((next & 0xC0) != 0x80) {
-                code_point = U'\xFFFD';
-                break;
-            }
-            code_point = (code_point << 6) | (next & 0x3F);
-        }
-        result.push_back(code_point);
-        ++index;
-    }
-    return result;
-}
+using namespace beman::transcoding;
 
-std::vector<char32_t> after(std::string_view input) {
-    std::vector<char32_t> result;
-    for (char32_t code_point : input | beman::transcoding::whatwg_decode<beman::transcoding::codec::utf_8>) {
-        result.push_back(code_point);
+namespace before_example {
+
+// clang-format off
+// 80d8fd24-5a96-46d0-8cb3-ab433f9aeaf7
+std::vector<char32_t> decode_utf8(
+    std::string_view input) {
+  std::vector<char32_t> result;
+  size_t i = 0;
+  while (i < input.size()) {
+    unsigned char b = input[i];
+    char32_t cp; int extra;
+    if (b < 0x80) { cp = b; extra = 0; }
+    else if ((b & 0xE0) == 0xC0)
+      { cp = b & 0x1F; extra = 1; }
+    else if ((b & 0xF0) == 0xE0)
+      { cp = b & 0x0F; extra = 2; }
+    else if ((b & 0xF8) == 0xF0)
+      { cp = b & 0x07; extra = 3; }
+    else { result.push_back(U'\xFFFD');
+           ++i; continue; }
+    if (i + extra >= input.size()) {
+      result.push_back(U'\xFFFD'); break;
     }
-    return result;
+    for (int j = 0; j < extra; ++j) {
+      unsigned char c = input[++i];
+      if ((c & 0xC0) != 0x80) {
+        cp = U'\xFFFD'; break;
+      }
+      cp = (cp << 6) | (c & 0x3F);
+    }
+    // Missing: overlong, surrogate checks
+    result.push_back(cp);
+    ++i;
+  }
+  return result;
 }
+// 80d8fd24-5a96-46d0-8cb3-ab433f9aeaf7 end
+// clang-format on
+
+} // namespace before_example
+
+namespace after_example {
+
+// clang-format off
+// 352e080f-46ee-46de-8da4-9280c42866e4
+std::vector<char32_t> decode_utf8(
+    std::string_view input) {
+  return input
+    | whatwg_decode<codec::utf_8>
+    | std::ranges::to<std::vector>();
+}
+// 352e080f-46ee-46de-8da4-9280c42866e4 end
+// clang-format on
+
+} // namespace after_example
 
 int main() {
-    constexpr std::string_view input  = "Hello";
-    auto                       manual = before(input);
-    auto                       view   = after(input);
-    return manual == view ? 0 : 1;
+    constexpr std::string_view input = "Hello";
+    return before_example::decode_utf8(input) == after_example::decode_utf8(input) ? 0 : 1;
 }
