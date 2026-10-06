@@ -7,7 +7,7 @@
 
 using namespace beman::transcoding;
 
-bool error_logged = false;
+bool     error_logged   = false;
 char32_t last_processed = U'\0';
 
 void log_warning(const char*) {}
