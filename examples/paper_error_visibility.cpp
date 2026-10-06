@@ -7,9 +7,12 @@
 
 using namespace beman::transcoding;
 
+bool error_logged = false;
+char32_t last_processed = U'\0';
+
 void log_warning(const char*) {}
-void log_warning(whatwg_error) {}
-void process(char32_t) {}
+void log_warning(whatwg_error) { error_logged = true; }
+void process(char32_t value) { last_processed = value; }
 
 void before_example() {
     // clang-format off
@@ -49,5 +52,6 @@ for (auto r : input
 
 int main() {
     before_example();
-    after_example("Hello");
+    after_example(std::string_view{"\xFF", 1});
+    return error_logged && last_processed == U'\xFFFD' ? 0 : 1;
 }

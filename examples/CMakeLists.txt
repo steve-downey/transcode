@@ -26,3 +26,10 @@ foreach(example ${ALL_EXAMPLES})
         )
     endif()
 endforeach()
+
+if(BEMAN_TRANSCODE_BUILD_TESTS)
+    add_test(
+        NAME beman.transcode.examples.paper_error_visibility
+        COMMAND beman.transcode.examples.paper_error_visibility
+    )
+endif()

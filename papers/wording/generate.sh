@@ -15,7 +15,8 @@
 #
 #   --out DIR   write the fragments and wording.mk here instead of into
 #               papers/wording (used by `make wording-check`, which
-#               regenerates into a scratch directory and diffs)
+#               regenerates into a scratch directory and diffs).  Required
+#               with --backend org, whose single output must live elsewhere.
 #   --backend   render mpark/wg21 Markdown (the default) or one complete
 #               wg21org Org fragment
 #   --validate  additionally run specgen's wording validators over each
@@ -131,6 +132,11 @@ HEADER
 if [ "$authored_only" -eq 1 ]; then
     authored_files
     exit 0
+fi
+
+if [ "$backend" = org ] && [ "$inputs_only" -eq 0 ] && [ -z "$out_dir" ]; then
+    echo "generate.sh: --backend org requires --out DIR" >&2
+    exit 2
 fi
 
 script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
@@ -274,7 +280,6 @@ HEADERS
     validate_arg=
     [ "$validate" -eq 0 ] || validate_arg=--validate
     # shellcheck disable=SC2086 # header_args and clang_args are deliberate argument lists
-    # shellcheck disable=SC2086 # argument lists are assembled deliberately
     "$specgen" generate $header_args --backend org --base-heading-level 2 \
         $new_root_args $validate_arg --no-compile-commands -o "$stage_dir/wording.org" -- $clang_args
 else
