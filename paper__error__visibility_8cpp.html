@@ -97,7 +97,8 @@ $(document).ready(function(){initNavTree('paper__error__visibility_8cpp.html',''
 
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">paper_error_visibility.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -107,22 +108,35 @@ $(document).ready(function(){initNavTree('paper__error__visibility_8cpp.html',''
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a82be2dde1af8af85561bf83e59f70838"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#a82be2dde1af8af85561bf83e59f70838">before</a> (std::string_view input)</td></tr>
-<tr class="separator:a82be2dde1af8af85561bf83e59f70838"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e03f9e88363c28d24fd6fe18321a3dd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#a9e03f9e88363c28d24fd6fe18321a3dd">after</a> (std::string_view input)</td></tr>
-<tr class="separator:a9e03f9e88363c28d24fd6fe18321a3dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a919300359858bb6f23678ef086398554"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#a919300359858bb6f23678ef086398554">log_warning</a> (const char *)</td></tr>
+<tr class="separator:a919300359858bb6f23678ef086398554"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29729485bc9406259e5d9bbd135bb69e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#a29729485bc9406259e5d9bbd135bb69e">log_warning</a> (<a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a>)</td></tr>
+<tr class="separator:a29729485bc9406259e5d9bbd135bb69e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8647597b5cf3a7eb3727f503defea7c1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#a8647597b5cf3a7eb3727f503defea7c1">process</a> (char32_t value)</td></tr>
+<tr class="separator:a8647597b5cf3a7eb3727f503defea7c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52114db2943bd64a6786e828aeea60c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#a52114db2943bd64a6786e828aeea60c7">before_example</a> ()</td></tr>
+<tr class="separator:a52114db2943bd64a6786e828aeea60c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3cbee09b3872848b0382552ae45acb13"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#a3cbee09b3872848b0382552ae45acb13">after_example</a> (std::string_view input)</td></tr>
+<tr class="separator:a3cbee09b3872848b0382552ae45acb13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
 <tr class="separator:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a6fd440d4b1458c7959a62a6ce5740605"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#a6fd440d4b1458c7959a62a6ce5740605">error_logged</a> = false</td></tr>
+<tr class="separator:a6fd440d4b1458c7959a62a6ce5740605"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f7312a76e8cb677242446ebfba92c46"><td class="memItemLeft" align="right" valign="top">char32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="paper__error__visibility_8cpp.html#a5f7312a76e8cb677242446ebfba92c46">last_processed</a> = U'\0'</td></tr>
+<tr class="separator:a5f7312a76e8cb677242446ebfba92c46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a9e03f9e88363c28d24fd6fe18321a3dd" name="a9e03f9e88363c28d24fd6fe18321a3dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9e03f9e88363c28d24fd6fe18321a3dd">&#9670;&#160;</a></span>after()</h2>
+<a id="a3cbee09b3872848b0382552ae45acb13" name="a3cbee09b3872848b0382552ae45acb13"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3cbee09b3872848b0382552ae45acb13">&#9670;&#160;</a></span>after_example()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool after </td>
+          <td class="memname">void after_example </td>
           <td>(</td>
           <td class="paramtype">std::string_view&#160;</td>
           <td class="paramname"><em>input</em></td><td>)</td>
@@ -133,17 +147,52 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a82be2dde1af8af85561bf83e59f70838" name="a82be2dde1af8af85561bf83e59f70838"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a82be2dde1af8af85561bf83e59f70838">&#9670;&#160;</a></span>before()</h2>
+<a id="a52114db2943bd64a6786e828aeea60c7" name="a52114db2943bd64a6786e828aeea60c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52114db2943bd64a6786e828aeea60c7">&#9670;&#160;</a></span>before_example()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool before </td>
+          <td class="memname">void before_example </td>
           <td>(</td>
-          <td class="paramtype">std::string_view&#160;</td>
-          <td class="paramname"><em>input</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a919300359858bb6f23678ef086398554" name="a919300359858bb6f23678ef086398554"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a919300359858bb6f23678ef086398554">&#9670;&#160;</a></span>log_warning() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void log_warning </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a29729485bc9406259e5d9bbd135bb69e" name="a29729485bc9406259e5d9bbd135bb69e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29729485bc9406259e5d9bbd135bb69e">&#9670;&#160;</a></span>log_warning() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void log_warning </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30bab">whatwg_error</a>&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -162,6 +211,53 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8647597b5cf3a7eb3727f503defea7c1" name="a8647597b5cf3a7eb3727f503defea7c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8647597b5cf3a7eb3727f503defea7c1">&#9670;&#160;</a></span>process()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void process </td>
+          <td>(</td>
+          <td class="paramtype">char32_t&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a6fd440d4b1458c7959a62a6ce5740605" name="a6fd440d4b1458c7959a62a6ce5740605"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fd440d4b1458c7959a62a6ce5740605">&#9670;&#160;</a></span>error_logged</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool error_logged = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5f7312a76e8cb677242446ebfba92c46" name="a5f7312a76e8cb677242446ebfba92c46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f7312a76e8cb677242446ebfba92c46">&#9670;&#160;</a></span>last_processed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char32_t last_processed = U'\0'</td>
         </tr>
       </table>
 </div><div class="memdoc">

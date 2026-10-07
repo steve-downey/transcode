@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['whatwg_5fdecode_5fview_0',['whatwg_decode_view',['../classbeman_1_1transcoding_1_1whatwg__decode__view.html#a52b78814deed6b966dc4f593aba204a6',1,'beman::transcoding::whatwg_decode_view']]],
-  ['whatwg_5fencode_5fview_1',['whatwg_encode_view',['../classbeman_1_1transcoding_1_1whatwg__encode__view.html#aaed53d3f0616a0aeea50192076d468e5',1,'beman::transcoding::whatwg_encode_view']]]
+  ['terminal_0',['terminal',['../classbeman_1_1transcoding_1_1decode__view_1_1iterator.html#a1ecd1cd960145c540cd3d2ae65bfb1ec',1,'beman::transcoding::decode_view::iterator::terminal()'],['../classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#ab2ba07056abca43108c3315c4d04c8de',1,'beman::transcoding::encode_view::iterator::terminal()'],['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ae67b73b7f6ecf9ba596ebb1178719ced',1,'beman::transcoding::whatwg_decode_view::iterator::terminal()'],['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a15dcb95f474902c2fa70544fa6d055c9',1,'beman::transcoding::whatwg_encode_view::iterator::terminal()']]],
+  ['transcode_5fstring_1',['transcode_string',['../namespacebeman_1_1transcoding.html#a8f32051613fde52669da89f0c7c20a7c',1,'beman::transcoding::transcode_string(std::span&lt; const char &gt; src, codec from, codec to)'],['../namespacebeman_1_1transcoding.html#ae36baae686b27c6b6bc50333f2616678',1,'beman::transcoding::transcode_string(std::span&lt; const char &gt; src, std::string_view from_label, std::string_view to_label)']]]
 ];

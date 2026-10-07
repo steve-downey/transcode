@@ -906,7 +906,8 @@ var NAVTREE =
       [ "File List", "files.html", "files_dup" ],
       [ "File Members", "globals.html", [
         [ "All", "globals.html", null ],
-        [ "Functions", "globals_func.html", null ]
+        [ "Functions", "globals_func.html", null ],
+        [ "Variables", "globals_vars.html", null ]
       ] ]
     ] ]
   ] ]
@@ -918,11 +919,11 @@ var NAVTREEINDEX =
 "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#af8a9b4adecc82c71253756d09f293102",
 "classbeman_1_1transcoding_1_1random__access__whatwg__encode__view.html#a691b2756443ceba36117bd283cb569ef",
 "classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ace8c5f8b648684ca94ac0684306a80f8",
-"ibm866_8hpp_source.html",
-"md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md214",
-"md_docs_plans_phase2_checklist.html#autotoc_md499",
-"md_docs_review_findings_2026_09_11.html#autotoc_md773",
-"structbeman_1_1transcoding_1_1iconv__transcode__closure.html#a7552c4a543709a5a9611b6d84aa5570e"
+"ibm866_8hpp.html",
+"md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md213",
+"md_docs_plans_phase2_checklist.html#autotoc_md498",
+"md_docs_review_findings_2026_09_11.html#autotoc_md772",
+"structbeman_1_1transcoding_1_1full__table__codec.html#ae0faaf856d34ebe61a335b05c7cbbd9b"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

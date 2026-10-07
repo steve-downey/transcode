@@ -1,5 +1,6 @@
 var NAVTREEINDEX5 =
 {
+"md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md213":[18,1],
 "md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md214":[18,2],
 "md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md215":[18,3],
 "md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md216":[18,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX5 =
 "md_docs_plans_phase2_checklist.html#autotoc_md494":[47,6],
 "md_docs_plans_phase2_checklist.html#autotoc_md495":[47,7],
 "md_docs_plans_phase2_checklist.html#autotoc_md496":[47,8],
-"md_docs_plans_phase2_checklist.html#autotoc_md497":[47,9],
-"md_docs_plans_phase2_checklist.html#autotoc_md498":[47,10]
+"md_docs_plans_phase2_checklist.html#autotoc_md497":[47,9]
 };

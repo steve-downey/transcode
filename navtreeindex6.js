@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"md_docs_plans_phase2_checklist.html#autotoc_md498":[47,10],
 "md_docs_plans_phase2_checklist.html#autotoc_md499":[47,11],
 "md_docs_plans_phase2_checklist.html#autotoc_md500":[47,12],
 "md_docs_plans_phase2_checklist.html#autotoc_md501":[47,13],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "md_docs_review_findings_2026_09_11.html#autotoc_md768":[62,0,2,2],
 "md_docs_review_findings_2026_09_11.html#autotoc_md769":[62,0,2,3],
 "md_docs_review_findings_2026_09_11.html#autotoc_md770":[62,0,2,4],
-"md_docs_review_findings_2026_09_11.html#autotoc_md771":[62,0,2,5],
-"md_docs_review_findings_2026_09_11.html#autotoc_md772":[62,0,2,6]
+"md_docs_review_findings_2026_09_11.html#autotoc_md771":[62,0,2,5]
 };

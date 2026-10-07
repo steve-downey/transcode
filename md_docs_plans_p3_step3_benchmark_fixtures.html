@@ -113,9 +113,10 @@ Context for Executing Agent</h1>
 <p>Catch2 3.x <code>BENCHMARK_ADVANCED</code> separates setup from measurement: </p><div class="fragment"><div class="line">BENCHMARK_ADVANCED(<span class="stringliteral">&quot;name&quot;</span>)(Catch::Benchmark::Chronometer meter) {</div>
 <div class="line">    <span class="keyword">auto</span> data = load_data();  <span class="comment">// not timed</span></div>
 <div class="line">    meter.measure([&amp;] {</div>
-<div class="line">        <span class="keywordflow">return</span> process(data);  <span class="comment">// timed, return prevents DCE</span></div>
+<div class="line">        <span class="keywordflow">return</span> <a class="code hl_function" href="paper__error__visibility_8cpp.html#a8647597b5cf3a7eb3727f503defea7c1">process</a>(data);  <span class="comment">// timed, return prevents DCE</span></div>
 <div class="line">    });</div>
 <div class="line">};</div>
+<div class="ttc" id="apaper__error__visibility_8cpp_html_a8647597b5cf3a7eb3727f503defea7c1"><div class="ttname"><a href="paper__error__visibility_8cpp.html#a8647597b5cf3a7eb3727f503defea7c1">process</a></div><div class="ttdeci">void process(char32_t value)</div><div class="ttdef"><b>Definition:</b> paper_error_visibility.cpp:15</div></div>
 </div><!-- fragment --><p>Project convention: reusable helpers get unit tests in <code>tests/beman/transcode/</code> and are registered in <code>tests/beman/transcode/CMakeLists.txt</code>.</p>
 <h1><a class="anchor" id="autotoc_md153"></a>
 Deliverables</h1>
