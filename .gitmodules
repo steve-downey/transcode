@@ -1,0 +1,4 @@
+[submodule "papers/wg21org/packages/org-transclusion"]
+	path = papers/wg21org/packages/org-transclusion
+	url = https://github.com/nobiot/org-transclusion.git
+	branch = main

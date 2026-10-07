@@ -1,0 +1,42 @@
+*.aux
+std.pdf
+std-gram.ext
+*.idx
+*.toc
+*.log
+*.lof
+*.lot
+*.out
+*.ilg
+*.ind
+*.tmp
+*.gls
+*.glo
+.DS_Store
+*.fdb_latexmk
+*.fls
+*.xtr
+.tags
+.tags_sorted_by_file
+tools/sections
+*.synctex.gz
+*.synctex*
+wg21.bib
+.deps/
+
+_minted*/
+
+# Output Files
+*.tex
+# ...except the exporter's own preamble, which is source.
+!wg21org-preamble.tex
+*.html
+*.pdf
+*.epub
+# Plots written by the code blocks in all-syntax-example.org
+images/Rplot.png
+
+
+# Emacs
+emacs.d/eln-cache/
+emacs.d/elpa*/

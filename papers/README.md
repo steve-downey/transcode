@@ -4,10 +4,37 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Papers
 
-`transcode-view.md` is the WG21 paper (D4246R1, "Transcoding Text Views"). It is
-built by the vendored [mpark/wg21](https://github.com/mpark/wg21) framework in
-`wg21/`, in that framework's flat layout: sources here, output under
-`generated/`.
+`transcode-view.md` is the mpark/wg21 source for D4246R1, "Transcoding Text
+Views". The wg21org conversion is `wg21org/transcode-view.org`; its generated
+wording is included from `wg21org/wording/wording.org`.
+
+Build the wg21org paper with:
+
+```sh
+make -C papers/wg21org transcode-view.html transcode-view.pdf
+```
+
+The generated wording is committed, so those builds do not require specgen.
+To regenerate it, build a specgen checkout with GCC 16 (the system compiler is
+too old), then name that binary and the GCC installation used by Clang:
+
+```sh
+specgen_wg21org=~/src/steve-downey/specgen/wg21org-transcode
+make -C "$specgen_wg21org" \
+  TOOLCHAIN=gcc-16 CONFIG=RelWithDebInfo compile
+
+SPECGEN="$specgen_wg21org/.build/build-gcc-16/tools/specgen/RelWithDebInfo/specgen" \
+SPECGEN_GCC_TOOLCHAIN=~/install/gcc-16 \
+BEMAN_TRANSCODE_BUILD_INCLUDE="$PWD/.build/build-gcc-16/include" \
+make -C papers/wg21org transcode-wording
+```
+
+Use the same variables with `transcode-wording-check` to regenerate into a
+temporary directory and verify that the committed Org fragment is current.
+
+The original mpark/wg21 paper is built by the vendored
+[mpark/wg21](https://github.com/mpark/wg21) framework in `wg21/`, in that
+framework's flat layout: sources here, output under `generated/`.
 
 ```sh
 make -C papers transcode-view.pdf    # or .html, .latex
