@@ -3,13 +3,20 @@
 set(ALL_EXAMPLES
     todo
     custom_single_byte_decoder
-    paper_decode_utf8
-    paper_shift_jis_to_utf8
     paper_iconv_view
     paper_from_cstring
     paper_error_visibility
-    paper_bulk_conversion
 )
+# These need std::ranges::to, directly or through the bulk helpers, which
+# libstdc++ lacks before GCC 14.
+if(BEMAN_TRANSCODE_HAS_RANGES_TO)
+    list(
+        APPEND ALL_EXAMPLES
+        paper_decode_utf8
+        paper_shift_jis_to_utf8
+        paper_bulk_conversion
+    )
+endif()
 message("Examples to be built: ${ALL_EXAMPLES}")
 
 foreach(example ${ALL_EXAMPLES})
