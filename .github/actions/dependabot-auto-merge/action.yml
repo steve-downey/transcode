@@ -110,14 +110,17 @@ runs:
           'any(.[]; .type == "required_status_checks" and
             ((.parameters.required_status_checks // []) | length > 0))' \
           <<< "$active_rules"; } 2>/dev/null || echo false)"
+        # The branches/{branch}/protection endpoint needs administration
+        # access, which GITHUB_TOKEN cannot be granted. The branch endpoint
+        # carries the same required-check summary under contents:read.
         has_classic_checks=false
-        if classic_protection="$(gh api \
-          "repos/$GITHUB_REPOSITORY/branches/$encoded_base_branch/protection" \
+        if branch_response="$(gh api \
+          "repos/$GITHUB_REPOSITORY/branches/$encoded_base_branch" \
           2>/dev/null)"; then
           has_classic_checks="$({ jq -r \
-            '((.required_status_checks.checks //
-              .required_status_checks.contexts // []) | length) > 0' \
-            <<< "$classic_protection"; } 2>/dev/null || echo false)"
+            '((.protection.required_status_checks.checks //
+              .protection.required_status_checks.contexts // []) | length) > 0' \
+            <<< "$branch_response"; } 2>/dev/null || echo false)"
         fi
 
         if [[ "$has_ruleset_checks" != true && "$has_classic_checks" != true ]]; then
