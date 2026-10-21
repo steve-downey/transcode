@@ -284,8 +284,6 @@ def render_gb18030_ranges_hpp(ranges: list[tuple[int, int]]) -> str:
     rows: list[str] = []
     for pointer, codepoint in ranges:
         rows.append(f"    {{{pointer}u, 0x{codepoint:04X}u}},")
-    if rows:
-        rows[-1] = rows[-1].rstrip(",")
 
     array_body = "\n".join(rows)
 

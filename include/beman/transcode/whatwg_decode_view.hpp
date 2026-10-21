@@ -486,8 +486,7 @@ constexpr void whatwg_decode_view<C, R, E>::iterator::load() {
         auto r = detail::single_byte_decode_one(current_, end_, detail::tables::windows_1252);
         if (r.is_error)
             std::unreachable();
-        else
-            value_ = r.code_point;
+        value_ = r.code_point;
     } else if constexpr (detail::single_byte_table_codec<C>) {
         auto r = detail::single_byte_decode_one(current_, end_, detail::single_byte_decode_table<C>());
         if (r.is_error)
