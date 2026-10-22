@@ -63,11 +63,13 @@ def test_codec_to_identifier_x_mac_cyrillic() -> None:
 
 
 def test_codec_to_guard() -> None:
-    assert codec_to_guard("iso-8859-2") == "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_ISO_8859_2_HPP"
+    guard = "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_ISO_8859_2_HPP"
+    assert codec_to_guard("iso-8859-2") == guard
 
 
 def test_codec_to_guard_windows_1252() -> None:
-    assert codec_to_guard("windows-1252") == "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_WINDOWS_1252_HPP"
+    guard = "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_WINDOWS_1252_HPP"
+    assert codec_to_guard("windows-1252") == guard
 
 
 def test_parse_single_byte_index_length(tmp_path: Path) -> None:
@@ -814,8 +816,8 @@ def test_generated_tables_match_committed(tmp_path: Path) -> None:
         == 0
     )
 
-    committed_include = REPO_ROOT / "include" / "beman" / "transcode" / "detail" / "tables"
-    committed_data = REPO_ROOT / "data" / "tables"
+    committed_include = REPO_ROOT / "include/beman/transcode/detail/tables"
+    committed_data = REPO_ROOT / "data/tables"
     generated = sorted(p.name for p in include_dir.iterdir())
     assert generated == sorted(p.name for p in committed_include.glob("*.hpp"))
     for name in generated:
@@ -825,4 +827,5 @@ def test_generated_tables_match_committed(tmp_path: Path) -> None:
     generated_bins = sorted(p.name for p in out_dir.iterdir())
     assert generated_bins == sorted(p.name for p in committed_data.iterdir())
     for name in generated_bins:
-        assert (out_dir / name).read_bytes() == (committed_data / name).read_bytes(), name
+        expected = (committed_data / name).read_bytes()
+        assert (out_dir / name).read_bytes() == expected, name
