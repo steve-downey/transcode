@@ -55,7 +55,7 @@ def codec_to_identifier(name: str) -> str:
 def codec_to_guard(name: str) -> str:
     """Convert codec name to an include-guard macro name."""
     ident = codec_to_identifier(name)
-    return f"DATA_TABLES_{ident.upper()}_HPP"
+    return f"INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_{ident.upper()}_HPP"
 
 
 def parse_single_byte_index(path: Path) -> list[int]:
@@ -120,6 +120,8 @@ def render_hpp(name: str, table: list[int]) -> str:
 #ifndef {guard}
 #define {guard}
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {{
 
 inline constexpr char32_t {ident}[128] = {{
@@ -144,9 +146,10 @@ def generate_single_byte(
     name: str,
     in_dir: Path,
     out_dir: Path,
+    include_tables_dir: Path,
     run_clang_format: bool = True,
 ) -> None:
-    """Generate .bin and .hpp for one single-byte codec."""
+    """Generate the .bin into out_dir and the .hpp into the include tree."""
     index_path = in_dir / f"index-{name}.txt"
     if not index_path.exists():
         print(f"  WARNING: {index_path} not found, skipping")
@@ -158,7 +161,8 @@ def generate_single_byte(
     bin_path = out_dir / f"{ident}.bin"
     write_bin(table, bin_path)
 
-    hpp_path = out_dir / f"{ident}.hpp"
+    include_tables_dir.mkdir(parents=True, exist_ok=True)
+    hpp_path = include_tables_dir / f"{ident}.hpp"
     hpp_content = render_hpp(name, table)
     hpp_path.write_text(hpp_content, encoding="utf-8")
 
@@ -219,6 +223,8 @@ def render_gbk_hpp(table: list[int]) -> str:
 
 #ifndef {guard}
 #define {guard}
+
+#include <beman/transcode/config.hpp>
 
 namespace beman::transcoding::detail::tables {{
 
@@ -295,8 +301,12 @@ def render_gb18030_ranges_hpp(ranges: list[tuple[int, int]]) -> str:
 #ifndef {guard}
 #define {guard}
 
+#include <beman/transcode/config.hpp>
+
+#if !BEMAN_TRANSCODE_USE_MODULES()
 #include <cstdint>
 
+#endif
 namespace beman::transcoding::detail::tables {{
 
 struct gb18030_range {{
@@ -393,6 +403,8 @@ def render_big5_hpp(table: list[int]) -> str:
 #ifndef {guard}
 #define {guard}
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {{
 
 inline constexpr char32_t big5[{n}] = {{
@@ -483,6 +495,8 @@ def render_shift_jis_hpp(table: list[int]) -> str:
 #ifndef {guard}
 #define {guard}
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {{
 
 inline constexpr char32_t shift_jis[{n}] = {{
@@ -569,6 +583,8 @@ def render_euc_jp_jis0212_hpp(table: list[int]) -> str:
 
 #ifndef {guard}
 #define {guard}
+
+#include <beman/transcode/config.hpp>
 
 namespace beman::transcoding::detail::tables {{
 
@@ -658,6 +674,8 @@ def render_euc_kr_hpp(table: list[int]) -> str:
 #ifndef {guard}
 #define {guard}
 
+#include <beman/transcode/config.hpp>
+
 namespace beman::transcoding::detail::tables {{
 
 inline constexpr char32_t euc_kr[{n}] = {{
@@ -708,7 +726,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--out-dir",
         default=str(DATA_TABLES),
-        help="Output directory for generated tables (default: data/tables)",
+        help="Output directory for binary tables (default: data/tables)",
     )
     parser.add_argument(
         "--no-clang-format",
@@ -730,9 +748,14 @@ def main(argv: list[str] | None = None) -> int:
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Generating single-byte tables from {in_dir}/ → {out_dir}/")
+    print(
+        f"Generating single-byte tables from {in_dir}/"
+        f" → {out_dir}/ + {include_tables_dir}/"
+    )
     for name in SINGLE_BYTE_INDEXES:
-        generate_single_byte(name, in_dir, out_dir, run_clang_format=run_cf)
+        generate_single_byte(
+            name, in_dir, out_dir, include_tables_dir, run_clang_format=run_cf
+        )
 
     print(f"Generating GBK table from {in_dir}/ → {include_tables_dir}/")
     generate_gbk(in_dir, include_tables_dir, run_clang_format=run_cf)
