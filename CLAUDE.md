@@ -132,7 +132,7 @@ Run `make coverage` to generate a coverage report. New code should have coverage
 
 ## Code Style
 
-Formatting is enforced by `.clang-format` (clang-format 22).
+Formatting is enforced by `.clang-format`, with the clang-format version pinned in `pyproject.toml`.
 Run `make lint` to apply.
 CMake files are formatted by `gersemi`.
 

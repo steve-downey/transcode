@@ -38,8 +38,8 @@ Replace `en.wikipedia.org` with `ar.`, `ru.`, `ja.` for other languages.
 ### Python encoding conversion
 
 ```python
-text.encode('windows-1251', errors='replace')  # UTF-8 -> windows-1251 bytes
-text.encode('shift_jis', errors='replace')      # UTF-8 -> Shift-JIS bytes
+text.encode("windows-1251", errors="replace")  # UTF-8 -> windows-1251 bytes
+text.encode("shift_jis", errors="replace")  # UTF-8 -> Shift-JIS bytes
 ```
 
 ## Deliverables

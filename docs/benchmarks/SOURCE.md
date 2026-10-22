@@ -53,8 +53,8 @@ The binary files (`*.bin`) are derived from the UTF-8 sources by Python's
 standard codec:
 
 ```python
-text.encode('windows-1251', errors='replace')   # -> ru_mars_windows1251.bin
-text.encode('shift_jis', errors='replace')       # -> ja_mars_shiftjis.bin
+text.encode("windows-1251", errors="replace")  # -> ru_mars_windows1251.bin
+text.encode("shift_jis", errors="replace")  # -> ja_mars_shiftjis.bin
 ```
 
 Characters outside the target encoding are replaced with `?` (0x3F).
