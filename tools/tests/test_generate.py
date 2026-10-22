@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 """Tests for tools/generate_tables.py."""
 
+import shutil
 import struct
 import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -15,6 +18,7 @@ from generate_tables import (
     SHIFTJIS_POINTER_COUNT,
     codec_to_guard,
     codec_to_identifier,
+    main,
     parse_big5_index,
     parse_euc_jp_jis0212_index,
     parse_euc_kr_index,
@@ -59,11 +63,11 @@ def test_codec_to_identifier_x_mac_cyrillic() -> None:
 
 
 def test_codec_to_guard() -> None:
-    assert codec_to_guard("iso-8859-2") == "DATA_TABLES_ISO_8859_2_HPP"
+    assert codec_to_guard("iso-8859-2") == "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_ISO_8859_2_HPP"
 
 
 def test_codec_to_guard_windows_1252() -> None:
-    assert codec_to_guard("windows-1252") == "DATA_TABLES_WINDOWS_1252_HPP"
+    assert codec_to_guard("windows-1252") == "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_WINDOWS_1252_HPP"
 
 
 def test_parse_single_byte_index_length(tmp_path: Path) -> None:
@@ -139,7 +143,7 @@ def test_write_bin_zero_unmapped(tmp_path: Path) -> None:
 def test_render_hpp_contains_guard(tmp_path: Path) -> None:
     table = [0] * 128
     hpp = render_hpp("iso-8859-2", table)
-    assert "DATA_TABLES_ISO_8859_2_HPP" in hpp
+    assert "INCLUDE_BEMAN_TRANSCODE_DETAIL_TABLES_ISO_8859_2_HPP" in hpp
 
 
 def test_render_hpp_contains_identifier(tmp_path: Path) -> None:
@@ -762,3 +766,63 @@ def test_render_euc_kr_hpp_known_codepoint() -> None:
     table[9026] = 0xAC00
     hpp = render_euc_kr_hpp(table)
     assert "0xAC00" in hpp
+
+
+@pytest.mark.parametrize(
+    "hpp",
+    [
+        render_hpp("ibm866", [0] * 128),
+        render_gbk_hpp([0] * GBK_POINTER_COUNT),
+        render_gb18030_ranges_hpp([]),
+        render_big5_hpp([0] * BIG5_POINTER_COUNT),
+        render_shift_jis_hpp([0] * SHIFTJIS_POINTER_COUNT),
+        render_euc_jp_jis0212_hpp([0] * EUC_JP_JIS0212_POINTER_COUNT),
+        render_euc_kr_hpp([0] * EUC_KR_POINTER_COUNT),
+    ],
+)
+def test_render_includes_config(hpp: str) -> None:
+    assert "#include <beman/transcode/config.hpp>" in hpp
+
+
+def test_render_gb18030_ranges_hpp_guards_std_include_for_modules() -> None:
+    hpp = render_gb18030_ranges_hpp([])
+    guard = hpp.index("#if !BEMAN_TRANSCODE_USE_MODULES()")
+    assert guard < hpp.index("#include <cstdint>") < hpp.index("#endif\n")
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.mark.skipif(shutil.which("clang-format") is None, reason="needs clang-format")
+def test_generated_tables_match_committed(tmp_path: Path) -> None:
+    """Regenerating from docs/whatwg reproduces the committed tables exactly."""
+    # clang-format finds its style by searching upward from the formatted file.
+    shutil.copy(REPO_ROOT / ".clang-format", tmp_path / ".clang-format")
+    out_dir = tmp_path / "data"
+    include_dir = tmp_path / "include"
+    assert (
+        main(
+            [
+                "--in-dir",
+                str(REPO_ROOT / "docs" / "whatwg"),
+                "--out-dir",
+                str(out_dir),
+                "--include-tables-dir",
+                str(include_dir),
+            ]
+        )
+        == 0
+    )
+
+    committed_include = REPO_ROOT / "include" / "beman" / "transcode" / "detail" / "tables"
+    committed_data = REPO_ROOT / "data" / "tables"
+    generated = sorted(p.name for p in include_dir.iterdir())
+    assert generated == sorted(p.name for p in committed_include.glob("*.hpp"))
+    for name in generated:
+        assert (include_dir / name).read_text(encoding="utf-8") == (
+            committed_include / name
+        ).read_text(encoding="utf-8"), name
+    generated_bins = sorted(p.name for p in out_dir.iterdir())
+    assert generated_bins == sorted(p.name for p in committed_data.iterdir())
+    for name in generated_bins:
+        assert (out_dir / name).read_bytes() == (committed_data / name).read_bytes(), name
