@@ -9,6 +9,7 @@ Checks: >
   readability-*,
   -bugprone-branch-clone,
   -bugprone-easily-swappable-parameters,
+  -bugprone-signed-bitwise,
   -bugprone-std-namespace-modification,
   -bugprone-throwing-static-initialization,
   -modernize-avoid-c-arrays,
