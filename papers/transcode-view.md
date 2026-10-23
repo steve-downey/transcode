@@ -43,26 +43,26 @@ The check is a `make` target, so a reviewer need not take the claim on faith.
 
 ## Changes since R0
 
-- Wording, generated from the reference implementation's headers and gated
-  against drift by CI. R0 proposed a design and specified none of it.
-- The `iconv` adaptor is specified rather than promised: `iconv_transcode` and
-  `iconv_transcode_or_error` over caller-provided staging storage, with
-  [transcode.iconv] written last and resting on nothing the other clauses need.
-- Named bulk helpers `decode_to` / `encode_to` / `decode_into` / `encode_into`,
-  each specified as the pipeline it names.
-- `transcode_string`, for runtime-selected transcoding by codec or by label.
-- BOM handling reversed. R0 put it out of scope; the UTF decoders now strip a
-  leading BOM that matches the selected codec, matching the Web Platform Tests,
-  and `sniff_encoding` examines the stream when the codec is not yet known.
-- UTF-16BE and UTF-16LE are decode-only, matching the Encoding Standard's lack
-  of UTF-16BE/LE encoders.
-- Encode input is validated as UTF-32 above codec dispatch.
-- The `_or_error` view pairs collapsed into one view template parameterized on
-  `transcode_error_kind`.
-- A correspondence table between `whatwg_error` and P2728's
-  `utf_transcoding_error`.
-- Editorially: a Context and Motivation section, and an abstract that answers
-  the objection rather than restating the design.
+The design is unchanged from P4246R0. The wording is regenerated from the
+reference implementation as it stands after the mailing, and the prose has a
+few editorial corrections.
+
+- [transcode.iconv] conditions its facilities on an available POSIX-conforming
+  `iconv` interface, which the operating system or a third-party library may
+  supply, and `iconv_t` is that interface's type. R0 conditioned them on "an
+  implementation that supplies an iconv conversion facility" and left `iconv_t`
+  implementation-defined.
+- [transcode.custom.encode] declares the adaptor's call operator and its
+  constraint, which R0 omitted.
+- `sniff_encoding` and the `null_term` sentinel's comparison state their
+  constraints as *Constraints:* paragraphs rather than as requires-clauses in
+  the declarations.
+- The paragraph on `<codecvt>` names the removed facets as what allocated and
+  dispatched virtually, where R0 left the subject to be inferred.
+- Three passages state what is gained and given up directly: the rationale for
+  the template-parameter codec, the named bulk helpers, and the open question
+  for SG16.
+- Prior Art opens on the libraries it draws from.
 
 ## Context and Motivation
 
@@ -73,7 +73,7 @@ glibc, musl, and the BSD and macOS libraries disagree about error recovery and a
 C++ added `std::codecvt` in `<locale>`, and the `<codecvt>` header's Unicode conversion facets on top of it.
 `<codecvt>` — `codecvt_utf8`, `codecvt_utf16`, `codecvt_utf8_utf16` — was deprecated in C++17 and removed in C++26 [@P2871R3], and the `char16_t` and `char32_t` facet specializations deprecated in C++20 went with it [@P2873R3].
 `std::codecvt` itself is still in `<locale>`; what was removed is everything in the pair that converted Unicode.
-It allocated on every call and dispatched through a virtual interface to do so; in the accompanying benchmark, the C89 `mbstowcs` is faster.
+The removed facets allocated on every call and dispatched through a virtual interface to do so; in the accompanying benchmark, the C89 `mbstowcs` is faster.
 
 The WHATWG Encoding Standard specified the missing part, for exactly the encodings the web still carries.
 It gives the byte-to-scalar mapping for every byte value, says what each malformed sequence produces, and the Web Platform Tests [@wpt-encoding] pin all of it across the browser engines.
@@ -327,8 +327,8 @@ The names are worth having anyway. Converting a buffer to a container is the
 operation users come for, and `decode_to<codec::utf_8>(input)` is what they
 look for first. Withholding the name only moves the question to every code
 review and every committee discussion of this facility. Each helper is a
-one-line forward to the pipeline it names, so the cost is four names and the
-wording that specifies them.
+one-line forward to the pipeline it names; what the proposal adds is four names
+and the wording that specifies them.
 
 The named helpers and pipelines are the same operations:
 
@@ -780,12 +780,12 @@ u8s | whatwg_decode<codec::utf_8>;  // Error: char8_t implies UTF-8
 
 ### Template Parameter vs Runtime Selection
 
-Making the codec a template parameter buys inlined codec logic, no dispatch per element, and `constexpr` transcoding.
+Making the codec a template parameter gives inlined codec logic, no dispatch per element, and `constexpr` transcoding.
 
-The cost is real, and it is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter cannot be spelled from a runtime string.
+What it gives up is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter cannot be spelled from a runtime string.
 However, the dispatch has to happen exactly once, at the point where the label is resolved, and it is a `switch` over an enumeration.
 `get_encoding` and `transcode_string` provide that dispatch, and runtime selection can be layered further via `variant` or `any`.
-Paying for dispatch on every code point instead would give up `constexpr` decoding for all callers to spare one `switch` for some of them.
+Dispatching on every code point instead would give up `constexpr` decoding for all callers to spare one `switch` for some of them.
 
 ### char32_t as the Interchange Type
 
@@ -936,7 +936,7 @@ alternatives are to return a result type from `decode_byte`, add a separate
 validity query, or keep and document the present restriction. This paper does
 not choose between them before SG16 review: no WHATWG single-byte codec needs
 the foreclosed mapping, and changing the indexed path for a hypothetical
-extension has a cost that the group should weigh explicitly.
+extension is a change the group should weigh.
 
 ## Summary of the Design
 
