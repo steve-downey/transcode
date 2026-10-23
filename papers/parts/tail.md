@@ -7,7 +7,7 @@
 
 ## Prior Art
 
-This design did not arise in isolation. It draws on several earlier libraries and proposals that explored encoding-aware iteration, transcoding APIs, and implementation techniques.
+The design draws on several earlier libraries and proposals that explored encoding-aware iteration, transcoding APIs, and implementation techniques.
 
 Tom Honermann's `text_view` library and paper [@P0244R2; @text-view] established an early range-based model for enumerating encoded text as code points. It made the encoding explicit in the type system, and it ran into the ergonomics problem that follows from doing so: iteration has to surface decoding status somehow.
 
