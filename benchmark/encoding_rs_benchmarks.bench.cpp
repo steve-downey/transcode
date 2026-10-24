@@ -38,6 +38,7 @@ static char           g_out_buf[kOutBufSize];
 TEST_CASE("encoding_rs baselines", "[benchmark][encoding_rs]") {
     using namespace beman::transcoding::bench;
 
+    describe({.conversion = "UTF-8 → UTF-8", .library = "encoding_rs", .api = "decode_to_utf8"});
     BENCHMARK_ADVANCED("encoding_rs UTF-8→UTF-8: English (ASCII-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("en_mars_utf8.txt");
@@ -50,6 +51,7 @@ TEST_CASE("encoding_rs baselines", "[benchmark][encoding_rs]") {
         });
     };
 
+    describe({.conversion = "UTF-8 → UTF-8", .library = "encoding_rs", .api = "decode_to_utf8"});
     BENCHMARK_ADVANCED("encoding_rs UTF-8→UTF-8: Japanese (CJK-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ja_mars_utf8.txt");
@@ -62,6 +64,7 @@ TEST_CASE("encoding_rs baselines", "[benchmark][encoding_rs]") {
         });
     };
 
+    describe({.conversion = "windows-1251 → UTF-8", .library = "encoding_rs", .api = "decode_to_utf8"});
     BENCHMARK_ADVANCED("encoding_rs Windows-1251→UTF-8: Russian")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ru_mars_windows1251.bin");
@@ -74,6 +77,7 @@ TEST_CASE("encoding_rs baselines", "[benchmark][encoding_rs]") {
         });
     };
 
+    describe({.conversion = "Shift_JIS → UTF-8", .library = "encoding_rs", .api = "decode_to_utf8"});
     BENCHMARK_ADVANCED("encoding_rs Shift-JIS→UTF-8: Japanese")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ja_mars_shiftjis.bin");

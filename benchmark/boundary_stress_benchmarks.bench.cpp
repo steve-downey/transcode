@@ -46,12 +46,15 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("Chunked whatwg UTF-8→char32: Arabic full corpus (baseline)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ar_mars_utf8.txt");
         meter.measure([&] { return count_elements(data | whatwg_decode<codec::utf_8>); });
     };
 
+    describe(
+        {.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view, 4-byte chunks"});
     BENCHMARK_ADVANCED("Chunked whatwg UTF-8→char32: Arabic 4-byte chunks (friendly)")
     (Catch::Benchmark::Chronometer meter) {
         auto data   = load_corpus("ar_mars_utf8.txt");
@@ -64,6 +67,8 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
         });
     };
 
+    describe(
+        {.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view, 3-byte chunks"});
     BENCHMARK_ADVANCED("Chunked whatwg UTF-8→char32: Arabic 3-byte chunks (hostile)")
     (Catch::Benchmark::Chronometer meter) {
         auto data   = load_corpus("ar_mars_utf8.txt");
@@ -91,11 +96,13 @@ TEST_CASE("Mock-iconv EINVAL stress: pairwise staging", "[benchmark][boundary][s
     using namespace beman::transcoding::bench;
     using namespace beman::transcoding::tests;
 
+    describe({.conversion = "mock iconv: EINVAL every unit", .library = "mock iconv", .api = "iconv_transcode_view"});
     BENCHMARK_ADVANCED("Mock-iconv pairwise EINVAL: 64-byte corpus")
     (Catch::Benchmark::Chronometer meter) {
         iconv_functions       fns{mock_iconv_open, mock_iconv_pairwise, mock_iconv_close};
         std::span<const char> data{einval_corpus.data(), einval_corpus.size()};
         std::span<char>       out{mock_out_buf};
+        record_input("64 × 'A'", data.size());
         meter.measure([&] {
             return count_elements(
                 iconv_transcode_view<iconv_functions, std::span<const char>>(data, fns, "X", "X", out));
@@ -116,11 +123,13 @@ TEST_CASE("Mock-iconv E2BIG stress: buffer exhaustion recovery", "[benchmark][bo
     using namespace beman::transcoding::bench;
     using namespace beman::transcoding::tests;
 
+    describe({.conversion = "mock iconv: E2BIG every byte", .library = "mock iconv", .api = "iconv_transcode_view"});
     BENCHMARK_ADVANCED("Mock-iconv E2BIG: 1 byte/call, 48-byte corpus")
     (Catch::Benchmark::Chronometer meter) {
         iconv_functions       fns{mock_iconv_open, mock_iconv_e2big, mock_iconv_close};
         std::span<const char> data{e2big_corpus.data(), e2big_corpus.size()};
         std::span<char>       out{mock_out_buf};
+        record_input("48 × 'X'", data.size());
         meter.measure([&] {
             return count_elements(
                 iconv_transcode_view<iconv_functions, std::span<const char>>(data, fns, "X", "X", out));
