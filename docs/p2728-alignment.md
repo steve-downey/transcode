@@ -172,6 +172,19 @@ test.
 - `as_charN_t` cast adaptors are pointless for a byte-in/`char32_t`-out pipeline —
   unless added deliberately as the interop seam to feed `char`-stored UTF into a
   P2728-typed pipeline.
+- **No unified error codes across backends.** P2728 has a single error enum,
+  `utf_transcoding_error`, because it covers UTF only. Here `whatwg_error` and
+  `iconv_error` stay separate, and there is no shared error code or coarse
+  category spanning them. Two cases settled this:
+  - `output_full` (`E2BIG`) is an artifact of iconv's fixed output buffer. It
+    says nothing about the input data, and no other backend can produce it.
+  - An unmapped code point is impossible for a UTF target, because every
+    scalar value has a UTF encoding. The legacy encoders still need it.
+
+  A unified scheme would make every client handle, forever, cases that cannot
+  happen for its conversion. Doing it properly would take a paper of its own.
+  This is about the error *codes*. Unifying the error *kind* (replacement vs
+  `expected`, item 1 above) is a different axis, and it is done.
 
 ## Action items
 
