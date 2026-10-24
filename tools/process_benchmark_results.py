@@ -140,7 +140,7 @@ class Measurement:
 
 
 @dataclass
-class Run:
+class SuiteRun:
     """One XML file and its sidecar."""
 
     path: Path
@@ -260,7 +260,7 @@ def flags_for(m: Measurement) -> list[str]:
     return flags
 
 
-def load_run(xml_path: Path) -> Run:
+def load_suite(xml_path: Path) -> SuiteRun:
     """Parse one XML file, join it with its sidecar, and flag each result."""
     results = parse_catch2_xml(xml_path)
     sidecar = load_sidecar(sidecar_path(xml_path))
@@ -287,7 +287,7 @@ def load_run(xml_path: Path) -> Run:
         )
         m.flags = flags_for(m)
         measurements.append(m)
-    return Run(xml_path, suite, environment, measurements, sidecar is not None)
+    return SuiteRun(xml_path, suite, environment, measurements, sidecar is not None)
 
 
 # ── Grouping and formatting ─────────────────────────────────────────────────
@@ -396,33 +396,45 @@ def slugify(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text).strip("-") or "unnamed"
 
 
-def environment_summary(runs: list[Run]) -> list[tuple[str, str]]:
-    """Key/value rows describing the runs; differing values are joined."""
+def environment_summary(suites: list[SuiteRun]) -> list[tuple[str, str]]:
+    """Key/value rows describing the suites; differing values are joined."""
     keys = [
         ("compiler", "Compiler"),
         ("build_config", "Build config"),
+        ("commit", "Commit"),
         ("cpu", "CPU"),
         ("host", "Host"),
         ("catch2", "Catch2"),
     ]
     rows: list[tuple[str, str]] = []
     for key, title in keys:
-        values = sorted({str(r.environment.get(key, "")) for r in runs} - {""})
+        values = sorted({str(r.environment.get(key, "")) for r in suites} - {""})
         if values:
             rows.append((title, "; ".join(values)))
-    stamps = sorted({str(r.environment.get("timestamp", "")) for r in runs} - {""})
+    stamps = sorted({str(r.environment.get("timestamp", "")) for r in suites} - {""})
     if stamps:
         rows.append(
             ("Run at", stamps[0] if len(stamps) == 1 else f"{stamps[0]} – {stamps[-1]}")
         )
-    rows.append(("Suites", ", ".join(r.suite for r in runs)))
+    rows.append(("Suites", ", ".join(r.suite for r in suites)))
     return rows
 
 
-def run_warnings(runs: list[Run]) -> list[str]:
+def run_warnings(suites: list[SuiteRun]) -> list[str]:
     """Whole-report problems: builds unfit for timing, missing sidecars."""
+    warnings = suite_warnings(suites)
+    compilers = {r.environment.get("compiler") for r in suites if r.has_sidecar}
+    if len(compilers) > 1:
+        warnings.append(
+            "Suites were built with different compilers; compare across them with care."
+        )
+    return warnings
+
+
+def suite_warnings(suites: list[SuiteRun]) -> list[str]:
+    """Problems with individual suites: no sidecar, or a build unfit for timing."""
     warnings: list[str] = []
-    for r in runs:
+    for r in suites:
         env = r.environment
         if not r.has_sidecar:
             warnings.append(
@@ -438,11 +450,6 @@ def run_warnings(runs: list[Run]) -> list[str]:
             )
         elif env.get("optimized") is False:
             warnings.append(f"{r.suite}: built without optimization.")
-    compilers = {r.environment.get("compiler") for r in runs if r.has_sidecar}
-    if len(compilers) > 1:
-        warnings.append(
-            "Suites were built with different compilers; compare across them with care."
-        )
     return warnings
 
 
@@ -454,6 +461,214 @@ def flag_counts(measurements: list[Measurement]) -> dict[str, int]:
     return {f: n for f, n in counts.items() if n}
 
 
+# ── Runs and matching ───────────────────────────────────────────────────────
+
+# Environment fields that say what a run was built and run with.  A comparison
+# varies one of them on purpose; the others should agree, or a difference
+# between runs cannot be put down to the one that was meant to change.
+RUN_AXES: list[tuple[str, str]] = [
+    ("compiler", "Compiler"),
+    ("build_config", "Build config"),
+    ("commit", "Commit"),
+    ("sanitizers", "Sanitizers"),
+    ("host", "Host"),
+    ("cpu", "CPU"),
+]
+
+
+@dataclass
+class Run:
+    """The suites from one benchmarking session, under one label."""
+
+    label: str
+    suites: list[SuiteRun]
+
+    @property
+    def measurements(self) -> list[Measurement]:
+        return [m for s in self.suites for m in s.measurements]
+
+    def axis_values(self, key: str) -> list[str]:
+        """Distinct values of one environment field across this run's suites."""
+        values = {
+            axis_text(s.environment.get(key)) for s in self.suites if s.has_sidecar
+        }
+        return sorted(values - {""})
+
+    @property
+    def started(self) -> str:
+        stamps = sorted(
+            {str(s.environment.get("timestamp", "")) for s in self.suites} - {""}
+        )
+        return stamps[0] if stamps else ""
+
+
+@dataclass
+class ComparisonRow:
+    """One benchmark, matched by (suite, name), with its result in each run."""
+
+    suite: str
+    name: str
+    cells: list[Measurement | None]  # one per run, in run order
+
+    @property
+    def reference(self) -> Measurement:
+        """The first run's result, or the first run that has one."""
+        return next(m for m in self.cells if m is not None)
+
+    @property
+    def missing_from(self) -> list[int]:
+        return [i for i, m in enumerate(self.cells) if m is None]
+
+    @property
+    def input_differs(self) -> bool:
+        inputs = {(m.input, m.input_bytes) for m in self.cells if m is not None}
+        return len(inputs) > 1
+
+
+def axis_text(value: Any) -> str:
+    """An environment value as text; an empty sanitizer list reads 'none'."""
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return ", ".join(str(v) for v in value) or "none"
+    return str(value)
+
+
+def short_axis_value(key: str, value: str) -> str:
+    """'gcc 16.1.0 20260427 (…)' → 'gcc 16.1.0', for run labels."""
+    if key == "compiler":
+        return " ".join(value.split()[:2])
+    return value
+
+
+def xml_files(paths: Iterable[Path]) -> list[Path]:
+    """Expand each directory to the XML files directly inside it, sorted."""
+    files: list[Path] = []
+    for p in paths:
+        files += sorted(p.glob("*.xml")) if p.is_dir() else [p]
+    return files
+
+
+def differing_axes(runs: list[Run]) -> list[str]:
+    """The RUN_AXES keys whose values are not the same in every run."""
+    return [
+        key for key, _ in RUN_AXES if len({tuple(r.axis_values(key)) for r in runs}) > 1
+    ]
+
+
+def assign_labels(runs: list[Run]) -> None:
+    """Label each unlabelled run by the environment fields that set it apart.
+
+    A run that did not record a differing field says so ('commit unknown').
+    Runs that no field tells apart are numbered; a label used twice gets a
+    '#n' suffix on its later uses.
+    """
+    titles = dict(RUN_AXES)
+    axes = differing_axes(runs)
+    for i, run in enumerate(runs, 1):
+        if run.label:
+            continue
+        parts = [
+            short_axis_value(k, "; ".join(run.axis_values(k)))
+            or f"{titles[k].lower()} unknown"
+            for k in axes
+        ]
+        run.label = " · ".join(parts) or f"run {i}"
+    seen: dict[str, int] = {}
+    for run in runs:
+        seen[run.label] = seen.get(run.label, 0) + 1
+        if seen[run.label] > 1:
+            run.label += f" #{seen[run.label]}"
+
+
+def match_runs(runs: list[Run]) -> tuple[list[ComparisonRow], list[str]]:
+    """Match results across runs by (suite, name).
+
+    Returns the rows in first-seen order, and a warning for each benchmark that
+    appears twice within one run (only the first is kept).
+    """
+    rows: dict[tuple[str, str], ComparisonRow] = {}
+    warnings: list[str] = []
+    for i, run in enumerate(runs):
+        for m in run.measurements:
+            row = rows.setdefault(
+                (m.suite, m.name), ComparisonRow(m.suite, m.name, [None] * len(runs))
+            )
+            if row.cells[i] is not None:
+                warnings.append(
+                    f"{run.label}: {m.suite} / {m.name} appears more than once; "
+                    "using the first."
+                )
+                continue
+            row.cells[i] = m
+    return list(rows.values()), warnings
+
+
+def comparison_groups(
+    rows: list[ComparisonRow],
+) -> tuple[list[ConversionGroup], dict[int, ComparisonRow]]:
+    """Group rows like a single run, by each row's reference result.
+
+    Returns the groups and a map from id(reference) back to its row.
+    """
+    by_reference = {id(r.reference): r for r in rows}
+    return group_by_conversion([r.reference for r in rows]), by_reference
+
+
+def _join_words(words: list[str]) -> str:
+    if len(words) <= 2:
+        return " and ".join(words)
+    return ", ".join(words[:-1]) + ", and " + words[-1]
+
+
+def comparison_warnings(runs: list[Run]) -> list[str]:
+    """Problems with comparing these runs, then problems within each run."""
+    titles = dict(RUN_AXES)
+    warnings: list[str] = []
+    axes = differing_axes(runs)
+    if len(axes) > 1:
+        names = _join_words([titles[k].lower() for k in axes])
+        warnings.append(
+            f"The runs differ in {names}, so a difference between them can't be "
+            "put down to any one of these."
+        )
+    for run in runs:
+        for key, title in RUN_AXES:
+            values = run.axis_values(key)
+            if len(values) > 1:
+                warnings.append(
+                    f"{run.label}: its suites differ in {title.lower()} "
+                    f"({'; '.join(values)})."
+                )
+        if any(c.endswith("-dirty") for c in run.axis_values("commit")):
+            warnings.append(
+                f"{run.label}: built from a modified tree, so the commit does not "
+                "fully identify the code."
+            )
+        warnings += [f"{run.label}: {w}" for w in suite_warnings(run.suites)]
+    return warnings
+
+
+def row_notes(row: ComparisonRow, runs: list[Run]) -> list[str]:
+    """Why a comparison row may not compare like with like."""
+    notes: list[str] = []
+    if row.missing_from:
+        notes.append("not in " + ", ".join(runs[i].label for i in row.missing_from))
+    if row.input_differs:
+        notes.append("input differs")
+    for run, m in zip(runs, row.cells, strict=True):
+        if m is not None and m.flags:
+            notes.append(f"{run.label}: {', '.join(m.flags)}")
+    return notes
+
+
+def fmt_cell_throughput(m: Measurement | None) -> str:
+    if m is None:
+        return "not run"
+    tput = m.throughput
+    return fmt_throughput(tput) if tput is not None else "—"
+
+
 # ── Markdown ────────────────────────────────────────────────────────────────
 
 
@@ -461,15 +676,15 @@ def _md_cell(text: str) -> str:
     return text.replace("|", "\\|")
 
 
-def render_markdown(runs: list[Run], label: str = "") -> str:
+def render_markdown(suites: list[SuiteRun], label: str = "") -> str:
     """Markdown report: environment, warnings, one table per conversion."""
-    measurements = [m for r in runs for m in r.measurements]
+    measurements = [m for r in suites for m in r.measurements]
     heading = "Benchmark Results" + (f" — {label}" if label else "")
     lines = [f"## {heading}", ""]
-    for key, value in environment_summary(runs):
+    for key, value in environment_summary(suites):
         lines.append(f"- **{key}:** {_md_cell(value)}")
     lines.append("")
-    for w in run_warnings(runs):
+    for w in run_warnings(suites):
         lines.append(f"> [!WARNING]\n> {w}\n")
 
     for group in group_by_conversion(measurements):
@@ -506,6 +721,72 @@ def render_markdown(runs: list[Run], label: str = "") -> str:
     lines.append(
         "> Throughput = input bytes / mean time; 1 MiB = 2²⁰ bytes; the CI is "
         "Catch2's 95% bootstrap interval on the mean."
+    )
+    return "\n".join(lines) + "\n"
+
+
+def run_table(runs: list[Run]) -> tuple[list[str], list[list[str]]]:
+    """Header and rows describing each run, for the comparison reports.
+
+    Environment fields no run recorded are left out.
+    """
+    axes = [(k, t) for k, t in RUN_AXES if any(r.axis_values(k) for r in runs)]
+    header = ["Run"] + [t for _, t in axes] + ["Run at", "Suites"]
+    rows = [
+        [r.label]
+        + ["; ".join(r.axis_values(k)) or "—" for k, _ in axes]
+        + [r.started or "—", ", ".join(s.suite for s in r.suites)]
+        for r in runs
+    ]
+    return header, rows
+
+
+def render_comparison_markdown(runs: list[Run], label: str = "") -> str:
+    """Markdown comparing runs: one throughput column per run."""
+    rows, duplicates = match_runs(runs)
+    heading = "Benchmark Comparison" + (f" — {label}" if label else "")
+    lines = [f"## {heading}", "", "### Runs", ""]
+    header, run_rows = run_table(runs)
+    lines.append("| " + " | ".join(header) + " |")
+    lines.append("|" + "|".join("---" for _ in header) + "|")
+    for cells in run_rows:
+        lines.append("| " + " | ".join(_md_cell(c) for c in cells) + " |")
+    lines.append("")
+    for w in comparison_warnings(runs) + duplicates:
+        lines.append(f"> [!WARNING]\n> {w}\n")
+
+    groups, by_reference = comparison_groups(rows)
+    run_cols = " | ".join(_md_cell(r.label) for r in runs)
+    for group in groups:
+        lines += [
+            f"### {_md_cell(group.conversion)}",
+            "",
+            f"| Input | Library | API | {run_cols} | Notes |",
+            "|-------|---------|-----|" + "------:|" * len(runs) + "-------|",
+        ]
+        for ig in group.inputs:
+            for m in ig.rows:
+                row = by_reference[id(m)]
+                cells = [
+                    f"{ig.input} ({fmt_bytes(ig.input_bytes)})",
+                    m.library or "?",
+                    row_label(m, ig),
+                    *(fmt_cell_throughput(c) for c in row.cells),
+                    "; ".join(row_notes(row, runs)),
+                ]
+                lines.append("| " + " | ".join(_md_cell(c) for c in cells) + " |")
+        lines.append("")
+
+    unmatched = [r for r in rows if r.missing_from]
+    if unmatched:
+        lines += ["### Not in every run", ""]
+        for r in unmatched:
+            missing = ", ".join(runs[i].label for i in r.missing_from)
+            lines.append(f"- {r.suite} / {_md_cell(r.name)}: not in {missing}")
+        lines.append("")
+    lines.append(
+        "> Throughput in MiB/s = input bytes / mean time; 1 MiB = 2²⁰ bytes. "
+        "Results are matched across runs by suite and benchmark name."
     )
     return "\n".join(lines) + "\n"
 
@@ -783,9 +1064,9 @@ def _tooltip(m: Measurement) -> str:
     return "\n".join(lines)
 
 
-def write_svg_dir(runs: list[Run], out_dir: Path) -> list[Path]:
+def write_svg_dir(suites: list[SuiteRun], out_dir: Path) -> list[Path]:
     """Write one standalone SVG per conversion; return the paths written."""
-    measurements = [m for r in runs for m in r.measurements]
+    measurements = [m for r in suites for m in r.measurements]
     groups = group_by_conversion(measurements)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
@@ -880,9 +1161,9 @@ def _legend_html(libraries: list[str]) -> str:
     return '<div class="legend">' + "".join(items) + "</div>"
 
 
-def render_html(runs: list[Run], label: str = "") -> str:
+def render_html(suites: list[SuiteRun], label: str = "") -> str:
     """A self-contained HTML report: no external scripts, styles or fonts."""
-    measurements = [m for r in runs for m in r.measurements]
+    measurements = [m for r in suites for m in r.measurements]
     groups = group_by_conversion(measurements)
     e = html.escape
 
@@ -898,11 +1179,11 @@ def render_html(runs: list[Run], label: str = "") -> str:
         f'<p class="sub">{e(label)}</p>' if label else "",
         '<dl class="env">',
     ]
-    for key, value in environment_summary(runs):
+    for key, value in environment_summary(suites):
         out.append(f"<dt>{e(key)}</dt><dd>{e(value)}</dd>")
     out.append("</dl>")
 
-    for w in run_warnings(runs):
+    for w in run_warnings(suites):
         out.append(
             f'<div class="callout critical"><strong>⚠ Warning</strong> {e(w)}</div>'
         )
@@ -965,18 +1246,92 @@ def render_html(runs: list[Run], label: str = "") -> str:
     return "\n".join(s for s in out if s) + "\n"
 
 
+def render_comparison_html(runs: list[Run], label: str = "") -> str:
+    """A self-contained HTML page comparing runs: one column per run."""
+    rows, duplicates = match_runs(runs)
+    groups, by_reference = comparison_groups(rows)
+    e = html.escape
+
+    def tokens(t: dict[str, str]) -> str:
+        return " ".join(f"{k}: {v};" for k, v in t.items())
+
+    css = PAGE_CSS % {"light": tokens(LIGHT_TOKENS), "dark": tokens(DARK_TOKENS)}
+    out = [
+        "<title>transcode benchmark comparison</title>",
+        f"<style>{css}</style>",
+        "<main>",
+        "<h1>beman.transcode benchmark comparison</h1>",
+        f'<p class="sub">{e(label)}</p>' if label else "",
+        '<h2 id="runs">Runs</h2><div class="card scroll"><table><thead><tr>',
+    ]
+    header, run_rows = run_table(runs)
+    out.append("".join(f"<th>{e(h)}</th>" for h in header) + "</tr></thead><tbody>")
+    for cells in run_rows:
+        out.append("<tr>" + "".join(f"<td>{e(c)}</td>" for c in cells) + "</tr>")
+    out.append("</tbody></table></div>")
+    for w in comparison_warnings(runs) + duplicates:
+        out.append(
+            f'<div class="callout critical"><strong>⚠ Warning</strong> {e(w)}</div>'
+        )
+
+    out.append('<nav class="toc"><ul>')
+    for g in groups:
+        out.append(
+            f'<li><a href="#{slugify(g.conversion)}">{e(g.conversion)}</a> '
+            f"({len(g.measurements)})</li>"
+        )
+    out.append("</ul></nav>")
+
+    run_heads = "".join(f'<th class="num">{e(r.label)}</th>' for r in runs)
+    for g in groups:
+        out.append(f'<h2 id="{slugify(g.conversion)}">{e(g.conversion)}</h2>')
+        out.append(
+            '<div class="card scroll"><table><thead><tr><th>Input</th>'
+            f"<th>Library</th><th>API</th>{run_heads}<th>Notes</th></tr></thead><tbody>"
+        )
+        for ig in g.inputs:
+            for m in ig.rows:
+                row = by_reference[id(m)]
+                values = "".join(
+                    f'<td class="num">{e(fmt_cell_throughput(c))}</td>'
+                    for c in row.cells
+                )
+                out.append(
+                    f"<tr><td>{e(ig.input)} ({e(fmt_bytes(ig.input_bytes))})</td>"
+                    f"<td>{e(m.library or '?')}</td><td>{e(row_label(m, ig))}</td>"
+                    f'{values}<td class="flags">{e("; ".join(row_notes(row, runs)))}'
+                    "</td></tr>"
+                )
+        out.append("</tbody></table></div>")
+
+    unmatched = [r for r in rows if r.missing_from]
+    if unmatched:
+        out.append('<h2 id="not-in-every-run">Not in every run</h2><ul>')
+        for r in unmatched:
+            missing = ", ".join(runs[i].label for i in r.missing_from)
+            out.append(f"<li>{e(r.suite)} / {e(r.name)}: not in {e(missing)}</li>")
+        out.append("</ul>")
+    out.append(
+        '<p class="sub">Throughput in MiB/s = input bytes / mean time; 1 MiB = '
+        "2²⁰ bytes. Results are matched across runs by suite and benchmark "
+        "name.</p>"
+    )
+    out.append("</main>")
+    return "\n".join(s for s in out if s) + "\n"
+
+
 # ── Vega-Lite ───────────────────────────────────────────────────────────────
 
 
 def render_vegalite_spec(
-    runs: list[Run], title: str = "Benchmark Throughput"
+    suites: list[SuiteRun], title: str = "Benchmark Throughput"
 ) -> dict[str, Any]:
     """Vega-Lite spec: mean and CI per benchmark, faceted by conversion.
 
     Excluded results are omitted.
     """
     values: list[dict[str, object]] = []
-    for r in runs:
+    for r in suites:
         for m in r.measurements:
             tput, ci = m.throughput, m.throughput_ci
             if tput is None or ci is None:
@@ -1040,19 +1395,82 @@ def render_vegalite_spec(
     }
 
 
+def render_comparison_vegalite(runs: list[Run], title: str) -> dict[str, Any]:
+    """The single-run spec over every run, faceted by run as well as conversion."""
+    spec = render_vegalite_spec(runs[0].suites, title=title)
+    spec["data"]["values"] = [
+        {**v, "run": r.label}
+        for r in runs
+        for v in render_vegalite_spec(r.suites)["data"]["values"]
+    ]
+    spec["facet"]["column"] = {
+        "field": "run",
+        "type": "nominal",
+        "sort": [r.label for r in runs],
+    }
+    return spec
+
+
 # ── CLI ─────────────────────────────────────────────────────────────────────
+
+
+class UsageError(Exception):
+    """A problem with the command line or the files it names."""
+
+
+def load_runs(xml_paths: list[Path], labelled: list[list[str]] | None) -> list[Run]:
+    """Load the positional files as one run, then each --run, and label them."""
+    specs: list[tuple[str, list[Path]]] = []
+    if xml_paths:
+        specs.append(("", xml_paths))
+    for label, *names in labelled or []:
+        if not names:
+            raise UsageError(f"--run {label}: no XML files or directories given")
+        specs.append((label, [Path(n) for n in names]))
+    if not specs:
+        raise UsageError("no XML files given")
+
+    runs: list[Run] = []
+    for label, paths in specs:
+        files = xml_files(paths)
+        if not files:
+            raise UsageError(f"{', '.join(map(str, paths))}: no XML files found")
+        suites: list[SuiteRun] = []
+        for f in files:
+            if not f.is_file():
+                raise UsageError(f"{f}: file not found")
+            try:
+                suites.append(load_suite(f))
+            except ValueError as exc:
+                raise UsageError(str(exc)) from exc
+        runs.append(Run(label, suites))
+    assign_labels(runs)
+    return runs
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Turn Catch2 benchmark XML into throughput reports and charts."
+        description="Turn Catch2 benchmark XML into throughput reports and charts.",
+        epilog="With one run, the report shows its results.  With more than one "
+        "(several --run options, or --run beside positional files), it compares "
+        "them, matching results by suite and benchmark name.",
     )
     parser.add_argument(
         "xml_files",
         metavar="XML",
-        nargs="+",
+        nargs="*",
         type=Path,
-        help="Catch2 XML result files; each FILE.xml is read with FILE.meta.json",
+        help="Catch2 XML result files, or directories of them, forming one run; "
+        "each FILE.xml is read with FILE.meta.json",
+    )
+    parser.add_argument(
+        "--run",
+        nargs="+",
+        action="append",
+        metavar=("LABEL", "XML"),
+        help="A labelled run: its XML files or directories.  Repeat to compare "
+        "runs; the first is the reference.  An empty LABEL is filled in from "
+        "the environment fields that tell the runs apart.",
     )
     parser.add_argument(
         "--label", metavar="TEXT", default="", help="Label for report headings"
@@ -1072,7 +1490,8 @@ def main(argv: list[str] | None = None) -> int:
         metavar="DIR",
         type=Path,
         default=None,
-        help="Write one standalone SVG chart per conversion into DIR",
+        help="Write one standalone SVG chart per conversion into DIR "
+        "(one subdirectory per run when comparing)",
     )
     parser.add_argument(
         "--vegalite",
@@ -1083,36 +1502,47 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    runs: list[Run] = []
-    for xml_path in args.xml_files:
-        if not xml_path.is_file():
-            print(f"error: {xml_path}: file not found", file=sys.stderr)
-            return 1
-        try:
-            runs.append(load_run(xml_path))
-        except ValueError as exc:
-            print(f"error: {exc}", file=sys.stderr)
-            return 1
+    try:
+        runs = load_runs(args.xml_files, args.run)
+    except UsageError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
 
     if not any(r.measurements for r in runs):
         print("No benchmark results found.", file=sys.stderr)
         return 1
 
-    label = args.label or (args.xml_files[0].stem if len(args.xml_files) == 1 else "")
+    if len(runs) == 1:
+        suites = runs[0].suites
+        label = args.label or (suites[0].path.stem if len(suites) == 1 else "")
+        markdown = render_markdown(suites, label=label)
+        page = render_html(suites, label=label) if args.html else ""
+    else:
+        label = args.label
+        markdown = render_comparison_markdown(runs, label=label)
+        page = render_comparison_html(runs, label=label) if args.html else ""
 
-    markdown = render_markdown(runs, label=label)
     if args.markdown is None:
         print(markdown)
     else:
         _write(args.markdown, markdown)
-
     if args.html is not None:
-        _write(args.html, render_html(runs, label=label))
+        _write(args.html, page)
     if args.svg_dir is not None:
-        paths = write_svg_dir(runs, args.svg_dir)
-        print(f"{len(paths)} SVG charts written to {args.svg_dir}", file=sys.stderr)
+        count = 0
+        for r in runs:
+            out_dir = (
+                args.svg_dir if len(runs) == 1 else args.svg_dir / slugify(r.label)
+            )
+            count += len(write_svg_dir(r.suites, out_dir))
+        print(f"{count} SVG charts written to {args.svg_dir}", file=sys.stderr)
     if args.vegalite is not None:
-        spec = render_vegalite_spec(runs, title=f"Throughput — {label}")
+        title = f"Throughput — {label}" if label else "Throughput"
+        spec = (
+            render_vegalite_spec(runs[0].suites, title=title)
+            if len(runs) == 1
+            else render_comparison_vegalite(runs, title=title)
+        )
         _write(args.vegalite, json.dumps(spec, indent=2, ensure_ascii=False) + "\n")
     return 0
 

@@ -91,6 +91,17 @@ Load several runs into one report.
   comparison is not about. Warn when, for example, two runs differ in both
   compiler and host.
 
+**Status:** implemented on branch `bench-multi-run`. Two changes from the
+outline above:
+- The option is `--run LABEL PATH...`, where each PATH is an XML file or a
+  directory of them. An empty label is derived.
+- The commit comes from a header generated at build time, not a configure-time
+  compile definition. A configure-time value would go stale on the next
+  checkout, which is exactly the before/after case.
+
+It also adds `make bench-compare`, and notes `input differs` on a row whose
+runs read different inputs.
+
 ### machine-load
 
 *Stage 2.*
@@ -267,6 +278,8 @@ matching, which is acceptable if unmatched benchmarks are listed (Stage 1).
 Leaning: (suite, name).
 **Decided by:** —
 **Log:**
+- 2026-10-24: [multi-run](#multi-run) matches on (suite, name). This is
+  provisional until a decision is recorded here.
 
 ### reference-library
 

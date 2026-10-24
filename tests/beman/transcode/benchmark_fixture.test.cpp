@@ -205,6 +205,7 @@ TEST_CASE("metadata_json escapes strings and lists every record", "[bench][metad
     CHECK(json.find("{\"name\": \"without input\", \"conversion\": \"\", \"library\": \"\", \"api\": \"\"}") !=
           std::string::npos);
     CHECK(json.find("\"build_config\": ") != std::string::npos);
+    CHECK(json.find("\"commit\": ") != std::string::npos);
     clear_benchmark_records();
 }
 

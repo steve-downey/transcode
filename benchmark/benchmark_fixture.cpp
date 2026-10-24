@@ -2,6 +2,8 @@
 
 #include <benchmark/benchmark_fixture.hpp>
 
+#include <benchmark/benchmark_commit.hpp>
+
 #include <catch2/catch_config.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_version_macros.hpp>
@@ -316,6 +318,7 @@ std::string metadata_json(const std::vector<benchmark_record>& records) {
     out += "    \"cpu\": " + json_string(cpu_model()) + ",\n";
     out += "    \"compiler\": " + json_string(compiler_id()) + ",\n";
     out += "    \"build_config\": " + json_string(BENCHMARK_BUILD_CONFIG) + ",\n";
+    out += "    \"commit\": " + json_string(BENCHMARK_GIT_COMMIT) + ",\n";
     out += std::string("    \"optimized\": ") + (optimized() ? "true" : "false") + ",\n";
     out += "    \"sanitizers\": [";
     auto sans = sanitizers();
