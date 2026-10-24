@@ -117,7 +117,7 @@ Overview</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>data/benchmarks/results/</code>   </td><td class="markdownTableBodyNone">Generated XML results and reports    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>tools/process_benchmark_results.py</code>   </td><td class="markdownTableBodyNone">Post-processing: XML → Markdown + Vega-Lite    </td></tr>
+<td class="markdownTableBodyNone"><code>tools/process_benchmark_results.py</code>   </td><td class="markdownTableBodyNone">Post-processing: XML + sidecar → Markdown, HTML, SVG, Vega-Lite    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>infra/scripts/bench-matrix.sh</code>   </td><td class="markdownTableBodyNone">Multi-toolchain matrix runner    </td></tr>
 <tr class="markdownTableRowOdd">
@@ -126,12 +126,15 @@ Overview</h1>
 <hr  />
 <h1><a class="anchor" id="autotoc_md20"></a>
 Quick Start</h1>
-<div class="fragment"><div class="line"># 1. Build and run smoke benchmark, then generate a Markdown report</div>
+<div class="fragment"><div class="line"># 1. Build and run smoke benchmark, then generate Markdown and HTML reports</div>
 <div class="line">make bench-report</div>
 <div class="line"> </div>
 <div class="line"># 2. Build GCC LTO benchmarks, save XML, then report with chart spec</div>
 <div class="line">make bench-report-lto</div>
-</div><!-- fragment --><p><code>bench-report</code> uses the <code>RelWithDebInfo</code> config (optimized, no sanitizers) and writes results to <code>data/benchmarks/results/smoke-RelWithDebInfo.xml</code>.</p>
+<div class="line"> </div>
+<div class="line"># 3. Build GCC-16 Perf, run the core suites, report with charts and SVGs</div>
+<div class="line">make bench-perf-report</div>
+</div><!-- fragment --><p><code>bench-report</code> uses the <code>RelWithDebInfo</code> config (optimized, no sanitizers) and writes <code>data/benchmarks/results/smoke-RelWithDebInfo.{xml,meta.json,md,html}</code>. Open the <code>.html</code> file in a browser.</p>
 <p><code>bench-report-lto</code> uses the <code>gcc-release-lto</code> CMake preset (GCC -O3 -flto).</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md22"></a>
@@ -160,42 +163,73 @@ Small Corpus (checked-in)</h2>
 Large Corpus (downloaded)</h2>
 <p>Run once to download and write to <code>data/benchmarks/</code>:</p>
 <div class="fragment"><div class="line">uv run python tools/download_benchmark_corpora.py</div>
-</div><!-- fragment --><p>This also writes <code>data/benchmarks/corpus_manifest.json</code> with file sizes and checksums. The reporting tool uses the manifest to compute throughput for full-scale runs.</p>
+</div><!-- fragment --><p>This also writes <code>data/benchmarks/corpus_manifest.json</code> with file sizes and checksums.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md26"></a>
 Generating Reports</h1>
+<p>Run a benchmark binary with <code>--reporter xml --out FILE.xml</code>. Besides the XML, the benchmark fixture writes <code>FILE.meta.json</code>, a sidecar that records, for every benchmark:</p>
+<ul>
+<li>what it converts, which library does the converting, and through which API;</li>
+<li>which input it read, whether that came from the downloaded corpus, the checked-in corpus, or was synthetic, and how many bytes it held;</li>
+</ul>
+<p>and, once per run, the compiler, build configuration, sanitizers, CPU and host. Set <code>BEMAN_TRANSCODE_BENCH_META=PATH</code> to write the sidecar somewhere else.</p>
+<p>The reporting tool reads each XML file together with its sidecar:</p>
+<div class="fragment"><div class="line">uv run python tools/process_benchmark_results.py \</div>
+<div class="line">    --label &quot;GCC-16 Perf&quot; \</div>
+<div class="line">    --markdown data/benchmarks/results/perf.md \</div>
+<div class="line">    --html data/benchmarks/results/perf.html \</div>
+<div class="line">    --svg-dir data/benchmarks/results/perf-svg \</div>
+<div class="line">    data/benchmarks/results/*-Perf.xml</div>
+</div><!-- fragment --><table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Option   </th><th class="markdownTableHeadNone">Output    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">*(none)*   </td><td class="markdownTableBodyNone">Markdown report on stdout    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>--markdown PATH</code>   </td><td class="markdownTableBodyNone">Markdown report, one table per conversion    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>--html PATH</code>   </td><td class="markdownTableBodyNone">Self-contained HTML report: environment, warnings, one chart per conversion, the full results table    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>--svg-dir DIR</code>   </td><td class="markdownTableBodyNone">One standalone SVG chart per conversion, named for it (<code>shift-jis-to-utf-8.svg</code>), for figures in papers    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>--vegalite PATH</code>   </td><td class="markdownTableBodyNone">Vega-Lite spec; paste into <a href="https://vega.github.io/editor/">https://vega.github.io/editor/</a>   </td></tr>
+</table>
+<p><code>make bench-perf-report</code> writes all four into <code>data/benchmarks/results/</code>.</p>
 <h2><a class="anchor" id="autotoc_md27"></a>
-From a Single XML File</h2>
-<div class="fragment"><div class="line">uv run python tools/process_benchmark_results.py \</div>
-<div class="line">    --corpus-dir benchmark/corpus \</div>
-<div class="line">    data/benchmarks/results/smoke-RelWithDebInfo.xml</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md28"></a>
-With Large Corpus Sizes</h2>
-<div class="fragment"><div class="line">uv run python tools/process_benchmark_results.py \</div>
-<div class="line">    --manifest data/benchmarks/corpus_manifest.json \</div>
-<div class="line">    data/benchmarks/results/smoke-RelWithDebInfo.xml</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md29"></a>
-With a Vega-Lite Chart</h2>
-<div class="fragment"><div class="line">uv run python tools/process_benchmark_results.py \</div>
-<div class="line">    --manifest data/benchmarks/corpus_manifest.json \</div>
-<div class="line">    --vegalite data/benchmarks/results/smoke.vl.json \</div>
-<div class="line">    --label &quot;GCC -O3 -flto&quot; \</div>
-<div class="line">    data/benchmarks/results/smoke-lto.xml</div>
-</div><!-- fragment --><p>Paste the <code>.vl.json</code> contents into <a href="https://vega.github.io/editor/">https://vega.github.io/editor/</a> to render an interactive bar chart.</p>
-<h2><a class="anchor" id="autotoc_md30"></a>
-Comparing Multiple Toolchains</h2>
-<p>Pass multiple XML files to the tool — it merges all results into one table:</p>
-<div class="fragment"><div class="line">uv run python tools/process_benchmark_results.py \</div>
-<div class="line">    data/benchmarks/results/smoke-gcc-release.xml \</div>
-<div class="line">    data/benchmarks/results/smoke-lto.xml</div>
-</div><!-- fragment --><hr  />
-<h1><a class="anchor" id="autotoc_md32"></a>
-Throughput Formula</h1>
-<div class="fragment"><div class="line">throughput_MiBs = corpus_bytes / (mean_time_s) / 2^20</div>
-</div><!-- fragment --><p>where <code>mean_time_s = mean_ns × 10⁻⁹</code> is the Catch2 mean per iteration.</p>
-<p>All values in the Markdown table use 95% confidence interval bounds from Catch2's bootstrap analysis.</p>
+Reading the charts</h2>
+<p>Each chart shows one conversion. Rows are grouped under the input they read, smallest first; within an input, each row is one benchmark. The mark is the mean throughput and the whisker is Catch2's 95% confidence interval on it. The axis is logarithmic, because throughputs across APIs span two orders of magnitude. Colour and marker shape both identify the library: beman.transcode (circle), iconv (square), encoding_rs (diamond), simdutf (triangle), the C/C++ standard library (inverted triangle).</p>
+<h2><a class="anchor" id="autotoc_md28"></a>
+Flags</h2>
+<p>A result is flagged instead of trusted when:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Flag   </th><th class="markdownTableHeadNone">Meaning   </th><th class="markdownTableHeadNone">Plotted?    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>no-metadata</code>   </td><td class="markdownTableBodyNone">no sidecar entry, so the input size is unknown   </td><td class="markdownTableBodyNone">no    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>empty-input</code>   </td><td class="markdownTableBodyNone">the input was empty, usually a missing corpus file   </td><td class="markdownTableBodyNone">no    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>implausible</code>   </td><td class="markdownTableBodyNone">under 1 ns per call, or over 32 bytes/ns (~30 GiB/s): the work was almost certainly optimized away   </td><td class="markdownTableBodyNone">no    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>noisy</code>   </td><td class="markdownTableBodyNone">Catch2's outlier variance is above 0.5 ("severely inflated")   </td><td class="markdownTableBodyNone">yes   </td></tr>
+</table>
+<p>An unplotted result keeps its row in the chart, with the reason where the value would be. The report also warns when a suite was built with a sanitizer or without optimization, or when suites were built with different compilers.</p>
+<p>Passing several XML files merges them into one report. Comparing two runs of the same benchmarks, such as two toolchains or before and after a change, is not supported yet.</p>
+<h2><a class="anchor" id="autotoc_md29"></a>
+Describing a benchmark</h2>
+<p>Put a <code>describe</code> call on the line before each <code>BENCHMARK</code> or <code>BENCHMARK_ADVANCED</code>. Benchmarks with the same conversion and input are drawn together, so name conversions consistently (<code>Shift_JIS → UTF-8</code>):</p>
+<div class="fragment"><div class="line">describe({.conversion = <span class="stringliteral">&quot;Shift_JIS → UTF-8&quot;</span>, .library = <span class="stringliteral">&quot;beman.transcode&quot;</span>, .api = <span class="stringliteral">&quot;transcode view&quot;</span>});</div>
+<div class="line">BENCHMARK(<span class="stringliteral">&quot;Shift-JIS -&gt; UTF-8 streaming (transcode pipe)&quot;</span>) {</div>
+<div class="line">    <span class="keywordflow">return</span> count_elements(corpus_span(<span class="stringliteral">&quot;ja_mars_shiftjis.bin&quot;</span>) | transcode&lt;codec::shift_jis, codec::utf_8&gt;);</div>
+<div class="line">};</div>
+</div><!-- fragment --><p><code>corpus_span</code> and <code>load_corpus</code> record their input. A benchmark over generated data calls <code>record_input(label, bytes)</code> from its body instead. A test case whose benchmarks need the downloaded corpus starts with <code>require_corpus("file")</code>, which skips the test case when the file is absent, so a missing file is reported rather than timed as an empty input.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md34"></a>
+<h1><a class="anchor" id="autotoc_md31"></a>
+Throughput Formula</h1>
+<div class="fragment"><div class="line">throughput_MiBs = input_bytes / (mean_time_s) / 2^20</div>
+</div><!-- fragment --><p>where <code>mean_time_s = mean_ns × 10⁻⁹</code> is the Catch2 mean per iteration, and <code>input_bytes</code> is the size the fixture recorded for the benchmark's input. The confidence interval on throughput comes from the bounds of Catch2's 95% bootstrap interval on the mean.</p>
+<hr  />
+<h1><a class="anchor" id="autotoc_md33"></a>
 Reproducing Published Results</h1>
 <div class="fragment"><div class="line"># Step 1: Download full corpus (one-time, requires network)</div>
 <div class="line">uv run python tools/download_benchmark_corpora.py</div>
@@ -217,7 +251,7 @@ Reproducing Published Results</h1>
 </div><!-- fragment --><p>Metadata lines in the output are prefixed with <code>#</code> and can be grepped:</p>
 <div class="fragment"><div class="line">grep &quot;^#&quot; data/benchmarks/results/matrix-20260527.txt</div>
 </div><!-- fragment --><hr  />
-<h1><a class="anchor" id="autotoc_md36"></a>
+<h1><a class="anchor" id="autotoc_md35"></a>
 Benchmark Suites</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -245,9 +279,11 @@ Benchmark Suites</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>make bench-matrix</code>   </td><td class="markdownTableBodyNone">all slices   </td><td class="markdownTableBodyNone"><code>[smoke]</code>    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>make bench-report</code>   </td><td class="markdownTableBodyNone">smoke → Markdown   </td><td class="markdownTableBodyNone">—    </td></tr>
+<td class="markdownTableBodyNone"><code>make bench-report</code>   </td><td class="markdownTableBodyNone">smoke → Markdown + HTML   </td><td class="markdownTableBodyNone">—    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>make bench-report-lto</code>   </td><td class="markdownTableBodyNone">LTO smoke → Markdown + chart   </td><td class="markdownTableBodyNone">—   </td></tr>
+<td class="markdownTableBodyNone"><code>make bench-report-lto</code>   </td><td class="markdownTableBodyNone">LTO smoke → Markdown + HTML + Vega-Lite   </td><td class="markdownTableBodyNone">—    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>make bench-perf-report</code>   </td><td class="markdownTableBodyNone">core suites, GCC-16 Perf → Markdown + HTML + SVG + Vega-Lite   </td><td class="markdownTableBodyNone">—   </td></tr>
 </table>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

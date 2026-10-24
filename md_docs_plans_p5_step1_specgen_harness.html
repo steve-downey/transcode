@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p5_step1_specgen_harness
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p5-step1-specgen-harness</code> <b>Depends on:</b> nothing <b>Read first:</b> <code><a class="el" href="phase5-index_8md.html">docs/plans/phase5-index.md</a></code>, <code>~/src/specgen/main/docs/user-guide.md</code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md286"></a>
+<h1><a class="anchor" id="autotoc_md285"></a>
 Goal</h1>
 <p>Stand up the whole generate → commit → transclude → check loop, and prove it end to end on one small header, before any wording markup exists. After this step, adding wording is only ever "write markup, run `make wording`".</p>
-<h1><a class="anchor" id="autotoc_md287"></a>
+<h1><a class="anchor" id="autotoc_md286"></a>
 Context for executing agent</h1>
 <p><code>papers/</code> is a flat mpark/wg21 layout: <code>papers/transcode-view.md</code> beside the vendored <code>papers/wg21/</code> subtree, outputs in <code>papers/generated/</code>. <code>papers/Makefile</code> is two lines of TLS environment plus <code>include wg21/flat.mk</code>.</p>
 <p>Two facts about that framework drive the design:</p>
@@ -112,7 +112,7 @@ Context for executing agent</h1>
 <li><code>base.mk</code> builds its pandoc command as <code>pandoc $(DATADIR)/srefs.defs $(filter %.md, $^) -o $@ ...</code>. <b>Every markdown prerequisite is an input, concatenated in prerequisite order.</b> That is the transclusion mechanism (index D3); nothing else is needed.</li>
 <li><code>flat.mk</code> sets <code>src := $(wildcard *.md)</code> (less CHANGELOG/LICENSE/README) and makes a paper target of each. Generated fragments must therefore live in a subdirectory (index D4).</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md288"></a>
+<h1><a class="anchor" id="autotoc_md287"></a>
 Tasks</h1>
 <ol type="1">
 <li>**<code>papers/wording/generate.sh</code>** — the single pinned invocation (index, standing conventions). It must:<ul>
@@ -135,7 +135,7 @@ Tasks</h1>
 <li><b>Bibliography placement.</b> Fragments are concatenated after <code>transcode-view.md</code>, and citeproc places the bibliography at the end of the document. Confirm where it lands and, if it lands after the wording, add an explicit <code>::: {#refs}</code> div at the intended place in <code>transcode-view.md</code>. Record the answer in the step's commit message; Step 10 depends on it.</li>
 <li>**<code>.gitignore</code> / lint.** <code>papers/wording/*.md</code> is committed (index D2) but is generated: exclude it from markdown lint rules that would fight specgen's output, and say so in <code>papers/wording/README.md</code> (one paragraph: generated, do not edit, regenerate with <code>make wording</code>).</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md289"></a>
+<h1><a class="anchor" id="autotoc_md288"></a>
 Acceptance</h1>
 <ul>
 <li><code>make wording</code> twice in a row leaves the tree clean.</li>
@@ -144,7 +144,7 @@ Acceptance</h1>
 <li><code>make lint</code> and <code>make test</code> green.</li>
 <li>No specgen invocation anywhere but <code>papers/wording/generate.sh</code>.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md290"></a>
+<h1><a class="anchor" id="autotoc_md289"></a>
 Notes</h1>
 <ul>
 <li>The <code>-I .build/build-system/include</code> entry is for <code>config_generated.hpp</code>, which CMake writes into the build tree. A fresh clone must therefore <code>make compile</code> once before <code>make wording</code> works; make that a documented prerequisite of the target rather than a surprise.</li>

@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p6_step7_fffd_reservatio
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p6-step7-fffd-reservation</code> <b>Depends on:</b> Step 0 <b>Finding:</b> S-03 <b>Read first:</b> <code><a class="el" href="phase6-index_8md.html">docs/plans/phase6-index.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md451"></a>
+<h1><a class="anchor" id="autotoc_md450"></a>
 Goal</h1>
 <p>Say out loud that a custom single-byte codec cannot map a high byte to the actual U+FFFD scalar, and put the question of whether that is acceptable in front of SG16 rather than answering it in a header.</p>
-<h1><a class="anchor" id="autotoc_md452"></a>
+<h1><a class="anchor" id="autotoc_md451"></a>
 Why</h1>
 <p><code>random_access_decode_codec_type</code> requires <code>decode_byte(byte)</code> to return "what `byte` alone decodes to, and U+FFFD if it decodes to nothing" (<code><a class="el" href="codec__concepts_8hpp.html">codec_concepts.hpp</a>:35-43</code>). The <code>_or_error</code> path then reads that value back (<code><a class="el" href="decode__view_8hpp.html">decode_view.hpp</a>:278-280</code>):</p>
 <div class="fragment"><div class="line"><span class="keywordtype">char32_t</span> cp = codec_.decode_byte(<span class="keywordtype">byte</span>);</div>
@@ -114,7 +114,7 @@ Why</h1>
 <p>The <code>byte &gt;= 0x80</code> guard limits the damage to high bytes, which is why this has not bitten anything: no WHATWG single-byte index maps a high byte to U+FFFD. It is a real limit on the <em>extension</em> point, though, and the extension point is part of what the paper proposes.</p>
 <p>The review offers three fixes. Returning a result type from <code>decode_byte</code>, or adding a separate validity query, both change the concept that makes <code>random_access_range</code> decoding possible &ndash; and the whole reason <code>decode_byte</code> returns a bare <code>char32_t</code> is that it is the cheap indexed path. Paying a result type per byte on the random-access path to serve a mapping no real codec has is the wrong trade to make unilaterally.</p>
 <p>So: document it, cost it, and ask. If SG16 wants the mapping, the concept changes then, with a reason.</p>
-<h1><a class="anchor" id="autotoc_md453"></a>
+<h1><a class="anchor" id="autotoc_md452"></a>
 What to change</h1>
 <p>No behaviour. Three docblocks and a paper paragraph.</p>
 <ul>
@@ -122,14 +122,14 @@ What to change</h1>
 <li><code><a class="el" href="decode__view_8hpp.html">include/beman/transcode/decode_view.hpp</a></code>, on the <code>_or_error</code> <code>operator*</code> — a <code>\remarks</code> saying that a high byte decoding to U+FFFD is reported as <code>invalid_byte</code>, and cross-referencing the concept. This is the place a reader finds the behaviour; it should not be the place they have to infer the rule.</li>
 <li>Note the asymmetry explicitly: replacement mode returns U+FFFD and <code>_or_error</code> mode reports <code>invalid_byte</code> for the same byte and the same codec. A reader who discovers that themselves will file it as a bug.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md454"></a>
+<h1><a class="anchor" id="autotoc_md453"></a>
 Paper</h1>
 <p><code>papers/transcode-view.md</code> has a "Questions for SG16" section. Add this to it, briefly: the reserved sentinel, the mapping it forecloses, the three fixes, and the reason for not choosing one yet. Step 8 owns the paper, so either land the paragraph here and tell Step 8, or hand Step 8 the text &ndash; but do not leave it unwritten, because the point of this step is the question, not the docblock.</p>
-<h1><a class="anchor" id="autotoc_md455"></a>
+<h1><a class="anchor" id="autotoc_md454"></a>
 Tests</h1>
 <p>A custom codec in <code>tests/beman/transcode/codec_concepts.test.cpp</code> (or <code>decode_view.test.cpp</code>, wherever the existing custom-codec fixtures live) that maps <code>0xFE</code> to U+FFFD, asserting the documented split: U+FFFD from the replacement view, <code>invalid_byte</code> from the <code>_or_error</code> view.</p>
 <p>This test pins current behaviour rather than desired behaviour, which is unusual and worth a comment saying so. If SG16 answers, the test changes with the concept &ndash; and it is the thing that will tell whoever makes that change exactly what they are changing.</p>
-<h1><a class="anchor" id="autotoc_md456"></a>
+<h1><a class="anchor" id="autotoc_md455"></a>
 Done when</h1>
 <ul>
 <li>The reservation is stated on the concept and its consequence on the view.</li>

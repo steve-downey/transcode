@@ -101,20 +101,20 @@ $(document).ready(function(){initNavTree('md_docs_plans_p6_step9_docs_build_ci.h
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p6-step9-docs-build-ci</code> <b>Depends on:</b> nothing — start alongside Step 0 <b>Findings:</b> D-05 through D-13, plus D-14 (found while planning) <b>Read first:</b> <code><a class="el" href="phase6-index_8md.html">docs/plans/phase6-index.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md471"></a>
+<h1><a class="anchor" id="autotoc_md470"></a>
 Goal</h1>
 <p>Fix the things a new contributor trips over in the first hour, none of which touch a spec-facing header.</p>
-<h1><a class="anchor" id="autotoc_md472"></a>
+<h1><a class="anchor" id="autotoc_md471"></a>
 Why together</h1>
 <p>These are nine unrelated items. They share a branch because each is small, none needs a design decision, and none can conflict with the header work. Splitting them into nine pull requests would cost more review than it saves.</p>
 <p>Keep them as separate <em>commits</em>, though. A single squashed "docs fixes" commit is unbisectable, and D-12 in particular could break an install.</p>
-<h1><a class="anchor" id="autotoc_md473"></a>
+<h1><a class="anchor" id="autotoc_md472"></a>
 The items</h1>
-<h2><a class="anchor" id="autotoc_md474"></a>
+<h2><a class="anchor" id="autotoc_md473"></a>
 D-05 — the build instructions name the wrong framework and the wrong standard</h2>
 <p><code><a class="el" href="README_8md.html">README.md</a></code> and <code>CONTRIBUTING.md</code> say GoogleTest. The tests are Catch2 3.x (<code>tests/beman/transcode/CMakeLists.txt</code>), and every test file includes <code>&lt;catch2/catch_all.hpp&gt;</code>. <code>CONTRIBUTING.md</code> lines 39-47, 70-77 and 94-101 also show manual configuration examples requesting C++17 or C++20; the target requires C++23 (<code>CMakeLists.txt:111</code>, <code>:121</code>).</p>
 <p>Replace GoogleTest with Catch2 and make every example request C++23. Grep for both; the review names three line ranges, and there may be more.</p>
-<h2><a class="anchor" id="autotoc_md475"></a>
+<h2><a class="anchor" id="autotoc_md474"></a>
 D-06 — the compiler matrix disagrees with the configure check</h2>
 <p><code><a class="el" href="README_8md.html">README.md</a>:570-580</code> advertises Clang 17 and 18. <code>CMakeLists.txt:22-29</code> refuses anything below Clang 19, with this reason:</p>
 <blockquote class="doxtable">
@@ -122,7 +122,7 @@ D-06 — the compiler matrix disagrees with the configure check</h2>
 </blockquote>
 <p>So the real constraint is a standard-library interaction, not a compiler version &ndash; Clang 18 against libc++ is not what the message is about. The file already prefers a feature probe over a version test for <code>ranges::to</code> (<code>CMakeLists.txt:67-77</code>); do the same here. Probe for what is actually needed, then make the README report whatever the probe accepts rather than a version number maintained by hand.</p>
 <p>If the probe turns out to be awkward, keep the version check and fix only the README &ndash; but say in the message that the bound is about libstdc++, because the current wording reads as though Clang 18 is broken.</p>
-<h2><a class="anchor" id="autotoc_md476"></a>
+<h2><a class="anchor" id="autotoc_md475"></a>
 D-07 — &lt;tt&gt;table_codec&lt;/tt&gt; is documented as public API and is not</h2>
 <p><code><a class="el" href="README_8md.html">README.md</a>:165-186</code> presents <code><a class="el" href="structbeman_1_1transcoding_1_1table__codec.html">beman::transcoding::table_codec</a></code> as provided public API and links <code><a class="el" href="custom__single__byte__decoder_8cpp.html">examples/custom_single_byte_decoder.cpp</a></code>. The type lives under <code>detail/</code>, and <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a>:56-61</code> says so explicitly:</p>
 <blockquote class="doxtable">
@@ -131,23 +131,23 @@ D-07 — &lt;tt&gt;table_codec&lt;/tt&gt; is documented as public API and is not
 <p>The linked example does not use <code>table_codec</code> either &ndash; it decodes bytes by hand. So the README documents a type the proposal excludes, and points at an example that demonstrates neither.</p>
 <p>Remove the public claim. Then make the example earn its name: rewrite <code><a class="el" href="custom__single__byte__decoder_8cpp.html">examples/custom_single_byte_decoder.cpp</a></code> to implement <code>random_access_decode_codec_type</code> and run it through <code>decode_view</code>, which is the extension point the proposal <em>does</em> offer. An example titled "custom
 single byte decoder" that uses no library API is the part of this worth fixing properly rather than deleting.</p>
-<h2><a class="anchor" id="autotoc_md477"></a>
+<h2><a class="anchor" id="autotoc_md476"></a>
 D-08 — ICU does not expose the iconv API</h2>
 <p><code><a class="el" href="README_8md.html">README.md</a>:188-195</code> groups ICU with implementations exposing <code>iconv_open</code>/<code>iconv</code>/<code>iconv_close</code>. ICU's converter API is the <code>ucnv_*</code> family. Remove it from the list, or describe it as a separate backend that would need an adapter.</p>
-<h2><a class="anchor" id="autotoc_md478"></a>
+<h2><a class="anchor" id="autotoc_md477"></a>
 D-09 — a tracked file named &lt;tt&gt;-&lt;/tt&gt;</h2>
 <p><code>./-</code> is tracked and holds an old <code>::: wording</code> synopsis snapshot. It came in with <code>94a32d2c</code> ("Print the enumerator meanings as tables, now that specgen
 can") &ndash; a redirection that captured stdout into a file whose name was meant to be a dash argument.</p>
 <p><code>git rm -- ./-</code>. Then find the invocation: check <code>papers/wording/generate.sh</code> and the <code>wording*</code> targets in the <code>Makefile</code> for a <code>&gt;</code> or a <code>-o</code> whose argument can go missing. A file that appeared once will appear again.</p>
 <p>Add a hygiene check. <code>.pre-commit-config.yaml</code> is the cheap place: a small <code>check-added-large-files</code>-style local hook, or <code>check-illegal-windows-names</code> style, that rejects a repository-root file whose name is not a plausible filename.</p>
-<h2><a class="anchor" id="autotoc_md479"></a>
+<h2><a class="anchor" id="autotoc_md478"></a>
 D-10 — &lt;tt&gt;docs/plans/handoff-next.md&lt;/tt&gt; reads as current</h2>
 <p>It reports 707 C++ tests (711 register now), a paper update that has since happened, and merge instructions for a branch that is gone. It describes an earlier state and does not say so.</p>
 <p>Give it a dated header saying what it was and when it was true, or delete it. Prefer the header: the phase documents around it are all historical too, and consistency is worth more than one fewer file.</p>
-<h2><a class="anchor" id="autotoc_md480"></a>
+<h2><a class="anchor" id="autotoc_md479"></a>
 D-11 — "Manual Lint" runs the ordinary lint</h2>
 <p><code>.github/workflows/test_makefile.yaml:86-95</code> runs <code>make lint</code>, which the preceding <code>Lint</code> step already ran. <code>make lint-manual</code> exists — <code>Makefile:281</code>, "Run all manual tools in pre-commit". Call it.</p>
-<h2><a class="anchor" id="autotoc_md481"></a>
+<h2><a class="anchor" id="autotoc_md480"></a>
 D-12 — module packaging is untested and the interface unit has no licence</h2>
 <p>Two things:</p>
 <p><code>include/beman/transcode/transcode.cppm</code> has no <code>// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</code>. Every other file does. Add it.</p>
@@ -159,23 +159,23 @@ D-12 — module packaging is untested and the interface unit has no licence</h2>
 <div class="ttc" id="atranscode_8hpp_html"><div class="ttname"><a href="transcode_8hpp.html">transcode.hpp</a></div></div>
 </div><!-- fragment --><p>and with that macro defined, <code><a class="el" href="transcode_8hpp.html">transcode.hpp</a></code> takes the <code>#else</code> branch and includes the whole header graph — roughly seventy files, none of them installed. A consumer that only <em>imports</em> the built module is fine; a consumer whose build system rebuilds the interface unit from the installed <code>FILE_SET CXX_MODULES</code> is not.</p>
 <p>Test it before fixing it, so the fix is aimed: configure with <code>BEMAN_TRANSCODE_USE_MODULES=ON</code>, install to a clean prefix, and build a small consumer against it. If the interface unit is rebuilt, install every header its include graph needs — which is the non-module list already in the <code>else</code> branch, so the two branches converge.</p>
-<h2><a class="anchor" id="autotoc_md482"></a>
+<h2><a class="anchor" id="autotoc_md481"></a>
 D-14 — the gitleaks hook is broken (not in the review)</h2>
 <p>Found while linting this phase's own documents. <code>pre-commit run gitleaks</code> fails on any file, including unmodified ones:</p>
 <div class="fragment"><div class="line">Error: unknown command &quot;git&quot; for &quot;gitleaks&quot;</div>
 </div><!-- fragment --><p>The pinned hook invokes a <code>gitleaks git</code> subcommand that the resolved binary does not have — a version drift between <code>.pre-commit-config.yaml</code> and what gitleaks now ships. So <code>make lint</code> has a permanently failing hook, which teaches everyone to read past a red result. That is worse than not having the hook.</p>
 <p>Pin the <code>rev</code> to a version whose CLI matches the invocation, or update the invocation. Check whether CI hits this too; if CI passes, the two are running different versions and that is the thing to fix.</p>
-<h2><a class="anchor" id="autotoc_md483"></a>
+<h2><a class="anchor" id="autotoc_md482"></a>
 D-13 — shebang on line 2</h2>
 <p><code>infra/cmake/telemetry.sh</code> has the SPDX comment first and <code>#!/usr/bin/env bash</code> second, which shellcheck flags and which would matter if anything ever executed it directly. Shebang first, SPDX second.</p>
-<h1><a class="anchor" id="autotoc_md484"></a>
+<h1><a class="anchor" id="autotoc_md483"></a>
 Repository hygiene</h1>
 <p>Also on this branch:</p>
 <ul>
 <li>Decide about <code>papers/baseline-check.md</code> — an untracked D4246R0 snapshot of the paper, apparently kept as a rendering baseline. Either commit it with a line saying what it is for, or delete it. An untracked near-copy of the paper is a trap for anyone grepping.</li>
 <li>Prune the four stale worktrees (<code>add-clang-tidy</code>, <code>codex/gb18030-e5e5-conformance</code>, <code>codex/remove-utf16-encode-paths</code>, <code>codex/scalar-value-precondition</code>). All four are ancestors of <code>main</code>.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md485"></a>
+<h1><a class="anchor" id="autotoc_md484"></a>
 Done when</h1>
 <ul>
 <li>Every item above is a separate commit with its finding ID in the subject.</li>
