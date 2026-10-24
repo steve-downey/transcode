@@ -185,6 +185,12 @@ Intentional, non-convergent differences (do not "fix" toward P2728)</h3>
 <ul>
 <li>The uniform <code>buf_</code>/<code>to_increment_</code> small-buffer iterator and <b>bidirectional</b> traversal assume <em>stateless</em> UTF-N. The repo's CJK codecs (ISO-2022-JP, GB18030 replay) are inherently <b>stateful and forward-only</b>; bidirectional like P2728 is not achievable for them.</li>
 <li><code>as_charN_t</code> cast adaptors are pointless for a byte-in/<code>char32_t</code>-out pipeline — unless added deliberately as the interop seam to feed <code>char</code>-stored UTF into a P2728-typed pipeline.</li>
+<li><p class="startli"><b>No unified error codes across backends.</b> P2728 has a single error enum, <code>utf_transcoding_error</code>, because it covers UTF only. Here <code>whatwg_error</code> and <code>iconv_error</code> stay separate, and there is no shared error code or coarse category spanning them. Two cases settled this:</p><ul>
+<li><code>output_full</code> (<code>E2BIG</code>) is an artifact of iconv's fixed output buffer. It says nothing about the input data, and no other backend can produce it.</li>
+<li>An unmapped code point is impossible for a UTF target, because every scalar value has a UTF encoding. The legacy encoders still need it.</li>
+</ul>
+<p class="startli">A unified scheme would make every client handle, forever, cases that cannot happen for its conversion. Doing it properly would take a paper of its own. This is about the error <em>codes</em>. Unifying the error <em>kind</em> (replacement vs <code>expected</code>, item 1 above) is a different axis, and it is done.</p>
+</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md77"></a>
 Action items</h2>
