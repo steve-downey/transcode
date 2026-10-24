@@ -115,7 +115,8 @@ uv run python tools/process_benchmark_results.py \
 | `--html PATH` | Self-contained HTML report: environment, warnings, one chart per conversion, the full results table |
 | `--svg-dir DIR` | One standalone SVG chart per conversion, named for it (`shift-jis-to-utf-8.svg`), for figures in papers |
 | `--vegalite PATH` | Vega-Lite spec; paste into <https://vega.github.io/editor/> |
-| `--run LABEL PATH...` | A labelled run, for comparing runs; see [Comparing runs](#comparing-runs). With more than one run, `--svg-dir` writes one subdirectory per run |
+| `--run LABEL PATH...` | A labelled run, for comparing runs; see [Comparing runs](#comparing-runs). With more than one run, `--svg-dir` writes one subdirectory per run, and one ratio chart subdirectory, `LATER-vs-FIRST`, per later run |
+| `--reference-library NAME` | The library the others are compared with in a single-run report; see [Ratios](#ratios). Default `beman.transcode` |
 
 `make bench-perf-report` writes all four into `data/benchmarks/results/`.
 
@@ -154,6 +155,22 @@ noisy run being read as a quiet one.
 
 Passing several XML files merges them into one report.
 
+### Ratios
+
+A ratio is one throughput as a multiple of another, measured on the same input.
+Above 1× is faster.  Its interval runs between the far ends of the two 95% CIs,
+so it is wider than either.  The report calls a difference real only when the
+interval excludes 1×: "2.50× faster" or "1.43× slower".  Otherwise it says *no
+clear change* (between runs) or *no clear difference* (between libraries),
+rather than showing a small win or loss.
+
+In a single-run report, a conversion run by more than one library gets a `vs
+beman.transcode` column.  The reference library's fastest result on each input
+reads `reference`, and every other result on that input is a multiple of it.
+Choose another reference with `--reference-library`.  Results on an input the
+reference library didn't run show `—`.  The Vega-Lite spec carries the same
+number as `vs_reference`.
+
 ### Comparing runs
 
 A *run* is the set of suites from one benchmarking session: a directory of XML
@@ -175,7 +192,9 @@ tells the runs apart, such as the compiler or the commit.
 
 Results are matched across runs by suite and benchmark name.  The report
 has a table describing each run, then one table per conversion with a
-throughput column per run.  A benchmark missing from a run shows `not run`
+throughput column per run.  After each run but the first comes its
+[ratio](#ratios) to the first.  The HTML report, the `--svg-dir` charts and the
+Vega-Lite spec also draw each ratio as a dot plot, on a log axis centred on 1×.  A benchmark missing from a run shows `not run`
 there, and every such benchmark is also listed under "Not in every run".  Each
 row's notes give the flags of each run's result, and say `input differs` when
 the runs read different inputs (a corpus downloaded for one run only, say),

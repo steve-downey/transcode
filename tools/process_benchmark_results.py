@@ -32,7 +32,7 @@ import math
 import re
 import sys
 import xml.etree.ElementTree as ET
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -718,11 +718,229 @@ def row_notes(row: ComparisonRow, runs: list[Run]) -> list[str]:
     return notes
 
 
+def comparison_columns(runs: list[Run]) -> list[str]:
+    """Each run's throughput column, then after every run but the first its
+    ratio to the first."""
+    heads = [runs[0].label]
+    for r in runs[1:]:
+        heads += [r.label, f"{r.label} vs {runs[0].label}"]
+    return heads
+
+
+def comparison_cells(row: ComparisonRow) -> list[str]:
+    """The cells under comparison_columns for one row."""
+    cells = [fmt_cell_throughput(row.cells[0])]
+    for k in range(1, len(row.cells)):
+        cells += [fmt_cell_throughput(row.cells[k]), fmt_ratio(run_ratio(row, k))]
+    return cells
+
+
 def fmt_cell_throughput(m: Measurement | None) -> str:
     if m is None:
         return "not run"
     tput = m.throughput
     return fmt_throughput(tput) if tput is not None else "—"
+
+
+# ── Ratios ──────────────────────────────────────────────────────────────────
+
+
+@dataclass
+class ChartPoint:
+    """Where one row's mark and whisker go, and the text beside them."""
+
+    value: float
+    low: float
+    high: float
+    text: str
+    muted: bool = False  # the text is a verdict rather than a value
+
+
+# The library whose throughput the others are a multiple of, in single-run
+# reports.  Provisional: see reference-library in docs/plans/bench-comparison.md.
+REFERENCE_LIBRARY = "beman.transcode"
+
+
+@dataclass
+class Ratio:
+    """One throughput as a multiple of another; above 1 is faster."""
+
+    value: float
+    low: float
+    high: float
+
+    @property
+    def clear(self) -> bool:
+        """The interval excludes 1×, so the difference is not just noise."""
+        return self.low > 1.0 or self.high < 1.0
+
+
+def throughput_ratio(m: Measurement | None, ref: Measurement | None) -> Ratio | None:
+    """m's throughput as a multiple of ref's.
+
+    None unless both are plotted and read the same input.  The interval takes
+    the far ends of the two 95% CIs, so it is wider than either.
+    """
+    if m is None or ref is None or m.throughput is None or ref.throughput is None:
+        return None
+    if (m.input, m.input_bytes) != (ref.input, ref.input_bytes):
+        return None
+    a, b = m.result, ref.result
+    if min(a.mean_ns, a.low_ns, b.mean_ns, b.low_ns) <= 0:
+        return None
+    return Ratio(b.mean_ns / a.mean_ns, b.low_ns / a.high_ns, b.high_ns / a.low_ns)
+
+
+def fmt_factor(x: float) -> str:
+    if x >= 100:
+        return f"{x:,.0f}"
+    if x >= 10:
+        return f"{x:.1f}"
+    return f"{x:.2f}"
+
+
+def fmt_ratio(ratio: Ratio | None, unclear: str = "no clear change") -> str:
+    """'1.23× faster', '2.50× slower', or unclear when the interval spans 1×."""
+    if ratio is None:
+        return "—"
+    if not ratio.clear:
+        return unclear
+    if ratio.value >= 1:
+        return f"{fmt_factor(ratio.value)}× faster"
+    return f"{fmt_factor(1 / ratio.value)}× slower"
+
+
+def fmt_ratio_tick(x: float) -> str:
+    return f"{x:g}×" if x >= 1 else f"{x:.2g}×"
+
+
+RATIO_NOTE = (
+    "A ratio compares throughput on the same input.  Its interval runs between "
+    "the far ends of the two 95% CIs, and a difference is reported only when "
+    "that interval excludes 1×."
+)
+
+
+# Half-widths for the ratio axis, and the ticks drawn on it.
+RATIO_EDGES = [1.1, 1.25, 1.5, 2.0, 3.0, 5.0, 10.0, 20.0, 50.0, 100.0, 1e3, 1e4, 1e5]
+RATIO_TICKS = [1.1, 1.25, 1.5, 2.0, 5.0, 10.0, 100.0, 1e3, 1e4, 1e5]
+
+
+def ratio_axis(
+    ratios: Iterable[Ratio],
+) -> tuple[tuple[float, float], list[tuple[float, str]]]:
+    """A log10 domain centred on 1×, wide enough for every interval, and its ticks.
+
+    The half-width is the smallest of RATIO_EDGES covering the widest
+    interval.  The ticks are 1× and up to three of RATIO_TICKS either side,
+    decades only once the axis reaches 100×.
+    """
+    extent = max(
+        (max(abs(math.log10(r.low)), abs(math.log10(r.high))) for r in ratios),
+        default=0.0,
+    )
+    edge = next(
+        (t for t in RATIO_EDGES if math.log10(t) >= extent - 1e-9), RATIO_EDGES[-1]
+    )
+    steps = [t for t in RATIO_TICKS if t <= edge and (edge < 100 or t >= 10)][-3:]
+    ticks = [(1 / t, fmt_ratio_tick(1 / t)) for t in reversed(steps)]
+    ticks += [(1.0, "1×")] + [(t, fmt_ratio_tick(t)) for t in steps]
+    half = math.log10(edge)
+    return (-half, half), ticks
+
+
+def library_reference(
+    group: InputGroup, reference_library: str = REFERENCE_LIBRARY
+) -> Measurement | None:
+    """The reference library's fastest plotted result on this input."""
+    candidates = [
+        m for m in group.rows if m.library == reference_library and m.throughput
+    ]
+    return max(candidates, key=lambda m: m.throughput or 0.0, default=None)
+
+
+def library_ratio_text(
+    m: Measurement, group: InputGroup, reference_library: str = REFERENCE_LIBRARY
+) -> str:
+    """m against the reference library on the same input, for a table cell."""
+    ref = library_reference(group, reference_library)
+    if ref is None:
+        return "—"
+    if m is ref:
+        return "reference"
+    return fmt_ratio(throughput_ratio(m, ref), unclear="no clear difference")
+
+
+def run_ratio(row: ComparisonRow, k: int) -> Ratio | None:
+    """Run k's result as a multiple of the first run's."""
+    return throughput_ratio(row.cells[k], row.cells[0])
+
+
+def run_ratio_point(row: ComparisonRow, runs: list[Run], k: int) -> ChartPoint | str:
+    """Run k against the first run, as a chart row: a ratio, or why there is none."""
+    base, cell = row.cells[0], row.cells[k]
+    for run, m in ((runs[0], base), (runs[k], cell)):
+        if m is None:
+            return f"not in {run.label}"
+        if not m.plotted:
+            reason = next(f for f in m.flags if f in EXCLUDED_FLAGS)
+            return f"not plotted in {run.label}: {FLAG_TEXT[reason]}"
+    ratio = run_ratio(row, k)
+    if ratio is None:
+        return "not compared: the runs read different inputs"
+    if ratio.clear:
+        return ChartPoint(
+            ratio.value, ratio.low, ratio.high, f"{fmt_factor(ratio.value)}×"
+        )
+    return ChartPoint(ratio.value, ratio.low, ratio.high, "no clear change", muted=True)
+
+
+def render_ratio_svg(
+    group: ConversionGroup,
+    by_reference: dict[int, ComparisonRow],
+    runs: list[Run],
+    k: int,
+    standalone: bool = False,
+) -> str:
+    """Run k's throughput as a multiple of the first run's, one row per benchmark.
+
+    The axis is logarithmic and centred on 1×; the whisker is the ratio's
+    interval.  A row whose interval crosses 1× reads "no clear change".
+    """
+    ratios = [
+        r
+        for m in group.measurements
+        if (r := run_ratio(by_reference[id(m)], k)) is not None
+    ]
+    domain, ticks = ratio_axis(ratios)
+
+    def tooltip(m: Measurement) -> str:
+        row = by_reference[id(m)]
+        ratio = run_ratio(row, k)
+        lines = [m.name, f"{m.library or '?'} · {m.api or '?'} · suite {m.suite}"]
+        for run, c in ((runs[0], row.cells[0]), (runs[k], row.cells[k])):
+            lines.append(f"{run.label}: {fmt_cell_throughput(c)} MiB/s")
+        if ratio is not None:
+            lines.append(
+                f"{fmt_factor(ratio.value)}× ({fmt_factor(ratio.low)} – "
+                f"{fmt_factor(ratio.high)}): {fmt_ratio(ratio)}"
+            )
+        return "\n".join(lines)
+
+    return _dot_chart(
+        group,
+        standalone,
+        title=f"{group.conversion}: {runs[k].label} vs {runs[0].label}",
+        point=lambda m: run_ratio_point(by_reference[id(m)], runs, k),
+        domain=domain,
+        ticks=ticks,
+        caption=f"throughput, {runs[k].label} ÷ {runs[0].label} (log scale) "
+        "· whisker = interval from both 95% CIs",
+        value_head="ratio",
+        aria="throughput ratio",
+        tooltip=tooltip,
+        emphasis=1.0,
+    )
 
 
 # ── Markdown ────────────────────────────────────────────────────────────────
@@ -732,8 +950,16 @@ def _md_cell(text: str) -> str:
     return text.replace("|", "\\|")
 
 
-def render_markdown(suites: list[SuiteRun], label: str = "") -> str:
-    """Markdown report: environment, warnings, one table per conversion."""
+def render_markdown(
+    suites: list[SuiteRun],
+    label: str = "",
+    reference_library: str = REFERENCE_LIBRARY,
+) -> str:
+    """Markdown report: environment, warnings, one table per conversion.
+
+    A conversion run by more than one library gets a column with each result's
+    throughput as a multiple of reference_library's on the same input.
+    """
     measurements = [m for r in suites for m in r.measurements]
     heading = "Benchmark Results" + (f" — {label}" if label else "")
     lines = [f"## {heading}", ""]
@@ -744,11 +970,14 @@ def render_markdown(suites: list[SuiteRun], label: str = "") -> str:
         lines.append(f"> [!WARNING]\n> {w}\n")
 
     for group in group_by_conversion(measurements):
+        compared = len(group.libraries) > 1
+        ratio_head = f" vs {_md_cell(reference_library)} |" if compared else ""
+        ratio_rule = "------:|" if compared else ""
         lines += [
             f"### {_md_cell(group.conversion)}",
             "",
-            "| Input | Library | API | Mean | 95% CI | MiB/s | Notes |",
-            "|-------|---------|-----|-----:|-------:|------:|-------|",
+            f"| Input | Library | API | Mean | 95% CI | MiB/s |{ratio_head} Notes |",
+            f"|-------|---------|-----|-----:|-------:|------:|{ratio_rule}-------|",
         ]
         for ig in group.inputs:
             for m in ig.rows:
@@ -762,6 +991,11 @@ def render_markdown(suites: list[SuiteRun], label: str = "") -> str:
                     fmt_time(r.mean_ns),
                     ci,
                     fmt_throughput(tput) if tput is not None else "—",
+                    *(
+                        [library_ratio_text(m, ig, reference_library)]
+                        if compared
+                        else []
+                    ),
                     ", ".join(m.flags),
                 ]
                 lines.append("| " + " | ".join(_md_cell(c) for c in cells) + " |")
@@ -776,7 +1010,7 @@ def render_markdown(suites: list[SuiteRun], label: str = "") -> str:
         lines.append("")
     lines.append(
         "> Throughput = input bytes / mean time; 1 MiB = 2²⁰ bytes; the CI is "
-        "Catch2's 95% bootstrap interval on the mean."
+        "Catch2's 95% bootstrap interval on the mean.  " + RATIO_NOTE
     )
     return "\n".join(lines) + "\n"
 
@@ -821,13 +1055,13 @@ def render_comparison_markdown(runs: list[Run], label: str = "") -> str:
         lines.append(f"> [!WARNING]\n> {w}\n")
 
     groups, by_reference = comparison_groups(rows)
-    run_cols = " | ".join(_md_cell(r.label) for r in runs)
+    run_cols = " | ".join(_md_cell(h) for h in comparison_columns(runs))
     for group in groups:
         lines += [
             f"### {_md_cell(group.conversion)}",
             "",
             f"| Input | Library | API | {run_cols} | Notes |",
-            "|-------|---------|-----|" + "------:|" * len(runs) + "-------|",
+            "|-------|---------|-----|" + "------:|" * (2 * len(runs) - 1) + "-------|",
         ]
         for ig in group.inputs:
             for m in ig.rows:
@@ -836,7 +1070,7 @@ def render_comparison_markdown(runs: list[Run], label: str = "") -> str:
                     f"{ig.input} ({fmt_bytes(ig.input_bytes)})",
                     m.library or "?",
                     row_label(m, ig),
-                    *(fmt_cell_throughput(c) for c in row.cells),
+                    *comparison_cells(row),
                     "; ".join(row_notes(row, runs)),
                 ]
                 lines.append("| " + " | ".join(_md_cell(c) for c in cells) + " |")
@@ -851,7 +1085,7 @@ def render_comparison_markdown(runs: list[Run], label: str = "") -> str:
         lines.append("")
     lines.append(
         "> Throughput in MiB/s = input bytes / mean time; 1 MiB = 2²⁰ bytes. "
-        "Results are matched across runs by suite and benchmark name."
+        "Results are matched across runs by suite and benchmark name.  " + RATIO_NOTE
     )
     return "\n".join(lines) + "\n"
 
@@ -982,6 +1216,27 @@ ROW_H = 22
 INPUT_H = 26
 
 
+def throughput_ticks(d0: float, d1: float) -> list[tuple[float, str]]:
+    """Decades always; 2× and 5× too when the axis is narrow enough to need them."""
+    steps = (1, 2, 5) if d1 - d0 <= 2 else (1,)
+    ticks: list[tuple[float, str]] = []
+    for decade in range(int(d0), int(d1) + 1):
+        for step in steps:
+            t = step * 10.0**decade
+            if math.log10(t) > d1 + 1e-9:
+                break
+            ticks.append((t, fmt_tick(t)))
+    return ticks
+
+
+def throughput_point(m: Measurement) -> ChartPoint | str:
+    ci, tput = m.throughput_ci, m.throughput
+    if ci is not None and tput is not None and tput > 0:
+        return ChartPoint(tput, ci[0], ci[1], fmt_throughput(tput))
+    reason = next(f for f in m.flags if f in EXCLUDED_FLAGS)
+    return f"not plotted: {FLAG_TEXT[reason]}"
+
+
 def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
     """One dot-and-whisker chart for a conversion, throughput on a log axis.
 
@@ -990,19 +1245,57 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
     the reason in place of a value, so nothing silently disappears.
     """
     d0, d1 = log_domain(group.measurements)
-    span = max(d1 - d0, 1.0)
+    return _dot_chart(
+        group,
+        standalone,
+        title=group.conversion,
+        point=throughput_point,
+        domain=(d0, max(d1, d0 + 1.0)),
+        ticks=throughput_ticks(d0, d1),
+        caption="throughput, MiB/s (log scale) · whisker = 95% CI",
+        value_head="MiB/s",
+        aria="throughput",
+        tooltip=_tooltip,
+    )
+
+
+def _dot_chart(
+    group: ConversionGroup,
+    standalone: bool,
+    *,
+    title: str,
+    point: Callable[[Measurement], ChartPoint | str],
+    domain: tuple[float, float],
+    ticks: list[tuple[float, str]],
+    caption: str,
+    value_head: str,
+    aria: str,
+    tooltip: Callable[[Measurement], str],
+    emphasis: float | None = None,
+) -> str:
+    """A dot-and-whisker chart with one row per measurement, on a log axis.
+
+    domain is in log10 units; point gives each row's mark or, as a string, why
+    it has none; emphasis draws a stronger line at that value (1× on a ratio
+    axis).
+    """
+    d0, d1 = domain
+    span = max(d1 - d0, 1e-9)
 
     def x_of(t: float) -> float:
         return PLOT_X0 + (math.log10(t) - d0) / span * (PLOT_X1 - PLOT_X0)
 
+    def clamp(t: float) -> float:
+        return min(max(x_of(t), PLOT_X0), PLOT_X1)
+
     libraries = group.libraries
     body: list[str] = []
-    title = html.escape(group.conversion)
+    title_text = html.escape(title)
     # A standalone figure carries its own title; in the HTML report the
     # section heading above the chart already names it.
     top = 30.0 if standalone else 0.0
     if standalone:
-        body.append(f'<text class="bt-title" x="{LABEL_X}" y="20">{title}</text>')
+        body.append(f'<text class="bt-title" x="{LABEL_X}" y="20">{title_text}</text>')
 
     if len(libraries) > 1:
         lx = float(LABEL_X)
@@ -1027,7 +1320,7 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
         for m in ig.rows:
             cy = y + ROW_H / 2
             label = row_label(m, ig)
-            tip = _tooltip(m)
+            tip = tooltip(m)
             cls = _lib_class(m.library)
             parts = [
                 f'<g class="bt-row" data-tip="{html.escape(tip, quote=True)}">',
@@ -1037,23 +1330,24 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
                 f'<text x="{LABEL_X + 12}" y="{cy + 4:.1f}">'
                 f"{html.escape(_truncate(label, 40))}</text>",
             ]
-            ci = m.throughput_ci
-            tput = m.throughput
-            if ci is not None and tput is not None and tput > 0:
+            pt = point(m)
+            if isinstance(pt, ChartPoint):
                 parts.append(
-                    f'<line class="bt-ci {cls}" x1="{x_of(ci[0]):.1f}" '
-                    f'y1="{cy:.1f}" x2="{x_of(ci[1]):.1f}" y2="{cy:.1f}"/>'
+                    f'<line class="bt-ci {cls}" x1="{clamp(pt.low):.1f}" '
+                    f'y1="{cy:.1f}" x2="{clamp(pt.high):.1f}" y2="{cy:.1f}"/>'
                 )
-                parts.append(_marker(_library_shape(m.library), x_of(tput), cy, cls))
                 parts.append(
-                    f'<text class="bt-value" x="{VALUE_X}" y="{cy + 4:.1f}">'
-                    f"{fmt_throughput(tput)}</text>"
+                    _marker(_library_shape(m.library), x_of(pt.value), cy, cls)
+                )
+                value_cls = "bt-flag" if pt.muted else "bt-value"
+                parts.append(
+                    f'<text class="{value_cls}" x="{VALUE_X}" y="{cy + 4:.1f}">'
+                    f"{html.escape(pt.text)}</text>"
                 )
             else:
-                reason = next(f for f in m.flags if f in EXCLUDED_FLAGS)
                 parts.append(
                     f'<text class="bt-flag" x="{PLOT_X0}" y="{cy + 4:.1f}">'
-                    f"not plotted: {html.escape(FLAG_TEXT[reason])}</text>"
+                    f"{html.escape(pt)}</text>"
                 )
             parts.append("</g>")
             rows_svg.append("".join(parts))
@@ -1061,22 +1355,22 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
 
     plot_top, plot_bottom = top + 6, y + 4
     grid: list[str] = []
-    # Decades always; 2× and 5× too when the axis is narrow enough to need them.
-    steps = (1, 2, 5) if span <= 2 else (1,)
-    for decade in range(int(d0), int(d1) + 1):
-        for step in steps:
-            t = step * 10.0**decade
-            if math.log10(t) > d1 + 1e-9:
-                break
-            gx = x_of(t)
-            grid.append(
-                f'<line class="bt-grid" x1="{gx:.1f}" y1="{plot_top:.0f}" '
-                f'x2="{gx:.1f}" y2="{plot_bottom:.0f}"/>'
-            )
-            grid.append(
-                f'<text class="bt-tick" x="{gx:.1f}" y="{plot_bottom + 16:.0f}" '
-                f'text-anchor="middle">{fmt_tick(t)}</text>'
-            )
+    for t, text in ticks:
+        gx = x_of(t)
+        grid.append(
+            f'<line class="bt-grid" x1="{gx:.1f}" y1="{plot_top:.0f}" '
+            f'x2="{gx:.1f}" y2="{plot_bottom:.0f}"/>'
+        )
+        grid.append(
+            f'<text class="bt-tick" x="{gx:.1f}" y="{plot_bottom + 16:.0f}" '
+            f'text-anchor="middle">{html.escape(text)}</text>'
+        )
+    if emphasis is not None:
+        ex = x_of(emphasis)
+        grid.append(
+            f'<line class="bt-axis" x1="{ex:.1f}" y1="{plot_top:.0f}" '
+            f'x2="{ex:.1f}" y2="{plot_bottom:.0f}"/>'
+        )
     grid.append(
         f'<line class="bt-axis" x1="{PLOT_X0}" y1="{plot_bottom:.0f}" '
         f'x2="{PLOT_X1}" y2="{plot_bottom:.0f}"/>'
@@ -1084,10 +1378,11 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
     grid.append(
         f'<text class="bt-tick" x="{(PLOT_X0 + PLOT_X1) / 2:.0f}" '
         f'y="{plot_bottom + 34:.0f}" text-anchor="middle">'
-        "throughput, MiB/s (log scale) · whisker = 95% CI</text>"
+        f"{html.escape(caption)}</text>"
     )
     grid.append(
-        f'<text class="bt-tick" x="{VALUE_X}" y="{plot_top + 2:.0f}">MiB/s</text>'
+        f'<text class="bt-tick" x="{VALUE_X}" y="{plot_top + 2:.0f}">'
+        f"{html.escape(value_head)}</text>"
     )
     height = plot_bottom + 46
 
@@ -1104,7 +1399,7 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
     head = (
         f'<svg xmlns="http://www.w3.org/2000/svg" class="bt-chart" '
         f'viewBox="0 0 {WIDTH} {height:.0f}" width="{WIDTH}" '
-        f'height="{height:.0f}" role="img" aria-label="{title} throughput">'
+        f'height="{height:.0f}" role="img" aria-label="{title_text} {aria}">'
     )
     return head + style + "".join(grid + body + rows_svg) + "</svg>"
 
@@ -1127,6 +1422,20 @@ def _tooltip(m: Measurement) -> str:
     for f in m.flags:
         lines.append(f"⚠ {f}: {FLAG_TEXT[f]}")
     return "\n".join(lines)
+
+
+def write_ratio_svg_dir(runs: list[Run], k: int, out_dir: Path) -> list[Path]:
+    """Write one standalone ratio chart per conversion, run k against the first."""
+    rows, _ = match_runs(runs)
+    groups, by_reference = comparison_groups(rows)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+    for g in groups:
+        path = out_dir / f"{slugify(g.conversion)}.svg"
+        svg = render_ratio_svg(g, by_reference, runs, k, standalone=True)
+        path.write_text(svg + "\n", encoding="utf-8")
+        written.append(path)
+    return written
 
 
 def write_svg_dir(suites: list[SuiteRun], out_dir: Path) -> list[Path]:
@@ -1226,7 +1535,11 @@ def _legend_html(libraries: list[str]) -> str:
     return '<div class="legend">' + "".join(items) + "</div>"
 
 
-def render_html(suites: list[SuiteRun], label: str = "") -> str:
+def render_html(
+    suites: list[SuiteRun],
+    label: str = "",
+    reference_library: str = REFERENCE_LIBRARY,
+) -> str:
     """A self-contained HTML report: no external scripts, styles or fonts."""
     measurements = [m for r in suites for m in r.measurements]
     groups = group_by_conversion(measurements)
@@ -1277,14 +1590,17 @@ def render_html(suites: list[SuiteRun], label: str = "") -> str:
     out.append('<h2 id="all-results">All results</h2><div class="card scroll"><table>')
     out.append(
         "<thead><tr><th>Conversion</th><th>Input</th><th>Library</th><th>API</th>"
-        "<th>Mean</th><th>95% CI</th><th>MiB/s</th><th>Notes</th>"
+        "<th>Mean</th><th>95% CI</th><th>MiB/s</th>"
+        f'<th class="num">vs {e(reference_library)}</th><th>Notes</th>'
         "<th>Benchmark</th><th>Suite</th></tr></thead><tbody>"
     )
     for g in groups:
+        compared = len(g.libraries) > 1
         for ig in g.inputs:
             for m in ig.rows:
                 r = m.result
                 tput = m.throughput
+                ratio = library_ratio_text(m, ig, reference_library) if compared else ""
                 out.append(
                     "<tr>"
                     f"<td>{e(g.conversion)}</td>"
@@ -1295,6 +1611,7 @@ def render_html(suites: list[SuiteRun], label: str = "") -> str:
                     f"{e(fmt_time(r.high_ns))}</td>"
                     f'<td class="num">'
                     f"{e(fmt_throughput(tput)) if tput is not None else '—'}</td>"
+                    f'<td class="num">{e(ratio)}</td>'
                     f'<td class="flags">{e(", ".join(m.flags))}</td>'
                     f"<td>{e(m.name)}</td><td>{e(m.suite)}</td>"
                     "</tr>"
@@ -1303,7 +1620,7 @@ def render_html(suites: list[SuiteRun], label: str = "") -> str:
     out.append(
         '<p class="sub">Throughput = input bytes / mean time; 1 MiB = 2²⁰ '
         "bytes. Whiskers and the CI column are Catch2's 95% bootstrap interval "
-        "on the mean.</p>"
+        f"on the mean. {e(RATIO_NOTE)}</p>"
     )
     out.append("</main>")
     out.append('<div id="bt-tip" hidden></div>')
@@ -1323,7 +1640,7 @@ def render_comparison_html(runs: list[Run], label: str = "") -> str:
     css = PAGE_CSS % {"light": tokens(LIGHT_TOKENS), "dark": tokens(DARK_TOKENS)}
     out = [
         "<title>transcode benchmark comparison</title>",
-        f"<style>{css}</style>",
+        f"<style>{css}{CHART_CSS}</style>",
         "<main>",
         "<h1>beman.transcode benchmark comparison</h1>",
         f'<p class="sub">{e(label)}</p>' if label else "",
@@ -1346,10 +1663,23 @@ def render_comparison_html(runs: list[Run], label: str = "") -> str:
             f"({len(g.measurements)})</li>"
         )
     out.append("</ul></nav>")
+    out.append(
+        _legend_html(
+            ordered_libraries(m.library for g in groups for m in g.measurements)
+        )
+    )
 
-    run_heads = "".join(f'<th class="num">{e(r.label)}</th>' for r in runs)
+    run_heads = "".join(
+        f'<th class="num">{e(h)}</th>' for h in comparison_columns(runs)
+    )
     for g in groups:
         out.append(f'<h2 id="{slugify(g.conversion)}">{e(g.conversion)}</h2>')
+        for k in range(1, len(runs)):
+            out.append(
+                f'<p class="sub">{e(runs[k].label)} vs {e(runs[0].label)}</p>'
+                f'<div class="card scroll">{render_ratio_svg(g, by_reference, runs, k)}'
+                "</div>"
+            )
         out.append(
             '<div class="card scroll"><table><thead><tr><th>Input</th>'
             f"<th>Library</th><th>API</th>{run_heads}<th>Notes</th></tr></thead><tbody>"
@@ -1358,8 +1688,7 @@ def render_comparison_html(runs: list[Run], label: str = "") -> str:
             for m in ig.rows:
                 row = by_reference[id(m)]
                 values = "".join(
-                    f'<td class="num">{e(fmt_cell_throughput(c))}</td>'
-                    for c in row.cells
+                    f'<td class="num">{e(c)}</td>' for c in comparison_cells(row)
                 )
                 out.append(
                     f"<tr><td>{e(ig.input)} ({e(fmt_bytes(ig.input_bytes))})</td>"
@@ -1379,9 +1708,11 @@ def render_comparison_html(runs: list[Run], label: str = "") -> str:
     out.append(
         '<p class="sub">Throughput in MiB/s = input bytes / mean time; 1 MiB = '
         "2²⁰ bytes. Results are matched across runs by suite and benchmark "
-        "name.</p>"
+        f"name. {e(RATIO_NOTE)}</p>"
     )
     out.append("</main>")
+    out.append('<div id="bt-tip" hidden></div>')
+    out.append(f"<script>{PAGE_JS}</script>")
     return "\n".join(s for s in out if s) + "\n"
 
 
@@ -1389,20 +1720,25 @@ def render_comparison_html(runs: list[Run], label: str = "") -> str:
 
 
 def render_vegalite_spec(
-    suites: list[SuiteRun], title: str = "Benchmark Throughput"
+    suites: list[SuiteRun],
+    title: str = "Benchmark Throughput",
+    reference_library: str = REFERENCE_LIBRARY,
 ) -> dict[str, Any]:
     """Vega-Lite spec: mean and CI per benchmark, faceted by conversion.
 
-    Excluded results are omitted.
+    Excluded results are omitted.  Where the reference library ran the same
+    input, vs_reference is the throughput as a multiple of its fastest result.
     """
     values: list[dict[str, object]] = []
-    for r in suites:
-        for m in r.measurements:
-            tput, ci = m.throughput, m.throughput_ci
-            if tput is None or ci is None:
-                continue
-            values.append(
-                {
+    groups = group_by_conversion([m for r in suites for m in r.measurements])
+    for g in groups:
+        for ig in g.inputs:
+            ref = library_reference(ig, reference_library)
+            for m in ig.rows:
+                tput, ci = m.throughput, m.throughput_ci
+                if tput is None or ci is None:
+                    continue
+                value: dict[str, object] = {
                     "benchmark": m.name,
                     "conversion": m.conversion,
                     "input": m.input,
@@ -1412,7 +1748,10 @@ def render_vegalite_spec(
                     "ci_low": round(ci[0], 2),
                     "ci_high": round(ci[1], 2),
                 }
-            )
+                ratio = throughput_ratio(m, ref)
+                if ratio is not None:
+                    value["vs_reference"] = round(ratio.value, 3)
+                values.append(value)
     x = {
         "field": "throughput_MiBs",
         "type": "quantitative",
@@ -1452,6 +1791,10 @@ def render_vegalite_spec(
                             {"field": "throughput_MiBs", "title": "MiB/s"},
                             {"field": "ci_low", "title": "CI low"},
                             {"field": "ci_high", "title": "CI high"},
+                            {
+                                "field": "vs_reference",
+                                "title": f"vs {reference_library}",
+                            },
                         ],
                     },
                 },
@@ -1461,19 +1804,100 @@ def render_vegalite_spec(
 
 
 def render_comparison_vegalite(runs: list[Run], title: str) -> dict[str, Any]:
-    """The single-run spec over every run, faceted by run as well as conversion."""
-    spec = render_vegalite_spec(runs[0].suites, title=title)
-    spec["data"]["values"] = [
+    """Two charts, one above the other.
+
+    The first is the single-run spec over every run, faceted by run as well as
+    conversion.  The second plots each later run's throughput as a multiple of
+    the first run's, on a log axis, faceted the same way.
+    """
+    throughput = render_vegalite_spec(runs[0].suites)
+    del throughput["$schema"], throughput["title"]
+    throughput["data"]["values"] = [
         {**v, "run": r.label}
         for r in runs
         for v in render_vegalite_spec(r.suites)["data"]["values"]
     ]
-    spec["facet"]["column"] = {
+    throughput["facet"]["column"] = {
         "field": "run",
         "type": "nominal",
         "sort": [r.label for r in runs],
     }
-    return spec
+
+    rows, _ = match_runs(runs)
+    ratios: list[dict[str, object]] = []
+    for row in rows:
+        for k in range(1, len(runs)):
+            ratio = run_ratio(row, k)
+            m = row.cells[k]
+            if ratio is None or m is None:
+                continue
+            ratios.append(
+                {
+                    "benchmark": m.name,
+                    "conversion": m.conversion,
+                    "input": m.input,
+                    "library": m.library,
+                    "api": m.api,
+                    "run": f"{runs[k].label} vs {runs[0].label}",
+                    "ratio": round(ratio.value, 4),
+                    "ratio_low": round(ratio.low, 4),
+                    "ratio_high": round(ratio.high, 4),
+                    "verdict": fmt_ratio(ratio),
+                }
+            )
+    x = {
+        "field": "ratio",
+        "type": "quantitative",
+        "scale": {"type": "log"},
+        "title": f"Throughput ÷ {runs[0].label}",
+    }
+    y = {"field": "benchmark", "type": "nominal", "title": None}
+    color = {"field": "library", "type": "nominal", "scale": {"domain": LIBRARY_ORDER}}
+    ratio_spec = {
+        "data": {"values": ratios},
+        "facet": {
+            "row": {"field": "conversion", "type": "nominal"},
+            "column": {"field": "run", "type": "nominal"},
+        },
+        "resolve": {"scale": {"y": "independent"}},
+        "spec": {
+            "layer": [
+                {"mark": "rule", "encoding": {"x": {"datum": 1}}},
+                {
+                    "mark": "rule",
+                    "encoding": {
+                        "x": {**x, "field": "ratio_low"},
+                        "x2": {"field": "ratio_high"},
+                        "y": y,
+                        "color": color,
+                    },
+                },
+                {
+                    "mark": {"type": "point", "filled": True},
+                    "encoding": {
+                        "x": x,
+                        "y": y,
+                        "color": color,
+                        "shape": {"field": "library", "type": "nominal"},
+                        "tooltip": [
+                            {"field": "benchmark"},
+                            {"field": "api"},
+                            {"field": "input"},
+                            {"field": "ratio"},
+                            {"field": "ratio_low", "title": "low"},
+                            {"field": "ratio_high", "title": "high"},
+                            {"field": "verdict"},
+                        ],
+                    },
+                },
+            ]
+        },
+    }
+    return {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "title": title,
+        "vconcat": [throughput, ratio_spec],
+    }
 
 
 # ── CLI ─────────────────────────────────────────────────────────────────────
@@ -1556,7 +1980,15 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=None,
         help="Write one standalone SVG chart per conversion into DIR "
-        "(one subdirectory per run when comparing)",
+        "(when comparing, one subdirectory per run, and one per later run "
+        "for its ratio to the first, named LATER-vs-FIRST)",
+    )
+    parser.add_argument(
+        "--reference-library",
+        metavar="NAME",
+        default=REFERENCE_LIBRARY,
+        help="The library other libraries are compared with in a single-run "
+        f"report (default: {REFERENCE_LIBRARY})",
     )
     parser.add_argument(
         "--vegalite",
@@ -1580,8 +2012,11 @@ def main(argv: list[str] | None = None) -> int:
     if len(runs) == 1:
         suites = runs[0].suites
         label = args.label or (suites[0].path.stem if len(suites) == 1 else "")
-        markdown = render_markdown(suites, label=label)
-        page = render_html(suites, label=label) if args.html else ""
+        ref = args.reference_library
+        markdown = render_markdown(suites, label=label, reference_library=ref)
+        page = (
+            render_html(suites, label=label, reference_library=ref) if args.html else ""
+        )
     else:
         label = args.label
         markdown = render_comparison_markdown(runs, label=label)
@@ -1600,11 +2035,16 @@ def main(argv: list[str] | None = None) -> int:
                 args.svg_dir if len(runs) == 1 else args.svg_dir / slugify(r.label)
             )
             count += len(write_svg_dir(r.suites, out_dir))
+        for k in range(1, len(runs)):
+            name = f"{slugify(runs[k].label)}-vs-{slugify(runs[0].label)}"
+            count += len(write_ratio_svg_dir(runs, k, args.svg_dir / name))
         print(f"{count} SVG charts written to {args.svg_dir}", file=sys.stderr)
     if args.vegalite is not None:
         title = f"Throughput — {label}" if label else "Throughput"
         spec = (
-            render_vegalite_spec(runs[0].suites, title=title)
+            render_vegalite_spec(
+                runs[0].suites, title=title, reference_library=args.reference_library
+            )
             if len(runs) == 1
             else render_comparison_vegalite(runs, title=title)
         )
