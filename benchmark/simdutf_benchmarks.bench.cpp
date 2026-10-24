@@ -41,6 +41,7 @@ TEST_CASE("simdutf ceiling baselines", "[benchmark][simdutf]") {
 
     // --- UTF-8 → UTF-32 (matches whatwg_decode<codec::utf_8> output type) ---
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "simdutf", .api = "convert_utf8_to_utf32"});
     BENCHMARK_ADVANCED("simdutf UTF-8→UTF-32: English (ASCII-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("en_mars_utf8.txt");
@@ -48,6 +49,7 @@ TEST_CASE("simdutf ceiling baselines", "[benchmark][simdutf]") {
         meter.measure([&] { return simdutf::convert_utf8_to_utf32(src.data(), src.size(), g_out_utf32); });
     };
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "simdutf", .api = "convert_utf8_to_utf32"});
     BENCHMARK_ADVANCED("simdutf UTF-8→UTF-32: Arabic (multibyte-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ar_mars_utf8.txt");
@@ -57,12 +59,14 @@ TEST_CASE("simdutf ceiling baselines", "[benchmark][simdutf]") {
 
     // --- UTF-8 validation (sub-operation of decode; fastest simdutf path) ---
 
+    describe({.conversion = "UTF-8 validate", .library = "simdutf", .api = "validate_utf8"});
     BENCHMARK_ADVANCED("simdutf UTF-8 validate: English (ASCII-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("en_mars_utf8.txt");
         meter.measure([&] { return simdutf::validate_utf8(src.data(), src.size()); });
     };
 
+    describe({.conversion = "UTF-8 validate", .library = "simdutf", .api = "validate_utf8"});
     BENCHMARK_ADVANCED("simdutf UTF-8 validate: Arabic (multibyte-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ar_mars_utf8.txt");
@@ -71,6 +75,7 @@ TEST_CASE("simdutf ceiling baselines", "[benchmark][simdutf]") {
 
     // --- UTF-8 → UTF-16 (common output format in many runtimes) ---
 
+    describe({.conversion = "UTF-8 → UTF-16LE", .library = "simdutf", .api = "convert_utf8_to_utf16le"});
     BENCHMARK_ADVANCED("simdutf UTF-8→UTF-16: English (ASCII-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("en_mars_utf8.txt");
@@ -78,6 +83,7 @@ TEST_CASE("simdutf ceiling baselines", "[benchmark][simdutf]") {
         meter.measure([&] { return simdutf::convert_utf8_to_utf16le(src.data(), src.size(), g_out_utf16); });
     };
 
+    describe({.conversion = "UTF-8 → UTF-16LE", .library = "simdutf", .api = "convert_utf8_to_utf16le"});
     BENCHMARK_ADVANCED("simdutf UTF-8→UTF-16: Arabic (multibyte-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ar_mars_utf8.txt");
