@@ -39,6 +39,7 @@ TEST_CASE("iconv baselines", "[benchmark][iconv]") {
 
     static char out_buf[4096];
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "iconv", .api = "iconv(3) loop"});
     BENCHMARK_ADVANCED("Raw iconv: UTF-8 to UTF-32LE English")
     (Catch::Benchmark::Chronometer meter) {
         auto    data = corpus_span("en_mars_utf8.txt");
@@ -47,12 +48,14 @@ TEST_CASE("iconv baselines", "[benchmark][iconv]") {
         ::iconv_close(cd);
     };
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "iconv", .api = "iconv_transcode_view"});
     BENCHMARK_ADVANCED("iconv_transcode_view: UTF-8 to UTF-32LE English")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("en_mars_utf8.txt");
         meter.measure([&] { return count_elements(data | iconv_transcode("UTF-8", "UTF-32LE", std::span(out_buf))); });
     };
 
+    describe({.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "iconv(3) loop"});
     BENCHMARK_ADVANCED("Raw iconv: Shift-JIS to UTF-8 Japanese")
     (Catch::Benchmark::Chronometer meter) {
         auto    data = corpus_span("ja_mars_shiftjis.bin");
@@ -61,6 +64,7 @@ TEST_CASE("iconv baselines", "[benchmark][iconv]") {
         ::iconv_close(cd);
     };
 
+    describe({.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "iconv_transcode_view"});
     BENCHMARK_ADVANCED("iconv_transcode_view: Shift-JIS to UTF-8 Japanese")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ja_mars_shiftjis.bin");
@@ -73,18 +77,21 @@ TEST_CASE("iconv bulk operations", "[benchmark][iconv]") {
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "iconv", .api = "iconv_transcode_to"});
     BENCHMARK_ADVANCED("iconv_transcode_to: UTF-8 to UTF-32LE English")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("en_mars_utf8.txt");
         meter.measure([&] { return iconv_transcode_to<std::string>(data, "UTF-8", "UTF-32LE").size(); });
     };
 
+    describe({.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "iconv_transcode_to"});
     BENCHMARK_ADVANCED("iconv_transcode_to: Shift-JIS to UTF-8 Japanese")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ja_mars_shiftjis.bin");
         meter.measure([&] { return iconv_transcode_to<std::string>(data, "SHIFT_JIS", "UTF-8").size(); });
     };
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "iconv", .api = "iconv_transcode_into"});
     BENCHMARK_ADVANCED("iconv_transcode_into: UTF-8 to UTF-32LE English")
     (Catch::Benchmark::Chronometer meter) {
         auto        data = corpus_span("en_mars_utf8.txt");
@@ -97,6 +104,7 @@ TEST_CASE("iconv bulk operations", "[benchmark][iconv]") {
         });
     };
 
+    describe({.conversion = "EUC-JP → Shift_JIS", .library = "iconv", .api = "iconv_transcode_to"});
     BENCHMARK_ADVANCED("iconv_transcode_to: EUC-JP to Shift-JIS Japanese")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ja_mars_eucjp.bin");
@@ -108,14 +116,20 @@ TEST_CASE("iconv large corpus", "[benchmark][iconv]") {
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
 
+    require_corpus("genji_monogatari_shiftjis.bin");
+    require_corpus("genji_monogatari_eucjp.bin");
+    require_corpus("xiyouji_gb18030.bin");
+
     static char out_buf[4096];
 
+    describe({.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "iconv_transcode_to"});
     BENCHMARK_ADVANCED("iconv_transcode_to: Shift-JIS → UTF-8, Genji (2.3 MB)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("genji_monogatari_shiftjis.bin");
         meter.measure([&] { return iconv_transcode_to<std::string>(data, "SHIFT_JIS", "UTF-8").size(); });
     };
 
+    describe({.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "iconv_transcode_view"});
     BENCHMARK_ADVANCED("iconv_transcode_view: Shift-JIS → UTF-8, Genji (2.3 MB)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("genji_monogatari_shiftjis.bin");
@@ -123,12 +137,14 @@ TEST_CASE("iconv large corpus", "[benchmark][iconv]") {
             [&] { return count_elements(data | iconv_transcode("SHIFT_JIS", "UTF-8", std::span(out_buf))); });
     };
 
+    describe({.conversion = "GB18030 → UTF-8", .library = "iconv", .api = "iconv_transcode_to"});
     BENCHMARK_ADVANCED("iconv_transcode_to: GB18030 → UTF-8, Journey to the West (624 KB)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("xiyouji_gb18030.bin");
         meter.measure([&] { return iconv_transcode_to<std::string>(data, "GB18030", "UTF-8").size(); });
     };
 
+    describe({.conversion = "EUC-JP → Shift_JIS", .library = "iconv", .api = "iconv_transcode_to"});
     BENCHMARK_ADVANCED("iconv_transcode_to: EUC-JP → Shift-JIS, Genji (2.3 MB)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("genji_monogatari_eucjp.bin");
