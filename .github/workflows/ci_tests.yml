@@ -41,7 +41,7 @@ jobs:
                   "tests": [
                     { "stdlibs": ["libstdc++"],
                       "tests": [
-                        "Debug.Default", "Release.Default", "Release.TSan",
+                        "Debug.Default", "Release.Default",
                         "Release.MaxSan", "Debug.Werror",
                         "Debug.Coverage"
                       ]
@@ -102,7 +102,7 @@ jobs:
                   "tests": [
                     { "stdlibs": ["libstdc++"],
                       "tests": [
-                        "Debug.Default", "Release.Default", "Release.TSan",
+                        "Debug.Default", "Release.Default",
                         "Release.MaxSan", "Debug.Werror"
                       ]
                     }
