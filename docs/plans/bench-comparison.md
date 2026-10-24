@@ -119,6 +119,18 @@ Record how busy the machine was, and flag runs made while it was busy.
 - This doesn't fix a noisy run. It stops a noisy run being read as a quiet
   one.
 
+**Status:** implemented on branch `bench-machine-load`. Two changes from the
+outline above:
+- `busy` is a warning on the suite, not a flag on each result, and the run
+  table shows each run's load. One process sees one machine state, so a
+  per-result flag would repeat the same fact on every row.
+- The load compared with the threshold is the *other load*. It is the larger
+  of the 1-minute load at the start, and the load at the end less one for the
+  benchmark's own thread.
+
+The kernel, governor and turbo setting join the run axes, so comparing runs
+that differ in them is warned about like a change of compiler.
+
 ### ratio-views
 
 *Stage 3.*
@@ -330,6 +342,12 @@ example 1.0 above an idle baseline, may be right. Calibrate it against
 quiet runs on pwyll.
 **Decided by:** —
 **Log:**
+- 2026-10-24: [machine-load](#machine-load) uses an absolute threshold, an
+  other load above 2.0, rather than a fraction of the CPU count. That is
+  `BUSY_LOAD` in `tools/process_benchmark_results.py`. This is provisional
+  until calibrated. pwyll at rest showed a 1-minute load of 1.4 on 20 CPUs,
+  and 21.5 during the `clang++-23` builds that slowed the
+  [multi-run](#multi-run) trial about 7×.
 
 ### count-mode-driver
 

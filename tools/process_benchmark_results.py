@@ -52,6 +52,12 @@ IMPLAUSIBLE_MEAN_NS = 1.0
 # a reliable summary of the samples.
 NOISY_OUTLIER_VARIANCE = 0.5
 
+# A suite is "busy" when work other than the benchmark kept more than this many
+# threads runnable, by the 1-minute load average.  The benchmarks are single
+# threaded, so a little other work already shares the CPU's power and cache.
+# Provisional: see busy-threshold in docs/plans/bench-comparison.md.
+BUSY_LOAD = 2.0
+
 # Flags, by slug.  "Excluded" flags keep a result off the charts and out of
 # the throughput column, because the number would be wrong, not just noisy.
 FLAG_TEXT: dict[str, str] = {
@@ -403,14 +409,28 @@ def environment_summary(suites: list[SuiteRun]) -> list[tuple[str, str]]:
         ("build_config", "Build config"),
         ("commit", "Commit"),
         ("cpu", "CPU"),
+        ("cpus", "CPUs"),
+        ("governor", "Governor"),
+        ("turbo", "Turbo"),
         ("host", "Host"),
+        ("kernel", "Kernel"),
         ("catch2", "Catch2"),
     ]
     rows: list[tuple[str, str]] = []
     for key, title in keys:
-        values = sorted({str(r.environment.get(key, "")) for r in suites} - {""})
+        values = sorted({axis_text(r.environment.get(key)) for r in suites} - {""})
         if values:
             rows.append((title, "; ".join(values)))
+    loads = [
+        load[0]
+        for r in suites
+        for load in (r.environment.get("load_start"), r.environment.get("load_end"))
+        if load
+    ]
+    if loads:
+        low, high = min(loads), max(loads)
+        span = f"{low:.2f}" if low == high else f"{low:.2f} – {high:.2f}"
+        rows.append(("Load (1 min)", span))
     stamps = sorted({str(r.environment.get("timestamp", "")) for r in suites} - {""})
     if stamps:
         rows.append(
@@ -450,7 +470,36 @@ def suite_warnings(suites: list[SuiteRun]) -> list[str]:
             )
         elif env.get("optimized") is False:
             warnings.append(f"{r.suite}: built without optimization.")
+        load = other_load(env)
+        if load is not None and load > BUSY_LOAD:
+            warnings.append(
+                f"{r.suite}: the machine was busy ({load_text(env)}), so other "
+                "work may have slowed these timings."
+            )
     return warnings
+
+
+def other_load(env: dict[str, Any]) -> float | None:
+    """The 1-minute load from work other than the benchmark, or None if unknown.
+
+    The larger of the load as the suite started, and the load as it ended less
+    the benchmark's own thread.
+    """
+    start, end = env.get("load_start"), env.get("load_end")
+    loads = ([start[0]] if start else []) + ([max(end[0] - 1.0, 0.0)] if end else [])
+    return max(loads) if loads else None
+
+
+def load_text(env: dict[str, Any]) -> str:
+    """'1-minute load 21.50 at the start and 22.10 at the end, on 20 CPUs'."""
+    start, end = env.get("load_start"), env.get("load_end")
+    parts = ([f"{start[0]:.2f} at the start"] if start else []) + (
+        [f"{end[0]:.2f} at the end"] if end else []
+    )
+    text = "1-minute load " + " and ".join(parts)
+    if env.get("cpus"):
+        text += f", on {env['cpus']} CPUs"
+    return text
 
 
 def flag_counts(measurements: list[Measurement]) -> dict[str, int]:
@@ -473,6 +522,9 @@ RUN_AXES: list[tuple[str, str]] = [
     ("sanitizers", "Sanitizers"),
     ("host", "Host"),
     ("cpu", "CPU"),
+    ("kernel", "Kernel"),
+    ("governor", "Governor"),
+    ("turbo", "Turbo"),
 ]
 
 
@@ -529,15 +581,19 @@ def axis_text(value: Any) -> str:
     """An environment value as text; an empty sanitizer list reads 'none'."""
     if value is None:
         return ""
+    if isinstance(value, bool):
+        return "on" if value else "off"
     if isinstance(value, list):
         return ", ".join(str(v) for v in value) or "none"
     return str(value)
 
 
 def short_axis_value(key: str, value: str) -> str:
-    """'gcc 16.1.0 20260427 (…)' → 'gcc 16.1.0', for run labels."""
+    """'gcc 16.1.0 20260427 (…)' → 'gcc 16.1.0', 'on' → 'turbo on', for run labels."""
     if key == "compiler":
         return " ".join(value.split()[:2])
+    if key == "turbo":
+        return f"turbo {value}"
     return value
 
 
@@ -731,14 +787,23 @@ def run_table(runs: list[Run]) -> tuple[list[str], list[list[str]]]:
     Environment fields no run recorded are left out.
     """
     axes = [(k, t) for k, t in RUN_AXES if any(r.axis_values(k) for r in runs)]
-    header = ["Run"] + [t for _, t in axes] + ["Run at", "Suites"]
+    header = ["Run"] + [t for _, t in axes] + ["Other load", "Run at", "Suites"]
     rows = [
         [r.label]
         + ["; ".join(r.axis_values(k)) or "—" for k, _ in axes]
-        + [r.started or "—", ", ".join(s.suite for s in r.suites)]
+        + [run_load_text(r), r.started or "—", ", ".join(s.suite for s in r.suites)]
         for r in runs
     ]
     return header, rows
+
+
+def run_load_text(run: Run) -> str:
+    """The highest other load across a run's suites, marked when it was busy."""
+    loads = [x for s in run.suites if (x := other_load(s.environment)) is not None]
+    if not loads:
+        return "—"
+    worst = max(loads)
+    return f"{worst:.2f} (busy)" if worst > BUSY_LOAD else f"{worst:.2f}"
 
 
 def render_comparison_markdown(runs: list[Run], label: str = "") -> str:

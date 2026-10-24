@@ -4,6 +4,7 @@
 #define BENCHMARK_BENCHMARK_FIXTURE_HPP
 
 #include <cstddef>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -69,8 +70,26 @@ void                                 end_benchmark();
 const std::vector<benchmark_record>& benchmark_records();
 void                                 clear_benchmark_records();
 
+// The system load averages over the last 1, 5 and 15 minutes.
+struct load_average {
+    double one     = 0.0;
+    double five    = 0.0;
+    double fifteen = 0.0;
+};
+
+// Parse the contents of /proc/loadavg; nullopt when it is not in that form.
+std::optional<load_average> parse_load_average(std::string_view text);
+
+// The current load averages, or nullopt where /proc/loadavg is unavailable.
+std::optional<load_average> read_load_average();
+
+// Record the load average as the run starts, for the sidecar; the listener
+// calls it when the test run begins.
+void begin_run();
+
 // The sidecar written beside the Catch2 XML: a JSON object holding the build
-// environment and one entry per benchmark record.
+// environment, the load at the start of the run (from begin_run) and now, and
+// one entry per benchmark record.
 std::string metadata_json(const std::vector<benchmark_record>& records);
 
 } // namespace beman::transcoding::bench
