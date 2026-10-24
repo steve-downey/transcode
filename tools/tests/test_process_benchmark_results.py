@@ -3,6 +3,7 @@
 """Tests for tools/process_benchmark_results.py."""
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -13,11 +14,15 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from process_benchmark_results import (
     BUSY_LOAD,
     IMPLAUSIBLE_BYTES_PER_NS,
+    REFERENCE_LIBRARY,
     SIDECAR_FORMAT,
+    Ratio,
     Run,
     assign_labels,
+    comparison_groups,
     comparison_warnings,
     environment_summary,
+    fmt_ratio,
     group_by_conversion,
     load_suite,
     log_domain,
@@ -25,11 +30,13 @@ from process_benchmark_results import (
     match_runs,
     other_load,
     parse_catch2_xml,
+    ratio_axis,
     render_comparison_html,
     render_comparison_markdown,
     render_comparison_vegalite,
     render_html,
     render_markdown,
+    render_ratio_svg,
     render_svg_chart,
     render_vegalite_spec,
     sidecar_path,
@@ -37,6 +44,7 @@ from process_benchmark_results import (
     suite_name,
     suite_warnings,
     throughput_MiBs,
+    throughput_ratio,
     xml_files,
 )
 
@@ -559,14 +567,20 @@ def write_run(
     run_dir: Path,
     drop: tuple[str, ...] = (),
     benchmarks: dict[str, dict[str, object]] | None = None,
+    speedup: float = 1.0,
     **environment: object,
 ) -> Path:
     """SAMPLE_XML and its sidecar in run_dir, with environment overrides.
 
-    drop removes benchmarks from the XML; benchmarks overrides sidecar entries.
+    drop removes benchmarks from the XML; benchmarks overrides sidecar entries;
+    speedup divides every mean and bound, making each result that much faster.
     """
     run_dir.mkdir(parents=True, exist_ok=True)
-    xml = SAMPLE_XML
+    xml = re.sub(
+        r'(<mean value|lowerBound|upperBound)="([0-9.]+)"',
+        lambda m: f'{m.group(1)}="{float(m.group(2)) / speedup}"',
+        SAMPLE_XML,
+    )
     for name in drop:
         start = xml.index(f'<BenchmarkResults name="{name}"')
         end = xml.index("</BenchmarkResults>", start) + len("</BenchmarkResults>")
@@ -797,8 +811,9 @@ def test_comparison_markdown_has_a_column_per_run(tmp_path: Path) -> None:
     assert md.startswith("## Benchmark Comparison — gcc")
     assert "| Run | Compiler | Build config | Commit |" in md
     assert "| before | gcc 16.0.1 | Perf | aaa |" in md
-    assert "| Input | Library | API | before | after | Notes |" in md
-    assert "| — | not run | not in after; before: empty-input |" in md
+    assert "| Input | Library | API | before | after | after vs before | Notes |" in md
+    assert "| — | not run | — | not in after; before: empty-input |" in md
+    assert "| 160 | 160 | no clear change |" in md
     assert "### Not in every run" in md
     assert "- smoke / missing corpus: not in after" in md
     assert "before: implausible, noisy; after: implausible, noisy" in md
@@ -812,8 +827,11 @@ def test_comparison_html_is_self_contained_and_escaped(tmp_path: Path) -> None:
     page = render_comparison_html(runs)
     assert "&lt;before&gt;" in page
     assert "<before>" not in page
-    assert "<script" not in page
-    assert "http" not in page
+    assert "<script src" not in page
+    assert "<link" not in page
+    assert (
+        'aria-label="UTF-8 → UTF-32: after vs &lt;before&gt; throughput ratio"' in page
+    )
 
 
 def test_comparison_vegalite_facets_by_run(tmp_path: Path) -> None:
@@ -822,8 +840,11 @@ def test_comparison_vegalite_facets_by_run(tmp_path: Path) -> None:
         load("after", write_run(tmp_path / "b")),
     ]
     spec = render_comparison_vegalite(runs, title="t")
-    assert spec["facet"]["column"]["sort"] == ["before", "after"]
-    assert {v["run"] for v in spec["data"]["values"]} == {"before", "after"}
+    throughput, ratios = spec["vconcat"]
+    assert throughput["facet"]["column"]["sort"] == ["before", "after"]
+    assert {v["run"] for v in throughput["data"]["values"]} == {"before", "after"}
+    assert {v["run"] for v in ratios["data"]["values"]} == {"after vs before"}
+    assert all(v["ratio"] == 1.0 for v in ratios["data"]["values"])
 
 
 def test_main_compares_runs(tmp_path: Path) -> None:
@@ -845,7 +866,12 @@ def test_main_compares_runs(tmp_path: Path) -> None:
     assert md.startswith("## Benchmark Comparison")
     assert "| gcc | clang |" in md
     assert "benchmark comparison" in (out / "c.html").read_text(encoding="utf-8")
-    assert sorted(p.name for p in (out / "svg").iterdir()) == ["clang", "gcc"]
+    assert sorted(p.name for p in (out / "svg").iterdir()) == [
+        "clang",
+        "clang-vs-gcc",
+        "gcc",
+    ]
+    assert (out / "svg" / "clang-vs-gcc" / "utf-8-to-utf-32.svg").is_file()
     json.loads((out / "c.vl.json").read_text(encoding="utf-8"))
 
 
@@ -875,3 +901,117 @@ def test_main_empty_directory_fails(tmp_path: Path) -> None:
 
 def test_main_without_input_fails() -> None:
     assert main([]) == 1
+
+
+# ---------------------------------------------------------------------------
+# Ratios
+# ---------------------------------------------------------------------------
+
+
+def test_throughput_ratio_is_faster_above_one(tmp_path: Path) -> None:
+    (before,) = load("", write_run(tmp_path / "a")).suites
+    (after,) = load("", write_run(tmp_path / "b", speedup=2.0)).suites
+    ratio = throughput_ratio(after.measurements[0], before.measurements[0])
+    assert ratio is not None
+    assert ratio.value == pytest.approx(2.0)
+    # The interval spans the far ends of both CIs: 3400/(3700/2) to 3700/(3400/2).
+    assert ratio.low == pytest.approx(2 * 3400 / 3700)
+    assert ratio.high == pytest.approx(2 * 3700 / 3400)
+    assert ratio.clear
+
+
+def test_throughput_ratio_needs_the_same_plotted_input(run_xml_path: Path) -> None:
+    ms = {m.name: m for m in load_suite(run_xml_path).measurements}
+    en = ms["whatwg_decode utf_8 en_mars corpus"]
+    assert throughput_ratio(en, ms["Single-byte decode: windows-1251 Russian"]) is None
+    assert throughput_ratio(en, ms["optimized away"]) is None
+    assert throughput_ratio(en, None) is None
+
+
+def test_fmt_ratio_reports_only_clear_differences() -> None:
+    assert fmt_ratio(Ratio(1.5, 1.2, 1.8)) == "1.50× faster"
+    assert fmt_ratio(Ratio(0.04, 0.03, 0.05)) == "25.0× slower"
+    assert fmt_ratio(Ratio(1.02, 0.97, 1.08)) == "no clear change"
+    assert fmt_ratio(Ratio(1.02, 0.97, 1.08), unclear="x") == "x"
+    assert fmt_ratio(None) == "—"
+
+
+def test_ratio_axis_is_centred_on_one() -> None:
+    (lo, hi), ticks = ratio_axis([Ratio(1.4, 1.3, 1.6), Ratio(0.9, 0.8, 1.0)])
+    assert lo == -hi
+    assert 10**hi == pytest.approx(2.0)
+    assert [t for _, t in ticks] == [
+        "0.5×",
+        "0.67×",
+        "0.8×",
+        "1×",
+        "1.25×",
+        "1.5×",
+        "2×",
+    ]
+    (lo, hi), ticks = ratio_axis([])
+    assert 10**hi == pytest.approx(1.1)
+    _, ticks = ratio_axis([Ratio(0.13, 0.12, 0.14)])
+    assert [t for _, t in ticks] == ["0.1×", "0.2×", "0.5×", "1×", "2×", "5×", "10×"]
+    _, ticks = ratio_axis([Ratio(300, 250, 350)])
+    assert [t for _, t in ticks] == [
+        "0.001×",
+        "0.01×",
+        "0.1×",
+        "1×",
+        "10×",
+        "100×",
+        "1000×",
+    ]
+
+
+def test_markdown_compares_libraries_with_the_reference(run_xml_path: Path) -> None:
+    md = render_markdown([load_suite(run_xml_path)])
+    assert f"| MiB/s | vs {REFERENCE_LIBRARY} | Notes |" in md
+    rows = {line.split(" | ")[1]: line for line in md.splitlines() if "en_mars" in line}
+    assert "| reference |" in rows["beman.transcode"]
+    assert "| 1.43× slower |" in rows["iconv"]
+    # A conversion only one library ran gets no ratio column.
+    section = md.split("### windows-1251 → UTF-32")[1]
+    assert "| MiB/s | Notes |" in section
+
+
+def test_reference_library_can_be_chosen(run_xml_path: Path, tmp_path: Path) -> None:
+    out = tmp_path / "r.md"
+    rc = main(
+        ["--reference-library", "iconv", "--markdown", str(out), str(run_xml_path)]
+    )
+    assert rc == 0
+    md = out.read_text(encoding="utf-8")
+    assert "| MiB/s | vs iconv | Notes |" in md
+    assert "| 1.43× faster |" in md
+
+
+def test_comparison_reports_a_clear_change(tmp_path: Path) -> None:
+    runs = [
+        load("before", write_run(tmp_path / "a")),
+        load("after", write_run(tmp_path / "b", speedup=0.5)),
+    ]
+    md = render_comparison_markdown(runs)
+    assert "| 160 | 79.8 | 2.00× slower |" in md
+
+
+def test_ratio_chart_marks_one_and_no_clear_change(tmp_path: Path) -> None:
+    runs = [
+        load("before", write_run(tmp_path / "a")),
+        load("after", write_run(tmp_path / "b", drop=("missing corpus",))),
+    ]
+    rows, _ = match_runs(runs)
+    groups, by_reference = comparison_groups(rows)
+    svgs = {
+        g.conversion: render_ratio_svg(g, by_reference, runs, 1, standalone=True)
+        for g in groups
+    }
+    utf = svgs[UTF]
+    assert ">1×</text>" in utf
+    assert "no clear change" in utf
+    assert "UTF-8 → UTF-32: after vs before" in utf
+    assert "var(--" not in utf
+    # The missing corpus was excluded in before, and is absent from after.
+    assert "not plotted in before" in svgs["Shift_JIS → UTF-32"]
+    assert "not plotted in before" in svgs["windows-1251 → UTF-32"]

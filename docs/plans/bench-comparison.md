@@ -149,6 +149,15 @@ Show the comparisons as ratios.
 - The output formats stay the same: Markdown, HTML, standalone SVG, and
   Vega-Lite.
 
+**Status:** implemented on branch `bench-ratio-views`.
+- Run vs run interleaves the ratio column after each later run's throughput,
+  and draws one ratio chart per conversion for each later run.
+- Library vs library is a column in the single-run report, not a separate
+  chart. The throughput chart already sets the libraries side by side on a
+  log axis, where the distance between marks *is* the ratio.
+- A ratio is computed only when both results are plotted and read the same
+  input. A row whose runs read different inputs says so in place of a ratio.
+
 ### repeated-runs
 
 *Stage 4.*
@@ -305,6 +314,12 @@ itself as 1×, so every other library reads as "N× ours". A command-line option
 with a per-conversion default may be the answer.
 **Decided by:** —
 **Log:**
+- 2026-10-24: [ratio-views](#ratio-views) defaults to beman.transcode, so
+  every other library reads as a multiple of ours, and `--reference-library`
+  overrides it. There is no per-conversion default yet. Within one input the
+  1× is the reference library's *fastest* result, so the column compares best
+  against best, and beman's other APIs read against its best one. This is
+  provisional until a decision is recorded here.
 
 ### change-significance
 
@@ -318,6 +333,13 @@ repeats don't overlap, or a fixed ±5% band. Instruction counts may need only a
 small fixed tolerance.
 **Decided by:** —
 **Log:**
+- 2026-10-24: [ratio-views](#ratio-views) uses the first candidate. The
+  ratio's interval is built conservatively from the two 95% CIs (lower bound
+  over upper bound, and upper over lower), and a change is reported only when
+  that interval excludes 1×. It inherits the weakness above: on a busy
+  machine, two runs can each have a tight CI and still differ by load. This is
+  provisional until [repeated-runs](#repeated-runs) gives a spread across
+  repeats.
 
 ### aggregate-statistic
 
