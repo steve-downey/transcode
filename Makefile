@@ -514,6 +514,25 @@ bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core 
 		$(BENCH_RESULTS_DIR)/iconv-Perf.xml \
 		$(BENCH_RESULTS_DIR)/boundary-Perf.xml
 
+# Compare two result directories, each holding the XML and .meta.json files of
+# one run, e.g. a copy of $(BENCH_RESULTS_DIR) taken before a change.  An empty
+# label is filled in from what tells the runs apart: compiler, commit, host....
+BENCH_BASELINE_LABEL ?=
+BENCH_CANDIDATE_LABEL ?=
+
+.PHONY: bench-compare
+bench-compare: ## Compare runs: make bench-compare BENCH_BASELINE=DIR BENCH_CANDIDATE=DIR
+	@if [ -z "$(BENCH_BASELINE)" ] || [ -z "$(BENCH_CANDIDATE)" ]; then \
+		echo "usage: make bench-compare BENCH_BASELINE=DIR BENCH_CANDIDATE=DIR"; \
+		exit 2; \
+	fi
+	$(UV) run python tools/process_benchmark_results.py \
+		--run "$(BENCH_BASELINE_LABEL)" $(BENCH_BASELINE) \
+		--run "$(BENCH_CANDIDATE_LABEL)" $(BENCH_CANDIDATE) \
+		--markdown $(BENCH_RESULTS_DIR)/compare.md \
+		--html $(BENCH_RESULTS_DIR)/compare.html \
+		--vegalite $(BENCH_RESULTS_DIR)/compare.vl.json
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile

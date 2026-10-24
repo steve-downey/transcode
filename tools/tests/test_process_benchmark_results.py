@@ -13,11 +13,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from process_benchmark_results import (
     IMPLAUSIBLE_BYTES_PER_NS,
     SIDECAR_FORMAT,
+    Run,
+    assign_labels,
+    comparison_warnings,
+    environment_summary,
     group_by_conversion,
-    load_run,
+    load_suite,
     log_domain,
     main,
+    match_runs,
     parse_catch2_xml,
+    render_comparison_html,
+    render_comparison_markdown,
+    render_comparison_vegalite,
     render_html,
     render_markdown,
     render_svg_chart,
@@ -26,6 +34,7 @@ from process_benchmark_results import (
     slugify,
     suite_name,
     throughput_MiBs,
+    xml_files,
 )
 
 # ---------------------------------------------------------------------------
@@ -284,7 +293,7 @@ def test_suite_name_is_last_component() -> None:
 
 
 def test_load_run_joins_sidecar(run_xml_path: Path) -> None:
-    run = load_run(run_xml_path)
+    run = load_suite(run_xml_path)
     assert run.has_sidecar
     assert run.suite == "smoke"
     assert run.environment["compiler"] == "gcc 16.0.1"
@@ -299,19 +308,19 @@ def test_load_run_joins_sidecar(run_xml_path: Path) -> None:
 
 
 def test_throughput_ci_uses_opposite_time_bounds(run_xml_path: Path) -> None:
-    m = load_run(run_xml_path).measurements[0]
+    m = load_suite(run_xml_path).measurements[0]
     assert m.throughput_ci == pytest.approx(
         (throughput_MiBs(586, 3700.0), throughput_MiBs(586, 3400.0))
     )
 
 
 def test_clean_results_have_no_flags(run_xml_path: Path) -> None:
-    run = load_run(run_xml_path)
+    run = load_suite(run_xml_path)
     assert [m.flags for m in run.measurements[:3]] == [[], [], []]
 
 
 def test_sub_nanosecond_result_is_implausible_and_noisy(run_xml_path: Path) -> None:
-    m = load_run(run_xml_path).measurements[3]
+    m = load_suite(run_xml_path).measurements[3]
     assert m.flags == ["implausible", "noisy"]
     assert not m.plotted
     assert m.throughput is None and m.throughput_ci is None
@@ -324,19 +333,19 @@ def test_implausible_by_bytes_per_ns(tmp_path: Path) -> None:
     p = tmp_path / "fast.xml"
     p.write_text(xml, encoding="utf-8")
     sidecar_path(p).write_text(json.dumps(SAMPLE_SIDECAR), encoding="utf-8")
-    m = load_run(p).measurements[0]
+    m = load_suite(p).measurements[0]
     assert IMPLAUSIBLE_BYTES_PER_NS < 586 / 10.0
     assert m.flags == ["implausible"]
 
 
 def test_missing_corpus_is_empty_input(run_xml_path: Path) -> None:
-    m = load_run(run_xml_path).measurements[4]
+    m = load_suite(run_xml_path).measurements[4]
     assert m.flags == ["empty-input"]
     assert m.throughput is None
 
 
 def test_no_sidecar_flags_every_result(sample_xml_path: Path) -> None:
-    run = load_run(sample_xml_path)
+    run = load_suite(sample_xml_path)
     assert not run.has_sidecar
     assert all("no-metadata" in m.flags for m in run.measurements)
     assert all(m.throughput is None for m in run.measurements)
@@ -347,7 +356,7 @@ def test_unknown_sidecar_format_is_rejected(tmp_path: Path) -> None:
     p.write_text(SAMPLE_XML, encoding="utf-8")
     sidecar_path(p).write_text(json.dumps({"format": "other/9"}), encoding="utf-8")
     with pytest.raises(ValueError, match="unknown sidecar format"):
-        load_run(p)
+        load_suite(p)
 
 
 # ---------------------------------------------------------------------------
@@ -356,24 +365,24 @@ def test_unknown_sidecar_format_is_rejected(tmp_path: Path) -> None:
 
 
 def test_group_compared_conversions_first(run_xml_path: Path) -> None:
-    groups = group_by_conversion(load_run(run_xml_path).measurements)
+    groups = group_by_conversion(load_suite(run_xml_path).measurements)
     assert groups[0].conversion == UTF
     assert groups[0].libraries == ["beman.transcode", "iconv"]
 
 
 def test_group_inputs_run_small_to_large(run_xml_path: Path) -> None:
-    groups = group_by_conversion(load_run(run_xml_path).measurements)
+    groups = group_by_conversion(load_suite(run_xml_path).measurements)
     w1251 = next(g for g in groups if g.conversion == "windows-1251 → UTF-32")
     assert [g.input_bytes for g in w1251.inputs] == [435, 4096]
 
 
 def test_log_domain_is_decade_aligned_and_ignores_excluded(run_xml_path: Path) -> None:
-    run = load_run(run_xml_path)
+    run = load_suite(run_xml_path)
     assert log_domain(run.measurements) == (2, 3)
 
 
 def test_log_domain_with_nothing_plotted(sample_xml_path: Path) -> None:
-    assert log_domain(load_run(sample_xml_path).measurements) == (1.0, 4.0)
+    assert log_domain(load_suite(sample_xml_path).measurements) == (1.0, 4.0)
 
 
 def test_slugify_names_files_for_the_conversion() -> None:
@@ -387,7 +396,7 @@ def test_slugify_names_files_for_the_conversion() -> None:
 
 
 def test_markdown_has_environment_and_conversion_sections(run_xml_path: Path) -> None:
-    md = render_markdown([load_run(run_xml_path)], label="GCC Perf")
+    md = render_markdown([load_suite(run_xml_path)], label="GCC Perf")
     assert "## Benchmark Results — GCC Perf" in md
     assert "**Compiler:** gcc 16.0.1" in md
     assert f"### {UTF}" in md
@@ -395,7 +404,7 @@ def test_markdown_has_environment_and_conversion_sections(run_xml_path: Path) ->
 
 
 def test_markdown_excluded_rows_show_dash_and_flag(run_xml_path: Path) -> None:
-    md = render_markdown([load_run(run_xml_path)])
+    md = render_markdown([load_suite(run_xml_path)])
     row = next(line for line in md.splitlines() if "4K × 0xC0" in line)
     assert "| — |" in row
     assert "implausible, noisy" in row
@@ -408,7 +417,7 @@ def test_markdown_escapes_pipes(tmp_path: Path) -> None:
     sidecar = json.loads(json.dumps(SAMPLE_SIDECAR))
     sidecar["benchmarks"][0]["api"] = "decode | to"
     sidecar_path(p).write_text(json.dumps(sidecar), encoding="utf-8")
-    assert "decode \\| to" in render_markdown([load_run(p)])
+    assert "decode \\| to" in render_markdown([load_suite(p)])
 
 
 def test_markdown_warns_for_sanitized_build(tmp_path: Path) -> None:
@@ -417,18 +426,18 @@ def test_markdown_warns_for_sanitized_build(tmp_path: Path) -> None:
     sidecar = json.loads(json.dumps(SAMPLE_SIDECAR))
     sidecar["environment"]["sanitizers"] = ["address"]
     sidecar_path(p).write_text(json.dumps(sidecar), encoding="utf-8")
-    assert "built with address sanitizer" in render_markdown([load_run(p)])
+    assert "built with address sanitizer" in render_markdown([load_suite(p)])
 
 
 def test_markdown_warns_for_missing_sidecar(sample_xml_path: Path) -> None:
     assert "no smoke.meta.json beside it" in render_markdown(
-        [load_run(sample_xml_path)]
+        [load_suite(sample_xml_path)]
     )
 
 
 def test_markdown_contains_formula_note(run_xml_path: Path) -> None:
     assert "Throughput = input bytes / mean time" in render_markdown(
-        [load_run(run_xml_path)]
+        [load_suite(run_xml_path)]
     )
 
 
@@ -438,7 +447,7 @@ def test_markdown_contains_formula_note(run_xml_path: Path) -> None:
 
 
 def test_standalone_svg_has_no_custom_properties(run_xml_path: Path) -> None:
-    group = group_by_conversion(load_run(run_xml_path).measurements)[0]
+    group = group_by_conversion(load_suite(run_xml_path).measurements)[0]
     svg = render_svg_chart(group, standalone=True)
     assert svg.startswith('<svg xmlns="http://www.w3.org/2000/svg"')
     assert "var(" not in svg
@@ -446,7 +455,7 @@ def test_standalone_svg_has_no_custom_properties(run_xml_path: Path) -> None:
 
 
 def test_svg_has_one_row_per_measurement_and_a_legend(run_xml_path: Path) -> None:
-    group = group_by_conversion(load_run(run_xml_path).measurements)[0]
+    group = group_by_conversion(load_suite(run_xml_path).measurements)[0]
     svg = render_svg_chart(group)
     assert svg.count('class="bt-row"') == 2
     assert "iconv_transcode_view" in svg
@@ -455,7 +464,7 @@ def test_svg_has_one_row_per_measurement_and_a_legend(run_xml_path: Path) -> Non
 
 
 def test_svg_keeps_excluded_rows_with_reason(run_xml_path: Path) -> None:
-    groups = group_by_conversion(load_run(run_xml_path).measurements)
+    groups = group_by_conversion(load_suite(run_xml_path).measurements)
     sjis = next(g for g in groups if g.conversion == "Shift_JIS → UTF-32")
     svg = render_svg_chart(sjis)
     assert "not plotted: input was empty" in svg
@@ -463,7 +472,7 @@ def test_svg_keeps_excluded_rows_with_reason(run_xml_path: Path) -> None:
 
 
 def test_html_is_self_contained(run_xml_path: Path) -> None:
-    page = render_html([load_run(run_xml_path)], label="GCC Perf")
+    page = render_html([load_suite(run_xml_path)], label="GCC Perf")
     assert page.startswith("<title>")
     assert "<script src" not in page
     assert "<link" not in page
@@ -478,12 +487,12 @@ def test_html_is_self_contained(run_xml_path: Path) -> None:
 
 
 def test_vegalite_spec_schema(run_xml_path: Path) -> None:
-    spec = render_vegalite_spec([load_run(run_xml_path)])
+    spec = render_vegalite_spec([load_suite(run_xml_path)])
     assert spec["$schema"].startswith("https://vega.github.io/schema/vega-lite/")
 
 
 def test_vegalite_omits_excluded_results(run_xml_path: Path) -> None:
-    spec = render_vegalite_spec([load_run(run_xml_path)])
+    spec = render_vegalite_spec([load_suite(run_xml_path)])
     names = [v["benchmark"] for v in spec["data"]["values"]]
     assert names == [
         "whatwg_decode utf_8 en_mars corpus",
@@ -493,7 +502,7 @@ def test_vegalite_omits_excluded_results(run_xml_path: Path) -> None:
 
 
 def test_vegalite_ci_brackets_mean(run_xml_path: Path) -> None:
-    for v in render_vegalite_spec([load_run(run_xml_path)])["data"]["values"]:
+    for v in render_vegalite_spec([load_suite(run_xml_path)])["data"]["values"]:
         assert v["ci_low"] <= v["throughput_MiBs"] <= v["ci_high"]
 
 
@@ -536,3 +545,259 @@ def test_main_no_results_fails(unknown_xml_path: Path, tmp_path: Path) -> None:
     )
     assert main([str(empty)]) == 1
     assert main([str(unknown_xml_path)]) == 0
+
+
+# ---------------------------------------------------------------------------
+# Several runs
+# ---------------------------------------------------------------------------
+
+
+def write_run(
+    run_dir: Path,
+    drop: tuple[str, ...] = (),
+    benchmarks: dict[str, dict[str, object]] | None = None,
+    **environment: object,
+) -> Path:
+    """SAMPLE_XML and its sidecar in run_dir, with environment overrides.
+
+    drop removes benchmarks from the XML; benchmarks overrides sidecar entries.
+    """
+    run_dir.mkdir(parents=True, exist_ok=True)
+    xml = SAMPLE_XML
+    for name in drop:
+        start = xml.index(f'<BenchmarkResults name="{name}"')
+        end = xml.index("</BenchmarkResults>", start) + len("</BenchmarkResults>")
+        xml = xml[:start] + xml[end:]
+    p = run_dir / "smoke.xml"
+    p.write_text(xml, encoding="utf-8")
+    sidecar = json.loads(json.dumps(SAMPLE_SIDECAR))
+    sidecar["environment"].update(environment)
+    for entry in sidecar["benchmarks"]:
+        entry.update((benchmarks or {}).get(entry["name"], {}))
+    sidecar_path(p).write_text(json.dumps(sidecar), encoding="utf-8")
+    return run_dir
+
+
+def load(label: str, run_dir: Path) -> Run:
+    return Run(label, [load_suite(f) for f in xml_files([run_dir])])
+
+
+def test_xml_files_expands_directories(tmp_path: Path) -> None:
+    (tmp_path / "b.xml").write_text("", encoding="utf-8")
+    (tmp_path / "a.xml").write_text("", encoding="utf-8")
+    (tmp_path / "a.meta.json").write_text("", encoding="utf-8")
+    single = tmp_path / "elsewhere.xml"
+    assert xml_files([tmp_path, single]) == [
+        tmp_path / "a.xml",
+        tmp_path / "b.xml",
+        single,
+    ]
+
+
+def test_environment_summary_shows_commit(tmp_path: Path) -> None:
+    run = load("", write_run(tmp_path / "a", commit="abc123"))
+    assert ("Commit", "abc123") in environment_summary(run.suites)
+
+
+def test_labels_come_from_the_differing_fields(tmp_path: Path) -> None:
+    runs = [
+        load("", write_run(tmp_path / "a", compiler="gcc 16.0.1 20260322 (exp)")),
+        load("", write_run(tmp_path / "b", compiler="clang 22.1.0 (https://x)")),
+        load("mine", write_run(tmp_path / "c", compiler="clang 21")),
+    ]
+    assign_labels(runs)
+    assert [r.label for r in runs] == ["gcc 16.0.1", "clang 22.1.0", "mine"]
+
+
+def test_label_says_when_a_field_was_not_recorded(tmp_path: Path) -> None:
+    runs = [
+        load("", write_run(tmp_path / "a")),
+        load("", write_run(tmp_path / "b", commit="bbb")),
+    ]
+    assign_labels(runs)
+    assert [r.label for r in runs] == ["commit unknown", "bbb"]
+
+
+def test_indistinguishable_runs_are_numbered(tmp_path: Path) -> None:
+    runs = [
+        load("", write_run(tmp_path / "a")),
+        load("", write_run(tmp_path / "b")),
+    ]
+    assign_labels(runs)
+    assert [r.label for r in runs] == ["run 1", "run 2"]
+
+
+def test_repeated_labels_get_a_suffix(tmp_path: Path) -> None:
+    runs = [
+        load("x", write_run(tmp_path / "a")),
+        load("x", write_run(tmp_path / "b")),
+    ]
+    assign_labels(runs)
+    assert [r.label for r in runs] == ["x", "x #2"]
+
+
+def test_match_runs_pairs_by_suite_and_name(tmp_path: Path) -> None:
+    runs = [
+        load("a", write_run(tmp_path / "a")),
+        load("b", write_run(tmp_path / "b", drop=("missing corpus",))),
+    ]
+    rows, duplicates = match_runs(runs)
+    assert duplicates == []
+    assert len(rows) == 5
+    by_name = {r.name: r for r in rows}
+    assert by_name["missing corpus"].missing_from == [1]
+    assert all(c is not None for c in by_name["optimized away"].cells)
+    assert by_name["optimized away"].cells[0] is runs[0].measurements[3]
+
+
+def test_match_runs_warns_about_duplicates(tmp_path: Path) -> None:
+    write_run(tmp_path / "a")
+    (tmp_path / "a" / "smoke2.xml").write_text(SAMPLE_XML, encoding="utf-8")
+    runs = [load("a", tmp_path / "a"), load("b", write_run(tmp_path / "b"))]
+    rows, duplicates = match_runs(runs)
+    assert len(rows) == 5
+    assert len(duplicates) == 5
+    assert duplicates[0].startswith("a: smoke / ")
+
+
+def test_changed_input_is_noted(tmp_path: Path) -> None:
+    runs = [
+        load("a", write_run(tmp_path / "a")),
+        load(
+            "b",
+            write_run(
+                tmp_path / "b",
+                benchmarks={"optimized away": {"input_bytes": 8192}},
+            ),
+        ),
+    ]
+    rows, _ = match_runs(runs)
+    differs = [r.name for r in rows if r.input_differs]
+    assert differs == ["optimized away"]
+    md = render_comparison_markdown(runs)
+    assert "input differs" in md
+
+
+def test_warns_when_runs_differ_in_more_than_one_field(tmp_path: Path) -> None:
+    runs = [
+        load("a", write_run(tmp_path / "a")),
+        load("b", write_run(tmp_path / "b", compiler="clang 22", host="other")),
+    ]
+    warnings = comparison_warnings(runs)
+    assert warnings[0].startswith("The runs differ in compiler and host")
+
+
+def test_one_differing_field_is_not_a_warning(tmp_path: Path) -> None:
+    runs = [
+        load("a", write_run(tmp_path / "a")),
+        load("b", write_run(tmp_path / "b", compiler="clang 22")),
+    ]
+    assert comparison_warnings(runs) == []
+
+
+def test_warns_about_mixed_suites_dirty_trees_and_sanitizers(tmp_path: Path) -> None:
+    write_run(tmp_path / "a", commit="abc-dirty", sanitizers=["address"])
+    other = json.loads(json.dumps(SAMPLE_SIDECAR))
+    other["environment"]["build_config"] = "Debug"
+    other["environment"]["commit"] = "abc-dirty"
+    other["environment"]["sanitizers"] = ["address"]
+    (tmp_path / "a" / "utf.xml").write_text(
+        SAMPLE_XML.replace("benchmarks.smoke", "benchmarks.utf"), encoding="utf-8"
+    )
+    (tmp_path / "a" / "utf.meta.json").write_text(json.dumps(other), encoding="utf-8")
+    runs = [load("a", tmp_path / "a"), load("b", write_run(tmp_path / "b"))]
+    warnings = comparison_warnings(runs)
+    assert "a: its suites differ in build config (Debug; Perf)." in warnings
+    assert any(w.startswith("a: built from a modified tree") for w in warnings)
+    assert any(w.startswith("a: smoke: built with address sanitizer") for w in warnings)
+
+
+def test_comparison_markdown_has_a_column_per_run(tmp_path: Path) -> None:
+    runs = [
+        load("before", write_run(tmp_path / "a", commit="aaa")),
+        load(
+            "after", write_run(tmp_path / "b", commit="bbb", drop=("missing corpus",))
+        ),
+    ]
+    md = render_comparison_markdown(runs, label="gcc")
+    assert md.startswith("## Benchmark Comparison — gcc")
+    assert "| Run | Compiler | Build config | Commit |" in md
+    assert "| before | gcc 16.0.1 | Perf | aaa |" in md
+    assert "| Input | Library | API | before | after | Notes |" in md
+    assert "| — | not run | not in after; before: empty-input |" in md
+    assert "### Not in every run" in md
+    assert "- smoke / missing corpus: not in after" in md
+    assert "before: implausible, noisy; after: implausible, noisy" in md
+
+
+def test_comparison_html_is_self_contained_and_escaped(tmp_path: Path) -> None:
+    runs = [
+        load("<before>", write_run(tmp_path / "a")),
+        load("after", write_run(tmp_path / "b")),
+    ]
+    page = render_comparison_html(runs)
+    assert "&lt;before&gt;" in page
+    assert "<before>" not in page
+    assert "<script" not in page
+    assert "http" not in page
+
+
+def test_comparison_vegalite_facets_by_run(tmp_path: Path) -> None:
+    runs = [
+        load("before", write_run(tmp_path / "a")),
+        load("after", write_run(tmp_path / "b")),
+    ]
+    spec = render_comparison_vegalite(runs, title="t")
+    assert spec["facet"]["column"]["sort"] == ["before", "after"]
+    assert {v["run"] for v in spec["data"]["values"]} == {"before", "after"}
+
+
+def test_main_compares_runs(tmp_path: Path) -> None:
+    a = write_run(tmp_path / "a")
+    b = write_run(tmp_path / "b", compiler="clang 22")
+    out = tmp_path / "out"
+    rc = main(
+        [
+            "--run", "gcc", str(a),
+            "--run", "clang", str(b / "smoke.xml"),
+            "--markdown", str(out / "c.md"),
+            "--html", str(out / "c.html"),
+            "--svg-dir", str(out / "svg"),
+            "--vegalite", str(out / "c.vl.json"),
+        ]
+    )  # fmt: skip
+    assert rc == 0
+    md = (out / "c.md").read_text(encoding="utf-8")
+    assert md.startswith("## Benchmark Comparison")
+    assert "| gcc | clang |" in md
+    assert "benchmark comparison" in (out / "c.html").read_text(encoding="utf-8")
+    assert sorted(p.name for p in (out / "svg").iterdir()) == ["clang", "gcc"]
+    json.loads((out / "c.vl.json").read_text(encoding="utf-8"))
+
+
+def test_main_positional_files_and_run_are_compared(tmp_path: Path) -> None:
+    a = write_run(tmp_path / "a")
+    b = write_run(tmp_path / "b", commit="bbb")
+    out = tmp_path / "c.md"
+    assert main([str(a), "--run", "new", str(b), "--markdown", str(out)]) == 0
+    assert "| commit unknown | new |" in out.read_text(encoding="utf-8")
+
+
+def test_main_empty_label_is_derived(tmp_path: Path) -> None:
+    a = write_run(tmp_path / "a", commit="aaa")
+    b = write_run(tmp_path / "b", commit="bbb")
+    out = tmp_path / "c.md"
+    assert main(["--run", "", str(a), "--run", "", str(b), "--markdown", str(out)]) == 0
+    assert "| aaa | bbb |" in out.read_text(encoding="utf-8")
+
+
+def test_main_run_without_files_fails(tmp_path: Path) -> None:
+    assert main(["--run", "lonely"]) == 1
+
+
+def test_main_empty_directory_fails(tmp_path: Path) -> None:
+    assert main(["--run", "x", str(tmp_path)]) == 1
+
+
+def test_main_without_input_fails() -> None:
+    assert main([]) == 1

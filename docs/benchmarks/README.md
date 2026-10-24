@@ -87,7 +87,8 @@ every benchmark:
 - which input it read, whether that came from the downloaded corpus, the
   checked-in corpus, or was synthetic, and how many bytes it held;
 
-and, once per run, the compiler, build configuration, sanitizers, CPU and host.
+and, once per run, the compiler, build configuration, commit (`git describe
+--always --dirty`, taken at build time), sanitizers, CPU and host.
 Set `BEMAN_TRANSCODE_BENCH_META=PATH` to write the sidecar somewhere else.
 
 The reporting tool reads each XML file together with its sidecar:
@@ -108,6 +109,7 @@ uv run python tools/process_benchmark_results.py \
 | `--html PATH` | Self-contained HTML report: environment, warnings, one chart per conversion, the full results table |
 | `--svg-dir DIR` | One standalone SVG chart per conversion, named for it (`shift-jis-to-utf-8.svg`), for figures in papers |
 | `--vegalite PATH` | Vega-Lite spec; paste into <https://vega.github.io/editor/> |
+| `--run LABEL PATH...` | A labelled run, for comparing runs; see [Comparing runs](#comparing-runs). With more than one run, `--svg-dir` writes one subdirectory per run |
 
 `make bench-perf-report` writes all four into `data/benchmarks/results/`.
 
@@ -136,9 +138,40 @@ An unplotted result keeps its row in the chart, with the reason where the value
 would be.  The report also warns when a suite was built with a sanitizer or
 without optimization, or when suites were built with different compilers.
 
-Passing several XML files merges them into one report.  Comparing two runs of
-the same benchmarks, such as two toolchains or before and after a change, is not
-supported yet.
+Passing several XML files merges them into one report.
+
+### Comparing runs
+
+A *run* is the set of suites from one benchmarking session: a directory of XML
+files and sidecars, or a list of XML files.  Give each run with `--run LABEL
+PATH...`, the first being the reference:
+
+```bash
+uv run python tools/process_benchmark_results.py \
+    --run gcc-16 results-gcc/ \
+    --run clang-22 results-clang/ \
+    --html compare.html --markdown compare.md
+```
+
+or, for two directories, `make bench-compare BENCH_BASELINE=DIR
+BENCH_CANDIDATE=DIR`, which writes `compare.{md,html,vl.json}` into
+`data/benchmarks/results/`.  Positional XML files, if any, form one more run,
+first in order.  An empty label (`--run "" DIR`) is filled in from whatever
+tells the runs apart, such as the compiler or the commit.
+
+Results are matched across runs by suite and benchmark name.  The report
+has a table describing each run, then one table per conversion with a
+throughput column per run.  A benchmark missing from a run shows `not run`
+there, and every such benchmark is also listed under "Not in every run".  Each
+row's notes give the flags of each run's result, and say `input differs` when
+the runs read different inputs (a corpus downloaded for one run only, say),
+because their throughputs then measure different work.
+
+The report warns when the runs differ in more than one of compiler, build
+config, commit, sanitizers, host and CPU, since a difference between them then
+can't be put down to any one of these; when the suites within one run differ in
+any of them; and when a run was built from a modified tree.  Comparison reports
+never fail on a slowdown: the tool exits 0 whatever the numbers say.
 
 ### Describing a benchmark
 
@@ -226,3 +259,4 @@ grep "^#" data/benchmarks/results/matrix-20260527.txt
 | `make bench-report` | smoke → Markdown + HTML | — |
 | `make bench-report-lto` | LTO smoke → Markdown + HTML + Vega-Lite | — |
 | `make bench-perf-report` | core suites, GCC-16 Perf → Markdown + HTML + SVG + Vega-Lite | — |
+| `make bench-compare` | two result directories → comparison Markdown + HTML + Vega-Lite | — |
