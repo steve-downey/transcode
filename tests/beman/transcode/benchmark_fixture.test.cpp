@@ -12,11 +12,13 @@
 
 #include <array>
 #include <cstddef>
+#include <initializer_list>
 #include <string>
 #include <string_view>
 #include <vector>
 
 using beman::transcoding::bench::begin_benchmark;
+using beman::transcoding::bench::begin_run;
 using beman::transcoding::bench::benchmark_records;
 using beman::transcoding::bench::chunk_corpus;
 using beman::transcoding::bench::clear_benchmark_records;
@@ -26,6 +28,8 @@ using beman::transcoding::bench::describe;
 using beman::transcoding::bench::end_benchmark;
 using beman::transcoding::bench::load_corpus;
 using beman::transcoding::bench::metadata_json;
+using beman::transcoding::bench::parse_load_average;
+using beman::transcoding::bench::read_load_average;
 using beman::transcoding::bench::record_input;
 using beman::transcoding::bench::require_corpus;
 using beman::transcoding::bench::volatile_sink;
@@ -206,6 +210,40 @@ TEST_CASE("metadata_json escapes strings and lists every record", "[bench][metad
           std::string::npos);
     CHECK(json.find("\"build_config\": ") != std::string::npos);
     CHECK(json.find("\"commit\": ") != std::string::npos);
+    clear_benchmark_records();
+}
+
+TEST_CASE("parse_load_average reads the first three fields of /proc/loadavg", "[bench][metadata]") {
+    auto load = parse_load_average("1.43 1.56 1.93 3/8707 2545026");
+    REQUIRE(load.has_value());
+    CHECK(load->one == 1.43);
+    CHECK(load->five == 1.56);
+    CHECK(load->fifteen == 1.93);
+    CHECK(parse_load_average("0.00 0.01 0.05").has_value());
+}
+
+TEST_CASE("parse_load_average rejects text that is not a load average", "[bench][metadata]") {
+    CHECK_FALSE(parse_load_average("").has_value());
+    CHECK_FALSE(parse_load_average("1.43 1.56").has_value());
+    CHECK_FALSE(parse_load_average("busy 1.56 1.93").has_value());
+}
+
+TEST_CASE("metadata_json records the machine state", "[bench][metadata]") {
+    clear_benchmark_records();
+    begin_benchmark("one");
+    end_benchmark();
+
+    std::string before = metadata_json(benchmark_records());
+    CHECK(before.find("\"load_start\": null") != std::string::npos);
+    for (const char* key : {"\"kernel\": ", "\"cpus\": ", "\"governor\": ", "\"turbo\": ", "\"load_end\": "})
+        CHECK(before.find(key) != std::string::npos);
+
+    begin_run();
+    std::string after = metadata_json(benchmark_records());
+    if (read_load_average().has_value())
+        CHECK(after.find("\"load_start\": [") != std::string::npos);
+    else
+        CHECK(after.find("\"load_start\": null") != std::string::npos);
     clear_benchmark_records();
 }
 

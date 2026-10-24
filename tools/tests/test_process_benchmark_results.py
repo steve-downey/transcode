@@ -11,6 +11,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from process_benchmark_results import (
+    BUSY_LOAD,
     IMPLAUSIBLE_BYTES_PER_NS,
     SIDECAR_FORMAT,
     Run,
@@ -22,6 +23,7 @@ from process_benchmark_results import (
     log_domain,
     main,
     match_runs,
+    other_load,
     parse_catch2_xml,
     render_comparison_html,
     render_comparison_markdown,
@@ -33,6 +35,7 @@ from process_benchmark_results import (
     sidecar_path,
     slugify,
     suite_name,
+    suite_warnings,
     throughput_MiBs,
     xml_files,
 )
@@ -710,6 +713,77 @@ def test_warns_about_mixed_suites_dirty_trees_and_sanitizers(tmp_path: Path) -> 
     assert "a: its suites differ in build config (Debug; Perf)." in warnings
     assert any(w.startswith("a: built from a modified tree") for w in warnings)
     assert any(w.startswith("a: smoke: built with address sanitizer") for w in warnings)
+
+
+def test_other_load_discounts_the_benchmark_thread() -> None:
+    assert other_load({}) is None
+    assert other_load({"load_start": [0.5, 0, 0]}) == 0.5
+    assert other_load({"load_end": [0.5, 0, 0]}) == 0.0
+    assert other_load({"load_start": [0.5, 0, 0], "load_end": [4.0, 0, 0]}) == 3.0
+
+
+def test_busy_suite_is_warned_about(tmp_path: Path) -> None:
+    busy = load("", write_run(tmp_path / "a", load_start=[21.5, 20, 18], cpus=20))
+    (warning,) = suite_warnings(busy.suites)
+    assert warning == (
+        "smoke: the machine was busy (1-minute load 21.50 at the start, on 20 "
+        "CPUs), so other work may have slowed these timings."
+    )
+    quiet = load(
+        "",
+        write_run(
+            tmp_path / "b", load_start=[BUSY_LOAD, 1, 1], load_end=[BUSY_LOAD + 1, 1, 1]
+        ),
+    )
+    assert suite_warnings(quiet.suites) == []
+
+
+def test_environment_summary_shows_the_machine_state(tmp_path: Path) -> None:
+    run = load(
+        "",
+        write_run(
+            tmp_path / "a",
+            cpus=20,
+            governor="powersave",
+            turbo=True,
+            kernel="7.0.0",
+            load_start=[1.43, 1, 1],
+            load_end=[2.1, 1, 1],
+        ),
+    )
+    rows = environment_summary(run.suites)
+    for row in [
+        ("CPUs", "20"),
+        ("Governor", "powersave"),
+        ("Turbo", "on"),
+        ("Kernel", "7.0.0"),
+        ("Load (1 min)", "1.43 – 2.10"),
+    ]:
+        assert row in rows
+
+
+def test_comparison_shows_each_runs_load(tmp_path: Path) -> None:
+    runs = [
+        load("quiet", write_run(tmp_path / "a", load_start=[0.4, 0, 0])),
+        load("busy", write_run(tmp_path / "b", load_start=[21.5, 0, 0])),
+    ]
+    md = render_comparison_markdown(runs)
+    assert "| CPU | Other load | Run at | Suites |" in md
+    assert "| Test CPU | 0.40 |" in md
+    assert "| Test CPU | 21.50 (busy) |" in md
+    assert any(
+        w.startswith("busy: smoke: the machine was busy")
+        for w in comparison_warnings(runs)
+    )
+
+
+def test_turbo_label_names_the_field(tmp_path: Path) -> None:
+    runs = [
+        load("", write_run(tmp_path / "a", turbo=True)),
+        load("", write_run(tmp_path / "b", turbo=False)),
+    ]
+    assign_labels(runs)
+    assert [r.label for r in runs] == ["turbo on", "turbo off"]
 
 
 def test_comparison_markdown_has_a_column_per_run(tmp_path: Path) -> None:

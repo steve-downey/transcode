@@ -87,8 +87,14 @@ every benchmark:
 - which input it read, whether that came from the downloaded corpus, the
   checked-in corpus, or was synthetic, and how many bytes it held;
 
-and, once per run, the compiler, build configuration, commit (`git describe
---always --dirty`, taken at build time), sanitizers, CPU and host.
+and, once per run:
+
+- the compiler, build configuration, commit (`git describe --always --dirty`,
+  taken at build time) and sanitizers;
+- the host, CPU model, logical CPU count, kernel version, CPU frequency
+  governor, and whether turbo/boost is enabled;
+- the load averages from `/proc/loadavg` as the run starts and as it ends.
+
 Set `BEMAN_TRANSCODE_BENCH_META=PATH` to write the sidecar somewhere else.
 
 The reporting tool reads each XML file together with its sidecar:
@@ -138,6 +144,14 @@ An unplotted result keeps its row in the chart, with the reason where the value
 would be.  The report also warns when a suite was built with a sanitizer or
 without optimization, or when suites were built with different compilers.
 
+It also warns when a suite ran on a busy machine.  The *other load* is the
+1-minute load average from work other than the benchmark.  It is the larger of
+the load as the suite started and the load as it ended less one, the
+benchmark's own thread.  A suite is busy when its other load is above 2.0.  The
+benchmarks are single-threaded, but other work still shares the CPU's power
+budget and cache.  A busy suite is reported, not dropped: the warning stops a
+noisy run being read as a quiet one.
+
 Passing several XML files merges them into one report.
 
 ### Comparing runs
@@ -167,8 +181,9 @@ row's notes give the flags of each run's result, and say `input differs` when
 the runs read different inputs (a corpus downloaded for one run only, say),
 because their throughputs then measure different work.
 
-The report warns when the runs differ in more than one of compiler, build
-config, commit, sanitizers, host and CPU, since a difference between them then
+The run table shows each run's highest other load, marked `busy` above the
+threshold.  The report warns when the runs differ in more than one of compiler,
+build config, commit, sanitizers, host, CPU, kernel, governor and turbo, since a difference between them then
 can't be put down to any one of these; when the suites within one run differ in
 any of them; and when a run was built from a modified tree.  Comparison reports
 never fail on a slowdown: the tool exits 0 whatever the numbers say.
