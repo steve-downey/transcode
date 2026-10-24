@@ -15,6 +15,7 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
 
     // --- Single-byte codecs ---
 
+    describe({.conversion = "windows-1251 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("Single-byte decode: windows-1251 Russian")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ru_mars_windows1251.bin");
@@ -23,6 +24,7 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
 
     // --- Multi-byte: Shift-JIS ---
 
+    describe({.conversion = "Shift_JIS → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("Multi-byte decode: Shift-JIS Japanese")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ja_mars_shiftjis.bin");
@@ -31,6 +33,7 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
 
     // --- UTF-8 via WHATWG ---
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("UTF-8 decode: Japanese (3-byte heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ja_mars_utf8.txt");
@@ -39,6 +42,7 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
 
     // --- GB18030 / GBK: 2-byte and 4-byte CJK sequences ---
 
+    describe({.conversion = "GBK → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("GB18030 decode: Chinese (2-byte and 4-byte CJK)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("zh_mars_gb18030.bin");
@@ -47,6 +51,7 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
 
     // --- Big5: Traditional Chinese with dual-codepoint special cases ---
 
+    describe({.conversion = "Big5 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("Big5 decode: Traditional Chinese")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("zh_tw_mars_big5.bin");
@@ -55,6 +60,7 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
 
     // --- EUC-JP: SS2 (half-width katakana), SS3 (JIS X 0212), 2-byte JIS X 0208 ---
 
+    describe({.conversion = "EUC-JP → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("EUC-JP decode: Japanese (SS2/SS3/2-byte paths)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ja_mars_eucjp.bin");
@@ -63,6 +69,7 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
 
     // --- EUC-KR: 2-byte Korean with 0x7F gap offset ---
 
+    describe({.conversion = "EUC-KR → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("EUC-KR decode: Korean (2-byte)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ko_mars_euckr.bin");
@@ -71,6 +78,7 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
 
     // --- ISO-2022-JP: stateful, 6-state machine with ESC sequences ---
 
+    describe({.conversion = "ISO-2022-JP → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("ISO-2022-JP decode: Japanese (stateful, escape sequences)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ja_mars_iso2022jp.bin");
@@ -79,38 +87,54 @@ TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
 
     // --- UTF-16: surrogate pair decode, large stream ---
 
+    describe({.conversion = "UTF-16LE → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("UTF-16LE decode: large stream (War and Peace)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("war_and_peace_utf16le.bin");
         meter.measure([&] { return count_elements(data | whatwg_decode<codec::utf_16le>); });
     };
 
+    describe({.conversion = "UTF-16BE → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("UTF-16BE decode: large stream (War and Peace)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("war_and_peace_utf16be.bin");
         meter.measure([&] { return count_elements(data | whatwg_decode<codec::utf_16be>); });
     };
+}
 
-    // --- Large CJK novels ---
+// The novels come from tools/download_benchmark_corpora.py and have no
+// checked-in fallback, so this test case skips when they are absent.
+TEST_CASE("WHATWG legacy codec benchmarks: large CJK novels", "[benchmark][whatwg]") {
+    using namespace beman::transcoding;
+    using namespace beman::transcoding::bench;
 
+    require_corpus("genji_monogatari_shiftjis.bin");
+    require_corpus("genji_monogatari_eucjp.bin");
+    require_corpus("xiyouji_gb18030.bin");
+    require_corpus("xiyouji_big5.bin");
+
+    describe({.conversion = "Shift_JIS → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("Shift-JIS decode: Tale of Genji (2.3 MB)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("genji_monogatari_shiftjis.bin");
         meter.measure([&] { return count_elements(data | whatwg_decode<codec::shift_jis>); });
     };
 
+    describe({.conversion = "EUC-JP → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("EUC-JP decode: Tale of Genji (2.3 MB)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("genji_monogatari_eucjp.bin");
         meter.measure([&] { return count_elements(data | whatwg_decode<codec::euc_jp>); });
     };
 
+    describe({.conversion = "GB18030 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("GB18030 decode: Journey to the West (624 KB)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("xiyouji_gb18030.bin");
         meter.measure([&] { return count_elements(data | whatwg_decode<codec::gb18030>); });
     };
 
+    describe({.conversion = "Big5 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("Big5 decode: Journey to the West (624 KB)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("xiyouji_big5.bin");

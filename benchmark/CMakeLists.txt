@@ -17,10 +17,13 @@ target_compile_definitions(
     PRIVATE
         "BENCHMARK_DATA_DIR=\"${PROJECT_SOURCE_DIR}/data/benchmarks\""
         "BENCHMARK_CORPUS_DIR=\"${PROJECT_SOURCE_DIR}/benchmark/corpus\""
+        "BENCHMARK_BUILD_CONFIG=\"$<CONFIG>\""
 )
+# Catch2 for the listener that writes the benchmark metadata sidecar, and for
+# SKIP in require_corpus.
 target_link_libraries(
     beman.transcode.benchmark_fixture
-    PRIVATE beman::transcode
+    PRIVATE beman::transcode Catch2::Catch2
 )
 
 add_executable(beman.transcode.benchmarks.smoke)

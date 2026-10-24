@@ -29,6 +29,7 @@ TEST_CASE("mbstowcs baselines", "[benchmark][codecvt]") {
         return;
     }
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "C/C++ standard library", .api = "mbstowcs (wchar_t)"});
     BENCHMARK_ADVANCED("mbstowcs UTF-8→wchar_t: English (ASCII-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto                 span = corpus_span("en_mars_utf8.txt");
@@ -37,6 +38,7 @@ TEST_CASE("mbstowcs baselines", "[benchmark][codecvt]") {
         meter.measure([&] { return std::mbstowcs(output.data(), input.c_str(), output.size()); });
     };
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "C/C++ standard library", .api = "mbstowcs (wchar_t)"});
     BENCHMARK_ADVANCED("mbstowcs UTF-8→wchar_t: Japanese (CJK-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto                 span = corpus_span("ja_mars_utf8.txt");
@@ -67,6 +69,8 @@ TEST_CASE("mbstowcs baselines", "[benchmark][codecvt]") {
 TEST_CASE("codecvt baselines", "[benchmark][codecvt]") {
     using namespace beman::transcoding::bench;
 
+    describe(
+        {.conversion = "UTF-8 → UTF-32", .library = "C/C++ standard library", .api = "wstring_convert<codecvt_utf8>"});
     BENCHMARK_ADVANCED("codecvt UTF-8→char32_t: English (ASCII-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto                                                        span = corpus_span("en_mars_utf8.txt");
@@ -75,6 +79,8 @@ TEST_CASE("codecvt baselines", "[benchmark][codecvt]") {
         meter.measure([&] { return converter.from_bytes(input).size(); });
     };
 
+    describe(
+        {.conversion = "UTF-8 → UTF-32", .library = "C/C++ standard library", .api = "wstring_convert<codecvt_utf8>"});
     BENCHMARK_ADVANCED("codecvt UTF-8→char32_t: Japanese (CJK-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto                                                        span = corpus_span("ja_mars_utf8.txt");

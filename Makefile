@@ -424,22 +424,22 @@ BENCH_RESULTS_DIR ?= data/benchmarks/results
 
 .PHONY: bench-report
 bench-report: CONFIG=RelWithDebInfo
-bench-report: compile ## Run smoke benchmark (RelWithDebInfo) and generate Markdown throughput report
+bench-report: compile ## Run smoke benchmark (RelWithDebInfo) and generate Markdown + HTML throughput report
 	@mkdir -p $(BENCH_RESULTS_DIR)
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]" \
 		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
 	$(UV) run python tools/process_benchmark_results.py \
-		--corpus-dir benchmark/corpus \
-		--manifest data/benchmarks/corpus_manifest.json \
 		--label "$(CONFIG)" \
+		--markdown $(BENCH_RESULTS_DIR)/smoke-$(CONFIG).md \
+		--html $(BENCH_RESULTS_DIR)/smoke-$(CONFIG).html \
 		$(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
 
 .PHONY: bench-report-lto
-bench-report-lto: bench-lto-xml ## Run GCC LTO smoke benchmark and generate Markdown throughput report
+bench-report-lto: bench-lto-xml ## Run GCC LTO smoke benchmark and generate Markdown + HTML throughput report
 	$(UV) run python tools/process_benchmark_results.py \
-		--corpus-dir benchmark/corpus \
-		--manifest data/benchmarks/corpus_manifest.json \
 		--label "GCC -O3 -flto" \
+		--markdown $(BENCH_RESULTS_DIR)/smoke-lto.md \
+		--html $(BENCH_RESULTS_DIR)/smoke-lto.html \
 		--vegalite $(BENCH_RESULTS_DIR)/smoke-lto.vl.json \
 		$(BENCH_RESULTS_DIR)/smoke-lto.xml
 
@@ -486,7 +486,7 @@ bench-perf-all: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf config and ru
 	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
 
 .PHONY: bench-perf-report
-bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core benchmarks, generate report
+bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core benchmarks, generate Markdown, HTML and SVG report
 	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
 	@mkdir -p $(BENCH_RESULTS_DIR)
 	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]" \
@@ -502,9 +502,10 @@ bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core 
 	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]" \
 		--reporter xml --out $(BENCH_RESULTS_DIR)/boundary-Perf.xml
 	$(UV) run python tools/process_benchmark_results.py \
-		--corpus-dir benchmark/corpus \
-		--manifest data/benchmarks/corpus_manifest.json \
 		--label "GCC-16 Perf (native)" \
+		--markdown $(BENCH_RESULTS_DIR)/perf.md \
+		--html $(BENCH_RESULTS_DIR)/perf.html \
+		--svg-dir $(BENCH_RESULTS_DIR)/perf-svg \
 		--vegalite $(BENCH_RESULTS_DIR)/perf.vl.json \
 		$(BENCH_RESULTS_DIR)/smoke-Perf.xml \
 		$(BENCH_RESULTS_DIR)/utf-Perf.xml \
