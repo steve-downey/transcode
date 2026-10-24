@@ -21,6 +21,6 @@ var searchData=
   ['euc_5fjp_2ehpp_18',['euc_jp.hpp',['../euc__jp_8hpp.html',1,'']]],
   ['euc_5fjp_5fjis0212_2ehpp_19',['euc_jp_jis0212.hpp',['../euc__jp__jis0212_8hpp.html',1,'']]],
   ['euc_5fkr_20',['euc_kr',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa86c9996b17a77b9a0033b639a7018ebd',1,'beman::transcoding']]],
-  ['euc_5fkr_2ehpp_21',['euc_kr.hpp',['../tables_2euc__kr_8hpp.html',1,'(Global Namespace)'],['../euc__kr_8hpp.html',1,'(Global Namespace)']]],
+  ['euc_5fkr_2ehpp_21',['euc_kr.hpp',['../euc__kr_8hpp.html',1,'(Global Namespace)'],['../tables_2euc__kr_8hpp.html',1,'(Global Namespace)']]],
   ['expected_22',['expected',['../namespacebeman_1_1transcoding.html#a692fa6937eaeda0a1ceaeed075b35218acd26d9e10ce691cc69aa2b90dcebbdac',1,'beman::transcoding']]]
 ];
