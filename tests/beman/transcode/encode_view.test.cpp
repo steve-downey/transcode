@@ -242,3 +242,35 @@ TEST_CASE("encode_view: view base() returns underlying range", "[encode_view]") 
     CHECK(view.base().size() == 2);
     CHECK(view.base()[0] == U'A');
 }
+
+TEST_CASE("encode_view: table_codec encodes the lowest index for a duplicated code point", "[encode_view]") {
+    // Two slots hold U+00C0; the first wins.  A later slot holds U+00C1 alone.
+    constexpr auto twice = [] {
+        std::array<char32_t, 128> t{};
+        t[3]  = U'\x00C0';
+        t[9]  = U'\x00C0';
+        t[64] = U'\x00C1';
+        return t;
+    }();
+    using twice_codec = table_codec<twice>;
+    CHECK(twice_codec{}.encode_one(U'\x00C0').bytes[0] == 0x83);
+    CHECK(twice_codec{}.encode_one(U'\x00C1').bytes[0] == 0xC0);
+    CHECK(twice_codec{}.encode_one(U'\x00C2').is_error);
+    CHECK(constify(twice_codec{}.encode_one(U'\x00C1').bytes[0]) == 0xC0);
+}
+
+TEST_CASE("encode_view: full_table_codec encodes by table position and rejects unmapped", "[encode_view]") {
+    constexpr auto flipped = [] {
+        std::array<char32_t, 256> t{};
+        for (std::size_t i = 1; i < 256; ++i)
+            t[i] = static_cast<char32_t>(255 - i);
+        return t;
+    }();
+    using flipped_codec = full_table_codec<flipped>;
+    CHECK(flipped_codec{}.encode_one(U'A').bytes[0] == 255 - 'A');
+    CHECK(flipped_codec{}.encode_one(U'\x00FE').bytes[0] == 1);
+    // Position 0 holds 0, the unmapped marker, so neither U+00FF nor U+0000 encodes.
+    CHECK(flipped_codec{}.encode_one(U'\x00FF').is_error);
+    CHECK(flipped_codec{}.encode_one(U'\0').is_error);
+    CHECK(constify(flipped_codec{}.encode_one(U'A').bytes[0]) == 255 - 'A');
+}

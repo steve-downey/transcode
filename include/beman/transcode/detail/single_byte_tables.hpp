@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 
 namespace beman::transcoding::detail {
 
@@ -148,16 +149,18 @@ constexpr char32_t decode_single_byte_at(unsigned char byte, const char32_t* tab
     return cp;
 }
 
-constexpr char encode_single_byte_at(char32_t cp, const char32_t* table) {
+// The byte for cp in codec C, or '?' when C cannot represent it.  Codecs
+// without an encode table (replacement, x-user-defined) encode only ASCII.
+template <codec C>
+constexpr char encode_single_byte_at(char32_t cp) {
     if (cp < 0x80)
         return static_cast<char>(cp);
-    if (table == nullptr)
+    if constexpr (get_encode_table<C>() == nullptr) {
         return '?';
-    for (int i = 0; i < 128; ++i) {
-        if (table[i] == cp)
-            return static_cast<char>(0x80 + i);
+    } else {
+        int pointer = reverse_index_for<table_ref{get_encode_table<C>(), 128}>.find(cp);
+        return pointer < 0 ? '?' : static_cast<char>(0x80 + pointer);
     }
-    return '?';
 }
 
 } // namespace beman::transcoding::detail

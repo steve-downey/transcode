@@ -102,9 +102,8 @@ class random_access_whatwg_encode_view
                 if (validation.is_error)
                     return error_result(validation.error);
             }
-            const auto  cp     = validation.code_point;
-            const auto& table  = detail::random_access_encode_table<C>();
-            const auto  result = detail::single_byte_encode_one(cp, table);
+            const auto cp     = validation.code_point;
+            const auto result = detail::single_byte_encode_one<detail::random_access_encode_table<C>()>(cp);
             return result.is_error ? error_result(whatwg_error::unmapped_codepoint)
                                    : value_type{static_cast<char>(result.byte)};
         }
@@ -503,8 +502,8 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
     }
     const auto cp = validation.code_point;
 
-    auto encode_single = [&](const char32_t (&table)[128]) {
-        const auto result = detail::single_byte_encode_one(cp, table);
+    auto encode_single = [&]<detail::table_ref Table> {
+        const auto result = detail::single_byte_encode_one<Table>(cp);
         if (result.is_error) {
             this->emit_error(whatwg_error::unmapped_codepoint, {'?'});
         } else {
@@ -520,7 +519,7 @@ constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
         len_ = r.count;
         pos_ = 0;
     } else if constexpr (detail::random_access_encode_codec<C>) {
-        encode_single(detail::random_access_encode_table<C>());
+        encode_single.template operator()<detail::random_access_encode_table<C>()>();
     } else if constexpr (C == codec::gbk) {
         auto r = detail::gbk_encode_one(cp);
         if (r.is_error) {

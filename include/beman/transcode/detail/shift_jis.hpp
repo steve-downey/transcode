@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/error.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
@@ -38,9 +39,15 @@ constexpr shift_jis_decode_result shift_jis_decode_one(I& current, S end);
 // Encode one Unicode codepoint as Shift_JIS.
 // ASCII (cp < 0x80) outputs 1 byte. U+00A5 maps to 0x5C; U+203E to 0x7E.
 // U+FF61-U+FF9F (half-width katakana) map to 0xA1-0xDF.
-// Other codepoints are searched in the decode table.
+// Other codepoints are looked up in shift_jis_index.
 // Returns is_error=true if the codepoint is not representable in Shift_JIS.
 constexpr shift_jis_encode_result shift_jis_encode_one(char32_t cp);
+
+// WHATWG's "index Shift_JIS pointer": the first pointer for a code point in
+// index jis0208, excluding pointers 8272-8835.  Those are the NEC-selected
+// IBM extensions, which duplicate the IBM extensions at 8836 and up; the
+// exclusion makes the IBM lead bytes 0xFA-0xFC the canonical encoding.
+inline constexpr auto& shift_jis_index = reverse_index_for<tables::shift_jis, pointer_range{8272, 8835}>;
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -120,19 +127,17 @@ constexpr shift_jis_encode_result shift_jis_encode_one(char32_t cp) {
         return r;
     }
 
-    // Search the decode table for the lowest pointer mapping to cp
-    for (int i = 0; i < 11280; ++i) {
-        if (tables::shift_jis[i] == cp) {
-            int                     lead_offset  = i / 188;
-            int                     trail_offset = i % 188;
-            int                     lead         = (lead_offset < 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1;
-            int                     trail        = (trail_offset < 63) ? trail_offset + 0x40 : trail_offset + 0x41;
-            shift_jis_encode_result r{};
-            r.bytes[0] = static_cast<unsigned char>(lead);
-            r.bytes[1] = static_cast<unsigned char>(trail);
-            r.count    = 2;
-            return r;
-        }
+    int pointer = shift_jis_index.find(cp);
+    if (pointer >= 0) {
+        int                     lead_offset  = pointer / 188;
+        int                     trail_offset = pointer % 188;
+        int                     lead         = (lead_offset < 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1;
+        int                     trail        = (trail_offset < 63) ? trail_offset + 0x40 : trail_offset + 0x41;
+        shift_jis_encode_result r{};
+        r.bytes[0] = static_cast<unsigned char>(lead);
+        r.bytes[1] = static_cast<unsigned char>(trail);
+        r.count    = 2;
+        return r;
     }
 
     return {{}, 0, true};

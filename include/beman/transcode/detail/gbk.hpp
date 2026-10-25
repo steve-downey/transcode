@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/error.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/gbk.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
@@ -90,18 +91,25 @@ constexpr gbk_encode_result gbk_encode_one(char32_t cp) {
         return r;
     }
 
-    for (int i = 0; i < 23940; ++i) {
-        if (tables::gbk[i] == cp) {
-            int lead  = (i / 190) + 0x81;
-            int trail = (i % 190) + 0x40;
-            if (trail >= 0x7F)
-                ++trail;
-            gbk_encode_result r{};
-            r.bytes[0] = static_cast<unsigned char>(lead);
-            r.bytes[1] = static_cast<unsigned char>(trail);
-            r.count    = 2;
-            return r;
-        }
+    // WHATWG: the GBK encoder writes U+20AC as the single byte 0x80, the
+    // byte its decoder reads back as U+20AC.  GB18030 uses the index instead.
+    if (cp == 0x20AC) {
+        gbk_encode_result r{};
+        r.bytes[0] = 0x80;
+        r.count    = 1;
+        return r;
+    }
+
+    if (int pointer = reverse_index_for<tables::gbk>.find(cp); pointer >= 0) {
+        int lead  = (pointer / 190) + 0x81;
+        int trail = (pointer % 190) + 0x40;
+        if (trail >= 0x7F)
+            ++trail;
+        gbk_encode_result r{};
+        r.bytes[0] = static_cast<unsigned char>(lead);
+        r.bytes[1] = static_cast<unsigned char>(trail);
+        r.count    = 2;
+        return r;
     }
 
     return {{}, 0, true};

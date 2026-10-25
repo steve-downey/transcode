@@ -29,8 +29,7 @@ class single_byte_encode_view : public std::ranges::view_interface<single_byte_e
     class iterator {
         using base_iter = std::ranges::iterator_t<R>;
 
-        base_iter       current_;
-        const char32_t* table_;
+        base_iter current_;
 
       public:
         using iterator_concept = std::random_access_iterator_tag;
@@ -40,14 +39,12 @@ class single_byte_encode_view : public std::ranges::view_interface<single_byte_e
 
         constexpr iterator() = default;
 
-        constexpr iterator(base_iter current, const char32_t* table) : current_(current), table_(table) {}
+        constexpr explicit iterator(base_iter current) : current_(current) {}
 
-        constexpr char operator*() const {
-            return detail::encode_single_byte_at(static_cast<char32_t>(*current_), table_);
-        }
+        constexpr char operator*() const { return detail::encode_single_byte_at<C>(static_cast<char32_t>(*current_)); }
 
         constexpr char operator[](difference_type n) const {
-            return detail::encode_single_byte_at(static_cast<char32_t>(current_[n]), table_);
+            return detail::encode_single_byte_at<C>(static_cast<char32_t>(current_[n]));
         }
 
         constexpr iterator& operator++() {
@@ -108,9 +105,9 @@ class single_byte_encode_view : public std::ranges::view_interface<single_byte_e
   public:
     constexpr explicit single_byte_encode_view(R base) : base_(std::move(base)) {}
 
-    constexpr iterator begin() const { return iterator(std::ranges::begin(base_), detail::get_encode_table<C>()); }
+    constexpr iterator begin() const { return iterator(std::ranges::begin(base_)); }
 
-    constexpr iterator end() const { return iterator(std::ranges::end(base_), detail::get_encode_table<C>()); }
+    constexpr iterator end() const { return iterator(std::ranges::end(base_)); }
 
     constexpr auto size() const
         requires std::ranges::sized_range<R>

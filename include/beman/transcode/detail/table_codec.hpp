@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/codec_concepts.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <array>
@@ -53,11 +54,10 @@ template <std::array<char32_t, 128> Table>
 constexpr encode_result table_codec<Table>::encode_one(char32_t cp) const {
     if (cp < 0x80)
         return {{static_cast<unsigned char>(cp)}, 1, false};
-    for (int i = 0; i < 128; ++i) {
-        if (Table[static_cast<std::size_t>(i)] == cp)
-            return {{static_cast<unsigned char>(0x80 + i)}, 1, false};
-    }
-    return {{}, 0, true};
+    int pointer = detail::reverse_index_for<Table>.find(cp);
+    if (pointer < 0)
+        return {{}, 0, true};
+    return {{static_cast<unsigned char>(0x80 + pointer)}, 1, false};
 }
 
 // ---------------------------------------------------------------------------
@@ -94,11 +94,12 @@ constexpr char32_t full_table_codec<Table>::decode_byte(unsigned char byte) cons
 
 template <std::array<char32_t, 256> Table>
 constexpr encode_result full_table_codec<Table>::encode_one(char32_t cp) const {
-    for (int i = 0; i < 256; ++i) {
-        if (Table[static_cast<std::size_t>(i)] == cp)
-            return {{static_cast<unsigned char>(i)}, 1, false};
-    }
-    return {{}, 0, true};
+    // Zero means "unmapped" in the table, so U+0000 has no encoding here, just
+    // as byte 0x00 has no decoding.
+    int pointer = detail::reverse_index_for<Table>.find(cp);
+    if (pointer < 0)
+        return {{}, 0, true};
+    return {{static_cast<unsigned char>(pointer)}, 1, false};
 }
 
 } // namespace beman::transcoding

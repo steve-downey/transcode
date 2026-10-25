@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/error.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/gb18030_ranges.hpp>
 #include <beman/transcode/detail/tables/gbk.hpp>
 
@@ -222,18 +223,16 @@ constexpr gb18030_encode_result gb18030_encode_one(char32_t cp) {
         return r;
     }
 
-    // Search GBK 2-byte table
-    for (int i = 0; i < 23940; ++i) {
-        if (tables::gbk[i] == cp) {
-            int lead  = (i / 190) + 0x81;
-            int trail = (i % 190) + 0x40;
-            if (trail >= 0x7F)
-                ++trail;
-            r.bytes[0] = static_cast<unsigned char>(lead);
-            r.bytes[1] = static_cast<unsigned char>(trail);
-            r.count    = 2;
-            return r;
-        }
+    // Two-byte sequences come from index gb18030 (the GBK table).
+    if (int pointer = reverse_index_for<tables::gbk>.find(cp); pointer >= 0) {
+        int lead  = (pointer / 190) + 0x81;
+        int trail = (pointer % 190) + 0x40;
+        if (trail >= 0x7F)
+            ++trail;
+        r.bytes[0] = static_cast<unsigned char>(lead);
+        r.bytes[1] = static_cast<unsigned char>(trail);
+        r.count    = 2;
+        return r;
     }
 
     // Encode via GB18030 4-byte ranges
