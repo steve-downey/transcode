@@ -8,6 +8,7 @@
 #include <catch2/catch_all.hpp>
 
 #include <span>
+#include <vector>
 
 TEST_CASE("WHATWG legacy codec benchmarks", "[benchmark][whatwg]") {
     using namespace beman::transcoding;
@@ -125,6 +126,26 @@ TEST_CASE("WHATWG legacy codec benchmarks: large CJK novels", "[benchmark][whatw
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("genji_monogatari_eucjp.bin");
         meter.measure([&] { return count_elements(data | whatwg_decode<codec::euc_jp>); });
+    };
+
+    // Shift_JIS encode on its own, from the novel's code points.  They are
+    // decoded here, outside any benchmark, so only the encode is timed; the
+    // iconv twin in iconv_benchmarks.bench.cpp records the same input.
+    const std::vector<char32_t> genji_code_points =
+        decode_to<codec::shift_jis>(corpus_span("genji_monogatari_shiftjis.bin"));
+
+    describe({.conversion = "UTF-32 → Shift_JIS", .library = "beman.transcode", .api = "whatwg_encode view"});
+    BENCHMARK_ADVANCED("Shift-JIS encode: Tale of Genji (from UTF-32)")
+    (Catch::Benchmark::Chronometer meter) {
+        record_input("genji_monogatari_shiftjis.bin as UTF-32", genji_code_points.size() * sizeof(char32_t));
+        meter.measure([&] { return count_elements(genji_code_points | whatwg_encode<codec::shift_jis>); });
+    };
+
+    describe({.conversion = "UTF-32 → Shift_JIS", .library = "beman.transcode", .api = "encode_to"});
+    BENCHMARK_ADVANCED("Shift-JIS encode_to: Tale of Genji (from UTF-32)")
+    (Catch::Benchmark::Chronometer meter) {
+        record_input("genji_monogatari_shiftjis.bin as UTF-32", genji_code_points.size() * sizeof(char32_t));
+        meter.measure([&] { return encode_to<codec::shift_jis>(genji_code_points).size(); });
     };
 
     describe({.conversion = "GB18030 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});

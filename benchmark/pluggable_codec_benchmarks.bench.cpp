@@ -180,4 +180,9 @@ TEST_CASE("Large corpus cross-encoding via view|to", "[benchmark][pluggable]") {
         return count_elements(corpus_span("genji_monogatari_shiftjis.bin") |
                               transcode<codec::shift_jis, codec::utf_8>);
     };
+
+    describe({.conversion = "EUC-JP → Shift_JIS", .library = "beman.transcode", .api = "transcode view"});
+    BENCHMARK("EUC-JP -> Shift-JIS streaming: Genji (2.3 MB)") {
+        return count_elements(corpus_span("genji_monogatari_eucjp.bin") | transcode<codec::euc_jp, codec::shift_jis>);
+    };
 }

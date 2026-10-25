@@ -207,6 +207,35 @@ Give #108 inputs large enough to measure throughput rather than setup cost.
 - Expected result: the encode-only benchmark should show whether Shift_JIS
   encode accounts for the 30×. The fix for #108 itself is a separate PR.
 
+**Status:** implemented on branch `bench-cjk-corpora`.
+- Two of the large-input benchmarks were already there. EUC-JP →
+  Shift_JIS on Genji was measured by beman's `decode | to, encode | to` and
+  by iconv, and beman's EUC-JP decode on Genji was also measured. Only the
+  94-byte excerpt lacked a large twin for the `transcode view` path.
+- Added on Genji:
+  - Shift_JIS encode from UTF-32, for beman's `whatwg_encode` view and
+    `encode_to`, and for iconv;
+  - EUC-JP → UTF-32 decode for iconv;
+  - EUC-JP → Shift_JIS for beman's `transcode view`.
+- The encode benchmarks decode the novel's Shift_JIS file once, in the test
+  case body and outside any benchmark. Both libraries encode those same
+  code points, recorded as `genji_monogatari_shiftjis.bin as UTF-32`.
+  iconv gets them as explicit little-endian bytes.
+- Result: Shift_JIS encode is the whole of #108. It was measured as a
+  RelWithDebInfo build on pwyll, with the load falling from 15 to 8, on
+  1,185,133 code points:
+
+  | Stage | beman.transcode | iconv |
+  |---|---:|---:|
+  | EUC-JP decode | 1.7 ms | 8.4 ms |
+  | Shift_JIS encode, view | 301 ms | 9.2 ms |
+  | EUC-JP → Shift_JIS, `transcode view` | 304 ms | 11.6 ms |
+
+  beman's decode is about 5× faster than iconv's, but its encode is about
+  33× slower, and the encode is nearly all of the transcode's time.
+  `encode_to` and `decode | to, encode | to` take about twice as long as
+  the views. The fix for #108 is still a separate PR.
+
 ### instruction-counts
 
 *Stage 6.*
