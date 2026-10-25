@@ -16,14 +16,17 @@ from process_benchmark_results import (
     IMPLAUSIBLE_BYTES_PER_NS,
     REFERENCE_LIBRARY,
     SIDECAR_FORMAT,
+    Measurement,
     Ratio,
     Run,
     assign_labels,
     comparison_groups,
     comparison_warnings,
+    duplicate_warnings,
     environment_summary,
     fmt_ratio,
     group_by_conversion,
+    library_ratio,
     load_suite,
     log_domain,
     main,
@@ -39,8 +42,11 @@ from process_benchmark_results import (
     render_ratio_svg,
     render_svg_chart,
     render_vegalite_spec,
+    repeat_order,
+    run_table,
     sidecar_path,
     slugify,
+    suite_measurements,
     suite_name,
     suite_warnings,
     throughput_MiBs,
@@ -568,6 +574,7 @@ def write_run(
     drop: tuple[str, ...] = (),
     benchmarks: dict[str, dict[str, object]] | None = None,
     speedup: float = 1.0,
+    name: str = "smoke.xml",
     **environment: object,
 ) -> Path:
     """SAMPLE_XML and its sidecar in run_dir, with environment overrides.
@@ -581,11 +588,11 @@ def write_run(
         lambda m: f'{m.group(1)}="{float(m.group(2)) / speedup}"',
         SAMPLE_XML,
     )
-    for name in drop:
-        start = xml.index(f'<BenchmarkResults name="{name}"')
+    for dropped in drop:
+        start = xml.index(f'<BenchmarkResults name="{dropped}"')
         end = xml.index("</BenchmarkResults>", start) + len("</BenchmarkResults>")
         xml = xml[:start] + xml[end:]
-    p = run_dir / "smoke.xml"
+    p = run_dir / name
     p.write_text(xml, encoding="utf-8")
     sidecar = json.loads(json.dumps(SAMPLE_SIDECAR))
     sidecar["environment"].update(environment)
@@ -668,13 +675,21 @@ def test_match_runs_pairs_by_suite_and_name(tmp_path: Path) -> None:
 
 
 def test_match_runs_warns_about_duplicates(tmp_path: Path) -> None:
-    write_run(tmp_path / "a")
-    (tmp_path / "a" / "smoke2.xml").write_text(SAMPLE_XML, encoding="utf-8")
-    runs = [load("a", tmp_path / "a"), load("b", write_run(tmp_path / "b"))]
+    run_dir = write_run(tmp_path / "a")
+    xml = (run_dir / "smoke.xml").read_text(encoding="utf-8")
+    twice = xml.replace(
+        '<TestCase name="suspicious"',
+        '<TestCase name="again"><BenchmarkResults name="optimized away" samples="1" '
+        'iterations="1"><mean value="1.0" lowerBound="1.0" upperBound="1.0"/>'
+        '</BenchmarkResults></TestCase><TestCase name="suspicious"',
+    )
+    (run_dir / "smoke.xml").write_text(twice, encoding="utf-8")
+    runs = [load("a", run_dir), load("b", write_run(tmp_path / "b"))]
     rows, duplicates = match_runs(runs)
     assert len(rows) == 5
-    assert len(duplicates) == 5
-    assert duplicates[0].startswith("a: smoke / ")
+    assert duplicates == [
+        "a: smoke / optimized away appears more than once in smoke.xml; using the first."
+    ]
 
 
 def test_changed_input_is_noted(tmp_path: Path) -> None:
@@ -1015,3 +1030,142 @@ def test_ratio_chart_marks_one_and_no_clear_change(tmp_path: Path) -> None:
     # The missing corpus was excluded in before, and is absent from after.
     assert "not plotted in before" in svgs["Shift_JIS → UTF-32"]
     assert "not plotted in before" in svgs["windows-1251 → UTF-32"]
+
+
+# ---------------------------------------------------------------------------
+# Repeats
+# ---------------------------------------------------------------------------
+
+
+def write_repeats(run_dir: Path, speedups: list[float], **kwargs: object) -> Path:
+    """One smoke.N.xml per speedup, a second apart."""
+    for i, speedup in enumerate(speedups, 1):
+        write_run(
+            run_dir,
+            speedup=speedup,
+            name=f"smoke.{i}.xml",
+            timestamp=f"2026-10-24T00:00:{i:02}Z",
+            **kwargs,  # type: ignore[arg-type]
+        )
+    return run_dir
+
+
+def by_name(measurements: list[Measurement]) -> dict[str, Measurement]:
+    return {m.name: m for m in measurements}
+
+
+EN = "whatwg_decode utf_8 en_mars corpus"
+AR = "UTF-8 decode: Arabic (multibyte-heavy)"
+
+
+def test_repeats_are_combined_into_one_result(tmp_path: Path) -> None:
+    run = load("", write_repeats(tmp_path / "a", [1.0, 2.0, 0.5]))
+    ms = by_name(run.measurements)
+    assert len(ms) == 5
+    en = ms[EN]
+    assert en.repeat_count == 3
+    assert en.result.mean_ns == pytest.approx(3500)  # the median
+    assert en.result.low_ns == pytest.approx(1750)
+    assert en.result.high_ns == pytest.approx(7000)
+    assert en.best_ns == pytest.approx(1750)
+    assert en.spread == pytest.approx(4.0)
+    assert run.repeats == 3
+
+
+def test_a_single_file_is_not_combined(run_xml_path: Path) -> None:
+    suite = load_suite(run_xml_path)
+    assert suite_measurements([suite]) == suite.measurements
+
+
+def test_repeats_are_ordered_by_time_then_number(tmp_path: Path) -> None:
+    d = tmp_path / "a"
+    for name in ("smoke.10.xml", "smoke.9.xml"):
+        write_run(d, name=name)
+    write_run(d, name="smoke.11.xml", timestamp="2026-10-23T00:00:00Z")
+    suites = sorted((load_suite(f) for f in xml_files([d])), key=repeat_order)
+    assert [s.path.name for s in suites] == [
+        "smoke.11.xml",
+        "smoke.9.xml",
+        "smoke.10.xml",
+    ]
+
+
+def test_repeats_show_median_fastest_and_range(tmp_path: Path) -> None:
+    d = write_repeats(tmp_path / "a", [1.0, 2.0])
+    write_run(d, name="smoke.3.xml", drop=(AR,), timestamp="2026-10-24T00:00:03Z")
+    run = load("", d)
+    assert ("Suites", "smoke ×3") in environment_summary(run.suites)
+    md = render_markdown(run.suites)
+    assert "| Median | Fastest | Range | MiB/s | vs beman.transcode | Notes |" in md
+    assert "| 3.5 µs | 1.75 µs | 1.75 µs – 3.5 µs (×2.00) |" in md
+    assert "2 of 3 repeats" in md
+    assert "median of its repeats' means" in md
+    page = render_html(run.suites)
+    assert "<th>Median</th><th>Fastest</th><th>Range</th>" in page
+    assert "range across repeats" in page
+
+
+def test_libraries_are_compared_within_each_repeat(tmp_path: Path) -> None:
+    # Each repeat slows every library by the same factor, so the ranges
+    # overlap but the ratio within every repeat is the same.
+    run = load("", write_repeats(tmp_path / "a", [1.0, 2.0, 0.5]))
+    ms = by_name(run.measurements)
+    ratio = library_ratio(ms[AR], ms[EN])
+    assert ratio is not None
+    assert ratio.value == pytest.approx(0.7)
+    assert ratio.low == pytest.approx(0.7)
+    assert ratio.high == pytest.approx(0.7)
+    assert throughput_ratio(ms[AR], ms[EN]) is not None
+    assert not throughput_ratio(ms[AR], ms[EN]).clear  # type: ignore[union-attr]
+    assert "| 1.43× slower |" in render_markdown(run.suites)
+
+
+def test_runs_with_repeats_are_compared_by_their_ranges(tmp_path: Path) -> None:
+    base = load("base", write_repeats(tmp_path / "a", [1.0, 1.05, 0.95]))
+    faster = load("faster", write_repeats(tmp_path / "b", [2.0, 2.1, 1.9]))
+    same = load("same", write_repeats(tmp_path / "c", [1.02, 0.9, 1.1]))
+    md = render_comparison_markdown([base, faster, same])
+    row = next(
+        line
+        for line in md.splitlines()
+        if "whatwg_decode view" in line and "en_mars" in line
+    )
+    assert "| 2.00× faster |" in row
+    assert row.endswith("| no clear change |  |")
+    header, rows = run_table([base, faster])
+    assert "Repeats" in header
+    assert rows[0][header.index("Repeats")] == "3"
+    assert rows[0][header.index("Suites")] == "smoke ×3"
+
+
+def test_run_table_has_no_repeats_column_without_repeats(tmp_path: Path) -> None:
+    header, _ = run_table(
+        [load("a", write_run(tmp_path / "a")), load("b", write_run(tmp_path / "b"))]
+    )
+    assert "Repeats" not in header
+
+
+def test_warnings_name_the_repeat_file(tmp_path: Path) -> None:
+    run = load("", write_repeats(tmp_path / "a", [1.0, 1.0], load_start=[9.0, 0, 0]))
+    warnings = suite_warnings(run.suites)
+    assert [w.split(":")[0] for w in warnings] == ["smoke.1.xml", "smoke.2.xml"]
+
+
+def test_single_run_warns_about_duplicate_names(run_xml_path: Path) -> None:
+    xml = run_xml_path.read_text(encoding="utf-8")
+    run_xml_path.write_text(
+        xml.replace(
+            "</TestCase>",
+            "</TestCase>" + xml.split("<TestCase")[1].join(["<TestCase", ""]),
+            1,
+        ),
+        encoding="utf-8",
+    )
+    suite = load_suite(run_xml_path)
+    assert duplicate_warnings([suite]) == [
+        f"smoke / {EN} appears more than once in smoke.xml; using the first."
+    ]
+    assert any(
+        "appears more than once" in line
+        for line in render_markdown([suite]).splitlines()
+    )
