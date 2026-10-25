@@ -297,6 +297,58 @@ table shows up directly as instructions per byte.  The dumps open in
 byte is flagged `few-instructions`, checking `implausible` from the other
 side.
 
+### Runner stability
+
+Before a GitHub-hosted runner can serve as a baseline, it has to be shown to
+give the same numbers twice.  The *Benchmark Runner Stability* workflow
+(`.github/workflows/bench-runner-stability.yml`) measures that.  It runs only
+when started by hand, from the Actions tab or with
+`gh workflow run bench-runner-stability.yml`, and is never part of
+`Required CI`.
+
+| Input | Default |
+|-------|---------|
+| `jobs` | `10` (at most 20) |
+| `count_runs` | `3` |
+| `suites` | `smoke utf whatwg pluggable iconv boundary` |
+
+One job builds the suites' binaries in RelWithDebInfo and downloads the
+corpora.  It doesn't use Perf, because Perf builds with `-march=native` and
+the binaries run on whatever CPU each later job gets.  Then `jobs` identical
+jobs each run `make bench-stability-job`, with the same binaries:
+
+- a timed pass, into `BENCH_JOB_DIR/timing`;
+- a count pass under callgrind, into `BENCH_JOB_DIR/instructions`.
+
+The target builds nothing and writes no report, so it also runs locally on
+any build:
+
+```bash
+make bench-stability-job BENCH_BIN_DIR=.build/build-system/benchmark/RelWithDebInfo \
+    BENCH_JOB_DIR=data/benchmarks/results/stability/job-1
+```
+
+A last job reads every job's directory with `tools/runner_stability.py`.  It
+puts the report on the run's summary page and uploads it as the
+`bench-stability-report` artifact, as `report.md` and `report.json`:
+
+```bash
+uv run python tools/runner_stability.py --markdown report.md --json report.json \
+    data/benchmarks/results/stability/job-*
+```
+
+The report gives:
+- each job's CPU model, CPU count, kernel and load;
+- the coefficient of variation across jobs (standard deviation ÷ mean), per
+  benchmark, of the wall time and of the instructions per call, with the
+  slowest job's time ÷ the fastest's;
+- a summary of those CVs over all benchmarks.
+
+When the jobs ran on more than one CPU model, the wall-time summary is
+repeated within each model.  That separates a change of hardware from a noisy
+VM.  The JSON holds every job's value of every benchmark.  The report applies
+no thresholds.
+
 ### Describing a benchmark
 
 Put a `describe` call on the line before each `BENCHMARK_ADVANCED`, and time
@@ -401,3 +453,4 @@ grep "^#" data/benchmarks/results/matrix-20260527.txt
 | `make bench-compare` | two result directories → comparison Markdown + HTML + Vega-Lite | — |
 | `make bench-repeat` | core suites, GCC-16 Perf, `BENCH_REPEATS` times → Markdown + HTML + SVG + Vega-Lite | — |
 | `make bench-instructions` | core suites, GCC-16 Perf, under callgrind → instruction counts, Markdown + HTML + SVG + Vega-Lite | — |
+| `make bench-stability-job` | core suites from prebuilt `BENCH_BIN_DIR`, timed then counted → one runner-stability job's results | — |

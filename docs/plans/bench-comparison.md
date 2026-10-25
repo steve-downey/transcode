@@ -364,6 +364,33 @@ Measure whether a GitHub-hosted runner is a usable baseline.
 - The workflow is never part of `Required CI` and has no thresholds.
 - Its result answers [runner-trust](#runner-trust).
 
+**Status:** implemented on branch `bench-runner-stability`, not yet run.
+- The workflow is `.github/workflows/bench-runner-stability.yml`. Its inputs
+  are `jobs` (default 10, at most 20), `count_runs` (default 3) and
+  `suites`. GitHub dispatches a workflow only once its file is on the
+  default branch, so the first run waits for this branch to reach `main`.
+- The build is RelWithDebInfo, not Release or Perf. Perf builds with
+  `-march=native`, which could fault on a different CPU in a later job.
+  Release is `-Ofast`, which no other benchmark build uses.
+  RelWithDebInfo is what `bench-report` times, and its debug info lets
+  kcachegrind read the dumps.
+- Each job runs `make bench-stability-job`: a timed pass, then a count pass,
+  from binaries built elsewhere. The count pass shares its recipe with
+  `bench-instructions`.
+- The report is a separate tool, `tools/runner_stability.py`, rather than a
+  mode of `process_benchmark_results.py`. It reads one directory per job,
+  and its rows are benchmarks, not jobs. It reuses the loader, so a job's
+  counts join its times as they do in a single run.
+- Besides the per-benchmark CVs and each job's CPU model, the report
+  summarizes the CVs over all benchmarks. When the jobs ran on more than one
+  CPU model, it repeats the wall-time summary within each model. That
+  separates hardware variation from VM noise, which is the split
+  [runner-trust](#runner-trust) needs. A JSON file holds every value.
+- A local trial ran three jobs of smoke and utf on a busy pwyll (load 9–13).
+  Wall-time CVs across the jobs came to 15–67%, and instruction counts were
+  identical in every job. This shows the tool works. It says nothing yet
+  about hosted runners.
+
 ## Open questions
 
 ### match-key
