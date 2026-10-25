@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <algorithm>
     #include <array>
     #include <cstddef>
     #include <cstdint>
@@ -71,8 +72,13 @@ template <reverse_index_shape Shape>
 struct reverse_index {
     static constexpr std::uint16_t no_page = 0xFFFF;
 
-    std::array<std::uint16_t, Shape.page_slots>                 page_of{};
-    std::array<std::array<std::uint16_t, 256>, Shape.page_count> pages{};
+    // Plain arrays, not std::array: the constant-evaluated build below touches
+    // these tens of thousands of times, and std::array's accessor is a function
+    // call at every touch, with an assertion in hardened library builds.  The
+    // extra statements would put a large index over clang's default step
+    // limit.  An empty table still needs one element to be a valid array.
+    std::uint16_t page_of[Shape.page_slots > 0 ? Shape.page_slots : 1]{};
+    std::uint16_t pages[Shape.page_count > 0 ? Shape.page_count : 1][256]{};
 
     // The lowest pointer whose entry is cp, or -1 when cp is not in the index.
     constexpr int find(char32_t cp) const;
@@ -126,60 +132,60 @@ constexpr int reverse_index<Shape>::find(char32_t cp) const {
 }
 
 constexpr reverse_index_shape reverse_index_shape_of(table_ref table, pointer_range excluded) {
-    char32_t highest = 0;
-    bool     any     = false;
+    // One pass: the highest code point and the set of pages it touches.
+    // Unicode has 0x1100 blocks of 256 code points.
+    bool                  seen[0x1100] = {};
+    reverse_index_shape   shape{};
+    char32_t              highest = 0;
+    const char32_t* const data    = table.data;
     for (std::size_t p = 0; p < table.size; ++p) {
-        char32_t cp = table.data[p];
-        if (cp == 0 || excluded.contains(static_cast<int>(p)))
+        const char32_t cp = data[p];
+        if (cp == 0)
             continue;
-        any     = true;
-        highest = cp > highest ? cp : highest;
-    }
-    if (!any)
-        return {};
-
-    reverse_index_shape shape{};
-    shape.page_slots = static_cast<std::size_t>(highest >> 8) + 1;
-
-    // Count the distinct pages.  Unicode has 0x1100 blocks of 256 code points.
-    bool seen[0x1100] = {};
-    for (std::size_t p = 0; p < table.size; ++p) {
-        char32_t cp = table.data[p];
-        if (cp == 0 || excluded.contains(static_cast<int>(p)))
+        const int pointer = static_cast<int>(p);
+        if (pointer >= excluded.first && pointer <= excluded.last)
             continue;
+        highest = std::max(highest, cp);
         if (!seen[cp >> 8]) {
             seen[cp >> 8] = true;
             ++shape.page_count;
         }
     }
+    if (shape.page_count > 0)
+        shape.page_slots = static_cast<std::size_t>(highest >> 8) + 1;
     return shape;
 }
 
 template <reverse_index_shape Shape>
 constexpr reverse_index<Shape> make_reverse_index(table_ref table, pointer_range excluded) {
     reverse_index<Shape> index{};
-    for (auto& slot : index.page_of)
-        slot = reverse_index<Shape>::no_page;
-    // Touch every entry once, in order, before the scattered writes below.
+    for (std::size_t hi = 0; hi < Shape.page_slots; ++hi)
+        index.page_of[hi] = reverse_index<Shape>::no_page;
+
+    // Touch every page entry once, in order, before the scattered writes below.
     // GCC keeps a constant-evaluated array sparse until an element is written,
     // and inserting elements out of order costs a shift of everything after
     // them; filling densely first makes each later write an in-place update
     // and cuts the build of a large index from about a second to a fifth of one.
-    for (auto& page : index.pages)
-        for (auto& entry : page)
-            entry = 0;
+    for (std::size_t page = 0; page < Shape.page_count; ++page)
+        for (std::size_t lo = 0; lo < 256; ++lo)
+            index.pages[page][lo] = 0;
 
-    std::uint16_t next_page = 0;
+    std::uint16_t         next_page = 0;
+    const char32_t* const data      = table.data;
     for (std::size_t p = 0; p < table.size; ++p) {
-        char32_t cp = table.data[p];
-        if (cp == 0 || excluded.contains(static_cast<int>(p)))
+        const char32_t cp = data[p];
+        if (cp == 0)
             continue;
-        std::size_t hi = cp >> 8;
+        const int pointer = static_cast<int>(p);
+        if (pointer >= excluded.first && pointer <= excluded.last)
+            continue;
+        const std::size_t hi = cp >> 8;
         if (index.page_of[hi] == reverse_index<Shape>::no_page)
             index.page_of[hi] = next_page++;
-        auto& entry = index.pages[index.page_of[hi]][cp & 0xFF];
+        std::uint16_t& entry = index.pages[index.page_of[hi]][cp & 0xFF];
         if (entry == 0)
-            entry = static_cast<std::uint16_t>(p + 1);
+            entry = static_cast<std::uint16_t>(pointer + 1);
     }
     return index;
 }

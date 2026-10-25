@@ -46,8 +46,8 @@ TEST_CASE("reverse_index shape counts page slots and non-empty pages", "[transco
 }
 
 TEST_CASE("reverse_index shape of an empty table is empty", "[transcoding::reverse_index]") {
-    static constexpr char32_t  none[3] = {};
-    constexpr auto             shape   = reverse_index_shape_of(none);
+    static constexpr char32_t none[3] = {};
+    constexpr auto            shape   = reverse_index_shape_of(none);
     CHECK(shape.page_slots == 0);
     CHECK(shape.page_count == 0);
     CHECK(reverse_index_for<none>.find(U'A') == -1);
