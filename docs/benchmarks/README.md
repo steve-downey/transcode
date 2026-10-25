@@ -153,7 +153,41 @@ benchmarks are single-threaded, but other work still shares the CPU's power
 budget and cache.  A busy suite is reported, not dropped: the warning stops a
 noisy run being read as a quiet one.
 
-Passing several XML files merges them into one report.
+Passing several XML files merges them into one report.  Several files of the
+same suite are [repeats](#repeated-runs) of it.
+
+### Repeated runs
+
+One run on a busy machine can be unlucky.  `make bench-repeat` builds the
+GCC-16 Perf configuration and runs the core suites `BENCH_REPEATS` times
+(default 5).  It writes `SUITE.N.xml` and `SUITE.N.meta.json` into
+`BENCH_REPEAT_DIR` (default `data/benchmarks/results/repeats/`), then reports
+on that directory.  Each repeat runs every suite before the next repeat
+starts, so the libraries in one repeat see much the same machine state.  The
+target refuses to write into a directory that already holds results.
+
+| Variable | Default |
+|----------|---------|
+| `BENCH_REPEATS` | `5` |
+| `BENCH_REPEAT_SUITES` | `smoke utf whatwg pluggable iconv boundary` |
+| `BENCH_REPEAT_DIR` | `$(BENCH_RESULTS_DIR)/repeats` |
+
+The report treats several files of one suite in one run as repeats, ordered by
+when they ran.  Each benchmark becomes one result:
+
+- its value is the median of the repeats' means, and the fastest repeat is
+  shown beside it;
+- its interval is the range across repeats, from fastest to slowest, in place
+  of Catch2's CI, and the charts' whiskers show that range;
+- a benchmark missing from some repeats is noted, as in `3 of 5 repeats`.
+
+Libraries are compared within each repeat, then the ratios are combined: the
+value is their median and the interval their range.  Load on the machine slows
+every library in a repeat together, so a ratio taken within a repeat holds
+still while the times move.  Two runs are compared on their ranges, so a
+change is reported only when the ranges of the two runs don't overlap.
+
+`make bench-compare` takes repeat directories as they are.
 
 ### Ratios
 
@@ -294,3 +328,4 @@ grep "^#" data/benchmarks/results/matrix-20260527.txt
 | `make bench-report-lto` | LTO smoke → Markdown + HTML + Vega-Lite | — |
 | `make bench-perf-report` | core suites, GCC-16 Perf → Markdown + HTML + SVG + Vega-Lite | — |
 | `make bench-compare` | two result directories → comparison Markdown + HTML + Vega-Lite | — |
+| `make bench-repeat` | core suites, GCC-16 Perf, `BENCH_REPEATS` times → Markdown + HTML + SVG + Vega-Lite | — |

@@ -514,6 +514,39 @@ bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core 
 		$(BENCH_RESULTS_DIR)/iconv-Perf.xml \
 		$(BENCH_RESULTS_DIR)/boundary-Perf.xml
 
+# Run the core suites BENCH_REPEATS times into one directory, as SUITE.N.xml
+# with SUITE.N.meta.json.  Each repeat runs every suite before the next repeat
+# starts, so the libraries in one repeat see much the same machine state.  The
+# report combines the repeats of each benchmark; see docs/benchmarks/README.md.
+BENCH_REPEATS ?= 5
+BENCH_REPEAT_SUITES ?= smoke utf whatwg pluggable iconv boundary
+BENCH_REPEAT_DIR ?= $(BENCH_RESULTS_DIR)/repeats
+
+.PHONY: bench-repeat
+bench-repeat: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run the core suites BENCH_REPEATS times, report on the repeats
+	@if ls $(BENCH_REPEAT_DIR)/*.xml >/dev/null 2>&1; then \
+		echo "$(BENCH_REPEAT_DIR) already holds results; move them or set BENCH_REPEAT_DIR"; \
+		exit 2; \
+	fi
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
+	@mkdir -p $(BENCH_REPEAT_DIR)
+	@for i in $$(seq 1 $(BENCH_REPEATS)); do \
+		for s in $(BENCH_REPEAT_SUITES); do \
+			if [ "$$s" = smoke ]; then tag="[smoke]"; else tag="[benchmark][$$s]"; fi; \
+			echo "repeat $$i of $(BENCH_REPEATS): $$s"; \
+			$(_PERF_BENCH)/beman.transcode.benchmarks.$$s "$$tag" \
+				--reporter xml --out $(BENCH_REPEAT_DIR)/$$s.$$i.xml >/dev/null \
+				|| echo "warning: $$s exited with status $$?"; \
+		done; \
+	done
+	$(UV) run python tools/process_benchmark_results.py \
+		--label "GCC-16 Perf, $(BENCH_REPEATS) repeats" \
+		--markdown $(BENCH_REPEAT_DIR)/report.md \
+		--html $(BENCH_REPEAT_DIR)/report.html \
+		--svg-dir $(BENCH_REPEAT_DIR)/svg \
+		--vegalite $(BENCH_REPEAT_DIR)/report.vl.json \
+		$(BENCH_REPEAT_DIR)
+
 # Compare two result directories, each holding the XML and .meta.json files of
 # one run, e.g. a copy of $(BENCH_RESULTS_DIR) taken before a change.  An empty
 # label is filled in from what tells the runs apart: compiler, commit, host....

@@ -173,6 +173,22 @@ Make one comparison less sensitive to a single unlucky run.
   aggregate the ratios. Don't take the ratio of aggregated times. Each repeat
   sees the same machine state for both libraries, and this keeps that.
 
+**Status:** implemented on branch `bench-repeated-runs`. The target is
+`make bench-repeat`, writing `SUITE.N.xml` with `SUITE.N.meta.json`.
+- The report needs no option for repeats. Several files of one suite in one
+  run are repeats, ordered by timestamp, then by file name. This changes how
+  such files are read: before this stage they were duplicates, and only the
+  first was kept.
+- A combined result's interval is the range across repeats. The ratio
+  arithmetic from [ratio-views](#ratio-views) is unchanged, so run vs run
+  calls a change only when the two runs' ranges don't overlap.
+- Library ratios are paired per repeat. On real repeats, two libraries whose
+  times overlap across repeats still give a ratio with a narrow interval.
+- The make loop runs repeats outside and suites inside. Suites are separate
+  processes, so a library's "same repeat" partner ran minutes away, not in
+  the same process. That is still far closer in time than the same suite one
+  repeat later.
+
 ### cjk-corpora
 
 *Stage 5.*
@@ -340,6 +356,11 @@ small fixed tolerance.
   machine, two runs can each have a tight CI and still differ by load. This is
   provisional until [repeated-runs](#repeated-runs) gives a spread across
   repeats.
+- 2026-10-24: [repeated-runs](#repeated-runs) gives that spread. A combined
+  result's interval is the range across repeats, so between runs the rule
+  becomes "the repeats don't overlap". Between libraries in one run it
+  becomes "the per-repeat ratios all fall on one side of 1×". The single-run
+  CI rule still applies to runs without repeats.
 
 ### aggregate-statistic
 
@@ -352,6 +373,10 @@ busy pwyll the minimum is attractive; on a dedicated machine either works.
 Show both, and plot one.
 **Decided by:** —
 **Log:**
+- 2026-10-24: [repeated-runs](#repeated-runs) plots the median and shows the
+  fastest repeat beside it in the tables. Throughput and ratios come from the
+  median, and the interval is the full range. There is no option to plot the
+  minimum yet. This is provisional until a decision is recorded here.
 
 ### busy-threshold
 

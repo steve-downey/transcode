@@ -30,6 +30,7 @@ import html
 import json
 import math
 import re
+import statistics
 import sys
 import xml.etree.ElementTree as ET
 from collections.abc import Callable, Iterable
@@ -120,10 +121,31 @@ class Measurement:
     input_source: str = ""
     input_bytes: int | None = None
     flags: list[str] = field(default_factory=list)
+    # When this result combines repeated runs: each repeat's result, by repeat
+    # number.  Empty for a single run.
+    repeats: dict[int, "Measurement"] = field(default_factory=dict)
 
     @property
     def name(self) -> str:
         return self.result.name
+
+    @property
+    def repeat_count(self) -> int:
+        return len(self.repeats) or 1
+
+    @property
+    def best_ns(self) -> float:
+        """The fastest repeat's mean, or the mean of a single run."""
+        if not self.repeats:
+            return self.result.mean_ns
+        return min(m.result.mean_ns for m in self.repeats.values())
+
+    @property
+    def spread(self) -> float | None:
+        """Slowest repeat's mean ÷ fastest's; None for a single run."""
+        if not self.repeats or self.result.low_ns <= 0:
+            return None
+        return self.result.high_ns / self.result.low_ns
 
     @property
     def plotted(self) -> bool:
@@ -296,6 +318,155 @@ def load_suite(xml_path: Path) -> SuiteRun:
     return SuiteRun(xml_path, suite, environment, measurements, sidecar is not None)
 
 
+# ── Repeats ─────────────────────────────────────────────────────────────────
+
+# Several XML files of one suite in one run are repeats of it.  Each result is
+# combined across them: its value is the median of the repeats' means (the
+# fastest is shown beside it), and its interval is their range, in place of
+# one run's CI.  Provisional: see aggregate-statistic in
+# docs/plans/bench-comparison.md.
+
+
+def _natural_key(text: str) -> list[int | str]:
+    """'smoke.10.xml' sorts after 'smoke.9.xml'."""
+    return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", text)]
+
+
+def repeat_order(suite: SuiteRun) -> tuple[str, list[int | str]]:
+    """Order repeats of one suite by when they ran, then by file name."""
+    return (str(suite.environment.get("timestamp", "")), _natural_key(suite.path.name))
+
+
+def combine_repeats(repeats: dict[int, Measurement]) -> Measurement:
+    """One result standing for several repeats of a benchmark."""
+    first = next(iter(repeats.values()))
+    means = [m.result.mean_ns for m in repeats.values()]
+    r = first.result
+    result = BenchmarkResult(
+        binary=r.binary,
+        test_case=r.test_case,
+        name=r.name,
+        mean_ns=statistics.median(means),
+        low_ns=min(means),
+        high_ns=max(means),
+        samples=sum(m.result.samples for m in repeats.values()),
+        iterations=r.iterations,
+        std_dev_ns=statistics.stdev(means) if len(means) > 1 else 0.0,
+        outlier_variance=statistics.median(
+            m.result.outlier_variance for m in repeats.values()
+        ),
+    )
+    m = Measurement(
+        result=result,
+        suite=first.suite,
+        conversion=first.conversion,
+        library=first.library,
+        api=first.api,
+        input=first.input,
+        input_source=first.input_source,
+        input_bytes=first.input_bytes,
+        repeats=dict(repeats),
+    )
+    m.flags = flags_for(m)
+    return m
+
+
+def suite_measurements(suites: list[SuiteRun]) -> list[Measurement]:
+    """Every result in suites, with the repeats of each suite combined.
+
+    A suite in only one file keeps its results as they are.  Within a file, a
+    benchmark name seen twice keeps its first result.
+    """
+    by_suite: dict[str, list[SuiteRun]] = {}
+    for suite in suites:
+        by_suite.setdefault(suite.suite, []).append(suite)
+    out: list[Measurement] = []
+    for files in by_suite.values():
+        if len(files) == 1:
+            out += files[0].measurements
+            continue
+        by_name: dict[str, dict[int, Measurement]] = {}
+        for number, f in enumerate(sorted(files, key=repeat_order), 1):
+            for m in f.measurements:
+                by_name.setdefault(m.name, {}).setdefault(number, m)
+        out += [combine_repeats(reps) for reps in by_name.values()]
+    return out
+
+
+def duplicate_warnings(suites: list[SuiteRun]) -> list[str]:
+    """A warning for each benchmark name seen twice within one file."""
+    warnings: list[str] = []
+    for suite in suites:
+        seen: set[str] = set()
+        for m in suite.measurements:
+            if m.name in seen:
+                warnings.append(
+                    f"{suite.suite} / {m.name} appears more than once in "
+                    f"{suite.path.name}; using the first."
+                )
+            seen.add(m.name)
+    return warnings
+
+
+def repeat_counts(suites: list[SuiteRun]) -> dict[str, int]:
+    """How many files each suite has, in first-seen order."""
+    counts: dict[str, int] = {}
+    for suite in suites:
+        counts[suite.suite] = counts.get(suite.suite, 0) + 1
+    return counts
+
+
+def suite_list(suites: list[SuiteRun]) -> str:
+    """'smoke, utf' for single files, 'smoke ×5, utf ×5' for repeats."""
+    return ", ".join(
+        name if n == 1 else f"{name} ×{n}" for name, n in repeat_counts(suites).items()
+    )
+
+
+def suite_labels(suites: list[SuiteRun]) -> list[str]:
+    """What to call each suite in a warning: its name, or its file when repeated."""
+    counts = repeat_counts(suites)
+    return [s.suite if counts[s.suite] == 1 else s.path.name for s in suites]
+
+
+def is_repeated(measurements: Iterable[Measurement]) -> bool:
+    return any(m.repeats for m in measurements)
+
+
+def time_columns(repeated: bool) -> list[str]:
+    """Headers for a result's time: one run's mean and CI, or repeats' summary."""
+    if repeated:
+        return ["Median", "Fastest", "Range"]
+    return ["Mean", "95% CI"]
+
+
+def time_cells(m: Measurement, repeated: bool) -> list[str]:
+    r = m.result
+    interval = f"{fmt_time(r.low_ns)} – {fmt_time(r.high_ns)}"
+    if not repeated:
+        return [fmt_time(r.mean_ns), interval]
+    if not m.repeats:
+        return [fmt_time(r.mean_ns), "—", f"1 run; CI {interval}"]
+    spread = m.spread
+    factor = f" (×{fmt_factor(spread)})" if spread is not None else ""
+    return [fmt_time(r.mean_ns), fmt_time(m.best_ns), interval + factor]
+
+
+def repeat_notes(m: Measurement, expected: dict[str, int]) -> list[str]:
+    """'3 of 5 repeats' when a result is missing from some of its suite's files."""
+    want = expected.get(m.suite, 1)
+    if want > 1 and m.repeat_count < want:
+        return [f"{m.repeat_count} of {want} repeats"]
+    return []
+
+
+def interval_text(measurements: Iterable[Measurement]) -> str:
+    """What a whisker or interval column means for these results."""
+    if is_repeated(measurements):
+        return "range across repeats"
+    return "95% CI"
+
+
 # ── Grouping and formatting ─────────────────────────────────────────────────
 
 
@@ -436,13 +607,13 @@ def environment_summary(suites: list[SuiteRun]) -> list[tuple[str, str]]:
         rows.append(
             ("Run at", stamps[0] if len(stamps) == 1 else f"{stamps[0]} – {stamps[-1]}")
         )
-    rows.append(("Suites", ", ".join(r.suite for r in suites)))
+    rows.append(("Suites", suite_list(suites)))
     return rows
 
 
 def run_warnings(suites: list[SuiteRun]) -> list[str]:
     """Whole-report problems: builds unfit for timing, missing sidecars."""
-    warnings = suite_warnings(suites)
+    warnings = suite_warnings(suites) + duplicate_warnings(suites)
     compilers = {r.environment.get("compiler") for r in suites if r.has_sidecar}
     if len(compilers) > 1:
         warnings.append(
@@ -454,7 +625,7 @@ def run_warnings(suites: list[SuiteRun]) -> list[str]:
 def suite_warnings(suites: list[SuiteRun]) -> list[str]:
     """Problems with individual suites: no sidecar, or a build unfit for timing."""
     warnings: list[str] = []
-    for r in suites:
+    for r, name in zip(suites, suite_labels(suites), strict=True):
         env = r.environment
         if not r.has_sidecar:
             warnings.append(
@@ -465,15 +636,15 @@ def suite_warnings(suites: list[SuiteRun]) -> list[str]:
             continue
         if env.get("sanitizers"):
             warnings.append(
-                f"{r.suite}: built with {', '.join(env['sanitizers'])} "
+                f"{name}: built with {', '.join(env['sanitizers'])} "
                 "sanitizer; timings are not meaningful."
             )
         elif env.get("optimized") is False:
-            warnings.append(f"{r.suite}: built without optimization.")
+            warnings.append(f"{name}: built without optimization.")
         load = other_load(env)
         if load is not None and load > BUSY_LOAD:
             warnings.append(
-                f"{r.suite}: the machine was busy ({load_text(env)}), so other "
+                f"{name}: the machine was busy ({load_text(env)}), so other "
                 "work may have slowed these timings."
             )
     return warnings
@@ -537,7 +708,12 @@ class Run:
 
     @property
     def measurements(self) -> list[Measurement]:
-        return [m for s in self.suites for m in s.measurements]
+        return suite_measurements(self.suites)
+
+    @property
+    def repeats(self) -> int:
+        """The most repeats of any suite in the run; 1 without repeats."""
+        return max(repeat_counts(self.suites).values(), default=1)
 
     def axis_values(self, key: str) -> list[str]:
         """Distinct values of one environment field across this run's suites."""
@@ -641,21 +817,16 @@ def match_runs(runs: list[Run]) -> tuple[list[ComparisonRow], list[str]]:
     """Match results across runs by (suite, name).
 
     Returns the rows in first-seen order, and a warning for each benchmark that
-    appears twice within one run (only the first is kept).
+    appears twice within one file (only the first is kept).
     """
     rows: dict[tuple[str, str], ComparisonRow] = {}
     warnings: list[str] = []
     for i, run in enumerate(runs):
+        warnings += [f"{run.label}: {w}" for w in duplicate_warnings(run.suites)]
         for m in run.measurements:
             row = rows.setdefault(
                 (m.suite, m.name), ComparisonRow(m.suite, m.name, [None] * len(runs))
             )
-            if row.cells[i] is not None:
-                warnings.append(
-                    f"{run.label}: {m.suite} / {m.name} appears more than once; "
-                    "using the first."
-                )
-                continue
             row.cells[i] = m
     return list(rows.values()), warnings
 
@@ -713,8 +884,11 @@ def row_notes(row: ComparisonRow, runs: list[Run]) -> list[str]:
     if row.input_differs:
         notes.append("input differs")
     for run, m in zip(runs, row.cells, strict=True):
-        if m is not None and m.flags:
-            notes.append(f"{run.label}: {', '.join(m.flags)}")
+        if m is None:
+            continue
+        flags = m.flags + repeat_notes(m, repeat_counts(run.suites))
+        if flags:
+            notes.append(f"{run.label}: {', '.join(flags)}")
     return notes
 
 
@@ -814,10 +988,17 @@ def fmt_ratio_tick(x: float) -> str:
     return f"{x:g}×" if x >= 1 else f"{x:.2g}×"
 
 
+REPEAT_NOTE = (
+    "Each result is the median of its repeats' means; the range runs from the "
+    "fastest repeat to the slowest, and throughput is from the median."
+)
+
+
 RATIO_NOTE = (
     "A ratio compares throughput on the same input.  Its interval runs between "
     "the far ends of the two 95% CIs, and a difference is reported only when "
-    "that interval excludes 1×."
+    "that interval excludes 1×.  With repeats, the range across repeats takes "
+    "the place of the CI, and libraries are compared within each repeat."
 )
 
 
@@ -859,6 +1040,25 @@ def library_reference(
     return max(candidates, key=lambda m: m.throughput or 0.0, default=None)
 
 
+def library_ratio(m: Measurement, ref: Measurement) -> Ratio | None:
+    """m's throughput as a multiple of ref's, from libraries in one run.
+
+    With repeats, the ratio is taken within each repeat both ran, since a
+    repeat sees one machine state for both; the value is the median of those
+    ratios and the interval their range.
+    """
+    single = throughput_ratio(m, ref)
+    common = sorted(set(m.repeats) & set(ref.repeats))
+    if single is None or len(common) < 2:
+        return single
+    ratios = [
+        ref.repeats[i].result.mean_ns / m.repeats[i].result.mean_ns
+        for i in common
+        if m.repeats[i].result.mean_ns > 0
+    ]
+    return Ratio(statistics.median(ratios), min(ratios), max(ratios))
+
+
 def library_ratio_text(
     m: Measurement, group: InputGroup, reference_library: str = REFERENCE_LIBRARY
 ) -> str:
@@ -868,7 +1068,7 @@ def library_ratio_text(
         return "—"
     if m is ref:
         return "reference"
-    return fmt_ratio(throughput_ratio(m, ref), unclear="no clear difference")
+    return fmt_ratio(library_ratio(m, ref), unclear="no clear difference")
 
 
 def run_ratio(row: ComparisonRow, k: int) -> Ratio | None:
@@ -960,7 +1160,7 @@ def render_markdown(
     A conversion run by more than one library gets a column with each result's
     throughput as a multiple of reference_library's on the same input.
     """
-    measurements = [m for r in suites for m in r.measurements]
+    measurements = suite_measurements(suites)
     heading = "Benchmark Results" + (f" — {label}" if label else "")
     lines = [f"## {heading}", ""]
     for key, value in environment_summary(suites):
@@ -969,6 +1169,9 @@ def render_markdown(
     for w in run_warnings(suites):
         lines.append(f"> [!WARNING]\n> {w}\n")
 
+    repeated = is_repeated(measurements)
+    expected = repeat_counts(suites)
+    times = time_columns(repeated)
     for group in group_by_conversion(measurements):
         compared = len(group.libraries) > 1
         ratio_head = f" vs {_md_cell(reference_library)} |" if compared else ""
@@ -976,27 +1179,27 @@ def render_markdown(
         lines += [
             f"### {_md_cell(group.conversion)}",
             "",
-            f"| Input | Library | API | Mean | 95% CI | MiB/s |{ratio_head} Notes |",
-            f"|-------|---------|-----|-----:|-------:|------:|{ratio_rule}-------|",
+            f"| Input | Library | API | {' | '.join(times)} | MiB/s |"
+            f"{ratio_head} Notes |",
+            "|-------|---------|-----|"
+            + "-----:|" * len(times)
+            + f"------:|{ratio_rule}-------|",
         ]
         for ig in group.inputs:
             for m in ig.rows:
-                r = m.result
-                ci = f"{fmt_time(r.low_ns)} – {fmt_time(r.high_ns)}"
                 tput = m.throughput
                 cells = [
                     f"{ig.input} ({fmt_bytes(ig.input_bytes)})",
                     m.library or "?",
                     row_label(m, ig),
-                    fmt_time(r.mean_ns),
-                    ci,
+                    *time_cells(m, repeated),
                     fmt_throughput(tput) if tput is not None else "—",
                     *(
                         [library_ratio_text(m, ig, reference_library)]
                         if compared
                         else []
                     ),
-                    ", ".join(m.flags),
+                    ", ".join(m.flags + repeat_notes(m, expected)),
                 ]
                 lines.append("| " + " | ".join(_md_cell(c) for c in cells) + " |")
         lines.append("")
@@ -1010,7 +1213,9 @@ def render_markdown(
         lines.append("")
     lines.append(
         "> Throughput = input bytes / mean time; 1 MiB = 2²⁰ bytes; the CI is "
-        "Catch2's 95% bootstrap interval on the mean.  " + RATIO_NOTE
+        "Catch2's 95% bootstrap interval on the mean.  "
+        + (REPEAT_NOTE + "  " if repeated else "")
+        + RATIO_NOTE
     )
     return "\n".join(lines) + "\n"
 
@@ -1021,11 +1226,20 @@ def run_table(runs: list[Run]) -> tuple[list[str], list[list[str]]]:
     Environment fields no run recorded are left out.
     """
     axes = [(k, t) for k, t in RUN_AXES if any(r.axis_values(k) for r in runs)]
-    header = ["Run"] + [t for _, t in axes] + ["Other load", "Run at", "Suites"]
+    repeated = any(r.repeats > 1 for r in runs)
+    header = (
+        ["Run"]
+        + [t for _, t in axes]
+        + ["Other load", "Run at"]
+        + (["Repeats"] if repeated else [])
+        + ["Suites"]
+    )
     rows = [
         [r.label]
         + ["; ".join(r.axis_values(k)) or "—" for k, _ in axes]
-        + [run_load_text(r), r.started or "—", ", ".join(s.suite for s in r.suites)]
+        + [run_load_text(r), r.started or "—"]
+        + ([str(r.repeats)] if repeated else [])
+        + [suite_list(r.suites)]
         for r in runs
     ]
     return header, rows
@@ -1252,7 +1466,8 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
         point=throughput_point,
         domain=(d0, max(d1, d0 + 1.0)),
         ticks=throughput_ticks(d0, d1),
-        caption="throughput, MiB/s (log scale) · whisker = 95% CI",
+        caption="throughput, MiB/s (log scale) · whisker = "
+        + interval_text(group.measurements),
         value_head="MiB/s",
         aria="throughput",
         tooltip=_tooltip,
@@ -1409,8 +1624,14 @@ def _tooltip(m: Measurement) -> str:
     lines = [
         m.name,
         f"{m.library or '?'} · {m.api or '?'} · suite {m.suite}",
-        f"mean {fmt_time(r.mean_ns)} (95% CI {fmt_time(r.low_ns)} – "
-        f"{fmt_time(r.high_ns)}), σ {fmt_time(r.std_dev_ns)}",
+        (
+            f"median {fmt_time(r.mean_ns)} of {m.repeat_count} repeats (range "
+            f"{fmt_time(r.low_ns)} – {fmt_time(r.high_ns)}), fastest "
+            f"{fmt_time(m.best_ns)}"
+            if m.repeats
+            else f"mean {fmt_time(r.mean_ns)} (95% CI {fmt_time(r.low_ns)} – "
+            f"{fmt_time(r.high_ns)}), σ {fmt_time(r.std_dev_ns)}"
+        ),
     ]
     ci = m.throughput_ci
     if ci is not None and m.throughput is not None:
@@ -1418,7 +1639,10 @@ def _tooltip(m: Measurement) -> str:
             f"{fmt_throughput(m.throughput)} MiB/s "
             f"({fmt_throughput(ci[0])} – {fmt_throughput(ci[1])})"
         )
-    lines.append(f"{r.samples} samples × {r.iterations} iterations")
+    if m.repeats:
+        lines.append(f"{r.samples} samples in all, {r.iterations} iterations each")
+    else:
+        lines.append(f"{r.samples} samples × {r.iterations} iterations")
     for f in m.flags:
         lines.append(f"⚠ {f}: {FLAG_TEXT[f]}")
     return "\n".join(lines)
@@ -1440,7 +1664,7 @@ def write_ratio_svg_dir(runs: list[Run], k: int, out_dir: Path) -> list[Path]:
 
 def write_svg_dir(suites: list[SuiteRun], out_dir: Path) -> list[Path]:
     """Write one standalone SVG per conversion; return the paths written."""
-    measurements = [m for r in suites for m in r.measurements]
+    measurements = suite_measurements(suites)
     groups = group_by_conversion(measurements)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
@@ -1541,7 +1765,7 @@ def render_html(
     reference_library: str = REFERENCE_LIBRARY,
 ) -> str:
     """A self-contained HTML report: no external scripts, styles or fonts."""
-    measurements = [m for r in suites for m in r.measurements]
+    measurements = suite_measurements(suites)
     groups = group_by_conversion(measurements)
     e = html.escape
 
@@ -1587,10 +1811,13 @@ def render_html(
         out.append(f'<h2 id="{slugify(g.conversion)}">{e(g.conversion)}</h2>')
         out.append(f'<div class="card scroll">{render_svg_chart(g)}</div>')
 
+    repeated = is_repeated(measurements)
+    expected = repeat_counts(suites)
+    time_heads = "".join(f"<th>{e(h)}</th>" for h in time_columns(repeated))
     out.append('<h2 id="all-results">All results</h2><div class="card scroll"><table>')
     out.append(
         "<thead><tr><th>Conversion</th><th>Input</th><th>Library</th><th>API</th>"
-        "<th>Mean</th><th>95% CI</th><th>MiB/s</th>"
+        f"{time_heads}<th>MiB/s</th>"
         f'<th class="num">vs {e(reference_library)}</th><th>Notes</th>'
         "<th>Benchmark</th><th>Suite</th></tr></thead><tbody>"
     )
@@ -1598,21 +1825,22 @@ def render_html(
         compared = len(g.libraries) > 1
         for ig in g.inputs:
             for m in ig.rows:
-                r = m.result
                 tput = m.throughput
                 ratio = library_ratio_text(m, ig, reference_library) if compared else ""
+                times = "".join(
+                    f'<td class="num">{e(c)}</td>' for c in time_cells(m, repeated)
+                )
+                notes = ", ".join(m.flags + repeat_notes(m, expected))
                 out.append(
                     "<tr>"
                     f"<td>{e(g.conversion)}</td>"
                     f"<td>{e(ig.input)} ({e(fmt_bytes(ig.input_bytes))})</td>"
                     f"<td>{e(m.library or '?')}</td><td>{e(m.api or '?')}</td>"
-                    f'<td class="num">{e(fmt_time(r.mean_ns))}</td>'
-                    f'<td class="num">{e(fmt_time(r.low_ns))} – '
-                    f"{e(fmt_time(r.high_ns))}</td>"
+                    f"{times}"
                     f'<td class="num">'
                     f"{e(fmt_throughput(tput)) if tput is not None else '—'}</td>"
                     f'<td class="num">{e(ratio)}</td>'
-                    f'<td class="flags">{e(", ".join(m.flags))}</td>'
+                    f'<td class="flags">{e(notes)}</td>'
                     f"<td>{e(m.name)}</td><td>{e(m.suite)}</td>"
                     "</tr>"
                 )
@@ -1620,7 +1848,8 @@ def render_html(
     out.append(
         '<p class="sub">Throughput = input bytes / mean time; 1 MiB = 2²⁰ '
         "bytes. Whiskers and the CI column are Catch2's 95% bootstrap interval "
-        f"on the mean. {e(RATIO_NOTE)}</p>"
+        f"on the mean. {e(REPEAT_NOTE) + ' ' if repeated else ''}"
+        f"{e(RATIO_NOTE)}</p>"
     )
     out.append("</main>")
     out.append('<div id="bt-tip" hidden></div>')
@@ -1730,7 +1959,7 @@ def render_vegalite_spec(
     input, vs_reference is the throughput as a multiple of its fastest result.
     """
     values: list[dict[str, object]] = []
-    groups = group_by_conversion([m for r in suites for m in r.measurements])
+    groups = group_by_conversion(suite_measurements(suites))
     for g in groups:
         for ig in g.inputs:
             ref = library_reference(ig, reference_library)
@@ -1748,9 +1977,11 @@ def render_vegalite_spec(
                     "ci_low": round(ci[0], 2),
                     "ci_high": round(ci[1], 2),
                 }
-                ratio = throughput_ratio(m, ref)
+                ratio = library_ratio(m, ref) if ref is not None else None
                 if ratio is not None:
                     value["vs_reference"] = round(ratio.value, 3)
+                if m.repeats:
+                    value["repeats"] = m.repeat_count
                 values.append(value)
     x = {
         "field": "throughput_MiBs",
