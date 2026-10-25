@@ -32,6 +32,12 @@
 #if __has_include(<unistd.h>)
     #include <unistd.h>
 #endif
+#if __has_include(<valgrind/callgrind.h>)
+    #include <valgrind/callgrind.h>
+#else
+    #define CALLGRIND_TOGGLE_COLLECT
+    #define CALLGRIND_DUMP_STATS_AT(desc) static_cast<void>(desc)
+#endif
 #if __has_include(<sys/utsname.h>)
     #include <sys/utsname.h>
 #endif
@@ -50,6 +56,8 @@ struct recorder {
     std::optional<benchmark_description> pending;
     std::optional<std::size_t>           current;
     std::optional<load_average>          load_start;
+    std::size_t                          count_runs = 0;
+    std::vector<std::string>             counted; // benchmarks already counted
 };
 
 std::mutex& state_mutex() {
@@ -265,7 +273,10 @@ class metadata_listener : public Catch::EventListenerBase {
     void testRunEnded(const Catch::TestRunStats& stats) override;
 };
 
-void metadata_listener::testRunStarting(const Catch::TestRunInfo&) { begin_run(); }
+void metadata_listener::testRunStarting(const Catch::TestRunInfo&) {
+    set_count_runs(parse_count_runs(std::getenv("BEMAN_TRANSCODE_BENCH_COUNT")));
+    begin_run();
+}
 
 void metadata_listener::benchmarkPreparing(Catch::StringRef name) {
     begin_benchmark(std::string_view(name.data(), name.size()));
@@ -322,6 +333,54 @@ void describe(const benchmark_description& description) {
 void record_input(std::string_view label, std::size_t bytes) {
     std::lock_guard lock(state_mutex());
     record_current_input(label, "synthetic", bytes);
+}
+
+std::size_t count_runs() {
+    std::lock_guard lock(state_mutex());
+    return state().count_runs;
+}
+
+void set_count_runs(std::size_t runs) {
+    std::lock_guard lock(state_mutex());
+    state().count_runs = runs;
+}
+
+std::size_t parse_count_runs(const char* text) {
+    if (text == nullptr)
+        return 0;
+    std::string_view view(text);
+    std::size_t      runs = 0;
+    auto [end, ec]        = std::from_chars(view.data(), view.data() + view.size(), runs);
+    if (ec != std::errc{} || end != view.data() + view.size())
+        return 0;
+    return runs;
+}
+
+std::size_t begin_count() {
+    std::lock_guard lock(state_mutex());
+    recorder&       r = state();
+    if (r.count_runs == 0 || !r.current)
+        return 0;
+    const std::string& name = r.records[*r.current].name;
+    for (const auto& done : r.counted)
+        if (done == name)
+            return 0;
+    r.counted.push_back(name);
+    return r.count_runs;
+}
+
+void start_counting() { CALLGRIND_TOGGLE_COLLECT; }
+
+void stop_counting() {
+    CALLGRIND_TOGGLE_COLLECT;
+    std::string name;
+    {
+        std::lock_guard lock(state_mutex());
+        recorder&       r = state();
+        if (r.current)
+            name = r.records[*r.current].name;
+    }
+    CALLGRIND_DUMP_STATS_AT(name.c_str());
 }
 
 std::optional<load_average> parse_load_average(std::string_view text) {
@@ -413,7 +472,8 @@ std::string metadata_json(const std::vector<benchmark_record>& records) {
         load_start = state().load_start;
     }
     out += "    \"load_start\": " + json_load(load_start) + ",\n";
-    out += "    \"load_end\": " + json_load(read_load_average()) + "\n";
+    out += "    \"load_end\": " + json_load(read_load_average()) + ",\n";
+    out += std::format("    \"count_runs\": {}\n", count_runs());
     out += "  },\n";
     out += "  \"benchmarks\": [";
     for (std::size_t i = 0; i < records.size(); ++i) {

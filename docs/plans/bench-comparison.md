@@ -312,6 +312,40 @@ header, below.
 - **#107 check.** A benchmark that is optimized away shows close to 0
   instructions per byte, confirming the `implausible` flag independently.
 
+**Status:** implemented on branch `bench-instruction-counts`.
+- `bench::measure` lives in `benchmark/benchmark_measure.hpp`. Count mode
+  lives in the fixture: `BEMAN_TRANSCODE_BENCH_COUNT=N`, read as the run
+  starts, with `count_runs` in the sidecar. Every `BENCHMARK_ADVANCED` body
+  uses the wrapper, and the 13 plain `BENCHMARK`s in the pluggable suite
+  became `BENCHMARK_ADVANCED`.
+- `make bench-instructions` runs the core suites under callgrind into
+  `$(BENCH_RESULTS_DIR)/instructions/`, with `BENCH_COUNT_RUNS` (default 3)
+  calls counted per benchmark. The dumps are `SUITE.callgrind.PID.N`, and
+  the report reads them beside `SUITE.xml`.
+- The counted suite's own timings are discarded. A counted suite passed in
+  one run beside timed suites joins them by suite and benchmark name, so one
+  report shows time and count side by side. A report of counts alone drops
+  the time columns. Output with no counts is byte-identical to before.
+- Collection is turned on with `CALLGRIND_TOGGLE_COLLECT` alone.
+  `CALLGRIND_ZERO_STATS` before it is redundant, since collection starts off
+  and each dump resets the counters. It also left dumps that
+  callgrind_annotate charged entirely to `__libc_start_main`.
+- First pass, a RelWithDebInfo build of the smoke, utf, whatwg, iconv and
+  pluggable suites, `N` = 3. smoke and utf took seconds, iconv 26 s. whatwg
+  and pluggable took 14 minutes each, almost all of it in the Genji inputs.
+  - #108: beman's Shift_JIS encode spends 1,145 instructions per byte of
+    UTF-32 input, iconv's 13.7, so 83× more. Per source line, 99.7% of
+    those instructions are lines 124–125 of `detail/shift_jis.hpp`, a
+    linear scan of the 11,280-entry decode table for each code point. That
+    is the fix #108 needs.
+  - #107: three single-byte decode results count under 0.01 instructions
+    per byte and are flagged `few-instructions`. These are the 4K × 0xC0
+    `whatwg_decode` and `table_codec` views, and windows-1251 on
+    `ru_mars_windows1251.bin`.
+  - UTF-8 decode through the `whatwg_decode` view costs 8.0 instructions per
+    byte on English and 15.0 on Arabic. iconv's `iconv_transcode_to` costs
+    40.1.
+
 ### runner-stability
 
 *Stage 7.*
@@ -390,6 +424,10 @@ small fixed tolerance.
   becomes "the repeats don't overlap". Between libraries in one run it
   becomes "the per-repeat ratios all fall on one side of 1×". The single-run
   CI rule still applies to runs without repeats.
+- 2026-10-25: [instruction-counts](#instruction-counts) uses a fixed
+  tolerance for counts. A count ratio's interval is ±1% around its value, so
+  a change is one of more than 1%. Provisional; the first pass hasn't yet
+  measured how much a count moves between runs of the same binary.
 
 ### aggregate-statistic
 
@@ -439,6 +477,11 @@ Valgrind. The alternative is a separate driver that bypasses Catch2. That
 duplicates every benchmark body, so it's a fallback only.
 **Decided by:** —
 **Log:**
+- 2026-10-25: [instruction-counts](#instruction-counts) uses the wrapper,
+  and it works. Under Valgrind, Catch2's own calls after the counted ones
+  cost about as much as the counted calls themselves. The minimal settings
+  keep that to a few calls per benchmark, so a whole suite takes minutes,
+  not hours. The fallback driver hasn't been needed.
 
 ### baseline-storage
 

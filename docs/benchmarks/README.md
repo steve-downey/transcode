@@ -139,6 +139,7 @@ A result is flagged instead of trusted when:
 | `no-metadata` | no sidecar entry, so the input size is unknown | no |
 | `empty-input` | the input was empty, usually a missing corpus file | no |
 | `implausible` | under 1 ns per call, or over 32 bytes/ns (~30 GiB/s): the work was almost certainly optimized away | no |
+| `few-instructions` | counted at under 0.01 instructions per input byte: the work was optimized away | no |
 | `noisy` | Catch2's outlier variance is above 0.5 ("severely inflated") | yes |
 
 An unplotted result keeps its row in the chart, with the reason where the value
@@ -241,18 +242,80 @@ can't be put down to any one of these; when the suites within one run differ in
 any of them; and when a run was built from a modified tree.  Comparison reports
 never fail on a slowdown: the tool exits 0 whatever the numbers say.
 
+### Instruction counts
+
+Wall time moves with the machine's load; an instruction count barely does.
+`make bench-instructions` builds the GCC-16 Perf configuration and runs each
+core suite once under Valgrind's callgrind, with the fixture in *count mode*.
+It writes `SUITE.xml`, its sidecar, and callgrind dumps
+`SUITE.callgrind.PID.N` into `BENCH_INSTRUCTION_DIR` (default
+`data/benchmarks/results/instructions/`), then reports on that directory.
+Like `bench-repeat`, it refuses a directory that already holds results.
+
+| Variable | Default |
+|----------|---------|
+| `BENCH_COUNT_RUNS` | `3` |
+| `BENCH_INSTRUCTION_SUITES` | `$(BENCH_REPEAT_SUITES)` |
+| `BENCH_INSTRUCTION_DIR` | `$(BENCH_RESULTS_DIR)/instructions` |
+
+Count mode is on when `BEMAN_TRANSCODE_BENCH_COUNT=N` is set.  The first time
+each benchmark's body reaches `bench::measure`, it runs once with nothing
+counted, to warm up lazy setup such as `iconv_open`; then `N` times with
+callgrind collecting; then callgrind dumps the counts under the benchmark's
+name.  After that the body is timed as usual, so Catch2 can finish, but with
+the minimal settings the target passes, and the times mean nothing.  The
+sidecar records `count_runs`, which marks the suite as counted.  Outside
+Valgrind, count mode runs the extra calls and counts nothing.
+
+The report divides each count by `N` and by the input size, giving
+instructions per input byte, lower being better.  A counted suite gives counts
+only.  Passed in one run beside timed suites, each count joins the timed
+result with the same suite and benchmark name:
+
+```bash
+uv run python tools/process_benchmark_results.py \
+    data/benchmarks/results/repeats data/benchmarks/results/instructions \
+    --html report.html
+```
+
+Each table gains an `Instr/B` column, and a conversion run by several libraries
+gets `instr vs beman.transcode` too.  The HTML report and `--svg-dir` draw an
+instructions chart beside each throughput chart (`CONVERSION.instructions.svg`).
+Comparing runs adds each run's count, and each later run's count ratio to the
+first, with a ratio chart of its own.  A count ratio is above 1× when there are
+fewer instructions, as a throughput ratio is when faster.  Counts barely vary
+between runs, so a count ratio is a change once it is more than 1% from 1×.
+The Vega-Lite spec carries `instructions_per_byte`, `instructions_vs_reference`
+and `instructions_ratio`.  A report of counts alone leaves out the time
+columns.
+
+A count is not a time.  Cache misses, branch mispredictions and memory stalls
+cost no instructions, and SIMD code does more work in each one, so the count
+flatters simdutf.  It finds algorithmic costs instead: a lookup that scans a
+table shows up directly as instructions per byte.  The dumps open in
+`kcachegrind`, which shows which functions spend them.  A count under 0.01 per
+byte is flagged `few-instructions`, checking `implausible` from the other
+side.
+
 ### Describing a benchmark
 
-Put a `describe` call on the line before each `BENCHMARK` or
-`BENCHMARK_ADVANCED`.  Benchmarks with the same conversion and input are drawn
-together, so name conversions consistently (`Shift_JIS → UTF-8`):
+Put a `describe` call on the line before each `BENCHMARK_ADVANCED`, and time
+its body with `bench::measure(meter, fn)` (`benchmark/benchmark_measure.hpp`)
+rather than `meter.measure(fn)`, so that count mode can count it.  Benchmarks
+with the same conversion and input are drawn together, so name conversions
+consistently (`Shift_JIS → UTF-8`):
 
 ```cpp
 describe({.conversion = "Shift_JIS → UTF-8", .library = "beman.transcode", .api = "transcode view"});
-BENCHMARK("Shift-JIS -> UTF-8 streaming (transcode pipe)") {
-    return count_elements(corpus_span("ja_mars_shiftjis.bin") | transcode<codec::shift_jis, codec::utf_8>);
+BENCHMARK_ADVANCED("Shift-JIS -> UTF-8 streaming (transcode pipe)")
+(Catch::Benchmark::Chronometer meter) {
+    measure(meter, [&] {
+        return count_elements(corpus_span("ja_mars_shiftjis.bin") | transcode<codec::shift_jis, codec::utf_8>);
+    });
 };
 ```
+
+A plain `BENCHMARK` is timed by Catch2 directly, and count mode never sees it.
 
 `corpus_span` and `load_corpus` record their input.  A benchmark over generated
 data calls `record_input(label, bytes)` from its body instead.  A test case
@@ -337,3 +400,4 @@ grep "^#" data/benchmarks/results/matrix-20260527.txt
 | `make bench-perf-report` | core suites, GCC-16 Perf → Markdown + HTML + SVG + Vega-Lite | — |
 | `make bench-compare` | two result directories → comparison Markdown + HTML + Vega-Lite | — |
 | `make bench-repeat` | core suites, GCC-16 Perf, `BENCH_REPEATS` times → Markdown + HTML + SVG + Vega-Lite | — |
+| `make bench-instructions` | core suites, GCC-16 Perf, under callgrind → instruction counts, Markdown + HTML + SVG + Vega-Lite | — |
