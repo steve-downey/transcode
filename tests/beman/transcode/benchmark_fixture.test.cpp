@@ -18,20 +18,24 @@
 #include <vector>
 
 using beman::transcoding::bench::begin_benchmark;
+using beman::transcoding::bench::begin_count;
 using beman::transcoding::bench::begin_run;
 using beman::transcoding::bench::benchmark_records;
 using beman::transcoding::bench::chunk_corpus;
 using beman::transcoding::bench::clear_benchmark_records;
 using beman::transcoding::bench::corpus_span;
 using beman::transcoding::bench::count_elements;
+using beman::transcoding::bench::count_runs;
 using beman::transcoding::bench::describe;
 using beman::transcoding::bench::end_benchmark;
 using beman::transcoding::bench::load_corpus;
 using beman::transcoding::bench::metadata_json;
+using beman::transcoding::bench::parse_count_runs;
 using beman::transcoding::bench::parse_load_average;
 using beman::transcoding::bench::read_load_average;
 using beman::transcoding::bench::record_input;
 using beman::transcoding::bench::require_corpus;
+using beman::transcoding::bench::set_count_runs;
 using beman::transcoding::bench::volatile_sink;
 using beman::transcoding::tests::constify;
 
@@ -244,6 +248,60 @@ TEST_CASE("metadata_json records the machine state", "[bench][metadata]") {
         CHECK(after.find("\"load_start\": [") != std::string::npos);
     else
         CHECK(after.find("\"load_start\": null") != std::string::npos);
+    clear_benchmark_records();
+}
+
+TEST_CASE("parse_count_runs reads a positive count", "[bench][count]") {
+    CHECK(parse_count_runs("5") == 5u);
+    CHECK(parse_count_runs("100") == 100u);
+}
+
+TEST_CASE("parse_count_runs turns anything else into 0", "[bench][count]") {
+    CHECK(parse_count_runs(nullptr) == 0u);
+    CHECK(parse_count_runs("") == 0u);
+    CHECK(parse_count_runs("0") == 0u);
+    CHECK(parse_count_runs("-1") == 0u);
+    CHECK(parse_count_runs("5x") == 0u);
+    CHECK(parse_count_runs("many") == 0u);
+}
+
+TEST_CASE("begin_count counts each benchmark once", "[bench][count]") {
+    clear_benchmark_records();
+    set_count_runs(3);
+    CHECK(count_runs() == 3u);
+    CHECK(begin_count() == 0u); // no benchmark running
+
+    begin_benchmark("first");
+    CHECK(begin_count() == 3u);
+    CHECK(begin_count() == 0u);
+    end_benchmark();
+
+    begin_benchmark("first");
+    CHECK(begin_count() == 0u);
+    end_benchmark();
+
+    begin_benchmark("second");
+    CHECK(begin_count() == 3u);
+    end_benchmark();
+    clear_benchmark_records();
+}
+
+TEST_CASE("begin_count counts nothing outside count mode", "[bench][count]") {
+    clear_benchmark_records();
+    CHECK(count_runs() == 0u);
+    begin_benchmark("timed");
+    CHECK(begin_count() == 0u);
+    end_benchmark();
+    clear_benchmark_records();
+}
+
+TEST_CASE("metadata_json records the count mode", "[bench][count]") {
+    clear_benchmark_records();
+    begin_benchmark("one");
+    end_benchmark();
+    CHECK(metadata_json(benchmark_records()).find("\"count_runs\": 0\n") != std::string::npos);
+    set_count_runs(7);
+    CHECK(metadata_json(benchmark_records()).find("\"count_runs\": 7\n") != std::string::npos);
     clear_benchmark_records();
 }
 

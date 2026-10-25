@@ -5,6 +5,7 @@
 import json
 import re
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from process_benchmark_results import (
     BUSY_LOAD,
+    COUNT_NOTE,
     IMPLAUSIBLE_BYTES_PER_NS,
     REFERENCE_LIBRARY,
     SIDECAR_FORMAT,
@@ -22,8 +24,10 @@ from process_benchmark_results import (
     assign_labels,
     comparison_groups,
     comparison_warnings,
+    count_ratio,
     duplicate_warnings,
     environment_summary,
+    fmt_count_ratio,
     fmt_ratio,
     group_by_conversion,
     library_ratio,
@@ -32,11 +36,13 @@ from process_benchmark_results import (
     main,
     match_runs,
     other_load,
+    parse_callgrind_dump,
     parse_catch2_xml,
     ratio_axis,
     render_comparison_html,
     render_comparison_markdown,
     render_comparison_vegalite,
+    render_count_chart,
     render_html,
     render_markdown,
     render_ratio_svg,
@@ -46,6 +52,7 @@ from process_benchmark_results import (
     run_table,
     sidecar_path,
     slugify,
+    suite_list,
     suite_measurements,
     suite_name,
     suite_warnings,
@@ -1169,3 +1176,196 @@ def test_single_run_warns_about_duplicate_names(run_xml_path: Path) -> None:
         "appears more than once" in line
         for line in render_markdown([suite]).splitlines()
     )
+
+
+# ---------------------------------------------------------------------------
+# Instruction counts
+# ---------------------------------------------------------------------------
+
+
+def callgrind_dump(name: str | None, total: int, summary: bool = True) -> str:
+    """A callgrind dump as bench::measure leaves one, or as the program's end does."""
+    trigger = f"Client Request: {name}" if name is not None else "Program termination"
+    return (
+        "# callgrind format\nversion: 1\ncreator: callgrind-3.26.0\npid: 1\n"
+        f"cmd: smoke\npart: 1\n\ndesc: I1 cache: \ndesc: Trigger: {trigger}\n"
+        "positions: line\nevents: Ir\n"
+        + (f"summary: {total}\n" if summary else "")
+        + f"\nfn=(1) main\n0 {total}\ntotals: {total}\n"
+    )
+
+
+def write_counted(
+    run_dir: Path,
+    per_call: Mapping[str, float],
+    count_runs: int = 2,
+    **kwargs: object,
+) -> Path:
+    """write_run in count mode, with a callgrind dump per benchmark in per_call
+    holding that many instructions per call."""
+    write_run(run_dir, count_runs=count_runs, **kwargs)  # type: ignore[arg-type]
+    for i, (name, n) in enumerate(per_call.items(), 1):
+        (run_dir / f"smoke.callgrind.4242.{i}").write_text(
+            callgrind_dump(name, round(n * count_runs)), encoding="utf-8"
+        )
+    (run_dir / "smoke.callgrind.4242").write_text(
+        callgrind_dump(None, 0), encoding="utf-8"
+    )
+    return run_dir
+
+
+def load_dirs(label: str, *run_dirs: Path) -> Run:
+    return Run(label, [load_suite(f) for f in xml_files(list(run_dirs))])
+
+
+# 8 instructions per byte for beman.transcode on the 586-byte input, 16 for iconv.
+COUNTS = {EN: 8 * 586, AR: 16 * 586}
+
+
+def test_parse_callgrind_dump_reads_the_name_and_total() -> None:
+    assert parse_callgrind_dump(callgrind_dump(EN, 9376)) == (EN, 9376)
+    assert parse_callgrind_dump(callgrind_dump(EN, 9376, summary=False)) == (EN, 9376)
+    assert parse_callgrind_dump(callgrind_dump(None, 0)) == (None, 0)
+
+
+def test_counted_suite_gives_counts_not_times(tmp_path: Path) -> None:
+    run = load("", write_counted(tmp_path / "c", COUNTS))
+    (suite,) = run.suites
+    assert suite.counted and suite.count_runs == 2
+    ms = by_name(run.measurements)
+    assert not ms[EN].timed
+    assert ms[EN].instructions == pytest.approx(8 * 586)
+    assert ms[EN].instructions_per_byte == pytest.approx(8.0)
+    assert ms[EN].throughput is None
+    assert ms["Single-byte decode: windows-1251 Russian"].instructions is None
+    # Valgrind's timings do not make a result implausible or noisy.
+    assert ms["optimized away"].flags == []
+
+
+def test_few_instructions_per_byte_is_flagged_and_excluded(tmp_path: Path) -> None:
+    run = load("", write_counted(tmp_path / "c", {"optimized away": 4}))
+    m = by_name(run.measurements)["optimized away"]
+    assert m.flags == ["few-instructions"]
+    assert m.instructions_per_byte is None
+
+
+def test_counts_join_the_timed_results(tmp_path: Path) -> None:
+    write_run(tmp_path / "t", drop=(AR,))
+    write_counted(tmp_path / "c", COUNTS)
+    run = load_dirs("", tmp_path / "t", tmp_path / "c")
+    ms = by_name(run.measurements)
+    assert len(ms) == 5
+    assert ms[EN].timed and ms[EN].instructions_per_byte == pytest.approx(8.0)
+    assert ms[EN].throughput is not None
+    # A count with no timed result is kept as one of its own.
+    assert not ms[AR].timed and ms[AR].instructions_per_byte == pytest.approx(16.0)
+    assert suite_list(run.suites) == "smoke, smoke (counted)"
+    assert run.repeats == 1
+
+
+def test_count_ratio_has_a_small_tolerance(tmp_path: Path) -> None:
+    run = load("", write_counted(tmp_path / "c", COUNTS))
+    ms = by_name(run.measurements)
+    ratio = count_ratio(ms[AR], ms[EN])
+    assert ratio is not None and ratio.value == pytest.approx(0.5)
+    assert fmt_count_ratio(ratio) == "2.00× more"
+    assert fmt_count_ratio(Ratio(1.005, 1.005 / 1.01, 1.005 * 1.01)) == (
+        "no clear change"
+    )
+    assert fmt_count_ratio(Ratio(1.03, 1.03 / 1.01, 1.03 * 1.01)) == "1.03× fewer"
+
+
+def test_markdown_shows_instructions_beside_times(tmp_path: Path) -> None:
+    write_run(tmp_path / "t")
+    write_counted(tmp_path / "c", COUNTS)
+    md = render_markdown(load_dirs("", tmp_path / "t", tmp_path / "c").suites)
+    assert "| MiB/s | vs beman.transcode | Instr/B | instr vs beman.transcode |" in md
+    assert "| 8.00 | reference |" in md
+    assert "| 16.0 | 2.00× more |" in md
+    assert COUNT_NOTE in md
+
+
+def test_markdown_of_counts_alone_has_no_time_columns(tmp_path: Path) -> None:
+    md = render_markdown(load("", write_counted(tmp_path / "c", COUNTS)).suites)
+    assert "MiB/s" not in md
+    assert "Mean" not in md
+    assert (
+        "| Input | Library | API | Instr/B | instr vs beman.transcode | Notes |" in md
+    )
+    assert "Throughput =" not in md
+
+
+def test_counted_suite_is_not_warned_about_load(tmp_path: Path) -> None:
+    run = load(
+        "",
+        write_counted(tmp_path / "c", COUNTS, load_start=[BUSY_LOAD + 5, 0, 0], cpus=4),
+    )
+    assert suite_warnings(run.suites) == []
+
+
+def test_counted_suite_without_dumps_is_warned_about(tmp_path: Path) -> None:
+    run = load("", write_run(tmp_path / "c", count_runs=3))
+    (warning,) = suite_warnings(run.suites)
+    assert warning.startswith("smoke (counted): run in count mode, but no callgrind")
+
+
+def test_count_chart_plots_instructions_per_byte(tmp_path: Path) -> None:
+    run = load("", write_counted(tmp_path / "c", COUNTS))
+    group = next(
+        g for g in group_by_conversion(run.measurements) if g.conversion == UTF
+    )
+    svg = render_count_chart(group, standalone=True)
+    assert "instructions per byte" in svg
+    assert ">8.00<" in svg and ">16.0<" in svg
+
+
+def test_html_draws_a_count_chart_beside_the_throughput_chart(tmp_path: Path) -> None:
+    write_run(tmp_path / "t")
+    write_counted(tmp_path / "c", COUNTS)
+    page = render_html(load_dirs("", tmp_path / "t", tmp_path / "c").suites)
+    assert 'aria-label="UTF-8 → UTF-32 throughput"' in page
+    assert 'aria-label="UTF-8 → UTF-32: instructions per byte chart"' in page
+    assert "<th>Instr/B</th>" in page
+
+
+def test_comparison_shows_count_ratios(tmp_path: Path) -> None:
+    before = load("before", write_counted(tmp_path / "a", COUNTS))
+    after = load("after", write_counted(tmp_path / "b", {EN: 4 * 586, AR: 16.05 * 586}))
+    runs = [before, after]
+    md = render_comparison_markdown(runs)
+    assert "| before instr/B | after instr/B | after vs before instr |" in md
+    assert "| 8.00 | 4.00 | 2.00× fewer |" in md
+    assert "| 16.0 | 16.1 | no clear change |" in md
+    assert "MiB/s |" not in md.split("### Runs")[1].split("\n\n")[0]
+    page = render_comparison_html(runs)
+    assert "instruction count ratio" in page
+    rows, _ = match_runs(runs)
+    groups, by_reference = comparison_groups(rows)
+    utf = next(g for g in groups if g.conversion == UTF)
+    svg = render_ratio_svg(utf, by_reference, runs, 1, standalone=True, counts=True)
+    assert ">2.00×<" in svg
+    assert "no clear change" in svg
+
+
+def test_vegalite_carries_instruction_counts(tmp_path: Path) -> None:
+    write_run(tmp_path / "t")
+    write_counted(tmp_path / "c", COUNTS)
+    spec = render_vegalite_spec(load_dirs("", tmp_path / "t", tmp_path / "c").suites)
+    ar = next(v for v in spec["data"]["values"] if v["benchmark"] == AR)
+    assert ar["instructions_per_byte"] == 16.0
+    assert ar["instructions_vs_reference"] == 0.5
+    before = load("before", write_counted(tmp_path / "a", COUNTS))
+    spec = render_comparison_vegalite([before, before], "t")
+    entry = spec["vconcat"][1]["data"]["values"][0]
+    assert entry["instructions_ratio"] == 1.0
+    assert "ratio" not in entry
+
+
+def test_main_writes_count_charts(tmp_path: Path) -> None:
+    write_run(tmp_path / "t")
+    write_counted(tmp_path / "c", COUNTS)
+    out = tmp_path / "svg"
+    assert main([str(tmp_path / "t"), str(tmp_path / "c"), "--svg-dir", str(out)]) == 0
+    names = sorted(p.name for p in out.iterdir())
+    assert "utf-8-to-utf-32.svg" in names
+    assert "utf-8-to-utf-32.instructions.svg" in names
