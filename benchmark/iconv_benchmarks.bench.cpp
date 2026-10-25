@@ -4,7 +4,9 @@
 #include <benchmark/benchmark_sink.hpp>
 #include <beman/transcode/iconv_bulk.hpp>
 #include <beman/transcode/iconv_bulk.hpp>
+#include <beman/transcode/codec.hpp>
 #include <beman/transcode/iconv_real.hpp>
+#include <beman/transcode/whatwg_decode_view.hpp>
 
 #include <catch2/catch_all.hpp>
 
@@ -31,6 +33,17 @@ static std::size_t raw_iconv_process(iconv_t cd, std::span<const char> data, cha
         total += out_buf_size - outleft;
     }
     return total;
+}
+
+// Shift_JIS bytes decoded by beman's WHATWG decoder, as UTF-32LE bytes for
+// iconv: least significant byte first, whatever the host's byte order.
+static std::string shift_jis_as_utf32le(std::span<const char> shift_jis) {
+    using namespace beman::transcoding;
+    std::string bytes;
+    for (char32_t cp : shift_jis | whatwg_decode<codec::shift_jis>)
+        for (int shift = 0; shift < 32; shift += 8)
+            bytes.push_back(static_cast<char>((cp >> shift) & 0xFF));
+    return bytes;
 }
 
 TEST_CASE("iconv baselines", "[benchmark][iconv]") {
@@ -149,5 +162,25 @@ TEST_CASE("iconv large corpus", "[benchmark][iconv]") {
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("genji_monogatari_eucjp.bin");
         meter.measure([&] { return iconv_transcode_to<std::string>(data, "EUC-JP", "SHIFT_JIS").size(); });
+    };
+
+    describe({.conversion = "EUC-JP → UTF-32", .library = "iconv", .api = "iconv_transcode_to"});
+    BENCHMARK_ADVANCED("iconv_transcode_to: EUC-JP → UTF-32LE, Genji (2.3 MB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("genji_monogatari_eucjp.bin");
+        meter.measure([&] { return iconv_transcode_to<std::string>(data, "EUC-JP", "UTF-32LE").size(); });
+    };
+
+    // Shift_JIS encode on its own, from the novel's code points.  They are
+    // decoded here, outside any benchmark, by the same decoder as the
+    // beman.transcode twin in whatwg_benchmarks.bench.cpp, so both encode
+    // the same input.
+    const std::string genji_utf32le = shift_jis_as_utf32le(corpus_span("genji_monogatari_shiftjis.bin"));
+
+    describe({.conversion = "UTF-32 → Shift_JIS", .library = "iconv", .api = "iconv_transcode_to"});
+    BENCHMARK_ADVANCED("iconv_transcode_to: UTF-32LE → Shift-JIS, Genji")
+    (Catch::Benchmark::Chronometer meter) {
+        record_input("genji_monogatari_shiftjis.bin as UTF-32", genji_utf32le.size());
+        meter.measure([&] { return iconv_transcode_to<std::string>(genji_utf32le, "UTF-32LE", "SHIFT_JIS").size(); });
     };
 }

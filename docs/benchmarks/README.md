@@ -260,6 +260,14 @@ whose benchmarks need the downloaded corpus starts with
 `require_corpus("file")`, which skips the test case when the file is absent, so
 a missing file is reported rather than timed as an empty input.
 
+To time one stage of a conversion, such as an encode on its own, prepare its
+input in the test case body, before the `BENCHMARK`, where no benchmark is
+running and nothing is recorded or timed.  Then call `record_input` in the
+benchmark with a label that says where the input came from, such as
+`"genji_monogatari_shiftjis.bin as UTF-32"`.  Benchmarks in different libraries
+that encode the same input must record the same label and size, so the report
+draws them together.
+
 ---
 
 ## Throughput Formula
