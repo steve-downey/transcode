@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p6_step4_null_term_preco
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p6-step4-null-term-precondition</code> <b>Depends on:</b> Step 0 <b>Finding:</b> C-06 <b>Read first:</b> <code><a class="el" href="phase6-index_8md.html">docs/plans/phase6-index.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md418"></a>
+<h1><a class="anchor" id="autotoc_md445"></a>
 Goal</h1>
 <p>Give <code>null_term_view</code> the precondition it has always had, and stop its default constructor producing an object whose <code>begin()</code> is a wild pointer.</p>
-<h1><a class="anchor" id="autotoc_md419"></a>
+<h1><a class="anchor" id="autotoc_md446"></a>
 Why</h1>
 <p><code>null_sentinel_t::operator==</code> is specified as <code>\returns *it == 0</code> (<code><a class="el" href="null__term_8hpp.html">null_term.hpp</a>:20</code>). Reaching that comparison requires dereferencing the iterator, so iteration reads element after element until it finds a zero. Nothing anywhere says a zero has to be there.</p>
 <p><code>views::null_term</code> accepts any pointer and any array (<code><a class="el" href="null__term_8hpp.html">null_term.hpp</a>:54</code>, <code>:57</code>), and its <code>\remarks</code> at lines 82-87 explains at length why a non-pointer is ill-formed &ndash; "so that a range carrying no terminator is a diagnosed error
@@ -114,7 +114,7 @@ and not a silent one" &ndash; while saying nothing about a pointer that carries 
 <div class="line"><span class="keyword">constexpr</span> null_term_view() = <span class="keywordflow">default</span>;     <span class="comment">// line 38</span></div>
 <div class="line"><span class="keyword">constexpr</span> I begin() <span class="keyword">const</span>;                <span class="comment">// line 41 — returns ptr_</span></div>
 </div><!-- fragment --><p>For <code>I = const char*</code>, <code>= default</code> default-initializes, so <code>ptr_</code> holds an indeterminate value and <code>begin()</code> hands it to the caller. The class is a <code>view</code>, and <code>view</code> requires <code>default_initializable</code>, so the constructor cannot simply be deleted without taking <code>null_term_view</code> out of the range adaptor world &ndash; but nothing requires the value to be garbage.</p>
-<h1><a class="anchor" id="autotoc_md420"></a>
+<h1><a class="anchor" id="autotoc_md447"></a>
 What to change</h1>
 <p><code><a class="el" href="null__term_8hpp.html">include/beman/transcode/null_term.hpp</a></code>.</p>
 <ul>
@@ -124,7 +124,7 @@ What to change</h1>
 <li><b>Carry it to the adaptor.</b> The <code>views::null_term</code> <code>\remarks</code> at lines 82-87 gains a sentence pointing at the constructor's precondition, so a reader who arrives through the adaptor &ndash; which is how the paper's examples arrive &ndash; is told.</li>
 </ul>
 <p>Do not add a runtime check. This is a precondition on an unbounded scan; the only honest check is the scan itself.</p>
-<h1><a class="anchor" id="autotoc_md421"></a>
+<h1><a class="anchor" id="autotoc_md448"></a>
 Tests</h1>
 <p><code>tests/beman/transcode/null_term.test.cpp</code>.</p>
 <ul>
@@ -133,7 +133,7 @@ Tests</h1>
 <li>Round-trip an ordinary C string and an array with an interior zero, to pin that the terminator is the <em>first</em> zero and not the last element.</li>
 </ul>
 <p>There is no negative compile test here: a missing terminator is a precondition, not a constraint, and the type system cannot see it. <code>CLAUDE.md</code> asks for a negative compile test for every <em>constraint</em>; this step adds none, and the existing <code>null_term_reject_range_fail.cpp</code> already covers the constraint that does exist.</p>
-<h1><a class="anchor" id="autotoc_md422"></a>
+<h1><a class="anchor" id="autotoc_md449"></a>
 Done when</h1>
 <ul>
 <li><code>ptr_</code> is value-initialized and a test proves it.</li>

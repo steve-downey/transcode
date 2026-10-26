@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p6_step1_sniff_forward_r
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p6-step1-sniff-forward-range</code> <b>Depends on:</b> Step 0 <b>Finding:</b> C-01 <b>Read first:</b> <code><a class="el" href="phase6-index_8md.html">docs/plans/phase6-index.md</a></code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md378"></a>
+<h1><a class="anchor" id="autotoc_md405"></a>
 Goal</h1>
 <p>Make the docblock true.</p>
-<h1><a class="anchor" id="autotoc_md379"></a>
+<h1><a class="anchor" id="autotoc_md406"></a>
 Why</h1>
 <p><code>sniff_encoding</code> is constrained on <code>legacy_byte_range</code>, which requires only <code>input_range</code>. It then does <code>++it</code> at <code><a class="el" href="sniff_8hpp.html">sniff.hpp</a>:44</code> and again at <code>:49</code> while reading up to three bytes &ndash; so on a single-pass range, two bytes are gone by the time it returns. Its own <code>\remarks</code> at lines 30-35 says:</p>
 <blockquote class="doxtable">
@@ -112,12 +112,12 @@ Why</h1>
 </blockquote>
 <p>For <code>std::ranges::istream_view&lt;char&gt;</code>, sniffing a BOM and then decoding gives you the payload minus two bytes, silently. Sniffing a <em>non</em>-BOM stream, which is the common case, costs the same two bytes off the front of the document. That is data loss in exactly the stream-oriented use the function exists for.</p>
 <p>Of the three fixes the review offers &ndash; require forward, return an advanced range, or make consumption part of the contract &ndash; requiring forward is the one that keeps the promise rather than retracting it. Returning a replayable range changes a one-word predicate into a two-value result for every caller, and admitting consumption makes the composition in the paper (<code>sniff</code>, then decode the same range) wrong.</p>
-<h1><a class="anchor" id="autotoc_md380"></a>
+<h1><a class="anchor" id="autotoc_md407"></a>
 What to change</h1>
 <p><code><a class="el" href="sniff_8hpp.html">include/beman/transcode/sniff.hpp</a></code>. Add <code>std::ranges::forward_range&lt;R&gt;</code> to the constraint on both the declaration (line 22-23) and the definition (line 36-37); they must stay identical or the declaration is not a declaration of the definition.</p>
 <p>The docblock needs one added sentence saying the range must be a forward range <em>because</em> the mark is not consumed &ndash; the constraint and the promise are the same fact, and a reader who sees only one of them will wonder about the other.</p>
 <p>Nothing else changes. The body is already correct for a forward range.</p>
-<h1><a class="anchor" id="autotoc_md381"></a>
+<h1><a class="anchor" id="autotoc_md408"></a>
 Tests</h1>
 <p><code>tests/beman/transcode/sniff.test.cpp</code> and a new negative compile test.</p>
 <ol type="1">
@@ -125,10 +125,10 @@ Tests</h1>
 <li><b>Negative compile</b> — <code>sniff_reject_input_range_fail.cpp</code>, feeding a genuinely single-pass range. Hand-roll the input-only range rather than using <code>istream_view</code>, so the test does not depend on a stream and stays <code>constexpr</code>-clean; the existing <code>sniff_reject_char32_range_fail.cpp</code> is the shape to copy. Register it in <code>tests/beman/transcode/CMakeLists.txt</code> following the block at lines 935-958: an <code>OBJECT</code> library with <code>EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true</code>, an <code>add_test</code> that invokes <code>${CMAKE_COMMAND} --build ... --target ...</code>, and a <code>PASS_REGULAR_EXPRESSION</code>. The expression must name <code>forward_range</code>, not <code>legacy_byte_range</code> &ndash; otherwise the test passes when the <em>wrong</em> constraint fires and tells you nothing.</li>
 <li><b>Consteval</b> — <code>constify(sniff_encoding(...))</code> for a BOM and a non-BOM case, per the <code>constify()</code> convention in <code>tests/beman/transcode/test_utilities.hpp</code>.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md382"></a>
+<h1><a class="anchor" id="autotoc_md409"></a>
 Watch for</h1>
 <p><code>views::null_term(ptr)</code> produces a <code>null_term_view</code> over a <code>contiguous_iterator</code>, which satisfies <code>forward_range</code>, so the <code>null_term | sniff</code> composition keeps working. Check that it still compiles before assuming so; a <code>null_term_view</code>'s <code>end()</code> is <code>null_sentinel_t</code>, and <code>forward_range</code> only needs the iterator, not a common range.</p>
-<h1><a class="anchor" id="autotoc_md383"></a>
+<h1><a class="anchor" id="autotoc_md410"></a>
 Done when</h1>
 <ul>
 <li><code>sniff_encoding</code> rejects a single-pass range with a diagnostic naming <code>forward_range</code>.</li>

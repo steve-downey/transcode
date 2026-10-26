@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p6_step0_wording_gate.ht
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p6-step0-wording-gate</code> <b>Depends on:</b> nothing <b>Read first:</b> <code><a class="el" href="phase6-index_8md.html">docs/plans/phase6-index.md</a></code>, <code>papers/wording/README.md</code>, <code>Makefile</code> lines 220-273</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md369"></a>
+<h1><a class="anchor" id="autotoc_md396"></a>
 Goal</h1>
 <p>Stop <code>make wording-inputs-check</code> from being a merge blocker for drift that is known, intentional and in progress, without giving up its guard against drift that is none of those things.</p>
-<h1><a class="anchor" id="autotoc_md370"></a>
+<h1><a class="anchor" id="autotoc_md397"></a>
 Why</h1>
 <p>The check hashes every spec-facing header and diffs against <code>papers/wording/inputs.sha256</code>. A header that moved without <code>make wording</code> fails the pull request. <code>make wording</code> needs a <code>specgen</code> built from <code>papers/wording/specgen-ref</code>, and specgen links LLVM's Clang front end.</p>
 <p>So the check's real cost is not the hash. It is that changing one line of a docblock obliges the contributor to build a compiler front end, and it obliges this phase &ndash; eight steps of header edits &ndash; to serialize behind one tool.</p>
@@ -112,7 +112,7 @@ Why</h1>
 reports by construction," because "an edit that changes no wording still needs
 a regeneration to say so." That was the right trade when the alternative was no check at all, and it is the wrong trade as a gate on a tree that is knowingly mid-revision.</p>
 <p>What the check is genuinely for is catching the header edit that nobody meant to leave the wording behind. That purpose survives an explicit opt-out; it does not survive being switched off.</p>
-<h1><a class="anchor" id="autotoc_md371"></a>
+<h1><a class="anchor" id="autotoc_md398"></a>
 Design</h1>
 <p>Add a pending list. <code>papers/wording/PENDING</code> names the spec-facing headers that are knowingly ahead of the committed fragments, one repo-relative path per line, <code>#</code> comments allowed. It is authored, not generated.</p>
 <p><code>make wording-inputs-check</code> then behaves as follows:</p>
@@ -124,7 +124,7 @@ Design</h1>
 </ul>
 <p><code>make wording</code> clears the file when it regenerates &ndash; the fragments are then current, so nothing is pending.</p>
 <p><code>make wording-check</code>, the real check that regenerates and diffs, <b>ignores the list entirely</b>. A paper revision still cannot go out against stale wording. That is what makes the opt-out safe: it defers a staleness report, it does not defer correctness.</p>
-<h1><a class="anchor" id="autotoc_md372"></a>
+<h1><a class="anchor" id="autotoc_md399"></a>
 What to change</h1>
 <ul>
 <li>**<code>Makefile</code>** lines 231-254. Read <code>PENDING</code>, partition the diff, and choose the exit code. Keep the existing message for an unlisted header; it is a good message. Add a distinct one for a listed header that says the entry must be removed by <code>make wording</code> before the paper goes out.</li>
@@ -132,7 +132,7 @@ What to change</h1>
 <li>**<code>.github/workflows/test_makefile.yaml</code>**. No change to the step; the target's exit code carries the decision. Add a separate job, or a condition on the existing one, that fails when <code>PENDING</code> is non-empty on a tag or on a paper-release branch &ndash; the point at which deferred is no longer acceptable.</li>
 <li>**<code>papers/wording/README.md</code>**. Document the list under "The drift gate," next to the paragraph that already explains why the check over-reports. Say what puts a name on it and what takes one off.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md373"></a>
+<h1><a class="anchor" id="autotoc_md400"></a>
 Tests</h1>
 <p><code>tests/tools/</code> holds the Python tool tests that <code>make pytest</code> runs; the shell plumbing here is better covered by a small set of cases driven from the same place, or by a <code>bats</code>-style script if that is already the local habit. Cover:</p>
 <ul>
@@ -142,7 +142,7 @@ Tests</h1>
 <li>listed header unchanged — fails as a stale entry</li>
 <li><code>make wording</code> empties the list</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md374"></a>
+<h1><a class="anchor" id="autotoc_md401"></a>
 Done when</h1>
 <ul>
 <li>The four cases above behave as described.</li>
@@ -150,7 +150,7 @@ Done when</h1>
 <li><code>papers/wording/README.md</code> describes the list.</li>
 <li>No fragment under <code>papers/wording/</code> is edited by hand.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md375"></a>
+<h1><a class="anchor" id="autotoc_md402"></a>
 Note on specgen</h1>
 <p>This step does not remove the need for specgen; it removes the need for it <em>eight times</em>. Step 8 still has to build it from <code>papers/wording/specgen-ref</code> and regenerate. Whoever picks up Step 8 should start that build early &ndash; it is the long pole &ndash; and should confirm the tool reproduces the committed fragments on an unmodified tree before trusting any diff it produces. </p>
 </div></div><!-- contents -->

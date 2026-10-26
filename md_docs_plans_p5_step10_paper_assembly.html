@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('md_docs_plans_p5_step10_paper_assembly
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p5-step10-paper-assembly</code> <b>Depends on:</b> Steps 4-9 <b>Read first:</b> <code><a class="el" href="phase5-index_8md.html">docs/plans/phase5-index.md</a></code>, <code>papers/wg21/MANUAL.md</code></p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md292"></a>
+<h1><a class="anchor" id="autotoc_md319"></a>
 Goal</h1>
 <p>Turn a directory of validated fragments into the paper's Wording section, and make drift between the headers and the paper a CI failure.</p>
-<h1><a class="anchor" id="autotoc_md293"></a>
+<h1><a class="anchor" id="autotoc_md320"></a>
 Tasks</h1>
 <ol type="1">
 <li><b>Write the Wording section of <code>papers/transcode-view.md</code>.</b> The generated fragments carry the clauses; the paper carries the editing instructions around them — "Add a new header `&lt;transcode&gt;` to [headers], Table 1", "Add a
@@ -117,7 +117,7 @@ Tasks</h1>
 <li><b>Reconcile the design sections against the generated clauses.</b> The authored prose was written before the wording existed and has drifted from it in at least one place: the "Concepts" section shows both <code>legacy_byte_range</code> and <code>unicode_scalar_range</code> constrained on <code>ranges::input_range</code>, and <code>legacy_byte_range</code> is defined on <code>ranges::range</code> (found while writing <code>[transcode.reqs]</code> in Step 4). Read every hand-written code block in the paper against its generated clause; the generated one is the truth.</li>
 <li><b>Bump the paper's revision</b> and update the abstract to say the wording is generated from the reference implementation — that is a claim reviewers should be able to check, and it is the phase's headline.</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md294"></a>
+<h1><a class="anchor" id="autotoc_md321"></a>
 Acceptance</h1>
 <ul>
 <li><code>make -C papers transcode-view.pdf</code> produces a paper whose Wording section contains every clause in <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code>, in outline order.</li>
@@ -126,7 +126,7 @@ Acceptance</h1>
 <li><code>make lint</code> and <code>make test</code> green.</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md296"></a>
+<h1><a class="anchor" id="autotoc_md323"></a>
 Outcome (2026-09-08)</h1>
 <p>The paper builds, in HTML and PDF, with its Wording section in the right place and every clause in <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code> present and in outline order &ndash; 23 of them, checked mechanically rather than by eye.</p>
 <p><b>Two corrections to what this section first claimed.</b></p>
@@ -134,7 +134,7 @@ Outcome (2026-09-08)</h1>
 <p>And <code>wording-check</code> is not a CI job. It was, briefly; see the drift gate below.</p>
 <p><b>Heading levels: flat, deliberately</b> (task 3). U2's <code>--base-heading-level</code> is still absent upstream, and the clauses come out at <code>##</code>, which is the level the paper's own sections use, so they are siblings of "Design" rather than children of "Wording". With <code>toc-depth: 2</code> the contents read as a clause list under the Wording heading, which is close enough to right that spending an upstream flag and another cross-repository dependency on it was not worth it. A nested rendering needs the flag <em>and</em> <code>toc-depth: 3</code>.</p>
 <p><b>U6 is worked around here and still open upstream.</b> The warning was the visible half. The other half is that mpark emits the link anyway, so every clause heading and every cross-reference in the published paper pointed at a <code>c++draft</code> page that does not exist &ndash; 23 distinct names, all of them clauses this paper adds. <code>generate.sh</code> now drops the <code>.sref</code> class from names under this paper's two stable-name roots, which leaves <code>[transcode.iconv]</code>, what the draft itself prints. Keyed on the roots on purpose: a citation of a clause that <em>is</em> in the draft keeps its <code>.sref</code> and still resolves. Filed as <a href="https://github.com/steve-downey/specgen/issues/89">specgen#89</a>; the <code>sed</code> comes out when that lands. The paper build is warning-free apart from a pre-existing duplicate <code>email</code> key in the author block, which is authorship metadata and not this step's to decide.</p>
-<h2><a class="anchor" id="autotoc_md297"></a>
+<h2><a class="anchor" id="autotoc_md324"></a>
 Three things that were wrong and are not any more</h2>
 <ul>
 <li><b>The bibliography resolved nothing.</b> The paper carried <code>bibliography: [../docs/*.bib]</code>, which mpark overrides with its own <code>csl.json</code> through <code>-d doc</code>, so all seven non-WG21 citations &ndash; <code>whatwg-encoding</code> included, cited in the abstract &ndash; silently resolved to nothing. The framework's mechanism is a <code>references</code> metadata block, which now lives in <code>parts/tail.md</code> beside the <code>::: {#refs}</code> div that places the bibliography (task 4). <code>P1629R1</code> is deliberately not in it: it is a WG21 paper and resolves from wg21.link on its own.</li>
@@ -142,7 +142,7 @@ Three things that were wrong and are not any more</h2>
 <li><b>Two headings were swallowed.</b> Splitting the file left "Questions for
   SG16" and "Wording" glued to the paragraph above them, so pandoc read them as text. Both were caught by rebuilding and reading the heading tree, which is the check worth keeping: the build does not fail on this, it just quietly produces a paper with two fewer sections.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md298"></a>
+<h2><a class="anchor" id="autotoc_md325"></a>
 Task 7: the code blocks, and one thing this step did not fix</h2>
 <p>Two real drifts, both fixed:</p>
 <ul>
@@ -153,7 +153,7 @@ Task 7: the code blocks, and one thing this step did not fix</h2>
 <p><b>The one this step did not fix</b>, because fixing it is a scope decision and not a transcription: <code>decode_to</code>, <code>encode_to</code>, <code>decode_into</code> and <code>encode_into</code> are proposed by the paper in five places &ndash; the "Bulk conversion to owned
 storage" section that argues the case and concludes "However, we propose the
 names", the Overview bullets, four ticked rows of the API surface table, "Questions for SG16", and the header's own comment ("They are proposed") &ndash; and they have <b>no wording</b>, because <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code> recorded them as "Not proposed at all" the day <em>after</em> the commit that proposed them, citing a header that says the opposite. Step 3 then kept <code>detail/bulk_transcode.hpp</code> outside the gathered region on that authority. They are public API in a <code>detail/</code>-pathed file that Step 3's promotion passed over. Recorded in full in <code><a class="el" href="wording-outline_8md.html">docs/wording-outline.md</a></code>; the fix is a header promotion plus a <code>[transcode.bulk]</code> clause, which is a step of its own.</p>
-<h2><a class="anchor" id="autotoc_md299"></a>
+<h2><a class="anchor" id="autotoc_md326"></a>
 The drift gate, and the workflow that did not survive</h2>
 <p>The first attempt was a workflow that installed LLVM, built specgen from <code>papers/wording/specgen-ref</code>, and ran <code>make wording-check</code> and <code>--validate</code> on every pull request. It was written, pushed, and removed, and it failed twice over before it was.</p>
 <p><b>It does not work.</b> specgen built and ran, then died on &lsquo;/usr/include/wchar.h: fatal error: 'stddef.h&rsquo; file not found` &ndash; a specgen built against an unpacked LLVM tarball derives its resource directory from the running binary's path rather than from the LLVM it links, so Clang's own builtin headers are not found. The parse tail would need <code>-resource-dir</code> or <code>SPECGEN_GCC_TOOLCHAIN</code>. It works on a developer machine because Clang finds the system GCC by itself, which is exactly the kind of difference that only shows up in a container.</p>

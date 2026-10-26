@@ -101,19 +101,19 @@ $(document).ready(function(){initNavTree('md_docs_plans_p6_step10_verification.h
 <div class="contents">
 <div class="textblock"><p><b>Branch:</b> <code>p6-step10-verification</code> <b>Depends on:</b> every other step <b>Closes:</b> the review's "Verification results and gaps" section</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md386"></a>
+<h1><a class="anchor" id="autotoc_md413"></a>
 Goal</h1>
 <p>Answer the questions the review left open, and confirm that the nine steps before this one did what they said.</p>
-<h1><a class="anchor" id="autotoc_md387"></a>
+<h1><a class="anchor" id="autotoc_md414"></a>
 Why a step of its own</h1>
 <p>The review is explicit that its own verification was partial:</p>
 <blockquote class="doxtable">
 <p>&zwj;A fresh C++ test build was not completed. CMake stalled while cloning Catch2. Existing CTest executables predate recent public-header changes, so their results must not be treated as verification of the current tree. </p>
 </blockquote>
 <p>So the review's clean-passes list &ndash; 252 Python tests, mypy, formatting, the examples under <code>g++-16</code>, the paper render, <code>wording-inputs-check</code> &ndash; was measured against a tree whose C++ tests had not been rebuilt. None of it is wrong; it is just narrower than it looks. This step makes the checks match the claim.</p>
-<h1><a class="anchor" id="autotoc_md388"></a>
+<h1><a class="anchor" id="autotoc_md415"></a>
 What to run</h1>
-<h2><a class="anchor" id="autotoc_md389"></a>
+<h2><a class="anchor" id="autotoc_md416"></a>
 Build matrix</h2>
 <p>Fresh configure and build from clean, toolchain-specific build trees, not incremental ones. The supported native matrix on this development machine is GCC 16 and Clang 22; keep build parallelism at two jobs:</p>
 <div class="fragment"><div class="line">CMAKE_BUILD_PARALLEL_LEVEL=2 make TOOLCHAIN=gcc-16 test</div>
@@ -124,35 +124,35 @@ Build matrix</h2>
 <div class="line">uv run cmake --build .build/build-gcc-16/ --config RelWithDebInfo</div>
 <div class="line">uv run ctest --test-dir .build/build-gcc-16/ -C Debug --output-on-failure</div>
 </div><!-- fragment --><p><code>BEMAN_TRANSCODE_USE_MODULES=ON</code> and <code>OFF</code> both configure, build and test.</p>
-<h2><a class="anchor" id="autotoc_md390"></a>
+<h2><a class="anchor" id="autotoc_md417"></a>
 Install and consume</h2>
 <p>From a clean prefix, both modes. Build a small consumer that includes <code>&lt;<a class="el" href="transcode_8hpp.html">beman/transcode/transcode.hpp</a>&gt;</code> and one that imports the module, against the <em>installed</em> package rather than the build tree. This is what D-12 was about and it has never been run.</p>
-<h2><a class="anchor" id="autotoc_md391"></a>
+<h2><a class="anchor" id="autotoc_md418"></a>
 Examples</h2>
 <p>Every file under <code>examples/</code> compiles and runs against the changed headers. The review did this with <code>g++-16</code> and it passed; Steps 3, 5 and 6 change what the examples see, so it has to be redone rather than inherited.</p>
-<h2><a class="anchor" id="autotoc_md392"></a>
+<h2><a class="anchor" id="autotoc_md419"></a>
 Wording</h2>
 <div class="fragment"><div class="line">make wording-check      # regenerate and diff — the real check</div>
 <div class="line">make wording-inputs-check</div>
 <div class="line">make wording-validate</div>
 </div><!-- fragment --><p><code>papers/wording/PENDING</code> must be empty. Read the <code>wording-validate</code> findings; do not merely count them. A coverage finding means a declaration has no home and a leakage finding means the wording names something the reader cannot see, and both are real.</p>
-<h2><a class="anchor" id="autotoc_md393"></a>
+<h2><a class="anchor" id="autotoc_md420"></a>
 The tools the review could not run</h2>
 <ul>
 <li><code>codespell</code> was unavailable. Install it and run it.</li>
 <li><code>specgen</code> was unavailable, so full <code>make wording-check</code> never ran. Step 8 builds it; confirm here.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md394"></a>
+<h2><a class="anchor" id="autotoc_md421"></a>
 Platform scope</h2>
 <p>The project matrix is the installed, versioned GCC 16 and Clang 22 toolchains above, using the repository's toolchain files. Containers and external images are outside the supported verification matrix and are strictly off limits. Record the review's request for a second iconv implementation as out of scope; do not turn Alpine, musl, or another unsupported platform into a release gate.</p>
-<h2><a class="anchor" id="autotoc_md395"></a>
+<h2><a class="anchor" id="autotoc_md422"></a>
 Coverage</h2>
 <p><code>make coverage</code>. Steps 2 and 3 add error branches; those should be covered. Branch coverage is not the target — line and function coverage is — but an uncovered <em>new</em> error path is a missing test, not an artefact.</p>
-<h1><a class="anchor" id="autotoc_md396"></a>
+<h1><a class="anchor" id="autotoc_md423"></a>
 Report</h1>
 <p>Write <code><a class="el" href="review-findings-2026-09-11-closeout_8md.html">docs/review-findings-2026-09-11-closeout.md</a></code> beside the original: each of the 30 findings, what was done, and the commit that did it. For anything deferred, say what and why, so the next review does not rediscover it as new.</p>
 <p>Findings expected to close as "documented, not fixed": S-03 (the U+FFFD reservation, referred to SG16), P-01 and P-02 (scoped as implementation-defined, with the split referred to SG16). Those are decisions, not omissions, and the closeout should read that way.</p>
-<h1><a class="anchor" id="autotoc_md397"></a>
+<h1><a class="anchor" id="autotoc_md424"></a>
 Done when</h1>
 <ul>
 <li>Every check above has been run and its result recorded.</li>

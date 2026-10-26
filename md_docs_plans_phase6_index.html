@@ -99,12 +99,12 @@ $(document).ready(function(){initNavTree('md_docs_plans_phase6_index.html',''); 
   <div class="headertitle"><div class="title">Phase 6: Acting on the 2026-09-11 Review </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md651"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md678"></a>
 Context</h1>
 <p><code><a class="el" href="review-findings-2026-09-11_8md.html">docs/review-findings-2026-09-11.md</a></code> is a triage of the public headers, the implementation, the tests, CMake packaging, CI, the examples, D4246R1, the generated wording, the README and the planning documents. It records 30 findings and says of itself that it is "a triage document, not a set of fixes."</p>
 <p>Phase 6 is the set of fixes.</p>
 <p>The review is not a code review in the usual sense. Seven of its findings are places where the implementation and its own docblock say different things, and because those docblocks <em>are</em> the wording &ndash; specgen reads them and renders the paper's normative clauses from them &ndash; a disagreement between code and comment in this repository is a disagreement between the implementation and the proposal. That is what makes them worth a phase rather than a cleanup branch.</p>
-<h1><a class="anchor" id="autotoc_md652"></a>
+<h1><a class="anchor" id="autotoc_md679"></a>
 Measurements taken before planning (2026-09-11)</h1>
 <p>Facts from the tree at <code>6281764f</code>, not estimates. Every substantive finding in the review was checked rather than taken.</p>
 <ul>
@@ -120,7 +120,7 @@ Measurements taken before planning (2026-09-11)</h1>
 <li><b>One finding the review did not have.</b> <code>pre-commit run gitleaks</code> fails on every file, modified or not: the pinned hook calls a <code>gitleaks git</code> subcommand the resolved binary does not have. <code>make lint</code> therefore has a permanently red hook. It is D-14, and it belongs to Step 9.</li>
 <li><b>The four sibling worktrees are stale.</b> <code>add-clang-tidy</code>, <code>codex/gb18030-e5e5-conformance</code>, <code>codex/remove-utf16-encode-paths</code> and <code>codex/scalar-value-precondition</code> are all ancestors of <code>main</code>; none carries unmerged work. There is no in-flight change this phase can collide with.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md653"></a>
+<h1><a class="anchor" id="autotoc_md680"></a>
 Decisions taken</h1>
 <p>The review says of six findings that a decision must come before there is a correct fix. Those decisions are made here, once, so no step has to re-open them at the keyboard.</p>
 <table class="markdownTable">
@@ -146,7 +146,7 @@ Decisions taken</h1>
 <td class="markdownTableBodyNone">S-03   </td><td class="markdownTableBodyNone"><b>Document the reservation.</b> U+FFFD is reserved as the unmapped-byte signal, the extensibility cost is stated, and the question of a better signal goes to SG16 rather than being answered here.   </td></tr>
 </table>
 <p>C-07 is source-breaking: it changes a return type. That is cheap now and expensive after LEWG review, which is the argument for doing it in this phase rather than the next.</p>
-<h2><a class="anchor" id="autotoc_md654"></a>
+<h2><a class="anchor" id="autotoc_md681"></a>
 S-01, resolved</h2>
 <p>The first decision here was "keep the precondition, drop the promises." It was wrong, and the way it was wrong is worth recording, because the same mistake is easy to make again.</p>
 <p>It rested on a true premise: WHATWG's encoders do take scalar values, and the Encoding Standard enforces it in <em>process an item</em> (§4.1) with <code>Assert: encoderDecoder is not an encoder instance or item is not a surrogate</code>, plus a second assertion that an encoder never runs in <code>"replacement"</code> mode &ndash; so the U+FFFD branch is structurally unreachable on the encode path.</p>
@@ -163,14 +163,14 @@ will be replaced with U+FFFD"; and HTML in <em>create an entry</em>, for form na
 <p>Two things also came off the list. <b>Noncharacters are not in play</b> &ndash; per Infra §4.6 a noncharacter is not a surrogate, so U+FFFE and U+FDD0–U+FDEF <em>are</em> scalar values and encode normally; the library correctly says nothing about them. And <b>there is no divergence between WHATWG's UTF-8 decoder and Unicode's U+FFFD guidance</b>: Encoding §8.1.1 says the constraints "match 'Best
 Practices for Using U+FFFD'… No other behavior is permitted," while Unicode §3.9.6 says it "does not require this practice for conformance." WHATWG mandates what Unicode recommends, so "conforms to WHATWG decode" is the stronger claim and should be stated as such rather than as two co-equal ones.</p>
 <p>Values above U+10FFFF remain genuinely undecided <em>by the standards</em> &ndash; Infra caps a code point at U+10FFFF, so such a value is not a code point, not a surrogate, and has no conversion defined anywhere. <code>char32_t</code> can hold one and a JavaScript string cannot, so this is a case C++ has to answer for itself. Step 6 treats it uniformly with surrogates rather than splitting: both are one comparison away from valid, and putting undefined behaviour one value from defined behaviour with nothing in the type system to mark the boundary buys nothing.</p>
-<h1><a class="anchor" id="autotoc_md655"></a>
+<h1><a class="anchor" id="autotoc_md682"></a>
 The wording gate, and why it is revised first</h1>
 <p><code>make wording-inputs-check</code> hashes every spec-facing header and diffs against <code>papers/wording/inputs.sha256</code>. It runs on every pull request, and it fails whenever a header moves without <code>make wording</code> having been run &ndash; which needs a <code>specgen</code> built from <code>papers/wording/specgen-ref</code>.</p>
 <p>Taken literally that makes eight of this phase's steps wait on an LLVM-linked tool, and it would make any contributor who fixes a typo in a docblock build one too. <code>papers/wording/README.md</code> already concedes the shape of the problem: the check "over-reports by construction," because "an edit that changes no wording
 still needs a regeneration to say so." That was an acceptable trade when the alternative was no check at all. It is not an acceptable trade as a gate on a phase whose whole subject is header edits.</p>
 <p>So Step 0 revises the check rather than submitting to it, and the phase stops being a queue behind one tool. Steps 1 through 7 change headers freely; Step 8 regenerates the wording once, with specgen, after the API decisions have settled &ndash; which is when regeneration is informative anyway, since a fragment regenerated three times tells a reviewer nothing the last regeneration does not.</p>
 <p>The correctness check does not weaken. <code>make wording-check</code> &ndash; the real one, which regenerates and diffs &ndash; still has to pass before a paper revision goes out, and Step 10 runs it. What changes is that the <em>staleness</em> check stops being a merge blocker for a tree that is knowingly mid-phase.</p>
-<h1><a class="anchor" id="autotoc_md656"></a>
+<h1><a class="anchor" id="autotoc_md683"></a>
 Step index</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -199,7 +199,7 @@ Step index</h1>
 <td class="markdownTableBodyNone">10   </td><td class="markdownTableBodyNone"><code>p6-step10-verification</code>   </td><td class="markdownTableBodyNone">open verification work   </td><td class="markdownTableBodyNone">all   </td></tr>
 </table>
 <p>Steps 0 and 9 touch no spec header and can start at once. Steps 1, 4, 5, 6 and 7 touch disjoint headers and can run in any order or in parallel. Steps 2 and 3 both rewrite <code><a class="el" href="iconv__bulk_8hpp.html">iconv_bulk.hpp</a></code>, so they are sequenced. Step 8 is last of the substantive steps because the paper describes what the others decided, and it is the one step that needs specgen.</p>
-<h1><a class="anchor" id="autotoc_md657"></a>
+<h1><a class="anchor" id="autotoc_md684"></a>
 Standing conventions</h1>
 <p>These are <code>CLAUDE.md</code>'s, repeated because a step document should not have to send the reader back for them.</p>
 <ul>
@@ -208,7 +208,7 @@ Standing conventions</h1>
 <li><b>Includes are angle-bracketed and full-path; functions are defined out-of-line inside the header; include guards are <code>#ifndef</code>, never <code>#pragma once</code>.</b></li>
 <li><b>Every file carries <code>// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</code>.</b></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md658"></a>
+<h1><a class="anchor" id="autotoc_md685"></a>
 Verification</h1>
 <p>Per step, before the pull request:</p>
 <div class="fragment"><div class="line">make test            # ctest + pytest</div>
@@ -216,7 +216,7 @@ Verification</h1>
 </div><!-- fragment --><p><code>make coverage</code> for any step that adds a branch. New code should have coverage; template instantiations that cannot be reached are not worth fighting the compiler over, but a <em>surprising</em> uncovered line gets a test or a note.</p>
 <p><code>make wording</code>, <code>make wording-check</code> and <code>make wording-validate</code> belong to Step 8 and Step 10, not to every step.</p>
 <p>Step 10 closes what the review left open: a fresh build across configurations and both module settings, install-and-consume from a clean prefix, the examples run against the changed headers, <code>make wording-validate</code> findings read rather than counted, <code>codespell</code>, and the C-01 through C-05 regressions run against glibc iconv <b>and at least one other implementation</b>.</p>
-<h1><a class="anchor" id="autotoc_md659"></a>
+<h1><a class="anchor" id="autotoc_md686"></a>
 Risks</h1>
 <ul>
 <li><b>Deferring regeneration means the wording is knowingly stale for the length of the phase.</b> That is the point of Step 0, and it is safe only because Step 8 and Step 10 both regenerate and diff. If the phase is abandoned mid-way, <code>main</code> is left with fragments that do not match the headers &ndash; so Step 8 is not optional, and a partial Phase 6 should be reverted rather than left.</li>
