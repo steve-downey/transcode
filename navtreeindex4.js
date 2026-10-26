@@ -1,7 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"ibm866_8hpp.html":[69,0,2,0,0,0,0,5],
-"ibm866_8hpp_source.html":[69,0,2,0,0,0,0,5],
 "iconv__bulk_8hpp.html":[69,0,2,0,0,10],
 "iconv__bulk_8hpp.html#a06d518f97b7706b182ba701e02be1da3":[69,0,2,0,0,10,0],
 "iconv__bulk_8hpp.html#a43d5fe1038fd6241a6486baf3bb2a55c":[69,0,2,0,0,10,1],
@@ -249,5 +247,7 @@ var NAVTREEINDEX4 =
 "md_docs_plans_p3_step8_encoding_rs_baseline.html#autotoc_md208":[17,7],
 "md_docs_plans_p3_step9_simdutf_baseline.html":[18],
 "md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md211":[18,0],
-"md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md212":[18,1]
+"md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md212":[18,1],
+"md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md213":[18,2],
+"md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md214":[18,3]
 };

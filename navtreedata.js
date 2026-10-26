@@ -917,11 +917,11 @@ var NAVTREEINDEX =
 "annotated.html",
 "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#af8a9b4adecc82c71253756d09f293102",
 "classbeman_1_1transcoding_1_1random__access__whatwg__encode__view.html#a691b2756443ceba36117bd283cb569ef",
-"classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ace8c5f8b648684ca94ac0684306a80f8",
-"ibm866_8hpp.html",
-"md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md213",
-"md_docs_plans_phase2_checklist.html#autotoc_md498",
-"md_docs_review_findings_2026_09_11.html#autotoc_md772",
+"classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#ae251e0092176f363928876caf81be7d5",
+"iconv__bulk_8hpp.html",
+"md_docs_plans_p3_step9_simdutf_baseline.html#autotoc_md215",
+"md_docs_plans_phase2_checklist.html#autotoc_md500",
+"md_docs_review_findings_2026_09_11.html#autotoc_md774",
 "structbeman_1_1transcoding_1_1full__table__codec.html#ae0faaf856d34ebe61a335b05c7cbbd9b"
 ];
 

@@ -6,7 +6,7 @@ var classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator =
     [ "reference", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#abe36ec665db2723441a467420a93f9e6", null ],
     [ "value_type", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a17b4d085e8ebe4d3b6b9e6d5a96af0c7", null ],
     [ "iterator", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#ae857b2d11e2d4e576c42f1e0db8dc122", null ],
-    [ "iterator", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a02204b5cb96471e042bda0d977fd226e", null ],
+    [ "iterator", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a95405ce53e966cb5b74050d87dde75aa", null ],
     [ "operator*", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a43f5f366ec9337378db04f3fad94b975", null ],
     [ "operator+", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a01f713d962a1a36111be7443b71f5d5c", null ],
     [ "operator++", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#aa7c3a475dd4c030ac2002cc1264db7cd", null ],
@@ -21,6 +21,5 @@ var classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator =
     [ "operator+", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a308025990ed5bc443a648a685e61fc0f", null ],
     [ "operator<=>", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a51393b5554f1168a78ff9de568cc1720", null ],
     [ "operator==", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#af1158e0cddc1da960f2333e63d40d9af", null ],
-    [ "current_", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a5111eab310fc0144ea966e14dc1adac5", null ],
-    [ "table_", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a395843f5a79a767d5fe43457659c3473", null ]
+    [ "current_", "classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html#a5111eab310fc0144ea966e14dc1adac5", null ]
 ];

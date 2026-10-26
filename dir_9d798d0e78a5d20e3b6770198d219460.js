@@ -9,6 +9,7 @@ var dir_9d798d0e78a5d20e3b6770198d219460 =
     [ "iso2022jp.hpp", "iso2022jp_8hpp.html", null ],
     [ "labels.hpp", "labels_8hpp.html", null ],
     [ "range_traits.hpp", "range__traits_8hpp.html", null ],
+    [ "reverse_index.hpp", "reverse__index_8hpp.html", null ],
     [ "shift_jis.hpp", "shift__jis_8hpp.html", null ],
     [ "single_byte.hpp", "single__byte_8hpp.html", null ],
     [ "single_byte_decode_view.hpp", "single__byte__decode__view_8hpp.html", "single__byte__decode__view_8hpp" ],
