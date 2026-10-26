@@ -183,15 +183,22 @@ TEST_CASE("WHATWG Shift_JIS encode benchmarks", "[benchmark][whatwg]") {
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
 
-    describe({.conversion = "UTF-32 → Shift_JIS", .library = "beman.transcode", .api = "whatwg_encode view"});
-    BENCHMARK_ADVANCED("Shift-JIS encode: Japanese (Mars corpus repeated to 256K code points)")
-    (Catch::Benchmark::Chronometer meter) {
+    // Built here, not in the benchmark body: reading the corpus there would
+    // record the corpus file as the input, and the first input recorded is
+    // the one that counts.
+    std::vector<char32_t> mars;
+    {
         std::vector<char32_t> once;
         for (char32_t cp : corpus_span("ja_mars_shiftjis.bin") | whatwg_decode<codec::shift_jis>)
             once.push_back(cp);
-        std::vector<char32_t> cps;
-        while (cps.size() < 256 * 1024)
-            cps.insert(cps.end(), once.begin(), once.end());
+        while (mars.size() < 256 * 1024)
+            mars.insert(mars.end(), once.begin(), once.end());
+    }
+
+    describe({.conversion = "UTF-32 → Shift_JIS", .library = "beman.transcode", .api = "whatwg_encode view"});
+    BENCHMARK_ADVANCED("Shift-JIS encode: Japanese (Mars corpus repeated to 256K code points)")
+    (Catch::Benchmark::Chronometer meter) {
+        const auto& cps = mars;
         record_input("ja_mars_shiftjis.bin repeated", cps.size() * sizeof(char32_t));
         measure(meter, [&] { return count_elements(cps | whatwg_encode<codec::shift_jis>); });
     };
@@ -261,12 +268,16 @@ TEST_CASE("WHATWG multi-byte encode sweeps", "[benchmark][whatwg]") {
         measure(meter, [&] { return count_elements(cps | whatwg_encode<codec::big5>); });
     };
 
+    // Decoded outside the benchmark body, so the recorded input is the UTF-32
+    // that is encoded, not the corpus file it came from.
+    std::vector<char32_t> russian;
+    for (char32_t cp : corpus_span("ru_mars_windows1251.bin") | whatwg_decode<codec::windows_1251>)
+        russian.push_back(cp);
+
     describe({.conversion = "UTF-32 → windows-1251", .library = "beman.transcode", .api = "whatwg_encode view"});
     BENCHMARK_ADVANCED("Single-byte encode: windows-1251 Russian")
     (Catch::Benchmark::Chronometer meter) {
-        std::vector<char32_t> cps;
-        for (char32_t cp : corpus_span("ru_mars_windows1251.bin") | whatwg_decode<codec::windows_1251>)
-            cps.push_back(cp);
+        const auto& cps = russian;
         record_input("ru_mars_windows1251.bin decoded", cps.size() * sizeof(char32_t));
         // The single-byte encode view is random-access, so counting its
         // elements never dereferences one; summing the bytes forces the lookups.
