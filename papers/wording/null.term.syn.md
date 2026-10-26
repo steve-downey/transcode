@@ -3,33 +3,35 @@
 ## Header `<null_term>` synopsis [null.term.syn] {-}
 
 ```cpp
-struct null_sentinel_t {
-  // @[null.term.sentinel]@, comparison
-  template<input_iterator I>
-    requires requires(I i) {
-      { *i == 0 };
-    }
-  friend constexpr bool operator==(const I& it, null_sentinel_t);
-};
+namespace std {
+  struct null_sentinel_t {
+    // @[null.term.sentinel]@, comparison
+    template<input_iterator I>
+      requires requires(I i) {
+        { *i == 0 };
+      }
+    friend constexpr bool operator==(const I& it, null_sentinel_t);
+  };
 
-inline constexpr null_sentinel_t null_sentinel{};
+  inline constexpr null_sentinel_t null_sentinel{};
 
-template<contiguous_iterator I>
-class null_term_view : public ranges::view_interface<null_term_view<I>> {
-  I $ptr${}; // exposition only
+  template<contiguous_iterator I>
+  class null_term_view : public ranges::view_interface<null_term_view<I>> {
+    I $ptr${}; // exposition only
 
-public:
-  // @[null.term.view]@, construction and access
-  constexpr null_term_view() = default;
-  constexpr explicit null_term_view(I ptr);
+  public:
+    // @[null.term.view]@, construction and access
+    constexpr null_term_view() = default;
+    constexpr explicit null_term_view(I ptr);
 
-  constexpr I begin() const;
-  constexpr null_sentinel_t end() const;
-};
+    constexpr I begin() const;
+    constexpr null_sentinel_t end() const;
+  };
 
-// @[null.term.adaptor]@, range adaptor object
+  // @[null.term.adaptor]@, range adaptor object
 
-inline constexpr $unspecified$ null_term;
+  inline constexpr $unspecified$ null_term;
+}
 ```
 
 :::

@@ -182,9 +182,9 @@ class iconv_transcode_view : public std::ranges::view_interface<iconv_transcode_
     // \ref{transcode.iconv}, construction and access
     explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to, std::span<char> buf);
 
-    //! \returns-equiv
+    //! \returns-expr
     const R& base() const& noexcept { return base_; }
-    //! \returns-equiv
+    //! \returns-expr
     R base() && { return std::move(base_); }
 
     iterator                begin();

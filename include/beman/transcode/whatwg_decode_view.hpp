@@ -304,9 +304,9 @@ class whatwg_decode_view : public std::ranges::view_interface<whatwg_decode_view
     // \ref{transcode.whatwg.decode}, construction and access
     constexpr explicit whatwg_decode_view(R base);
 
-    //! \returns-equiv
+    //! \returns-expr
     constexpr const R& base() const& noexcept { return base_; }
-    //! \returns-equiv
+    //! \returns-expr
     constexpr R base() && { return std::move(base_); }
 
     constexpr iterator begin();
@@ -562,7 +562,7 @@ constexpr whatwg_decode_view<C, R, E>::iterator::iterator(base_iter current, bas
 
 template <codec C, std::ranges::input_range R, transcode_error_kind E>
     requires legacy_byte_range<R>
-//! \returns-equiv
+//! \returns-expr
 constexpr auto whatwg_decode_view<C, R, E>::iterator::operator*() const -> result_t {
     return value_;
 }

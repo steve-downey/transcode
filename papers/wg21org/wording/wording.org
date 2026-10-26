@@ -6,436 +6,442 @@
 :END:
 
 #+begin_codeblock
-// \ref{transcode.errors}, error types
-
-enum class whatwg_error {
-  invalid_byte,
-  truncated_sequence,
-  overlong_encoding,
-  surrogate_code_point,
-  out_of_range,
-  unmapped_codepoint,
-};
-
-enum class iconv_error {
-  invalid_sequence,
-  incomplete_sequence,
-  output_full,
-  open_failed,
-  system_error,
-};
-
-enum class transcode_error_kind {
-  replacement,
-  expected,
-};
-
-// \ref{transcode.reqs}, range requirements
-
-template<typename T>
-concept @\exposidnc{legacy-byte-type}@ =
-    same_as<T, char> || same_as<T, signed char> || same_as<T, unsigned char> ||
-    same_as<T, byte>; // exposition only
-
-template<typename R>
-concept legacy_byte_range = ranges::range<R> && !is_array_v<remove_cvref_t<R>> &&
-                            @\exposidnc{legacy-byte-type}@<remove_cv_t<ranges::range_value_t<R>>>;
-
-template<typename R>
-concept unicode_scalar_range =
-    ranges::input_range<R> && !is_array_v<remove_cvref_t<R>> &&
-    same_as<remove_cv_t<ranges::range_value_t<R>>, char32_t>;
-
-// \ref{transcode.codec}, encodings
-
-enum class codec {
-  utf_8,
-  replacement,
-  x_user_defined,
-  ibm866,
-  iso_8859_2,
-  iso_8859_3,
-  iso_8859_4,
-  iso_8859_5,
-  iso_8859_6,
-  iso_8859_7,
-  iso_8859_8,
-  iso_8859_8_i,
-  iso_8859_10,
-  iso_8859_13,
-  iso_8859_14,
-  iso_8859_15,
-  iso_8859_16,
-  koi8_r,
-  koi8_u,
-  macintosh,
-  windows_874,
-  windows_1250,
-  windows_1251,
-  windows_1252,
-  windows_1253,
-  windows_1254,
-  windows_1255,
-  windows_1256,
-  windows_1257,
-  windows_1258,
-  x_mac_cyrillic,
-  utf_16be,
-  utf_16le,
-  gbk,
-  gb18030,
-  big5,
-  shift_jis,
-  euc_jp,
-  iso_2022_jp,
-  euc_kr,
-};
-
-// \ref{transcode.codec.label}, label lookup
-
-constexpr optional<codec> get_encoding(string_view label) noexcept;
-
-// \ref{transcode.custom.reqs}, codec requirements
-
-struct decode_result {
-  char32_t code_point{};
-  whatwg_error error{};
-  bool is_error{false};
-};
-
-struct encode_result {
-  unsigned char bytes[8]{};
-  int count{0};
-  bool is_error{false};
-};
-
-// \ref{transcode.custom.reqs}, codec requirements
-
-template<typename C>
-concept decode_codec = semiregular<C> && requires(C& c, const unsigned char*& iter,
-                                                  const unsigned char* sentinel) {
-  { c.decode_one(iter, sentinel) } -> same_as<decode_result>;
-};
-
-template<typename C>
-concept random_access_decode_codec_type =
-    decode_codec<C> && requires(const C& c, unsigned char byte) {
-      { c.decode_byte(byte) } -> same_as<char32_t>;
-    };
-
-template<typename C>
-concept encode_codec = semiregular<C> && requires(C& c, char32_t cp) {
-  { c.encode_one(cp) } -> same_as<encode_result>;
-};
-
-template<typename C>
-concept flushable_decode_codec = decode_codec<C> && requires(C& c) {
-  { c.flush() } -> same_as<optional<decode_result>>;
-};
-
-// \ref{transcode.whatwg.decode}, decoding views
-
-template<codec C, ranges::input_range R,
-         transcode_error_kind E = transcode_error_kind::replacement>
-  requires legacy_byte_range<R>
-class whatwg_decode_view : public ranges::view_interface<whatwg_decode_view<C, R, E>> {
-  R @\exposidnc{base}@; // exposition only
-
-  class @\exposidnc{iterator}@; // exposition only
-
-public:
-  // \ref{transcode.whatwg.decode}, construction and access
-  constexpr explicit whatwg_decode_view(R base);
-
-  constexpr const R& base() const& noexcept;
-  constexpr R base() &&;
-
-  constexpr @\exposidnc{iterator}@ begin();
-  constexpr @\exposidnc{iterator}@ begin() const
-    requires @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
-  constexpr @\exposidnc{iterator}@ end()
-    requires ranges::forward_range<R> && ranges::common_range<R>;
-  constexpr @\exposidnc{iterator}@ end() const
-    requires ranges::forward_range<const R> && ranges::common_range<const R> &&
-             @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
-  constexpr default_sentinel_t end() const;
-};
-
-template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_decode;
-
-template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_decode_or_error;
-
-template<codec C, input_range R, transcode_error_kind E>
-  requires legacy_byte_range<R>
-inline constexpr bool enable_borrowed_range<whatwg_decode_view<C, R, E>> =
-    borrowed_range<R>;
-
-// \ref{transcode.whatwg.encode}, encoding views
-
-template<codec C, ranges::input_range R,
-         transcode_error_kind E = transcode_error_kind::replacement>
-  requires @\exposidnc{whatwg-encode-input}@<C, R>
-class whatwg_encode_view : public ranges::view_interface<whatwg_encode_view<C, R, E>> {
-  R @\exposidnc{base}@; // exposition only
-
-  class @\exposidnc{iterator}@; // exposition only
-
-public:
-  // \ref{transcode.whatwg.encode}, construction and access
-  constexpr explicit whatwg_encode_view(R base);
-
-  constexpr const R& base() const& noexcept;
-  constexpr R base() &&;
-
-  constexpr @\exposidnc{iterator}@ begin();
-  constexpr @\exposidnc{iterator}@ begin() const
-    requires @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
-  constexpr @\exposidnc{iterator}@ end()
-    requires ranges::forward_range<R> && ranges::common_range<R>;
-  constexpr @\exposidnc{iterator}@ end() const
-    requires ranges::forward_range<const R> && ranges::common_range<const R> &&
-             @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
-  constexpr default_sentinel_t end() const;
-};
-
-template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_encode;
-
-template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_encode_or_error;
-
-template<codec C, input_range R, transcode_error_kind E>
-  requires @\exposidnc{whatwg-encode-input}@<C, R>
-inline constexpr bool enable_borrowed_range<whatwg_encode_view<C, R, E>> =
-    borrowed_range<R>;
-
-// \ref{transcode.custom.decode}, class template decode_view
-
-template<decode_codec Codec, ranges::input_range R,
-         transcode_error_kind E = transcode_error_kind::replacement>
-  requires legacy_byte_range<R>
-class decode_view : public ranges::view_interface<decode_view<Codec, R, E>> {
-  R @\exposidnc{base}@;      // exposition only
-  Codec @\exposidnc{codec}@; // exposition only
+namespace std {
+  // \ref{transcode.errors}, error types
+
+  enum class whatwg_error {
+    invalid_byte,
+    truncated_sequence,
+    overlong_encoding,
+    surrogate_code_point,
+    out_of_range,
+    unmapped_codepoint,
+  };
+
+  enum class iconv_error {
+    invalid_sequence,
+    incomplete_sequence,
+    output_full,
+    open_failed,
+    system_error,
+  };
+
+  enum class transcode_error_kind {
+    replacement,
+    expected,
+  };
+
+  // \ref{transcode.reqs}, range requirements
+
+  template<typename T>
+  concept @\exposidnc{legacy-byte-type}@ =
+      same_as<T, char> || same_as<T, signed char> || same_as<T, unsigned char> ||
+      same_as<T, byte>; // exposition only
+
+  template<typename R>
+  concept legacy_byte_range = ranges::range<R> && !is_array_v<remove_cvref_t<R>> &&
+                              @\exposidnc{legacy-byte-type}@<remove_cv_t<ranges::range_value_t<R>>>;
+
+  template<typename R>
+  concept unicode_scalar_range =
+      ranges::input_range<R> && !is_array_v<remove_cvref_t<R>> &&
+      same_as<remove_cv_t<ranges::range_value_t<R>>, char32_t>;
+
+  // \ref{transcode.codec}, encodings
+
+  enum class codec {
+    utf_8,
+    replacement,
+    x_user_defined,
+    ibm866,
+    iso_8859_2,
+    iso_8859_3,
+    iso_8859_4,
+    iso_8859_5,
+    iso_8859_6,
+    iso_8859_7,
+    iso_8859_8,
+    iso_8859_8_i,
+    iso_8859_10,
+    iso_8859_13,
+    iso_8859_14,
+    iso_8859_15,
+    iso_8859_16,
+    koi8_r,
+    koi8_u,
+    macintosh,
+    windows_874,
+    windows_1250,
+    windows_1251,
+    windows_1252,
+    windows_1253,
+    windows_1254,
+    windows_1255,
+    windows_1256,
+    windows_1257,
+    windows_1258,
+    x_mac_cyrillic,
+    utf_16be,
+    utf_16le,
+    gbk,
+    gb18030,
+    big5,
+    shift_jis,
+    euc_jp,
+    iso_2022_jp,
+    euc_kr,
+  };
+
+  // \ref{transcode.codec.label}, label lookup
+
+  constexpr optional<codec> get_encoding(string_view label) noexcept;
+
+  // \ref{transcode.custom.reqs}, codec requirements
+
+  struct decode_result {
+    char32_t code_point{};
+    whatwg_error error{};
+    bool is_error{false};
+  };
+
+  struct encode_result {
+    unsigned char bytes[8]{};
+    int count{0};
+    bool is_error{false};
+  };
+
+  // \ref{transcode.custom.reqs}, codec requirements
+
+  template<typename C>
+  concept decode_codec = semiregular<C> && requires(C& c, const unsigned char*& iter,
+                                                    const unsigned char* sentinel) {
+    { c.decode_one(iter, sentinel) } -> same_as<decode_result>;
+  };
+
+  template<typename C>
+  concept random_access_decode_codec_type =
+      decode_codec<C> && requires(const C& c, unsigned char byte) {
+        { c.decode_byte(byte) } -> same_as<char32_t>;
+      };
+
+  template<typename C>
+  concept encode_codec = semiregular<C> && requires(C& c, char32_t cp) {
+    { c.encode_one(cp) } -> same_as<encode_result>;
+  };
+
+  template<typename C>
+  concept flushable_decode_codec = decode_codec<C> && requires(C& c) {
+    { c.flush() } -> same_as<optional<decode_result>>;
+  };
+
+  // \ref{transcode.whatwg.decode}, decoding views
+
+  template<codec C, ranges::input_range R,
+           transcode_error_kind E = transcode_error_kind::replacement>
+    requires legacy_byte_range<R>
+  class whatwg_decode_view
+      : public ranges::view_interface<whatwg_decode_view<C, R, E>> {
+    R @\exposidnc{base}@; // exposition only
+
+    class @\exposidnc{iterator}@; // exposition only
+
+  public:
+    // \ref{transcode.whatwg.decode}, construction and access
+    constexpr explicit whatwg_decode_view(R base);
+
+    constexpr const R& base() const& noexcept;
+    constexpr R base() &&;
+
+    constexpr @\exposidnc{iterator}@ begin();
+    constexpr @\exposidnc{iterator}@ begin() const
+      requires @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
+    constexpr @\exposidnc{iterator}@ end()
+      requires ranges::forward_range<R> && ranges::common_range<R>;
+    constexpr @\exposidnc{iterator}@ end() const
+      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
+               @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
+    constexpr default_sentinel_t end() const;
+  };
+
+  template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_decode;
+
+  template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_decode_or_error;
+
+  template<codec C, input_range R, transcode_error_kind E>
+    requires legacy_byte_range<R>
+  inline constexpr bool enable_borrowed_range<whatwg_decode_view<C, R, E>> =
+      borrowed_range<R>;
+
+  // \ref{transcode.whatwg.encode}, encoding views
+
+  template<codec C, ranges::input_range R,
+           transcode_error_kind E = transcode_error_kind::replacement>
+    requires @\exposidnc{whatwg-encode-input}@<C, R>
+  class whatwg_encode_view
+      : public ranges::view_interface<whatwg_encode_view<C, R, E>> {
+    R @\exposidnc{base}@; // exposition only
+
+    class @\exposidnc{iterator}@; // exposition only
+
+  public:
+    // \ref{transcode.whatwg.encode}, construction and access
+    constexpr explicit whatwg_encode_view(R base);
+
+    constexpr const R& base() const& noexcept;
+    constexpr R base() &&;
+
+    constexpr @\exposidnc{iterator}@ begin();
+    constexpr @\exposidnc{iterator}@ begin() const
+      requires @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
+    constexpr @\exposidnc{iterator}@ end()
+      requires ranges::forward_range<R> && ranges::common_range<R>;
+    constexpr @\exposidnc{iterator}@ end() const
+      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
+               @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
+    constexpr default_sentinel_t end() const;
+  };
+
+  template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_encode;
+
+  template<codec C> inline constexpr @\placeholder{unspecified}@ whatwg_encode_or_error;
+
+  template<codec C, input_range R, transcode_error_kind E>
+    requires @\exposidnc{whatwg-encode-input}@<C, R>
+  inline constexpr bool enable_borrowed_range<whatwg_encode_view<C, R, E>> =
+      borrowed_range<R>;
+
+  // \ref{transcode.custom.decode}, class template decode_view
+
+  template<decode_codec Codec, ranges::input_range R,
+           transcode_error_kind E = transcode_error_kind::replacement>
+    requires legacy_byte_range<R>
+  class decode_view : public ranges::view_interface<decode_view<Codec, R, E>> {
+    R @\exposidnc{base}@;      // exposition only
+    Codec @\exposidnc{codec}@; // exposition only
 
-  class @\exposidnc{iterator}@; // exposition only
+    class @\exposidnc{iterator}@; // exposition only
+
+  public:
+    // \ref{transcode.custom.decode}, construction and access
+    constexpr explicit decode_view(R base, Codec codec = {});
 
-public:
-  // \ref{transcode.custom.decode}, construction and access
-  constexpr explicit decode_view(R base, Codec codec = {});
+    constexpr const R& base() const& noexcept;
+    constexpr R base() &&;
 
-  constexpr const R& base() const& noexcept;
-  constexpr R base() &&;
+    constexpr @\exposidnc{iterator}@ begin();
+    constexpr @\exposidnc{iterator}@ begin() const
+      requires @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
+    constexpr @\exposidnc{iterator}@ end()
+      requires ranges::forward_range<R> && ranges::common_range<R>;
+    constexpr @\exposidnc{iterator}@ end() const
+      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
+               @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
+    constexpr default_sentinel_t end() const;
+  };
 
-  constexpr @\exposidnc{iterator}@ begin();
-  constexpr @\exposidnc{iterator}@ begin() const
-    requires @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
-  constexpr @\exposidnc{iterator}@ end()
-    requires ranges::forward_range<R> && ranges::common_range<R>;
-  constexpr @\exposidnc{iterator}@ end() const
-    requires ranges::forward_range<const R> && ranges::common_range<const R> &&
-             @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
-  constexpr default_sentinel_t end() const;
-};
+  template<decode_codec Codec> constexpr decode_closure<Codec> decode(Codec codec = {});
 
-template<decode_codec Codec> constexpr decode_closure<Codec> decode(Codec codec = {});
+  template<decode_codec Codec>
+  constexpr decode_closure<Codec, transcode_error_kind::expected> decode_or_error(
+      Codec codec = {});
 
-template<decode_codec Codec>
-constexpr decode_closure<Codec, transcode_error_kind::expected> decode_or_error(
-    Codec codec = {});
+  template<decode_codec Codec, ranges::input_range R>
+  decode_or_error_view decode_or_error_view =
+      decode_view<Codec, R, transcode_error_kind::expected>;
 
-template<decode_codec Codec, ranges::input_range R>
-decode_or_error_view decode_or_error_view =
-    decode_view<Codec, R, transcode_error_kind::expected>;
+  template<random_access_decode_codec_type Codec, ranges::random_access_range R>
+  random_access_decode_or_error_view random_access_decode_or_error_view =
+      random_access_decode_view<Codec, R, transcode_error_kind::expected>;
 
-template<random_access_decode_codec_type Codec, ranges::random_access_range R>
-random_access_decode_or_error_view random_access_decode_or_error_view =
-    random_access_decode_view<Codec, R, transcode_error_kind::expected>;
+  template<decode_codec Codec>
+  decode_or_error_closure decode_or_error_closure =
+      decode_closure<Codec, transcode_error_kind::expected>;
 
-template<decode_codec Codec>
-decode_or_error_closure decode_or_error_closure =
-    decode_closure<Codec, transcode_error_kind::expected>;
+  // \ref{transcode.custom.encode}, class template encode_view
 
-// \ref{transcode.custom.encode}, class template encode_view
+  template<encode_codec Codec, ranges::input_range R,
+           transcode_error_kind E = transcode_error_kind::replacement>
+    requires unicode_scalar_range<R>
+  class encode_view : public ranges::view_interface<encode_view<Codec, R, E>> {
+    R @\exposidnc{base}@;      // exposition only
+    Codec @\exposidnc{codec}@; // exposition only
 
-template<encode_codec Codec, ranges::input_range R,
-         transcode_error_kind E = transcode_error_kind::replacement>
-  requires unicode_scalar_range<R>
-class encode_view : public ranges::view_interface<encode_view<Codec, R, E>> {
-  R @\exposidnc{base}@;      // exposition only
-  Codec @\exposidnc{codec}@; // exposition only
+    class @\exposidnc{iterator}@; // exposition only
 
-  class @\exposidnc{iterator}@; // exposition only
+  public:
+    // \ref{transcode.custom.encode}, construction and access
+    constexpr explicit encode_view(R base, Codec codec = {});
 
-public:
-  // \ref{transcode.custom.encode}, construction and access
-  constexpr explicit encode_view(R base, Codec codec = {});
+    constexpr const R& base() const& noexcept;
+    constexpr R base() &&;
 
-  constexpr const R& base() const& noexcept;
-  constexpr R base() &&;
+    constexpr @\exposidnc{iterator}@ begin();
+    constexpr @\exposidnc{iterator}@ begin() const
+      requires @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
+    constexpr @\exposidnc{iterator}@ end()
+      requires ranges::forward_range<R> && ranges::common_range<R>;
+    constexpr @\exposidnc{iterator}@ end() const
+      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
+               @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
+    constexpr default_sentinel_t end() const;
+  };
 
-  constexpr @\exposidnc{iterator}@ begin();
-  constexpr @\exposidnc{iterator}@ begin() const
-    requires @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
-  constexpr @\exposidnc{iterator}@ end()
-    requires ranges::forward_range<R> && ranges::common_range<R>;
-  constexpr @\exposidnc{iterator}@ end() const
-    requires ranges::forward_range<const R> && ranges::common_range<const R> &&
-             @\exposidnc{const-iterator-compatible-range}@<R> && @\exposidnc{const-sentinel-compatible-range}@<R>;
-  constexpr default_sentinel_t end() const;
-};
+  template<encode_codec Codec> constexpr encode_closure<Codec> encode(Codec codec = {});
 
-template<encode_codec Codec> constexpr encode_closure<Codec> encode(Codec codec = {});
+  template<encode_codec Codec>
+  constexpr encode_closure<Codec, transcode_error_kind::expected> encode_or_error(
+      Codec codec = {});
+
+  template<encode_codec Codec, ranges::input_range R>
+  encode_or_error_view encode_or_error_view =
+      encode_view<Codec, R, transcode_error_kind::expected>;
+
+  template<encode_codec Codec>
+  encode_or_error_closure encode_or_error_closure =
+      encode_closure<Codec, transcode_error_kind::expected>;
+
+  // \ref{transcode.pipeline}, transcoding pipelines
 
-template<encode_codec Codec>
-constexpr encode_closure<Codec, transcode_error_kind::expected> encode_or_error(
-    Codec codec = {});
+  template<codec From, codec To> inline constexpr @\placeholder{unspecified}@ transcode;
 
-template<encode_codec Codec, ranges::input_range R>
-encode_or_error_view encode_or_error_view =
-    encode_view<Codec, R, transcode_error_kind::expected>;
+  template<decode_codec From, encode_codec To>
+  constexpr pluggable_transcode_closure<From, To> pluggable_transcode(From from, To to);
 
-template<encode_codec Codec>
-encode_or_error_closure encode_or_error_closure =
-    encode_closure<Codec, transcode_error_kind::expected>;
+  // \ref{transcode.string}, eager transcoding
 
-// \ref{transcode.pipeline}, transcoding pipelines
+  constexpr bool has_whatwg_encoder(codec encoding) noexcept;
 
-template<codec From, codec To> inline constexpr @\placeholder{unspecified}@ transcode;
+  optional<string> transcode_string(span<const char> src, codec from, codec to);
 
-template<decode_codec From, encode_codec To>
-constexpr pluggable_transcode_closure<From, To> pluggable_transcode(From from, To to);
+  optional<string> transcode_string(span<const char> src, string_view from_label,
+                                    string_view to_label);
 
-// \ref{transcode.string}, eager transcoding
+  // \ref{transcode.bulk}, eager bulk conversion
 
-constexpr bool has_whatwg_encoder(codec encoding) noexcept;
+  template<codec C, legacy_byte_range R>
+  constexpr vector<char32_t> decode_to(R&& source);
 
-optional<string> transcode_string(span<const char> src, codec from, codec to);
+  template<codec C, typename Container = string, unicode_scalar_range R>
+  constexpr Container encode_to(R&& source);
 
-optional<string> transcode_string(span<const char> src, string_view from_label,
-                                  string_view to_label);
+  template<codec C, legacy_byte_range R, output_iterator<char32_t> Output>
+  constexpr void decode_into(R&& source, Output output);
 
-// \ref{transcode.bulk}, eager bulk conversion
+  template<codec C, unicode_scalar_range R, output_iterator<char> Output>
+  constexpr void encode_into(R&& source, Output output);
 
-template<codec C, legacy_byte_range R> constexpr vector<char32_t> decode_to(R&& source);
+  template<decode_codec Codec, legacy_byte_range R>
+  constexpr vector<char32_t> decode_to(Codec codec, R&& source);
 
-template<codec C, typename Container = string, unicode_scalar_range R>
-constexpr Container encode_to(R&& source);
+  template<encode_codec Codec, typename Container = string, unicode_scalar_range R>
+  constexpr Container encode_to(Codec codec, R&& source);
 
-template<codec C, legacy_byte_range R, output_iterator<char32_t> Output>
-constexpr void decode_into(R&& source, Output output);
+  template<decode_codec Codec, legacy_byte_range R, output_iterator<char32_t> Output>
+  constexpr void decode_into(Codec codec, R&& source, Output output);
 
-template<codec C, unicode_scalar_range R, output_iterator<char> Output>
-constexpr void encode_into(R&& source, Output output);
+  template<encode_codec Codec, unicode_scalar_range R, output_iterator<char> Output>
+  constexpr void encode_into(Codec codec, R&& source, Output output);
 
-template<decode_codec Codec, legacy_byte_range R>
-constexpr vector<char32_t> decode_to(Codec codec, R&& source);
+  // \ref{transcode.codec.sniff}, byte order mark sniffing
 
-template<encode_codec Codec, typename Container = string, unicode_scalar_range R>
-constexpr Container encode_to(Codec codec, R&& source);
+  template<legacy_byte_range R>
+    requires ranges::forward_range<R>
+  constexpr optional<codec> sniff_encoding(R&& r) noexcept;
 
-template<decode_codec Codec, legacy_byte_range R, output_iterator<char32_t> Output>
-constexpr void decode_into(Codec codec, R&& source, Output output);
+  // \ref{transcode.iconv}, iconv adaptors
 
-template<encode_codec Codec, unicode_scalar_range R, output_iterator<char> Output>
-constexpr void encode_into(Codec codec, R&& source, Output output);
+  inline constexpr size_t iconv_min_buffer_size = 4;
 
-// \ref{transcode.codec.sniff}, byte order mark sniffing
+  struct iconv_functions {
+    iconv_t (*open)(const char* tocode, const char* fromcode);
+    size_t (*convert)(iconv_t cd, char** inbuf, size_t* inbytesleft, char** outbuf,
+                      size_t* outbytesleft);
+    int (*close)(iconv_t cd);
+  };
 
-template<legacy_byte_range R>
-  requires ranges::forward_range<R>
-constexpr optional<codec> sniff_encoding(R&& r) noexcept;
+  template<typename IconvFns, ranges::input_range R>
+    requires legacy_byte_range<R>
+  class iconv_transcode_view
+      : public ranges::view_interface<iconv_transcode_view<IconvFns, R>> {
+    R @\exposidnc{base}@;            // exposition only
+    IconvFns @\exposidnc{fns}@;      // exposition only
+    const char* @\exposidnc{from}@;  // exposition only
+    const char* @\exposidnc{to}@;    // exposition only
+    span<char> @\exposidnc{buffer}@; // exposition only
 
-// \ref{transcode.iconv}, iconv adaptors
+  public:
+    class @\exposidnc{iterator}@; // exposition only
 
-inline constexpr size_t iconv_min_buffer_size = 4;
+    // \ref{transcode.iconv}, construction and access
+    explicit iconv_transcode_view(R base, IconvFns fns, const char* from,
+                                  const char* to, span<char> buf);
 
-struct iconv_functions {
-  iconv_t (*open)(const char* tocode, const char* fromcode);
-  size_t (*convert)(iconv_t cd, char** inbuf, size_t* inbytesleft, char** outbuf,
-                    size_t* outbytesleft);
-  int (*close)(iconv_t cd);
-};
+    const R& base() const& noexcept;
+    R base() &&;
 
-template<typename IconvFns, ranges::input_range R>
-  requires legacy_byte_range<R>
-class iconv_transcode_view
-    : public ranges::view_interface<iconv_transcode_view<IconvFns, R>> {
-  R @\exposidnc{base}@;            // exposition only
-  IconvFns @\exposidnc{fns}@;      // exposition only
-  const char* @\exposidnc{from}@;  // exposition only
-  const char* @\exposidnc{to}@;    // exposition only
-  span<char> @\exposidnc{buffer}@; // exposition only
+    @\exposidnc{iterator}@ begin();
+    default_sentinel_t end() const;
+  };
 
-public:
-  class @\exposidnc{iterator}@; // exposition only
+  template<typename IconvFns, ranges::input_range R>
+    requires legacy_byte_range<R>
+  class iconv_transcode_or_error_view
+      : public ranges::view_interface<iconv_transcode_or_error_view<IconvFns, R>> {
+    R @\exposidnc{base}@;            // exposition only
+    IconvFns @\exposidnc{fns}@;      // exposition only
+    const char* @\exposidnc{from}@;  // exposition only
+    const char* @\exposidnc{to}@;    // exposition only
+    span<char> @\exposidnc{buffer}@; // exposition only
 
-  // \ref{transcode.iconv}, construction and access
-  explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to,
-                                span<char> buf);
+  public:
+    class @\exposidnc{iterator}@; // exposition only
 
-  const R& base() const& noexcept;
-  R base() &&;
+    // \ref{transcode.iconv}, construction and access
+    explicit iconv_transcode_or_error_view(R base, IconvFns fns, const char* from,
+                                           const char* to, span<char> buf);
 
-  @\exposidnc{iterator}@ begin();
-  default_sentinel_t end() const;
-};
+    const R& base() const& noexcept;
+    R base() &&;
 
-template<typename IconvFns, ranges::input_range R>
-  requires legacy_byte_range<R>
-class iconv_transcode_or_error_view
-    : public ranges::view_interface<iconv_transcode_or_error_view<IconvFns, R>> {
-  R @\exposidnc{base}@;            // exposition only
-  IconvFns @\exposidnc{fns}@;      // exposition only
-  const char* @\exposidnc{from}@;  // exposition only
-  const char* @\exposidnc{to}@;    // exposition only
-  span<char> @\exposidnc{buffer}@; // exposition only
+    @\exposidnc{iterator}@ begin();
+    default_sentinel_t end() const;
+  };
 
-public:
-  class @\exposidnc{iterator}@; // exposition only
+  inline iconv_functions make_real_iconv_fns() noexcept;
 
-  // \ref{transcode.iconv}, construction and access
-  explicit iconv_transcode_or_error_view(R base, IconvFns fns, const char* from,
-                                         const char* to, span<char> buf);
+  inline auto iconv_transcode(const char* from, const char* to, span<char> buf);
 
-  const R& base() const& noexcept;
-  R base() &&;
+  inline auto iconv_transcode_or_error(const char* from, const char* to,
+                                       span<char> buf);
 
-  @\exposidnc{iterator}@ begin();
-  default_sentinel_t end() const;
-};
+  // \ref{transcode.iconv}, eager conversion
 
-inline iconv_functions make_real_iconv_fns() noexcept;
+  template<typename Container = string, typename IconvFns, legacy_byte_range R>
+  Container iconv_transcode_to(R&& source, const char* from, const char* to,
+                               IconvFns fns);
 
-inline auto iconv_transcode(const char* from, const char* to, span<char> buf);
+  template<typename Container = string, legacy_byte_range R>
+  Container iconv_transcode_to(R&& source, const char* from, const char* to);
 
-inline auto iconv_transcode_or_error(const char* from, const char* to, span<char> buf);
+  template<typename IconvFns, legacy_byte_range R, output_iterator<char> Output>
+  Output iconv_transcode_into(R&& source, const char* from, const char* to,
+                              Output output, IconvFns fns);
 
-// \ref{transcode.iconv}, eager conversion
+  template<legacy_byte_range R, output_iterator<char> Output>
+  Output iconv_transcode_into(R&& source, const char* from, const char* to,
+                              Output output);
 
-template<typename Container = string, typename IconvFns, legacy_byte_range R>
-Container iconv_transcode_to(R&& source, const char* from, const char* to,
-                             IconvFns fns);
+  template<typename Container = string, typename IconvFns, legacy_byte_range R>
+  expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
+                                                               const char* from,
+                                                               const char* to,
+                                                               IconvFns fns);
 
-template<typename Container = string, legacy_byte_range R>
-Container iconv_transcode_to(R&& source, const char* from, const char* to);
-
-template<typename IconvFns, legacy_byte_range R, output_iterator<char> Output>
-Output iconv_transcode_into(R&& source, const char* from, const char* to, Output output,
-                            IconvFns fns);
-
-template<legacy_byte_range R, output_iterator<char> Output>
-Output iconv_transcode_into(R&& source, const char* from, const char* to,
-                            Output output);
-
-template<typename Container = string, typename IconvFns, legacy_byte_range R>
-expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
-                                                             const char* from,
-                                                             const char* to,
-                                                             IconvFns fns);
-
-template<typename Container = string, legacy_byte_range R>
-expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
-                                                             const char* from,
-                                                             const char* to);
+  template<typename Container = string, legacy_byte_range R>
+  expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
+                                                               const char* from,
+                                                               const char* to);
+}
 #+end_codeblock
 
 #+begin_pnum
@@ -483,7 +489,7 @@ constexpr iterator end() const;
 #+end_itemdecl
 
 #+begin_pnum
-/Constraints/: ~R~ models @@latex:\exposid{const-iterator-compatible-range}@@@@html:<code><var>const-iterator-compatible-range</var></code>@@ and ~R~ models ~range~.
+/Constraints/: ~R~ models @@latex:\exposid{const-iterator-compatible-range}@@@@html:<code><var>const-iterator-compatible-range</var></code>@@ and ~const R~ models ~range~.
 #+end_pnum
 
 #+begin_itemdecl
@@ -773,11 +779,7 @@ constexpr const R& base() const& noexcept;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return @\exposidnc{base}@;
-#+end_codeblock
+/Returns/: @@latex:\exposid{base}@@@@html:<code><var>base</var></code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -785,11 +787,7 @@ constexpr R base() &&;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return move(@\exposidnc{base}@);
-#+end_codeblock
+/Returns/: @@latex:\tcode{move(\exposid{base})}@@@@html:<code>move(<var>base</var>)</code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -839,8 +837,8 @@ constexpr @\exposidnc{iterator}@ end() const;
 #+begin_pnum
 /Constraints/:
 
-- ~R~ models ~forward_range~,
-- ~R~ models ~common_range~,
+- ~const R~ models ~forward_range~,
+- ~const R~ models ~common_range~,
 - ~R~ models @@latex:\exposid{const-iterator-compatible-range}@@@@html:<code><var>const-iterator-compatible-range</var></code>@@,
 - ~R~ models @@latex:\exposid{const-sentinel-compatible-range}@@@@html:<code><var>const-sentinel-compatible-range</var></code>@@.
 #+end_pnum
@@ -892,11 +890,7 @@ constexpr result_t operator*() const;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return @\exposidnc{value}@;
-#+end_codeblock
+/Returns/: @@latex:\exposid{value}@@@@html:<code><var>value</var></code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -957,11 +951,7 @@ constexpr const R& base() const& noexcept;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return @\exposidnc{base}@;
-#+end_codeblock
+/Returns/: @@latex:\exposid{base}@@@@html:<code><var>base</var></code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -969,11 +959,7 @@ constexpr R base() &&;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return move(@\exposidnc{base}@);
-#+end_codeblock
+/Returns/: @@latex:\tcode{move(\exposid{base})}@@@@html:<code>move(<var>base</var>)</code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1023,8 +1009,8 @@ constexpr @\exposidnc{iterator}@ end() const;
 #+begin_pnum
 /Constraints/:
 
-- ~R~ models ~forward_range~,
-- ~R~ models ~common_range~,
+- ~const R~ models ~forward_range~,
+- ~const R~ models ~common_range~,
 - ~R~ models @@latex:\exposid{const-iterator-compatible-range}@@@@html:<code><var>const-iterator-compatible-range</var></code>@@,
 - ~R~ models @@latex:\exposid{const-sentinel-compatible-range}@@@@html:<code><var>const-sentinel-compatible-range</var></code>@@.
 #+end_pnum
@@ -1194,11 +1180,7 @@ constexpr const R& base() const& noexcept;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return @\exposidnc{base}@;
-#+end_codeblock
+/Returns/: @@latex:\exposid{base}@@@@html:<code><var>base</var></code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1206,11 +1188,7 @@ constexpr R base() &&;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return move(@\exposidnc{base}@);
-#+end_codeblock
+/Returns/: @@latex:\tcode{move(\exposid{base})}@@@@html:<code>move(<var>base</var>)</code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1260,8 +1238,8 @@ constexpr @\exposidnc{iterator}@ end() const;
 #+begin_pnum
 /Constraints/:
 
-- ~R~ models ~forward_range~,
-- ~R~ models ~common_range~,
+- ~const R~ models ~forward_range~,
+- ~const R~ models ~common_range~,
 - ~R~ models @@latex:\exposid{const-iterator-compatible-range}@@@@html:<code><var>const-iterator-compatible-range</var></code>@@,
 - ~R~ models @@latex:\exposid{const-sentinel-compatible-range}@@@@html:<code><var>const-sentinel-compatible-range</var></code>@@.
 #+end_pnum
@@ -1313,11 +1291,7 @@ constexpr result_t operator*() const;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return @\exposidnc{value}@;
-#+end_codeblock
+/Returns/: @@latex:\exposid{value}@@@@html:<code><var>value</var></code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1378,11 +1352,7 @@ constexpr const R& base() const& noexcept;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return @\exposidnc{base}@;
-#+end_codeblock
+/Returns/: @@latex:\exposid{base}@@@@html:<code><var>base</var></code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1390,11 +1360,7 @@ constexpr R base() &&;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return move(@\exposidnc{base}@);
-#+end_codeblock
+/Returns/: @@latex:\tcode{move(\exposid{base})}@@@@html:<code>move(<var>base</var>)</code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1444,8 +1410,8 @@ constexpr @\exposidnc{iterator}@ end() const;
 #+begin_pnum
 /Constraints/:
 
-- ~R~ models ~forward_range~,
-- ~R~ models ~common_range~,
+- ~const R~ models ~forward_range~,
+- ~const R~ models ~common_range~,
 - ~R~ models @@latex:\exposid{const-iterator-compatible-range}@@@@html:<code><var>const-iterator-compatible-range</var></code>@@,
 - ~R~ models @@latex:\exposid{const-sentinel-compatible-range}@@@@html:<code><var>const-sentinel-compatible-range</var></code>@@.
 #+end_pnum
@@ -1612,11 +1578,7 @@ template<codec C, legacy_byte_range R> constexpr vector<char32_t> decode_to(R&& 
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return forward<R>(source) | whatwg_decode<C> | ranges::to<vector<char32_t>>();
-#+end_codeblock
+/Returns/: ~forward<R>(source) | whatwg_decode<C> | ranges::to<vector<char32_t>>()~.
 #+end_pnum
 
 #+begin_pnum
@@ -1629,11 +1591,7 @@ constexpr Container encode_to(R&& source);
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return forward<R>(source) | whatwg_encode<C> | ranges::to<Container>();
-#+end_codeblock
+/Returns/: ~forward<R>(source) | whatwg_encode<C> | ranges::to<Container>()~.
 #+end_pnum
 
 #+begin_pnum
@@ -1672,11 +1630,7 @@ constexpr vector<char32_t> decode_to(Codec codec, R&& source);
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return forward<R>(source) | decode(codec) | ranges::to<vector<char32_t>>();
-#+end_codeblock
+/Returns/: ~forward<R>(source) | decode(codec) | ranges::to<vector<char32_t>>()~.
 #+end_pnum
 
 #+begin_pnum
@@ -1689,11 +1643,7 @@ constexpr Container encode_to(Codec codec, R&& source);
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return forward<R>(source) | encode(codec) | ranges::to<Container>();
-#+end_codeblock
+/Returns/: ~forward<R>(source) | encode(codec) | ranges::to<Container>()~.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1734,11 +1684,7 @@ const R& base() const& noexcept;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return @\exposidnc{base}@;
-#+end_codeblock
+/Returns/: @@latex:\exposid{base}@@@@html:<code><var>base</var></code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1746,11 +1692,7 @@ R base() &&;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return move(@\exposidnc{base}@);
-#+end_codeblock
+/Returns/: @@latex:\tcode{move(\exposid{base})}@@@@html:<code>move(<var>base</var>)</code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1758,11 +1700,7 @@ const R& base() const& noexcept;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return @\exposidnc{base}@;
-#+end_codeblock
+/Returns/: @@latex:\exposid{base}@@@@html:<code><var>base</var></code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1770,11 +1708,7 @@ R base() &&;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return move(@\exposidnc{base}@);
-#+end_codeblock
+/Returns/: @@latex:\tcode{move(\exposid{base})}@@@@html:<code>move(<var>base</var>)</code>@@.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1896,12 +1830,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to);
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return iconv_transcode_to<Container>(forward<R>(source), from, to,
-                                     make_real_iconv_fns());
-#+end_codeblock
+/Returns/: ~iconv_transcode_to<Container>(forward<R>(source), from, to, make_real_iconv_fns())~.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1929,12 +1858,7 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to,
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return iconv_transcode_into(forward<R>(source), from, to, move(output),
-                            make_real_iconv_fns());
-#+end_codeblock
+/Returns/: ~iconv_transcode_into(forward<R>(source), from, to, move(output), make_real_iconv_fns())~.
 #+end_pnum
 
 #+begin_itemdecl
@@ -1961,12 +1885,7 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return iconv_transcode_to_or_error<Container>(forward<R>(source), from, to,
-                                              make_real_iconv_fns());
-#+end_codeblock
+/Returns/: ~iconv_transcode_to_or_error<Container>(forward<R>(source), from, to, make_real_iconv_fns())~.
 #+end_pnum
 
 *** Classes ~iconv_transcode_view::iterator~ and ~iconv_transcode_or_error_view::iterator~ [transcode.iconv.iterator]
@@ -2111,33 +2030,35 @@ void operator++(int);
 :END:
 
 #+begin_codeblock
-struct null_sentinel_t {
-  // \ref{null.term.sentinel}, comparison
-  template<input_iterator I>
-    requires requires(I i) {
-      { *i == 0 };
-    }
-  friend constexpr bool operator==(const I& it, null_sentinel_t);
-};
+namespace std {
+  struct null_sentinel_t {
+    // \ref{null.term.sentinel}, comparison
+    template<input_iterator I>
+      requires requires(I i) {
+        { *i == 0 };
+      }
+    friend constexpr bool operator==(const I& it, null_sentinel_t);
+  };
 
-inline constexpr null_sentinel_t null_sentinel{};
+  inline constexpr null_sentinel_t null_sentinel{};
 
-template<contiguous_iterator I>
-class null_term_view : public ranges::view_interface<null_term_view<I>> {
-  I @\exposidnc{ptr}@{}; // exposition only
+  template<contiguous_iterator I>
+  class null_term_view : public ranges::view_interface<null_term_view<I>> {
+    I @\exposidnc{ptr}@{}; // exposition only
 
-public:
-  // \ref{null.term.view}, construction and access
-  constexpr null_term_view() = default;
-  constexpr explicit null_term_view(I ptr);
+  public:
+    // \ref{null.term.view}, construction and access
+    constexpr null_term_view() = default;
+    constexpr explicit null_term_view(I ptr);
 
-  constexpr I begin() const;
-  constexpr null_sentinel_t end() const;
-};
+    constexpr I begin() const;
+    constexpr null_sentinel_t end() const;
+  };
 
-// \ref{null.term.adaptor}, range adaptor object
+  // \ref{null.term.adaptor}, range adaptor object
 
-inline constexpr @\placeholder{unspecified}@ null_term;
+  inline constexpr @\placeholder{unspecified}@ null_term;
+}
 #+end_codeblock
 
 ** Class ~null_sentinel_t~ [null.term.sentinel]
@@ -2192,11 +2113,7 @@ constexpr I begin() const;
 #+end_itemdecl
 
 #+begin_pnum
-/Returns/: Equivalent to:
-
-#+begin_codeblock
-return @\exposidnc{ptr}@;
-#+end_codeblock
+/Returns/: @@latex:\exposid{ptr}@@@@html:<code><var>ptr</var></code>@@.
 #+end_pnum
 
 #+begin_itemdecl

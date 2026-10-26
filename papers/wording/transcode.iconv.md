@@ -6,41 +6,25 @@
 const R& base() const& noexcept;
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return $base$;
-```
+[#]{.pnum} *Returns*: `$base$`.
 
 ```cpp
 R base() &&;
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return move($base$);
-```
+[#]{.pnum} *Returns*: `move($base$)`.
 
 ```cpp
 const R& base() const& noexcept;
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return $base$;
-```
+[#]{.pnum} *Returns*: `$base$`.
 
 ```cpp
 R base() &&;
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return move($base$);
-```
+[#]{.pnum} *Returns*: `move($base$)`.
 
 ```cpp
 inline constexpr size_t iconv_min_buffer_size = 4;
@@ -128,12 +112,7 @@ template<typename Container = string, legacy_byte_range R>
 Container iconv_transcode_to(R&& source, const char* from, const char* to);
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return iconv_transcode_to<Container>(forward<R>(source), from, to,
-                                     make_real_iconv_fns());
-```
+[#]{.pnum} *Returns*: `iconv_transcode_to<Container>(forward<R>(source), from, to, make_real_iconv_fns())`.
 
 ```cpp
 template<typename IconvFns, legacy_byte_range R, output_iterator<char> Output>
@@ -153,12 +132,7 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to,
                             Output output);
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return iconv_transcode_into(forward<R>(source), from, to, move(output),
-                            make_real_iconv_fns());
-```
+[#]{.pnum} *Returns*: `iconv_transcode_into(forward<R>(source), from, to, move(output), make_real_iconv_fns())`.
 
 ```cpp
 template<typename Container = string, typename IconvFns, legacy_byte_range R>
@@ -179,12 +153,7 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
                                                              const char* to);
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return iconv_transcode_to_or_error<Container>(forward<R>(source), from, to,
-                                              make_real_iconv_fns());
-```
+[#]{.pnum} *Returns*: `iconv_transcode_to_or_error<Container>(forward<R>(source), from, to, make_real_iconv_fns())`.
 
 ### Classes `iconv_transcode_view::iterator` and `iconv_transcode_or_error_view::iterator` [transcode.iconv.iterator] {-}
 

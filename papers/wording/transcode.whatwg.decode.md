@@ -6,21 +6,13 @@
 constexpr const R& base() const& noexcept;
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return $base$;
-```
+[#]{.pnum} *Returns*: `$base$`.
 
 ```cpp
 constexpr R base() &&;
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return move($base$);
-```
+[#]{.pnum} *Returns*: `move($base$)`.
 
 ```cpp
 constexpr explicit whatwg_decode_view(R base);
@@ -56,8 +48,8 @@ constexpr $iterator$ end() const;
 
 [#]{.pnum} *Constraints*:
 
-- [#.#]{.pnum} `R` models `forward_range`,
-- [#.#]{.pnum} `R` models `common_range`,
+- [#.#]{.pnum} `const R` models `forward_range`,
+- [#.#]{.pnum} `const R` models `common_range`,
 - [#.#]{.pnum} `R` models `$const-iterator-compatible-range$`,
 - [#.#]{.pnum} `R` models `$const-sentinel-compatible-range$`.
 
@@ -93,11 +85,7 @@ constexpr iterator(base_iter current, base_sent end);
 constexpr result_t operator*() const;
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return $value$;
-```
+[#]{.pnum} *Returns*: `$value$`.
 
 ```cpp
 constexpr $iterator$& operator++();
