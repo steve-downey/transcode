@@ -446,30 +446,32 @@ optimizer, the same effect that any range adaptor wrapping a bulk API
 experiences.
 
 The two-step bulk approach (237 µs) pays for the intermediate `char32_t` vector
-allocation plus the Shift-JIS encode table search.
+allocation plus a second pass over the data.
 
-### Non-UTF → Non-UTF: EUC-JP → Shift-JIS (28 KB Japanese)
+### Non-UTF → Non-UTF: EUC-JP → Shift-JIS (30 KB Japanese)
 
 The problem case for a decode-codepoint-encode architecture: transcoding
 between two legacy byte encodings that both represent the same characters.
 
 | Implementation | Mean | Throughput | Notes |
 |----------------|------|-----------|-------|
-| **`iconv_transcode_to`** (single pass) | 144 µs | 185 MiB/s | Direct byte→byte via glibc iconv |
-| **beman.transcode** streaming (`transcode` pipe) | 1.12 ms | 24 MiB/s | decode view \| encode view |
-| **beman.transcode** bulk (`view \| ranges::to<string>()`) | 1.30 ms | 20 MiB/s | Two-step, char32_t intermediate |
+| **beman.transcode** streaming (`transcode` pipe) | 138 µs | 213 MiB/s | decode view \| encode view |
+| **`iconv_transcode_to`** (single pass) | 225 µs | 131 MiB/s | Direct byte→byte via glibc iconv |
+| **beman.transcode** bulk (`view \| ranges::to<string>()`) | 308 µs | 96 MiB/s | Two-step, char32_t intermediate |
 
-`iconv_transcode_to` is 7-9x faster because it performs a single-pass byte→byte
-conversion inside glibc's codec tables (decades of optimization).  The
-beman.transcode approach must
-decode every byte to char32_t (EUC-JP table lookup), then encode each codepoint
-back to Shift-JIS (linear scan of a 128-entry table per character).  The linear
-scan in `encode_one()` is the dominant cost.
+Each code point is decoded from EUC-JP with a table lookup and encoded to
+Shift-JIS through a reverse index of the WHATWG table, built at compile time,
+so the encode side costs two loads per code point rather than a search.  An
+earlier version of the encoder scanned the 11,280-entry index for every code
+point and ran at about 5 ms on this corpus; the reverse index is what closed
+the gap to iconv.
 
-For non-UTF cross-encoding work, prefer `iconv_transcode_to` when both encodings
-are available on the system.  The streaming views are appropriate when you need
-composability with other range adaptors or when the intermediate `char32_t`
-representation is needed for processing (filtering, normalization, etc).
+For non-UTF cross-encoding work the streaming view and `iconv_transcode_to` are
+within a factor of two of each other, in either direction depending on the
+corpus.  The streaming views compose with other range adaptors and expose the
+intermediate `char32_t` representation for processing (filtering,
+normalization, etc); `iconv_transcode_to` covers encodings this library does
+not, when the system iconv has them.
 
 ### WHATWG Legacy Codecs (this library)
 
@@ -535,9 +537,9 @@ Single-element streaming views on a 4 KB synthetic corpus of upper-half bytes
 
 ¹ Random-access sized range; GCC elides the iteration loop (O(1) pointer
 arithmetic).
-² Encode is a 128-entry linear scan per codepoint; GCC auto-vectorizes
-the loop over the 4 KB synthetic corpus.  Real-world mixed-content
-throughput will be lower.
+² Encode is a reverse-index lookup per codepoint, built at compile time
+from the table; the synthetic corpus repeats one codepoint, so the loads
+stay in L1.  Real-world mixed-content throughput will be lower.
 
 ### UTF-8 via `view | ranges::to`
 

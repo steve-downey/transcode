@@ -2,6 +2,8 @@
 
 #include <beman/transcode/whatwg_encode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
+#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/detail/tables/shift_jis.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/test_utilities.hpp>
 
@@ -291,4 +293,41 @@ TEST_CASE("iso_2022_jp or_error encode unmapped yields error", "[transcoding::is
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::unmapped_codepoint);
+}
+
+// ---------------------------------------------------------------------------
+// Index lookups agree with the linear scan WHATWG defines them by
+// ---------------------------------------------------------------------------
+
+TEST_CASE("iso_2022_jp encode agrees with a linear scan of index jis0208 for every code point",
+          "[transcoding::iso_2022_jp_encode]") {
+    for (int pointer = 0; pointer < 11280; ++pointer) {
+        char32_t cp = detail::tables::shift_jis[pointer];
+        if (cp == 0)
+            continue;
+        int first = 0;
+        while (detail::tables::shift_jis[first] != cp)
+            ++first;
+        std::vector<char32_t> cps{cp};
+        auto                  result = collect(cps | whatwg_encode<codec::iso_2022_jp>);
+        // ESC $ B, lead, trail, ESC ( B
+        REQUIRE(result.size() == 8);
+        CHECK(result[3] == static_cast<char>((first / 94) + 0x21));
+        CHECK(result[4] == static_cast<char>((first % 94) + 0x21));
+    }
+}
+
+TEST_CASE("iso_2022_jp encode then decode round-trips every code point in index jis0208",
+          "[transcoding::iso_2022_jp_encode]") {
+    for (char32_t cp : detail::tables::shift_jis) {
+        if (cp == 0)
+            continue;
+        std::vector<char32_t> cps{cp};
+        auto                  bytes = collect(cps | whatwg_encode<codec::iso_2022_jp>);
+        std::vector<char32_t> back;
+        for (char32_t c : bytes | whatwg_decode<codec::iso_2022_jp>)
+            back.push_back(c);
+        REQUIRE(back.size() == 1);
+        CHECK(back[0] == cp);
+    }
 }

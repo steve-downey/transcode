@@ -2,6 +2,8 @@
 
 #include <beman/transcode/whatwg_encode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
+#include <beman/transcode/detail/tables/windows_1252.hpp>
+#include <beman/transcode/detail/tables/iso_8859_7.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/test_utilities.hpp>
 
@@ -236,4 +238,40 @@ TEST_CASE("whatwg_encode UTF-8 consteval", "[transcoding::whatwg_encode][utf8]")
         return b0 == '\xE2' && b1 == '\x82' && b2 == '\xAC';
     };
     CHECK(constify(encode_euro()));
+}
+
+// ---------------------------------------------------------------------------
+// Single-byte encode agrees with a linear scan of the table
+// ---------------------------------------------------------------------------
+
+template <codec C>
+void check_single_byte_table_against_scan(const char32_t (&table)[128]) {
+    for (int i = 0; i < 128; ++i) {
+        char32_t cp = table[i];
+        if (cp == 0)
+            continue;
+        int first = 0;
+        while (table[first] != cp)
+            ++first;
+        std::vector<char32_t> cps{cp};
+        std::vector<char>     result;
+        for (char c : cps | whatwg_encode<C>)
+            result.push_back(c);
+        REQUIRE(result.size() == 1);
+        CHECK(static_cast<unsigned char>(result[0]) == 0x80 + first);
+    }
+}
+
+TEST_CASE("single-byte encode agrees with a linear scan of the table", "[transcoding::whatwg_encode]") {
+    check_single_byte_table_against_scan<codec::windows_1252>(detail::tables::windows_1252);
+    check_single_byte_table_against_scan<codec::iso_8859_7>(detail::tables::iso_8859_7);
+}
+
+TEST_CASE("single-byte encode of an unmapped code point is '?'", "[transcoding::whatwg_encode]") {
+    std::vector<char32_t> cps{U'\x4E00'};
+    std::vector<char>     result;
+    for (char c : cps | whatwg_encode<codec::windows_1252>)
+        result.push_back(c);
+    REQUIRE(result.size() == 1);
+    CHECK(result[0] == '?');
 }

@@ -6,10 +6,13 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/error.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/big5.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <array>
     #include <iterator>
+    #include <utility>
 
 #endif
 namespace beman::transcoding::detail {
@@ -54,6 +57,18 @@ constexpr big5_decode_result big5_decode_one(I& current, S end);
 // the lowest pointer that maps to cp, then converts pointer to lead/trail bytes.
 // Returns is_error=true if the codepoint is not representable in Big5.
 constexpr big5_encode_result big5_encode_one(char32_t cp);
+
+// WHATWG's "index Big5 pointer".  The encoder leaves out pointers below
+// (0xA1 - 0x81) * 157 = 5024, the Hong Kong Supplementary Character Set, so
+// HKSCS-only code points are unencodable and the 57 that HKSCS duplicates
+// take their standard Big5 pointer.  Six code points take the last pointer
+// rather than the first: the box-drawing characters U+2550, U+255E, U+2561
+// and U+256A, and the ideographs U+5341 and U+5345.
+inline constexpr pointer_range big5_hkscs_pointers{0, 5023};
+
+inline constexpr auto& big5_index = reverse_index_for<tables::big5, big5_hkscs_pointers>;
+
+constexpr int big5_index_pointer(char32_t cp);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -113,6 +128,32 @@ constexpr big5_decode_result big5_decode_one(I& current, S end) {
     return {cp, {}, {}, false};
 }
 
+constexpr int big5_last_pointer(char32_t cp) {
+    for (int pointer = 19781; pointer >= 5024; --pointer)
+        if (tables::big5[pointer] == cp)
+            return pointer;
+    return -1;
+}
+
+// The six last-pointer code points, resolved once at compile time.
+inline constexpr std::array<std::pair<char32_t, int>, 6> big5_last_pointers = {
+    {
+        {0x2550, big5_last_pointer(0x2550)},
+        {0x255E, big5_last_pointer(0x255E)},
+        {0x2561, big5_last_pointer(0x2561)},
+        {0x256A, big5_last_pointer(0x256A)},
+        {0x5341, big5_last_pointer(0x5341)},
+        {0x5345, big5_last_pointer(0x5345)},
+    },
+};
+
+constexpr int big5_index_pointer(char32_t cp) {
+    for (const auto& [last_cp, pointer] : big5_last_pointers)
+        if (cp == last_cp)
+            return pointer;
+    return big5_index.find(cp);
+}
+
 constexpr big5_encode_result big5_encode_one(char32_t cp) {
     if (cp < 0x80) {
         big5_encode_result r{};
@@ -121,17 +162,16 @@ constexpr big5_encode_result big5_encode_one(char32_t cp) {
         return r;
     }
 
-    for (int i = 0; i < 19782; ++i) {
-        if (tables::big5[i] == cp) {
-            int                lead   = (i / 157) + 0x81;
-            int                offset = i % 157;
-            int                trail  = (offset < 63) ? offset + 0x40 : offset + 0x62;
-            big5_encode_result r{};
-            r.bytes[0] = static_cast<unsigned char>(lead);
-            r.bytes[1] = static_cast<unsigned char>(trail);
-            r.count    = 2;
-            return r;
-        }
+    int pointer = big5_index_pointer(cp);
+    if (pointer >= 0) {
+        int                lead   = (pointer / 157) + 0x81;
+        int                offset = pointer % 157;
+        int                trail  = (offset < 63) ? offset + 0x40 : offset + 0x62;
+        big5_encode_result r{};
+        r.bytes[0] = static_cast<unsigned char>(lead);
+        r.bytes[1] = static_cast<unsigned char>(trail);
+        r.count    = 2;
+        return r;
     }
 
     return {{}, 0, true};

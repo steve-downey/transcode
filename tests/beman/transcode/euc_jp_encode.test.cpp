@@ -2,6 +2,9 @@
 
 #include <beman/transcode/whatwg_encode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
+#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/detail/tables/euc_jp_jis0212.hpp>
+#include <beman/transcode/detail/tables/shift_jis.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/test_utilities.hpp>
 
@@ -189,4 +192,80 @@ TEST_CASE("euc_jp or_error encode unmapped codepoint yields error", "[transcodin
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::unmapped_codepoint);
+}
+
+// ---------------------------------------------------------------------------
+// Index lookups agree with the linear scans WHATWG defines them by
+// ---------------------------------------------------------------------------
+
+TEST_CASE("euc_jp encode agrees with a linear scan of index jis0208 for every code point",
+          "[transcoding::euc_jp_encode]") {
+    for (int pointer = 0; pointer < 11280; ++pointer) {
+        char32_t cp = detail::tables::shift_jis[pointer];
+        if (cp == 0)
+            continue;
+        int first = 0;
+        while (detail::tables::shift_jis[first] != cp)
+            ++first;
+        std::vector<char32_t> cps{cp};
+        auto                  result = collect(cps | whatwg_encode<codec::euc_jp>);
+        REQUIRE(result.size() == 2);
+        CHECK(static_cast<unsigned char>(result[0]) == (first / 94) + 0xA1);
+        CHECK(static_cast<unsigned char>(result[1]) == (first % 94) + 0xA1);
+    }
+}
+
+TEST_CASE("euc_jp encode reaches index jis0212 for every code point not in jis0208", "[transcoding::euc_jp_encode]") {
+    for (int pointer = 0; pointer < 8836; ++pointer) {
+        char32_t cp = detail::tables::euc_jp_jis0212[pointer];
+        if (cp == 0)
+            continue;
+        bool in_jis0208 = false;
+        for (char32_t other : detail::tables::shift_jis)
+            in_jis0208 = in_jis0208 || other == cp;
+        if (in_jis0208)
+            continue;
+        int first = 0;
+        while (detail::tables::euc_jp_jis0212[first] != cp)
+            ++first;
+        std::vector<char32_t> cps{cp};
+        auto                  result = collect(cps | whatwg_encode<codec::euc_jp>);
+        REQUIRE(result.size() == 3);
+        CHECK(static_cast<unsigned char>(result[0]) == 0x8F);
+        CHECK(static_cast<unsigned char>(result[1]) == (first / 94) + 0xA1);
+        CHECK(static_cast<unsigned char>(result[2]) == (first % 94) + 0xA1);
+    }
+}
+
+TEST_CASE("euc_jp encode then decode round-trips every code point in both indexes", "[transcoding::euc_jp_encode]") {
+    auto round_trip = [](char32_t cp) {
+        std::vector<char32_t> cps{cp};
+        auto                  bytes = collect(cps | whatwg_encode<codec::euc_jp>);
+        std::vector<char32_t> back;
+        for (char32_t c : bytes | whatwg_decode<codec::euc_jp>)
+            back.push_back(c);
+        REQUIRE(back.size() == 1);
+        CHECK(back[0] == cp);
+    };
+    for (char32_t cp : detail::tables::shift_jis)
+        if (cp != 0)
+            round_trip(cp);
+    for (char32_t cp : detail::tables::euc_jp_jis0212)
+        if (cp != 0)
+            round_trip(cp);
+}
+
+TEST_CASE("euc_jp encode consteval two-byte and three-byte", "[transcoding::euc_jp_encode]") {
+    using beman::transcoding::tests::constify;
+    constexpr auto encode = [](char32_t cp) consteval {
+        std::array<char32_t, 1> cps{cp};
+        std::span<char32_t>     sp(cps);
+        std::array<char, 3>     out{};
+        int                     n = 0;
+        for (char c : sp | whatwg_encode<codec::euc_jp>)
+            out[static_cast<std::size_t>(n++)] = c;
+        return out;
+    };
+    CHECK(constify(encode(U'\x4E00')) == std::array<char, 3>{'\xB0', '\xEC', 0});
+    CHECK(constify(encode(U'\x02D8')) == std::array<char, 3>{'\x8F', '\xA2', '\xAF'});
 }

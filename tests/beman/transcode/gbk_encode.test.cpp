@@ -2,6 +2,8 @@
 
 #include <beman/transcode/whatwg_encode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
+#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/detail/tables/gbk.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/test_utilities.hpp>
 
@@ -131,4 +133,64 @@ TEST_CASE("gbk or_error encode unmapped codepoint yields error", "[transcoding::
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg_error::unmapped_codepoint);
+}
+
+// ---------------------------------------------------------------------------
+// WHATWG special case and the index lookup
+// ---------------------------------------------------------------------------
+
+TEST_CASE("gbk encode U+20AC (euro) -> 0x80", "[transcoding::gbk_encode]") {
+    // The GBK encoder writes the euro sign as the single byte its decoder
+    // reads back; GB18030 uses the two-byte 0xA2 0xE3 instead.
+    std::vector<char32_t> cps{U'\x20AC'};
+    auto                  result = collect(cps | whatwg_encode<codec::gbk>);
+    REQUIRE(result.size() == 1);
+    CHECK(static_cast<unsigned char>(result[0]) == 0x80);
+}
+
+TEST_CASE("gbk encode agrees with a linear scan of index gb18030 for every code point", "[transcoding::gbk_encode]") {
+    for (int pointer = 0; pointer < 23940; ++pointer) {
+        char32_t cp = detail::tables::gbk[pointer];
+        if (cp == 0 || cp == U'\x20AC')
+            continue;
+        int first = 0;
+        while (detail::tables::gbk[first] != cp)
+            ++first;
+        int trail = (first % 190) + 0x40;
+        if (trail >= 0x7F)
+            ++trail;
+        std::vector<char32_t> cps{cp};
+        auto                  result = collect(cps | whatwg_encode<codec::gbk>);
+        REQUIRE(result.size() == 2);
+        CHECK(static_cast<unsigned char>(result[0]) == (first / 190) + 0x81);
+        CHECK(static_cast<unsigned char>(result[1]) == trail);
+    }
+}
+
+TEST_CASE("gbk encode then decode round-trips every code point in index gb18030", "[transcoding::gbk_encode]") {
+    for (char32_t cp : detail::tables::gbk) {
+        if (cp == 0)
+            continue;
+        std::vector<char32_t> cps{cp};
+        auto                  bytes = collect(cps | whatwg_encode<codec::gbk>);
+        std::vector<char32_t> back;
+        for (char32_t c : bytes | whatwg_decode<codec::gbk>)
+            back.push_back(c);
+        REQUIRE(back.size() == 1);
+        CHECK(back[0] == cp);
+    }
+}
+
+TEST_CASE("gbk encode consteval two-byte", "[transcoding::gbk_encode]") {
+    using beman::transcoding::tests::constify;
+    constexpr auto encode = [](char32_t cp) consteval {
+        std::array<char32_t, 1> cps{cp};
+        std::span<char32_t>     sp(cps);
+        std::array<char, 2>     out{};
+        int                     n = 0;
+        for (char c : sp | whatwg_encode<codec::gbk>)
+            out[static_cast<std::size_t>(n++)] = c;
+        return out;
+    };
+    CHECK(constify(encode(U'\x4E02')) == std::array<char, 2>{'\x81', '\x40'});
 }
