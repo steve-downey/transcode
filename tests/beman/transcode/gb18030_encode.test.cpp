@@ -2,6 +2,8 @@
 
 #include <beman/transcode/whatwg_encode_view.hpp>
 #include <beman/transcode/whatwg_encode_view.hpp>
+#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/detail/tables/gbk.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/test_utilities.hpp>
 
@@ -175,4 +177,42 @@ TEST_CASE("gb18030 or_error encode U+10000 (4-byte)", "[transcoding::gb18030_enc
     CHECK(static_cast<unsigned char>(result[1].value()) == 0x30);
     CHECK(static_cast<unsigned char>(result[2].value()) == 0x81);
     CHECK(static_cast<unsigned char>(result[3].value()) == 0x30);
+}
+
+// ---------------------------------------------------------------------------
+// The two-byte index lookup
+// ---------------------------------------------------------------------------
+
+TEST_CASE("gb18030 encode agrees with a linear scan of index gb18030 for every two-byte code point",
+          "[transcoding::gb18030_encode]") {
+    for (int pointer = 0; pointer < 23940; ++pointer) {
+        char32_t cp = detail::tables::gbk[pointer];
+        if (cp == 0)
+            continue;
+        int first = 0;
+        while (detail::tables::gbk[first] != cp)
+            ++first;
+        int trail = (first % 190) + 0x40;
+        if (trail >= 0x7F)
+            ++trail;
+        std::vector<char32_t> cps{cp};
+        auto                  result = collect(cps | whatwg_encode<codec::gb18030>);
+        REQUIRE(result.size() == 2);
+        CHECK(static_cast<unsigned char>(result[0]) == (first / 190) + 0x81);
+        CHECK(static_cast<unsigned char>(result[1]) == trail);
+    }
+}
+
+TEST_CASE("gb18030 encode then decode round-trips every two-byte code point", "[transcoding::gb18030_encode]") {
+    for (char32_t cp : detail::tables::gbk) {
+        if (cp == 0)
+            continue;
+        std::vector<char32_t> cps{cp};
+        auto                  bytes = collect(cps | whatwg_encode<codec::gb18030>);
+        std::vector<char32_t> back;
+        for (char32_t c : bytes | whatwg_decode<codec::gb18030>)
+            back.push_back(c);
+        REQUIRE(back.size() == 1);
+        CHECK(back[0] == cp);
+    }
 }

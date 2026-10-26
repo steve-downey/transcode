@@ -514,6 +514,132 @@ bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core 
 		$(BENCH_RESULTS_DIR)/iconv-Perf.xml \
 		$(BENCH_RESULTS_DIR)/boundary-Perf.xml
 
+# Run the core suites BENCH_REPEATS times into one directory, as SUITE.N.xml
+# with SUITE.N.meta.json.  Each repeat runs every suite before the next repeat
+# starts, so the libraries in one repeat see much the same machine state.  The
+# report combines the repeats of each benchmark; see docs/benchmarks/README.md.
+BENCH_REPEATS ?= 5
+BENCH_REPEAT_SUITES ?= smoke utf whatwg pluggable iconv boundary
+BENCH_REPEAT_DIR ?= $(BENCH_RESULTS_DIR)/repeats
+
+.PHONY: bench-repeat
+bench-repeat: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run the core suites BENCH_REPEATS times, report on the repeats
+	@if ls $(BENCH_REPEAT_DIR)/*.xml >/dev/null 2>&1; then \
+		echo "$(BENCH_REPEAT_DIR) already holds results; move them or set BENCH_REPEAT_DIR"; \
+		exit 2; \
+	fi
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
+	@mkdir -p $(BENCH_REPEAT_DIR)
+	@for i in $$(seq 1 $(BENCH_REPEATS)); do \
+		for s in $(BENCH_REPEAT_SUITES); do \
+			if [ "$$s" = smoke ]; then tag="[smoke]"; else tag="[benchmark][$$s]"; fi; \
+			echo "repeat $$i of $(BENCH_REPEATS): $$s"; \
+			$(_PERF_BENCH)/beman.transcode.benchmarks.$$s "$$tag" \
+				--reporter xml --out $(BENCH_REPEAT_DIR)/$$s.$$i.xml >/dev/null \
+				|| echo "warning: $$s exited with status $$?"; \
+		done; \
+	done
+	$(UV) run python tools/process_benchmark_results.py \
+		--label "GCC-16 Perf, $(BENCH_REPEATS) repeats" \
+		--markdown $(BENCH_REPEAT_DIR)/report.md \
+		--html $(BENCH_REPEAT_DIR)/report.html \
+		--svg-dir $(BENCH_REPEAT_DIR)/svg \
+		--vegalite $(BENCH_REPEAT_DIR)/report.vl.json \
+		$(BENCH_REPEAT_DIR)
+
+# Count instructions instead of timing: run each core suite once under
+# callgrind with the fixture in count mode, which runs every benchmark body
+# BENCH_COUNT_RUNS times with collection on and dumps the counts under the
+# benchmark's name.  Catch2's own settings are cut to the minimum, since its
+# timings under Valgrind mean nothing.  The report divides each count by the
+# runs and the input size.  Pass this directory beside a timing run's to see
+# instructions per byte next to the times.
+BENCH_COUNT_RUNS ?= 3
+BENCH_INSTRUCTION_SUITES ?= $(BENCH_REPEAT_SUITES)
+BENCH_INSTRUCTION_DIR ?= $(BENCH_RESULTS_DIR)/instructions
+
+# $(call bench_count_suites,BIN_DIR,OUT_DIR): count each of
+# BENCH_INSTRUCTION_SUITES from the binaries in BIN_DIR into OUT_DIR.
+define bench_count_suites
+for s in $(BENCH_INSTRUCTION_SUITES); do \
+	if [ "$$s" = smoke ]; then tag="[smoke]"; else tag="[benchmark][$$s]"; fi; \
+	echo "counting: $$s"; \
+	BEMAN_TRANSCODE_BENCH_COUNT=$(BENCH_COUNT_RUNS) \
+		valgrind --tool=callgrind --collect-atstart=no \
+		--callgrind-out-file=$(2)/$$s.callgrind.%p \
+		$(1)/beman.transcode.benchmarks.$$s "$$tag" \
+		--benchmark-samples 1 --benchmark-resamples 1 --benchmark-warmup-time 0 \
+		--reporter xml --out $(2)/$$s.xml >/dev/null 2>&1 \
+		|| echo "warning: $$s exited with status $$?"; \
+done
+endef
+
+.PHONY: bench-instructions
+bench-instructions: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, count instructions of the core suites under callgrind, report
+	@command -v valgrind >/dev/null || { echo "bench-instructions needs valgrind"; exit 2; }
+	@if ls $(BENCH_INSTRUCTION_DIR)/*.xml >/dev/null 2>&1; then \
+		echo "$(BENCH_INSTRUCTION_DIR) already holds results; move them or set BENCH_INSTRUCTION_DIR"; \
+		exit 2; \
+	fi
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
+	@mkdir -p $(BENCH_INSTRUCTION_DIR)
+	@$(call bench_count_suites,$(_PERF_BENCH),$(BENCH_INSTRUCTION_DIR))
+	$(UV) run python tools/process_benchmark_results.py \
+		--label "GCC-16 Perf, instruction counts" \
+		--markdown $(BENCH_INSTRUCTION_DIR)/report.md \
+		--html $(BENCH_INSTRUCTION_DIR)/report.html \
+		--svg-dir $(BENCH_INSTRUCTION_DIR)/svg \
+		--vegalite $(BENCH_INSTRUCTION_DIR)/report.vl.json \
+		$(BENCH_INSTRUCTION_DIR)
+
+# One job of the runner-stability workflow
+# (.github/workflows/bench-runner-stability.yml): run the core suites once
+# timed, into BENCH_JOB_DIR/timing, then once counted, into
+# BENCH_JOB_DIR/instructions, from binaries already built in BENCH_BIN_DIR.
+# It builds nothing and writes no report; tools/runner_stability.py reports on
+# all the jobs' directories together.
+BENCH_JOB_DIR ?= $(BENCH_RESULTS_DIR)/stability-job
+
+.PHONY: bench-stability-job
+bench-stability-job: ## Run the core suites timed, then counted, from prebuilt BENCH_BIN_DIR into BENCH_JOB_DIR
+	@if [ -z "$(BENCH_BIN_DIR)" ]; then \
+		echo "usage: make bench-stability-job BENCH_BIN_DIR=DIR [BENCH_JOB_DIR=DIR]"; \
+		exit 2; \
+	fi
+	@command -v valgrind >/dev/null || { echo "bench-stability-job needs valgrind"; exit 2; }
+	@if ls $(BENCH_JOB_DIR)/*/*.xml >/dev/null 2>&1; then \
+		echo "$(BENCH_JOB_DIR) already holds results; move them or set BENCH_JOB_DIR"; \
+		exit 2; \
+	fi
+	@mkdir -p $(BENCH_JOB_DIR)/timing $(BENCH_JOB_DIR)/instructions
+	@for s in $(BENCH_REPEAT_SUITES); do \
+		if [ "$$s" = smoke ]; then tag="[smoke]"; else tag="[benchmark][$$s]"; fi; \
+		echo "timing: $$s"; \
+		$(BENCH_BIN_DIR)/beman.transcode.benchmarks.$$s "$$tag" \
+			--reporter xml --out $(BENCH_JOB_DIR)/timing/$$s.xml >/dev/null \
+			|| echo "warning: $$s exited with status $$?"; \
+	done
+	@$(call bench_count_suites,$(BENCH_BIN_DIR),$(BENCH_JOB_DIR)/instructions)
+
+# Compare two result directories, each holding the XML and .meta.json files of
+# one run, e.g. a copy of $(BENCH_RESULTS_DIR) taken before a change.  An empty
+# label is filled in from what tells the runs apart: compiler, commit, host....
+BENCH_BASELINE_LABEL ?=
+BENCH_CANDIDATE_LABEL ?=
+
+.PHONY: bench-compare
+bench-compare: ## Compare runs: make bench-compare BENCH_BASELINE=DIR BENCH_CANDIDATE=DIR
+	@if [ -z "$(BENCH_BASELINE)" ] || [ -z "$(BENCH_CANDIDATE)" ]; then \
+		echo "usage: make bench-compare BENCH_BASELINE=DIR BENCH_CANDIDATE=DIR"; \
+		exit 2; \
+	fi
+	$(UV) run python tools/process_benchmark_results.py \
+		--run "$(BENCH_BASELINE_LABEL)" $(BENCH_BASELINE) \
+		--run "$(BENCH_CANDIDATE_LABEL)" $(BENCH_CANDIDATE) \
+		--markdown $(BENCH_RESULTS_DIR)/compare.md \
+		--html $(BENCH_RESULTS_DIR)/compare.html \
+		--vegalite $(BENCH_RESULTS_DIR)/compare.vl.json
+
 .PHONY: docs
 docs: ## Build the docs with Doxygen
 	doxygen docs/Doxyfile

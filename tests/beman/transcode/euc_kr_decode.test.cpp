@@ -55,10 +55,9 @@ TEST_CASE("euc_kr decode pointer 0: 0x81 0x41 -> U+AC02", "[transcoding::euc_kr]
     CHECK(result[0] == U'\xAC02');
 }
 
-TEST_CASE("euc_kr decode U+AC00 (가): 0xB0 0xA2", "[transcoding::euc_kr]") {
-    // pointer = (0xB0 - 0x81) * 190 + (0xA2 - 0x41) - 1 = 47*190 + 96 = 9026 -> U+AC00
-    // (trail 0xA2 > 0x7F, so offset = 0xA2 - 0x41 - 1 = 96)
-    std::vector<char> bytes{'\xB0', '\xA2'};
+TEST_CASE("euc_kr decode U+AC00 (가): 0xB0 0xA1", "[transcoding::euc_kr]") {
+    // pointer = (0xB0 - 0x81) * 190 + (0xA1 - 0x41) = 47*190 + 96 = 9026 -> U+AC00
+    std::vector<char> bytes{'\xB0', '\xA1'};
     auto              result = collect(bytes | whatwg_decode<codec::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xAC00');
@@ -78,8 +77,9 @@ TEST_CASE("euc_kr decode invalid lead byte 0xFF -> U+FFFD", "[transcoding::euc_k
     CHECK(result[0] == U'\xFFFD');
 }
 
-TEST_CASE("euc_kr decode invalid trail byte 0x7F -> U+FFFD", "[transcoding::euc_kr]") {
-    // trail 0x7F is DEL, excluded from valid trail bytes
+TEST_CASE("euc_kr decode trail byte 0x7F -> U+FFFD", "[transcoding::euc_kr]") {
+    // WHATWG admits 0x7F as a trail byte, but index euc-kr maps no pointer
+    // with that trail, so the result is the same as an invalid byte.
     std::vector<char> bytes{'\x81', '\x7F'};
     auto              result = collect(bytes | whatwg_decode<codec::euc_kr>);
     REQUIRE(result.size() == 1);
@@ -96,7 +96,7 @@ TEST_CASE("euc_kr decode invalid trail byte 0x40 -> U+FFFD", "[transcoding::euc_
 
 TEST_CASE("euc_kr decode unmapped pointer (pointer 26): 0x81 0x5B -> U+FFFD", "[transcoding::euc_kr]") {
     // pointer = (0x81-0x81)*190 + (0x5B-0x41) = 20 -> unmapped (table[20]==0 but actually..
-    // trail=0x5B, offset = 0x5B-0x41=26, 0x5B < 0x7F -> no skip adjustment
+    // trail=0x5B: pointer = 0x5B - 0x41 = 26
     // pointer = 0*190 + 26 = 26, euc_kr[26] == 0 -> U+FFFD
     std::vector<char> bytes{'\x81', '\x5B'};
     auto              result = collect(bytes | whatwg_decode<codec::euc_kr>);
@@ -112,8 +112,8 @@ TEST_CASE("euc_kr decode truncated sequence: lone lead 0x81 -> U+FFFD", "[transc
 }
 
 TEST_CASE("euc_kr decode mixed ASCII + Korean", "[transcoding::euc_kr]") {
-    // 'A' (0x41) + U+AC00 (0xB0 0xA2)
-    std::vector<char> bytes{'\x41', '\xB0', '\xA2'};
+    // 'A' (0x41) + U+AC00 (0xB0 0xA1)
+    std::vector<char> bytes{'\x41', '\xB0', '\xA1'};
     auto              result = collect(bytes | whatwg_decode<codec::euc_kr>);
     REQUIRE(result.size() == 2);
     CHECK(result[0] == U'A');
@@ -161,7 +161,7 @@ TEST_CASE("euc_kr or_error: pointer 0 -> U+AC02", "[transcoding::euc_kr_or_error
 }
 
 TEST_CASE("euc_kr or_error: U+AC00 (가) -> success", "[transcoding::euc_kr_or_error]") {
-    std::vector<char> bytes{'\xB0', '\xA2'};
+    std::vector<char> bytes{'\xB0', '\xA1'};
     auto              result = collect_or_error(bytes | whatwg_decode_or_error<codec::euc_kr>);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());

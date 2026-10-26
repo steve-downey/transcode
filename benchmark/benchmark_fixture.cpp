@@ -2,18 +2,22 @@
 
 #include <benchmark/benchmark_fixture.hpp>
 
+#include <benchmark/benchmark_commit.hpp>
+
 #include <catch2/catch_config.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_version_macros.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 
+#include <charconv>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <initializer_list>
 #include <iterator>
 #include <map>
 #include <mutex>
@@ -21,10 +25,21 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <system_error>
+#include <thread>
 #include <vector>
 
 #if __has_include(<unistd.h>)
     #include <unistd.h>
+#endif
+#if __has_include(<valgrind/callgrind.h>)
+    #include <valgrind/callgrind.h>
+#else
+    #define CALLGRIND_TOGGLE_COLLECT
+    #define CALLGRIND_DUMP_STATS_AT(desc) static_cast<void>(desc)
+#endif
+#if __has_include(<sys/utsname.h>)
+    #include <sys/utsname.h>
 #endif
 
 namespace beman::transcoding::bench {
@@ -40,6 +55,9 @@ struct recorder {
     std::vector<benchmark_record>        records;
     std::optional<benchmark_description> pending;
     std::optional<std::size_t>           current;
+    std::optional<load_average>          load_start;
+    std::size_t                          count_runs = 0;
+    std::vector<std::string>             counted; // benchmarks already counted
 };
 
 std::mutex& state_mutex() {
@@ -182,6 +200,44 @@ std::string cpu_model() {
     return {};
 }
 
+// The first line of a file, or empty when it cannot be read.
+std::string first_line(const char* path) {
+    std::ifstream f(path);
+    std::string   line;
+    std::getline(f, line);
+    return line;
+}
+
+std::string kernel_release() {
+#if __has_include(<sys/utsname.h>)
+    struct utsname name = {};
+    if (::uname(&name) == 0)
+        return name.release;
+#endif
+    return {};
+}
+
+// The scaling governor of CPU 0 ("performance", "powersave", ...), or empty
+// where cpufreq is not exposed, as in many VMs.
+std::string cpu_governor() { return first_line("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"); }
+
+// Whether the CPU may clock above its base frequency: intel_pstate reports the
+// inverse as no_turbo, other cpufreq drivers report boost.  Unknown when
+// neither file is there.
+std::optional<bool> turbo_enabled() {
+    if (auto no_turbo = first_line("/sys/devices/system/cpu/intel_pstate/no_turbo"); !no_turbo.empty())
+        return no_turbo == "0";
+    if (auto boost = first_line("/sys/devices/system/cpu/cpufreq/boost"); !boost.empty())
+        return boost == "1";
+    return std::nullopt;
+}
+
+std::string json_load(const std::optional<load_average>& load) {
+    if (!load)
+        return "null";
+    return std::format("[{:.2f}, {:.2f}, {:.2f}]", load->one, load->five, load->fifteen);
+}
+
 std::string utc_timestamp() {
     auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     return std::format("{:%Y-%m-%dT%H:%M:%SZ}", now);
@@ -210,11 +266,17 @@ class metadata_listener : public Catch::EventListenerBase {
   public:
     using Catch::EventListenerBase::EventListenerBase;
 
+    void testRunStarting(const Catch::TestRunInfo& info) override;
     void benchmarkPreparing(Catch::StringRef name) override;
     void benchmarkEnded(const Catch::BenchmarkStats<>& stats) override;
     void benchmarkFailed(Catch::StringRef name) override;
     void testRunEnded(const Catch::TestRunStats& stats) override;
 };
+
+void metadata_listener::testRunStarting(const Catch::TestRunInfo&) {
+    set_count_runs(parse_count_runs(std::getenv("BEMAN_TRANSCODE_BENCH_COUNT")));
+    begin_run();
+}
 
 void metadata_listener::benchmarkPreparing(Catch::StringRef name) {
     begin_benchmark(std::string_view(name.data(), name.size()));
@@ -273,6 +335,77 @@ void record_input(std::string_view label, std::size_t bytes) {
     record_current_input(label, "synthetic", bytes);
 }
 
+std::size_t count_runs() {
+    std::lock_guard lock(state_mutex());
+    return state().count_runs;
+}
+
+void set_count_runs(std::size_t runs) {
+    std::lock_guard lock(state_mutex());
+    state().count_runs = runs;
+}
+
+std::size_t parse_count_runs(const char* text) {
+    if (text == nullptr)
+        return 0;
+    std::string_view view(text);
+    std::size_t      runs = 0;
+    auto [end, ec]        = std::from_chars(view.data(), view.data() + view.size(), runs);
+    if (ec != std::errc{} || end != view.data() + view.size())
+        return 0;
+    return runs;
+}
+
+std::size_t begin_count() {
+    std::lock_guard lock(state_mutex());
+    recorder&       r = state();
+    if (r.count_runs == 0 || !r.current)
+        return 0;
+    const std::string& name = r.records[*r.current].name;
+    for (const auto& done : r.counted)
+        if (done == name)
+            return 0;
+    r.counted.push_back(name);
+    return r.count_runs;
+}
+
+void start_counting() { CALLGRIND_TOGGLE_COLLECT; }
+
+void stop_counting() {
+    CALLGRIND_TOGGLE_COLLECT;
+    std::string name;
+    {
+        std::lock_guard lock(state_mutex());
+        recorder&       r = state();
+        if (r.current)
+            name = r.records[*r.current].name;
+    }
+    CALLGRIND_DUMP_STATS_AT(name.c_str());
+}
+
+std::optional<load_average> parse_load_average(std::string_view text) {
+    load_average load;
+    for (double* field : {&load.one, &load.five, &load.fifteen}) {
+        auto start = text.find_first_not_of(' ');
+        if (start == std::string_view::npos)
+            return std::nullopt;
+        text.remove_prefix(start);
+        auto [end, ec] = std::from_chars(text.data(), text.data() + text.size(), *field);
+        if (ec != std::errc{})
+            return std::nullopt;
+        text.remove_prefix(static_cast<std::size_t>(end - text.data()));
+    }
+    return load;
+}
+
+std::optional<load_average> read_load_average() { return parse_load_average(first_line("/proc/loadavg")); }
+
+void begin_run() {
+    auto            load = read_load_average();
+    std::lock_guard lock(state_mutex());
+    state().load_start = load;
+}
+
 void begin_benchmark(std::string_view name) {
     std::lock_guard lock(state_mutex());
     recorder&       r = state();
@@ -316,6 +449,7 @@ std::string metadata_json(const std::vector<benchmark_record>& records) {
     out += "    \"cpu\": " + json_string(cpu_model()) + ",\n";
     out += "    \"compiler\": " + json_string(compiler_id()) + ",\n";
     out += "    \"build_config\": " + json_string(BENCHMARK_BUILD_CONFIG) + ",\n";
+    out += "    \"commit\": " + json_string(BENCHMARK_GIT_COMMIT) + ",\n";
     out += std::string("    \"optimized\": ") + (optimized() ? "true" : "false") + ",\n";
     out += "    \"sanitizers\": [";
     auto sans = sanitizers();
@@ -323,7 +457,23 @@ std::string metadata_json(const std::vector<benchmark_record>& records) {
         out += (i ? ", " : "") + json_string(sans[i]);
     out += "],\n";
     out +=
-        std::format("    \"catch2\": \"{}.{}.{}\"\n", CATCH_VERSION_MAJOR, CATCH_VERSION_MINOR, CATCH_VERSION_PATCH);
+        std::format("    \"catch2\": \"{}.{}.{}\",\n", CATCH_VERSION_MAJOR, CATCH_VERSION_MINOR, CATCH_VERSION_PATCH);
+    out += "    \"kernel\": " + json_string(kernel_release()) + ",\n";
+    if (auto cpus = std::thread::hardware_concurrency(); cpus != 0)
+        out += std::format("    \"cpus\": {},\n", cpus);
+    else
+        out += "    \"cpus\": null,\n";
+    out += "    \"governor\": " + json_string(cpu_governor()) + ",\n";
+    auto turbo = turbo_enabled();
+    out += std::string("    \"turbo\": ") + (!turbo ? "null" : *turbo ? "true" : "false") + ",\n";
+    std::optional<load_average> load_start;
+    {
+        std::lock_guard lock(state_mutex());
+        load_start = state().load_start;
+    }
+    out += "    \"load_start\": " + json_load(load_start) + ",\n";
+    out += "    \"load_end\": " + json_load(read_load_average()) + ",\n";
+    out += std::format("    \"count_runs\": {}\n", count_runs());
     out += "  },\n";
     out += "  \"benchmarks\": [";
     for (std::size_t i = 0; i < records.size(); ++i) {

@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/error.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -39,17 +40,17 @@ struct single_byte_encode_result {
 };
 
 // Encode one validated code point to a single legacy byte.
-// ASCII (cp < 0x80) is a direct passthrough.
-// For cp >= 0x80: scans table[0..127] for table[i] == cp;
-// returns {0x80 + i, false} if found, {{}, true} if not.
-constexpr single_byte_encode_result single_byte_encode_one(char32_t cp, const char32_t (&table)[128]) {
+// Encode one code point against a 128-entry upper-half table.
+// ASCII (cp < 0x80) is a direct passthrough.  For cp >= 0x80 the reverse
+// index of Table gives the lowest i with Table[i] == cp; the byte is 0x80 + i.
+template <table_ref Table>
+constexpr single_byte_encode_result single_byte_encode_one(char32_t cp) {
     if (cp < 0x80)
         return {static_cast<unsigned char>(cp), false};
-    for (int i = 0; i < 128; ++i) {
-        if (table[i] == cp)
-            return {static_cast<unsigned char>(0x80 + i), false};
-    }
-    return {{}, true};
+    int pointer = reverse_index_for<Table>.find(cp);
+    if (pointer < 0)
+        return {{}, true};
+    return {static_cast<unsigned char>(0x80 + pointer), false};
 }
 
 } // namespace beman::transcoding::detail

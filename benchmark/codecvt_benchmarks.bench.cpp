@@ -11,6 +11,7 @@
 //   - MSVC STL: deprecated but present through at least VS 2022.
 
 #include <benchmark/benchmark_fixture.hpp>
+#include <benchmark/benchmark_measure.hpp>
 #include <benchmark/benchmark_sink.hpp>
 
 #include <catch2/catch_all.hpp>
@@ -35,7 +36,7 @@ TEST_CASE("mbstowcs baselines", "[benchmark][codecvt]") {
         auto                 span = corpus_span("en_mars_utf8.txt");
         std::string          input(span.data(), span.size());
         std::vector<wchar_t> output(input.size() + 1);
-        meter.measure([&] { return std::mbstowcs(output.data(), input.c_str(), output.size()); });
+        measure(meter, [&] { return std::mbstowcs(output.data(), input.c_str(), output.size()); });
     };
 
     describe({.conversion = "UTF-8 → UTF-32", .library = "C/C++ standard library", .api = "mbstowcs (wchar_t)"});
@@ -44,7 +45,7 @@ TEST_CASE("mbstowcs baselines", "[benchmark][codecvt]") {
         auto                 span = corpus_span("ja_mars_utf8.txt");
         std::string          input(span.data(), span.size());
         std::vector<wchar_t> output(input.size() + 1);
-        meter.measure([&] { return std::mbstowcs(output.data(), input.c_str(), output.size()); });
+        measure(meter, [&] { return std::mbstowcs(output.data(), input.c_str(), output.size()); });
     };
 
     std::setlocale(LC_CTYPE, prev_locale);
@@ -76,7 +77,7 @@ TEST_CASE("codecvt baselines", "[benchmark][codecvt]") {
         auto                                                        span = corpus_span("en_mars_utf8.txt");
         std::string                                                 input(span.data(), span.size());
         std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-        meter.measure([&] { return converter.from_bytes(input).size(); });
+        measure(meter, [&] { return converter.from_bytes(input).size(); });
     };
 
     describe(
@@ -86,7 +87,7 @@ TEST_CASE("codecvt baselines", "[benchmark][codecvt]") {
         auto                                                        span = corpus_span("ja_mars_utf8.txt");
         std::string                                                 input(span.data(), span.size());
         std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-        meter.measure([&] { return converter.from_bytes(input).size(); });
+        measure(meter, [&] { return converter.from_bytes(input).size(); });
     };
 }
 

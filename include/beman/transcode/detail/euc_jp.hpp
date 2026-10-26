@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/error.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/euc_jp_jis0212.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
 
@@ -143,27 +144,25 @@ constexpr euc_jp_encode_result euc_jp_encode_one(char32_t cp) {
         return r;
     }
 
-    // Search JIS X 0208 table (first 8836 entries of shift_jis = EUC-JP jis0208 range)
-    for (int i = 0; i < 8836; ++i) {
-        if (tables::shift_jis[i] == cp) {
-            euc_jp_encode_result r{};
-            r.bytes[0] = static_cast<unsigned char>((i / 94) + 0xA1);
-            r.bytes[1] = static_cast<unsigned char>((i % 94) + 0xA1);
-            r.count    = 2;
-            return r;
-        }
+    // WHATWG: the index pointer for the code point in index jis0208.  Every
+    // code point's first pointer there is below 8836, so the IBM extension
+    // rows that only Shift_JIS can address never come up.
+    if (int pointer = reverse_index_for<tables::shift_jis>.find(cp); pointer >= 0) {
+        euc_jp_encode_result r{};
+        r.bytes[0] = static_cast<unsigned char>((pointer / 94) + 0xA1);
+        r.bytes[1] = static_cast<unsigned char>((pointer % 94) + 0xA1);
+        r.count    = 2;
+        return r;
     }
 
-    // Search JIS X 0212 table
-    for (int i = 0; i < 8836; ++i) {
-        if (tables::euc_jp_jis0212[i] == cp) {
-            euc_jp_encode_result r{};
-            r.bytes[0] = 0x8F;
-            r.bytes[1] = static_cast<unsigned char>((i / 94) + 0xA1);
-            r.bytes[2] = static_cast<unsigned char>((i % 94) + 0xA1);
-            r.count    = 3;
-            return r;
-        }
+    // Then index jis0212, as a three-byte sequence behind SS3.
+    if (int pointer = reverse_index_for<tables::euc_jp_jis0212>.find(cp); pointer >= 0) {
+        euc_jp_encode_result r{};
+        r.bytes[0] = 0x8F;
+        r.bytes[1] = static_cast<unsigned char>((pointer / 94) + 0xA1);
+        r.bytes[2] = static_cast<unsigned char>((pointer % 94) + 0xA1);
+        r.count    = 3;
+        return r;
     }
 
     return {{}, 0, true};

@@ -19,6 +19,29 @@ target_compile_definitions(
         "BENCHMARK_CORPUS_DIR=\"${PROJECT_SOURCE_DIR}/benchmark/corpus\""
         "BENCHMARK_BUILD_CONFIG=\"$<CONFIG>\""
 )
+# The commit being benchmarked, for the sidecar.  Regenerated at every build so
+# a before/after comparison never reports a stale commit; see git_describe.cmake.
+find_package(Git QUIET)
+add_custom_target(
+    beman.transcode.benchmark_commit
+    COMMAND
+        "${CMAKE_COMMAND}" "-DGIT_EXECUTABLE=${GIT_EXECUTABLE}"
+        "-DSOURCE_DIR=${PROJECT_SOURCE_DIR}"
+        "-DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/generated/benchmark/benchmark_commit.hpp"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/git_describe.cmake"
+    BYPRODUCTS
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/benchmark/benchmark_commit.hpp"
+    COMMENT "Recording the benchmarked commit"
+    VERBATIM
+)
+add_dependencies(
+    beman.transcode.benchmark_fixture
+    beman.transcode.benchmark_commit
+)
+target_include_directories(
+    beman.transcode.benchmark_fixture
+    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated"
+)
 # Catch2 for the listener that writes the benchmark metadata sidecar, and for
 # SKIP in require_corpus.
 target_link_libraries(

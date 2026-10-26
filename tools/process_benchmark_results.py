@@ -15,6 +15,13 @@ results that cannot be trusted, and renders:
   figures in papers;
 * a Vega-Lite spec (``--vegalite PATH``) for interactive exploration.
 
+A suite run in count mode, under callgrind (``make bench-instructions``), has
+``count_runs`` in its sidecar and callgrind dumps beside its XML,
+``FILE.callgrind.*``, one per benchmark.  Its timings mean nothing; it gives
+each benchmark's instructions per input byte instead.  Passed beside timed
+suites in one run, the counts join the timed results with the same suite and
+benchmark name.
+
 Usage:
     uv run python tools/process_benchmark_results.py [--label TEXT] \\
         [--markdown PATH] [--html PATH] [--svg-dir DIR] [--vegalite PATH] \\
@@ -23,6 +30,7 @@ Usage:
 Formulas:
     throughput_MiBs        = input_bytes / (mean_ns * 1e-9) / 2**20
     throughput CI (95%)    = input_bytes / upper_ns .. input_bytes / lower_ns
+    instructions_per_byte  = Ir / count_runs / input_bytes
 """
 
 import argparse
@@ -30,9 +38,10 @@ import html
 import json
 import math
 import re
+import statistics
 import sys
 import xml.etree.ElementTree as ET
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -48,9 +57,25 @@ SIDECAR_FORMAT = "beman.transcode.bench-meta/1"
 IMPLAUSIBLE_BYTES_PER_NS = 32.0
 IMPLAUSIBLE_MEAN_NS = 1.0
 
+# Fewer instructions than this per input byte is not a conversion: even SIMD
+# code moving 64 bytes per instruction spends more on its loop.  The work was
+# optimized away.  Provisional, like IMPLAUSIBLE_BYTES_PER_NS.
+IMPLAUSIBLE_INSTRUCTIONS_PER_BYTE = 0.01
+
+# Instruction counts barely move between runs of the same binary, so a count
+# ratio is a change once it is more than this fraction from 1×.  Provisional:
+# see change-significance in docs/plans/bench-comparison.md.
+COUNT_TOLERANCE = 0.01
+
 # Catch2 calls outlier variance above 0.5 "severely inflated": the mean is not
 # a reliable summary of the samples.
 NOISY_OUTLIER_VARIANCE = 0.5
+
+# A suite is "busy" when work other than the benchmark kept more than this many
+# threads runnable, by the 1-minute load average.  The benchmarks are single
+# threaded, so a little other work already shares the CPU's power and cache.
+# Provisional: see busy-threshold in docs/plans/bench-comparison.md.
+BUSY_LOAD = 2.0
 
 # Flags, by slug.  "Excluded" flags keep a result off the charts and out of
 # the throughput column, because the number would be wrong, not just noisy.
@@ -58,9 +83,15 @@ FLAG_TEXT: dict[str, str] = {
     "no-metadata": "no sidecar entry, so the input size is unknown",
     "empty-input": "input was empty (corpus file missing?)",
     "implausible": "too fast to be real work; likely optimized away",
+    "few-instructions": "too few instructions to be real work; likely optimized away",
     "noisy": "outliers severely inflate the variance",
 }
-EXCLUDED_FLAGS = frozenset({"no-metadata", "empty-input", "implausible"})
+EXCLUDED_FLAGS = frozenset(
+    {"no-metadata", "empty-input", "implausible", "few-instructions"}
+)
+# A count is kept off the instruction charts for these; "implausible" is about
+# time, and the count says for itself whether the work was done.
+COUNT_EXCLUDED_FLAGS = frozenset({"no-metadata", "empty-input", "few-instructions"})
 
 # Library identity → categorical slot and marker shape.  Colour follows the
 # library across every chart; the shape repeats the identity for print and
@@ -114,20 +145,62 @@ class Measurement:
     input_source: str = ""
     input_bytes: int | None = None
     flags: list[str] = field(default_factory=list)
+    # When this result combines repeated runs: each repeat's result, by repeat
+    # number.  Empty for a single run.
+    repeats: dict[int, "Measurement"] = field(default_factory=dict)
+    # False for a result from a suite run in count mode, whose time was taken
+    # under Valgrind and means nothing.
+    timed: bool = True
+    # Instructions per call, from callgrind; None when not counted.
+    instructions: float | None = None
 
     @property
     def name(self) -> str:
         return self.result.name
 
     @property
+    def repeat_count(self) -> int:
+        return len(self.repeats) or 1
+
+    @property
+    def best_ns(self) -> float:
+        """The fastest repeat's mean, or the mean of a single run."""
+        if not self.repeats:
+            return self.result.mean_ns
+        return min(m.result.mean_ns for m in self.repeats.values())
+
+    @property
+    def spread(self) -> float | None:
+        """Slowest repeat's mean ÷ fastest's; None for a single run."""
+        if not self.repeats or self.result.low_ns <= 0:
+            return None
+        return self.result.high_ns / self.result.low_ns
+
+    @property
     def plotted(self) -> bool:
-        return not EXCLUDED_FLAGS.intersection(self.flags)
+        return self.timed and not EXCLUDED_FLAGS.intersection(self.flags)
 
     @property
     def throughput(self) -> float | None:
         if self.input_bytes is None or not self.plotted:
             return None
         return throughput_MiBs(self.input_bytes, self.result.mean_ns)
+
+    @property
+    def counted_per_byte(self) -> float | None:
+        """Instructions per input byte, whatever the flags say."""
+        if self.instructions is None or not self.input_bytes:
+            return None
+        if self.input_source == "missing":
+            return None
+        return self.instructions / self.input_bytes
+
+    @property
+    def instructions_per_byte(self) -> float | None:
+        """Instructions per input byte, or None when not counted or excluded."""
+        if COUNT_EXCLUDED_FLAGS.intersection(self.flags):
+            return None
+        return self.counted_per_byte
 
     @property
     def throughput_ci(self) -> tuple[float, float] | None:
@@ -140,7 +213,7 @@ class Measurement:
 
 
 @dataclass
-class Run:
+class SuiteRun:
     """One XML file and its sidecar."""
 
     path: Path
@@ -148,6 +221,12 @@ class Run:
     environment: dict[str, Any]
     measurements: list[Measurement]
     has_sidecar: bool
+    # Calls per benchmark counted under callgrind; 0 for a timed suite.
+    count_runs: int = 0
+
+    @property
+    def counted(self) -> bool:
+        return self.count_runs > 0
 
 
 @dataclass
@@ -244,23 +323,68 @@ def throughput_MiBs(input_bytes: int, mean_ns: float) -> float:
 
 
 def flags_for(m: Measurement) -> list[str]:
-    """The flags that apply to a measurement, in FLAG_TEXT order."""
+    """The flags that apply to a measurement, in FLAG_TEXT order.
+
+    The time-based flags apply only to a timed result.
+    """
     flags: list[str] = []
     if m.input_bytes is None:
         flags.append("no-metadata")
     elif m.input_bytes == 0 or m.input_source == "missing":
         flags.append("empty-input")
-    elif (
+    elif m.timed and (
         m.result.mean_ns < IMPLAUSIBLE_MEAN_NS
         or m.input_bytes / m.result.mean_ns > IMPLAUSIBLE_BYTES_PER_NS
     ):
         flags.append("implausible")
-    if m.result.outlier_variance > NOISY_OUTLIER_VARIANCE:
+    per_byte = m.counted_per_byte
+    if per_byte is not None and per_byte < IMPLAUSIBLE_INSTRUCTIONS_PER_BYTE:
+        flags.append("few-instructions")
+    if m.timed and m.result.outlier_variance > NOISY_OUTLIER_VARIANCE:
         flags.append("noisy")
     return flags
 
 
-def load_run(xml_path: Path) -> Run:
+def parse_callgrind_dump(text: str) -> tuple[str | None, int | None]:
+    """The benchmark a callgrind dump was taken for, and its instruction total.
+
+    The name is the description bench::measure gave CALLGRIND_DUMP_STATS_AT;
+    None for a dump callgrind took for another reason, such as the program
+    ending.  The total is the summary line, or the totals line without one.
+    """
+    name: str | None = None
+    summary: int | None = None
+    totals: int | None = None
+    trigger = "desc: Trigger: Client Request: "
+    for line in text.splitlines():
+        if line.startswith(trigger):
+            name = line[len(trigger) :]
+        elif line.startswith("summary:"):
+            summary = int(line.split()[1])
+        elif line.startswith("totals:"):
+            totals = int(line.split()[1])
+    return name, summary if summary is not None else totals
+
+
+def callgrind_dumps(xml_path: Path) -> list[Path]:
+    """The callgrind dumps written beside xml_path: FILE.callgrind.*."""
+    return sorted(xml_path.parent.glob(f"{xml_path.stem}.callgrind.*"))
+
+
+def read_instruction_counts(xml_path: Path) -> dict[str, int]:
+    """Each counted benchmark's instruction total, from the dumps beside xml_path.
+
+    A benchmark dumped twice keeps its first total.
+    """
+    counts: dict[str, int] = {}
+    for path in callgrind_dumps(xml_path):
+        name, total = parse_callgrind_dump(path.read_text(encoding="utf-8"))
+        if name is not None and total is not None:
+            counts.setdefault(name, total)
+    return counts
+
+
+def load_suite(xml_path: Path) -> SuiteRun:
     """Parse one XML file, join it with its sidecar, and flag each result."""
     results = parse_catch2_xml(xml_path)
     sidecar = load_sidecar(sidecar_path(xml_path))
@@ -272,9 +396,12 @@ def load_run(xml_path: Path) -> Run:
 
     binary = results[0].binary if results else xml_path.stem
     suite = suite_name(binary)
+    count_runs = int(environment.get("count_runs") or 0)
+    counts = read_instruction_counts(xml_path) if count_runs else {}
     measurements: list[Measurement] = []
     for r in results:
         entry = meta.get(r.name, {})
+        total = counts.get(r.name)
         m = Measurement(
             result=r,
             suite=suite,
@@ -284,10 +411,197 @@ def load_run(xml_path: Path) -> Run:
             input=entry.get("input", ""),
             input_source=entry.get("input_source", ""),
             input_bytes=entry.get("input_bytes"),
+            timed=not count_runs,
+            instructions=total / count_runs if total is not None else None,
         )
         m.flags = flags_for(m)
         measurements.append(m)
-    return Run(xml_path, suite, environment, measurements, sidecar is not None)
+    return SuiteRun(
+        xml_path, suite, environment, measurements, sidecar is not None, count_runs
+    )
+
+
+# ── Repeats ─────────────────────────────────────────────────────────────────
+
+# Several XML files of one suite in one run are repeats of it.  Each result is
+# combined across them: its value is the median of the repeats' means (the
+# fastest is shown beside it), and its interval is their range, in place of
+# one run's CI.  Provisional: see aggregate-statistic in
+# docs/plans/bench-comparison.md.
+
+
+def _natural_key(text: str) -> list[int | str]:
+    """'smoke.10.xml' sorts after 'smoke.9.xml'."""
+    return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", text)]
+
+
+def repeat_order(suite: SuiteRun) -> tuple[str, list[int | str]]:
+    """Order repeats of one suite by when they ran, then by file name."""
+    return (str(suite.environment.get("timestamp", "")), _natural_key(suite.path.name))
+
+
+def combine_repeats(repeats: dict[int, Measurement]) -> Measurement:
+    """One result standing for several repeats of a benchmark."""
+    first = next(iter(repeats.values()))
+    means = [m.result.mean_ns for m in repeats.values()]
+    r = first.result
+    result = BenchmarkResult(
+        binary=r.binary,
+        test_case=r.test_case,
+        name=r.name,
+        mean_ns=statistics.median(means),
+        low_ns=min(means),
+        high_ns=max(means),
+        samples=sum(m.result.samples for m in repeats.values()),
+        iterations=r.iterations,
+        std_dev_ns=statistics.stdev(means) if len(means) > 1 else 0.0,
+        outlier_variance=statistics.median(
+            m.result.outlier_variance for m in repeats.values()
+        ),
+    )
+    m = Measurement(
+        result=result,
+        suite=first.suite,
+        conversion=first.conversion,
+        library=first.library,
+        api=first.api,
+        input=first.input,
+        input_source=first.input_source,
+        input_bytes=first.input_bytes,
+        repeats=dict(repeats),
+    )
+    m.flags = flags_for(m)
+    return m
+
+
+def suite_measurements(suites: list[SuiteRun]) -> list[Measurement]:
+    """Every result in suites, with the repeats of each suite combined.
+
+    A suite in only one file keeps its results as they are.  Within a file, a
+    benchmark name seen twice keeps its first result.  A counted suite's
+    instruction counts join the timed result with the same suite and name; a
+    count with no timed result is kept as a result of its own.
+    """
+    out = timed_measurements([s for s in suites if not s.counted])
+    by_key = {(m.suite, m.name): m for m in out}
+    for suite in suites:
+        if not suite.counted:
+            continue
+        for m in suite.measurements:
+            timed = by_key.get((m.suite, m.name))
+            if timed is None:
+                by_key[(m.suite, m.name)] = m
+                out.append(m)
+            elif timed.instructions is None and m.instructions is not None:
+                timed.instructions = m.instructions
+                timed.flags = flags_for(timed)
+    return out
+
+
+def timed_measurements(suites: list[SuiteRun]) -> list[Measurement]:
+    """The results of timed suites, with each suite's repeats combined."""
+    by_suite: dict[str, list[SuiteRun]] = {}
+    for suite in suites:
+        by_suite.setdefault(suite.suite, []).append(suite)
+    out: list[Measurement] = []
+    for files in by_suite.values():
+        if len(files) == 1:
+            out += files[0].measurements
+            continue
+        by_name: dict[str, dict[int, Measurement]] = {}
+        for number, f in enumerate(sorted(files, key=repeat_order), 1):
+            for m in f.measurements:
+                by_name.setdefault(m.name, {}).setdefault(number, m)
+        out += [combine_repeats(reps) for reps in by_name.values()]
+    return out
+
+
+def duplicate_warnings(suites: list[SuiteRun]) -> list[str]:
+    """A warning for each benchmark name seen twice within one file."""
+    warnings: list[str] = []
+    for suite in suites:
+        seen: set[str] = set()
+        for m in suite.measurements:
+            if m.name in seen:
+                warnings.append(
+                    f"{suite.suite} / {m.name} appears more than once in "
+                    f"{suite.path.name}; using the first."
+                )
+            seen.add(m.name)
+    return warnings
+
+
+def repeat_counts(suites: list[SuiteRun]) -> dict[str, int]:
+    """How many timed files each suite has, in first-seen order."""
+    counts: dict[str, int] = {}
+    for suite in suites:
+        if not suite.counted:
+            counts[suite.suite] = counts.get(suite.suite, 0) + 1
+    return counts
+
+
+def suite_list(suites: list[SuiteRun]) -> str:
+    """'smoke, utf' for single files, 'smoke ×5, utf ×5' for repeats, and
+    'smoke (counted)' for a suite counted under callgrind."""
+    names = [
+        name if n == 1 else f"{name} ×{n}" for name, n in repeat_counts(suites).items()
+    ]
+    names += [f"{s.suite} (counted)" for s in suites if s.counted]
+    return ", ".join(names)
+
+
+def suite_labels(suites: list[SuiteRun]) -> list[str]:
+    """What to call each suite in a warning: its name, its file when repeated,
+    or its name marked as counted."""
+    counts = repeat_counts(suites)
+    return [
+        f"{s.suite} (counted)"
+        if s.counted
+        else s.suite
+        if counts[s.suite] == 1
+        else s.path.name
+        for s in suites
+    ]
+
+
+def is_repeated(measurements: Iterable[Measurement]) -> bool:
+    return any(m.repeats for m in measurements)
+
+
+def time_columns(repeated: bool) -> list[str]:
+    """Headers for a result's time: one run's mean and CI, or repeats' summary."""
+    if repeated:
+        return ["Median", "Fastest", "Range"]
+    return ["Mean", "95% CI"]
+
+
+def time_cells(m: Measurement, repeated: bool) -> list[str]:
+    if not m.timed:
+        return ["—"] * len(time_columns(repeated))
+    r = m.result
+    interval = f"{fmt_time(r.low_ns)} – {fmt_time(r.high_ns)}"
+    if not repeated:
+        return [fmt_time(r.mean_ns), interval]
+    if not m.repeats:
+        return [fmt_time(r.mean_ns), "—", f"1 run; CI {interval}"]
+    spread = m.spread
+    factor = f" (×{fmt_factor(spread)})" if spread is not None else ""
+    return [fmt_time(r.mean_ns), fmt_time(m.best_ns), interval + factor]
+
+
+def repeat_notes(m: Measurement, expected: dict[str, int]) -> list[str]:
+    """'3 of 5 repeats' when a result is missing from some of its suite's files."""
+    want = expected.get(m.suite, 1)
+    if want > 1 and m.repeat_count < want:
+        return [f"{m.repeat_count} of {want} repeats"]
+    return []
+
+
+def interval_text(measurements: Iterable[Measurement]) -> str:
+    """What a whisker or interval column means for these results."""
+    if is_repeated(measurements):
+        return "range across repeats"
+    return "95% CI"
 
 
 # ── Grouping and formatting ─────────────────────────────────────────────────
@@ -378,6 +692,32 @@ def fmt_throughput(t: float) -> str:
     return f"{t:.2f}"
 
 
+def fmt_instructions(x: float) -> str:
+    """Instructions per byte with three significant figures, '1,234' to '0.0123'."""
+    if x >= 100:
+        return f"{x:,.0f}"
+    if x >= 10:
+        return f"{x:.1f}"
+    if x >= 1:
+        return f"{x:.2f}"
+    return f"{x:.3g}"
+
+
+def fmt_cell_instructions(m: Measurement | None) -> str:
+    if m is None:
+        return "not run"
+    per_byte = m.instructions_per_byte
+    return fmt_instructions(per_byte) if per_byte is not None else "—"
+
+
+def is_timed(measurements: Iterable[Measurement]) -> bool:
+    return any(m.timed for m in measurements)
+
+
+def is_counted(measurements: Iterable[Measurement]) -> bool:
+    return any(m.instructions is not None for m in measurements)
+
+
 def fmt_tick(t: float) -> str:
     if t >= 1000:
         return f"{t / 1000:g}K"
@@ -396,33 +736,59 @@ def slugify(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text).strip("-") or "unnamed"
 
 
-def environment_summary(runs: list[Run]) -> list[tuple[str, str]]:
-    """Key/value rows describing the runs; differing values are joined."""
+def environment_summary(suites: list[SuiteRun]) -> list[tuple[str, str]]:
+    """Key/value rows describing the suites; differing values are joined."""
     keys = [
         ("compiler", "Compiler"),
         ("build_config", "Build config"),
+        ("commit", "Commit"),
         ("cpu", "CPU"),
+        ("cpus", "CPUs"),
+        ("governor", "Governor"),
+        ("turbo", "Turbo"),
         ("host", "Host"),
+        ("kernel", "Kernel"),
         ("catch2", "Catch2"),
     ]
     rows: list[tuple[str, str]] = []
     for key, title in keys:
-        values = sorted({str(r.environment.get(key, "")) for r in runs} - {""})
+        values = sorted({axis_text(r.environment.get(key)) for r in suites} - {""})
         if values:
             rows.append((title, "; ".join(values)))
-    stamps = sorted({str(r.environment.get("timestamp", "")) for r in runs} - {""})
+    loads = [
+        load[0]
+        for r in suites
+        for load in (r.environment.get("load_start"), r.environment.get("load_end"))
+        if load
+    ]
+    if loads:
+        low, high = min(loads), max(loads)
+        span = f"{low:.2f}" if low == high else f"{low:.2f} – {high:.2f}"
+        rows.append(("Load (1 min)", span))
+    stamps = sorted({str(r.environment.get("timestamp", "")) for r in suites} - {""})
     if stamps:
         rows.append(
             ("Run at", stamps[0] if len(stamps) == 1 else f"{stamps[0]} – {stamps[-1]}")
         )
-    rows.append(("Suites", ", ".join(r.suite for r in runs)))
+    rows.append(("Suites", suite_list(suites)))
     return rows
 
 
-def run_warnings(runs: list[Run]) -> list[str]:
+def run_warnings(suites: list[SuiteRun]) -> list[str]:
     """Whole-report problems: builds unfit for timing, missing sidecars."""
+    warnings = suite_warnings(suites) + duplicate_warnings(suites)
+    compilers = {r.environment.get("compiler") for r in suites if r.has_sidecar}
+    if len(compilers) > 1:
+        warnings.append(
+            "Suites were built with different compilers; compare across them with care."
+        )
+    return warnings
+
+
+def suite_warnings(suites: list[SuiteRun]) -> list[str]:
+    """Problems with individual suites: no sidecar, or a build unfit for timing."""
     warnings: list[str] = []
-    for r in runs:
+    for r, name in zip(suites, suite_labels(suites), strict=True):
         env = r.environment
         if not r.has_sidecar:
             warnings.append(
@@ -433,17 +799,51 @@ def run_warnings(runs: list[Run]) -> list[str]:
             continue
         if env.get("sanitizers"):
             warnings.append(
-                f"{r.suite}: built with {', '.join(env['sanitizers'])} "
+                f"{name}: built with {', '.join(env['sanitizers'])} "
                 "sanitizer; timings are not meaningful."
             )
         elif env.get("optimized") is False:
-            warnings.append(f"{r.suite}: built without optimization.")
-    compilers = {r.environment.get("compiler") for r in runs if r.has_sidecar}
-    if len(compilers) > 1:
-        warnings.append(
-            "Suites were built with different compilers; compare across them with care."
-        )
+            warnings.append(f"{name}: built without optimization.")
+        if r.counted:
+            if not any(m.instructions is not None for m in r.measurements):
+                warnings.append(
+                    f"{name}: run in count mode, but no callgrind dump beside "
+                    f"it names a benchmark; run it under valgrind "
+                    f"--tool=callgrind --callgrind-out-file="
+                    f"{r.path.stem}.callgrind.%p."
+                )
+            # Load slows a count down but does not change it.
+            continue
+        load = other_load(env)
+        if load is not None and load > BUSY_LOAD:
+            warnings.append(
+                f"{name}: the machine was busy ({load_text(env)}), so other "
+                "work may have slowed these timings."
+            )
     return warnings
+
+
+def other_load(env: dict[str, Any]) -> float | None:
+    """The 1-minute load from work other than the benchmark, or None if unknown.
+
+    The larger of the load as the suite started, and the load as it ended less
+    the benchmark's own thread.
+    """
+    start, end = env.get("load_start"), env.get("load_end")
+    loads = ([start[0]] if start else []) + ([max(end[0] - 1.0, 0.0)] if end else [])
+    return max(loads) if loads else None
+
+
+def load_text(env: dict[str, Any]) -> str:
+    """'1-minute load 21.50 at the start and 22.10 at the end, on 20 CPUs'."""
+    start, end = env.get("load_start"), env.get("load_end")
+    parts = ([f"{start[0]:.2f} at the start"] if start else []) + (
+        [f"{end[0]:.2f} at the end"] if end else []
+    )
+    text = "1-minute load " + " and ".join(parts)
+    if env.get("cpus"):
+        text += f", on {env['cpus']} CPUs"
+    return text
 
 
 def flag_counts(measurements: list[Measurement]) -> dict[str, int]:
@@ -454,6 +854,589 @@ def flag_counts(measurements: list[Measurement]) -> dict[str, int]:
     return {f: n for f, n in counts.items() if n}
 
 
+# ── Runs and matching ───────────────────────────────────────────────────────
+
+# Environment fields that say what a run was built and run with.  A comparison
+# varies one of them on purpose; the others should agree, or a difference
+# between runs cannot be put down to the one that was meant to change.
+RUN_AXES: list[tuple[str, str]] = [
+    ("compiler", "Compiler"),
+    ("build_config", "Build config"),
+    ("commit", "Commit"),
+    ("sanitizers", "Sanitizers"),
+    ("host", "Host"),
+    ("cpu", "CPU"),
+    ("kernel", "Kernel"),
+    ("governor", "Governor"),
+    ("turbo", "Turbo"),
+]
+
+
+@dataclass
+class Run:
+    """The suites from one benchmarking session, under one label."""
+
+    label: str
+    suites: list[SuiteRun]
+
+    @property
+    def measurements(self) -> list[Measurement]:
+        return suite_measurements(self.suites)
+
+    @property
+    def repeats(self) -> int:
+        """The most repeats of any suite in the run; 1 without repeats."""
+        return max(repeat_counts(self.suites).values(), default=1)
+
+    def axis_values(self, key: str) -> list[str]:
+        """Distinct values of one environment field across this run's suites."""
+        values = {
+            axis_text(s.environment.get(key)) for s in self.suites if s.has_sidecar
+        }
+        return sorted(values - {""})
+
+    @property
+    def started(self) -> str:
+        stamps = sorted(
+            {str(s.environment.get("timestamp", "")) for s in self.suites} - {""}
+        )
+        return stamps[0] if stamps else ""
+
+
+@dataclass
+class ComparisonRow:
+    """One benchmark, matched by (suite, name), with its result in each run."""
+
+    suite: str
+    name: str
+    cells: list[Measurement | None]  # one per run, in run order
+
+    @property
+    def reference(self) -> Measurement:
+        """The first run's result, or the first run that has one."""
+        return next(m for m in self.cells if m is not None)
+
+    @property
+    def missing_from(self) -> list[int]:
+        return [i for i, m in enumerate(self.cells) if m is None]
+
+    @property
+    def input_differs(self) -> bool:
+        inputs = {(m.input, m.input_bytes) for m in self.cells if m is not None}
+        return len(inputs) > 1
+
+
+def axis_text(value: Any) -> str:
+    """An environment value as text; an empty sanitizer list reads 'none'."""
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return "on" if value else "off"
+    if isinstance(value, list):
+        return ", ".join(str(v) for v in value) or "none"
+    return str(value)
+
+
+def short_axis_value(key: str, value: str) -> str:
+    """'gcc 16.1.0 20260427 (…)' → 'gcc 16.1.0', 'on' → 'turbo on', for run labels."""
+    if key == "compiler":
+        return " ".join(value.split()[:2])
+    if key == "turbo":
+        return f"turbo {value}"
+    return value
+
+
+def xml_files(paths: Iterable[Path]) -> list[Path]:
+    """Expand each directory to the XML files directly inside it, sorted."""
+    files: list[Path] = []
+    for p in paths:
+        files += sorted(p.glob("*.xml")) if p.is_dir() else [p]
+    return files
+
+
+def differing_axes(runs: list[Run]) -> list[str]:
+    """The RUN_AXES keys whose values are not the same in every run."""
+    return [
+        key for key, _ in RUN_AXES if len({tuple(r.axis_values(key)) for r in runs}) > 1
+    ]
+
+
+def assign_labels(runs: list[Run]) -> None:
+    """Label each unlabelled run by the environment fields that set it apart.
+
+    A run that did not record a differing field says so ('commit unknown').
+    Runs that no field tells apart are numbered; a label used twice gets a
+    '#n' suffix on its later uses.
+    """
+    titles = dict(RUN_AXES)
+    axes = differing_axes(runs)
+    for i, run in enumerate(runs, 1):
+        if run.label:
+            continue
+        parts = [
+            short_axis_value(k, "; ".join(run.axis_values(k)))
+            or f"{titles[k].lower()} unknown"
+            for k in axes
+        ]
+        run.label = " · ".join(parts) or f"run {i}"
+    seen: dict[str, int] = {}
+    for run in runs:
+        seen[run.label] = seen.get(run.label, 0) + 1
+        if seen[run.label] > 1:
+            run.label += f" #{seen[run.label]}"
+
+
+def match_runs(runs: list[Run]) -> tuple[list[ComparisonRow], list[str]]:
+    """Match results across runs by (suite, name).
+
+    Returns the rows in first-seen order, and a warning for each benchmark that
+    appears twice within one file (only the first is kept).
+    """
+    rows: dict[tuple[str, str], ComparisonRow] = {}
+    warnings: list[str] = []
+    for i, run in enumerate(runs):
+        warnings += [f"{run.label}: {w}" for w in duplicate_warnings(run.suites)]
+        for m in run.measurements:
+            row = rows.setdefault(
+                (m.suite, m.name), ComparisonRow(m.suite, m.name, [None] * len(runs))
+            )
+            row.cells[i] = m
+    return list(rows.values()), warnings
+
+
+def comparison_groups(
+    rows: list[ComparisonRow],
+) -> tuple[list[ConversionGroup], dict[int, ComparisonRow]]:
+    """Group rows like a single run, by each row's reference result.
+
+    Returns the groups and a map from id(reference) back to its row.
+    """
+    by_reference = {id(r.reference): r for r in rows}
+    return group_by_conversion([r.reference for r in rows]), by_reference
+
+
+def _join_words(words: list[str]) -> str:
+    if len(words) <= 2:
+        return " and ".join(words)
+    return ", ".join(words[:-1]) + ", and " + words[-1]
+
+
+def comparison_warnings(runs: list[Run]) -> list[str]:
+    """Problems with comparing these runs, then problems within each run."""
+    titles = dict(RUN_AXES)
+    warnings: list[str] = []
+    axes = differing_axes(runs)
+    if len(axes) > 1:
+        names = _join_words([titles[k].lower() for k in axes])
+        warnings.append(
+            f"The runs differ in {names}, so a difference between them can't be "
+            "put down to any one of these."
+        )
+    for run in runs:
+        for key, title in RUN_AXES:
+            values = run.axis_values(key)
+            if len(values) > 1:
+                warnings.append(
+                    f"{run.label}: its suites differ in {title.lower()} "
+                    f"({'; '.join(values)})."
+                )
+        if any(c.endswith("-dirty") for c in run.axis_values("commit")):
+            warnings.append(
+                f"{run.label}: built from a modified tree, so the commit does not "
+                "fully identify the code."
+            )
+        warnings += [f"{run.label}: {w}" for w in suite_warnings(run.suites)]
+    return warnings
+
+
+def row_notes(row: ComparisonRow, runs: list[Run]) -> list[str]:
+    """Why a comparison row may not compare like with like."""
+    notes: list[str] = []
+    if row.missing_from:
+        notes.append("not in " + ", ".join(runs[i].label for i in row.missing_from))
+    if row.input_differs:
+        notes.append("input differs")
+    for run, m in zip(runs, row.cells, strict=True):
+        if m is None:
+            continue
+        flags = m.flags + repeat_notes(m, repeat_counts(run.suites))
+        if flags:
+            notes.append(f"{run.label}: {', '.join(flags)}")
+    return notes
+
+
+def comparison_columns(
+    runs: list[Run], timed: bool = True, counted: bool = False
+) -> list[str]:
+    """Each run's throughput column, then after every run but the first its
+    ratio to the first; then the same for instructions per byte."""
+    heads: list[str] = []
+    if timed:
+        heads.append(runs[0].label)
+        for r in runs[1:]:
+            heads += [r.label, f"{r.label} vs {runs[0].label}"]
+    if counted:
+        heads.append(f"{runs[0].label} instr/B")
+        for r in runs[1:]:
+            heads += [f"{r.label} instr/B", f"{r.label} vs {runs[0].label} instr"]
+    return heads
+
+
+def comparison_cells(
+    row: ComparisonRow, timed: bool = True, counted: bool = False
+) -> list[str]:
+    """The cells under comparison_columns for one row."""
+    cells: list[str] = []
+    if timed:
+        cells.append(fmt_cell_throughput(row.cells[0]))
+        for k in range(1, len(row.cells)):
+            cells += [fmt_cell_throughput(row.cells[k]), fmt_ratio(run_ratio(row, k))]
+    if counted:
+        cells.append(fmt_cell_instructions(row.cells[0]))
+        for k in range(1, len(row.cells)):
+            cells += [
+                fmt_cell_instructions(row.cells[k]),
+                fmt_count_ratio(run_count_ratio(row, k)),
+            ]
+    return cells
+
+
+def comparison_measures(rows: list[ComparisonRow]) -> tuple[bool, bool]:
+    """Whether any result in rows was timed, and whether any was counted."""
+    cells = [c for r in rows for c in r.cells if c is not None]
+    return is_timed(cells), is_counted(cells)
+
+
+def fmt_cell_throughput(m: Measurement | None) -> str:
+    if m is None:
+        return "not run"
+    tput = m.throughput
+    return fmt_throughput(tput) if tput is not None else "—"
+
+
+# ── Ratios ──────────────────────────────────────────────────────────────────
+
+
+@dataclass
+class ChartPoint:
+    """Where one row's mark and whisker go, and the text beside them."""
+
+    value: float
+    low: float
+    high: float
+    text: str
+    muted: bool = False  # the text is a verdict rather than a value
+
+
+# The library whose throughput the others are a multiple of, in single-run
+# reports.  Provisional: see reference-library in docs/plans/bench-comparison.md.
+REFERENCE_LIBRARY = "beman.transcode"
+
+
+@dataclass
+class Ratio:
+    """One throughput as a multiple of another; above 1 is faster."""
+
+    value: float
+    low: float
+    high: float
+
+    @property
+    def clear(self) -> bool:
+        """The interval excludes 1×, so the difference is not just noise."""
+        return self.low > 1.0 or self.high < 1.0
+
+
+def throughput_ratio(m: Measurement | None, ref: Measurement | None) -> Ratio | None:
+    """m's throughput as a multiple of ref's.
+
+    None unless both are plotted and read the same input.  The interval takes
+    the far ends of the two 95% CIs, so it is wider than either.
+    """
+    if m is None or ref is None or m.throughput is None or ref.throughput is None:
+        return None
+    if (m.input, m.input_bytes) != (ref.input, ref.input_bytes):
+        return None
+    a, b = m.result, ref.result
+    if min(a.mean_ns, a.low_ns, b.mean_ns, b.low_ns) <= 0:
+        return None
+    return Ratio(b.mean_ns / a.mean_ns, b.low_ns / a.high_ns, b.high_ns / a.low_ns)
+
+
+def fmt_factor(x: float) -> str:
+    if x >= 100:
+        return f"{x:,.0f}"
+    if x >= 10:
+        return f"{x:.1f}"
+    return f"{x:.2f}"
+
+
+def fmt_ratio(
+    ratio: Ratio | None,
+    unclear: str = "no clear change",
+    better: str = "faster",
+    worse: str = "slower",
+) -> str:
+    """'1.23× faster', '2.50× slower', or unclear when the interval spans 1×."""
+    if ratio is None:
+        return "—"
+    if not ratio.clear:
+        return unclear
+    if ratio.value >= 1:
+        return f"{fmt_factor(ratio.value)}× {better}"
+    return f"{fmt_factor(1 / ratio.value)}× {worse}"
+
+
+def count_ratio(m: Measurement | None, ref: Measurement | None) -> Ratio | None:
+    """ref's instructions per byte as a multiple of m's; above 1 is fewer.
+
+    None unless both were counted and read the same input.  A count barely
+    varies between runs, so the interval is COUNT_TOLERANCE either side.
+    """
+    if m is None or ref is None:
+        return None
+    a, b = m.instructions_per_byte, ref.instructions_per_byte
+    if a is None or b is None or a <= 0:
+        return None
+    if (m.input, m.input_bytes) != (ref.input, ref.input_bytes):
+        return None
+    v = b / a
+    return Ratio(v, v / (1 + COUNT_TOLERANCE), v * (1 + COUNT_TOLERANCE))
+
+
+def fmt_count_ratio(ratio: Ratio | None, unclear: str = "no clear change") -> str:
+    """'2.00× fewer', '3.00× more' (instructions), or unclear within tolerance."""
+    return fmt_ratio(ratio, unclear, better="fewer", worse="more")
+
+
+def fmt_ratio_tick(x: float) -> str:
+    return f"{x:g}×" if x >= 1 else f"{x:.2g}×"
+
+
+REPEAT_NOTE = (
+    "Each result is the median of its repeats' means; the range runs from the "
+    "fastest repeat to the slowest, and throughput is from the median."
+)
+
+
+COUNT_NOTE = (
+    "Instructions per byte = callgrind's instruction count over the counted "
+    "calls ÷ the calls ÷ input bytes; lower is better.  A count barely varies "
+    "between runs, so a count ratio is a change once it is more than "
+    f"{COUNT_TOLERANCE:.0%} from 1×.  A count leaves out cache misses, branch "
+    "mispredictions and memory stalls, and SIMD code does more work per "
+    "instruction, so it is shown beside the time, not in place of it."
+)
+
+
+RATIO_NOTE = (
+    "A ratio compares throughput on the same input.  Its interval runs between "
+    "the far ends of the two 95% CIs, and a difference is reported only when "
+    "that interval excludes 1×.  With repeats, the range across repeats takes "
+    "the place of the CI, and libraries are compared within each repeat."
+)
+
+
+# Half-widths for the ratio axis, and the ticks drawn on it.
+RATIO_EDGES = [1.1, 1.25, 1.5, 2.0, 3.0, 5.0, 10.0, 20.0, 50.0, 100.0, 1e3, 1e4, 1e5]
+RATIO_TICKS = [1.1, 1.25, 1.5, 2.0, 5.0, 10.0, 100.0, 1e3, 1e4, 1e5]
+
+
+def ratio_axis(
+    ratios: Iterable[Ratio],
+) -> tuple[tuple[float, float], list[tuple[float, str]]]:
+    """A log10 domain centred on 1×, wide enough for every interval, and its ticks.
+
+    The half-width is the smallest of RATIO_EDGES covering the widest
+    interval.  The ticks are 1× and up to three of RATIO_TICKS either side,
+    decades only once the axis reaches 100×.
+    """
+    extent = max(
+        (max(abs(math.log10(r.low)), abs(math.log10(r.high))) for r in ratios),
+        default=0.0,
+    )
+    edge = next(
+        (t for t in RATIO_EDGES if math.log10(t) >= extent - 1e-9), RATIO_EDGES[-1]
+    )
+    steps = [t for t in RATIO_TICKS if t <= edge and (edge < 100 or t >= 10)][-3:]
+    ticks = [(1 / t, fmt_ratio_tick(1 / t)) for t in reversed(steps)]
+    ticks += [(1.0, "1×")] + [(t, fmt_ratio_tick(t)) for t in steps]
+    half = math.log10(edge)
+    return (-half, half), ticks
+
+
+def library_reference(
+    group: InputGroup, reference_library: str = REFERENCE_LIBRARY
+) -> Measurement | None:
+    """The reference library's fastest plotted result on this input."""
+    candidates = [
+        m for m in group.rows if m.library == reference_library and m.throughput
+    ]
+    return max(candidates, key=lambda m: m.throughput or 0.0, default=None)
+
+
+def library_ratio(m: Measurement, ref: Measurement) -> Ratio | None:
+    """m's throughput as a multiple of ref's, from libraries in one run.
+
+    With repeats, the ratio is taken within each repeat both ran, since a
+    repeat sees one machine state for both; the value is the median of those
+    ratios and the interval their range.
+    """
+    single = throughput_ratio(m, ref)
+    common = sorted(set(m.repeats) & set(ref.repeats))
+    if single is None or len(common) < 2:
+        return single
+    ratios = [
+        ref.repeats[i].result.mean_ns / m.repeats[i].result.mean_ns
+        for i in common
+        if m.repeats[i].result.mean_ns > 0
+    ]
+    return Ratio(statistics.median(ratios), min(ratios), max(ratios))
+
+
+def library_ratio_text(
+    m: Measurement, group: InputGroup, reference_library: str = REFERENCE_LIBRARY
+) -> str:
+    """m against the reference library on the same input, for a table cell."""
+    ref = library_reference(group, reference_library)
+    if ref is None:
+        return "—"
+    if m is ref:
+        return "reference"
+    return fmt_ratio(library_ratio(m, ref), unclear="no clear difference")
+
+
+def count_reference(
+    group: InputGroup, reference_library: str = REFERENCE_LIBRARY
+) -> Measurement | None:
+    """The reference library's counted result with the fewest instructions per
+    byte on this input."""
+    candidates = [
+        m
+        for m in group.rows
+        if m.library == reference_library and m.instructions_per_byte
+    ]
+    return min(candidates, key=lambda m: m.instructions_per_byte or 0.0, default=None)
+
+
+def library_count_text(
+    m: Measurement, group: InputGroup, reference_library: str = REFERENCE_LIBRARY
+) -> str:
+    """m's instruction count against the reference library's, for a table cell."""
+    ref = count_reference(group, reference_library)
+    if ref is None:
+        return "—"
+    if m is ref:
+        return "reference"
+    return fmt_count_ratio(count_ratio(m, ref), unclear="no clear difference")
+
+
+def run_ratio(row: ComparisonRow, k: int) -> Ratio | None:
+    """Run k's result as a multiple of the first run's."""
+    return throughput_ratio(row.cells[k], row.cells[0])
+
+
+def run_count_ratio(row: ComparisonRow, k: int) -> Ratio | None:
+    """The first run's instructions per byte as a multiple of run k's."""
+    return count_ratio(row.cells[k], row.cells[0])
+
+
+def run_ratio_point(
+    row: ComparisonRow, runs: list[Run], k: int, counts: bool = False
+) -> ChartPoint | str:
+    """Run k against the first run, as a chart row: a ratio, or why there is none.
+
+    With counts, the ratio is of instructions per byte rather than throughput.
+    """
+    base, cell = row.cells[0], row.cells[k]
+    for run, m in ((runs[0], base), (runs[k], cell)):
+        if m is None:
+            return f"not in {run.label}"
+        if counts and m.instructions is None:
+            return f"not counted in {run.label}"
+        if not counts and not m.timed:
+            return f"not timed in {run.label}"
+        excluded = COUNT_EXCLUDED_FLAGS if counts else EXCLUDED_FLAGS
+        reason = next((f for f in m.flags if f in excluded), None)
+        if reason is not None:
+            return f"not plotted in {run.label}: {FLAG_TEXT[reason]}"
+    ratio = run_count_ratio(row, k) if counts else run_ratio(row, k)
+    if ratio is None:
+        return "not compared: the runs read different inputs"
+    if ratio.clear:
+        return ChartPoint(
+            ratio.value, ratio.low, ratio.high, f"{fmt_factor(ratio.value)}×"
+        )
+    return ChartPoint(ratio.value, ratio.low, ratio.high, "no clear change", muted=True)
+
+
+def render_ratio_svg(
+    group: ConversionGroup,
+    by_reference: dict[int, ComparisonRow],
+    runs: list[Run],
+    k: int,
+    standalone: bool = False,
+    counts: bool = False,
+) -> str:
+    """Run k's throughput as a multiple of the first run's, one row per benchmark.
+
+    The axis is logarithmic and centred on 1×; the whisker is the ratio's
+    interval.  A row whose interval crosses 1× reads "no clear change".  With
+    counts, the chart is of instructions per byte instead, the first run's ÷
+    run k's, so that above 1× is fewer instructions, as it is faster for time.
+    """
+    ratio_of = run_count_ratio if counts else run_ratio
+    ratios = [
+        r
+        for m in group.measurements
+        if (r := ratio_of(by_reference[id(m)], k)) is not None
+    ]
+    domain, ticks = ratio_axis(ratios)
+
+    def tooltip(m: Measurement) -> str:
+        row = by_reference[id(m)]
+        ratio = ratio_of(row, k)
+        lines = [m.name, f"{m.library or '?'} · {m.api or '?'} · suite {m.suite}"]
+        for run, c in ((runs[0], row.cells[0]), (runs[k], row.cells[k])):
+            if counts:
+                lines.append(f"{run.label}: {fmt_cell_instructions(c)} instr/B")
+            else:
+                lines.append(f"{run.label}: {fmt_cell_throughput(c)} MiB/s")
+        if ratio is not None:
+            verdict = fmt_count_ratio(ratio) if counts else fmt_ratio(ratio)
+            lines.append(
+                f"{fmt_factor(ratio.value)}× ({fmt_factor(ratio.low)} – "
+                f"{fmt_factor(ratio.high)}): {verdict}"
+            )
+        return "\n".join(lines)
+
+    if counts:
+        title = f"{group.conversion}: {runs[k].label} vs {runs[0].label}, instructions"
+        caption = (
+            f"instructions per byte, {runs[0].label} ÷ {runs[k].label} (log scale) "
+            f"· above 1× is fewer · whisker = ±{COUNT_TOLERANCE:.0%} tolerance"
+        )
+    else:
+        title = f"{group.conversion}: {runs[k].label} vs {runs[0].label}"
+        caption = (
+            f"throughput, {runs[k].label} ÷ {runs[0].label} (log scale) "
+            "· whisker = interval from both 95% CIs"
+        )
+    return _dot_chart(
+        group,
+        standalone,
+        title=title,
+        point=lambda m: run_ratio_point(by_reference[id(m)], runs, k, counts),
+        domain=domain,
+        ticks=ticks,
+        caption=caption,
+        value_head="ratio",
+        aria="instruction count ratio" if counts else "throughput ratio",
+        tooltip=tooltip,
+        emphasis=1.0,
+    )
+
+
 # ── Markdown ────────────────────────────────────────────────────────────────
 
 
@@ -461,37 +1444,47 @@ def _md_cell(text: str) -> str:
     return text.replace("|", "\\|")
 
 
-def render_markdown(runs: list[Run], label: str = "") -> str:
-    """Markdown report: environment, warnings, one table per conversion."""
-    measurements = [m for r in runs for m in r.measurements]
+def render_markdown(
+    suites: list[SuiteRun],
+    label: str = "",
+    reference_library: str = REFERENCE_LIBRARY,
+) -> str:
+    """Markdown report: environment, warnings, one table per conversion.
+
+    A conversion run by more than one library gets a column with each result's
+    throughput as a multiple of reference_library's on the same input.
+    """
+    measurements = suite_measurements(suites)
     heading = "Benchmark Results" + (f" — {label}" if label else "")
     lines = [f"## {heading}", ""]
-    for key, value in environment_summary(runs):
+    for key, value in environment_summary(suites):
         lines.append(f"- **{key}:** {_md_cell(value)}")
     lines.append("")
-    for w in run_warnings(runs):
+    for w in run_warnings(suites):
         lines.append(f"> [!WARNING]\n> {w}\n")
 
+    repeated = is_repeated(measurements)
+    expected = repeat_counts(suites)
+    columns = result_columns(measurements, reference_library)
     for group in group_by_conversion(measurements):
+        compared = len(group.libraries) > 1
+        shown = [c for c in columns if compared or not c.ratio]
         lines += [
             f"### {_md_cell(group.conversion)}",
             "",
-            "| Input | Library | API | Mean | 95% CI | MiB/s | Notes |",
-            "|-------|---------|-----|-----:|-------:|------:|-------|",
+            "| Input | Library | API | "
+            + " | ".join(_md_cell(c.head) for c in shown)
+            + " | Notes |",
+            "|-------|---------|-----|" + "".join(c.rule for c in shown) + "-------|",
         ]
         for ig in group.inputs:
             for m in ig.rows:
-                r = m.result
-                ci = f"{fmt_time(r.low_ns)} – {fmt_time(r.high_ns)}"
-                tput = m.throughput
                 cells = [
                     f"{ig.input} ({fmt_bytes(ig.input_bytes)})",
                     m.library or "?",
                     row_label(m, ig),
-                    fmt_time(r.mean_ns),
-                    ci,
-                    fmt_throughput(tput) if tput is not None else "—",
-                    ", ".join(m.flags),
+                    *(c.cell(m, ig) for c in shown),
+                    ", ".join(m.flags + repeat_notes(m, expected)),
                 ]
                 lines.append("| " + " | ".join(_md_cell(c) for c in cells) + " |")
         lines.append("")
@@ -503,9 +1496,154 @@ def render_markdown(runs: list[Run], label: str = "") -> str:
         for f, n in counts.items():
             lines.append(f"- `{f}` ({n}): {FLAG_TEXT[f]}")
         lines.append("")
+    notes: list[str] = []
+    if is_timed(measurements):
+        notes.append(
+            "Throughput = input bytes / mean time; 1 MiB = 2²⁰ bytes; the CI is "
+            "Catch2's 95% bootstrap interval on the mean.  "
+            + (REPEAT_NOTE + "  " if repeated else "")
+            + RATIO_NOTE
+        )
+    if is_counted(measurements):
+        notes.append(COUNT_NOTE)
+    lines.append("> " + "  ".join(notes))
+    return "\n".join(lines) + "\n"
+
+
+@dataclass
+class ResultColumn:
+    """A column of a single-run results table, after Input, Library and API."""
+
+    head: str
+    rule: str  # its Markdown alignment rule
+    cell: Callable[[Measurement, InputGroup], str]
+    ratio: bool = False  # shown only for a conversion run by several libraries
+
+
+def result_columns(
+    measurements: list[Measurement], reference_library: str = REFERENCE_LIBRARY
+) -> list[ResultColumn]:
+    """Time, throughput and its ratio to the reference library when any result
+    was timed; instructions per byte and its ratio when any was counted."""
+    columns: list[ResultColumn] = []
+    if is_timed(measurements):
+        repeated = is_repeated(measurements)
+
+        def time_cell(i: int) -> Callable[[Measurement, InputGroup], str]:
+            return lambda m, ig: time_cells(m, repeated)[i]
+
+        for i, head in enumerate(time_columns(repeated)):
+            columns.append(ResultColumn(head, "-----:|", time_cell(i)))
+        columns.append(
+            ResultColumn("MiB/s", "------:|", lambda m, ig: fmt_cell_throughput(m))
+        )
+        columns.append(
+            ResultColumn(
+                f"vs {reference_library}",
+                "------:|",
+                lambda m, ig: library_ratio_text(m, ig, reference_library),
+                ratio=True,
+            )
+        )
+    if is_counted(measurements):
+        columns.append(
+            ResultColumn("Instr/B", "------:|", lambda m, ig: fmt_cell_instructions(m))
+        )
+        columns.append(
+            ResultColumn(
+                f"instr vs {reference_library}",
+                "------:|",
+                lambda m, ig: library_count_text(m, ig, reference_library),
+                ratio=True,
+            )
+        )
+    return columns
+
+
+def run_table(runs: list[Run]) -> tuple[list[str], list[list[str]]]:
+    """Header and rows describing each run, for the comparison reports.
+
+    Environment fields no run recorded are left out.
+    """
+    axes = [(k, t) for k, t in RUN_AXES if any(r.axis_values(k) for r in runs)]
+    repeated = any(r.repeats > 1 for r in runs)
+    header = (
+        ["Run"]
+        + [t for _, t in axes]
+        + ["Other load", "Run at"]
+        + (["Repeats"] if repeated else [])
+        + ["Suites"]
+    )
+    rows = [
+        [r.label]
+        + ["; ".join(r.axis_values(k)) or "—" for k, _ in axes]
+        + [run_load_text(r), r.started or "—"]
+        + ([str(r.repeats)] if repeated else [])
+        + [suite_list(r.suites)]
+        for r in runs
+    ]
+    return header, rows
+
+
+def run_load_text(run: Run) -> str:
+    """The highest other load across a run's suites, marked when it was busy."""
+    loads = [x for s in run.suites if (x := other_load(s.environment)) is not None]
+    if not loads:
+        return "—"
+    worst = max(loads)
+    return f"{worst:.2f} (busy)" if worst > BUSY_LOAD else f"{worst:.2f}"
+
+
+def render_comparison_markdown(runs: list[Run], label: str = "") -> str:
+    """Markdown comparing runs: one throughput column per run."""
+    rows, duplicates = match_runs(runs)
+    heading = "Benchmark Comparison" + (f" — {label}" if label else "")
+    lines = [f"## {heading}", "", "### Runs", ""]
+    header, run_rows = run_table(runs)
+    lines.append("| " + " | ".join(header) + " |")
+    lines.append("|" + "|".join("---" for _ in header) + "|")
+    for cells in run_rows:
+        lines.append("| " + " | ".join(_md_cell(c) for c in cells) + " |")
+    lines.append("")
+    for w in comparison_warnings(runs) + duplicates:
+        lines.append(f"> [!WARNING]\n> {w}\n")
+
+    groups, by_reference = comparison_groups(rows)
+    timed, counted = comparison_measures(rows)
+    heads = comparison_columns(runs, timed, counted)
+    run_cols = " | ".join(_md_cell(h) for h in heads)
+    for group in groups:
+        lines += [
+            f"### {_md_cell(group.conversion)}",
+            "",
+            f"| Input | Library | API | {run_cols} | Notes |",
+            "|-------|---------|-----|" + "------:|" * len(heads) + "-------|",
+        ]
+        for ig in group.inputs:
+            for m in ig.rows:
+                row = by_reference[id(m)]
+                cells = [
+                    f"{ig.input} ({fmt_bytes(ig.input_bytes)})",
+                    m.library or "?",
+                    row_label(m, ig),
+                    *comparison_cells(row, timed, counted),
+                    "; ".join(row_notes(row, runs)),
+                ]
+                lines.append("| " + " | ".join(_md_cell(c) for c in cells) + " |")
+        lines.append("")
+
+    unmatched = [r for r in rows if r.missing_from]
+    if unmatched:
+        lines += ["### Not in every run", ""]
+        for r in unmatched:
+            missing = ", ".join(runs[i].label for i in r.missing_from)
+            lines.append(f"- {r.suite} / {_md_cell(r.name)}: not in {missing}")
+        lines.append("")
     lines.append(
-        "> Throughput = input bytes / mean time; 1 MiB = 2²⁰ bytes; the CI is "
-        "Catch2's 95% bootstrap interval on the mean."
+        "> Throughput in MiB/s = input bytes / mean time; 1 MiB = 2²⁰ bytes. "
+        "Results are matched across runs by suite and benchmark name.  "
+        + RATIO_NOTE
+        + ("  " + COUNT_NOTE if counted else "")
     )
     return "\n".join(lines) + "\n"
 
@@ -636,6 +1774,70 @@ ROW_H = 22
 INPUT_H = 26
 
 
+def throughput_ticks(d0: float, d1: float) -> list[tuple[float, str]]:
+    """Decades always; 2× and 5× too when the axis is narrow enough to need them."""
+    steps = (1, 2, 5) if d1 - d0 <= 2 else (1,)
+    ticks: list[tuple[float, str]] = []
+    for decade in range(int(d0), int(d1) + 1):
+        for step in steps:
+            t = step * 10.0**decade
+            if math.log10(t) > d1 + 1e-9:
+                break
+            ticks.append((t, fmt_tick(t)))
+    return ticks
+
+
+def throughput_point(m: Measurement) -> ChartPoint | str:
+    ci, tput = m.throughput_ci, m.throughput
+    if ci is not None and tput is not None and tput > 0:
+        return ChartPoint(tput, ci[0], ci[1], fmt_throughput(tput))
+    if not m.timed:
+        return "not timed: counted under Valgrind"
+    reason = next(f for f in m.flags if f in EXCLUDED_FLAGS)
+    return f"not plotted: {FLAG_TEXT[reason]}"
+
+
+def count_point(m: Measurement) -> ChartPoint | str:
+    per_byte = m.instructions_per_byte
+    if per_byte is not None and per_byte > 0:
+        return ChartPoint(per_byte, per_byte, per_byte, fmt_instructions(per_byte))
+    if m.instructions is None:
+        return "not counted"
+    reason = next(f for f in m.flags if f in COUNT_EXCLUDED_FLAGS)
+    return f"not plotted: {FLAG_TEXT[reason]}"
+
+
+def count_domain(measurements: Iterable[Measurement]) -> tuple[float, float]:
+    """Decade-aligned log10 domain covering every plotted count, at least one
+    decade wide."""
+    values = [v for m in measurements if (v := m.instructions_per_byte)]
+    if not values:
+        return (0.0, 1.0)
+    d0 = math.floor(math.log10(min(values)))
+    d1 = math.ceil(math.log10(max(values)))
+    return (d0, max(d1, d0 + 1))
+
+
+def render_count_chart(group: ConversionGroup, standalone: bool = False) -> str:
+    """One dot chart for a conversion: instructions per input byte, log axis.
+
+    A count has no interval, so a row has a mark and no whisker.
+    """
+    d0, d1 = count_domain(group.measurements)
+    return _dot_chart(
+        group,
+        standalone,
+        title=f"{group.conversion}: instructions per byte",
+        point=count_point,
+        domain=(d0, d1),
+        ticks=throughput_ticks(d0, d1),
+        caption="instructions per input byte (log scale) · lower is better",
+        value_head="instr/B",
+        aria="chart",
+        tooltip=_tooltip,
+    )
+
+
 def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
     """One dot-and-whisker chart for a conversion, throughput on a log axis.
 
@@ -644,19 +1846,58 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
     the reason in place of a value, so nothing silently disappears.
     """
     d0, d1 = log_domain(group.measurements)
-    span = max(d1 - d0, 1.0)
+    return _dot_chart(
+        group,
+        standalone,
+        title=group.conversion,
+        point=throughput_point,
+        domain=(d0, max(d1, d0 + 1.0)),
+        ticks=throughput_ticks(d0, d1),
+        caption="throughput, MiB/s (log scale) · whisker = "
+        + interval_text(group.measurements),
+        value_head="MiB/s",
+        aria="throughput",
+        tooltip=_tooltip,
+    )
+
+
+def _dot_chart(
+    group: ConversionGroup,
+    standalone: bool,
+    *,
+    title: str,
+    point: Callable[[Measurement], ChartPoint | str],
+    domain: tuple[float, float],
+    ticks: list[tuple[float, str]],
+    caption: str,
+    value_head: str,
+    aria: str,
+    tooltip: Callable[[Measurement], str],
+    emphasis: float | None = None,
+) -> str:
+    """A dot-and-whisker chart with one row per measurement, on a log axis.
+
+    domain is in log10 units; point gives each row's mark or, as a string, why
+    it has none; emphasis draws a stronger line at that value (1× on a ratio
+    axis).
+    """
+    d0, d1 = domain
+    span = max(d1 - d0, 1e-9)
 
     def x_of(t: float) -> float:
         return PLOT_X0 + (math.log10(t) - d0) / span * (PLOT_X1 - PLOT_X0)
 
+    def clamp(t: float) -> float:
+        return min(max(x_of(t), PLOT_X0), PLOT_X1)
+
     libraries = group.libraries
     body: list[str] = []
-    title = html.escape(group.conversion)
+    title_text = html.escape(title)
     # A standalone figure carries its own title; in the HTML report the
     # section heading above the chart already names it.
     top = 30.0 if standalone else 0.0
     if standalone:
-        body.append(f'<text class="bt-title" x="{LABEL_X}" y="20">{title}</text>')
+        body.append(f'<text class="bt-title" x="{LABEL_X}" y="20">{title_text}</text>')
 
     if len(libraries) > 1:
         lx = float(LABEL_X)
@@ -681,7 +1922,7 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
         for m in ig.rows:
             cy = y + ROW_H / 2
             label = row_label(m, ig)
-            tip = _tooltip(m)
+            tip = tooltip(m)
             cls = _lib_class(m.library)
             parts = [
                 f'<g class="bt-row" data-tip="{html.escape(tip, quote=True)}">',
@@ -691,23 +1932,24 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
                 f'<text x="{LABEL_X + 12}" y="{cy + 4:.1f}">'
                 f"{html.escape(_truncate(label, 40))}</text>",
             ]
-            ci = m.throughput_ci
-            tput = m.throughput
-            if ci is not None and tput is not None and tput > 0:
+            pt = point(m)
+            if isinstance(pt, ChartPoint):
                 parts.append(
-                    f'<line class="bt-ci {cls}" x1="{x_of(ci[0]):.1f}" '
-                    f'y1="{cy:.1f}" x2="{x_of(ci[1]):.1f}" y2="{cy:.1f}"/>'
+                    f'<line class="bt-ci {cls}" x1="{clamp(pt.low):.1f}" '
+                    f'y1="{cy:.1f}" x2="{clamp(pt.high):.1f}" y2="{cy:.1f}"/>'
                 )
-                parts.append(_marker(_library_shape(m.library), x_of(tput), cy, cls))
                 parts.append(
-                    f'<text class="bt-value" x="{VALUE_X}" y="{cy + 4:.1f}">'
-                    f"{fmt_throughput(tput)}</text>"
+                    _marker(_library_shape(m.library), x_of(pt.value), cy, cls)
+                )
+                value_cls = "bt-flag" if pt.muted else "bt-value"
+                parts.append(
+                    f'<text class="{value_cls}" x="{VALUE_X}" y="{cy + 4:.1f}">'
+                    f"{html.escape(pt.text)}</text>"
                 )
             else:
-                reason = next(f for f in m.flags if f in EXCLUDED_FLAGS)
                 parts.append(
                     f'<text class="bt-flag" x="{PLOT_X0}" y="{cy + 4:.1f}">'
-                    f"not plotted: {html.escape(FLAG_TEXT[reason])}</text>"
+                    f"{html.escape(pt)}</text>"
                 )
             parts.append("</g>")
             rows_svg.append("".join(parts))
@@ -715,22 +1957,22 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
 
     plot_top, plot_bottom = top + 6, y + 4
     grid: list[str] = []
-    # Decades always; 2× and 5× too when the axis is narrow enough to need them.
-    steps = (1, 2, 5) if span <= 2 else (1,)
-    for decade in range(int(d0), int(d1) + 1):
-        for step in steps:
-            t = step * 10.0**decade
-            if math.log10(t) > d1 + 1e-9:
-                break
-            gx = x_of(t)
-            grid.append(
-                f'<line class="bt-grid" x1="{gx:.1f}" y1="{plot_top:.0f}" '
-                f'x2="{gx:.1f}" y2="{plot_bottom:.0f}"/>'
-            )
-            grid.append(
-                f'<text class="bt-tick" x="{gx:.1f}" y="{plot_bottom + 16:.0f}" '
-                f'text-anchor="middle">{fmt_tick(t)}</text>'
-            )
+    for t, text in ticks:
+        gx = x_of(t)
+        grid.append(
+            f'<line class="bt-grid" x1="{gx:.1f}" y1="{plot_top:.0f}" '
+            f'x2="{gx:.1f}" y2="{plot_bottom:.0f}"/>'
+        )
+        grid.append(
+            f'<text class="bt-tick" x="{gx:.1f}" y="{plot_bottom + 16:.0f}" '
+            f'text-anchor="middle">{html.escape(text)}</text>'
+        )
+    if emphasis is not None:
+        ex = x_of(emphasis)
+        grid.append(
+            f'<line class="bt-axis" x1="{ex:.1f}" y1="{plot_top:.0f}" '
+            f'x2="{ex:.1f}" y2="{plot_bottom:.0f}"/>'
+        )
     grid.append(
         f'<line class="bt-axis" x1="{PLOT_X0}" y1="{plot_bottom:.0f}" '
         f'x2="{PLOT_X1}" y2="{plot_bottom:.0f}"/>'
@@ -738,10 +1980,11 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
     grid.append(
         f'<text class="bt-tick" x="{(PLOT_X0 + PLOT_X1) / 2:.0f}" '
         f'y="{plot_bottom + 34:.0f}" text-anchor="middle">'
-        "throughput, MiB/s (log scale) · whisker = 95% CI</text>"
+        f"{html.escape(caption)}</text>"
     )
     grid.append(
-        f'<text class="bt-tick" x="{VALUE_X}" y="{plot_top + 2:.0f}">MiB/s</text>'
+        f'<text class="bt-tick" x="{VALUE_X}" y="{plot_top + 2:.0f}">'
+        f"{html.escape(value_head)}</text>"
     )
     height = plot_bottom + 46
 
@@ -758,41 +2001,86 @@ def render_svg_chart(group: ConversionGroup, standalone: bool = False) -> str:
     head = (
         f'<svg xmlns="http://www.w3.org/2000/svg" class="bt-chart" '
         f'viewBox="0 0 {WIDTH} {height:.0f}" width="{WIDTH}" '
-        f'height="{height:.0f}" role="img" aria-label="{title} throughput">'
+        f'height="{height:.0f}" role="img" aria-label="{title_text} {aria}">'
     )
     return head + style + "".join(grid + body + rows_svg) + "</svg>"
 
 
 def _tooltip(m: Measurement) -> str:
     r = m.result
-    lines = [
-        m.name,
-        f"{m.library or '?'} · {m.api or '?'} · suite {m.suite}",
-        f"mean {fmt_time(r.mean_ns)} (95% CI {fmt_time(r.low_ns)} – "
-        f"{fmt_time(r.high_ns)}), σ {fmt_time(r.std_dev_ns)}",
-    ]
+    lines = [m.name, f"{m.library or '?'} · {m.api or '?'} · suite {m.suite}"]
+    if not m.timed:
+        lines.append("not timed: counted under Valgrind")
+    elif m.repeats:
+        lines.append(
+            f"median {fmt_time(r.mean_ns)} of {m.repeat_count} repeats (range "
+            f"{fmt_time(r.low_ns)} – {fmt_time(r.high_ns)}), fastest "
+            f"{fmt_time(m.best_ns)}"
+        )
+    else:
+        lines.append(
+            f"mean {fmt_time(r.mean_ns)} (95% CI {fmt_time(r.low_ns)} – "
+            f"{fmt_time(r.high_ns)}), σ {fmt_time(r.std_dev_ns)}"
+        )
+    if m.instructions is not None:
+        per_byte = m.counted_per_byte
+        lines.append(
+            f"{m.instructions:,.0f} instructions per call"
+            + (f", {fmt_instructions(per_byte)} per byte" if per_byte else "")
+        )
     ci = m.throughput_ci
     if ci is not None and m.throughput is not None:
         lines.append(
             f"{fmt_throughput(m.throughput)} MiB/s "
             f"({fmt_throughput(ci[0])} – {fmt_throughput(ci[1])})"
         )
-    lines.append(f"{r.samples} samples × {r.iterations} iterations")
+    if not m.timed:
+        pass
+    elif m.repeats:
+        lines.append(f"{r.samples} samples in all, {r.iterations} iterations each")
+    else:
+        lines.append(f"{r.samples} samples × {r.iterations} iterations")
     for f in m.flags:
         lines.append(f"⚠ {f}: {FLAG_TEXT[f]}")
     return "\n".join(lines)
 
 
-def write_svg_dir(runs: list[Run], out_dir: Path) -> list[Path]:
-    """Write one standalone SVG per conversion; return the paths written."""
-    measurements = [m for r in runs for m in r.measurements]
+def write_ratio_svg_dir(runs: list[Run], k: int, out_dir: Path) -> list[Path]:
+    """Write one standalone ratio chart per conversion, run k against the first:
+    CONVERSION.svg for throughput, CONVERSION.instructions.svg for counts."""
+    rows, _ = match_runs(runs)
+    groups, by_reference = comparison_groups(rows)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+    for g in groups:
+        cells = [c for m in g.measurements for c in by_reference[id(m)].cells if c]
+        for counts, suffix in ((False, ".svg"), (True, ".instructions.svg")):
+            if not (is_counted(cells) if counts else is_timed(cells)):
+                continue
+            path = out_dir / f"{slugify(g.conversion)}{suffix}"
+            svg = render_ratio_svg(g, by_reference, runs, k, True, counts)
+            path.write_text(svg + "\n", encoding="utf-8")
+            written.append(path)
+    return written
+
+
+def write_svg_dir(suites: list[SuiteRun], out_dir: Path) -> list[Path]:
+    """Write one standalone SVG per conversion, CONVERSION.svg for throughput
+    and CONVERSION.instructions.svg for counts; return the paths written."""
+    measurements = suite_measurements(suites)
     groups = group_by_conversion(measurements)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
     for g in groups:
-        path = out_dir / f"{slugify(g.conversion)}.svg"
-        path.write_text(render_svg_chart(g, standalone=True) + "\n", encoding="utf-8")
-        written.append(path)
+        charts = []
+        if is_timed(g.measurements):
+            charts.append((".svg", render_svg_chart(g, standalone=True)))
+        if is_counted(g.measurements):
+            charts.append((".instructions.svg", render_count_chart(g, standalone=True)))
+        for suffix, svg in charts:
+            path = out_dir / f"{slugify(g.conversion)}{suffix}"
+            path.write_text(svg + "\n", encoding="utf-8")
+            written.append(path)
     return written
 
 
@@ -880,9 +2168,13 @@ def _legend_html(libraries: list[str]) -> str:
     return '<div class="legend">' + "".join(items) + "</div>"
 
 
-def render_html(runs: list[Run], label: str = "") -> str:
+def render_html(
+    suites: list[SuiteRun],
+    label: str = "",
+    reference_library: str = REFERENCE_LIBRARY,
+) -> str:
     """A self-contained HTML report: no external scripts, styles or fonts."""
-    measurements = [m for r in runs for m in r.measurements]
+    measurements = suite_measurements(suites)
     groups = group_by_conversion(measurements)
     e = html.escape
 
@@ -898,11 +2190,11 @@ def render_html(runs: list[Run], label: str = "") -> str:
         f'<p class="sub">{e(label)}</p>' if label else "",
         '<dl class="env">',
     ]
-    for key, value in environment_summary(runs):
+    for key, value in environment_summary(suites):
         out.append(f"<dt>{e(key)}</dt><dd>{e(value)}</dd>")
     out.append("</dl>")
 
-    for w in run_warnings(runs):
+    for w in run_warnings(suites):
         out.append(
             f'<div class="callout critical"><strong>⚠ Warning</strong> {e(w)}</div>'
         )
@@ -926,38 +2218,150 @@ def render_html(runs: list[Run], label: str = "") -> str:
 
     for g in groups:
         out.append(f'<h2 id="{slugify(g.conversion)}">{e(g.conversion)}</h2>')
-        out.append(f'<div class="card scroll">{render_svg_chart(g)}</div>')
+        if is_timed(g.measurements):
+            out.append(f'<div class="card scroll">{render_svg_chart(g)}</div>')
+        if is_counted(g.measurements):
+            out.append(f'<div class="card scroll">{render_count_chart(g)}</div>')
 
+    repeated = is_repeated(measurements)
+    expected = repeat_counts(suites)
+    columns = result_columns(measurements, reference_library)
+    heads = "".join(
+        f'<th class="num">{e(c.head)}</th>' if c.ratio else f"<th>{e(c.head)}</th>"
+        for c in columns
+    )
     out.append('<h2 id="all-results">All results</h2><div class="card scroll"><table>')
     out.append(
         "<thead><tr><th>Conversion</th><th>Input</th><th>Library</th><th>API</th>"
-        "<th>Mean</th><th>95% CI</th><th>MiB/s</th><th>Notes</th>"
+        f"{heads}<th>Notes</th>"
         "<th>Benchmark</th><th>Suite</th></tr></thead><tbody>"
     )
     for g in groups:
+        compared = len(g.libraries) > 1
         for ig in g.inputs:
             for m in ig.rows:
-                r = m.result
-                tput = m.throughput
+                values = "".join(
+                    f'<td class="num">'
+                    f"{e(c.cell(m, ig) if compared or not c.ratio else '')}</td>"
+                    for c in columns
+                )
+                notes = ", ".join(m.flags + repeat_notes(m, expected))
                 out.append(
                     "<tr>"
                     f"<td>{e(g.conversion)}</td>"
                     f"<td>{e(ig.input)} ({e(fmt_bytes(ig.input_bytes))})</td>"
                     f"<td>{e(m.library or '?')}</td><td>{e(m.api or '?')}</td>"
-                    f'<td class="num">{e(fmt_time(r.mean_ns))}</td>'
-                    f'<td class="num">{e(fmt_time(r.low_ns))} – '
-                    f"{e(fmt_time(r.high_ns))}</td>"
-                    f'<td class="num">'
-                    f"{e(fmt_throughput(tput)) if tput is not None else '—'}</td>"
-                    f'<td class="flags">{e(", ".join(m.flags))}</td>'
+                    f"{values}"
+                    f'<td class="flags">{e(notes)}</td>'
                     f"<td>{e(m.name)}</td><td>{e(m.suite)}</td>"
                     "</tr>"
                 )
     out.append("</tbody></table></div>")
+    footer: list[str] = []
+    if is_timed(measurements):
+        footer.append(
+            "Throughput = input bytes / mean time; 1 MiB = 2²⁰ "
+            "bytes. Whiskers and the CI column are Catch2's 95% bootstrap interval "
+            f"on the mean. {e(REPEAT_NOTE) + ' ' if repeated else ''}"
+            f"{e(RATIO_NOTE)}"
+        )
+    if is_counted(measurements):
+        footer.append(e(COUNT_NOTE))
+    out.append(f'<p class="sub">{" ".join(footer)}</p>')
+    out.append("</main>")
+    out.append('<div id="bt-tip" hidden></div>')
+    out.append(f"<script>{PAGE_JS}</script>")
+    return "\n".join(s for s in out if s) + "\n"
+
+
+def render_comparison_html(runs: list[Run], label: str = "") -> str:
+    """A self-contained HTML page comparing runs: one column per run."""
+    rows, duplicates = match_runs(runs)
+    groups, by_reference = comparison_groups(rows)
+    e = html.escape
+
+    def tokens(t: dict[str, str]) -> str:
+        return " ".join(f"{k}: {v};" for k, v in t.items())
+
+    css = PAGE_CSS % {"light": tokens(LIGHT_TOKENS), "dark": tokens(DARK_TOKENS)}
+    out = [
+        "<title>transcode benchmark comparison</title>",
+        f"<style>{css}{CHART_CSS}</style>",
+        "<main>",
+        "<h1>beman.transcode benchmark comparison</h1>",
+        f'<p class="sub">{e(label)}</p>' if label else "",
+        '<h2 id="runs">Runs</h2><div class="card scroll"><table><thead><tr>',
+    ]
+    header, run_rows = run_table(runs)
+    out.append("".join(f"<th>{e(h)}</th>" for h in header) + "</tr></thead><tbody>")
+    for cells in run_rows:
+        out.append("<tr>" + "".join(f"<td>{e(c)}</td>" for c in cells) + "</tr>")
+    out.append("</tbody></table></div>")
+    for w in comparison_warnings(runs) + duplicates:
+        out.append(
+            f'<div class="callout critical"><strong>⚠ Warning</strong> {e(w)}</div>'
+        )
+
+    out.append('<nav class="toc"><ul>')
+    for g in groups:
+        out.append(
+            f'<li><a href="#{slugify(g.conversion)}">{e(g.conversion)}</a> '
+            f"({len(g.measurements)})</li>"
+        )
+    out.append("</ul></nav>")
     out.append(
-        '<p class="sub">Throughput = input bytes / mean time; 1 MiB = 2²⁰ '
-        "bytes. Whiskers and the CI column are Catch2's 95% bootstrap interval "
-        "on the mean.</p>"
+        _legend_html(
+            ordered_libraries(m.library for g in groups for m in g.measurements)
+        )
+    )
+
+    timed, counted = comparison_measures(rows)
+    run_heads = "".join(
+        f'<th class="num">{e(h)}</th>' for h in comparison_columns(runs, timed, counted)
+    )
+    for g in groups:
+        out.append(f'<h2 id="{slugify(g.conversion)}">{e(g.conversion)}</h2>')
+        for k in range(1, len(runs)):
+            for counts, shown in ((False, timed), (True, counted)):
+                if not shown:
+                    continue
+                what = ", instructions" if counts else ""
+                svg = render_ratio_svg(g, by_reference, runs, k, counts=counts)
+                out.append(
+                    f'<p class="sub">{e(runs[k].label)} vs {e(runs[0].label)}'
+                    f"{what}</p>"
+                    f'<div class="card scroll">{svg}</div>'
+                )
+        out.append(
+            '<div class="card scroll"><table><thead><tr><th>Input</th>'
+            f"<th>Library</th><th>API</th>{run_heads}<th>Notes</th></tr></thead><tbody>"
+        )
+        for ig in g.inputs:
+            for m in ig.rows:
+                row = by_reference[id(m)]
+                values = "".join(
+                    f'<td class="num">{e(c)}</td>'
+                    for c in comparison_cells(row, timed, counted)
+                )
+                out.append(
+                    f"<tr><td>{e(ig.input)} ({e(fmt_bytes(ig.input_bytes))})</td>"
+                    f"<td>{e(m.library or '?')}</td><td>{e(row_label(m, ig))}</td>"
+                    f'{values}<td class="flags">{e("; ".join(row_notes(row, runs)))}'
+                    "</td></tr>"
+                )
+        out.append("</tbody></table></div>")
+
+    unmatched = [r for r in rows if r.missing_from]
+    if unmatched:
+        out.append('<h2 id="not-in-every-run">Not in every run</h2><ul>')
+        for r in unmatched:
+            missing = ", ".join(runs[i].label for i in r.missing_from)
+            out.append(f"<li>{e(r.suite)} / {e(r.name)}: not in {e(missing)}</li>")
+        out.append("</ul>")
+    out.append(
+        '<p class="sub">Throughput in MiB/s = input bytes / mean time; 1 MiB = '
+        "2²⁰ bytes. Results are matched across runs by suite and benchmark "
+        f"name. {e(RATIO_NOTE)}{' ' + e(COUNT_NOTE) if counted else ''}</p>"
     )
     out.append("</main>")
     out.append('<div id="bt-tip" hidden></div>')
@@ -969,30 +2373,49 @@ def render_html(runs: list[Run], label: str = "") -> str:
 
 
 def render_vegalite_spec(
-    runs: list[Run], title: str = "Benchmark Throughput"
+    suites: list[SuiteRun],
+    title: str = "Benchmark Throughput",
+    reference_library: str = REFERENCE_LIBRARY,
 ) -> dict[str, Any]:
     """Vega-Lite spec: mean and CI per benchmark, faceted by conversion.
 
-    Excluded results are omitted.
+    Excluded results are omitted.  Where the reference library ran the same
+    input, vs_reference is the throughput as a multiple of its fastest result.
     """
     values: list[dict[str, object]] = []
-    for r in runs:
-        for m in r.measurements:
-            tput, ci = m.throughput, m.throughput_ci
-            if tput is None or ci is None:
-                continue
-            values.append(
-                {
+    measurements = suite_measurements(suites)
+    groups = group_by_conversion(measurements)
+    for g in groups:
+        for ig in g.inputs:
+            ref = library_reference(ig, reference_library)
+            count_ref = count_reference(ig, reference_library)
+            for m in ig.rows:
+                tput, ci = m.throughput, m.throughput_ci
+                per_byte = m.instructions_per_byte
+                if (tput is None or ci is None) and per_byte is None:
+                    continue
+                value: dict[str, object] = {
                     "benchmark": m.name,
                     "conversion": m.conversion,
                     "input": m.input,
                     "library": m.library,
                     "api": m.api,
-                    "throughput_MiBs": round(tput, 2),
-                    "ci_low": round(ci[0], 2),
-                    "ci_high": round(ci[1], 2),
                 }
-            )
+                if tput is not None and ci is not None:
+                    value["throughput_MiBs"] = round(tput, 2)
+                    value["ci_low"] = round(ci[0], 2)
+                    value["ci_high"] = round(ci[1], 2)
+                ratio = library_ratio(m, ref) if ref is not None else None
+                if ratio is not None:
+                    value["vs_reference"] = round(ratio.value, 3)
+                if m.repeats:
+                    value["repeats"] = m.repeat_count
+                if per_byte is not None:
+                    value["instructions_per_byte"] = round(per_byte, 4)
+                    cr = count_ratio(m, count_ref)
+                    if cr is not None:
+                        value["instructions_vs_reference"] = round(cr.value, 3)
+                values.append(value)
     x = {
         "field": "throughput_MiBs",
         "type": "quantitative",
@@ -1032,7 +2455,25 @@ def render_vegalite_spec(
                             {"field": "throughput_MiBs", "title": "MiB/s"},
                             {"field": "ci_low", "title": "CI low"},
                             {"field": "ci_high", "title": "CI high"},
-                        ],
+                            {
+                                "field": "vs_reference",
+                                "title": f"vs {reference_library}",
+                            },
+                        ]
+                        + (
+                            [
+                                {
+                                    "field": "instructions_per_byte",
+                                    "title": "instr/B",
+                                },
+                                {
+                                    "field": "instructions_vs_reference",
+                                    "title": f"instr vs {reference_library}",
+                                },
+                            ]
+                            if is_counted(measurements)
+                            else []
+                        ),
                     },
                 },
             ]
@@ -1040,19 +2481,167 @@ def render_vegalite_spec(
     }
 
 
+def render_comparison_vegalite(runs: list[Run], title: str) -> dict[str, Any]:
+    """Two charts, one above the other.
+
+    The first is the single-run spec over every run, faceted by run as well as
+    conversion.  The second plots each later run's throughput as a multiple of
+    the first run's, on a log axis, faceted the same way.
+    """
+    throughput = render_vegalite_spec(runs[0].suites)
+    del throughput["$schema"], throughput["title"]
+    throughput["data"]["values"] = [
+        {**v, "run": r.label}
+        for r in runs
+        for v in render_vegalite_spec(r.suites)["data"]["values"]
+    ]
+    throughput["facet"]["column"] = {
+        "field": "run",
+        "type": "nominal",
+        "sort": [r.label for r in runs],
+    }
+
+    rows, _ = match_runs(runs)
+    ratios: list[dict[str, object]] = []
+    for row in rows:
+        for k in range(1, len(runs)):
+            ratio = run_ratio(row, k)
+            counts = run_count_ratio(row, k)
+            m = row.cells[k]
+            if (ratio is None and counts is None) or m is None:
+                continue
+            entry: dict[str, object] = {
+                "benchmark": m.name,
+                "conversion": m.conversion,
+                "input": m.input,
+                "library": m.library,
+                "api": m.api,
+                "run": f"{runs[k].label} vs {runs[0].label}",
+            }
+            if ratio is not None:
+                entry["ratio"] = round(ratio.value, 4)
+                entry["ratio_low"] = round(ratio.low, 4)
+                entry["ratio_high"] = round(ratio.high, 4)
+                entry["verdict"] = fmt_ratio(ratio)
+            if counts is not None:
+                entry["instructions_ratio"] = round(counts.value, 4)
+                entry["instructions_verdict"] = fmt_count_ratio(counts)
+            ratios.append(entry)
+    x = {
+        "field": "ratio",
+        "type": "quantitative",
+        "scale": {"type": "log"},
+        "title": f"Throughput ÷ {runs[0].label}",
+    }
+    y = {"field": "benchmark", "type": "nominal", "title": None}
+    color = {"field": "library", "type": "nominal", "scale": {"domain": LIBRARY_ORDER}}
+    ratio_spec = {
+        "data": {"values": ratios},
+        "facet": {
+            "row": {"field": "conversion", "type": "nominal"},
+            "column": {"field": "run", "type": "nominal"},
+        },
+        "resolve": {"scale": {"y": "independent"}},
+        "spec": {
+            "layer": [
+                {"mark": "rule", "encoding": {"x": {"datum": 1}}},
+                {
+                    "mark": "rule",
+                    "encoding": {
+                        "x": {**x, "field": "ratio_low"},
+                        "x2": {"field": "ratio_high"},
+                        "y": y,
+                        "color": color,
+                    },
+                },
+                {
+                    "mark": {"type": "point", "filled": True},
+                    "encoding": {
+                        "x": x,
+                        "y": y,
+                        "color": color,
+                        "shape": {"field": "library", "type": "nominal"},
+                        "tooltip": [
+                            {"field": "benchmark"},
+                            {"field": "api"},
+                            {"field": "input"},
+                            {"field": "ratio"},
+                            {"field": "ratio_low", "title": "low"},
+                            {"field": "ratio_high", "title": "high"},
+                            {"field": "verdict"},
+                        ],
+                    },
+                },
+            ]
+        },
+    }
+    return {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "title": title,
+        "vconcat": [throughput, ratio_spec],
+    }
+
+
 # ── CLI ─────────────────────────────────────────────────────────────────────
+
+
+class UsageError(Exception):
+    """A problem with the command line or the files it names."""
+
+
+def load_runs(xml_paths: list[Path], labelled: list[list[str]] | None) -> list[Run]:
+    """Load the positional files as one run, then each --run, and label them."""
+    specs: list[tuple[str, list[Path]]] = []
+    if xml_paths:
+        specs.append(("", xml_paths))
+    for label, *names in labelled or []:
+        if not names:
+            raise UsageError(f"--run {label}: no XML files or directories given")
+        specs.append((label, [Path(n) for n in names]))
+    if not specs:
+        raise UsageError("no XML files given")
+
+    runs: list[Run] = []
+    for label, paths in specs:
+        files = xml_files(paths)
+        if not files:
+            raise UsageError(f"{', '.join(map(str, paths))}: no XML files found")
+        suites: list[SuiteRun] = []
+        for f in files:
+            if not f.is_file():
+                raise UsageError(f"{f}: file not found")
+            try:
+                suites.append(load_suite(f))
+            except ValueError as exc:
+                raise UsageError(str(exc)) from exc
+        runs.append(Run(label, suites))
+    assign_labels(runs)
+    return runs
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Turn Catch2 benchmark XML into throughput reports and charts."
+        description="Turn Catch2 benchmark XML into throughput reports and charts.",
+        epilog="With one run, the report shows its results.  With more than one "
+        "(several --run options, or --run beside positional files), it compares "
+        "them, matching results by suite and benchmark name.",
     )
     parser.add_argument(
         "xml_files",
         metavar="XML",
-        nargs="+",
+        nargs="*",
         type=Path,
-        help="Catch2 XML result files; each FILE.xml is read with FILE.meta.json",
+        help="Catch2 XML result files, or directories of them, forming one run; "
+        "each FILE.xml is read with FILE.meta.json",
+    )
+    parser.add_argument(
+        "--run",
+        nargs="+",
+        action="append",
+        metavar=("LABEL", "XML"),
+        help="A labelled run: its XML files or directories.  Repeat to compare "
+        "runs; the first is the reference.  An empty LABEL is filled in from "
+        "the environment fields that tell the runs apart.",
     )
     parser.add_argument(
         "--label", metavar="TEXT", default="", help="Label for report headings"
@@ -1072,7 +2661,16 @@ def main(argv: list[str] | None = None) -> int:
         metavar="DIR",
         type=Path,
         default=None,
-        help="Write one standalone SVG chart per conversion into DIR",
+        help="Write one standalone SVG chart per conversion into DIR "
+        "(when comparing, one subdirectory per run, and one per later run "
+        "for its ratio to the first, named LATER-vs-FIRST)",
+    )
+    parser.add_argument(
+        "--reference-library",
+        metavar="NAME",
+        default=REFERENCE_LIBRARY,
+        help="The library other libraries are compared with in a single-run "
+        f"report (default: {REFERENCE_LIBRARY})",
     )
     parser.add_argument(
         "--vegalite",
@@ -1083,36 +2681,55 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    runs: list[Run] = []
-    for xml_path in args.xml_files:
-        if not xml_path.is_file():
-            print(f"error: {xml_path}: file not found", file=sys.stderr)
-            return 1
-        try:
-            runs.append(load_run(xml_path))
-        except ValueError as exc:
-            print(f"error: {exc}", file=sys.stderr)
-            return 1
+    try:
+        runs = load_runs(args.xml_files, args.run)
+    except UsageError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
 
     if not any(r.measurements for r in runs):
         print("No benchmark results found.", file=sys.stderr)
         return 1
 
-    label = args.label or (args.xml_files[0].stem if len(args.xml_files) == 1 else "")
+    if len(runs) == 1:
+        suites = runs[0].suites
+        label = args.label or (suites[0].path.stem if len(suites) == 1 else "")
+        ref = args.reference_library
+        markdown = render_markdown(suites, label=label, reference_library=ref)
+        page = (
+            render_html(suites, label=label, reference_library=ref) if args.html else ""
+        )
+    else:
+        label = args.label
+        markdown = render_comparison_markdown(runs, label=label)
+        page = render_comparison_html(runs, label=label) if args.html else ""
 
-    markdown = render_markdown(runs, label=label)
     if args.markdown is None:
         print(markdown)
     else:
         _write(args.markdown, markdown)
-
     if args.html is not None:
-        _write(args.html, render_html(runs, label=label))
+        _write(args.html, page)
     if args.svg_dir is not None:
-        paths = write_svg_dir(runs, args.svg_dir)
-        print(f"{len(paths)} SVG charts written to {args.svg_dir}", file=sys.stderr)
+        count = 0
+        for r in runs:
+            out_dir = (
+                args.svg_dir if len(runs) == 1 else args.svg_dir / slugify(r.label)
+            )
+            count += len(write_svg_dir(r.suites, out_dir))
+        for k in range(1, len(runs)):
+            name = f"{slugify(runs[k].label)}-vs-{slugify(runs[0].label)}"
+            count += len(write_ratio_svg_dir(runs, k, args.svg_dir / name))
+        print(f"{count} SVG charts written to {args.svg_dir}", file=sys.stderr)
     if args.vegalite is not None:
-        spec = render_vegalite_spec(runs, title=f"Throughput — {label}")
+        title = f"Throughput — {label}" if label else "Throughput"
+        spec = (
+            render_vegalite_spec(
+                runs[0].suites, title=title, reference_library=args.reference_library
+            )
+            if len(runs) == 1
+            else render_comparison_vegalite(runs, title=title)
+        )
         _write(args.vegalite, json.dumps(spec, indent=2, ensure_ascii=False) + "\n")
     return 0
 
