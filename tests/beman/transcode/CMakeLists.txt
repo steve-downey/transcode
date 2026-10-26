@@ -277,6 +277,20 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.reverse_index)
+target_sources(
+    beman.transcode.tests.reverse_index
+    PRIVATE reverse_index.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.reverse_index
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.reverse_index
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 add_executable(beman.transcode.tests.euc_jp_decode)
 target_sources(
     beman.transcode.tests.euc_jp_decode
@@ -648,6 +662,7 @@ catch_discover_tests(beman.transcode.tests.big5_decode)
 catch_discover_tests(beman.transcode.tests.big5_encode)
 catch_discover_tests(beman.transcode.tests.shift_jis_decode)
 catch_discover_tests(beman.transcode.tests.shift_jis_encode)
+catch_discover_tests(beman.transcode.tests.reverse_index)
 catch_discover_tests(beman.transcode.tests.euc_jp_decode)
 catch_discover_tests(beman.transcode.tests.euc_jp_encode)
 catch_discover_tests(beman.transcode.tests.iso2022jp_decode)
@@ -1217,3 +1232,32 @@ target_link_libraries(
         Catch2::Catch2WithMain
 )
 catch_discover_tests(beman.transcode.tests.benchmark_fixture)
+
+# reverse_index stores pointer + 1 in 16 bits, so tables of 0xFFFF or more
+# entries are rejected by a static_assert.
+add_library(beman.transcode.tests.reverse_index_reject_wide_table_fail OBJECT)
+target_sources(
+    beman.transcode.tests.reverse_index_reject_wide_table_fail
+    PRIVATE reverse_index_reject_wide_table_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.reverse_index_reject_wide_table_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.reverse_index_reject_wide_table_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME reverse_index_reject_wide_table_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.reverse_index_reject_wide_table_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    reverse_index_reject_wide_table_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "transcode: reverse_index stores pointer \\+ 1 in 16 bits"
+)

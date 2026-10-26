@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/error.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/euc_kr.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
@@ -62,11 +63,12 @@ constexpr euc_kr_decode_result euc_kr_decode_one(I& current, S end) {
     auto trail = static_cast<unsigned char>(*current);
     ++current;
 
-    if (trail < 0x41 || trail > 0xFE || trail == 0x7F)
+    // WHATWG: trail bytes run 0x41-0xFE without a gap; 0x7F is a trail byte
+    // too, one that index euc-kr leaves unmapped.
+    if (trail < 0x41 || trail > 0xFE)
         return {{}, whatwg_error::invalid_byte, true};
 
-    int offset  = trail > 0x7F ? 1 : 0;
-    int pointer = ((lead - 0x81) * 190) + (trail - 0x41) - offset;
+    int pointer = ((lead - 0x81) * 190) + (trail - 0x41);
 
     char32_t cp = tables::euc_kr[pointer];
     if (cp == 0)
@@ -82,17 +84,12 @@ constexpr euc_kr_encode_result euc_kr_encode_one(char32_t cp) {
         return r;
     }
 
-    for (int i = 0; i < 23940; ++i) {
-        if (tables::euc_kr[i] == cp) {
-            int trail = (i % 190) + 0x41;
-            if (trail >= 0x7F)
-                ++trail;
-            euc_kr_encode_result r{};
-            r.bytes[0] = static_cast<unsigned char>((i / 190) + 0x81);
-            r.bytes[1] = static_cast<unsigned char>(trail);
-            r.count    = 2;
-            return r;
-        }
+    if (int pointer = reverse_index_for<tables::euc_kr>.find(cp); pointer >= 0) {
+        euc_kr_encode_result r{};
+        r.bytes[0] = static_cast<unsigned char>((pointer / 190) + 0x81);
+        r.bytes[1] = static_cast<unsigned char>((pointer % 190) + 0x41);
+        r.count    = 2;
+        return r;
     }
 
     return {{}, 0, true};

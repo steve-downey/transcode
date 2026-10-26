@@ -148,9 +148,9 @@ TEST_CASE("gb18030 decode-then-encode: bytes from encoding", "[roundtrip::gb1803
 // ---------------------------------------------------------------------------
 
 TEST_CASE("big5 encode-then-decode: ASCII and Traditional Chinese", "[roundtrip::big5]") {
-    // U+4E00 is in Big5 (pointer 5495: 0xA4 0x40)
-    // U+00CA (E-circumflex) is a Big5 specific Latin char (pointer 1137: 0x88 0x66)
-    std::vector<char32_t> cps{U'A', U'\x4E00', U'\x00CA'};
+    // U+4E00 is in Big5 (pointer 5495: 0xA4 0x40).  U+5341 is one of the six
+    // code points the WHATWG encoder writes from its last pointer (0xA4 0x51).
+    std::vector<char32_t> cps{U'A', U'\x4E00', U'\x5341'};
     CHECK(encode_then_decode<codec::big5>(cps) == cps);
 }
 

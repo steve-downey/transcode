@@ -6,9 +6,15 @@
 #include <beman/transcode/transcode.hpp>
 #include <beman/transcode/transcode.hpp>
 #include <beman/transcode/config_generated.hpp>
+#include <beman/transcode/detail/tables/big5.hpp>
+#include <beman/transcode/detail/tables/euc_kr.hpp>
+#include <beman/transcode/detail/tables/gbk.hpp>
+#include <beman/transcode/detail/tables/shift_jis.hpp>
 
 #include <catch2/catch_all.hpp>
 
+#include <algorithm>
+#include <ranges>
 #include <span>
 #include <vector>
 
@@ -165,5 +171,110 @@ TEST_CASE("WHATWG legacy codec benchmarks: large CJK novels", "[benchmark][whatw
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("xiyouji_big5.bin");
         measure(meter, [&] { return count_elements(data | whatwg_decode<codec::big5>); });
+    };
+}
+
+// Encoding into a multi-byte legacy codec is a reverse lookup from code point
+// to index pointer.  The Mars corpus is 340 bytes, far too small to time a
+// per-code-point cost, so the first benchmark repeats it, and the second
+// encodes every code point in index jis0208 once, which spreads the lookups
+// over the whole index rather than the common kana and kanji rows.
+TEST_CASE("WHATWG Shift_JIS encode benchmarks", "[benchmark][whatwg]") {
+    using namespace beman::transcoding;
+    using namespace beman::transcoding::bench;
+
+    describe({.conversion = "UTF-32 → Shift_JIS", .library = "beman.transcode", .api = "whatwg_encode view"});
+    BENCHMARK_ADVANCED("Shift-JIS encode: Japanese (Mars corpus repeated to 256K code points)")
+    (Catch::Benchmark::Chronometer meter) {
+        std::vector<char32_t> once;
+        for (char32_t cp : corpus_span("ja_mars_shiftjis.bin") | whatwg_decode<codec::shift_jis>)
+            once.push_back(cp);
+        std::vector<char32_t> cps;
+        while (cps.size() < 256 * 1024)
+            cps.insert(cps.end(), once.begin(), once.end());
+        record_input("ja_mars_shiftjis.bin repeated", cps.size() * sizeof(char32_t));
+        measure(meter, [&] { return count_elements(cps | whatwg_encode<codec::shift_jis>); });
+    };
+
+    describe({.conversion = "UTF-32 → Shift_JIS", .library = "beman.transcode", .api = "whatwg_encode view"});
+    BENCHMARK_ADVANCED("Shift-JIS encode: every code point in index jis0208 once")
+    (Catch::Benchmark::Chronometer meter) {
+        std::vector<char32_t> cps;
+        for (char32_t cp : detail::tables::shift_jis)
+            if (cp != 0)
+                cps.push_back(cp);
+        std::ranges::sort(cps);
+        auto dup = std::ranges::unique(cps);
+        cps.erase(dup.begin(), dup.end());
+        record_input("index jis0208 code points", cps.size() * sizeof(char32_t));
+        measure(meter, [&] { return count_elements(cps | whatwg_encode<codec::shift_jis>); });
+    };
+}
+
+// The same one-of-each sweep for the other multi-byte encoders.  Each walks
+// its whole index, so a per-code-point cost that grows with the index shows
+// up here before it shows up on text.
+TEST_CASE("WHATWG multi-byte encode sweeps", "[benchmark][whatwg]") {
+    using namespace beman::transcoding;
+    using namespace beman::transcoding::bench;
+
+    auto distinct = [](const auto& table) {
+        std::vector<char32_t> cps;
+        for (char32_t cp : table)
+            if (cp != 0)
+                cps.push_back(cp);
+        std::ranges::sort(cps);
+        auto dup = std::ranges::unique(cps);
+        cps.erase(dup.begin(), dup.end());
+        return cps;
+    };
+
+    describe({.conversion = "UTF-32 → EUC-JP", .library = "beman.transcode", .api = "whatwg_encode view"});
+    BENCHMARK_ADVANCED("EUC-JP encode: every code point in index jis0208 once")
+    (Catch::Benchmark::Chronometer meter) {
+        auto cps = distinct(detail::tables::shift_jis);
+        record_input("index jis0208 code points", cps.size() * sizeof(char32_t));
+        measure(meter, [&] { return count_elements(cps | whatwg_encode<codec::euc_jp>); });
+    };
+
+    describe({.conversion = "UTF-32 → EUC-KR", .library = "beman.transcode", .api = "whatwg_encode view"});
+    BENCHMARK_ADVANCED("EUC-KR encode: every code point in index euc-kr once")
+    (Catch::Benchmark::Chronometer meter) {
+        auto cps = distinct(detail::tables::euc_kr);
+        record_input("index euc-kr code points", cps.size() * sizeof(char32_t));
+        measure(meter, [&] { return count_elements(cps | whatwg_encode<codec::euc_kr>); });
+    };
+
+    describe({.conversion = "UTF-32 → GBK", .library = "beman.transcode", .api = "whatwg_encode view"});
+    BENCHMARK_ADVANCED("GBK encode: every code point in index gb18030 once")
+    (Catch::Benchmark::Chronometer meter) {
+        auto cps = distinct(detail::tables::gbk);
+        record_input("index gb18030 code points", cps.size() * sizeof(char32_t));
+        measure(meter, [&] { return count_elements(cps | whatwg_encode<codec::gbk>); });
+    };
+
+    describe({.conversion = "UTF-32 → Big5", .library = "beman.transcode", .api = "whatwg_encode view"});
+    BENCHMARK_ADVANCED("Big5 encode: every code point in index Big5 once")
+    (Catch::Benchmark::Chronometer meter) {
+        auto cps = distinct(detail::tables::big5);
+        record_input("index Big5 code points", cps.size() * sizeof(char32_t));
+        measure(meter, [&] { return count_elements(cps | whatwg_encode<codec::big5>); });
+    };
+
+    describe({.conversion = "UTF-32 → windows-1251", .library = "beman.transcode", .api = "whatwg_encode view"});
+    BENCHMARK_ADVANCED("Single-byte encode: windows-1251 Russian")
+    (Catch::Benchmark::Chronometer meter) {
+        std::vector<char32_t> cps;
+        for (char32_t cp : corpus_span("ru_mars_windows1251.bin") | whatwg_decode<codec::windows_1251>)
+            cps.push_back(cp);
+        record_input("ru_mars_windows1251.bin decoded", cps.size() * sizeof(char32_t));
+        // The single-byte encode view is random-access, so counting its
+        // elements never dereferences one; summing the bytes forces the lookups.
+        measure(meter, [&] {
+            std::size_t sum = 0;
+            for (char c : cps | whatwg_encode<codec::windows_1251>)
+                sum += static_cast<unsigned char>(c);
+            return sum;
+        });
     };
 }

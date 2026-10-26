@@ -26,7 +26,10 @@ namespace beman::transcoding::bench {
 template <std::invocable Fn>
 void measure(Catch::Benchmark::Chronometer meter, Fn&& fn);
 
-namespace detail {
+// Not "detail": the benchmark files use both beman::transcoding and
+// beman::transcoding::bench, and a bench::detail would make every mention of
+// the library's detail namespace ambiguous.
+namespace measure_detail {
 
 template <std::invocable Fn>
 void invoke_kept(Fn& fn) {
@@ -36,15 +39,15 @@ void invoke_kept(Fn& fn) {
         Catch::Benchmark::deoptimize_value(fn());
 }
 
-} // namespace detail
+} // namespace measure_detail
 
 template <std::invocable Fn>
 void measure(Catch::Benchmark::Chronometer meter, Fn&& fn) {
     if (std::size_t runs = begin_count(); runs != 0) {
-        detail::invoke_kept(fn);
+        measure_detail::invoke_kept(fn);
         start_counting();
         for (std::size_t i = 0; i < runs; ++i)
-            detail::invoke_kept(fn);
+            measure_detail::invoke_kept(fn);
         stop_counting();
     }
     meter.measure(std::forward<Fn>(fn));

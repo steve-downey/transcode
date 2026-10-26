@@ -37,6 +37,7 @@ set(BEMAN_TRANSCODE_HEADERS
     detail/labels.hpp
     detail/gb18030.hpp
     detail/range_traits.hpp
+    detail/reverse_index.hpp
     detail/whatwg_decode_select.hpp
     detail/whatwg_encode_select.hpp
     detail/gbk.hpp

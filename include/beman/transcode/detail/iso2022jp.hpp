@@ -13,6 +13,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/error.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
@@ -246,16 +247,16 @@ constexpr iso2022jp_encode_result iso2022jp_encode_one(iso2022jp_encode_state& s
         }
         return {{ascii_byte}, 1, false};
     }
-    for (int i = 0; i < 8836; ++i) {
-        if (tables::shift_jis[i] == cp) {
-            const auto lead  = static_cast<char>((i / 94) + 0x21);
-            const auto trail = static_cast<char>((i % 94) + 0x21);
-            if (st.state != 2) {
-                st.state = 2;
-                return {{'\x1B', '\x24', '\x42', lead, trail}, 5, false};
-            }
-            return {{lead, trail}, 2, false};
+    // WHATWG: the index pointer for the code point in index jis0208; every
+    // code point's first pointer there fits the 94x94 plane.
+    if (int pointer = reverse_index_for<tables::shift_jis>.find(cp); pointer >= 0) {
+        const auto lead  = static_cast<char>((pointer / 94) + 0x21);
+        const auto trail = static_cast<char>((pointer % 94) + 0x21);
+        if (st.state != 2) {
+            st.state = 2;
+            return {{'\x1B', '\x24', '\x42', lead, trail}, 5, false};
         }
+        return {{lead, trail}, 2, false};
     }
     // Unmapped.  The lossy encoder returns to ASCII before substituting, so the
     // replacement carries the escape sequence with it.
