@@ -1,0 +1,190 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# Measure whether a GitHub-hosted runner is a usable benchmark baseline.
+#
+# Build the benchmarks once, then run the same binaries in several identical
+# jobs, each on whatever runner it is given: a timed pass, then an
+# instruction-count pass under callgrind.  A last job reports, per benchmark,
+# how much the wall time and the instruction count vary across the jobs, and
+# which CPU model each job ran on.  See runner-stability and runner-trust in
+# docs/plans/bench-comparison.md.
+#
+# Run by hand only.  It is never part of Required CI and applies no
+# thresholds: the report is the result, whatever the numbers are.
+
+name: Benchmark Runner Stability
+
+on:
+  workflow_dispatch:
+    inputs:
+      jobs:
+        description: "Identical benchmark jobs to run (1-20)"
+        default: "10"
+      count_runs:
+        description: "Calls of each benchmark counted under callgrind"
+        default: "3"
+      suites:
+        description: "Benchmark suites, space separated"
+        default: "smoke utf whatwg pluggable iconv boundary"
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build benchmarks
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/bemanproject/infra-containers-gcc:latest
+    env:
+      VCPKG: ""
+    outputs:
+      jobs: ${{ steps.matrix.outputs.jobs }}
+    steps:
+      - name: Job list
+        id: matrix
+        shell: bash
+        env:
+          JOBS: ${{ inputs.jobs }}
+        run: |
+          if ! [[ "$JOBS" =~ ^[0-9]+$ ]] || (( JOBS < 1 || JOBS > 20 )); then
+            echo "jobs must be a number from 1 to 20, not '$JOBS'"
+            exit 1
+          fi
+          echo "jobs=[$(seq -s, 1 "$JOBS")]" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: 'recursive'
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.11.6"
+
+      # The callgrind client requests that count mode needs come from
+      # valgrind's headers, so valgrind must be present when building, or the
+      # count pass would count nothing.
+      - name: Install ccache and valgrind
+        shell: bash
+        run: |
+          curl -fsSL https://github.com/ccache/ccache/releases/download/v4.13.6/ccache-4.13.6-linux-x86_64-glibc.tar.xz \
+            | tar xJ --strip-components=1 -C /usr/local/bin ccache-4.13.6-linux-x86_64-glibc/ccache
+          apt-get update && apt-get install -y --no-install-recommends valgrind
+          test -f /usr/include/valgrind/callgrind.h
+
+      # RelWithDebInfo, not Perf: Perf builds with -march=native, and these
+      # binaries run on whatever CPU each later job is given.
+      - name: Build
+        shell: bash
+        env:
+          SUITES: ${{ inputs.suites }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          make venv
+          make .build/build-system/CMakeCache.txt
+          targets=()
+          for s in $SUITES; do targets+=("beman.transcode.benchmarks.$s"); done
+          uv run cmake --build .build/build-system --config RelWithDebInfo \
+            --target "${targets[@]}"
+
+      - name: Download corpora
+        shell: bash
+        run: uv run python tools/download_benchmark_corpora.py
+
+      # A tar keeps the binaries executable; an artifact alone would not.
+      - name: Pack binaries and corpora
+        shell: bash
+        run: |
+          tar cf bench-build.tar .build/build-system/benchmark/RelWithDebInfo data/benchmarks
+      - name: Upload binaries and corpora
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bench-build
+          path: bench-build.tar
+          retention-days: 7
+
+  run:
+    name: Benchmark job ${{ matrix.job }}
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/bemanproject/infra-containers-gcc:latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        job: ${{ fromJSON(needs.build.outputs.jobs) }}
+    steps:
+      # Checked out at the same path as the build, since the binaries look for
+      # the corpora by the absolute path they were built with.
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install valgrind
+        shell: bash
+        run: apt-get update && apt-get install -y --no-install-recommends valgrind
+      - name: Download binaries and corpora
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: bench-build
+      - name: Unpack binaries and corpora
+        shell: bash
+        run: tar xf bench-build.tar && rm bench-build.tar
+      - name: Run the suites, timed then counted
+        shell: bash
+        env:
+          SUITES: ${{ inputs.suites }}
+          COUNT_RUNS: ${{ inputs.count_runs }}
+        run: |
+          make bench-stability-job \
+            BENCH_BIN_DIR=.build/build-system/benchmark/RelWithDebInfo \
+            BENCH_JOB_DIR=stability/job-${{ matrix.job }} \
+            BENCH_REPEAT_SUITES="$SUITES" \
+            BENCH_COUNT_RUNS="$COUNT_RUNS"
+      - name: Upload results
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bench-stability-job-${{ matrix.job }}
+          path: stability/job-${{ matrix.job }}
+          retention-days: 30
+
+  # Reports on whatever jobs finished, so one failed job does not lose the
+  # rest.
+  report:
+    name: Stability report
+    needs: run
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.11.6"
+      - name: Download job results
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: bench-stability-job-*
+          path: stability
+      - name: Report
+        shell: bash
+        run: |
+          uv run python tools/runner_stability.py \
+            --label "${{ github.sha }}" \
+            --markdown stability/report.md \
+            --json stability/report.json \
+            $(ls -d stability/bench-stability-job-* | sort -V)
+          cat stability/report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bench-stability-report
+          path: |
+            stability/report.md
+            stability/report.json
+          retention-days: 90

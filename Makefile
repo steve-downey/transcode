@@ -558,6 +558,22 @@ BENCH_COUNT_RUNS ?= 3
 BENCH_INSTRUCTION_SUITES ?= $(BENCH_REPEAT_SUITES)
 BENCH_INSTRUCTION_DIR ?= $(BENCH_RESULTS_DIR)/instructions
 
+# $(call bench_count_suites,BIN_DIR,OUT_DIR): count each of
+# BENCH_INSTRUCTION_SUITES from the binaries in BIN_DIR into OUT_DIR.
+define bench_count_suites
+for s in $(BENCH_INSTRUCTION_SUITES); do \
+	if [ "$$s" = smoke ]; then tag="[smoke]"; else tag="[benchmark][$$s]"; fi; \
+	echo "counting: $$s"; \
+	BEMAN_TRANSCODE_BENCH_COUNT=$(BENCH_COUNT_RUNS) \
+		valgrind --tool=callgrind --collect-atstart=no \
+		--callgrind-out-file=$(2)/$$s.callgrind.%p \
+		$(1)/beman.transcode.benchmarks.$$s "$$tag" \
+		--benchmark-samples 1 --benchmark-resamples 1 --benchmark-warmup-time 0 \
+		--reporter xml --out $(2)/$$s.xml >/dev/null 2>&1 \
+		|| echo "warning: $$s exited with status $$?"; \
+done
+endef
+
 .PHONY: bench-instructions
 bench-instructions: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, count instructions of the core suites under callgrind, report
 	@command -v valgrind >/dev/null || { echo "bench-instructions needs valgrind"; exit 2; }
@@ -567,17 +583,7 @@ bench-instructions: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, count in
 	fi
 	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
 	@mkdir -p $(BENCH_INSTRUCTION_DIR)
-	@for s in $(BENCH_INSTRUCTION_SUITES); do \
-		if [ "$$s" = smoke ]; then tag="[smoke]"; else tag="[benchmark][$$s]"; fi; \
-		echo "counting: $$s"; \
-		BEMAN_TRANSCODE_BENCH_COUNT=$(BENCH_COUNT_RUNS) \
-			valgrind --tool=callgrind --collect-atstart=no \
-			--callgrind-out-file=$(BENCH_INSTRUCTION_DIR)/$$s.callgrind.%p \
-			$(_PERF_BENCH)/beman.transcode.benchmarks.$$s "$$tag" \
-			--benchmark-samples 1 --benchmark-resamples 1 --benchmark-warmup-time 0 \
-			--reporter xml --out $(BENCH_INSTRUCTION_DIR)/$$s.xml >/dev/null 2>&1 \
-			|| echo "warning: $$s exited with status $$?"; \
-	done
+	@$(call bench_count_suites,$(_PERF_BENCH),$(BENCH_INSTRUCTION_DIR))
 	$(UV) run python tools/process_benchmark_results.py \
 		--label "GCC-16 Perf, instruction counts" \
 		--markdown $(BENCH_INSTRUCTION_DIR)/report.md \
@@ -585,6 +591,35 @@ bench-instructions: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, count in
 		--svg-dir $(BENCH_INSTRUCTION_DIR)/svg \
 		--vegalite $(BENCH_INSTRUCTION_DIR)/report.vl.json \
 		$(BENCH_INSTRUCTION_DIR)
+
+# One job of the runner-stability workflow
+# (.github/workflows/bench-runner-stability.yml): run the core suites once
+# timed, into BENCH_JOB_DIR/timing, then once counted, into
+# BENCH_JOB_DIR/instructions, from binaries already built in BENCH_BIN_DIR.
+# It builds nothing and writes no report; tools/runner_stability.py reports on
+# all the jobs' directories together.
+BENCH_JOB_DIR ?= $(BENCH_RESULTS_DIR)/stability-job
+
+.PHONY: bench-stability-job
+bench-stability-job: ## Run the core suites timed, then counted, from prebuilt BENCH_BIN_DIR into BENCH_JOB_DIR
+	@if [ -z "$(BENCH_BIN_DIR)" ]; then \
+		echo "usage: make bench-stability-job BENCH_BIN_DIR=DIR [BENCH_JOB_DIR=DIR]"; \
+		exit 2; \
+	fi
+	@command -v valgrind >/dev/null || { echo "bench-stability-job needs valgrind"; exit 2; }
+	@if ls $(BENCH_JOB_DIR)/*/*.xml >/dev/null 2>&1; then \
+		echo "$(BENCH_JOB_DIR) already holds results; move them or set BENCH_JOB_DIR"; \
+		exit 2; \
+	fi
+	@mkdir -p $(BENCH_JOB_DIR)/timing $(BENCH_JOB_DIR)/instructions
+	@for s in $(BENCH_REPEAT_SUITES); do \
+		if [ "$$s" = smoke ]; then tag="[smoke]"; else tag="[benchmark][$$s]"; fi; \
+		echo "timing: $$s"; \
+		$(BENCH_BIN_DIR)/beman.transcode.benchmarks.$$s "$$tag" \
+			--reporter xml --out $(BENCH_JOB_DIR)/timing/$$s.xml >/dev/null \
+			|| echo "warning: $$s exited with status $$?"; \
+	done
+	@$(call bench_count_suites,$(BENCH_BIN_DIR),$(BENCH_JOB_DIR)/instructions)
 
 # Compare two result directories, each holding the XML and .meta.json files of
 # one run, e.g. a copy of $(BENCH_RESULTS_DIR) taken before a change.  An empty
