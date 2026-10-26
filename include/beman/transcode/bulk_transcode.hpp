@@ -71,7 +71,7 @@ constexpr void encode_into(Codec codec, R&& source, Output output);
 // Out-of-line definitions: WHATWG codec, as a template parameter
 // ---------------------------------------------------------------------------
 
-//! \returns-equiv
+//! \returns-expr
 //! \remarks Each of these is the pipeline it names, run to completion.  They
 //! add no behaviour to it: the errors are the decoding view's, substituted
 //! rather than reported \iref{transcode.whatwg.decode}, and a caller who wants
@@ -83,7 +83,7 @@ constexpr std::vector<char32_t> decode_to(R&& source) {
     return std::forward<R>(source) | whatwg_decode<C> | std::ranges::to<std::vector<char32_t>>();
 }
 
-//! \returns-equiv
+//! \returns-expr
 //! \remarks `Container` is the caller's choice of result, defaulted to
 //! `string` because that is what encoded bytes are usually wanted in.
 template <codec C, typename Container, unicode_scalar_range R>
@@ -107,7 +107,7 @@ constexpr void encode_into(R&& source, Output output) {
 // Out-of-line definitions: pluggable codec, as an argument
 // ---------------------------------------------------------------------------
 
-//! \returns-equiv
+//! \returns-expr
 //! \remarks The same four operations over a codec supplied as a value
 //! \iref{transcode.custom.reqs}, for a codec chosen at run time or one the
 //! `codec` enumeration does not name.
@@ -116,7 +116,7 @@ constexpr std::vector<char32_t> decode_to(Codec codec, R&& source) {
     return std::forward<R>(source) | decode(codec) | std::ranges::to<std::vector<char32_t>>();
 }
 
-//! \returns-equiv
+//! \returns-expr
 template <encode_codec Codec, typename Container, unicode_scalar_range R>
 constexpr Container encode_to(Codec codec, R&& source) {
     return std::forward<R>(source) | encode(codec) | std::ranges::to<Container>();

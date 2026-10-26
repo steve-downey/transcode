@@ -10,4 +10,4 @@
 # paper has not adopted.  Pin a commit SHA here instead as soon as the pair
 # stops moving together -- the file is read verbatim by `git checkout`, so a SHA
 # works with no other change.
-main
+b79ff35c4d8daee9f657a47940422c8d41479353

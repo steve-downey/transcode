@@ -111,7 +111,7 @@ inline constexpr detail::null_term_adaptor null_term{};
 template <std::contiguous_iterator I>
 constexpr null_term_view<I>::null_term_view(I ptr) : ptr_(ptr) {}
 
-//! \returns-equiv
+//! \returns-expr
 template <std::contiguous_iterator I>
 constexpr I null_term_view<I>::begin() const {
     return ptr_;

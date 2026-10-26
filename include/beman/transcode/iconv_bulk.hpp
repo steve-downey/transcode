@@ -148,7 +148,7 @@ Container iconv_transcode_to(R&& source, const char* from, const char* to, Iconv
 
 // iconv_transcode_to<Container>(source, from, to)
 // Overload using real iconv (no dependency injection).
-//! \returns-equiv
+//! \returns-expr
 template <typename Container = std::string, legacy_byte_range R>
 Container iconv_transcode_to(R&& source, const char* from, const char* to) {
     return iconv_transcode_to<Container>(std::forward<R>(source), from, to, make_real_iconv_fns());
@@ -221,7 +221,7 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
 
 // iconv_transcode_into(source, from, to, output)
 // Overload using real iconv.
-//! \returns-equiv
+//! \returns-expr
 template <legacy_byte_range R, std::output_iterator<char> Output>
 Output iconv_transcode_into(R&& source, const char* from, const char* to, Output output) {
     return iconv_transcode_into(std::forward<R>(source), from, to, std::move(output), make_real_iconv_fns());
@@ -300,7 +300,7 @@ iconv_transcode_to_or_error(R&& source, const char* from, const char* to, IconvF
 
 // iconv_transcode_to_or_error<Container>(source, from, to)
 // Overload using real iconv.
-//! \returns-equiv
+//! \returns-expr
 template <typename Container = std::string, legacy_byte_range R>
 std::expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source, const char* from, const char* to) {
     return iconv_transcode_to_or_error<Container>(std::forward<R>(source), from, to, make_real_iconv_fns());

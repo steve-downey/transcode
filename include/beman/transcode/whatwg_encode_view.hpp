@@ -313,9 +313,9 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
     // \ref{transcode.whatwg.encode}, construction and access
     constexpr explicit whatwg_encode_view(R base);
 
-    //! \returns-equiv
+    //! \returns-expr
     constexpr const R& base() const& noexcept { return base_; }
-    //! \returns-equiv
+    //! \returns-expr
     constexpr R base() && { return std::move(base_); }
 
     constexpr iterator begin();

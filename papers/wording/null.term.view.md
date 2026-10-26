@@ -20,11 +20,7 @@ constexpr explicit null_term_view(I ptr);
 constexpr I begin() const;
 ```
 
-[#]{.pnum} *Returns*: Equivalent to:
-
-```cpp
-return $ptr$;
-```
+[#]{.pnum} *Returns*: `$ptr$`.
 
 ```cpp
 constexpr null_sentinel_t end() const;

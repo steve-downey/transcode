@@ -111,9 +111,9 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
     // \ref{transcode.custom.encode}, construction and access
     constexpr explicit encode_view(R base, Codec codec = {});
 
-    //! \returns-equiv
+    //! \returns-expr
     constexpr const R& base() const& noexcept { return base_; }
-    //! \returns-equiv
+    //! \returns-expr
     constexpr R base() && { return std::move(base_); }
 
     constexpr iterator begin();

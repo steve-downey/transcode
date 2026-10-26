@@ -202,9 +202,9 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
     // \ref{transcode.custom.decode}, construction and access
     constexpr explicit decode_view(R base, Codec codec = {});
 
-    //! \returns-equiv
+    //! \returns-expr
     constexpr const R& base() const& noexcept { return base_; }
-    //! \returns-equiv
+    //! \returns-expr
     constexpr R base() && { return std::move(base_); }
 
     constexpr iterator begin();
@@ -452,7 +452,7 @@ constexpr void decode_view<Codec, R, E>::iterator::load() {
 
 template <decode_codec Codec, std::ranges::input_range R, transcode_error_kind E>
     requires legacy_byte_range<R>
-//! \returns-equiv
+//! \returns-expr
 constexpr auto decode_view<Codec, R, E>::iterator::operator*() const -> result_t {
     return value_;
 }
