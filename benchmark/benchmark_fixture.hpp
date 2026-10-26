@@ -4,6 +4,7 @@
 #define BENCHMARK_BENCHMARK_FIXTURE_HPP
 
 #include <cstddef>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -69,8 +70,51 @@ void                                 end_benchmark();
 const std::vector<benchmark_record>& benchmark_records();
 void                                 clear_benchmark_records();
 
+// Count mode, for counting instructions under callgrind.  While count_runs()
+// is N > 0, bench::measure (benchmark_measure.hpp) runs each benchmark's body
+// N more times with callgrind collecting, and the sidecar records N.  0, the
+// default, is ordinary timing.
+std::size_t count_runs();
+
+// Set count_runs(). The listener sets it from BEMAN_TRANSCODE_BENCH_COUNT as
+// the run starts.
+void set_count_runs(std::size_t runs);
+
+// A BEMAN_TRANSCODE_BENCH_COUNT value as a run count: a positive decimal
+// integer, or 0 for anything else, including null.
+std::size_t parse_count_runs(const char* text);
+
+// For bench::measure.  The number of calls to count for the running benchmark:
+// count_runs() the first time it asks, and 0 after that, outside count mode,
+// or outside a benchmark.
+std::size_t begin_count();
+
+// For bench::measure.  Turn callgrind's collection on before the counted
+// calls; turn it off after them and dump the counts, described by the running
+// benchmark's name.  Outside Valgrind they do nothing.
+void start_counting();
+void stop_counting();
+
+// The system load averages over the last 1, 5 and 15 minutes.
+struct load_average {
+    double one     = 0.0;
+    double five    = 0.0;
+    double fifteen = 0.0;
+};
+
+// Parse the contents of /proc/loadavg; nullopt when it is not in that form.
+std::optional<load_average> parse_load_average(std::string_view text);
+
+// The current load averages, or nullopt where /proc/loadavg is unavailable.
+std::optional<load_average> read_load_average();
+
+// Record the load average as the run starts, for the sidecar; the listener
+// calls it when the test run begins.
+void begin_run();
+
 // The sidecar written beside the Catch2 XML: a JSON object holding the build
-// environment and one entry per benchmark record.
+// environment, the load at the start of the run (from begin_run) and now, and
+// one entry per benchmark record.
 std::string metadata_json(const std::vector<benchmark_record>& records);
 
 } // namespace beman::transcoding::bench

@@ -4,6 +4,7 @@
 #include <beman/transcode/iconv_transcode_view.hpp>
 
 #include <benchmark/benchmark_fixture.hpp>
+#include <benchmark/benchmark_measure.hpp>
 #include <benchmark/benchmark_sink.hpp>
 #include <beman/transcode/transcode.hpp>
 #include <tests/beman/transcode/iconv_mock.hpp>
@@ -50,7 +51,7 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
     BENCHMARK_ADVANCED("Chunked whatwg UTF-8→char32: Arabic full corpus (baseline)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ar_mars_utf8.txt");
-        meter.measure([&] { return count_elements(data | whatwg_decode<codec::utf_8>); });
+        measure(meter, [&] { return count_elements(data | whatwg_decode<codec::utf_8>); });
     };
 
     describe(
@@ -59,7 +60,7 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
     (Catch::Benchmark::Chronometer meter) {
         auto data   = load_corpus("ar_mars_utf8.txt");
         auto chunks = chunk_corpus(data, 4); // 4 bytes = 2 complete Arabic 2-byte chars
-        meter.measure([&] {
+        measure(meter, [&] {
             std::size_t n = 0;
             for (auto chunk : chunks)
                 n += count_elements(std::span<const char>(chunk.data(), chunk.size()) | whatwg_decode<codec::utf_8>);
@@ -73,7 +74,7 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
     (Catch::Benchmark::Chronometer meter) {
         auto data   = load_corpus("ar_mars_utf8.txt");
         auto chunks = chunk_corpus(data, 3); // 3 bytes splits 2-byte seqs at boundaries
-        meter.measure([&] {
+        measure(meter, [&] {
             std::size_t n = 0;
             for (auto chunk : chunks)
                 n += count_elements(std::span<const char>(chunk.data(), chunk.size()) | whatwg_decode<codec::utf_8>);
@@ -103,7 +104,7 @@ TEST_CASE("Mock-iconv EINVAL stress: pairwise staging", "[benchmark][boundary][s
         std::span<const char> data{einval_corpus.data(), einval_corpus.size()};
         std::span<char>       out{mock_out_buf};
         record_input("64 × 'A'", data.size());
-        meter.measure([&] {
+        measure(meter, [&] {
             return count_elements(
                 iconv_transcode_view<iconv_functions, std::span<const char>>(data, fns, "X", "X", out));
         });
@@ -130,7 +131,7 @@ TEST_CASE("Mock-iconv E2BIG stress: buffer exhaustion recovery", "[benchmark][bo
         std::span<const char> data{e2big_corpus.data(), e2big_corpus.size()};
         std::span<char>       out{mock_out_buf};
         record_input("48 × 'X'", data.size());
-        meter.measure([&] {
+        measure(meter, [&] {
             return count_elements(
                 iconv_transcode_view<iconv_functions, std::span<const char>>(data, fns, "X", "X", out));
         });

@@ -15,6 +15,7 @@
 // is set automatically when cargo is found.  See benchmark/CMakeLists.txt.
 
 #include <benchmark/benchmark_fixture.hpp>
+#include <benchmark/benchmark_measure.hpp>
 #include <benchmark/benchmark_sink.hpp>
 
 #include <catch2/catch_all.hpp>
@@ -43,7 +44,7 @@ TEST_CASE("encoding_rs baselines", "[benchmark][encoding_rs]") {
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("en_mars_utf8.txt");
         REQUIRE(src.size() * 4 <= kOutBufSize);
-        meter.measure([&] {
+        measure(meter, [&] {
             return enc_rs_utf8_to_utf8(reinterpret_cast<const uint8_t*>(src.data()),
                                        src.size(),
                                        reinterpret_cast<uint8_t*>(g_out_buf),
@@ -56,7 +57,7 @@ TEST_CASE("encoding_rs baselines", "[benchmark][encoding_rs]") {
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ja_mars_utf8.txt");
         REQUIRE(src.size() * 4 <= kOutBufSize);
-        meter.measure([&] {
+        measure(meter, [&] {
             return enc_rs_utf8_to_utf8(reinterpret_cast<const uint8_t*>(src.data()),
                                        src.size(),
                                        reinterpret_cast<uint8_t*>(g_out_buf),
@@ -69,7 +70,7 @@ TEST_CASE("encoding_rs baselines", "[benchmark][encoding_rs]") {
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ru_mars_windows1251.bin");
         REQUIRE(src.size() * 4 <= kOutBufSize);
-        meter.measure([&] {
+        measure(meter, [&] {
             return enc_rs_windows1251_to_utf8(reinterpret_cast<const uint8_t*>(src.data()),
                                               src.size(),
                                               reinterpret_cast<uint8_t*>(g_out_buf),
@@ -82,7 +83,7 @@ TEST_CASE("encoding_rs baselines", "[benchmark][encoding_rs]") {
     (Catch::Benchmark::Chronometer meter) {
         auto src = corpus_span("ja_mars_shiftjis.bin");
         REQUIRE(src.size() * 4 <= kOutBufSize);
-        meter.measure([&] {
+        measure(meter, [&] {
             return enc_rs_shift_jis_to_utf8(reinterpret_cast<const uint8_t*>(src.data()),
                                             src.size(),
                                             reinterpret_cast<uint8_t*>(g_out_buf),
