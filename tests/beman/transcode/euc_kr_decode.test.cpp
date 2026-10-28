@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/error.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
@@ -32,19 +32,19 @@ std::vector<std::expected<char32_t, beman::transcoding::whatwg::error>> collect_
 using namespace beman::transcoding;
 
 // ---------------------------------------------------------------------------
-// whatwg_decode<whatwg::encoding::euc_kr>
+// whatwg::decode<whatwg::encoding::euc_kr>
 // ---------------------------------------------------------------------------
 
 TEST_CASE("euc_kr decode ASCII passthrough 'A' (0x41)", "[transcoding::euc_kr]") {
     std::vector<char> bytes{'\x41'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'A');
 }
 
 TEST_CASE("euc_kr decode ASCII NUL (0x00)", "[transcoding::euc_kr]") {
     std::vector<char> bytes{'\x00'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\0');
 }
@@ -52,7 +52,7 @@ TEST_CASE("euc_kr decode ASCII NUL (0x00)", "[transcoding::euc_kr]") {
 TEST_CASE("euc_kr decode pointer 0: 0x81 0x41 -> U+AC02", "[transcoding::euc_kr]") {
     // pointer = (0x81 - 0x81) * 190 + (0x41 - 0x41) = 0 -> U+AC02
     std::vector<char> bytes{'\x81', '\x41'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xAC02');
 }
@@ -60,21 +60,21 @@ TEST_CASE("euc_kr decode pointer 0: 0x81 0x41 -> U+AC02", "[transcoding::euc_kr]
 TEST_CASE("euc_kr decode U+AC00 (가): 0xB0 0xA1", "[transcoding::euc_kr]") {
     // pointer = (0xB0 - 0x81) * 190 + (0xA1 - 0x41) = 47*190 + 96 = 9026 -> U+AC00
     std::vector<char> bytes{'\xB0', '\xA1'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xAC00');
 }
 
 TEST_CASE("euc_kr decode invalid lead byte 0x80 -> U+FFFD", "[transcoding::euc_kr]") {
     std::vector<char> bytes{'\x80'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
 
 TEST_CASE("euc_kr decode invalid lead byte 0xFF -> U+FFFD", "[transcoding::euc_kr]") {
     std::vector<char> bytes{'\xFF'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
@@ -83,7 +83,7 @@ TEST_CASE("euc_kr decode trail byte 0x7F -> U+FFFD", "[transcoding::euc_kr]") {
     // WHATWG admits 0x7F as a trail byte, but index euc-kr maps no pointer
     // with that trail, so the result is the same as an invalid byte.
     std::vector<char> bytes{'\x81', '\x7F'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
@@ -91,7 +91,7 @@ TEST_CASE("euc_kr decode trail byte 0x7F -> U+FFFD", "[transcoding::euc_kr]") {
 TEST_CASE("euc_kr decode invalid trail byte 0x40 -> U+FFFD", "[transcoding::euc_kr]") {
     // trail must be >= 0x41
     std::vector<char> bytes{'\x81', '\x40'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
@@ -101,14 +101,14 @@ TEST_CASE("euc_kr decode unmapped pointer (pointer 26): 0x81 0x5B -> U+FFFD", "[
     // trail=0x5B: pointer = 0x5B - 0x41 = 26
     // pointer = 0*190 + 26 = 26, euc_kr[26] == 0 -> U+FFFD
     std::vector<char> bytes{'\x81', '\x5B'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
 
 TEST_CASE("euc_kr decode truncated sequence: lone lead 0x81 -> U+FFFD", "[transcoding::euc_kr]") {
     std::vector<char> bytes{'\x81'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
@@ -116,7 +116,7 @@ TEST_CASE("euc_kr decode truncated sequence: lone lead 0x81 -> U+FFFD", "[transc
 TEST_CASE("euc_kr decode mixed ASCII + Korean", "[transcoding::euc_kr]") {
     // 'A' (0x41) + U+AC00 (0xB0 0xA1)
     std::vector<char> bytes{'\x41', '\xB0', '\xA1'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::euc_kr>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 2);
     CHECK(result[0] == U'A');
     CHECK(result[1] == U'\xAC00');
@@ -126,7 +126,7 @@ TEST_CASE("euc_kr decode pipe syntax with span", "[transcoding::euc_kr]") {
     std::vector<char>     bytes{'\x41'};
     std::span<const char> sp(bytes);
     std::vector<char32_t> result;
-    for (char32_t cp : sp | whatwg_decode<whatwg::encoding::euc_kr>)
+    for (char32_t cp : sp | whatwg::decode<whatwg::encoding::euc_kr>)
         result.push_back(cp);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'A');
@@ -137,18 +137,18 @@ TEST_CASE("euc_kr decode consteval ASCII", "[transcoding::euc_kr]") {
     constexpr auto decode_a = []() consteval {
         constexpr char        bytes[] = {'\x41'};
         std::span<const char> sp(bytes, 1);
-        return *(sp | whatwg_decode<whatwg::encoding::euc_kr>).begin();
+        return *(sp | whatwg::decode<whatwg::encoding::euc_kr>).begin();
     };
     CHECK(constify(decode_a()) == U'A');
 }
 
 // ---------------------------------------------------------------------------
-// whatwg_decode_or_error<whatwg::encoding::euc_kr>
+// whatwg::decode_or_error<whatwg::encoding::euc_kr>
 // ---------------------------------------------------------------------------
 
 TEST_CASE("euc_kr or_error: ASCII passthrough", "[transcoding::euc_kr_or_error]") {
     std::vector<char> bytes{'\x41'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::euc_kr>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == U'A');
@@ -156,7 +156,7 @@ TEST_CASE("euc_kr or_error: ASCII passthrough", "[transcoding::euc_kr_or_error]"
 
 TEST_CASE("euc_kr or_error: pointer 0 -> U+AC02", "[transcoding::euc_kr_or_error]") {
     std::vector<char> bytes{'\x81', '\x41'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::euc_kr>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == U'\xAC02');
@@ -164,7 +164,7 @@ TEST_CASE("euc_kr or_error: pointer 0 -> U+AC02", "[transcoding::euc_kr_or_error
 
 TEST_CASE("euc_kr or_error: U+AC00 (가) -> success", "[transcoding::euc_kr_or_error]") {
     std::vector<char> bytes{'\xB0', '\xA1'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::euc_kr>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == U'\xAC00');
@@ -172,7 +172,7 @@ TEST_CASE("euc_kr or_error: U+AC00 (가) -> success", "[transcoding::euc_kr_or_e
 
 TEST_CASE("euc_kr or_error: invalid lead byte yields error", "[transcoding::euc_kr_or_error]") {
     std::vector<char> bytes{'\x80'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::euc_kr>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::invalid_byte);
@@ -180,7 +180,7 @@ TEST_CASE("euc_kr or_error: invalid lead byte yields error", "[transcoding::euc_
 
 TEST_CASE("euc_kr or_error: truncated sequence yields error", "[transcoding::euc_kr_or_error]") {
     std::vector<char> bytes{'\x81'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::euc_kr>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::truncated_sequence);
@@ -188,7 +188,7 @@ TEST_CASE("euc_kr or_error: truncated sequence yields error", "[transcoding::euc
 
 TEST_CASE("euc_kr or_error: invalid trail byte yields error", "[transcoding::euc_kr_or_error]") {
     std::vector<char> bytes{'\x81', '\x7F'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::euc_kr>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::euc_kr>);
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::invalid_byte);

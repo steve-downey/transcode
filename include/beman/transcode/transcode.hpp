@@ -39,12 +39,14 @@ import beman.transcode;
     #include <beman/transcode/whatwg/label.hpp>
     #include <beman/transcode/codec_result.hpp>
     #include <beman/transcode/codec_concepts.hpp>
-    #include <beman/transcode/whatwg_decode_view.hpp>
-    #include <beman/transcode/whatwg_encode_view.hpp>
+    #include <beman/transcode/whatwg/decode_view.hpp>
+    #include <beman/transcode/whatwg/encode_view.hpp>
     #include <beman/transcode/decode_view.hpp>
     #include <beman/transcode/encode_view.hpp>
+    #include <beman/transcode/whatwg/transcode_view.hpp>
     #include <beman/transcode/transcode_view.hpp>
-    #include <beman/transcode/transcode_string.hpp>
+    #include <beman/transcode/whatwg/transcode_string.hpp>
+    #include <beman/transcode/whatwg/bulk.hpp>
     #include <beman/transcode/bulk_transcode.hpp>
     #include <beman/transcode/whatwg/bom_sniff.hpp>
     #include <beman/transcode/iconv_transcode_view.hpp>
@@ -77,11 +79,11 @@ import beman.transcode;
 
     // \rSec2[transcode.whatwg.decode]{Decoding views}
 
-    // \rSec3[transcode.whatwg.decode.iterator]{Class `whatwg_decode_view::iterator`}
+    // \rSec3[transcode.whatwg.decode.iterator]{Class `whatwg::decode_view::iterator`}
 
     // \rSec2[transcode.whatwg.encode]{Encoding views}
 
-    // \rSec3[transcode.whatwg.encode.iterator]{Class `whatwg_encode_view::iterator`}
+    // \rSec3[transcode.whatwg.encode.iterator]{Class `whatwg::encode_view::iterator`}
 
     // \rSec2[transcode.custom.reqs]{Codec requirements}
 

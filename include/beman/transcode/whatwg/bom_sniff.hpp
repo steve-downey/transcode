@@ -7,7 +7,7 @@
 
 #include <beman/transcode/concepts.hpp>
 #include <beman/transcode/null_term.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()

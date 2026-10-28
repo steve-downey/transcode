@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_encode_view.hpp>
-#include <beman/transcode/whatwg_encode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/encode_view.hpp>
+#include <beman/transcode/whatwg/encode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
 
@@ -16,10 +16,10 @@ namespace {
 template <whatwg::encoding C>
 std::vector<char32_t> encode_then_decode(std::vector<char32_t> cps) {
     std::vector<char> bytes;
-    for (char b : cps | whatwg_encode<C>)
+    for (char b : cps | whatwg::encode<C>)
         bytes.push_back(b);
     std::vector<char32_t> result;
-    for (char32_t cp : bytes | whatwg_decode<C>)
+    for (char32_t cp : bytes | whatwg::decode<C>)
         result.push_back(cp);
     return result;
 }
@@ -27,10 +27,10 @@ std::vector<char32_t> encode_then_decode(std::vector<char32_t> cps) {
 template <whatwg::encoding C>
 std::vector<char> decode_then_encode(std::vector<char> bytes) {
     std::vector<char32_t> cps;
-    for (char32_t cp : bytes | whatwg_decode<C>)
+    for (char32_t cp : bytes | whatwg::decode<C>)
         cps.push_back(cp);
     std::vector<char> result;
-    for (char b : cps | whatwg_encode<C>)
+    for (char b : cps | whatwg::encode<C>)
         result.push_back(b);
     return result;
 }
@@ -121,7 +121,7 @@ TEST_CASE("gbk decode-then-encode: bytes from encoding", "[roundtrip::gbk]") {
     // derive canonical bytes by encoding, then verify decode->encode returns same bytes
     std::vector<char32_t> cps{U'A', U'\x4E00'};
     std::vector<char>     bytes;
-    for (char b : cps | whatwg_encode<whatwg::encoding::gbk>)
+    for (char b : cps | whatwg::encode<whatwg::encoding::gbk>)
         bytes.push_back(b);
     CHECK(decode_then_encode<whatwg::encoding::gbk>(bytes) == bytes);
 }
@@ -139,7 +139,7 @@ TEST_CASE("gb18030 encode-then-decode: ASCII, BMP CJK, supplementary", "[roundtr
 TEST_CASE("gb18030 decode-then-encode: bytes from encoding", "[roundtrip::gb18030]") {
     std::vector<char32_t> cps{U'A', U'\x4E00', U'\x1F600'};
     std::vector<char>     bytes;
-    for (char b : cps | whatwg_encode<whatwg::encoding::gb18030>)
+    for (char b : cps | whatwg::encode<whatwg::encoding::gb18030>)
         bytes.push_back(b);
     CHECK(decode_then_encode<whatwg::encoding::gb18030>(bytes) == bytes);
 }
@@ -158,7 +158,7 @@ TEST_CASE("big5 encode-then-decode: ASCII and Traditional Chinese", "[roundtrip:
 TEST_CASE("big5 decode-then-encode: bytes from encoding", "[roundtrip::big5]") {
     std::vector<char32_t> cps{U'A', U'\x4E00'};
     std::vector<char>     bytes;
-    for (char b : cps | whatwg_encode<whatwg::encoding::big5>)
+    for (char b : cps | whatwg::encode<whatwg::encoding::big5>)
         bytes.push_back(b);
     CHECK(decode_then_encode<whatwg::encoding::big5>(bytes) == bytes);
 }
@@ -177,7 +177,7 @@ TEST_CASE("shift_jis encode-then-decode: ASCII, katakana, CJK", "[roundtrip::shi
 TEST_CASE("shift_jis decode-then-encode: bytes from encoding", "[roundtrip::shift_jis]") {
     std::vector<char32_t> cps{U'A', U'\x3000', U'\xFF61'};
     std::vector<char>     bytes;
-    for (char b : cps | whatwg_encode<whatwg::encoding::shift_jis>)
+    for (char b : cps | whatwg::encode<whatwg::encoding::shift_jis>)
         bytes.push_back(b);
     CHECK(decode_then_encode<whatwg::encoding::shift_jis>(bytes) == bytes);
 }
@@ -197,7 +197,7 @@ TEST_CASE("euc_jp encode-then-decode: ASCII, JIS X 0208, half-width katakana, JI
 TEST_CASE("euc_jp decode-then-encode: bytes from encoding", "[roundtrip::euc_jp]") {
     std::vector<char32_t> cps{U'A', U'\x3000', U'\xFF61'};
     std::vector<char>     bytes;
-    for (char b : cps | whatwg_encode<whatwg::encoding::euc_jp>)
+    for (char b : cps | whatwg::encode<whatwg::encoding::euc_jp>)
         bytes.push_back(b);
     CHECK(decode_then_encode<whatwg::encoding::euc_jp>(bytes) == bytes);
 }

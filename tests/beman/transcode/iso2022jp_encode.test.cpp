@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_encode_view.hpp>
-#include <beman/transcode/whatwg_encode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/encode_view.hpp>
+#include <beman/transcode/whatwg/encode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
 #include <beman/transcode/whatwg/error.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
@@ -35,19 +35,19 @@ std::vector<std::expected<char, beman::transcoding::whatwg::error>> collect_or_e
 using namespace beman::transcoding;
 
 // ---------------------------------------------------------------------------
-// whatwg_encode<whatwg::encoding::iso_2022_jp>
+// whatwg::encode<whatwg::encoding::iso_2022_jp>
 // ---------------------------------------------------------------------------
 
 TEST_CASE("iso_2022_jp encode ASCII 'A' -> 0x41 (no escape)", "[transcoding::iso_2022_jp_encode]") {
     std::vector<char32_t> cps{U'A'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == '\x41');
 }
 
 TEST_CASE("iso_2022_jp encode ASCII NUL -> 0x00", "[transcoding::iso_2022_jp_encode]") {
     std::vector<char32_t> cps{U'\0'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == '\x00');
 }
@@ -56,7 +56,7 @@ TEST_CASE("iso_2022_jp encode U+00A5 (YEN SIGN) -> ESC ( J 0x5C [+ ESC ( B at en
           "[transcoding::iso_2022_jp_encode]") {
     // U+00A5 → ESC ( J 0x5C (4 bytes, state=Roman); end-of-stream in Roman → ESC ( B (3 bytes)
     std::vector<char32_t> cps{U'\x00A5'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 7);
     CHECK(result[0] == '\x1B');
     CHECK(result[1] == '\x28');
@@ -71,7 +71,7 @@ TEST_CASE("iso_2022_jp encode U+203E (OVERLINE) -> ESC ( J 0x7E [+ ESC ( B at en
           "[transcoding::iso_2022_jp_encode]") {
     // U+203E → ESC ( J 0x7E (4 bytes, state=Roman); end-of-stream in Roman → ESC ( B (3 bytes)
     std::vector<char32_t> cps{U'\x203E'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 7);
     CHECK(result[0] == '\x1B');
     CHECK(result[1] == '\x28');
@@ -86,7 +86,7 @@ TEST_CASE("iso_2022_jp encode U+3000 (JIS X 0208 pointer 0) -> ESC $ B 0x21 0x21
           "[transcoding::iso_2022_jp_encode]") {
     // ESC $ B = 1B 24 42, lead=0x21, trail=0x21; end-of-stream in JIS0208 appends ESC ( B
     std::vector<char32_t> cps{U'\x3000'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 8);
     CHECK(result[0] == '\x1B');
     CHECK(result[1] == '\x24');
@@ -103,7 +103,7 @@ TEST_CASE("iso_2022_jp encode U+4E00 (一) after U+3000: 0x30 0x6C (already in J
     // U+3000 switches to JIS0208, U+4E00 (pointer 1485) stays in JIS0208 -> 0x30 0x6C
     // End-of-stream in JIS0208 appends ESC ( B (3 bytes)
     std::vector<char32_t> cps{U'\x3000', U'\x4E00'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     // U+3000: ESC$B 0x21 0x21 = 5 bytes; U+4E00: 0x30 0x6C = 2 bytes; ESC(B = 3 bytes; total 10
     REQUIRE(result.size() == 10);
     CHECK(result[0] == '\x1B'); // ESC $ B for U+3000
@@ -121,7 +121,7 @@ TEST_CASE("iso_2022_jp encode U+4E00 (一) after U+3000: 0x30 0x6C (already in J
 // Coverage: consecutive YEN signs — second one stays in Roman state (lines 402-403).
 TEST_CASE("iso_2022_jp encode consecutive YEN signs: ESC(J 0x5C 0x5C ESC(B", "[transcoding::iso_2022_jp_encode]") {
     std::vector<char32_t> cps{U'\x00A5', U'\x00A5'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 8);
     CHECK(result[0] == '\x1B'); // ESC ( J for first YEN
     CHECK(result[1] == '\x28');
@@ -136,7 +136,7 @@ TEST_CASE("iso_2022_jp encode consecutive YEN signs: ESC(J 0x5C 0x5C ESC(B", "[t
 // Coverage: unmapped codepoint while in JIS state → ESC(B + '?' (lines 447-452).
 TEST_CASE("iso_2022_jp encode unmapped after JIS: ESC$B chars ESC(B '?'", "[transcoding::iso_2022_jp_encode]") {
     std::vector<char32_t> cps{U'\x3000', U'\x1F600'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     // U+3000: ESC$B 0x21 0x21 (5 bytes, state=JIS)
     // U+1F600 unmapped: ESC(B '?' (4 bytes, state=ASCII)
     // No trailing ESC(B (already in ASCII)
@@ -154,7 +154,7 @@ TEST_CASE("iso_2022_jp encode unmapped after JIS: ESC$B chars ESC(B '?'", "[tran
 
 TEST_CASE("iso_2022_jp encode unmapped codepoint U+1F600 -> '?'", "[transcoding::iso_2022_jp_encode]") {
     std::vector<char32_t> cps{U'\x1F600'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == '?');
 }
@@ -166,7 +166,7 @@ TEST_CASE("iso_2022_jp encode mixed: 'A' + U+3000 + 'B'", "[transcoding::iso_202
     // So: 0x41 [ESC$B 0x21 0x21] [ESC(B 0x42] = 1 + 5 + 4 = 10 bytes
     // No trailing ESC(B because we're already in ASCII after emitting 'B'
     std::vector<char32_t> cps{U'A', U'\x3000', U'B'};
-    auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 10);
     CHECK(result[0] == '\x41'); // 'A'
     CHECK(result[1] == '\x1B'); // ESC $ B for U+3000
@@ -183,7 +183,7 @@ TEST_CASE("iso_2022_jp encode mixed: 'A' + U+3000 + 'B'", "[transcoding::iso_202
 TEST_CASE("iso_2022_jp encode pipe syntax", "[transcoding::iso_2022_jp_encode]") {
     std::vector<char32_t> cps{U'A'};
     std::vector<char>     result;
-    for (char c : cps | whatwg_encode<whatwg::encoding::iso_2022_jp>)
+    for (char c : cps | whatwg::encode<whatwg::encoding::iso_2022_jp>)
         result.push_back(c);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == '\x41');
@@ -194,18 +194,18 @@ TEST_CASE("iso_2022_jp encode consteval ASCII", "[transcoding::iso_2022_jp_encod
     constexpr auto encode_a = []() consteval {
         std::array<char32_t, 1> cps{U'A'};
         std::span<char32_t>     sp(cps);
-        return *(sp | whatwg_encode<whatwg::encoding::iso_2022_jp>).begin();
+        return *(sp | whatwg::encode<whatwg::encoding::iso_2022_jp>).begin();
     };
     CHECK(constify(encode_a()) == '\x41');
 }
 
 // ---------------------------------------------------------------------------
-// whatwg_encode_or_error<whatwg::encoding::iso_2022_jp>
+// whatwg::encode_or_error<whatwg::encoding::iso_2022_jp>
 // ---------------------------------------------------------------------------
 
 TEST_CASE("iso_2022_jp or_error encode ASCII 'A'", "[transcoding::iso_2022_jp_encode_or_error]") {
     std::vector<char32_t> cps{U'A'};
-    auto                  result = collect_or_error(cps | whatwg_encode_or_error<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect_or_error(cps | whatwg::encode_or_error<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == '\x41');
@@ -215,7 +215,7 @@ TEST_CASE("iso_2022_jp or_error encode U+3000 -> ESC $ B 0x21 0x21 [+ ESC ( B at
           "[transcoding::iso_2022_jp_encode_or_error]") {
     // ESC $ B 0x21 0x21 (JIS0208) + ESC ( B (return-to-ASCII at end) = 8 bytes
     std::vector<char32_t> cps{U'\x3000'};
-    auto                  result = collect_or_error(cps | whatwg_encode_or_error<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect_or_error(cps | whatwg::encode_or_error<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 8);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == '\x1B');
@@ -233,7 +233,7 @@ TEST_CASE("iso_2022_jp or_error encode U+3000 -> ESC $ B 0x21 0x21 [+ ESC ( B at
 TEST_CASE("iso_2022_jp or_error encode U+00A5 (YEN) -> ESC(J 0x5C + ESC(B",
           "[transcoding::iso_2022_jp_encode_or_error]") {
     std::vector<char32_t> cps{U'\x00A5'};
-    auto                  result = collect_or_error(cps | whatwg_encode_or_error<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect_or_error(cps | whatwg::encode_or_error<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 7);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == '\x1B');
@@ -246,7 +246,7 @@ TEST_CASE("iso_2022_jp or_error encode U+00A5 (YEN) -> ESC(J 0x5C + ESC(B",
 // Coverage: or_error consecutive YEN + OVERLINE (lines 721-725, already in Roman).
 TEST_CASE("iso_2022_jp or_error encode consecutive YEN + OVERLINE", "[transcoding::iso_2022_jp_encode_or_error]") {
     std::vector<char32_t> cps{U'\x00A5', U'\x203E'};
-    auto                  result = collect_or_error(cps | whatwg_encode_or_error<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect_or_error(cps | whatwg::encode_or_error<whatwg::encoding::iso_2022_jp>);
     // ESC(J 0x5C (4) + 0x7E (1, already Roman) + ESC(B (3) = 8
     REQUIRE(result.size() == 8);
     REQUIRE(result[3].has_value());
@@ -261,7 +261,7 @@ TEST_CASE("iso_2022_jp or_error encode consecutive YEN + OVERLINE", "[transcodin
 TEST_CASE("iso_2022_jp or_error encode ASCII after JIS: U+3000 then 'B'",
           "[transcoding::iso_2022_jp_encode_or_error]") {
     std::vector<char32_t> cps{U'\x3000', U'B'};
-    auto                  result = collect_or_error(cps | whatwg_encode_or_error<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect_or_error(cps | whatwg::encode_or_error<whatwg::encoding::iso_2022_jp>);
     // U+3000: ESC$B 0x21 0x21 (5 bytes, state=JIS)
     // 'B': ESC(B 0x42 (4 bytes, state=ASCII)
     // No trailing ESC(B (already ASCII)
@@ -276,7 +276,7 @@ TEST_CASE("iso_2022_jp or_error encode ASCII after JIS: U+3000 then 'B'",
 TEST_CASE("iso_2022_jp or_error encode consecutive JIS chars: U+3000 then U+4E00",
           "[transcoding::iso_2022_jp_encode_or_error]") {
     std::vector<char32_t> cps{U'\x3000', U'\x4E00'};
-    auto                  result = collect_or_error(cps | whatwg_encode_or_error<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect_or_error(cps | whatwg::encode_or_error<whatwg::encoding::iso_2022_jp>);
     // U+3000: ESC$B 0x21 0x21 (5 bytes, state=JIS)
     // U+4E00: 0x30 0x6C (2 bytes, already JIS, no ESC)
     // ESC(B at end (3 bytes)
@@ -291,7 +291,7 @@ TEST_CASE("iso_2022_jp or_error encode consecutive JIS chars: U+3000 then U+4E00
 
 TEST_CASE("iso_2022_jp or_error encode unmapped yields error", "[transcoding::iso_2022_jp_encode_or_error]") {
     std::vector<char32_t> cps{U'\x1F600'};
-    auto                  result = collect_or_error(cps | whatwg_encode_or_error<whatwg::encoding::iso_2022_jp>);
+    auto                  result = collect_or_error(cps | whatwg::encode_or_error<whatwg::encoding::iso_2022_jp>);
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::unmapped_codepoint);
@@ -311,7 +311,7 @@ TEST_CASE("iso_2022_jp encode agrees with a linear scan of index jis0208 for eve
         while (detail::tables::shift_jis[first] != cp)
             ++first;
         std::vector<char32_t> cps{cp};
-        auto                  result = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+        auto                  result = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
         // ESC $ B, lead, trail, ESC ( B
         REQUIRE(result.size() == 8);
         CHECK(result[3] == static_cast<char>((first / 94) + 0x21));
@@ -325,9 +325,9 @@ TEST_CASE("iso_2022_jp encode then decode round-trips every code point in index 
         if (cp == 0)
             continue;
         std::vector<char32_t> cps{cp};
-        auto                  bytes = collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>);
+        auto                  bytes = collect(cps | whatwg::encode<whatwg::encoding::iso_2022_jp>);
         std::vector<char32_t> back;
-        for (char32_t c : bytes | whatwg_decode<whatwg::encoding::iso_2022_jp>)
+        for (char32_t c : bytes | whatwg::decode<whatwg::encoding::iso_2022_jp>)
             back.push_back(c);
         REQUIRE(back.size() == 1);
         CHECK(back[0] == cp);

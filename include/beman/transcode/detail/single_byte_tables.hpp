@@ -5,7 +5,7 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 

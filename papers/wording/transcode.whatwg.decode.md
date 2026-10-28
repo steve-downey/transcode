@@ -15,7 +15,7 @@ constexpr R base() &&;
 [#]{.pnum} *Returns*: `move($base$)`.
 
 ```cpp
-constexpr explicit whatwg_decode_view(R base);
+constexpr explicit decode_view(R base);
 ```
 
 [#]{.pnum} *Effects*: Initializes `$base$` with `std::move(base)`.
@@ -62,18 +62,18 @@ constexpr default_sentinel_t end() const;
 [#]{.pnum} *Returns*: `default_sentinel`.
 
 ```cpp
-template<whatwg::encoding C> inline constexpr $unspecified$ whatwg_decode;
+template<whatwg::encoding C> inline constexpr $unspecified$ decode;
 ```
 
-[#]{.pnum} *Remarks*: The name `whatwg_decode<C>` denotes a range adaptor object.  Given a subexpression `E` that models `legacy_byte_range`, the expression `whatwg_decode<C>(E)` and `E | whatwg_decode<C>` are each expression-equivalent to a `whatwg_decode_view<C, views::all_t<decltype((E))>>` over `E`.  An `E` of array type is ill-formed: a string literal carries a terminating null character that a decode would render, and `views::null_term` ([null.term.adaptor]) is how a null-terminated sequence becomes a range.
+[#]{.pnum} *Remarks*: The name `whatwg::decode<C>` denotes a range adaptor object.  Given a subexpression `E` that models `legacy_byte_range`, the expression `whatwg::decode<C>(E)` and `E | whatwg::decode<C>` are each expression-equivalent to a `whatwg::decode_view<C, views::all_t<decltype((E))>>` over `E`.  An `E` of array type is ill-formed: a string literal carries a terminating null character that a decode would render, and `views::null_term` ([null.term.adaptor]) is how a null-terminated sequence becomes a range.
 
 ```cpp
-template<whatwg::encoding C> inline constexpr $unspecified$ whatwg_decode_or_error;
+template<whatwg::encoding C> inline constexpr $unspecified$ decode_or_error;
 ```
 
-[#]{.pnum} *Remarks*: `whatwg_decode_or_error<C>` is `whatwg_decode<C>` with `error_mode::report`: the view it adapts to has value type `expected<char32_t, whatwg::error>`, and a decoding error is the error rather than U+FFFD.
+[#]{.pnum} *Remarks*: `whatwg::decode_or_error<C>` is `whatwg::decode<C>` with `error_mode::report`: the view it adapts to has value type `expected<char32_t, whatwg::error>`, and a decoding error is the error rather than U+FFFD.
 
-### Class `whatwg_decode_view::iterator` [transcode.whatwg.decode.iterator] {-}
+### Class `whatwg::decode_view::iterator` [transcode.whatwg.decode.iterator] {-}
 
 ```cpp
 constexpr iterator(base_iter current, base_sent end);

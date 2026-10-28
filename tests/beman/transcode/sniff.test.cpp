@@ -102,7 +102,7 @@ TEST_CASE("whatwg::bom_sniff: sniff then decode sees the whole document", "[tran
     REQUIRE(whatwg::bom_sniff(bytes) == whatwg::encoding::utf_8);
 
     std::u32string decoded;
-    for (char32_t cp : bytes | whatwg_decode<whatwg::encoding::utf_8>)
+    for (char32_t cp : bytes | whatwg::decode<whatwg::encoding::utf_8>)
         decoded.push_back(cp);
     CHECK(decoded == U"hi");
 }

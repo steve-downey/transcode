@@ -47,7 +47,7 @@
 #include <beman/transcode/detail/single_byte.hpp>
 #include <beman/transcode/detail/utf8_encode.hpp>
 #include <beman/transcode/detail/utf32.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
@@ -60,13 +60,12 @@
     #include <type_traits>
 
 #endif
-namespace beman::transcoding {
+namespace beman::transcoding::whatwg {
 
 //! \omit
 template <whatwg::encoding C, std::ranges::random_access_range R, error_mode E = error_mode::replacement>
     requires unicode_scalar_range<R> && detail::random_access_encode_codec<C>
-class random_access_whatwg_encode_view
-    : public std::ranges::view_interface<random_access_whatwg_encode_view<C, R, E>> {
+class random_access_encode_view : public std::ranges::view_interface<random_access_encode_view<C, R, E>> {
     R base_;
 
     class iterator {
@@ -160,7 +159,7 @@ class random_access_whatwg_encode_view
     };
 
   public:
-    constexpr explicit random_access_whatwg_encode_view(R base) : base_(std::move(base)) {}
+    constexpr explicit random_access_encode_view(R base) : base_(std::move(base)) {}
 
     constexpr const R& base() const& noexcept { return base_; }
     constexpr R        base() && { return std::move(base_); }
@@ -189,13 +188,13 @@ class random_access_whatwg_encode_view
 };
 
 // ---------------------------------------------------------------------------
-// whatwg_encode_view — validates char32_t UTF-32 code units and encodes the
+// whatwg::encode_view — validates char32_t UTF-32 code units and encodes the
 // resulting scalar values, optionally reporting validation or mapping errors.
 // ---------------------------------------------------------------------------
 
 // \ref{transcode.whatwg.encode}, encoding views
 
-//! \remarks `whatwg_encode_view<C, R, E>` validates the `char32_t` elements of
+//! \remarks `whatwg::encode_view<C, R, E>` validates the `char32_t` elements of
 //! `R` as UTF-32 and presents them as the bytes the encoding `C` encodes them
 //! to, one element per byte.  In replacement mode, an ill-formed UTF-32 code
 //! unit is replaced with U+FFFD and that scalar value is encoded normally; in
@@ -210,7 +209,7 @@ class random_access_whatwg_encode_view
 //! `x_user_defined`, and the view does not accept them.
 template <whatwg::encoding C, std::ranges::input_range R, error_mode E = error_mode::replacement>
     requires detail::whatwg_encode_input<C, R>
-class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view<C, R, E>> {
+class encode_view : public std::ranges::view_interface<encode_view<C, R, E>> {
     //! \expos
     R base_;
 
@@ -310,7 +309,7 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
 
   public:
     // \ref{transcode.whatwg.encode}, construction and access
-    constexpr explicit whatwg_encode_view(R base);
+    constexpr explicit encode_view(R base);
 
     //! \returns-expr
     constexpr const R& base() const& noexcept { return base_; }
@@ -330,7 +329,7 @@ class whatwg_encode_view : public std::ranges::view_interface<whatwg_encode_view
 
 //! \omit
 template <whatwg::encoding C, error_mode E = error_mode::replacement>
-struct whatwg_encode_closure {
+struct encode_closure {
     template <typename R>
         requires detail::whatwg_encode_input<C, R>
     constexpr auto operator()(R&& r) const;
@@ -343,87 +342,74 @@ struct whatwg_encode_closure {
 
     template <typename R>
         requires detail::whatwg_encode_input<C, R>
-    constexpr friend auto operator|(R&& r, const whatwg_encode_closure& self) {
+    constexpr friend auto operator|(R&& r, const encode_closure& self) {
         return self(std::forward<R>(r));
     }
 
     template <unicode_scalar_range R>
         requires(!detail::whatwg_encode_codec<C>)
-    constexpr friend auto operator|(R&& r, const whatwg_encode_closure& self) {
+    constexpr friend auto operator|(R&& r, const encode_closure& self) {
         return self(std::forward<R>(r));
     }
 
     template <typename R>
         requires std::is_array_v<std::remove_cvref_t<R>>
-    friend auto operator|(R&&, const whatwg_encode_closure&) {
+    friend auto operator|(R&&, const encode_closure&) {
         static_assert(!std::is_array_v<std::remove_cvref_t<R>>,
-                      "transcode: raw arrays are not valid input to whatwg_encode; "
+                      "transcode: raw arrays are not valid input to whatwg::encode; "
                       "wrap with std::span or std::vector");
     }
 };
 
 //! \seebelow
-//! \remarks The name `whatwg_encode<C>` denotes a range adaptor object.  Given
+//! \remarks The name `whatwg::encode<C>` denotes a range adaptor object.  Given
 //! a subexpression `E` that models `unicode_scalar_range`, the expression
-//! `whatwg_encode<C>(E)` and `E | whatwg_encode<C>` are each
-//! expression-equivalent to a `whatwg_encode_view<C, views::all_t<decltype((E))>>`
+//! `whatwg::encode<C>(E)` and `E | whatwg::encode<C>` are each
+//! expression-equivalent to a `whatwg::encode_view<C, views::all_t<decltype((E))>>`
 //! over `E`.  An `E` of array type is ill-formed.
 template <whatwg::encoding C>
-inline constexpr auto whatwg_encode = whatwg_encode_closure<C, error_mode::replacement>{};
+inline constexpr auto encode = encode_closure<C, error_mode::replacement>{};
 
 //! \seebelow
-//! \remarks `whatwg_encode_or_error<C>` is `whatwg_encode<C>` with
+//! \remarks `whatwg::encode_or_error<C>` is `whatwg::encode<C>` with
 //! `error_mode::report`: the view it adapts to has value type
 //! `expected<char, whatwg::error>`, and validation and encoding errors are
 //! reported rather than replaced.
 template <whatwg::encoding C>
-inline constexpr auto whatwg_encode_or_error = whatwg_encode_closure<C, error_mode::report>{};
+inline constexpr auto encode_or_error = encode_closure<C, error_mode::report>{};
 
-// The names the paired views had before they were unified.
-//! \omit
-template <whatwg::encoding C, std::ranges::input_range R>
-using whatwg_encode_or_error_view = whatwg_encode_view<C, R, error_mode::report>;
-
-//! \omit
-template <whatwg::encoding C, std::ranges::random_access_range R>
-using random_access_whatwg_encode_or_error_view = random_access_whatwg_encode_view<C, R, error_mode::report>;
-
-//! \omit
-template <whatwg::encoding C>
-using whatwg_encode_or_error_closure = whatwg_encode_closure<C, error_mode::report>;
-
-} // namespace beman::transcoding
+} // namespace beman::transcoding::whatwg
 
 namespace std::ranges {
 
 //! \omit
 template <beman::transcoding::whatwg::encoding C, random_access_range R, beman::transcoding::error_mode E>
     requires beman::transcoding::unicode_scalar_range<R> && beman::transcoding::detail::random_access_encode_codec<C>
-inline constexpr bool enable_borrowed_range<beman::transcoding::random_access_whatwg_encode_view<C, R, E>> =
+inline constexpr bool enable_borrowed_range<beman::transcoding::whatwg::random_access_encode_view<C, R, E>> =
     borrowed_range<R>;
 
 template <beman::transcoding::whatwg::encoding C, input_range R, beman::transcoding::error_mode E>
     requires beman::transcoding::detail::whatwg_encode_input<C, R>
-inline constexpr bool enable_borrowed_range<beman::transcoding::whatwg_encode_view<C, R, E>> = borrowed_range<R>;
+inline constexpr bool enable_borrowed_range<beman::transcoding::whatwg::encode_view<C, R, E>> = borrowed_range<R>;
 
 } // namespace std::ranges
 
-namespace beman::transcoding {
+namespace beman::transcoding::whatwg {
 
 // ---------------------------------------------------------------------------
-// Out-of-line definitions: whatwg_encode_view
+// Out-of-line definitions: whatwg::encode_view
 // ---------------------------------------------------------------------------
 
 template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \effects Initializes `$base$` with `std::move(base)`.
-constexpr whatwg_encode_view<C, R, E>::whatwg_encode_view(R base) : base_(std::move(base)) {}
+constexpr encode_view<C, R, E>::encode_view(R base) : base_(std::move(base)) {}
 
 template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \returns An `$iterator$` over `$base$`, positioned at the first byte of
 //! its first encoded element.
-constexpr auto whatwg_encode_view<C, R, E>::begin() -> iterator {
+constexpr auto encode_view<C, R, E>::begin() -> iterator {
     return iterator(std::ranges::begin(base_), std::ranges::end(base_));
 }
 
@@ -431,7 +417,7 @@ template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \returns An `$iterator$` over `$base$`, positioned at the first byte of
 //! its first encoded element.
-constexpr auto whatwg_encode_view<C, R, E>::begin() const -> iterator
+constexpr auto encode_view<C, R, E>::begin() const -> iterator
     requires detail::const_iterator_compatible_range<R> && detail::const_sentinel_compatible_range<R>
 {
     return iterator(std::ranges::begin(base_), std::ranges::end(base_));
@@ -441,7 +427,7 @@ template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \returns An `$iterator$` that compares equal to an iterator that has
 //! encoded every element of `$base$`.
-constexpr auto whatwg_encode_view<C, R, E>::end() -> iterator
+constexpr auto encode_view<C, R, E>::end() -> iterator
     requires std::ranges::forward_range<R> && std::ranges::common_range<R>
 {
     return iterator::terminal();
@@ -450,7 +436,7 @@ constexpr auto whatwg_encode_view<C, R, E>::end() -> iterator
 template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \returns `default_sentinel`.
-constexpr std::default_sentinel_t whatwg_encode_view<C, R, E>::end() const {
+constexpr std::default_sentinel_t encode_view<C, R, E>::end() const {
     return std::default_sentinel;
 }
 
@@ -458,7 +444,7 @@ template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \returns An `$iterator$` that compares equal to an iterator that has
 //! encoded every element of `$base$`.
-constexpr auto whatwg_encode_view<C, R, E>::end() const -> iterator
+constexpr auto encode_view<C, R, E>::end() const -> iterator
     requires std::ranges::forward_range<const R> && std::ranges::common_range<const R> &&
              detail::const_iterator_compatible_range<R> && detail::const_sentinel_compatible_range<R>
 {
@@ -466,12 +452,12 @@ constexpr auto whatwg_encode_view<C, R, E>::end() const -> iterator
 }
 
 // ---------------------------------------------------------------------------
-// Out-of-line definitions: whatwg_encode_view::iterator
+// Out-of-line definitions: whatwg::encode_view::iterator
 // ---------------------------------------------------------------------------
 
 template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
-constexpr void whatwg_encode_view<C, R, E>::iterator::load() {
+constexpr void encode_view<C, R, E>::iterator::load() {
     using result_value = std::remove_cvref_t<decltype(this->buf_[0])>;
 
     if (current_ == end_) {
@@ -595,7 +581,7 @@ template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \effects Initializes `$current$` with `std::move(current)` and `$end$`
 //! with `std::move(end)`, then encodes the first element.
-constexpr whatwg_encode_view<C, R, E>::iterator::iterator(base_iter current, base_sent end)
+constexpr encode_view<C, R, E>::iterator::iterator(base_iter current, base_sent end)
     : current_(std::move(current)), end_(std::move(end)) {
     load();
 }
@@ -604,7 +590,7 @@ template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \returns The byte at the current position of the encoded element, or the
 //! error the encoding of that element produced.
-constexpr auto whatwg_encode_view<C, R, E>::iterator::operator*() const {
+constexpr auto encode_view<C, R, E>::iterator::operator*() const {
     return this->buf_[this->pos_];
 }
 
@@ -616,7 +602,7 @@ template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
 //! stateful encoding, exhausting the base range also emits whatever the
 //! encoding owes to return to its initial state.
 //! \returns `*this`.
-constexpr auto whatwg_encode_view<C, R, E>::iterator::operator++() -> iterator& {
+constexpr auto encode_view<C, R, E>::iterator::operator++() -> iterator& {
     if (++pos_ < len_)
         return *this;
     load();
@@ -626,7 +612,7 @@ constexpr auto whatwg_encode_view<C, R, E>::iterator::operator++() -> iterator& 
 template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \effects-equiv
-constexpr auto whatwg_encode_view<C, R, E>::iterator::operator++(int) -> iterator
+constexpr auto encode_view<C, R, E>::iterator::operator++(int) -> iterator
     requires std::ranges::forward_range<R>
 {
     auto tmp = *this;
@@ -637,28 +623,28 @@ constexpr auto whatwg_encode_view<C, R, E>::iterator::operator++(int) -> iterato
 template <whatwg::encoding C, std::ranges::input_range R, error_mode E>
     requires detail::whatwg_encode_input<C, R>
 //! \effects-equiv
-constexpr void whatwg_encode_view<C, R, E>::iterator::operator++(int)
+constexpr void encode_view<C, R, E>::iterator::operator++(int)
     requires(!std::ranges::forward_range<R>)
 {
     ++*this;
 }
 
 // ---------------------------------------------------------------------------
-// Out-of-line definitions: whatwg_encode_closure
+// Out-of-line definitions: whatwg::encode_closure
 // ---------------------------------------------------------------------------
 
 template <whatwg::encoding C, error_mode E>
 template <typename R>
     requires detail::whatwg_encode_input<C, R>
-constexpr auto whatwg_encode_closure<C, E>::operator()(R&& r) const {
+constexpr auto encode_closure<C, E>::operator()(R&& r) const {
     using view_t = std::views::all_t<R>;
     auto all     = std::views::all(std::forward<R>(r));
     if constexpr (detail::random_access_encode_codec<C> && std::ranges::random_access_range<view_t>)
-        return random_access_whatwg_encode_view<C, view_t, E>(std::move(all));
+        return random_access_encode_view<C, view_t, E>(std::move(all));
     else
-        return whatwg_encode_view<C, view_t, E>(std::move(all));
+        return encode_view<C, view_t, E>(std::move(all));
 }
 
-} // namespace beman::transcoding
+} // namespace beman::transcoding::whatwg
 
 #endif // INCLUDE_BEMAN_TRANSCODE_WHATWG_ENCODE_VIEW_HPP

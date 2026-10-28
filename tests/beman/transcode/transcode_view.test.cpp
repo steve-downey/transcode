@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/transcode_view.hpp>
-#include <beman/transcode/transcode_view.hpp>
+#include <beman/transcode/whatwg/transcode_view.hpp>
+#include <beman/transcode/whatwg/transcode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
@@ -19,7 +19,8 @@ TEST_CASE("transcode_view: windows-1252 bytes to UTF-8 via pipe", "[transcode_vi
     std::string src{'\x80'};
     std::string expected{'\xE2', '\x82', '\xAC'};
     std::string result;
-    for (char b : std::span<const char>(src) | transcode<whatwg::encoding::windows_1252, whatwg::encoding::utf_8>)
+    for (char b :
+         std::span<const char>(src) | whatwg::transcode<whatwg::encoding::windows_1252, whatwg::encoding::utf_8>)
         result.push_back(b);
     CHECK(result == expected);
 }
@@ -29,7 +30,8 @@ TEST_CASE("transcode_view: UTF-8 to windows-1252 via pipe", "[transcode_view]") 
     std::string src{'\xE2', '\x82', '\xAC'};
     std::string expected{'\x80'};
     std::string result;
-    for (char b : std::span<const char>(src) | transcode<whatwg::encoding::utf_8, whatwg::encoding::windows_1252>)
+    for (char b :
+         std::span<const char>(src) | whatwg::transcode<whatwg::encoding::utf_8, whatwg::encoding::windows_1252>)
         result.push_back(b);
     CHECK(result == expected);
 }
@@ -37,7 +39,7 @@ TEST_CASE("transcode_view: UTF-8 to windows-1252 via pipe", "[transcode_view]") 
 TEST_CASE("transcode_view: UTF-8 to GBK via pipe (ASCII passthrough)", "[transcode_view]") {
     std::string src = "hello";
     std::string result;
-    for (char b : std::span<const char>(src) | transcode<whatwg::encoding::utf_8, whatwg::encoding::gbk>)
+    for (char b : std::span<const char>(src) | whatwg::transcode<whatwg::encoding::utf_8, whatwg::encoding::gbk>)
         result.push_back(b);
     CHECK(result == "hello");
 }
@@ -45,7 +47,7 @@ TEST_CASE("transcode_view: UTF-8 to GBK via pipe (ASCII passthrough)", "[transco
 TEST_CASE("transcode_view: GBK to UTF-8 via pipe (ASCII passthrough)", "[transcode_view]") {
     std::string src = "abc";
     std::string result;
-    for (char b : std::span<const char>(src) | transcode<whatwg::encoding::gbk, whatwg::encoding::utf_8>)
+    for (char b : std::span<const char>(src) | whatwg::transcode<whatwg::encoding::gbk, whatwg::encoding::utf_8>)
         result.push_back(b);
     CHECK(result == "abc");
 }
@@ -53,7 +55,7 @@ TEST_CASE("transcode_view: GBK to UTF-8 via pipe (ASCII passthrough)", "[transco
 TEST_CASE("transcode_view: UTF-8 to Shift_JIS via pipe (ASCII passthrough)", "[transcode_view]") {
     std::string src = "abc";
     std::string result;
-    for (char b : std::span<const char>(src) | transcode<whatwg::encoding::utf_8, whatwg::encoding::shift_jis>)
+    for (char b : std::span<const char>(src) | whatwg::transcode<whatwg::encoding::utf_8, whatwg::encoding::shift_jis>)
         result.push_back(b);
     CHECK(result == "abc");
 }
@@ -61,7 +63,7 @@ TEST_CASE("transcode_view: UTF-8 to Shift_JIS via pipe (ASCII passthrough)", "[t
 TEST_CASE("transcode_view: same codec is identity (UTF-8)", "[transcode_view]") {
     std::string src = "hello world";
     std::string result;
-    for (char b : std::span<const char>(src) | transcode<whatwg::encoding::utf_8, whatwg::encoding::utf_8>)
+    for (char b : std::span<const char>(src) | whatwg::transcode<whatwg::encoding::utf_8, whatwg::encoding::utf_8>)
         result.push_back(b);
     CHECK(result == src);
 }
@@ -70,7 +72,7 @@ namespace {
 constexpr bool check_transcode_closure_constexpr() {
     // ASCII 'A' (0x41) round-trips through UTF-8→UTF-8 unchanged.
     std::array<char, 1> src{'\x41'};
-    auto view = std::span<const char>(src) | transcode<whatwg::encoding::utf_8, whatwg::encoding::utf_8>;
+    auto view = std::span<const char>(src) | whatwg::transcode<whatwg::encoding::utf_8, whatwg::encoding::utf_8>;
     auto it   = view.begin();
     if (it == std::default_sentinel)
         return false;

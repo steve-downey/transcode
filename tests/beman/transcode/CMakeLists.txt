@@ -785,7 +785,7 @@ set_tests_properties(
     concepts_reject_arrays_fail
     PROPERTIES
         PASS_REGULAR_EXPRESSION
-            "transcode: raw arrays are not valid input to whatwg_decode"
+            "transcode: raw arrays are not valid input to whatwg::decode"
 )
 
 # legacy_byte_range rejects unicode char types (char8_t etc.) via legacy_byte_type disjunction

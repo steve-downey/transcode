@@ -6,7 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/whatwg/label.hpp>
-#include <beman/transcode/whatwg_encode_view.hpp>
+#include <beman/transcode/whatwg/encode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
@@ -16,11 +16,11 @@
     #include <string_view>
 
 #endif
-namespace beman::transcoding {
+namespace beman::transcoding::whatwg {
 
 // \ref{transcode.string}, eager transcoding
 
-constexpr bool has_whatwg_encoder(whatwg::encoding encoding) noexcept;
+constexpr bool has_encoder(whatwg::encoding encoding) noexcept;
 
 std::optional<std::string> transcode_string(std::span<const char> src, whatwg::encoding from, whatwg::encoding to);
 
@@ -52,7 +52,7 @@ namespace detail {
 template <whatwg::encoding C>
 std::u32string transcode_decode_all(std::span<const char> src) {
     std::u32string result;
-    for (char32_t cp : src | whatwg_decode<C>)
+    for (char32_t cp : src | decode<C>)
         result.push_back(cp);
     return result;
 }
@@ -60,7 +60,7 @@ std::u32string transcode_decode_all(std::span<const char> src) {
 template <whatwg::encoding C>
 std::string transcode_encode_all(std::u32string_view src) {
     std::string result;
-    for (char b : src | whatwg_encode<C>)
+    for (char b : src | encode<C>)
         result.push_back(b);
     return result;
 }
@@ -73,7 +73,7 @@ std::string transcode_encode_all(std::u32string_view src) {
 
 //! \returns `true` if the WHATWG Encoding Standard defines an encoder for
 //! `encoding`, and `false` otherwise.
-constexpr bool has_whatwg_encoder(whatwg::encoding encoding) noexcept {
+constexpr bool has_encoder(whatwg::encoding encoding) noexcept {
     return encoding != whatwg::encoding::utf_16be && encoding != whatwg::encoding::utf_16le &&
            encoding != whatwg::encoding::replacement && encoding != whatwg::encoding::x_user_defined;
 }
@@ -86,11 +86,11 @@ constexpr bool has_whatwg_encoder(whatwg::encoding encoding) noexcept {
 //! encodes to `'?'`.
 //! \remarks This is `transcode` \iref{transcode.pipeline} run to completion
 //! into a `string`, which is what a caller who wants the whole result and not
-//! a view writes.  `src | transcode<From, To> | ranges::to<string>()` is the
+//! a view writes.  `src | whatwg::transcode<From, To> | ranges::to<string>()` is the
 //! same thing with the codecs known at compile time.
 inline std::optional<std::string>
 transcode_string(std::span<const char> src, whatwg::encoding from, whatwg::encoding to) {
-    if (!has_whatwg_encoder(to))
+    if (!has_encoder(to))
         return std::nullopt;
 
     std::u32string intermediate;
@@ -328,7 +328,7 @@ transcode_string(std::span<const char> src, whatwg::encoding from, whatwg::encod
     case whatwg::encoding::euc_kr:
         result = detail::transcode_encode_all<whatwg::encoding::euc_kr>(u32v);
         break;
-    // Unreachable after has_whatwg_encoder(to); retained to keep the switch exhaustive.
+    // Unreachable after whatwg::has_encoder(to); retained to keep the switch exhaustive.
     case whatwg::encoding::utf_16be:
     case whatwg::encoding::utf_16le:
     case whatwg::encoding::replacement:
@@ -339,7 +339,7 @@ transcode_string(std::span<const char> src, whatwg::encoding from, whatwg::encod
     return result;
 }
 
-//! \returns `transcode_string(src, *whatwg::get_encoding(from_label),
+//! \returns `whatwg::transcode_string(src, *whatwg::get_encoding(from_label),
 //! *whatwg::get_encoding(to_label))`, and `nullopt` if either label names no encoding
 //! \iref{transcode.codec.label} or the target encoding has no WHATWG encoder.
 //! \remarks This is the overload a program uses when the encodings are a
@@ -354,6 +354,6 @@ transcode_string(std::span<const char> src, std::string_view from_label, std::st
     return transcode_string(src, *from, *to);
 }
 
-} // namespace beman::transcoding
+} // namespace beman::transcoding::whatwg
 
 #endif // INCLUDE_BEMAN_TRANSCODE_TRANSCODE_STRING_HPP

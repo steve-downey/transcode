@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 // The eager bulk helpers: decode_to, encode_to, decode_into, encode_into,
-// each in a WHATWG form taking the codec as a template parameter and a
-// pluggable form taking it as an argument.
+// in the form that takes the codec as an argument.  The form that names a
+// WHATWG encoding as a template parameter is in
+// <beman/transcode/whatwg/bulk.hpp>.
 //
 // Every one is a one-line forward to the pipeline it names.  That is the whole
 // of the implementation and it is also the whole of the specification: the
@@ -29,32 +30,19 @@
     #include <beman/transcode/concepts.hpp>
     #include <beman/transcode/decode_view.hpp>
     #include <beman/transcode/encode_view.hpp>
-    #include <beman/transcode/whatwg_decode_view.hpp>
-    #include <beman/transcode/whatwg_encode_view.hpp>
-    #include <beman/transcode/whatwg/encoding.hpp>
 
     #if !BEMAN_TRANSCODE_USE_MODULES()
         #include <algorithm>
+        #include <iterator>
         #include <ranges>
         #include <string>
+        #include <utility>
         #include <vector>
 
     #endif
 namespace beman::transcoding {
 
 // \ref{transcode.bulk}, eager bulk conversion
-
-template <whatwg::encoding C, legacy_byte_range R>
-constexpr std::vector<char32_t> decode_to(R&& source);
-
-template <whatwg::encoding C, typename Container = std::string, unicode_scalar_range R>
-constexpr Container encode_to(R&& source);
-
-template <whatwg::encoding C, legacy_byte_range R, std::output_iterator<char32_t> Output>
-constexpr void decode_into(R&& source, Output output);
-
-template <whatwg::encoding C, unicode_scalar_range R, std::output_iterator<char> Output>
-constexpr void encode_into(R&& source, Output output);
 
 template <text_decoder Codec, legacy_byte_range R>
 constexpr std::vector<char32_t> decode_to(Codec codec, R&& source);
@@ -69,49 +57,13 @@ template <text_encoder Codec, unicode_scalar_range R, std::output_iterator<char>
 constexpr void encode_into(Codec codec, R&& source, Output output);
 
 // ---------------------------------------------------------------------------
-// Out-of-line definitions: WHATWG codec, as a template parameter
+// Out-of-line definitions
 // ---------------------------------------------------------------------------
 
 //! \returns-expr
-//! \remarks Each of these is the pipeline it names, run to completion.  They
-//! add no behaviour to it: the errors are the decoding view's, substituted
-//! rather than reported \iref{transcode.whatwg.decode}, and a caller who wants
-//! them reported writes the pipeline with `whatwg_decode_or_error` instead.
-//! What they add is the name, for the case a caller wants the whole result
-//! rather than a view over it.
-template <whatwg::encoding C, legacy_byte_range R>
-constexpr std::vector<char32_t> decode_to(R&& source) {
-    return std::forward<R>(source) | whatwg_decode<C> | std::ranges::to<std::vector<char32_t>>();
-}
-
-//! \returns-expr
-//! \remarks `Container` is the caller's choice of result, defaulted to
-//! `string` because that is what encoded bytes are usually wanted in.
-template <whatwg::encoding C, typename Container, unicode_scalar_range R>
-constexpr Container encode_to(R&& source) {
-    return std::forward<R>(source) | whatwg_encode<C> | std::ranges::to<Container>();
-}
-
-//! \effects-equiv
-template <whatwg::encoding C, legacy_byte_range R, std::output_iterator<char32_t> Output>
-constexpr void decode_into(R&& source, Output output) {
-    std::ranges::copy(std::forward<R>(source) | whatwg_decode<C>, output);
-}
-
-//! \effects-equiv
-template <whatwg::encoding C, unicode_scalar_range R, std::output_iterator<char> Output>
-constexpr void encode_into(R&& source, Output output) {
-    std::ranges::copy(std::forward<R>(source) | whatwg_encode<C>, output);
-}
-
-// ---------------------------------------------------------------------------
-// Out-of-line definitions: pluggable codec, as an argument
-// ---------------------------------------------------------------------------
-
-//! \returns-expr
-//! \remarks The same four operations over a codec supplied as a value
-//! \iref{transcode.custom.reqs}, for a codec chosen at run time or one the
-//! `whatwg::encoding` enumeration does not name.
+//! \remarks The same four operations as the `whatwg::` forms over a codec
+//! supplied as a value \iref{transcode.custom.reqs}, for a codec chosen at run
+//! time or one the `whatwg::encoding` enumeration does not name.
 template <text_decoder Codec, legacy_byte_range R>
 constexpr std::vector<char32_t> decode_to(Codec codec, R&& source) {
     return std::forward<R>(source) | decode(codec) | std::ranges::to<std::vector<char32_t>>();

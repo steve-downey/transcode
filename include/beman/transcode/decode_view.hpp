@@ -103,7 +103,7 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 
 // \ref{transcode.custom.decode}, class template decode_view
 
-//! \remarks `decode_view<Codec, R, E>` is `whatwg_decode_view`
+//! \remarks `decode_view<Codec, R, E>` is `whatwg::decode_view`
 //! \iref{transcode.whatwg.decode} with the codec supplied as a value rather
 //! than named by an enumerator: it presents the bytes of `R` as the Unicode
 //! scalar values `Codec` decodes them to, reports a decoding error as `E`
@@ -548,16 +548,6 @@ constexpr auto decode_closure<Codec, E>::operator()(R&& r) const {
     else
         return decode_view<Codec, view_t, E>(std::move(all), codec_);
 }
-
-// The names the paired views had before they were unified.
-template <text_decoder Codec, std::ranges::input_range R>
-using decode_or_error_view = decode_view<Codec, R, error_mode::report>;
-
-template <single_byte_text_decoder Codec, std::ranges::random_access_range R>
-using random_access_decode_or_error_view = random_access_decode_view<Codec, R, error_mode::report>;
-
-template <text_decoder Codec>
-using decode_or_error_closure = decode_closure<Codec, error_mode::report>;
 
 } // namespace beman::transcoding
 

@@ -40,7 +40,7 @@ void after_example(std::string_view input) {
     // clang-format off
 // d9624e97-0a08-46c1-99c3-04a729a7324b
 for (auto r : input
-    | whatwg_decode_or_error<whatwg::encoding::utf_8>) {
+    | whatwg::decode_or_error<whatwg::encoding::utf_8>) {
   if (r.has_value()) {
     process(*r);
   } else {

@@ -121,7 +121,7 @@ TEST_CASE("volatile_sink accepts values without crashing", "[bench][sink]") {
 
 TEST_CASE("describe applies to the next benchmark only", "[bench][metadata]") {
     clear_benchmark_records();
-    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
+    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg::decode view"});
     begin_benchmark("first");
     end_benchmark();
     begin_benchmark("second");
@@ -132,7 +132,7 @@ TEST_CASE("describe applies to the next benchmark only", "[bench][metadata]") {
     CHECK(records[0].name == "first");
     CHECK(records[0].conversion == "UTF-8 → UTF-32");
     CHECK(records[0].library == "beman.transcode");
-    CHECK(records[0].api == "whatwg_decode view");
+    CHECK(records[0].api == "whatwg::decode view");
     CHECK(records[1].name == "second");
     CHECK(records[1].conversion.empty());
     clear_benchmark_records();

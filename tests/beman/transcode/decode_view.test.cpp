@@ -107,10 +107,10 @@ TEST_CASE("decode_view: empty input produces empty output", "[decode_view]") {
 }
 
 // ---------------------------------------------------------------------------
-// decode_or_error_view with table_codec
+// decode_view with error_mode::report with table_codec
 // ---------------------------------------------------------------------------
 
-TEST_CASE("decode_or_error_view: table_codec success", "[decode_view]") {
+TEST_CASE("decode_view with error_mode::report: table_codec success", "[decode_view]") {
     std::string src{'\x41', '\xC0'}; // A, then Latin-1 0xC0
     auto        view = std::span<const char>(src) | decode_or_error(latin1_codec{});
     auto        it   = view.begin();
@@ -129,7 +129,7 @@ TEST_CASE("decode_or_error_view: table_codec success", "[decode_view]") {
     CHECK(it == end);
 }
 
-TEST_CASE("decode_or_error_view: reports errors", "[decode_view]") {
+TEST_CASE("decode_view with error_mode::report: reports errors", "[decode_view]") {
     std::string src{'\x80'}; // unmapped in sparse
     auto        view = std::span<const char>(src) | decode_or_error(sparse_codec{});
     auto        it   = view.begin();
@@ -250,7 +250,7 @@ TEST_CASE("decode_view: iterator base() returns underlying position", "[decode_v
     CHECK(*it.base() == 0x42);
 }
 
-TEST_CASE("decode_or_error_view: iterator base() tracks position", "[decode_view]") {
+TEST_CASE("decode_view with error_mode::report: iterator base() tracks position", "[decode_view]") {
     std::vector<unsigned char> src{0x41, 0x80}; // A, then unmapped in sparse
     auto                       view = src | decode_or_error(sparse_codec{});
     auto                       it   = view.begin();
