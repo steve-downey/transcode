@@ -353,4 +353,12 @@ using encode_or_error_closure = encode_closure<Codec, transcode_error_kind::expe
 
 } // namespace beman::transcoding
 
+namespace std::ranges {
+
+template <beman::transcoding::encode_codec Codec, input_range R, beman::transcoding::transcode_error_kind E>
+    requires beman::transcoding::unicode_scalar_range<R>
+inline constexpr bool enable_borrowed_range<beman::transcoding::encode_view<Codec, R, E>> = borrowed_range<R>;
+
+} // namespace std::ranges
+
 #endif // INCLUDE_BEMAN_TRANSCODE_ENCODE_VIEW_HPP

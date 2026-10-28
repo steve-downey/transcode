@@ -8,7 +8,10 @@
 #include <tests/beman/transcode/test_utilities.hpp>
 #include <catch2/catch_all.hpp>
 
+#include <algorithm>
 #include <array>
+#include <concepts>
+#include <ranges>
 #include <optional>
 #include <span>
 #include <string>
@@ -269,4 +272,45 @@ TEST_CASE("decode_view: std::byte input range", "[decode_view]") {
         result.push_back(cp);
     CHECK(result[0] == U'A');
     CHECK(result[1] == U'\x00C0');
+}
+
+// ---------------------------------------------------------------------------
+// borrowed_range propagation
+// ---------------------------------------------------------------------------
+
+namespace {
+using fwd_span_t = std::span<const char>;
+using ra_span_t  = std::span<const unsigned char>;
+
+using fwd_decode_t = decltype(std::declval<fwd_span_t>() | decode(xor_codec{}));
+using ra_decode_t  = decltype(std::declval<ra_span_t>() | decode(latin1_codec{}));
+using owning_t     = decltype(std::string{} | decode(xor_codec{}));
+
+static_assert(std::ranges::borrowed_range<fwd_decode_t>);
+static_assert(std::ranges::borrowed_range<ra_decode_t>);
+static_assert(!std::ranges::borrowed_range<owning_t>);
+static_assert(std::ranges::borrowed_range<decltype(std::declval<fwd_span_t>() | decode_or_error(xor_codec{}))>);
+
+constexpr char32_t find_through_span() {
+    constexpr std::array<unsigned char, 3> bytes{0x41, 0x42, 0xC0};
+    auto it = std::ranges::find(std::span<const unsigned char>{bytes} | decode(latin1_codec{}), U'\x00C0');
+    return *it;
+}
+} // namespace
+
+TEST_CASE("decode_view: borrowed_range over a span", "[decode_view]") {
+    std::array<char, 3> src{'a', 'b', 'c'};
+    // xor_codec XORs with an incrementing counter: 'a'^1 = '`', 'b'^2 = '`', 'c'^3 = '`'.
+    auto it = std::ranges::find(std::span<const char>{src} | decode(xor_codec{}), U'`');
+    static_assert(!std::same_as<decltype(it), std::ranges::dangling>);
+    CHECK(*it == U'`');
+
+    std::array<unsigned char, 3> bytes{0x41, 0x42, 0xC0};
+    auto it2 = std::ranges::find(std::span<const unsigned char>{bytes} | decode(latin1_codec{}), U'\x00C0');
+    static_assert(!std::same_as<decltype(it2), std::ranges::dangling>);
+    CHECK(*it2 == U'\x00C0');
+}
+
+TEST_CASE("decode_view: borrowed find in a constant expression", "[decode_view]") {
+    CHECK(constify(find_through_span()) == U'\x00C0');
 }

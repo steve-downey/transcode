@@ -1103,6 +1103,34 @@ set_tests_properties(
             "transcode: raw arrays are not valid input to decode"
 )
 
+# Negative compile test: a decode view over an owning base is not borrowed
+add_library(beman.transcode.tests.decode_view_dangling_fail OBJECT)
+target_sources(
+    beman.transcode.tests.decode_view_dangling_fail
+    PRIVATE decode_view_dangling_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.decode_view_dangling_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.decode_view_dangling_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME decode_view_dangling_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.decode_view_dangling_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    decode_view_dangling_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "no match for .+operator\\*.+ \\(operand type is .+std::ranges::borrowed_iterator_t<beman::transcoding::decode_view<identity_codec, std::ranges::owning_view"
+)
+
 add_executable(beman.transcode.tests.blp59001)
 target_sources(beman.transcode.tests.blp59001 PRIVATE blp59001.test.cpp)
 target_include_directories(
