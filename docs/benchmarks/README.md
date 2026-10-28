@@ -425,6 +425,7 @@ grep "^#" data/benchmarks/results/matrix-20260527.txt
 | UTF family | `benchmarks.utf` | `[benchmark][utf]` |
 | WHATWG legacy codecs and labels | `benchmarks.whatwg` | `[benchmark][whatwg]` |
 | Pluggable codecs | `benchmarks.pluggable` | `[benchmark][pluggable]` |
+| Runtime codec dispatch | `benchmarks.dispatch` | `[benchmark][dispatch]` |
 | Boundary stress | `benchmarks.boundary` | `[benchmark][boundary]` |
 | iconv baseline | `benchmarks.iconv` | `[benchmark][iconv]` |
 | `std::codecvt` baseline | `benchmarks.codecvt` | `[benchmark][codecvt]` |
@@ -442,17 +443,45 @@ benchmarks.  The other targets:
 | `make bench-matrix` | the compiler slices, `[smoke]` |
 | `make bench-matrix-full` | the compiler slices, `[benchmark]` |
 | `make bench-instructions` | core suites, GCC-16 Perf, under callgrind → instruction counts, Markdown + HTML + SVG + Vega-Lite |
+| `make bench-dispatch-instructions` | dispatch suite, GCC-16 Perf, under callgrind → runtime dispatch overhead per call, Markdown |
 | `make bench-coverage` | core suites under Gcov → coverage report |
 | `make bench-stability-job` | core suites from prebuilt `BENCH_BIN_DIR`, timed then counted → one runner-stability job's results |
 
 The `benchmarks.whatwg` binary also holds the label benchmarks
 (`benchmark/label_benchmarks.bench.cpp`, tag `[label]`), so the core-suite
-targets run them with the rest of `whatwg`.  They time `get_encoding` alone,
-and `transcode_string` on the same input three ways: with the codecs fixed at
-compile time, by `codec` value, and by label.  The differences between the
-three are the cost of the switch to the codec's instantiation and of the two
-label lookups.  To run only these:
+targets run them with the rest of `whatwg`.  They time `get_encoding` alone.
+To run only these:
 
 ```bash
 .build/build-system/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg "[label]"
 ```
+
+### Runtime codec dispatch
+
+`get_encoding` returns a `whatwg::encoding` value, one type for every
+encoding, while the views take their encoding as a template argument.  A
+program that chooses its encoding at run time therefore goes through a switch
+from the value to the codec's instantiation; `transcode_string(src, encoding,
+encoding)` holds that switch.  `benchmarks.dispatch` (`benchmark/dispatch_benchmarks.bench.cpp`, tag
+`[benchmark][dispatch]`) runs each of three conversions three ways on the same
+input:
+
+| API | What it adds |
+|-----|--------------|
+| `fixed codecs` | nothing: `transcode_string`'s body with both encodings as template arguments, the floor |
+| `by codec` | the switch from each `encoding` value to its codec's instantiation |
+| `by label` | two `get_encoding` lookups, then the switch |
+
+The conversions are windows-1251 → UTF-8 (single-byte decode), UTF-8 →
+windows-1251 (single-byte encode) and Shift_JIS → UTF-8 (multi-byte decode),
+each on a 32-byte prefix cut on a character boundary and on its whole corpus.
+
+The overhead is paid once per call, and it is too small for wall time to
+resolve.  `make bench-dispatch-instructions` counts the suite under callgrind
+into `BENCH_DISPATCH_DIR` (default
+`data/benchmarks/results/dispatch-instructions/`) and runs
+`tools/dispatch_overhead.py`, which prints, and writes to
+`dispatch-overhead.md`, each runtime path's instructions per call and its
+difference from `fixed codecs`.  Counts per call, not per byte, since the
+difference does not grow with the input.  `make bench` times the same suite
+with the rest.

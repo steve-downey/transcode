@@ -38,7 +38,7 @@ left alone:
 | `BENCH_REPEATS` | `5` |
 | `BENCH_WARMUP_MS` | `1000` |
 | `BENCH_SETTLE_LOAD` | `2.0`, the 1-minute load the report calls busy; timing waits up to five minutes for it |
-| `BENCH_SUITES` | `utf whatwg pluggable boundary iconv codecvt encoding_rs simdutf` |
+| `BENCH_SUITES` | `utf whatwg pluggable dispatch boundary iconv codecvt encoding_rs simdutf` |
 | `BENCH_DIR` | `$(BENCH_RESULTS_DIR)/<UTC timestamp>` |
 
 ## Comparing Compilers and Flags
