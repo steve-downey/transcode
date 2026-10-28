@@ -20,9 +20,33 @@ jobs:
         with:
           egress-policy: audit
 
-      - uses: DenverCoder1/doxygen-github-pages-action@a30f9538f8ef1305aeceb563018f452c7a62d200 # v2.0.0
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          submodules: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz texlive-xetex \
+            texlive-fonts-recommended texlive-latex-recommended \
+            texlive-latex-extra
+
+      - name: Generate Doxygen documentation
+        run: doxygen docs/Doxyfile
+
+      - name: Build the paper
+        run: make -C papers transcode-view.html transcode-view.pdf
+
+      - name: Add the paper to the published tree
+        run: |
+          mkdir -p docs/html/paper
+          cp papers/generated/transcode-view.html papers/generated/transcode-view.pdf docs/html/paper/
+          touch docs/html/.nojekyll
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4.9.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: docs/html
-          config_file: docs/Doxyfile
