@@ -79,6 +79,15 @@ def test_render_labels_hpp_is_table_only() -> None:
     assert "get_encoding" not in hpp
 
 
+def test_render_labels_hpp_labels_are_string_views() -> None:
+    """Labels carry their length, so a lookup never recomputes it."""
+    entries = parse_encodings_json(ENCODINGS_JSON)
+    hpp = render_labels_hpp(entries)
+    assert "std::string_view label;" in hpp
+    assert "#include <string_view>" in hpp
+    assert "const char*" not in hpp
+
+
 def test_render_labels_hpp_has_utf8_entry() -> None:
     entries = parse_encodings_json(ENCODINGS_JSON)
     hpp = render_labels_hpp(entries)
