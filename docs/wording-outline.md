@@ -58,6 +58,7 @@ order the compiler needs and need not match.
 | `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp`, done 2026-09-07 |
 | `transcode.codec.label` | 3 | Label lookup | `whatwg::get_encoding` | `label.hpp`, done 2026-09-07 |
 | `transcode.codec.sniff` | 3 | Byte order mark sniffing | `whatwg::bom_sniff` | `sniff.hpp`, done 2026-09-07 |
+| `transcode.whatwg.decoders` | 2 | Decoders | `whatwg::decoder` | `whatwg/decoder.hpp`, added step 08 of the SG16 response |
 | `transcode.whatwg.decode` | 2 | Decoding views | `whatwg::decode_view`, its closures `whatwg::decode<C>` / `whatwg::decode_or_error<C>`, and its `enable_borrowed_range` specialization | `whatwg/decode_view.hpp`, done 2026-09-08 |
 | `transcode.whatwg.decode.iterator` | 3 | Class `whatwg::decode_view::iterator` | the iterator operations | `whatwg/decode_view.hpp`, done 2026-09-08 |
 | `transcode.whatwg.encode` | 2 | Encoding views | `whatwg::encode_view`, likewise | `whatwg/encode_view.hpp`, done 2026-09-08 |

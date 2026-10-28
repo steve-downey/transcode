@@ -586,6 +586,24 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+add_executable(beman.transcode.tests.whatwg_decoder)
+target_sources(
+    beman.transcode.tests.whatwg_decoder
+    PRIVATE whatwg_decoder.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.whatwg_decoder
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_compile_definitions(
+    beman.transcode.tests.whatwg_decoder
+    PRIVATE "BENCHMARK_CORPUS_DIR=\"${PROJECT_SOURCE_DIR}/benchmark/corpus\""
+)
+target_link_libraries(
+    beman.transcode.tests.whatwg_decoder
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 add_executable(beman.transcode.tests.transcode_view)
 target_sources(
     beman.transcode.tests.transcode_view
@@ -686,6 +704,7 @@ catch_discover_tests(beman.transcode.tests.sniff)
 catch_discover_tests(beman.transcode.tests.transcode)
 catch_discover_tests(beman.transcode.tests.transcode_string)
 catch_discover_tests(beman.transcode.tests.transcode_string_label)
+catch_discover_tests(beman.transcode.tests.whatwg_decoder)
 catch_discover_tests(beman.transcode.tests.transcode_view)
 if(BEMAN_TRANSCODE_HAS_RANGES_TO)
     catch_discover_tests(beman.transcode.tests.bulk_transcode)
@@ -786,6 +805,34 @@ set_tests_properties(
     PROPERTIES
         PASS_REGULAR_EXPRESSION
             "required for the satisfaction of .+flushable_text_encoder<C>.+ \\[with C = wrong_flush_encoder\\]"
+)
+
+# whatwg::decoder::decode_byte is not callable for an encoding that is not single-byte
+add_library(beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail OBJECT)
+target_sources(
+    beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail
+    PRIVATE whatwg_decoder_decode_byte_reject_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME whatwg_decoder_decode_byte_reject_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    whatwg_decoder_decode_byte_reject_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "required for the satisfaction of .+random_access_decode_codec<C>.+ \\[with C = .+encoding::shift_jis\\]"
 )
 
 # legacy_byte_range rejects raw arrays (char[N]) via !is_array_v

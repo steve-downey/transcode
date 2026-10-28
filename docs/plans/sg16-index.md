@@ -179,11 +179,12 @@ top level.
 
 ## Codec contract: decode_result {#decode-result-contract}
 
-**Provisional, step 08.** `decode_result` gains a trailing, defaulted
+**Done, step 08.** `decode_result` gains a trailing, defaulted
 `bool is_empty{false}`. It says the decoder consumed input but produced no
 scalar value. The WHATWG cases are an ISO-2022-JP escape sequence at the end of
-the input, and a UTF byte order mark with nothing after it. `decode_view` then
-decodes again, or ends if the input is exhausted. Existing three-member
+the input, and a UTF byte order mark with nothing after it. `decode_view::iterator::load()` loops: at the end of the input it flushes (an
+engaged result with `is_empty` ends the range like `nullopt`), otherwise it
+calls `decode_one` and goes round again on an `is_empty` result. Existing three-member
 brace-initialisation keeps compiling. Revisit if a consumer needs to
 distinguish "nothing yet, need more input" from "nothing, by design".
 
@@ -239,7 +240,7 @@ docblocks (decoder and encoder) now say "called until `nullopt`".
 
 ## Codec objects for the WHATWG encodings {#codec-objects}
 
-**Provisional, steps 08 and 10.**
+**Decoder done in step 08; encoder provisional, step 10.**
 
 - `whatwg::decoder<C>` (`whatwg/decoder.hpp`) is defined for every
   `whatwg::encoding`. It models `text_decoder`, and it models `single_byte_text_decoder`
@@ -247,6 +248,14 @@ docblocks (decoder and encoder) now say "called until `nullopt`".
   `flushable_text_decoder` exactly when the encoding keeps state between calls
   (UTF-16BE/LE, GBK/gb18030, Big5, ISO-2022-JP). The UTF decoders keep an
   "at start" flag and drop a leading U+FEFF. It is `equality_comparable`.
+  The flag is the member `bom_` of type `detail::leading_bom_state_t<C>`
+  (`detail/whatwg_decode_select.hpp`): `{bool first}` for UTF-8 and UTF-16, and
+  the empty `detail::no_decode_state` for the rest, held as
+  `[[no_unique_address]]`. The per-encoding dispatch is the private
+  `decode_scalar`; `decode_one` wraps it with the BOM rule, and `flush()`
+  runs `decode_scalar` over an empty range. `decode_view` and
+  `random_access_decode_view` need no change for the decoder: the codec is
+  copied per `begin()`, so the flag restarts per traversal.
 - `whatwg::encoder<C>` (`whatwg/encoder.hpp`) exists only where
   `whatwg::has_encoder(C)`: it is a **constrained primary template**
   (`requires detail::whatwg_encode_codec<C>`). It is not a `static_assert`

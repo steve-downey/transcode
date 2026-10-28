@@ -13,11 +13,16 @@ namespace beman::transcoding {
 //! \remarks What a codec's `decode_one` returns.  `is_error` says whether the
 //! decode failed.  When it did, `error` says why and `code_point` is
 //! U+FFFD REPLACEMENT CHARACTER; when it did not, `code_point` is the decoded
-//! Unicode scalar value and `error` is unspecified.
+//! Unicode scalar value and `error` is unspecified.  `is_empty` says the call
+//! consumed input but produced nothing -- an escape sequence that only changes
+//! the decoder's mode, a byte order mark with nothing after it: when it is
+//! `true`, `code_point`, `error` and `is_error` are unspecified and the view
+//! asks again, or, if the input is exhausted, finishes.
 struct decode_result {
     char32_t      code_point{};
     whatwg::error error{};
     bool          is_error{false};
+    bool          is_empty{false};
 };
 
 //! \remarks What a codec's `encode_one` returns.  `is_error` says whether the

@@ -101,6 +101,7 @@ namespace std {
     char32_t code_point{};
     whatwg::error error{};
     bool is_error{false};
+    bool is_empty{false};
   };
 
   struct encode_result {
@@ -136,6 +137,29 @@ namespace std {
   template<typename C>
   concept flushable_text_encoder = text_encoder<C> && requires(C& c) {
     { c.flush() } -> same_as<optional<encode_result>>;
+  };
+
+  // @[transcode.whatwg.decoders]@, decoders
+
+  template<encoding C>
+  class decoder {
+    [[no_unique_address]] detail::decode_state_t<C> $state${};    // exposition only
+    [[no_unique_address]] detail::leading_bom_state_t<C> $bom${}; // exposition only
+
+    template<input_iterator I, sentinel_for<I> S>
+    constexpr decode_result $decode-scalar$(I& current, S end); // exposition only
+
+  public:
+    template<input_iterator I, sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, S end);
+
+    constexpr char32_t decode_byte(unsigned char byte) const
+      requires $random-access-decode-codec$<C>;
+
+    constexpr optional<decode_result> flush()
+      requires(!same_as<detail::decode_state_t<C>, detail::no_decode_state>);
+
+    friend constexpr bool operator==(const decoder&, const decoder&) = default;
   };
 
   // @[transcode.whatwg.decode]@, decoding views
@@ -218,8 +242,8 @@ namespace std {
            error_mode E = error_mode::replacement>
     requires legacy_byte_range<R>
   class decode_view : public ranges::view_interface<decode_view<Codec, R, E>> {
-    R $base$;      // exposition only
-    Codec $codec$; // exposition only
+    R $base$;                            // exposition only
+    [[no_unique_address]] Codec $codec$; // exposition only
 
     class $iterator$; // exposition only
 
@@ -439,9 +463,29 @@ namespace std {
 }
 ```
 
-[#]{.pnum} *Remarks*: What a codec's `decode_one` returns.  `is_error` says whether the decode failed.  When it did, `error` says why and `code_point` is U+FFFD REPLACEMENT CHARACTER; when it did not, `code_point` is the decoded Unicode scalar value and `error` is unspecified.
+[#]{.pnum} *Remarks*: What a codec's `decode_one` returns.  `is_error` says whether the decode failed.  When it did, `error` says why and `code_point` is U+FFFD REPLACEMENT CHARACTER; when it did not, `code_point` is the decoded Unicode scalar value and `error` is unspecified.  `is_empty` says the call consumed input but produced nothing -- an escape sequence that only changes the decoder's mode, a byte order mark with nothing after it: when it is `true`, `code_point`, `error` and `is_error` are unspecified and the view asks again, or, if the input is exhausted, finishes.
 
 [#]{.pnum} *Remarks*: What a codec's `encode_one` returns.  `is_error` says whether the encode failed -- the encoding has no representation for that scalar value. When it did not, `count` is the number of bytes written and `bytes[0]` through `bytes[count - 1]` are the encoded form; when it did, `count` is zero and the view substitutes or reports the error as its error mode says.
+
+[#]{.pnum} *Remarks*: `whatwg::decoder<C>` is the decoder, as a codec object, for the encoding `C` the Encoding Standard defines.  It models `text_decoder` ([transcode.custom.reqs]) for every encoding, and the decode adaptor over it ([transcode.custom.decode]) yields what `whatwg::decode<C>` does.  It models `single_byte_text_decoder` when `C` names an encoding that decodes one byte to one scalar value, and `flushable_text_decoder` when `C` names an encoding whose decoding can leave a result owed after the last byte.  The decoder for a UTF encoding discards one leading U+FEFF BYTE ORDER MARK from the text it decodes.  It is equality comparable.
+
+```cpp
+constexpr char32_t decode_byte(unsigned char byte) const;
+```
+
+[#]{.pnum} *Constraints*: `C` models `$random-access-decode-codec$`.
+
+[#]{.pnum} *Returns*: `0xFFFD` if `byte` decodes to nothing in `C`, otherwise the scalar value `byte` decodes to.
+
+```cpp
+constexpr optional<decode_result> flush();
+```
+
+[#]{.pnum} *Constraints*: `same_as<detail::decode_state_t<C>, detail::no_decode_state>` is `false`.
+
+[#]{.pnum} *Effects*: Decodes what the end of the input leaves owed, from an empty range.
+
+[#]{.pnum} *Returns*: `nullopt` if nothing is owed.  Otherwise a scalar value still pending, or the error for a sequence the input ended in the middle of.
 
 [#]{.pnum} *Remarks*: `whatwg::decode_view<C, R, E>` presents the bytes of `R` as the Unicode scalar values the encoding `C` decodes them to, one element per decoded scalar value.  A byte sequence the encoding does not allow is a decoding error, reported as `E` says: as U+FFFD REPLACEMENT CHARACTER when `E` is `error_mode::replacement`, and as an `unexpected` holding a `whatwg::error` when it is `error_mode::report`.  Decoding is lazy: an element is decoded when the iterator reaches it.  Every `char32_t` value the view presents is a Unicode scalar value.
 

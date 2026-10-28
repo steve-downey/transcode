@@ -91,7 +91,7 @@ constexpr result_t operator*() const;
 constexpr $iterator$& operator++();
 ```
 
-[#]{.pnum} *Effects*: Decodes the next element of the base range, or, if none remains, makes `*this` equal to `end()`.  When `Codec` models `flushable_text_decoder`, exhausting the base range calls `flush()`, and calls it again after each engaged result, yielding what it returns until it returns `nullopt`.
+[#]{.pnum} *Effects*: Decodes the next element of the base range, or, if none remains, makes `*this` equal to `end()`.  A `decode_one` result with `is_empty` yields no element and decoding goes on.  When `Codec` models `flushable_text_decoder`, exhausting the base range calls `flush()`, and calls it again after each engaged result, yielding what it returns until it returns `nullopt` or a result with `is_empty`.
 
 [#]{.pnum} *Returns*: `*this`.
 
