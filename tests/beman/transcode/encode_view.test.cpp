@@ -9,7 +9,10 @@
 #include <tests/beman/transcode/test_utilities.hpp>
 #include <catch2/catch_all.hpp>
 
+#include <algorithm>
 #include <array>
+#include <concepts>
+#include <ranges>
 #include <span>
 #include <string>
 #include <vector>
@@ -273,4 +276,35 @@ TEST_CASE("encode_view: full_table_codec encodes by table position and rejects u
     CHECK(flipped_codec{}.encode_one(U'\x00FF').is_error);
     CHECK(flipped_codec{}.encode_one(U'\0').is_error);
     CHECK(constify(flipped_codec{}.encode_one(U'A').bytes[0]) == 255 - 'A');
+}
+
+// ---------------------------------------------------------------------------
+// borrowed_range propagation
+// ---------------------------------------------------------------------------
+
+namespace {
+using u32_span_t   = std::span<const char32_t>;
+using enc_borrowed = decltype(std::declval<u32_span_t>() | encode(latin1_codec{}));
+using enc_owning   = decltype(std::u32string{} | encode(latin1_codec{}));
+
+static_assert(std::ranges::borrowed_range<enc_borrowed>);
+static_assert(!std::ranges::borrowed_range<enc_owning>);
+static_assert(std::ranges::borrowed_range<decltype(std::declval<u32_span_t>() | encode_or_error(latin1_codec{}))>);
+
+constexpr unsigned char find_through_span() {
+    constexpr std::array<char32_t, 3> cps{U'A', U'B', U'\x00C0'};
+    auto it = std::ranges::find(std::span<const char32_t>{cps} | encode(latin1_codec{}), static_cast<char>(0xC0));
+    return static_cast<unsigned char>(*it);
+}
+} // namespace
+
+TEST_CASE("encode_view: borrowed_range over a span", "[encode_view]") {
+    std::array<char32_t, 3> cps{U'A', U'B', U'\x00C0'};
+    auto it = std::ranges::find(std::span<const char32_t>{cps} | encode(latin1_codec{}), static_cast<char>(0xC0));
+    static_assert(!std::same_as<decltype(it), std::ranges::dangling>);
+    CHECK(static_cast<unsigned char>(*it) == 0xC0);
+}
+
+TEST_CASE("encode_view: borrowed find in a constant expression", "[encode_view]") {
+    CHECK(constify(find_through_span()) == 0xC0);
 }

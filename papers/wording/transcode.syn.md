@@ -254,6 +254,11 @@ namespace std {
   decode_or_error_closure decode_or_error_closure =
       decode_closure<Codec, transcode_error_kind::expected>;
 
+  template<decode_codec Codec, input_range R, transcode_error_kind E>
+    requires legacy_byte_range<R>
+  inline constexpr bool enable_borrowed_range<decode_view<Codec, R, E>> =
+      borrowed_range<R>;
+
   // @[transcode.custom.encode]@, class template encode_view
 
   template<encode_codec Codec, ranges::input_range R,
@@ -296,6 +301,11 @@ namespace std {
   template<encode_codec Codec>
   encode_or_error_closure encode_or_error_closure =
       encode_closure<Codec, transcode_error_kind::expected>;
+
+  template<encode_codec Codec, input_range R, transcode_error_kind E>
+    requires unicode_scalar_range<R>
+  inline constexpr bool enable_borrowed_range<encode_view<Codec, R, E>> =
+      borrowed_range<R>;
 
   // @[transcode.pipeline]@, transcoding pipelines
 

@@ -562,4 +562,20 @@ using decode_or_error_closure = decode_closure<Codec, transcode_error_kind::expe
 
 } // namespace beman::transcoding
 
+namespace std::ranges {
+
+//! \omit
+template <beman::transcoding::random_access_decode_codec_type Codec,
+          random_access_range                                 R,
+          beman::transcoding::transcode_error_kind            E>
+    requires beman::transcoding::legacy_byte_range<R>
+inline constexpr bool enable_borrowed_range<beman::transcoding::random_access_decode_view<Codec, R, E>> =
+    borrowed_range<R>;
+
+template <beman::transcoding::decode_codec Codec, input_range R, beman::transcoding::transcode_error_kind E>
+    requires beman::transcoding::legacy_byte_range<R>
+inline constexpr bool enable_borrowed_range<beman::transcoding::decode_view<Codec, R, E>> = borrowed_range<R>;
+
+} // namespace std::ranges
+
 #endif // INCLUDE_BEMAN_TRANSCODE_DECODE_VIEW_HPP
