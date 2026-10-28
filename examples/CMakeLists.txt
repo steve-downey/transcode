@@ -3,6 +3,7 @@
 set(ALL_EXAMPLES
     todo
     custom_single_byte_decoder
+    paper_custom_codec
     paper_iconv_view
     paper_from_cstring
     paper_error_visibility
@@ -38,5 +39,9 @@ if(BEMAN_TRANSCODE_BUILD_TESTS)
     add_test(
         NAME beman.transcode.examples.paper_error_visibility
         COMMAND beman.transcode.examples.paper_error_visibility
+    )
+    add_test(
+        NAME beman.transcode.examples.paper_custom_codec
+        COMMAND beman.transcode.examples.paper_custom_codec
     )
 endif()
