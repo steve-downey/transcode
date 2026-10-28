@@ -70,6 +70,7 @@ static_assert(text_decoder<latin1_codec>);
 static_assert(single_byte_text_decoder<latin1_codec>);
 static_assert(text_encoder<latin1_codec>);
 static_assert(!flushable_text_decoder<latin1_codec>);
+static_assert(!flushable_text_encoder<latin1_codec>);
 
 static_assert(text_decoder<sparse_codec>);
 static_assert(single_byte_text_decoder<sparse_codec>);
@@ -79,6 +80,7 @@ static_assert(text_decoder<stateful_test_codec>);
 static_assert(!single_byte_text_decoder<stateful_test_codec>);
 static_assert(!text_encoder<stateful_test_codec>);
 static_assert(flushable_text_decoder<stateful_test_codec>);
+static_assert(!flushable_text_encoder<stateful_test_codec>);
 
 static_assert(!text_decoder<not_a_codec>);
 static_assert(!text_encoder<not_a_codec>);

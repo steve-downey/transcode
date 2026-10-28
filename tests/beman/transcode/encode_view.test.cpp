@@ -13,9 +13,13 @@
 #include <algorithm>
 #include <array>
 #include <concepts>
+#include <cstddef>
+#include <iterator>
+#include <optional>
 #include <ranges>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 using namespace beman::transcoding;
@@ -308,4 +312,144 @@ TEST_CASE("encode_view: borrowed_range over a span", "[encode_view]") {
 
 TEST_CASE("encode_view: borrowed find in a constant expression", "[encode_view]") {
     CHECK(constify(find_through_span()) == 0xC0);
+}
+
+// ---------------------------------------------------------------------------
+// flushable_text_encoder: a toy shift-state encoder
+// ---------------------------------------------------------------------------
+
+namespace {
+struct shift_state_encoder {
+    bool shifted{false};
+
+    constexpr encode_result encode_one(char32_t cp) {
+        encode_result r{};
+        if (cp < 0x80) {
+            if (shifted) {
+                r.bytes[r.count++] = 0x0F;
+                shifted            = false;
+            }
+            r.bytes[r.count++] = static_cast<unsigned char>(cp);
+        } else if (cp <= 0xFF) {
+            if (!shifted) {
+                r.bytes[r.count++] = 0x0E;
+                shifted            = true;
+            }
+            r.bytes[r.count++] = static_cast<unsigned char>(cp);
+        } else {
+            r.is_error = true;
+        }
+        return r;
+    }
+
+    constexpr std::optional<encode_result> flush() {
+        if (!shifted)
+            return std::nullopt;
+        shifted = false;
+        encode_result r{};
+        r.bytes[0] = 0x0F;
+        r.count    = 1;
+        return r;
+    }
+
+    friend constexpr bool operator==(const shift_state_encoder&, const shift_state_encoder&) = default;
+};
+
+static_assert(text_encoder<shift_state_encoder>);
+static_assert(flushable_text_encoder<shift_state_encoder>);
+static_assert(!flushable_text_encoder<latin1_codec>);
+
+// A single-pass range of char32_t: an input range that is not a forward range.
+struct input_only_scalars : std::ranges::view_interface<input_only_scalars> {
+    const char32_t* first_{nullptr};
+    const char32_t* last_{nullptr};
+
+    struct iterator {
+        using iterator_concept = std::input_iterator_tag;
+        using value_type       = char32_t;
+        using difference_type  = std::ptrdiff_t;
+
+        const char32_t* p_{nullptr};
+
+        constexpr char32_t  operator*() const { return *p_; }
+        constexpr iterator& operator++() {
+            ++p_;
+            return *this;
+        }
+        constexpr void        operator++(int) { ++p_; }
+        friend constexpr bool operator==(const iterator& it, const iterator& e) { return it.p_ == e.p_; }
+    };
+
+    input_only_scalars() = default;
+    constexpr explicit input_only_scalars(std::u32string_view s) : first_(s.data()), last_(s.data() + s.size()) {}
+    constexpr iterator begin() const { return {first_}; }
+    constexpr iterator end() const { return {last_}; }
+};
+
+static_assert(std::ranges::input_range<input_only_scalars>);
+static_assert(!std::ranges::forward_range<input_only_scalars>);
+
+template <typename V>
+std::string collect_bytes(V&& v) {
+    std::string out;
+    for (auto b : v)
+        out.push_back(static_cast<char>(b));
+    return out;
+}
+
+constexpr std::array<char, 4> shift_encode_a_e_acute() {
+    std::array<char, 4> out{};
+    std::size_t         n = 0;
+    for (char c : std::u32string_view{U"aé"} | encode(shift_state_encoder{}))
+        out[n++] = c;
+    return out;
+}
+} // namespace
+
+TEST_CASE("encode_view: flushable encoder flushes at end of input", "[encode_view][flush]") {
+    using namespace std::string_literals;
+    CHECK(collect_bytes(std::u32string_view{U"aé"} | encode(shift_state_encoder{})) == "a\x0E\xE9\x0F"s);
+    CHECK(collect_bytes(std::u32string_view{U"éa"} | encode(shift_state_encoder{})) == "\x0E\xE9\x0F"
+                                                                                       "a"s);
+    CHECK(collect_bytes(std::u32string_view{U"ab"} | encode(shift_state_encoder{})) == "ab"s);
+    CHECK(collect_bytes(std::u32string_view{U""} | encode(shift_state_encoder{})).empty());
+}
+
+TEST_CASE("encode_view: flushable encoder in report mode", "[encode_view][flush]") {
+    std::string out;
+    for (auto r : std::u32string_view{U"aé"} | encode_or_error(shift_state_encoder{})) {
+        REQUIRE(r.has_value());
+        out.push_back(*r);
+    }
+    CHECK(out == "a\x0E\xE9\x0F");
+}
+
+TEST_CASE("encode_view: flushable encoder, forward base counts the flushed byte", "[encode_view][flush]") {
+    auto v = std::u32string_view{U"aé"} | encode(shift_state_encoder{});
+    CHECK(std::ranges::distance(v) == 4);
+}
+
+TEST_CASE("encode_view: flushable encoder, input-only base", "[encode_view][flush]") {
+    using namespace std::string_literals;
+    auto in = input_only_scalars{U"aé"};
+    CHECK(collect_bytes(in | encode(shift_state_encoder{})) == "a\x0E\xE9\x0F"s);
+}
+
+TEST_CASE("encode_view: iterators before and after the flushed byte differ", "[encode_view][flush]") {
+    auto v        = std::u32string_view{U"aé"} | encode(shift_state_encoder{});
+    auto b        = v.begin();
+    auto at_flush = std::ranges::next(b, 3); // 'a', SO, 0xE9 consumed; at the flushed SI
+    auto after    = std::ranges::next(b, 4);
+    CHECK(at_flush != after);
+    CHECK(*at_flush == static_cast<char>(0x0F));
+    CHECK(after == v.end());
+    CHECK(at_flush != v.end());
+}
+
+TEST_CASE("encode_view: flushable encoder in a constant expression", "[encode_view][flush]") {
+    constexpr auto bytes = constify(shift_encode_a_e_acute());
+    CHECK(bytes[0] == 'a');
+    CHECK(static_cast<unsigned char>(bytes[1]) == 0x0E);
+    CHECK(static_cast<unsigned char>(bytes[2]) == 0xE9);
+    CHECK(static_cast<unsigned char>(bytes[3]) == 0x0F);
 }
