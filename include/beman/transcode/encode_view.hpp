@@ -56,7 +56,7 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
         //! \expos
         base_sent end_{};
         //! \expos
-        Codec codec_{};
+        [[no_unique_address]] Codec codec_{};
         //! \expos
         std::array<unsigned char, 8> buf_{};
         //! \expos
@@ -102,7 +102,13 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
         {
             if (lhs.done_ || rhs.done_)
                 return lhs.done_ == rhs.done_;
-            return lhs.current_ == rhs.current_ && lhs.pos_ == rhs.pos_ && lhs.is_error_ == rhs.is_error_;
+            if (!(lhs.current_ == rhs.current_ && lhs.pos_ == rhs.pos_ && lhs.len_ == rhs.len_ &&
+                  lhs.is_error_ == rhs.is_error_))
+                return false;
+            if constexpr (std::equality_comparable<Codec>)
+                return lhs.codec_ == rhs.codec_;
+            else
+                return true;
         }
 
         constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
@@ -210,10 +216,29 @@ template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 constexpr void encode_view<Codec, R, E>::iterator::load() {
     if (current_ == end_) {
+        if constexpr (flushable_text_encoder<Codec>) {
+            auto flushed = codec_.flush();
+            if (flushed && (flushed->is_error || flushed->count > 0)) {
+                if (flushed->is_error) {
+                    is_error_ = true;
+                    error_    = whatwg::error::unmapped_codepoint;
+                    len_      = 1;
+                } else {
+                    is_error_ = false;
+                    for (int i = 0; i < flushed->count; ++i)
+                        buf_[static_cast<std::size_t>(i)] = flushed->bytes[static_cast<std::size_t>(i)];
+                    len_ = flushed->count;
+                }
+                pos_ = 0;
+                return;
+            }
+        }
         done_ = true;
         return;
     }
-    const auto validation = detail::validate_utf32(static_cast<char32_t>(*current_++));
+    const auto scalar = static_cast<char32_t>(*current_);
+    ++current_;
+    const auto validation = detail::validate_utf32(scalar);
     if constexpr (E == error_mode::report) {
         if (validation.is_error) {
             is_error_ = true;
@@ -256,7 +281,10 @@ template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \effects Advances to the next byte of the encoded element, encoding the
 //! next element of the base range when the current one is exhausted; if no
-//! element remains, makes `*this` equal to `end()`.
+//! element remains, makes `*this` equal to `end()`.  When `Codec` models
+//! `flushable_text_encoder`, exhausting the base range calls `flush()`, and
+//! calls it again after each engaged result, yielding the bytes it returns
+//! until it returns `nullopt`.
 //! \returns `*this`.
 constexpr auto encode_view<Codec, R, E>::iterator::operator++() -> iterator& {
     if (is_error_) {

@@ -55,13 +55,26 @@ concept text_encoder = std::semiregular<C> && requires(C& c, char32_t cp) {
 };
 
 //! \remarks A type models `flushable_text_decoder` if it can owe output after
-//! the last byte.  `c.flush()` is called once, when the input is exhausted,
-//! and returns what the codec still owes -- a truncation error for a sequence
-//! that ended mid-way, say -- or `nullopt` if it owes nothing.  A codec that
-//! does not model this concept is asked for nothing at the end of the input.
+//! the last byte.  `c.flush()` is called when the input is exhausted, and
+//! again after each engaged result, until it returns `nullopt`.  It returns
+//! what the codec still owes -- a truncation error for a sequence that ended
+//! mid-way, say -- or `nullopt` if it owes nothing.  A codec that does not
+//! model this concept is asked for nothing at the end of the input.
 template <typename C>
 concept flushable_text_decoder = text_decoder<C> && requires(C& c) {
     { c.flush() } -> std::same_as<std::optional<decode_result>>;
+};
+
+//! \remarks A type models `flushable_text_encoder` if it can owe output after
+//! the last scalar value, as an encoding with shift states must return to its
+//! initial state.  `c.flush()` is called when the input is exhausted, and
+//! again after each engaged result, until it returns `nullopt`.  It returns
+//! the bytes the codec still owes, or `nullopt` if it owes nothing.  A codec
+//! that does not model this concept is asked for nothing at the end of the
+//! input.
+template <typename C>
+concept flushable_text_encoder = text_encoder<C> && requires(C& c) {
+    { c.flush() } -> std::same_as<std::optional<encode_result>>;
 };
 
 } // namespace beman::transcoding

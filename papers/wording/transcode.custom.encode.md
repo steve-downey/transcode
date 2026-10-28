@@ -91,7 +91,7 @@ constexpr result_t operator*() const;
 constexpr $iterator$& operator++();
 ```
 
-[#]{.pnum} *Effects*: Advances to the next byte of the encoded element, encoding the next element of the base range when the current one is exhausted; if no element remains, makes `*this` equal to `end()`.
+[#]{.pnum} *Effects*: Advances to the next byte of the encoded element, encoding the next element of the base range when the current one is exhausted; if no element remains, makes `*this` equal to `end()`.  When `Codec` models `flushable_text_encoder`, exhausting the base range calls `flush()`, and calls it again after each engaged result, yielding the bytes it returns until it returns `nullopt`.
 
 [#]{.pnum} *Returns*: `*this`.
 

@@ -202,7 +202,7 @@ are unaffected. Report mode yields one `unexpected` element either way.
 
 ## flushable_text_encoder {#flushable-encoder}
 
-**Provisional, step 07.** This mirrors `flushable_text_decoder`:
+**Done, step 07.** This mirrors `flushable_text_decoder`:
 
 ```cpp
 template <typename C>
@@ -214,7 +214,10 @@ concept flushable_text_encoder = text_encoder<C> && requires(C& c) {
 `encode_view` calls `flush()` at the end of input, emits its bytes, and calls
 it again until it returns `nullopt`. The first real consumer is
 `whatwg::encoder<encoding::iso_2022_jp>` in step 10. Until then, the only
-consumer is a toy shift-state encoder in the tests.
+consumer is the toy `shift_state_encoder` in `tests/beman/transcode/encode_view.test.cpp`.
+An engaged result with `count == 0` and no error is treated as "owes nothing"
+(the view finishes), so a buggy codec cannot loop forever. Both `flush()`
+docblocks (decoder and encoder) now say "called until `nullopt`".
 
 ## Pluggable view invariants {#pluggable-view-invariants}
 

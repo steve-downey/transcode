@@ -760,6 +760,34 @@ set_tests_properties(
 # confirms the failure is due to the intended constraint, not an unrelated error.
 # ---------------------------------------------------------------------------
 
+# flushable_text_encoder rejects an encoder whose flush() has the wrong type
+add_library(beman.transcode.tests.flushable_encoder_reject_fail OBJECT)
+target_sources(
+    beman.transcode.tests.flushable_encoder_reject_fail
+    PRIVATE flushable_encoder_reject_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.flushable_encoder_reject_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.flushable_encoder_reject_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME flushable_encoder_reject_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.flushable_encoder_reject_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    flushable_encoder_reject_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "required for the satisfaction of .+flushable_text_encoder<C>.+ \\[with C = wrong_flush_encoder\\]"
+)
+
 # legacy_byte_range rejects raw arrays (char[N]) via !is_array_v
 add_library(beman.transcode.tests.concepts_reject_arrays_fail OBJECT)
 target_sources(

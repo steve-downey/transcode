@@ -133,6 +133,11 @@ namespace std {
     { c.flush() } -> same_as<optional<decode_result>>;
   };
 
+  template<typename C>
+  concept flushable_text_encoder = text_encoder<C> && requires(C& c) {
+    { c.flush() } -> same_as<optional<encode_result>>;
+  };
+
   // @[transcode.whatwg.decode]@, decoding views
 
   template<whatwg::encoding C, ranges::input_range R,

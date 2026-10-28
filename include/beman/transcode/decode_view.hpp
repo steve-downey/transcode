@@ -460,8 +460,9 @@ template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \effects Decodes the next element of the base range, or, if none remains,
 //! makes `*this` equal to `end()`.  When `Codec` models
-//! `flushable_text_decoder`, exhausting the base range calls `flush()` once
-//! and yields what it returns, if anything.
+//! `flushable_text_decoder`, exhausting the base range calls `flush()`, and
+//! calls it again after each engaged result, yielding what it returns until
+//! it returns `nullopt`.
 //! \returns `*this`.
 constexpr auto decode_view<Codec, R, E>::iterator::operator++() -> iterator& {
     load();
