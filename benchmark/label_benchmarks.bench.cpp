@@ -38,9 +38,7 @@ const T& opaque(T& value) {
     return value;
 }
 
-std::optional<codec> lookup(std::string& label) {
-    return beman::transcoding::get_encoding(opaque(label));
-}
+std::optional<codec> lookup(std::string& label) { return beman::transcoding::get_encoding(opaque(label)); }
 
 // What transcode_string does once it has both codecs, with no dispatch.
 template <codec From, codec To>
@@ -122,7 +120,8 @@ TEST_CASE("Label lookup benchmarks", "[benchmark][whatwg][label]") {
             measure(meter, [&] { return transcode_fixed<codec::windows_1251, codec::utf_8>(in.bytes); });
         };
 
-        describe({.conversion = "windows-1251 → UTF-8", .library = "beman.transcode", .api = "transcode_string codec"});
+        describe(
+            {.conversion = "windows-1251 → UTF-8", .library = "beman.transcode", .api = "transcode_string codec"});
         BENCHMARK_ADVANCED("transcode_string by codec:" + suffix)
         (Catch::Benchmark::Chronometer meter) {
             codec from = codec::windows_1251;
@@ -130,7 +129,8 @@ TEST_CASE("Label lookup benchmarks", "[benchmark][whatwg][label]") {
             measure(meter, [&] { return transcode_string(in.bytes, opaque(from), opaque(to)); });
         };
 
-        describe({.conversion = "windows-1251 → UTF-8", .library = "beman.transcode", .api = "transcode_string label"});
+        describe(
+            {.conversion = "windows-1251 → UTF-8", .library = "beman.transcode", .api = "transcode_string label"});
         BENCHMARK_ADVANCED("transcode_string by label:" + suffix)
         (Catch::Benchmark::Chronometer meter) {
             std::string from = "windows-1251";
