@@ -23,9 +23,9 @@ namespace std {
     system_error,
   };
 
-  enum class transcode_error_kind {
+  enum class error_mode {
     replacement,
-    expected,
+    report,
   };
 
   // @[transcode.reqs]@, range requirements
@@ -133,8 +133,7 @@ namespace std {
 
   // @[transcode.whatwg.decode]@, decoding views
 
-  template<codec C, ranges::input_range R,
-           transcode_error_kind E = transcode_error_kind::replacement>
+  template<codec C, ranges::input_range R, error_mode E = error_mode::replacement>
     requires legacy_byte_range<R>
   class whatwg_decode_view
       : public ranges::view_interface<whatwg_decode_view<C, R, E>> {
@@ -164,15 +163,14 @@ namespace std {
 
   template<codec C> inline constexpr $unspecified$ whatwg_decode_or_error;
 
-  template<codec C, input_range R, transcode_error_kind E>
+  template<codec C, input_range R, error_mode E>
     requires legacy_byte_range<R>
   inline constexpr bool enable_borrowed_range<whatwg_decode_view<C, R, E>> =
       borrowed_range<R>;
 
   // @[transcode.whatwg.encode]@, encoding views
 
-  template<codec C, ranges::input_range R,
-           transcode_error_kind E = transcode_error_kind::replacement>
+  template<codec C, ranges::input_range R, error_mode E = error_mode::replacement>
     requires $whatwg-encode-input$<C, R>
   class whatwg_encode_view
       : public ranges::view_interface<whatwg_encode_view<C, R, E>> {
@@ -202,7 +200,7 @@ namespace std {
 
   template<codec C> inline constexpr $unspecified$ whatwg_encode_or_error;
 
-  template<codec C, input_range R, transcode_error_kind E>
+  template<codec C, input_range R, error_mode E>
     requires $whatwg-encode-input$<C, R>
   inline constexpr bool enable_borrowed_range<whatwg_encode_view<C, R, E>> =
       borrowed_range<R>;
@@ -210,7 +208,7 @@ namespace std {
   // @[transcode.custom.decode]@, class template decode_view
 
   template<decode_codec Codec, ranges::input_range R,
-           transcode_error_kind E = transcode_error_kind::replacement>
+           error_mode E = error_mode::replacement>
     requires legacy_byte_range<R>
   class decode_view : public ranges::view_interface<decode_view<Codec, R, E>> {
     R $base$;      // exposition only
@@ -239,22 +237,20 @@ namespace std {
   template<decode_codec Codec> constexpr decode_closure<Codec> decode(Codec codec = {});
 
   template<decode_codec Codec>
-  constexpr decode_closure<Codec, transcode_error_kind::expected> decode_or_error(
-      Codec codec = {});
+  constexpr decode_closure<Codec, error_mode::report> decode_or_error(Codec codec = {});
 
   template<decode_codec Codec, ranges::input_range R>
-  decode_or_error_view decode_or_error_view =
-      decode_view<Codec, R, transcode_error_kind::expected>;
+  decode_or_error_view decode_or_error_view = decode_view<Codec, R, error_mode::report>;
 
   template<random_access_decode_codec_type Codec, ranges::random_access_range R>
   random_access_decode_or_error_view random_access_decode_or_error_view =
-      random_access_decode_view<Codec, R, transcode_error_kind::expected>;
+      random_access_decode_view<Codec, R, error_mode::report>;
 
   template<decode_codec Codec>
   decode_or_error_closure decode_or_error_closure =
-      decode_closure<Codec, transcode_error_kind::expected>;
+      decode_closure<Codec, error_mode::report>;
 
-  template<decode_codec Codec, input_range R, transcode_error_kind E>
+  template<decode_codec Codec, input_range R, error_mode E>
     requires legacy_byte_range<R>
   inline constexpr bool enable_borrowed_range<decode_view<Codec, R, E>> =
       borrowed_range<R>;
@@ -262,7 +258,7 @@ namespace std {
   // @[transcode.custom.encode]@, class template encode_view
 
   template<encode_codec Codec, ranges::input_range R,
-           transcode_error_kind E = transcode_error_kind::replacement>
+           error_mode E = error_mode::replacement>
     requires unicode_scalar_range<R>
   class encode_view : public ranges::view_interface<encode_view<Codec, R, E>> {
     R $base$;      // exposition only
@@ -291,18 +287,16 @@ namespace std {
   template<encode_codec Codec> constexpr encode_closure<Codec> encode(Codec codec = {});
 
   template<encode_codec Codec>
-  constexpr encode_closure<Codec, transcode_error_kind::expected> encode_or_error(
-      Codec codec = {});
+  constexpr encode_closure<Codec, error_mode::report> encode_or_error(Codec codec = {});
 
   template<encode_codec Codec, ranges::input_range R>
-  encode_or_error_view encode_or_error_view =
-      encode_view<Codec, R, transcode_error_kind::expected>;
+  encode_or_error_view encode_or_error_view = encode_view<Codec, R, error_mode::report>;
 
   template<encode_codec Codec>
   encode_or_error_closure encode_or_error_closure =
-      encode_closure<Codec, transcode_error_kind::expected>;
+      encode_closure<Codec, error_mode::report>;
 
-  template<encode_codec Codec, input_range R, transcode_error_kind E>
+  template<encode_codec Codec, input_range R, error_mode E>
     requires unicode_scalar_range<R>
   inline constexpr bool enable_borrowed_range<encode_view<Codec, R, E>> =
       borrowed_range<R>;
@@ -453,13 +447,13 @@ namespace std {
 
 [#]{.pnum} *Remarks*: What a codec's `decode_one` returns.  `is_error` says whether the decode failed.  When it did, `error` says why and `code_point` is U+FFFD REPLACEMENT CHARACTER; when it did not, `code_point` is the decoded Unicode scalar value and `error` is unspecified.
 
-[#]{.pnum} *Remarks*: What a codec's `encode_one` returns.  `is_error` says whether the encode failed -- the encoding has no representation for that scalar value. When it did not, `count` is the number of bytes written and `bytes[0]` through `bytes[count - 1]` are the encoded form; when it did, `count` is zero and the view substitutes or reports the error as its error kind says.
+[#]{.pnum} *Remarks*: What a codec's `encode_one` returns.  `is_error` says whether the encode failed -- the encoding has no representation for that scalar value. When it did not, `count` is the number of bytes written and `bytes[0]` through `bytes[count - 1]` are the encoded form; when it did, `count` is zero and the view substitutes or reports the error as its error mode says.
 
-[#]{.pnum} *Remarks*: `whatwg_decode_view<C, R, E>` presents the bytes of `R` as the Unicode scalar values the encoding `C` decodes them to, one element per decoded scalar value.  A byte sequence the encoding does not allow is a decoding error, reported as `E` says: as U+FFFD REPLACEMENT CHARACTER when `E` is `transcode_error_kind::replacement`, and as an `unexpected` holding a `whatwg_error` when it is `transcode_error_kind::expected`.  Decoding is lazy: an element is decoded when the iterator reaches it.  Every `char32_t` value the view presents is a Unicode scalar value.
+[#]{.pnum} *Remarks*: `whatwg_decode_view<C, R, E>` presents the bytes of `R` as the Unicode scalar values the encoding `C` decodes them to, one element per decoded scalar value.  A byte sequence the encoding does not allow is a decoding error, reported as `E` says: as U+FFFD REPLACEMENT CHARACTER when `E` is `error_mode::replacement`, and as an `unexpected` holding a `whatwg_error` when it is `error_mode::report`.  Decoding is lazy: an element is decoded when the iterator reaches it.  Every `char32_t` value the view presents is a Unicode scalar value.
 
 [#]{.pnum} The view models `random_access_range` when `C` names an encoding that decodes one byte to one scalar value and `R` models `random_access_range`.  How an implementation achieves that is not specified; it is a property of the view rather than a second view.
 
-[#]{.pnum} *Remarks*: `whatwg_encode_view<C, R, E>` validates the `char32_t` elements of `R` as UTF-32 and presents them as the bytes the encoding `C` encodes them to, one element per byte.  In replacement mode, an ill-formed UTF-32 code unit is replaced with U+FFFD and that scalar value is encoded normally; in expected mode it yields an `unexpected` holding `whatwg_error::surrogate_code_point` or `whatwg_error::out_of_range`.  A scalar value the encoding cannot represent yields `'?'` in replacement mode and `whatwg_error::unmapped_codepoint` in expected mode.  Encoding is lazy, and one input element can produce several output elements.
+[#]{.pnum} *Remarks*: `whatwg_encode_view<C, R, E>` validates the `char32_t` elements of `R` as UTF-32 and presents them as the bytes the encoding `C` encodes them to, one element per byte.  In replacement mode, an ill-formed UTF-32 code unit is replaced with U+FFFD and that scalar value is encoded normally; in report mode it yields an `unexpected` holding `whatwg_error::surrogate_code_point` or `whatwg_error::out_of_range`.  A scalar value the encoding cannot represent yields `'?'` in replacement mode and `whatwg_error::unmapped_codepoint` in report mode.  Encoding is lazy, and one input element can produce several output elements.
 
 [#]{.pnum} `C` is required to be an encoding the WHATWG Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and the view does not accept them.
 
@@ -487,9 +481,9 @@ constexpr auto size() const;
 
 [#]{.pnum} *Constraints*: `R` models `sized_range`.
 
-[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg_decode_view` ([transcode.whatwg.decode]) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error kind and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.  The view does not validate a successful `code_point`; the program-supplied `Codec` is responsible for returning Unicode scalar values as required by `decode_codec`.
+[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg_decode_view` ([transcode.whatwg.decode]) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error mode and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.  The view does not validate a successful `code_point`; the program-supplied `Codec` is responsible for returning Unicode scalar values as required by `decode_codec`.
 
-[#]{.pnum} The view models `random_access_range` when `Codec` models `random_access_decode_codec_type` and `R` models `random_access_range`. When it does, a byte whose value is `0x80` or above and for which `Codec::decode_byte` returns U+FFFD is reported as `whatwg_error::invalid_byte` in expected mode and yields U+FFFD in replacement mode.  This follows from the U+FFFD reservation required by `random_access_decode_codec_type` ([transcode.custom.reqs]).
+[#]{.pnum} The view models `random_access_range` when `Codec` models `random_access_decode_codec_type` and `R` models `random_access_range`. When it does, a byte whose value is `0x80` or above and for which `Codec::decode_byte` returns U+FFFD is reported as `whatwg_error::invalid_byte` in report mode and yields U+FFFD in replacement mode.  This follows from the U+FFFD reservation required by `random_access_decode_codec_type` ([transcode.custom.reqs]).
 
 ```cpp
 static constexpr $iterator$ $terminal$();
@@ -497,7 +491,7 @@ static constexpr $iterator$ $terminal$();
 
 [#]{.pnum} *Constraints*: `R` models `forward_range`.
 
-[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg_encode_view` ([transcode.whatwg.encode]) with the codec supplied as a value rather than named by an enumerator: it validates the `char32_t` elements of `R` as UTF-32, presents the resulting scalar values as the bytes `Codec` encodes them to, reports an error as `E` says, and encodes lazily.  Ill-formed UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in replacement mode and is reported without calling the codec in expected mode.  A custom codec therefore receives only Unicode scalar values.
+[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg_encode_view` ([transcode.whatwg.encode]) with the codec supplied as a value rather than named by an enumerator: it validates the `char32_t` elements of `R` as UTF-32, presents the resulting scalar values as the bytes `Codec` encodes them to, reports an error as `E` says, and encodes lazily.  Ill-formed UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in replacement mode and is reported without calling the codec in report mode.  A custom codec therefore receives only Unicode scalar values.
 
 ```cpp
 static constexpr $iterator$ $terminal$();

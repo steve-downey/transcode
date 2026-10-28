@@ -36,7 +36,7 @@ concept legacy_byte_range = std::ranges::range<R> && !std::is_array_v<std::remov
 //! \remarks `unicode_scalar_range` constrains the type of a range and not its
 //! values.  Its `char32_t` elements are interpreted as UTF-32 code units by an
 //! encode operation: a code unit that is not a Unicode scalar value is replaced
-//! with U+FFFD or reported as an error, according to the operation's error kind.
+//! with U+FFFD or reported as an error, according to the operation's error mode.
 template <typename R>
 concept unicode_scalar_range = std::ranges::input_range<R> && !std::is_array_v<std::remove_cvref_t<R>> &&
                                std::same_as<std::remove_cv_t<std::ranges::range_value_t<R>>, char32_t>;

@@ -71,7 +71,7 @@ template<codec C> inline constexpr $unspecified$ whatwg_decode;
 template<codec C> inline constexpr $unspecified$ whatwg_decode_or_error;
 ```
 
-[#]{.pnum} *Remarks*: `whatwg_decode_or_error<C>` is `whatwg_decode<C>` with `transcode_error_kind::expected`: the view it adapts to has value type `expected<char32_t, whatwg_error>`, and a decoding error is the error rather than U+FFFD.
+[#]{.pnum} *Remarks*: `whatwg_decode_or_error<C>` is `whatwg_decode<C>` with `error_mode::report`: the view it adapts to has value type `expected<char32_t, whatwg_error>`, and a decoding error is the error rather than U+FFFD.
 
 ### Class `whatwg_decode_view::iterator` [transcode.whatwg.decode.iterator] {-}
 

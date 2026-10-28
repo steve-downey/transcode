@@ -47,18 +47,18 @@ enum class iconv_error {
 : [Enum class `iconv_error`]{#transcode.errors.iconv}
 
 ```cpp
-enum class transcode_error_kind {
+enum class error_mode {
   replacement,
-  expected,
+  report,
 };
 ```
 
-[#]{.pnum} *Remarks*: A view's error kind says how it reports a failure of the codec it drives.  The enumerators have the meanings in the following table.
+[#]{.pnum} *Remarks*: A view's error mode says how it reports a failure of the codec it drives.  The enumerators have the meanings in the following table.
 
 | Constant | Meaning |
 |---|---|
 | `replacement` | a failure to decode yields U+FFFD REPLACEMENT CHARACTER.  Ill-formed UTF-32 input is first replaced with U+FFFD and then encoded normally; when an encoder cannot represent a scalar value, the encode view yields `'?'`. The view's value type is the codec's own. |
-| `expected` | the view's value type is `expected<T, whatwg_error>`, and a failure yields an `unexpected` holding the error that occurred. |
-: [Enum class `transcode_error_kind`]{#transcode.errors.kind}
+| `report` | the view's value type is `expected<T, whatwg_error>`, and a failure yields an `unexpected` holding the error that occurred. |
+: [Enum class `error_mode`]{#transcode.errors.kind}
 
 :::

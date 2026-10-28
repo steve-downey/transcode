@@ -71,7 +71,7 @@ template<encode_codec Codec> constexpr $see below$ encode(Codec codec = {});
 template<encode_codec Codec> constexpr $see below$ encode_or_error(Codec codec = {});
 ```
 
-[#]{.pnum} *Returns*: `encode(codec)` with `transcode_error_kind::expected`: the view it adapts to has value type `expected<char, whatwg_error>`, and an encoding or UTF-32 validation error is reported rather than replaced.
+[#]{.pnum} *Returns*: `encode(codec)` with `error_mode::report`: the view it adapts to has value type `expected<char, whatwg_error>`, and an encoding or UTF-32 validation error is reported rather than replaced.
 
 ### Class `encode_view::iterator` [transcode.custom.encode.iterator] {-}
 
