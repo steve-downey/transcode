@@ -11,7 +11,7 @@
 
 #include <beman/transcode/codec_concepts.hpp>
 #include <beman/transcode/codec_result.hpp>
-#include <beman/transcode/codec.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 #include <beman/transcode/decode_view.hpp>
 #include <beman/transcode/encode_view.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
@@ -49,12 +49,12 @@ constexpr encode_result iso_8859_1::encode_one(char32_t cp) const {
     return result;
 }
 
-static_assert(decode_codec<iso_8859_1> && encode_codec<iso_8859_1>);
+static_assert(text_decoder<iso_8859_1> && text_encoder<iso_8859_1>);
 
 // ISO-8859-1 to UTF-8: a custom decoder, then the library's UTF-8 encoder.
 constexpr std::string to_utf8(std::string_view latin1) {
     std::string out;
-    for (char b : latin1 | decode(iso_8859_1{}) | whatwg_encode<codec::utf_8>)
+    for (char b : latin1 | decode(iso_8859_1{}) | whatwg_encode<whatwg::encoding::utf_8>)
         out.push_back(b);
     return out;
 }
@@ -63,7 +63,7 @@ constexpr std::string to_utf8(std::string_view latin1) {
 // scalar value the encoding cannot represent becomes '?'.
 constexpr std::string from_utf8(std::string_view utf8) {
     std::string out;
-    for (char b : utf8 | whatwg_decode<codec::utf_8> | encode(iso_8859_1{}))
+    for (char b : utf8 | whatwg_decode<whatwg::encoding::utf_8> | encode(iso_8859_1{}))
         out.push_back(b);
     return out;
 }

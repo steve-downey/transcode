@@ -8,6 +8,8 @@
 #include <beman/transcode/codec_concepts.hpp>
 #include <beman/transcode/concepts.hpp>
 #include <beman/transcode/detail/range_traits.hpp>
+#include <beman/transcode/whatwg/error.hpp>
+#include <beman/transcode/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <expected>
@@ -23,9 +25,7 @@ namespace beman::transcoding {
 // ---------------------------------------------------------------------------
 
 //! \omit
-template <random_access_decode_codec_type  Codec,
-          std::ranges::random_access_range R,
-          error_mode                       E = error_mode::replacement>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E = error_mode::replacement>
     requires legacy_byte_range<R>
 class random_access_decode_view : public std::ranges::view_interface<random_access_decode_view<Codec, R, E>> {
     R     base_;
@@ -39,9 +39,9 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 
       public:
         using value_type =
-            std::conditional_t<E == error_mode::report, std::expected<char32_t, whatwg_error>, char32_t>;
+            std::conditional_t<E == error_mode::report, std::expected<char32_t, whatwg::error>, char32_t>;
 
-        static constexpr value_type error_result(whatwg_error e) {
+        static constexpr value_type error_result(whatwg::error e) {
             if constexpr (E == error_mode::report)
                 return value_type(std::unexpect, e);
             else
@@ -98,7 +98,7 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 };
 
 // ---------------------------------------------------------------------------
-// decode_view — decodes bytes to expected<char32_t, whatwg_error>
+// decode_view — decodes bytes to expected<char32_t, whatwg::error>
 // ---------------------------------------------------------------------------
 
 // \ref{transcode.custom.decode}, class template decode_view
@@ -112,16 +112,16 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 //! wrote rather than one the Encoding Standard defines.  The view does not
 //! validate a successful `code_point`; the program-supplied `Codec` is
 //! responsible for returning Unicode scalar values as required by
-//! `decode_codec`.
+//! `text_decoder`.
 //!
 //! The view models `random_access_range` when `Codec` models
-//! `random_access_decode_codec_type` and `R` models `random_access_range`.
+//! `single_byte_text_decoder` and `R` models `random_access_range`.
 //! When it does, a byte whose value is `0x80` or above and for which
 //! `Codec::decode_byte` returns U+FFFD is reported as
-//! `whatwg_error::invalid_byte` in report mode and yields U+FFFD in
+//! `whatwg::error::invalid_byte` in report mode and yields U+FFFD in
 //! replacement mode.  This follows from the U+FFFD reservation required by
-//! `random_access_decode_codec_type` \iref{transcode.custom.reqs}.
-template <decode_codec Codec, std::ranges::input_range R, error_mode E = error_mode::replacement>
+//! `single_byte_text_decoder` \iref{transcode.custom.reqs}.
+template <text_decoder Codec, std::ranges::input_range R, error_mode E = error_mode::replacement>
     requires legacy_byte_range<R>
 class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>> {
     //! \expos
@@ -134,10 +134,10 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
     class iterator {
         using base_iter = detail::compatible_iterator_t<R>;
         using base_sent = detail::compatible_sentinel_t<R>;
-        using result_t  = std::conditional_t<E == error_mode::report, std::expected<char32_t, whatwg_error>, char32_t>;
+        using result_t = std::conditional_t<E == error_mode::report, std::expected<char32_t, whatwg::error>, char32_t>;
 
         //! \expos
-        static constexpr result_t error_result(whatwg_error e) {
+        static constexpr result_t error_result(whatwg::error e) {
             if constexpr (E == error_mode::report)
                 return result_t(std::unexpect, e);
             else
@@ -222,7 +222,7 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
 // ---------------------------------------------------------------------------
 
 //! \omit
-template <decode_codec Codec, error_mode E = error_mode::replacement>
+template <text_decoder Codec, error_mode E = error_mode::replacement>
 struct decode_closure {
     Codec codec_;
 
@@ -250,16 +250,16 @@ struct decode_closure {
 //! are each expression-equivalent to a
 //! `decode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of
 //! `codec`.  An `E` of array type is ill-formed.
-template <decode_codec Codec>
+template <text_decoder Codec>
 constexpr decode_closure<Codec> decode(Codec codec = {}) {
     return {codec};
 }
 
 //! \seebelow
 //! \returns `decode(codec)` with `error_mode::report`: the view it
-//! adapts to has value type `expected<char32_t, whatwg_error>`, and a decoding
+//! adapts to has value type `expected<char32_t, whatwg::error>`, and a decoding
 //! error is the error rather than U+FFFD.
-template <decode_codec Codec>
+template <text_decoder Codec>
 constexpr decode_closure<Codec, error_mode::report> decode_or_error(Codec codec = {}) {
     return {codec};
 }
@@ -268,40 +268,40 @@ constexpr decode_closure<Codec, error_mode::report> decode_or_error(Codec codec 
 // Out-of-line definitions: random_access_decode_view
 // ===========================================================================
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr random_access_decode_view<Codec, R, E>::random_access_decode_view(R base, Codec codec)
     : base_(std::move(base)), codec_(codec) {}
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr random_access_decode_view<Codec, R, E>::iterator::iterator(base_iter current, Codec codec)
     : current_(current), codec_(codec) {}
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator*() const -> value_type {
     const auto byte = static_cast<unsigned char>(*current_);
     char32_t   cp   = codec_.decode_byte(byte);
     if (cp == U'\xFFFD' && byte >= 0x80)
-        return error_result(whatwg_error::invalid_byte);
+        return error_result(whatwg::error::invalid_byte);
     return cp;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator[](difference_type n) const -> value_type {
     return *(*this + n);
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator++() -> iterator& {
     ++current_;
     return *this;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator++(int) -> iterator {
     auto tmp = *this;
@@ -309,14 +309,14 @@ constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator++(int)
     return tmp;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator--() -> iterator& {
     --current_;
     return *this;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator--(int) -> iterator {
     auto tmp = *this;
@@ -324,48 +324,48 @@ constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator--(int)
     return tmp;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator+=(difference_type n) -> iterator& {
     current_ += n;
     return *this;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator-=(difference_type n) -> iterator& {
     current_ -= n;
     return *this;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator+(difference_type n) const -> iterator {
     auto tmp = *this;
     return tmp += n;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator-(difference_type n) const -> iterator {
     auto tmp = *this;
     return tmp -= n;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::iterator::operator-(const iterator& other) const
     -> difference_type {
     return current_ - other.current_;
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::begin() -> iterator {
     return iterator(std::ranges::begin(base_), codec_);
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::begin() const -> iterator
     requires detail::const_iterator_compatible_range<R>
@@ -373,13 +373,13 @@ constexpr auto random_access_decode_view<Codec, R, E>::begin() const -> iterator
     return iterator(std::ranges::begin(base_), codec_);
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::end() -> iterator {
     return iterator(std::ranges::end(base_), codec_);
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::end() const -> iterator
     requires detail::const_iterator_compatible_range<R> && std::ranges::range<const R>
@@ -387,7 +387,7 @@ constexpr auto random_access_decode_view<Codec, R, E>::end() const -> iterator
     return iterator(std::ranges::end(base_), codec_);
 }
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R, error_mode E>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto random_access_decode_view<Codec, R, E>::size() const
     requires std::ranges::sized_range<R>
@@ -399,13 +399,13 @@ constexpr auto random_access_decode_view<Codec, R, E>::size() const
 // Out-of-line definitions: decode_view
 // ===========================================================================
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \effects Initializes `$base$` with `std::move(base)` and `$codec$` with
 //! `codec`.
 constexpr decode_view<Codec, R, E>::decode_view(R base, Codec codec) : base_(std::move(base)), codec_(codec) {}
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \effects Initializes `$current$` with `std::move(current)`, `$end$` with
 //! `std::move(end)` and the iterator's own copy of the codec with `codec`,
@@ -415,7 +415,7 @@ constexpr decode_view<Codec, R, E>::iterator::iterator(base_iter current, base_s
     load();
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr auto decode_view<Codec, R, E>::iterator::terminal() -> iterator
     requires std::ranges::forward_range<R>
@@ -425,11 +425,11 @@ constexpr auto decode_view<Codec, R, E>::iterator::terminal() -> iterator
     return it;
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr void decode_view<Codec, R, E>::iterator::load() {
     if (current_ == end_) {
-        if constexpr (flushable_decode_codec<Codec>) {
+        if constexpr (flushable_text_decoder<Codec>) {
             auto flushed = codec_.flush();
             if (flushed) {
                 if (flushed->is_error)
@@ -449,18 +449,18 @@ constexpr void decode_view<Codec, R, E>::iterator::load() {
         value_ = r.code_point;
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \returns-expr
 constexpr auto decode_view<Codec, R, E>::iterator::operator*() const -> result_t {
     return value_;
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \effects Decodes the next element of the base range, or, if none remains,
 //! makes `*this` equal to `end()`.  When `Codec` models
-//! `flushable_decode_codec`, exhausting the base range calls `flush()` once
+//! `flushable_text_decoder`, exhausting the base range calls `flush()` once
 //! and yields what it returns, if anything.
 //! \returns `*this`.
 constexpr auto decode_view<Codec, R, E>::iterator::operator++() -> iterator& {
@@ -468,7 +468,7 @@ constexpr auto decode_view<Codec, R, E>::iterator::operator++() -> iterator& {
     return *this;
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \effects-equiv
 constexpr auto decode_view<Codec, R, E>::iterator::operator++(int) -> iterator
@@ -479,7 +479,7 @@ constexpr auto decode_view<Codec, R, E>::iterator::operator++(int) -> iterator
     return tmp;
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \effects-equiv
 constexpr void decode_view<Codec, R, E>::iterator::operator++(int)
@@ -488,7 +488,7 @@ constexpr void decode_view<Codec, R, E>::iterator::operator++(int)
     ++*this;
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \returns An `$iterator$` over `$base$` and a copy of `$codec$`, positioned
 //! at its first decoded element.
@@ -496,7 +496,7 @@ constexpr auto decode_view<Codec, R, E>::begin() -> iterator {
     return iterator(std::ranges::begin(base_), std::ranges::end(base_), codec_);
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \returns An `$iterator$` over `$base$` and a copy of `$codec$`, positioned
 //! at its first decoded element.
@@ -506,7 +506,7 @@ constexpr auto decode_view<Codec, R, E>::begin() const -> iterator
     return iterator(std::ranges::begin(base_), std::ranges::end(base_), codec_);
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \returns An `$iterator$` that compares equal to an iterator that has
 //! decoded every element of `$base$`.
@@ -516,7 +516,7 @@ constexpr auto decode_view<Codec, R, E>::end() -> iterator
     return iterator::terminal();
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \returns An `$iterator$` that compares equal to an iterator that has
 //! decoded every element of `$base$`.
@@ -527,7 +527,7 @@ constexpr auto decode_view<Codec, R, E>::end() const -> iterator
     return iterator::terminal();
 }
 
-template <decode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \returns `default_sentinel`.
 constexpr std::default_sentinel_t decode_view<Codec, R, E>::end() const {
@@ -538,25 +538,25 @@ constexpr std::default_sentinel_t decode_view<Codec, R, E>::end() const {
 // Out-of-line definitions: decode_closure
 // ===========================================================================
 
-template <decode_codec Codec, error_mode E>
+template <text_decoder Codec, error_mode E>
 template <legacy_byte_range R>
 constexpr auto decode_closure<Codec, E>::operator()(R&& r) const {
     using view_t = std::views::all_t<R>;
     auto all     = std::views::all(std::forward<R>(r));
-    if constexpr (random_access_decode_codec_type<Codec> && std::ranges::random_access_range<view_t>)
+    if constexpr (single_byte_text_decoder<Codec> && std::ranges::random_access_range<view_t>)
         return random_access_decode_view<Codec, view_t, E>(std::move(all), codec_);
     else
         return decode_view<Codec, view_t, E>(std::move(all), codec_);
 }
 
 // The names the paired views had before they were unified.
-template <decode_codec Codec, std::ranges::input_range R>
+template <text_decoder Codec, std::ranges::input_range R>
 using decode_or_error_view = decode_view<Codec, R, error_mode::report>;
 
-template <random_access_decode_codec_type Codec, std::ranges::random_access_range R>
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R>
 using random_access_decode_or_error_view = random_access_decode_view<Codec, R, error_mode::report>;
 
-template <decode_codec Codec>
+template <text_decoder Codec>
 using decode_or_error_closure = decode_closure<Codec, error_mode::report>;
 
 } // namespace beman::transcoding
@@ -564,14 +564,12 @@ using decode_or_error_closure = decode_closure<Codec, error_mode::report>;
 namespace std::ranges {
 
 //! \omit
-template <beman::transcoding::random_access_decode_codec_type Codec,
-          random_access_range                                 R,
-          beman::transcoding::error_mode                      E>
+template <beman::transcoding::single_byte_text_decoder Codec, random_access_range R, beman::transcoding::error_mode E>
     requires beman::transcoding::legacy_byte_range<R>
 inline constexpr bool enable_borrowed_range<beman::transcoding::random_access_decode_view<Codec, R, E>> =
     borrowed_range<R>;
 
-template <beman::transcoding::decode_codec Codec, input_range R, beman::transcoding::error_mode E>
+template <beman::transcoding::text_decoder Codec, input_range R, beman::transcoding::error_mode E>
     requires beman::transcoding::legacy_byte_range<R>
 inline constexpr bool enable_borrowed_range<beman::transcoding::decode_view<Codec, R, E>> = borrowed_range<R>;
 

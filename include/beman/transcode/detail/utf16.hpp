@@ -4,8 +4,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF16_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -30,9 +29,9 @@ struct utf16_decode_state {
 };
 
 struct utf16_decode_result {
-    char32_t     code_point{0xFFFD};
-    whatwg_error error{};
-    bool         is_error{false};
+    char32_t      code_point{0xFFFD};
+    whatwg::error error{};
+    bool          is_error{false};
 };
 
 struct utf16_encode_result {
@@ -77,7 +76,7 @@ constexpr utf16_decode_result utf16_decode_one(utf16_decode_state& st, I& curren
         b0 = static_cast<unsigned char>(*current);
         ++current;
         if (current == end)
-            return {0xFFFD, whatwg_error::truncated_sequence, true};
+            return {0xFFFD, whatwg::error::truncated_sequence, true};
         b1 = static_cast<unsigned char>(*current);
         ++current;
     }
@@ -86,11 +85,11 @@ constexpr utf16_decode_result utf16_decode_one(utf16_decode_state& st, I& curren
 
     if (unit >= 0xD800 && unit <= 0xDBFF) {
         if (current == end)
-            return {0xFFFD, whatwg_error::truncated_sequence, true};
+            return {0xFFFD, whatwg::error::truncated_sequence, true};
         auto b2 = static_cast<unsigned char>(*current);
         ++current;
         if (current == end)
-            return {0xFFFD, whatwg_error::truncated_sequence, true};
+            return {0xFFFD, whatwg::error::truncated_sequence, true};
         auto b3 = static_cast<unsigned char>(*current);
         ++current;
 
@@ -101,11 +100,11 @@ constexpr utf16_decode_result utf16_decode_one(utf16_decode_state& st, I& curren
         st.pending[0]    = b2;
         st.pending[1]    = b3;
         st.pending_count = 2;
-        return {0xFFFD, whatwg_error::surrogate_code_point, true};
+        return {0xFFFD, whatwg::error::surrogate_code_point, true};
     }
 
     if (unit >= 0xDC00 && unit <= 0xDFFF)
-        return {0xFFFD, whatwg_error::surrogate_code_point, true};
+        return {0xFFFD, whatwg::error::surrogate_code_point, true};
 
     return {static_cast<char32_t>(unit), {}, false};
 }

@@ -62,16 +62,16 @@ constexpr default_sentinel_t end() const;
 [#]{.pnum} *Returns*: `default_sentinel`.
 
 ```cpp
-template<encode_codec Codec> constexpr $see below$ encode(Codec codec = {});
+template<text_encoder Codec> constexpr $see below$ encode(Codec codec = {});
 ```
 
 [#]{.pnum} *Returns*: A range adaptor object over `codec`.  Given a subexpression `E` that models `unicode_scalar_range`, `encode(codec)(E)` and `E | encode(codec)` are each expression-equivalent to an `encode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of `codec`.
 
 ```cpp
-template<encode_codec Codec> constexpr $see below$ encode_or_error(Codec codec = {});
+template<text_encoder Codec> constexpr $see below$ encode_or_error(Codec codec = {});
 ```
 
-[#]{.pnum} *Returns*: `encode(codec)` with `error_mode::report`: the view it adapts to has value type `expected<char, whatwg_error>`, and an encoding or UTF-32 validation error is reported rather than replaced.
+[#]{.pnum} *Returns*: `encode(codec)` with `error_mode::report`: the view it adapts to has value type `expected<char, whatwg::error>`, and an encoding or UTF-32 validation error is reported rather than replaced.
 
 ### Class `encode_view::iterator` [transcode.custom.encode.iterator] {-}
 

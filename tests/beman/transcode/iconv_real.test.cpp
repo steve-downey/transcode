@@ -7,6 +7,7 @@
 #include <catch2/catch_all.hpp>
 
 #include <beman/transcode/iconv_transcode_or_error_view.hpp>
+#include <beman/transcode/error.hpp>
 
 #include <array>
 #include <cstddef>

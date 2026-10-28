@@ -3,7 +3,7 @@
 ## Encodings [transcode.codec] {-}
 
 ```cpp
-enum class codec {
+enum class encoding {
   utf_8,
   replacement,
   x_user_defined,
@@ -47,31 +47,31 @@ enum class codec {
 };
 ```
 
-[#]{.pnum} *Remarks*: Each enumerator names the encoding of the same name in the WHATWG Encoding Standard, whose table of encodings is normative and is not restated here: an encoding is what that standard says it is, and a specification that copied the list would be a second one to keep current. `codec::replacement` is that standard's `replacement` encoding, which decodes any non-empty input to a single U+FFFD REPLACEMENT CHARACTER, and `codec::x_user_defined` its `x-user-defined`.
+[#]{.pnum} *Remarks*: Each enumerator names the encoding of the same name in the WHATWG Encoding Standard, whose table of encodings is normative and is not restated here: an encoding is what that standard says it is, and a specification that copied the list would be a second one to keep current. `whatwg::encoding::replacement` is that standard's `replacement` encoding, which decodes any non-empty input to a single U+FFFD REPLACEMENT CHARACTER, and `whatwg::encoding::x_user_defined` its `x-user-defined`.
 
 ### Label lookup [transcode.codec.label] {-}
 
 ```cpp
-constexpr optional<codec> get_encoding(string_view label) noexcept;
+constexpr optional<encoding> get_encoding(string_view label) noexcept;
 ```
 
-[#]{.pnum} *Returns*: The `codec` whose WHATWG label set contains `label`, and `nullopt` if no encoding has that label.  Leading and trailing ASCII whitespace is ignored and the comparison is ASCII case-insensitive, which is the Encoding Standard's "get an encoding" algorithm.
+[#]{.pnum} *Returns*: The `encoding` whose WHATWG label set contains `label`, and `nullopt` if no encoding has that label.  Leading and trailing ASCII whitespace is ignored and the comparison is ASCII case-insensitive, which is the Encoding Standard's "get an encoding" algorithm.
 
-[#]{.pnum} *Remarks*: An encoding's labels are the alternative names a document may spell it with -- `latin1`, `iso-8859-1` and `windows-1252` are all labels of `codec::windows_1252` -- so a lookup that fails is a name no encoding claims, not an encoding that cannot be represented.
+[#]{.pnum} *Remarks*: An encoding's labels are the alternative names a document may spell it with -- `latin1`, `iso-8859-1` and `windows-1252` are all labels of `whatwg::encoding::windows_1252` -- so a lookup that fails is a name no encoding claims, not an encoding that cannot be represented.
 
 ### Byte order mark sniffing [transcode.codec.sniff] {-}
 
 ```cpp
-template<legacy_byte_range R> constexpr optional<codec> sniff_encoding(R&& r) noexcept;
+template<legacy_byte_range R> constexpr optional<encoding> bom_sniff(R&& r) noexcept;
 ```
 
 [#]{.pnum} *Constraints*: `R` models `forward_range`.
 
 [#]{.pnum} *Returns*: The encoding `r` begins with a byte order mark for:
 
-- [#.#]{.pnum} `codec::utf_8`, if `r` begins with `EF BB BF`;
-- [#.#]{.pnum} `codec::utf_16be`, if `r` begins with `FE FF`;
-- [#.#]{.pnum} `codec::utf_16le`, if `r` begins with `FF FE`;
+- [#.#]{.pnum} `whatwg::encoding::utf_8`, if `r` begins with `EF BB BF`;
+- [#.#]{.pnum} `whatwg::encoding::utf_16be`, if `r` begins with `FE FF`;
+- [#.#]{.pnum} `whatwg::encoding::utf_16le`, if `r` begins with `FF FE`;
 - [#.#]{.pnum} `nullopt` otherwise.
 
 [#]{.pnum} *Remarks*: This is the byte order mark half of the Encoding Standard's "decide the fallback encoding" step: what to do when there is no mark is a question about the document and its transport, which a library cannot answer.  The mark itself is not consumed -- a decode view strips a leading U+FEFF for the UTF codecs on its own -- so the range can be passed on unchanged.

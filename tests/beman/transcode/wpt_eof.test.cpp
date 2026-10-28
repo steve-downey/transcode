@@ -2,6 +2,7 @@
 
 #include <beman/transcode/whatwg_decode_view.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/wpt_eof_vectors.hpp>
 
@@ -18,7 +19,7 @@ TEST_CASE("WPT EOF: UTF-8 truncated sequences", "[wpt::eof]") {
             continue;
         std::vector<char>     bytes(v.input.begin(), v.input.end());
         std::vector<char32_t> got;
-        for (char32_t cp : bytes | whatwg_decode<codec::utf_8>)
+        for (char32_t cp : bytes | whatwg_decode<whatwg::encoding::utf_8>)
             got.push_back(cp);
         INFO("encoding=" << v.encoding << " input_size=" << v.input.size());
         CHECK(got == v.expected);
@@ -31,7 +32,7 @@ TEST_CASE("WPT EOF: Big5 truncated sequences", "[wpt::eof]") {
             continue;
         std::vector<char>     bytes(v.input.begin(), v.input.end());
         std::vector<char32_t> got;
-        for (char32_t cp : bytes | whatwg_decode<codec::big5>)
+        for (char32_t cp : bytes | whatwg_decode<whatwg::encoding::big5>)
             got.push_back(cp);
         INFO("encoding=" << v.encoding << " input_size=" << v.input.size());
         CHECK(got == v.expected);

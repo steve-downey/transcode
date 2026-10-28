@@ -4,6 +4,8 @@
 #include <beman/transcode/iconv_bulk.hpp>
 
 #include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
+#include <beman/transcode/error.hpp>
 
 #include <catch2/catch_all.hpp>
 
@@ -123,7 +125,7 @@ TEST_CASE("iconv_transcode_to skips invalid UTF-8 without producing malformed UT
 
     CHECK(result.size() % 2 == 0);
     std::vector<char32_t> decoded;
-    for (char32_t code_point : result | whatwg_decode<codec::utf_16le>)
+    for (char32_t code_point : result | whatwg_decode<whatwg::encoding::utf_16le>)
         decoded.push_back(code_point);
     CHECK(decoded == std::vector<char32_t>{U'A', U'B'});
 }

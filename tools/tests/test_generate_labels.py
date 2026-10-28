@@ -82,10 +82,10 @@ def test_render_labels_hpp_is_table_only() -> None:
 def test_render_labels_hpp_has_utf8_entry() -> None:
     entries = parse_encodings_json(ENCODINGS_JSON)
     hpp = render_labels_hpp(entries)
-    assert '"utf-8", codec::utf_8' in hpp
+    assert '"utf-8", whatwg::encoding::utf_8' in hpp
 
 
 def test_render_labels_hpp_has_shift_jis_entry() -> None:
     entries = parse_encodings_json(ENCODINGS_JSON)
     hpp = render_labels_hpp(entries)
-    assert '"shift_jis", codec::shift_jis' in hpp
+    assert '"shift_jis", whatwg::encoding::shift_jis' in hpp

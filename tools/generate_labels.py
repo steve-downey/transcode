@@ -37,7 +37,8 @@ def parse_encodings_json(path: Path) -> list[tuple[str, str]]:
 def render_labels_hpp(entries: list[tuple[str, str]]) -> str:
     """Render the labels.hpp header from sorted (label, codec_value) pairs."""
     table_rows = "\n".join(
-        f'    {{"{label}", codec::{codec_val}}},' for label, codec_val in entries
+        f'    {{"{label}", whatwg::encoding::{codec_val}}},'
+        for label, codec_val in entries
     )
     return f"""\
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -46,13 +47,13 @@ def render_labels_hpp(entries: list[tuple[str, str]]) -> str:
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
 
-#include <beman/transcode/codec.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 namespace beman::transcoding::detail {{
 
 struct label_entry {{
     const char* label;
-    codec       value;
+    whatwg::encoding value;
 }};
 
 inline constexpr label_entry label_table[] = {{

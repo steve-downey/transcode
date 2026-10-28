@@ -6,6 +6,7 @@
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/detail/single_byte_tables.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -21,7 +22,7 @@ namespace detail {
 
 } // namespace detail
 
-template <codec C, std::ranges::random_access_range R>
+template <whatwg::encoding C, std::ranges::random_access_range R>
     requires detail::single_byte_codec<C> && unicode_scalar_range<R>
 class single_byte_encode_view : public std::ranges::view_interface<single_byte_encode_view<C, R>> {
     R base_;
@@ -116,7 +117,7 @@ class single_byte_encode_view : public std::ranges::view_interface<single_byte_e
     }
 };
 
-template <codec C>
+template <whatwg::encoding C>
 struct single_byte_encode_closure {
     template <unicode_scalar_range R>
         requires std::ranges::random_access_range<R>
@@ -140,7 +141,7 @@ struct single_byte_encode_closure {
     }
 };
 
-template <codec C>
+template <whatwg::encoding C>
 inline constexpr single_byte_encode_closure<C> single_byte_encode{};
 
 } // namespace beman::transcoding

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// NEGATIVE COMPILE TEST: sniff_encoding requires a forward_range.
+// NEGATIVE COMPILE TEST: whatwg::bom_sniff requires a forward_range.
 // This file must NOT compile — it is registered as a WILL_FAIL ctest target.
 //
-// sniff_encoding reads up to three bytes and advances the iterator to do it.
+// whatwg::bom_sniff reads up to three bytes and advances the iterator to do it.
 // On a single-pass range those bytes are gone, and the caller gets a range
 // that is missing the very prefix it just asked about — silently, since
 // nothing in the signature says the argument was consumed.  So a range that
@@ -17,7 +17,7 @@
 // arranging for some requirement to fail incidentally keeps the diagnostic
 // about the thing under test.
 
-#include <beman/transcode/sniff.hpp>
+#include <beman/transcode/whatwg/bom_sniff.hpp>
 
 #include <cstddef>
 #include <iterator>
@@ -59,6 +59,6 @@ void test() {
     single_pass_bytes r{"\xEF\xBB\xBF"
                         "hi"};
     // Single-pass: sniffing would eat the mark — must fail to compile.
-    auto result = beman::transcoding::sniff_encoding(r);
+    auto result = beman::transcoding::whatwg::bom_sniff(r);
     (void)result;
 }

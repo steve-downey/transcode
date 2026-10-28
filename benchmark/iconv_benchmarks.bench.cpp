@@ -5,7 +5,7 @@
 #include <benchmark/benchmark_sink.hpp>
 #include <beman/transcode/iconv_bulk.hpp>
 #include <beman/transcode/iconv_bulk.hpp>
-#include <beman/transcode/codec.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 #include <beman/transcode/iconv_real.hpp>
 #include <beman/transcode/whatwg_decode_view.hpp>
 
@@ -41,7 +41,7 @@ static std::size_t raw_iconv_process(iconv_t cd, std::span<const char> data, cha
 static std::string shift_jis_as_utf32le(std::span<const char> shift_jis) {
     using namespace beman::transcoding;
     std::string bytes;
-    for (char32_t cp : shift_jis | whatwg_decode<codec::shift_jis>)
+    for (char32_t cp : shift_jis | whatwg_decode<whatwg::encoding::shift_jis>)
         for (int shift = 0; shift < 32; shift += 8)
             bytes.push_back(static_cast<char>((cp >> shift) & 0xFF));
     return bytes;

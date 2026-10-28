@@ -4,6 +4,7 @@
 #include <beman/transcode/whatwg_encode_view.hpp>
 #include <beman/transcode/detail/tables/windows_1252.hpp>
 #include <beman/transcode/detail/tables/iso_8859_7.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/test_utilities.hpp>
 
@@ -25,7 +26,7 @@ using namespace beman::transcoding;
 
 TEST_CASE("whatwg_encode_view satisfies input_range", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'A'};
-    auto                  view = cps | whatwg_encode<codec::windows_1252>;
+    auto                  view = cps | whatwg_encode<whatwg::encoding::windows_1252>;
     static_assert(std::ranges::input_range<decltype(view)>);
     static_assert(std::ranges::forward_range<decltype(view)>);
     static_assert(std::ranges::common_range<decltype(view)>);
@@ -34,7 +35,8 @@ TEST_CASE("whatwg_encode_view satisfies input_range", "[transcoding::whatwg_enco
     static_assert(std::ranges::forward_range<const decltype(view)>);
     static_assert(std::ranges::common_range<const decltype(view)>);
     static_assert(std::ranges::borrowed_range<decltype(view)>);
-    static_assert(!std::ranges::borrowed_range<decltype(std::vector<char32_t>{U'A'} | whatwg_encode<codec::utf_8>)>);
+    static_assert(
+        !std::ranges::borrowed_range<decltype(std::vector<char32_t>{U'A'} | whatwg_encode<whatwg::encoding::utf_8>)>);
     static_assert(std::copyable<std::ranges::iterator_t<decltype(view)>>);
     static_assert(std::ranges::random_access_range<decltype(view)>);
     static_assert(std::ranges::random_access_range<const decltype(view)>);
@@ -42,19 +44,19 @@ TEST_CASE("whatwg_encode_view satisfies input_range", "[transcoding::whatwg_enco
 }
 
 TEST_CASE("whatwg_encode_view const iteration also works for owning views", "[transcoding::whatwg_encode]") {
-    auto view = std::vector<char32_t>{U'A'} | whatwg_encode<codec::utf_8>;
+    auto view = std::vector<char32_t>{U'A'} | whatwg_encode<whatwg::encoding::utf_8>;
     static_assert(std::ranges::range<const decltype(view)>);
 }
 
 TEST_CASE("whatwg_encode iso_2022_jp is common when base is common", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'A'};
-    auto                  view = cps | whatwg_encode<codec::iso_2022_jp>;
+    auto                  view = cps | whatwg_encode<whatwg::encoding::iso_2022_jp>;
     static_assert(std::ranges::common_range<decltype(view)>);
 }
 
 TEST_CASE("whatwg_encode_view keeps UTF-8 as non-random-access", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'\x20AC'};
-    auto                  view = cps | whatwg_encode<codec::utf_8>;
+    auto                  view = cps | whatwg_encode<whatwg::encoding::utf_8>;
     static_assert(std::ranges::forward_range<decltype(view)>);
     static_assert(std::ranges::borrowed_range<decltype(view)>);
     static_assert(std::copyable<std::ranges::iterator_t<decltype(view)>>);
@@ -64,7 +66,7 @@ TEST_CASE("whatwg_encode_view keeps UTF-8 as non-random-access", "[transcoding::
 
 TEST_CASE("whatwg_encode_view forward iterators are multipass for UTF-8", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'\x20AC'};
-    auto                  view  = cps | whatwg_encode<codec::utf_8>;
+    auto                  view  = cps | whatwg_encode<whatwg::encoding::utf_8>;
     auto                  first = view.begin();
     auto                  copy  = first;
     CHECK(*first == '\xE2');
@@ -76,7 +78,7 @@ TEST_CASE("whatwg_encode_view forward iterators are multipass for UTF-8", "[tran
 
 TEST_CASE("whatwg_encode_view supports indexing for indexed codecs", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'A', U'\x20AC', U'B'};
-    auto                  view = cps | whatwg_encode<codec::windows_1252>;
+    auto                  view = cps | whatwg_encode<whatwg::encoding::windows_1252>;
     REQUIRE(view.size() == 3);
     auto it = view.begin();
     CHECK(it[0] == 'A');
@@ -88,10 +90,10 @@ TEST_CASE("whatwg_encode_view supports indexing for indexed codecs", "[transcodi
 
 TEST_CASE("whatwg_encode iterators outlive borrowed views", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'\x20AC'};
-    using view_t = decltype(cps | whatwg_encode<codec::utf_8>);
+    using view_t = decltype(cps | whatwg_encode<whatwg::encoding::utf_8>);
     std::ranges::iterator_t<view_t> it;
     {
-        auto view = cps | whatwg_encode<codec::utf_8>;
+        auto view = cps | whatwg_encode<whatwg::encoding::utf_8>;
         it        = view.begin();
     }
     CHECK(*it == '\xE2');
@@ -101,68 +103,68 @@ TEST_CASE("whatwg_encode iterators outlive borrowed views", "[transcoding::whatw
 
 TEST_CASE("whatwg_encode windows_1252 ASCII passthrough", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'H', U'i'};
-    CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'H', 'i'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::windows_1252>) == std::vector<char>{'H', 'i'});
 }
 
 TEST_CASE("whatwg_encode windows_1252 euro sign", "[transcoding::whatwg_encode]") {
     // U+20AC (Euro sign) -> 0x80 in windows-1252
     std::vector<char32_t> cps{U'\x20AC'};
-    CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'\x80'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::windows_1252>) == std::vector<char>{'\x80'});
 }
 
 TEST_CASE("whatwg_encode windows_1252 unmapped codepoint yields question mark", "[transcoding::whatwg_encode]") {
     // U+4E2D (CJK) is not in windows-1252
     std::vector<char32_t> cps{U'\x4E2D'};
-    CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'?'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::windows_1252>) == std::vector<char>{'?'});
 }
 
 TEST_CASE("whatwg_encode validates UTF-32 before single-byte encoding", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{static_cast<char32_t>(0xD800)};
-    CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'?'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::windows_1252>) == std::vector<char>{'?'});
 }
 
 TEST_CASE("whatwg_encode encodes substituted U+FFFD through a CJK codec", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{static_cast<char32_t>(0x110000)};
-    CHECK(collect(cps | whatwg_encode<codec::gb18030>) ==
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::gb18030>) ==
           std::vector<char>{static_cast<char>(0x84), '\x31', static_cast<char>(0xA4), '\x37'});
 }
 
 TEST_CASE("whatwg_encode encodes substituted U+FFFD through stateful ISO-2022-JP", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'\x3000', static_cast<char32_t>(0xD800), U'\x3000'};
-    CHECK(collect(cps | whatwg_encode<codec::iso_2022_jp>) == std::vector<char>{'\x1B',
-                                                                                '\x24',
-                                                                                '\x42',
-                                                                                '\x21',
-                                                                                '\x21',
-                                                                                '\x1B',
-                                                                                '\x28',
-                                                                                '\x42',
-                                                                                '?',
-                                                                                '\x1B',
-                                                                                '\x24',
-                                                                                '\x42',
-                                                                                '\x21',
-                                                                                '\x21',
-                                                                                '\x1B',
-                                                                                '\x28',
-                                                                                '\x42'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::iso_2022_jp>) == std::vector<char>{'\x1B',
+                                                                                           '\x24',
+                                                                                           '\x42',
+                                                                                           '\x21',
+                                                                                           '\x21',
+                                                                                           '\x1B',
+                                                                                           '\x28',
+                                                                                           '\x42',
+                                                                                           '?',
+                                                                                           '\x1B',
+                                                                                           '\x24',
+                                                                                           '\x42',
+                                                                                           '\x21',
+                                                                                           '\x21',
+                                                                                           '\x1B',
+                                                                                           '\x28',
+                                                                                           '\x42'});
 }
 
 TEST_CASE("whatwg_encode iso_8859_2 A-ogonek", "[transcoding::whatwg_encode]") {
     // U+0104 (Latin capital A with ogonek) -> 0xA1 in iso-8859-2
     std::vector<char32_t> cps{U'\x0104'};
-    CHECK(collect(cps | whatwg_encode<codec::iso_8859_2>) == std::vector<char>{'\xA1'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::iso_8859_2>) == std::vector<char>{'\xA1'});
 }
 
 TEST_CASE("whatwg_encode koi8_r Cyrillic A", "[transcoding::whatwg_encode]") {
     // U+0410 (Cyrillic capital A) -> 0xE1 in KOI8-R
     std::vector<char32_t> cps{U'\x0410'};
-    CHECK(collect(cps | whatwg_encode<codec::koi8_r>) == std::vector<char>{'\xE1'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::koi8_r>) == std::vector<char>{'\xE1'});
 }
 
 TEST_CASE("whatwg_encode windows_1252 mixed ASCII and high", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'A', U'\x20AC', U'B'};
-    CHECK(collect(cps | whatwg_encode<codec::windows_1252>) == std::vector<char>{'A', '\x80', 'B'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::windows_1252>) == std::vector<char>{'A', '\x80', 'B'});
 }
 
 TEST_CASE("whatwg_encode windows_1252 consteval", "[transcoding::whatwg_encode]") {
@@ -170,7 +172,7 @@ TEST_CASE("whatwg_encode windows_1252 consteval", "[transcoding::whatwg_encode]"
     constexpr auto encode_euro = []() consteval {
         constexpr char32_t        cps[] = {U'\x20AC'};
         std::span<const char32_t> sp(cps, 1);
-        return *(sp | whatwg_encode<codec::windows_1252>).begin();
+        return *(sp | whatwg_encode<whatwg::encoding::windows_1252>).begin();
     };
     CHECK(constify(encode_euro()) == '\x80');
 }
@@ -180,7 +182,7 @@ TEST_CASE("whatwg_encode UTF-32 validation is consteval", "[transcoding::whatwg_
     constexpr auto encode_surrogate = []() consteval {
         constexpr char32_t        cps[] = {static_cast<char32_t>(0xD800)};
         std::span<const char32_t> sp(cps, 1);
-        return *(sp | whatwg_encode<codec::windows_1252>).begin();
+        return *(sp | whatwg_encode<whatwg::encoding::windows_1252>).begin();
     };
     CHECK(constify(encode_surrogate()) == '?');
 }
@@ -191,37 +193,38 @@ TEST_CASE("whatwg_encode UTF-32 validation is consteval", "[transcoding::whatwg_
 
 TEST_CASE("whatwg_encode UTF-8 ASCII single byte", "[transcoding::whatwg_encode][utf8]") {
     std::vector<char32_t> cps{U'A'};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'A'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::utf_8>) == std::vector<char>{'A'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 2-byte sequence", "[transcoding::whatwg_encode][utf8]") {
     // U+00E9 (e acute) -> 0xC3 0xA9
     std::vector<char32_t> cps{U'\x00E9'};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'\xC3', '\xA9'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::utf_8>) == std::vector<char>{'\xC3', '\xA9'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 3-byte sequence", "[transcoding::whatwg_encode][utf8]") {
     // U+20AC (Euro sign) -> 0xE2 0x82 0xAC
     std::vector<char32_t> cps{U'\x20AC'};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'\xE2', '\x82', '\xAC'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::utf_8>) == std::vector<char>{'\xE2', '\x82', '\xAC'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 4-byte sequence", "[transcoding::whatwg_encode][utf8]") {
     // U+1F600 (grinning face emoji) -> 0xF0 0x9F 0x98 0x80
     std::vector<char32_t> cps{U'\x1F600'};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'\xF0', '\x9F', '\x98', '\x80'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::utf_8>) == std::vector<char>{'\xF0', '\x9F', '\x98', '\x80'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 surrogate replaced with U+FFFD", "[transcoding::whatwg_encode][utf8]") {
     // U+D800 (surrogate) -> U+FFFD encoded as {0xEF, 0xBF, 0xBD}
     std::vector<char32_t> cps{static_cast<char32_t>(0xD800)};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'\xEF', '\xBF', '\xBD'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::utf_8>) == std::vector<char>{'\xEF', '\xBF', '\xBD'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 multi-codepoint string", "[transcoding::whatwg_encode][utf8]") {
     // "Hi" + Euro -> "Hi" + 3 bytes
     std::vector<char32_t> cps{U'H', U'i', U'\x20AC'};
-    CHECK(collect(cps | whatwg_encode<codec::utf_8>) == std::vector<char>{'H', 'i', '\xE2', '\x82', '\xAC'});
+    CHECK(collect(cps | whatwg_encode<whatwg::encoding::utf_8>) ==
+          std::vector<char>{'H', 'i', '\xE2', '\x82', '\xAC'});
 }
 
 TEST_CASE("whatwg_encode UTF-8 consteval", "[transcoding::whatwg_encode][utf8]") {
@@ -229,7 +232,7 @@ TEST_CASE("whatwg_encode UTF-8 consteval", "[transcoding::whatwg_encode][utf8]")
     constexpr auto encode_euro = []() consteval {
         constexpr char32_t        cps[] = {U'\x20AC'};
         std::span<const char32_t> sp(cps, 1);
-        auto                      it = (sp | whatwg_encode<codec::utf_8>).begin();
+        auto                      it = (sp | whatwg_encode<whatwg::encoding::utf_8>).begin();
         char                      b0 = *it;
         ++it;
         char b1 = *it;
@@ -244,7 +247,7 @@ TEST_CASE("whatwg_encode UTF-8 consteval", "[transcoding::whatwg_encode][utf8]")
 // Single-byte encode agrees with a linear scan of the table
 // ---------------------------------------------------------------------------
 
-template <codec C>
+template <whatwg::encoding C>
 void check_single_byte_table_against_scan(const char32_t (&table)[128]) {
     for (int i = 0; i < 128; ++i) {
         char32_t cp = table[i];
@@ -263,14 +266,14 @@ void check_single_byte_table_against_scan(const char32_t (&table)[128]) {
 }
 
 TEST_CASE("single-byte encode agrees with a linear scan of the table", "[transcoding::whatwg_encode]") {
-    check_single_byte_table_against_scan<codec::windows_1252>(detail::tables::windows_1252);
-    check_single_byte_table_against_scan<codec::iso_8859_7>(detail::tables::iso_8859_7);
+    check_single_byte_table_against_scan<whatwg::encoding::windows_1252>(detail::tables::windows_1252);
+    check_single_byte_table_against_scan<whatwg::encoding::iso_8859_7>(detail::tables::iso_8859_7);
 }
 
 TEST_CASE("single-byte encode of an unmapped code point is '?'", "[transcoding::whatwg_encode]") {
     std::vector<char32_t> cps{U'\x4E00'};
     std::vector<char>     result;
-    for (char c : cps | whatwg_encode<codec::windows_1252>)
+    for (char c : cps | whatwg_encode<whatwg::encoding::windows_1252>)
         result.push_back(c);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == '?');

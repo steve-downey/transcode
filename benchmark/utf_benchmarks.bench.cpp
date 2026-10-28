@@ -5,6 +5,7 @@
 #include <benchmark/benchmark_sink.hpp>
 #include <beman/transcode/transcode.hpp>
 #include <beman/transcode/transcode.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 #include <catch2/catch_all.hpp>
 
@@ -18,14 +19,14 @@ TEST_CASE("UTF benchmarks", "[benchmark][utf]") {
     BENCHMARK_ADVANCED("UTF-8 decode: English (ASCII-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("en_mars_utf8.txt");
-        measure(meter, [&] { return count_elements(data | whatwg_decode<codec::utf_8>); });
+        measure(meter, [&] { return count_elements(data | whatwg_decode<whatwg::encoding::utf_8>); });
     };
 
     describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
     BENCHMARK_ADVANCED("UTF-8 decode: Arabic (multibyte-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ar_mars_utf8.txt");
-        measure(meter, [&] { return count_elements(data | whatwg_decode<codec::utf_8>); });
+        measure(meter, [&] { return count_elements(data | whatwg_decode<whatwg::encoding::utf_8>); });
     };
 
     describe({.conversion = "UTF-8 → UTF-32 → UTF-8",
@@ -34,8 +35,10 @@ TEST_CASE("UTF benchmarks", "[benchmark][utf]") {
     BENCHMARK_ADVANCED("UTF-8 encode round-trip: English")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("en_mars_utf8.txt");
-        measure(meter,
-                [&] { return count_elements(data | whatwg_decode<codec::utf_8> | whatwg_encode<codec::utf_8>); });
+        measure(meter, [&] {
+            return count_elements(data | whatwg_decode<whatwg::encoding::utf_8> |
+                                  whatwg_encode<whatwg::encoding::utf_8>);
+        });
     };
 
     // Large-stream benchmarks: exercises sustained throughput rather than
@@ -47,7 +50,7 @@ TEST_CASE("UTF benchmarks", "[benchmark][utf]") {
     BENCHMARK_ADVANCED("UTF-8 decode: large stream (War and Peace, ASCII-heavy)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("war_and_peace_utf8.txt");
-        measure(meter, [&] { return count_elements(data | whatwg_decode<codec::utf_8>); });
+        measure(meter, [&] { return count_elements(data | whatwg_decode<whatwg::encoding::utf_8>); });
     };
 
     describe({.conversion = "UTF-8 → UTF-32 → UTF-8",
@@ -56,7 +59,9 @@ TEST_CASE("UTF benchmarks", "[benchmark][utf]") {
     BENCHMARK_ADVANCED("UTF-8 encode round-trip: large stream (War and Peace)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("war_and_peace_utf8.txt");
-        measure(meter,
-                [&] { return count_elements(data | whatwg_decode<codec::utf_8> | whatwg_encode<codec::utf_8>); });
+        measure(meter, [&] {
+            return count_elements(data | whatwg_decode<whatwg::encoding::utf_8> |
+                                  whatwg_encode<whatwg::encoding::utf_8>);
+        });
     };
 }

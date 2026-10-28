@@ -7,6 +7,7 @@
 #include <benchmark/benchmark_measure.hpp>
 #include <benchmark/benchmark_sink.hpp>
 #include <beman/transcode/transcode.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 #include <tests/beman/transcode/iconv_mock.hpp>
 
 #include <catch2/catch_all.hpp>
@@ -51,7 +52,7 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
     BENCHMARK_ADVANCED("Chunked whatwg UTF-8→char32: Arabic full corpus (baseline)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ar_mars_utf8.txt");
-        measure(meter, [&] { return count_elements(data | whatwg_decode<codec::utf_8>); });
+        measure(meter, [&] { return count_elements(data | whatwg_decode<whatwg::encoding::utf_8>); });
     };
 
     describe(
@@ -63,7 +64,8 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
         measure(meter, [&] {
             std::size_t n = 0;
             for (auto chunk : chunks)
-                n += count_elements(std::span<const char>(chunk.data(), chunk.size()) | whatwg_decode<codec::utf_8>);
+                n += count_elements(std::span<const char>(chunk.data(), chunk.size()) |
+                                    whatwg_decode<whatwg::encoding::utf_8>);
             return n;
         });
     };
@@ -77,7 +79,8 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
         measure(meter, [&] {
             std::size_t n = 0;
             for (auto chunk : chunks)
-                n += count_elements(std::span<const char>(chunk.data(), chunk.size()) | whatwg_decode<codec::utf_8>);
+                n += count_elements(std::span<const char>(chunk.data(), chunk.size()) |
+                                    whatwg_decode<whatwg::encoding::utf_8>);
             return n;
         });
     };
