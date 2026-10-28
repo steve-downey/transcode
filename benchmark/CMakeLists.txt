@@ -72,7 +72,7 @@ target_link_libraries(
 add_executable(beman.transcode.benchmarks.whatwg)
 target_sources(
     beman.transcode.benchmarks.whatwg
-    PRIVATE whatwg_benchmarks.bench.cpp
+    PRIVATE whatwg_benchmarks.bench.cpp label_benchmarks.bench.cpp
 )
 target_link_libraries(
     beman.transcode.benchmarks.whatwg
