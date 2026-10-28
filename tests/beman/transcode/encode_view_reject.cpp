@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// Negative compile test: a type that does NOT satisfy encode_codec should fail
+// Negative compile test: a type that does NOT satisfy text_encoder should fail
 // to compile when passed to encode().  The compiler diagnostic must mention
-// encode_codec (via a concept constraint failure).
+// text_encoder (via a concept constraint failure).
 
 #include <beman/transcode/encode_view.hpp>
 
@@ -11,7 +11,7 @@
 using namespace beman::transcoding;
 
 struct not_an_encode_codec {
-    // Missing encode_one — does not satisfy encode_codec
+    // Missing encode_one — does not satisfy text_encoder
     int value;
 };
 

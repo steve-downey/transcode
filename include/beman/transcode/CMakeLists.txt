@@ -2,7 +2,7 @@
 
 # One list, both modes.
 #
-# Module mode used to install five files -- codec.hpp, config.hpp,
+# Module mode used to install five files -- whatwg/encoding.hpp, config.hpp,
 # transcode.hpp, todo.hpp and the generated config.  That is enough for a
 # consumer who only `import beman.transcode;`, because transcode.hpp takes its
 # `import` branch and needs nothing else.
@@ -15,22 +15,23 @@
 # consumer to do, so the file set has to cover it.
 set(BEMAN_TRANSCODE_HEADERS
     bulk_transcode.hpp
-    codec.hpp
     config.hpp
     codec_concepts.hpp
     codec_result.hpp
-    label.hpp
     concepts.hpp
     decode_view.hpp
     encode_view.hpp
     error.hpp
     iconv_bulk.hpp
     null_term.hpp
-    sniff.hpp
     todo.hpp
     transcode.hpp
     transcode_string.hpp
     transcode_view.hpp
+    whatwg/bom_sniff.hpp
+    whatwg/encoding.hpp
+    whatwg/error.hpp
+    whatwg/label.hpp
     detail/big5.hpp
     detail/euc_jp.hpp
     detail/euc_kr.hpp

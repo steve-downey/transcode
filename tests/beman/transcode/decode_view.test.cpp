@@ -4,6 +4,7 @@
 #include <beman/transcode/decode_view.hpp>
 
 #include <beman/transcode/detail/table_codec.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
 #include <catch2/catch_all.hpp>
@@ -63,8 +64,8 @@ struct xor_codec {
     }
 };
 
-static_assert(decode_codec<xor_codec>);
-static_assert(!random_access_decode_codec_type<xor_codec>);
+static_assert(text_decoder<xor_codec>);
+static_assert(!single_byte_text_decoder<xor_codec>);
 
 // ---------------------------------------------------------------------------
 // decode_view with table_codec via pipe
@@ -135,7 +136,7 @@ TEST_CASE("decode_or_error_view: reports errors", "[decode_view]") {
 
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == whatwg_error::invalid_byte);
+    CHECK(r.error() == whatwg::error::invalid_byte);
 }
 
 TEST_CASE("decode views reserve U+FFFD as the high-byte error signal", "[decode_view]") {
@@ -150,7 +151,7 @@ TEST_CASE("decode views reserve U+FFFD as the high-byte error signal", "[decode_
     // This intentionally pins the current mode asymmetry pending SG16's
     // decision about the random-access codec extension point.
     CHECK(!result.has_value());
-    CHECK(result.error() == whatwg_error::invalid_byte);
+    CHECK(result.error() == whatwg::error::invalid_byte);
 }
 
 // ---------------------------------------------------------------------------
@@ -258,7 +259,7 @@ TEST_CASE("decode_or_error_view: iterator base() tracks position", "[decode_view
     CHECK(*it.base() == 0x80);
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == whatwg_error::invalid_byte);
+    CHECK(r.error() == whatwg::error::invalid_byte);
 }
 
 // ---------------------------------------------------------------------------

@@ -4,10 +4,9 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_SHIFT_JIS_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -16,9 +15,9 @@
 namespace beman::transcoding::detail {
 
 struct shift_jis_decode_result {
-    char32_t     code_point{0xFFFD};
-    whatwg_error error{};
-    bool         is_error{false};
+    char32_t      code_point{0xFFFD};
+    whatwg::error error{};
+    bool          is_error{false};
 };
 
 struct shift_jis_encode_result {
@@ -56,7 +55,7 @@ inline constexpr auto& shift_jis_index = reverse_index_for<tables::shift_jis, po
 template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr shift_jis_decode_result shift_jis_decode_one(I& current, S end) {
     if (current == end)
-        return {{}, whatwg_error::truncated_sequence, true};
+        return {{}, whatwg::error::truncated_sequence, true};
 
     auto lead = static_cast<unsigned char>(*current);
     ++current;
@@ -72,10 +71,10 @@ constexpr shift_jis_decode_result shift_jis_decode_one(I& current, S end) {
     // Multi-byte lead bytes: 0x81-0x9F and 0xE0-0xFC
     bool is_lead = (lead >= 0x81 && lead <= 0x9F) || (lead >= 0xE0 && lead <= 0xFC);
     if (!is_lead)
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
 
     if (current == end)
-        return {{}, whatwg_error::truncated_sequence, true};
+        return {{}, whatwg::error::truncated_sequence, true};
 
     auto trail = static_cast<unsigned char>(*current);
     ++current;
@@ -83,7 +82,7 @@ constexpr shift_jis_decode_result shift_jis_decode_one(I& current, S end) {
     // Valid trail ranges: 0x40-0x7E and 0x80-0xFC (0x7F excluded)
     bool valid_trail = (trail >= 0x40 && trail <= 0x7E) || (trail >= 0x80 && trail <= 0xFC);
     if (!valid_trail)
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
 
     int lead_offset  = (lead <= 0x9F) ? lead - 0x81 : lead - 0xC1;
     int trail_offset = (trail < 0x7F) ? trail - 0x40 : trail - 0x41;
@@ -91,7 +90,7 @@ constexpr shift_jis_decode_result shift_jis_decode_one(I& current, S end) {
 
     char32_t cp = tables::shift_jis[pointer];
     if (cp == 0)
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
 
     return {cp, {}, false};
 }

@@ -980,7 +980,7 @@ set_tests_properties(
             "transcode: raw arrays are not valid input to transcode"
 )
 
-# sniff_encoding requires legacy_byte_range; char32_t ranges must be rejected.
+# whatwg::bom_sniff requires legacy_byte_range; char32_t ranges must be rejected.
 add_library(beman.transcode.tests.sniff_reject_char32_range_fail OBJECT)
 target_sources(
     beman.transcode.tests.sniff_reject_char32_range_fail
@@ -1006,7 +1006,7 @@ set_tests_properties(
     PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
 )
 
-# sniff_encoding requires forward_range; single-pass ranges must be rejected,
+# whatwg::bom_sniff requires forward_range; single-pass ranges must be rejected,
 # because examining the mark advances the iterator over it.
 add_library(beman.transcode.tests.sniff_reject_input_range_fail OBJECT)
 target_sources(
@@ -1214,7 +1214,7 @@ add_test(
     COMMAND beman.transcode.tests.pluggable_transcode
 )
 
-# Negative compile test: encode rejects types that don't satisfy encode_codec
+# Negative compile test: encode rejects types that don't satisfy text_encoder
 add_library(beman.transcode.tests.encode_view_reject OBJECT)
 target_sources(
     beman.transcode.tests.encode_view_reject
@@ -1236,7 +1236,7 @@ add_test(
 )
 set_tests_properties(
     encode_view_reject
-    PROPERTIES PASS_REGULAR_EXPRESSION "encode_codec"
+    PROPERTIES PASS_REGULAR_EXPRESSION "text_encoder"
 )
 
 # ---------------------------------------------------------------------------

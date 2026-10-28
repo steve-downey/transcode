@@ -33,9 +33,10 @@ import beman.transcode;
     // \rSec2[transcode.syn]{Header `<transcode>` synopsis}
 
     #include <beman/transcode/error.hpp>
+    #include <beman/transcode/whatwg/error.hpp>
     #include <beman/transcode/concepts.hpp>
-    #include <beman/transcode/codec.hpp>
-    #include <beman/transcode/label.hpp>
+    #include <beman/transcode/whatwg/encoding.hpp>
+    #include <beman/transcode/whatwg/label.hpp>
     #include <beman/transcode/codec_result.hpp>
     #include <beman/transcode/codec_concepts.hpp>
     #include <beman/transcode/whatwg_decode_view.hpp>
@@ -45,7 +46,7 @@ import beman.transcode;
     #include <beman/transcode/transcode_view.hpp>
     #include <beman/transcode/transcode_string.hpp>
     #include <beman/transcode/bulk_transcode.hpp>
-    #include <beman/transcode/sniff.hpp>
+    #include <beman/transcode/whatwg/bom_sniff.hpp>
     #include <beman/transcode/iconv_transcode_view.hpp>
     #include <beman/transcode/iconv_transcode_or_error_view.hpp>
     #include <beman/transcode/iconv_real.hpp>

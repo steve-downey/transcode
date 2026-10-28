@@ -7,134 +7,135 @@
 
 #include <beman/transcode/whatwg_decode_view.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 namespace beman::transcoding::detail {
 
-template <codec C>
+template <whatwg::encoding C>
 consteval const char32_t* get_decode_table() {
-    if constexpr (C == codec::ibm866)
+    if constexpr (C == whatwg::encoding::ibm866)
         return tables::ibm866;
-    else if constexpr (C == codec::iso_8859_2)
+    else if constexpr (C == whatwg::encoding::iso_8859_2)
         return tables::iso_8859_2;
-    else if constexpr (C == codec::iso_8859_3)
+    else if constexpr (C == whatwg::encoding::iso_8859_3)
         return tables::iso_8859_3;
-    else if constexpr (C == codec::iso_8859_4)
+    else if constexpr (C == whatwg::encoding::iso_8859_4)
         return tables::iso_8859_4;
-    else if constexpr (C == codec::iso_8859_5)
+    else if constexpr (C == whatwg::encoding::iso_8859_5)
         return tables::iso_8859_5;
-    else if constexpr (C == codec::iso_8859_6)
+    else if constexpr (C == whatwg::encoding::iso_8859_6)
         return tables::iso_8859_6;
-    else if constexpr (C == codec::iso_8859_7)
+    else if constexpr (C == whatwg::encoding::iso_8859_7)
         return tables::iso_8859_7;
-    else if constexpr (C == codec::iso_8859_8)
+    else if constexpr (C == whatwg::encoding::iso_8859_8)
         return tables::iso_8859_8;
-    else if constexpr (C == codec::iso_8859_8_i)
+    else if constexpr (C == whatwg::encoding::iso_8859_8_i)
         return tables::iso_8859_8;
-    else if constexpr (C == codec::iso_8859_10)
+    else if constexpr (C == whatwg::encoding::iso_8859_10)
         return tables::iso_8859_10;
-    else if constexpr (C == codec::iso_8859_13)
+    else if constexpr (C == whatwg::encoding::iso_8859_13)
         return tables::iso_8859_13;
-    else if constexpr (C == codec::iso_8859_14)
+    else if constexpr (C == whatwg::encoding::iso_8859_14)
         return tables::iso_8859_14;
-    else if constexpr (C == codec::iso_8859_15)
+    else if constexpr (C == whatwg::encoding::iso_8859_15)
         return tables::iso_8859_15;
-    else if constexpr (C == codec::iso_8859_16)
+    else if constexpr (C == whatwg::encoding::iso_8859_16)
         return tables::iso_8859_16;
-    else if constexpr (C == codec::koi8_r)
+    else if constexpr (C == whatwg::encoding::koi8_r)
         return tables::koi8_r;
-    else if constexpr (C == codec::koi8_u)
+    else if constexpr (C == whatwg::encoding::koi8_u)
         return tables::koi8_u;
-    else if constexpr (C == codec::macintosh)
+    else if constexpr (C == whatwg::encoding::macintosh)
         return tables::macintosh;
-    else if constexpr (C == codec::windows_874)
+    else if constexpr (C == whatwg::encoding::windows_874)
         return tables::windows_874;
-    else if constexpr (C == codec::windows_1250)
+    else if constexpr (C == whatwg::encoding::windows_1250)
         return tables::windows_1250;
-    else if constexpr (C == codec::windows_1251)
+    else if constexpr (C == whatwg::encoding::windows_1251)
         return tables::windows_1251;
-    else if constexpr (C == codec::windows_1252)
+    else if constexpr (C == whatwg::encoding::windows_1252)
         return tables::windows_1252;
-    else if constexpr (C == codec::windows_1253)
+    else if constexpr (C == whatwg::encoding::windows_1253)
         return tables::windows_1253;
-    else if constexpr (C == codec::windows_1254)
+    else if constexpr (C == whatwg::encoding::windows_1254)
         return tables::windows_1254;
-    else if constexpr (C == codec::windows_1255)
+    else if constexpr (C == whatwg::encoding::windows_1255)
         return tables::windows_1255;
-    else if constexpr (C == codec::windows_1256)
+    else if constexpr (C == whatwg::encoding::windows_1256)
         return tables::windows_1256;
-    else if constexpr (C == codec::windows_1257)
+    else if constexpr (C == whatwg::encoding::windows_1257)
         return tables::windows_1257;
-    else if constexpr (C == codec::windows_1258)
+    else if constexpr (C == whatwg::encoding::windows_1258)
         return tables::windows_1258;
-    else if constexpr (C == codec::x_mac_cyrillic)
+    else if constexpr (C == whatwg::encoding::x_mac_cyrillic)
         return tables::x_mac_cyrillic;
-    else if constexpr (C == codec::replacement)
+    else if constexpr (C == whatwg::encoding::replacement)
         return nullptr;
-    else if constexpr (C == codec::x_user_defined)
+    else if constexpr (C == whatwg::encoding::x_user_defined)
         return nullptr;
 }
 
-template <codec C>
+template <whatwg::encoding C>
 consteval const char32_t* get_encode_table() {
-    if constexpr (C == codec::ibm866)
+    if constexpr (C == whatwg::encoding::ibm866)
         return tables::ibm866;
-    else if constexpr (C == codec::iso_8859_2)
+    else if constexpr (C == whatwg::encoding::iso_8859_2)
         return tables::iso_8859_2;
-    else if constexpr (C == codec::iso_8859_3)
+    else if constexpr (C == whatwg::encoding::iso_8859_3)
         return tables::iso_8859_3;
-    else if constexpr (C == codec::iso_8859_4)
+    else if constexpr (C == whatwg::encoding::iso_8859_4)
         return tables::iso_8859_4;
-    else if constexpr (C == codec::iso_8859_5)
+    else if constexpr (C == whatwg::encoding::iso_8859_5)
         return tables::iso_8859_5;
-    else if constexpr (C == codec::iso_8859_6)
+    else if constexpr (C == whatwg::encoding::iso_8859_6)
         return tables::iso_8859_6;
-    else if constexpr (C == codec::iso_8859_7)
+    else if constexpr (C == whatwg::encoding::iso_8859_7)
         return tables::iso_8859_7;
-    else if constexpr (C == codec::iso_8859_8)
+    else if constexpr (C == whatwg::encoding::iso_8859_8)
         return tables::iso_8859_8;
-    else if constexpr (C == codec::iso_8859_8_i)
+    else if constexpr (C == whatwg::encoding::iso_8859_8_i)
         return tables::iso_8859_8;
-    else if constexpr (C == codec::iso_8859_10)
+    else if constexpr (C == whatwg::encoding::iso_8859_10)
         return tables::iso_8859_10;
-    else if constexpr (C == codec::iso_8859_13)
+    else if constexpr (C == whatwg::encoding::iso_8859_13)
         return tables::iso_8859_13;
-    else if constexpr (C == codec::iso_8859_14)
+    else if constexpr (C == whatwg::encoding::iso_8859_14)
         return tables::iso_8859_14;
-    else if constexpr (C == codec::iso_8859_15)
+    else if constexpr (C == whatwg::encoding::iso_8859_15)
         return tables::iso_8859_15;
-    else if constexpr (C == codec::iso_8859_16)
+    else if constexpr (C == whatwg::encoding::iso_8859_16)
         return tables::iso_8859_16;
-    else if constexpr (C == codec::koi8_r)
+    else if constexpr (C == whatwg::encoding::koi8_r)
         return tables::koi8_r;
-    else if constexpr (C == codec::koi8_u)
+    else if constexpr (C == whatwg::encoding::koi8_u)
         return tables::koi8_u;
-    else if constexpr (C == codec::macintosh)
+    else if constexpr (C == whatwg::encoding::macintosh)
         return tables::macintosh;
-    else if constexpr (C == codec::windows_874)
+    else if constexpr (C == whatwg::encoding::windows_874)
         return tables::windows_874;
-    else if constexpr (C == codec::windows_1250)
+    else if constexpr (C == whatwg::encoding::windows_1250)
         return tables::windows_1250;
-    else if constexpr (C == codec::windows_1251)
+    else if constexpr (C == whatwg::encoding::windows_1251)
         return tables::windows_1251;
-    else if constexpr (C == codec::windows_1252)
+    else if constexpr (C == whatwg::encoding::windows_1252)
         return tables::windows_1252;
-    else if constexpr (C == codec::windows_1253)
+    else if constexpr (C == whatwg::encoding::windows_1253)
         return tables::windows_1253;
-    else if constexpr (C == codec::windows_1254)
+    else if constexpr (C == whatwg::encoding::windows_1254)
         return tables::windows_1254;
-    else if constexpr (C == codec::windows_1255)
+    else if constexpr (C == whatwg::encoding::windows_1255)
         return tables::windows_1255;
-    else if constexpr (C == codec::windows_1256)
+    else if constexpr (C == whatwg::encoding::windows_1256)
         return tables::windows_1256;
-    else if constexpr (C == codec::windows_1257)
+    else if constexpr (C == whatwg::encoding::windows_1257)
         return tables::windows_1257;
-    else if constexpr (C == codec::windows_1258)
+    else if constexpr (C == whatwg::encoding::windows_1258)
         return tables::windows_1258;
-    else if constexpr (C == codec::x_mac_cyrillic)
+    else if constexpr (C == whatwg::encoding::x_mac_cyrillic)
         return tables::x_mac_cyrillic;
-    else if constexpr (C == codec::replacement)
+    else if constexpr (C == whatwg::encoding::replacement)
         return nullptr;
-    else if constexpr (C == codec::x_user_defined)
+    else if constexpr (C == whatwg::encoding::x_user_defined)
         return nullptr;
 }
 
@@ -151,7 +152,7 @@ constexpr char32_t decode_single_byte_at(unsigned char byte, const char32_t* tab
 
 // The byte for cp in codec C, or '?' when C cannot represent it.  Codecs
 // without an encode table (replacement, x-user-defined) encode only ASCII.
-template <codec C>
+template <whatwg::encoding C>
 constexpr char encode_single_byte_at(char32_t cp) {
     if (cp < 0x80)
         return static_cast<char>(cp);

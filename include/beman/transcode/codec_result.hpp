@@ -4,8 +4,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_CODEC_RESULT_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 namespace beman::transcoding {
 
@@ -16,9 +15,9 @@ namespace beman::transcoding {
 //! U+FFFD REPLACEMENT CHARACTER; when it did not, `code_point` is the decoded
 //! Unicode scalar value and `error` is unspecified.
 struct decode_result {
-    char32_t     code_point{};
-    whatwg_error error{};
-    bool         is_error{false};
+    char32_t      code_point{};
+    whatwg::error error{};
+    bool          is_error{false};
 };
 
 //! \remarks What a codec's `encode_one` returns.  `is_error` says whether the

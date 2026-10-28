@@ -62,16 +62,16 @@ constexpr default_sentinel_t end() const;
 [#]{.pnum} *Returns*: `default_sentinel`.
 
 ```cpp
-template<decode_codec Codec> constexpr $see below$ decode(Codec codec = {});
+template<text_decoder Codec> constexpr $see below$ decode(Codec codec = {});
 ```
 
 [#]{.pnum} *Returns*: A range adaptor object over `codec`.  Given a subexpression `E` that models `legacy_byte_range`, `decode(codec)(E)` and `E | decode(codec)` are each expression-equivalent to a `decode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of `codec`.  An `E` of array type is ill-formed.
 
 ```cpp
-template<decode_codec Codec> constexpr $see below$ decode_or_error(Codec codec = {});
+template<text_decoder Codec> constexpr $see below$ decode_or_error(Codec codec = {});
 ```
 
-[#]{.pnum} *Returns*: `decode(codec)` with `error_mode::report`: the view it adapts to has value type `expected<char32_t, whatwg_error>`, and a decoding error is the error rather than U+FFFD.
+[#]{.pnum} *Returns*: `decode(codec)` with `error_mode::report`: the view it adapts to has value type `expected<char32_t, whatwg::error>`, and a decoding error is the error rather than U+FFFD.
 
 ### Class `decode_view::iterator` [transcode.custom.decode.iterator] {-}
 
@@ -91,7 +91,7 @@ constexpr result_t operator*() const;
 constexpr $iterator$& operator++();
 ```
 
-[#]{.pnum} *Effects*: Decodes the next element of the base range, or, if none remains, makes `*this` equal to `end()`.  When `Codec` models `flushable_decode_codec`, exhausting the base range calls `flush()` once and yields what it returns, if anything.
+[#]{.pnum} *Effects*: Decodes the next element of the base range, or, if none remains, makes `*this` equal to `end()`.  When `Codec` models `flushable_text_decoder`, exhausting the base range calls `flush()` once and yields what it returns, if anything.
 
 [#]{.pnum} *Returns*: `*this`.
 

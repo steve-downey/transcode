@@ -5,6 +5,7 @@
 
 #include <beman/transcode/decode_view.hpp>
 #include <beman/transcode/detail/table_codec.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
 #include <catch2/catch_all.hpp>
@@ -137,7 +138,7 @@ TEST_CASE("encode_or_error_view: unmapped codepoint yields unexpected", "[encode
 
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == whatwg_error::unmapped_codepoint);
+    CHECK(r.error() == whatwg::error::unmapped_codepoint);
 }
 
 TEST_CASE("encode_or_error_view: custom codecs do not receive ill-formed UTF-32", "[encode_view]") {
@@ -145,7 +146,7 @@ TEST_CASE("encode_or_error_view: custom codecs do not receive ill-formed UTF-32"
     auto           view = src | encode_or_error(replacement_aware_codec{});
     auto           r    = *view.begin();
     REQUIRE(!r.has_value());
-    CHECK(r.error() == whatwg_error::out_of_range);
+    CHECK(r.error() == whatwg::error::out_of_range);
 }
 
 TEST_CASE("encode_or_error_view: sparse table unmapped yields unexpected", "[encode_view]") {
@@ -155,19 +156,19 @@ TEST_CASE("encode_or_error_view: sparse table unmapped yields unexpected", "[enc
 
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == whatwg_error::unmapped_codepoint);
+    CHECK(r.error() == whatwg::error::unmapped_codepoint);
 }
 
 TEST_CASE("encode_or_error_view: mixed success and error", "[encode_view]") {
-    std::u32string                                 src{U'A', U'\x1F600', U'B'}; // A, emoji, B
-    std::vector<std::expected<char, whatwg_error>> result;
+    std::u32string                                  src{U'A', U'\x1F600', U'B'}; // A, emoji, B
+    std::vector<std::expected<char, whatwg::error>> result;
     for (auto v : src | encode_or_error(latin1_codec{}))
         result.push_back(v);
     REQUIRE(result.size() == 3);
     CHECK(result[0].has_value());
     CHECK(result[0].value() == 'A');
     CHECK(!result[1].has_value());
-    CHECK(result[1].error() == whatwg_error::unmapped_codepoint);
+    CHECK(result[1].error() == whatwg::error::unmapped_codepoint);
     CHECK(result[2].has_value());
     CHECK(result[2].value() == 'B');
 }

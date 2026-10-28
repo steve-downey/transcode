@@ -12,7 +12,7 @@ using namespace beman::transcoding;
 TEST_CASE("module: whatwg_decode via import", "[transcoding::module]") {
     std::vector<char> utf8{'h', 'e', 'l', 'l', 'o'};
     std::u32string    result;
-    for (char32_t cp : utf8 | whatwg_decode<codec::utf_8>)
+    for (char32_t cp : utf8 | whatwg_decode<whatwg::encoding::utf_8>)
         result.push_back(cp);
     CHECK(result == U"hello");
 }
@@ -20,19 +20,19 @@ TEST_CASE("module: whatwg_decode via import", "[transcoding::module]") {
 TEST_CASE("module: whatwg_encode via import", "[transcoding::module]") {
     std::u32string src = U"hello";
     std::string    result;
-    for (char b : src | whatwg_encode<codec::utf_8>)
+    for (char b : src | whatwg_encode<whatwg::encoding::utf_8>)
         result.push_back(b);
     CHECK(result == "hello");
 }
 
-TEST_CASE("module: get_encoding via import", "[transcoding::module]") {
-    CHECK(get_encoding("utf-8") == codec::utf_8);
-    CHECK(get_encoding("shift_jis") == codec::shift_jis);
+TEST_CASE("module: whatwg::get_encoding via import", "[transcoding::module]") {
+    CHECK(whatwg::get_encoding("utf-8") == whatwg::encoding::utf_8);
+    CHECK(whatwg::get_encoding("shift_jis") == whatwg::encoding::shift_jis);
 }
 
-TEST_CASE("module: sniff_encoding via import", "[transcoding::module]") {
+TEST_CASE("module: whatwg::bom_sniff via import", "[transcoding::module]") {
     std::vector<unsigned char> utf8_bom = {0xEF, 0xBB, 0xBF, 'h', 'i'};
-    CHECK(sniff_encoding(utf8_bom) == codec::utf_8);
+    CHECK(whatwg::bom_sniff(utf8_bom) == whatwg::encoding::utf_8);
 }
 
 TEST_CASE("module: iconv_functions type accessible", "[transcoding::module]") {
@@ -73,12 +73,12 @@ TEST_CASE("module: round-trip UTF-8 decode/encode via import", "[transcoding::mo
     std::vector<char> utf8{'\xE4', '\xB8', '\xAD'}; // 中 in UTF-8
 
     std::u32string codepoints;
-    for (char32_t cp : utf8 | whatwg_decode<codec::utf_8>)
+    for (char32_t cp : utf8 | whatwg_decode<whatwg::encoding::utf_8>)
         codepoints.push_back(cp);
     CHECK(codepoints == U"中");
 
     std::vector<char> result;
-    for (char b : codepoints | whatwg_encode<codec::utf_8>)
+    for (char b : codepoints | whatwg_encode<whatwg::encoding::utf_8>)
         result.push_back(b);
     CHECK(result == utf8);
 }

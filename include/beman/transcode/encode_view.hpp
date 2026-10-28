@@ -9,6 +9,8 @@
 #include <beman/transcode/concepts.hpp>
 #include <beman/transcode/detail/range_traits.hpp>
 #include <beman/transcode/detail/utf32.hpp>
+#include <beman/transcode/whatwg/error.hpp>
+#include <beman/transcode/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <array>
@@ -21,7 +23,7 @@
 namespace beman::transcoding {
 
 // ---------------------------------------------------------------------------
-// encode_view — encodes char32_t scalars to expected<char, whatwg_error>
+// encode_view — encodes char32_t scalars to expected<char, whatwg::error>
 // ---------------------------------------------------------------------------
 
 // \ref{transcode.custom.encode}, class template encode_view
@@ -34,7 +36,7 @@ namespace beman::transcoding {
 //! UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in
 //! replacement mode and is reported without calling the codec in report
 //! mode.  A custom codec therefore receives only Unicode scalar values.
-template <encode_codec Codec, std::ranges::input_range R, error_mode E = error_mode::replacement>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E = error_mode::replacement>
     requires unicode_scalar_range<R>
 class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>> {
     //! \expos
@@ -47,7 +49,7 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
     class iterator {
         using base_iter = detail::compatible_iterator_t<R>;
         using base_sent = detail::compatible_sentinel_t<R>;
-        using result_t  = std::conditional_t<E == error_mode::report, std::expected<char, whatwg_error>, char>;
+        using result_t  = std::conditional_t<E == error_mode::report, std::expected<char, whatwg::error>, char>;
 
         //! \expos
         base_iter current_{};
@@ -64,7 +66,7 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
         //! \expos
         bool is_error_{false};
         //! \expos
-        whatwg_error error_{};
+        whatwg::error error_{};
         //! \expos
         bool done_{false};
 
@@ -131,7 +133,7 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
 // ---------------------------------------------------------------------------
 
 //! \omit
-template <encode_codec Codec, error_mode E = error_mode::replacement>
+template <text_encoder Codec, error_mode E = error_mode::replacement>
 struct encode_closure {
     Codec codec_;
 
@@ -156,16 +158,16 @@ struct encode_closure {
 //! `E | encode(codec)` are each expression-equivalent to an
 //! `encode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of
 //! `codec`.
-template <encode_codec Codec>
+template <text_encoder Codec>
 constexpr encode_closure<Codec> encode(Codec codec = {}) {
     return {codec};
 }
 
 //! \seebelow
 //! \returns `encode(codec)` with `error_mode::report`: the view it
-//! adapts to has value type `expected<char, whatwg_error>`, and an encoding
+//! adapts to has value type `expected<char, whatwg::error>`, and an encoding
 //! or UTF-32 validation error is reported rather than replaced.
-template <encode_codec Codec>
+template <text_encoder Codec>
 constexpr encode_closure<Codec, error_mode::report> encode_or_error(Codec codec = {}) {
     return {codec};
 }
@@ -178,13 +180,13 @@ constexpr encode_closure<Codec, error_mode::report> encode_or_error(Codec codec 
 // Out-of-line definitions: encode_view
 // ===========================================================================
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \effects Initializes `$base$` with `std::move(base)` and `$codec$` with
 //! `codec`.
 constexpr encode_view<Codec, R, E>::encode_view(R base, Codec codec) : base_(std::move(base)), codec_(codec) {}
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \effects Initializes `$current$` with `std::move(current)`, `$end$` with
 //! `std::move(end)` and the iterator's own copy of the codec with `codec`,
@@ -194,7 +196,7 @@ constexpr encode_view<Codec, R, E>::iterator::iterator(base_iter current, base_s
     load();
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 constexpr auto encode_view<Codec, R, E>::iterator::terminal() -> iterator
     requires std::ranges::forward_range<R>
@@ -204,7 +206,7 @@ constexpr auto encode_view<Codec, R, E>::iterator::terminal() -> iterator
     return it;
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 constexpr void encode_view<Codec, R, E>::iterator::load() {
     if (current_ == end_) {
@@ -224,7 +226,7 @@ constexpr void encode_view<Codec, R, E>::iterator::load() {
     auto r = codec_.encode_one(validation.code_point);
     if (r.is_error) {
         is_error_ = true;
-        error_    = whatwg_error::unmapped_codepoint;
+        error_    = whatwg::error::unmapped_codepoint;
         len_      = 1;
     } else {
         is_error_ = false;
@@ -235,7 +237,7 @@ constexpr void encode_view<Codec, R, E>::iterator::load() {
     pos_ = 0;
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \returns The byte at the current position of the encoded element, or the
 //! error the encoding of that element produced.
@@ -250,7 +252,7 @@ constexpr auto encode_view<Codec, R, E>::iterator::operator*() const -> result_t
     return static_cast<char>(buf_[static_cast<std::size_t>(pos_)]);
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \effects Advances to the next byte of the encoded element, encoding the
 //! next element of the base range when the current one is exhausted; if no
@@ -267,7 +269,7 @@ constexpr auto encode_view<Codec, R, E>::iterator::operator++() -> iterator& {
     return *this;
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 constexpr auto encode_view<Codec, R, E>::iterator::operator++(int) -> iterator
     requires std::ranges::forward_range<R>
@@ -277,7 +279,7 @@ constexpr auto encode_view<Codec, R, E>::iterator::operator++(int) -> iterator
     return tmp;
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 constexpr void encode_view<Codec, R, E>::iterator::operator++(int)
     requires(!std::ranges::forward_range<R>)
@@ -285,7 +287,7 @@ constexpr void encode_view<Codec, R, E>::iterator::operator++(int)
     ++*this;
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \returns An `$iterator$` over `$base$` and a copy of `$codec$`, positioned
 //! at the first byte of its first encoded element.
@@ -293,7 +295,7 @@ constexpr auto encode_view<Codec, R, E>::begin() -> iterator {
     return iterator(std::ranges::begin(base_), std::ranges::end(base_), codec_);
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \returns An `$iterator$` over `$base$` and a copy of `$codec$`, positioned
 //! at the first byte of its first encoded element.
@@ -303,7 +305,7 @@ constexpr auto encode_view<Codec, R, E>::begin() const -> iterator
     return iterator(std::ranges::begin(base_), std::ranges::end(base_), codec_);
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \returns An `$iterator$` that compares equal to an iterator that has
 //! encoded every element of `$base$`.
@@ -313,7 +315,7 @@ constexpr auto encode_view<Codec, R, E>::end() -> iterator
     return iterator::terminal();
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \returns An `$iterator$` that compares equal to an iterator that has
 //! encoded every element of `$base$`.
@@ -324,7 +326,7 @@ constexpr auto encode_view<Codec, R, E>::end() const -> iterator
     return iterator::terminal();
 }
 
-template <encode_codec Codec, std::ranges::input_range R, error_mode E>
+template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
 //! \returns `default_sentinel`.
 constexpr std::default_sentinel_t encode_view<Codec, R, E>::end() const {
@@ -335,7 +337,7 @@ constexpr std::default_sentinel_t encode_view<Codec, R, E>::end() const {
 // Out-of-line definitions: encode_closure, encode_closure
 // ===========================================================================
 
-template <encode_codec Codec, error_mode E>
+template <text_encoder Codec, error_mode E>
 template <unicode_scalar_range R>
 constexpr auto encode_closure<Codec, E>::operator()(R&& r) const {
     using view_t = std::views::all_t<R>;
@@ -344,17 +346,17 @@ constexpr auto encode_closure<Codec, E>::operator()(R&& r) const {
 }
 
 // The names the paired views had before they were unified.
-template <encode_codec Codec, std::ranges::input_range R>
+template <text_encoder Codec, std::ranges::input_range R>
 using encode_or_error_view = encode_view<Codec, R, error_mode::report>;
 
-template <encode_codec Codec>
+template <text_encoder Codec>
 using encode_or_error_closure = encode_closure<Codec, error_mode::report>;
 
 } // namespace beman::transcoding
 
 namespace std::ranges {
 
-template <beman::transcoding::encode_codec Codec, input_range R, beman::transcoding::error_mode E>
+template <beman::transcoding::text_encoder Codec, input_range R, beman::transcoding::error_mode E>
     requires beman::transcoding::unicode_scalar_range<R>
 inline constexpr bool enable_borrowed_range<beman::transcoding::encode_view<Codec, R, E>> = borrowed_range<R>;
 

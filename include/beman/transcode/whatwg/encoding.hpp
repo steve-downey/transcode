@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef INCLUDE_BEMAN_TRANSCODE_CODEC_HPP
-#define INCLUDE_BEMAN_TRANSCODE_CODEC_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_WHATWG_ENCODING_HPP
+#define INCLUDE_BEMAN_TRANSCODE_WHATWG_ENCODING_HPP
 
 #include <beman/transcode/config.hpp>
 
-namespace beman::transcoding {
+namespace beman::transcoding::whatwg {
 
 // \ref{transcode.codec}, encodings
 
@@ -13,10 +13,10 @@ namespace beman::transcoding {
 //! Encoding Standard, whose table of encodings is normative and is not
 //! restated here: an encoding is what that standard says it is, and a
 //! specification that copied the list would be a second one to keep current.
-//! `codec::replacement` is that standard's `replacement` encoding, which
+//! `whatwg::encoding::replacement` is that standard's `replacement` encoding, which
 //! decodes any non-empty input to a single U+FFFD REPLACEMENT CHARACTER, and
-//! `codec::x_user_defined` its `x-user-defined`.
-enum class codec {
+//! `whatwg::encoding::x_user_defined` its `x-user-defined`.
+enum class encoding {
     utf_8,
     replacement,
     x_user_defined,
@@ -59,6 +59,6 @@ enum class codec {
     euc_kr,
 };
 
-} // namespace beman::transcoding
+} // namespace beman::transcoding::whatwg
 
-#endif // INCLUDE_BEMAN_TRANSCODE_CODEC_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_WHATWG_ENCODING_HPP

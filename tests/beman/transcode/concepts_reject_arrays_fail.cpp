@@ -7,10 +7,11 @@
 // silently decay to pointers and include the null terminator.
 
 #include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 void test() {
     char arr[5] = "test";
     // char[N] is not a legacy_byte_range — should fail to compile
-    auto v = arr | beman::transcoding::whatwg_decode<beman::transcoding::codec::utf_8>;
+    auto v = arr | beman::transcoding::whatwg_decode<beman::transcoding::whatwg::encoding::utf_8>;
     (void)v;
 }

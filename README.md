@@ -88,14 +88,14 @@ validation error.
 
 ### Decode Views — Bytes to Unicode
 
-Pipe any byte range through `whatwg_decode<codec>` to get a lazy `char32_t` view:
+Pipe any byte range through `whatwg_decode<C>` to get a lazy `char32_t` view:
 
 ```cpp
 #include <beman/transcode/transcode.hpp>
 
 std::vector<char32_t> decode_utf8(std::string_view input) {
     std::vector<char32_t> result;
-    for (char32_t cp : input | beman::transcoding::whatwg_decode<beman::transcoding::codec::utf_8>) {
+    for (char32_t cp : input | beman::transcoding::whatwg_decode<beman::transcoding::whatwg::encoding::utf_8>) {
         result.push_back(cp);
     }
     return result;
@@ -103,12 +103,12 @@ std::vector<char32_t> decode_utf8(std::string_view input) {
 ```
 
 For explicit error visibility, use the `_or_error` variant which yields
-`std::expected<char32_t, whatwg_error>`:
+`std::expected<char32_t, whatwg::error>`:
 
 ```cpp
-for (auto result : input | beman::transcoding::whatwg_decode_or_error<beman::transcoding::codec::utf_8>) {
+for (auto result : input | beman::transcoding::whatwg_decode_or_error<beman::transcoding::whatwg::encoding::utf_8>) {
     if (!result.has_value()) {
-        // result.error() is whatwg_error::invalid_byte, ::truncated_sequence, etc.
+        // result.error() is whatwg::error::invalid_byte, ::truncated_sequence, etc.
     }
 }
 ```
@@ -118,7 +118,7 @@ C strings work via `views::null_term`:
 ```cpp
 auto decode_cstring(const char* text) {
     return beman::transcoding::views::null_term(text)
-         | beman::transcoding::whatwg_decode<beman::transcoding::codec::utf_8>;
+         | beman::transcoding::whatwg_decode<beman::transcoding::whatwg::encoding::utf_8>;
 }
 ```
 
@@ -128,7 +128,7 @@ The reverse direction encodes Unicode scalars back to bytes:
 
 ```cpp
 // char32_t range → char range (UTF-8 bytes)
-auto encoded = codepoints | beman::transcoding::whatwg_encode<beman::transcoding::codec::utf_8>;
+auto encoded = codepoints | beman::transcoding::whatwg_encode<beman::transcoding::whatwg::encoding::utf_8>;
 ```
 
 The WHATWG Encoding Standard does not define encoders for UTF-16BE or UTF-16LE;
@@ -149,7 +149,7 @@ Compose decode and encode into a single pipeline:
 
 std::string shift_jis_to_utf8(std::string_view input) {
     std::string result;
-    for (char byte : input | beman::transcoding::transcode<beman::transcoding::codec::shift_jis, beman::transcoding::codec::utf_8>) {
+    for (char byte : input | beman::transcoding::transcode<beman::transcoding::whatwg::encoding::shift_jis, beman::transcoding::whatwg::encoding::utf_8>) {
         result.push_back(byte);
     }
     return result;
@@ -165,11 +165,11 @@ auto result = beman::transcoding::transcode_string(data, "shift_jis", "utf-8");
 
 ### The Pluggable Codec Protocol
 
-Implement `decode_codec` or `encode_codec` to add your own encoding:
+Implement `text_decoder` or `text_encoder` to add your own encoding:
 
 ```cpp
 template <typename C>
-concept decode_codec = std::semiregular<C> &&
+concept text_decoder = std::semiregular<C> &&
     requires(C& c, const unsigned char*& iter, const unsigned char* sentinel) {
         { c.decode_one(iter, sentinel) } -> std::same_as<decode_result>;
     };
@@ -255,7 +255,7 @@ Legend: ✅ implemented · n/a architectural model doesn't support this ·
 
 | API | WHATWG | Pluggable codec | iconv | P2728 |
 |-----|--------|-----------------|-------|----------|
-| **Codec identity** | `codec::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
+| **Codec identity** | `whatwg::encoding::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
 | **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(f,t,buf)` | ✅ `views::to_utf32` |
 | **Decode or-error view** | ✅ `whatwg_decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
 | **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | n/a ¹ | ✅ `views::to_utf8` / `to_utf16` |
@@ -268,10 +268,10 @@ Legend: ✅ implemented · n/a architectural model doesn't support this ·
 | **Bulk encode → output iter** | ✅ `encode_into<C>(r,out)` | ✅ `encode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
 | **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
 | **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | n/a ³ |
-| **Runtime label lookup** | ✅ `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
+| **Runtime label lookup** | ✅ `whatwg::get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
 | **Runtime transcode** | ✅ `transcode_string(src,from,to)` | n/a ⁴ | ✅ `iconv_transcode_to(r,f,t)` | n/a ⁵ |
-| **BOM sniffing** | ✅ `sniff_encoding(range)` | n/a ⁶ | n/a ⁶ | n/a ⁷ |
-| **Error type** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
+| **BOM sniffing** | ✅ `whatwg::bom_sniff(range)` | n/a ⁶ | n/a ⁶ | n/a ⁷ |
+| **Error type** | `whatwg::error` | `whatwg::error` | `iconv_error` | `utf_transcoding_error` |
 | **Output element type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
 | **Input element type** | `char`/`unsigned char`/`byte` | `char`/`byte` (legacy) | `char` (any byte encoding) | `char8_t`/`char16_t`/`char32_t` |
 | **constexpr** | ✅ | ✅ | 🔴 (POSIX userland library) | ✅ |
@@ -298,13 +298,13 @@ runtime name-to-codec registry by design — codec selection happens at
 compile time through the type system.  Runtime transcode is similarly outside
 the model: you compose `decode(codec_a{}) | encode(codec_b{})` at compile time.
 
-⁵ **P2728 selects its codec from the character type.**  Selection is
+⁵ **P2728 selects its whatwg::encoding from the character type.**  Selection is
 determined by the character types (`char8_t`, `char16_t`, `char32_t`), so
 runtime label lookup and runtime transcode are outside its model.
 
 ⁶ **BOM sniffing is a property of the byte stream.**
-`sniff_encoding()` examines the first bytes of a stream to detect UTF-8,
-UTF-16BE or UTF-16LE BOMs and returns the appropriate `codec` enum value.  This
+`whatwg::bom_sniff()` examines the first bytes of a stream to detect UTF-8,
+UTF-16BE or UTF-16LE BOMs and returns the appropriate `whatwg::encoding` value.  This
 is a WHATWG-specific facility; pluggable codecs and iconv operate on
 already-identified encodings.
 
@@ -321,21 +321,21 @@ named helpers are provided for the same four operations:
 using namespace beman::transcoding;
 
 // Decode to vector — view | ranges::to
-auto cps = bytes | whatwg_decode<codec::utf_8> | std::ranges::to<std::vector<char32_t>>();
+auto cps = bytes | whatwg_decode<whatwg::encoding::utf_8> | std::ranges::to<std::vector<char32_t>>();
 
 // Encode to string — view | ranges::to
-auto encoded = codepoints | whatwg_encode<codec::shift_jis> | std::ranges::to<std::string>();
+auto encoded = codepoints | whatwg_encode<whatwg::encoding::shift_jis> | std::ranges::to<std::string>();
 
 // Output-iterator — ranges::copy
-std::ranges::copy(bytes | whatwg_decode<codec::utf_8>, std::back_inserter(vec));
+std::ranges::copy(bytes | whatwg_decode<whatwg::encoding::utf_8>, std::back_inserter(vec));
 ```
 
 ```cpp
 // The same four operations, named:
-auto cps2     = decode_to<codec::utf_8>(bytes);
-auto encoded2 = encode_to<codec::shift_jis, std::string>(codepoints);
-decode_into<codec::utf_8>(bytes, std::back_inserter(vec));
-encode_into<codec::utf_8>(codepoints, std::back_inserter(str));
+auto cps2     = decode_to<whatwg::encoding::utf_8>(bytes);
+auto encoded2 = encode_to<whatwg::encoding::shift_jis, std::string>(codepoints);
+decode_into<whatwg::encoding::utf_8>(bytes, std::back_inserter(vec));
+encode_into<whatwg::encoding::utf_8>(codepoints, std::back_inserter(str));
 ```
 
 Each helper is a one-line forward to the pipeline it names, with no measurable
@@ -371,10 +371,10 @@ labels you already have.
 
 `beman.transcode` provides:
 
-- **Compile-time WHATWG dispatch** via `codec::utf_8`, `codec::shift_jis`, etc. —
+- **Compile-time WHATWG dispatch** via `whatwg::encoding::utf_8`, `whatwg::encoding::shift_jis`, etc. —
   enum constants used as non-type template parameters, so there is no
   per-element dispatch and decoding runs at compile time
-- **Runtime label resolution** via `get_encoding("utf-8")` and
+- **Runtime label resolution** via `whatwg::get_encoding("utf-8")` and
   `transcode_string(data, "shift_jis", "utf-8")` — for cases where the encoding
   name comes from user input, HTTP headers, or HTML meta tags
 - **System iconv interop** via `iconv_transcode("UTF-8", "EUC-TW", buffer)` —

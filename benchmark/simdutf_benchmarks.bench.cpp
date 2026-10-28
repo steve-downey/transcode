@@ -40,7 +40,7 @@ static char16_t       g_out_utf16[kMaxCodepoints];
 TEST_CASE("simdutf ceiling baselines", "[benchmark][simdutf]") {
     using namespace beman::transcoding::bench;
 
-    // --- UTF-8 → UTF-32 (matches whatwg_decode<codec::utf_8> output type) ---
+    // --- UTF-8 → UTF-32 (matches whatwg_decode<whatwg::encoding::utf_8> output type) ---
 
     describe({.conversion = "UTF-8 → UTF-32", .library = "simdutf", .api = "convert_utf8_to_utf32"});
     BENCHMARK_ADVANCED("simdutf UTF-8→UTF-32: English (ASCII-heavy)")

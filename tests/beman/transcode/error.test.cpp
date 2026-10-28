@@ -2,14 +2,15 @@
 
 #include <beman/transcode/error.hpp>
 #include <beman/transcode/error.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 #include <catch2/catch_all.hpp>
 
 using namespace beman::transcoding;
 
-TEST_CASE("whatwg_error enum values", "[transcoding::error]") {
-    CHECK(whatwg_error::invalid_byte != whatwg_error::truncated_sequence);
-    CHECK(whatwg_error::overlong_encoding != whatwg_error::surrogate_code_point);
-    CHECK(whatwg_error::out_of_range != whatwg_error::invalid_byte);
+TEST_CASE("whatwg::error enum values", "[transcoding::error]") {
+    CHECK(whatwg::error::invalid_byte != whatwg::error::truncated_sequence);
+    CHECK(whatwg::error::overlong_encoding != whatwg::error::surrogate_code_point);
+    CHECK(whatwg::error::out_of_range != whatwg::error::invalid_byte);
 }
 
 TEST_CASE("iconv_error enum values", "[transcoding::error]") {

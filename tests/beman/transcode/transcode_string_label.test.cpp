@@ -68,7 +68,7 @@ TEST_CASE("transcode_string label: both labels unknown returns nullopt", "[trans
 }
 
 TEST_CASE("transcode_string label: alias labels resolve correctly", "[transcode_string][label]") {
-    // "sjis", "x-sjis", "shift_jis" all map to codec::shift_jis
+    // "sjis", "x-sjis", "shift_jis" all map to whatwg::encoding::shift_jis
     std::string src = "abc";
     auto        r1  = transcode_string(std::span<const char>(src), "utf-8", "sjis");
     auto        r2  = transcode_string(std::span<const char>(src), "utf-8", "shift_jis");

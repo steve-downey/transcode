@@ -14,7 +14,7 @@ int main() {
     // Test 1: whatwg_decode via module
     std::vector<char> utf8_input{'h', 'e', 'l', 'l', 'o'};
     std::u32string    decoded;
-    for (char32_t cp : utf8_input | whatwg_decode<codec::utf_8>) {
+    for (char32_t cp : utf8_input | whatwg_decode<whatwg::encoding::utf_8>) {
         decoded.push_back(cp);
     }
     if (decoded != U"hello") {
@@ -26,7 +26,7 @@ int main() {
     // Test 2: whatwg_encode via module
     std::u32string encoded_input = U"hello";
     std::string    encoded;
-    for (char b : encoded_input | whatwg_encode<codec::utf_8>) {
+    for (char b : encoded_input | whatwg_encode<whatwg::encoding::utf_8>) {
         encoded.push_back(b);
     }
     if (encoded != "hello") {
@@ -35,20 +35,20 @@ int main() {
     }
     std::cout << "PASS: module whatwg_encode\n";
 
-    // Test 3: get_encoding via module
-    if (get_encoding("utf-8") != codec::utf_8) {
-        std::cerr << "FAIL: module get_encoding\n";
+    // Test 3: whatwg::get_encoding via module
+    if (whatwg::get_encoding("utf-8") != whatwg::encoding::utf_8) {
+        std::cerr << "FAIL: module whatwg::get_encoding\n";
         return 1;
     }
-    std::cout << "PASS: module get_encoding\n";
+    std::cout << "PASS: module whatwg::get_encoding\n";
 
-    // Test 4: sniff_encoding via module
+    // Test 4: whatwg::bom_sniff via module
     std::vector<unsigned char> bom = {0xEF, 0xBB, 0xBF, 'h', 'i'};
-    if (sniff_encoding(bom) != codec::utf_8) {
-        std::cerr << "FAIL: module sniff_encoding\n";
+    if (whatwg::bom_sniff(bom) != whatwg::encoding::utf_8) {
+        std::cerr << "FAIL: module whatwg::bom_sniff\n";
         return 1;
     }
-    std::cout << "PASS: module sniff_encoding\n";
+    std::cout << "PASS: module whatwg::bom_sniff\n";
 
     // Test 5: iconv_functions via module
     iconv_functions fns = make_real_iconv_fns();

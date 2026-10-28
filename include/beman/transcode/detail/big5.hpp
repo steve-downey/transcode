@@ -4,10 +4,9 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_BIG5_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/big5.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <array>
@@ -32,10 +31,10 @@ struct big5_decode_state {
 };
 
 struct big5_decode_result {
-    char32_t     code_point{0xFFFD};
-    char32_t     code_point2{0};
-    whatwg_error error{};
-    bool         is_error{false};
+    char32_t      code_point{0xFFFD};
+    char32_t      code_point2{0};
+    whatwg::error error{};
+    bool          is_error{false};
 };
 
 struct big5_encode_result {
@@ -77,7 +76,7 @@ constexpr int big5_index_pointer(char32_t cp);
 template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr big5_decode_result big5_decode_one(I& current, S end) {
     if (current == end)
-        return {{}, {}, whatwg_error::truncated_sequence, true};
+        return {{}, {}, whatwg::error::truncated_sequence, true};
 
     auto lead = static_cast<unsigned char>(*current);
     ++current;
@@ -86,10 +85,10 @@ constexpr big5_decode_result big5_decode_one(I& current, S end) {
         return {static_cast<char32_t>(lead), {}, {}, false};
 
     if (lead < 0x81 || lead > 0xFE)
-        return {{}, {}, whatwg_error::invalid_byte, true};
+        return {{}, {}, whatwg::error::invalid_byte, true};
 
     if (current == end)
-        return {{}, {}, whatwg_error::truncated_sequence, true};
+        return {{}, {}, whatwg::error::truncated_sequence, true};
 
     auto trail = static_cast<unsigned char>(*current);
     ++current;
@@ -103,7 +102,7 @@ constexpr big5_decode_result big5_decode_one(I& current, S end) {
     if (offset < 0) {
         // WHATWG: if trail is ASCII, prepend it back (emit as next codepoint)
         char32_t repush = (trail < 0x80) ? static_cast<char32_t>(trail) : 0;
-        return {{}, repush, whatwg_error::invalid_byte, true};
+        return {{}, repush, whatwg::error::invalid_byte, true};
     }
 
     int pointer = ((lead - 0x81) * 157) + offset;
@@ -122,7 +121,7 @@ constexpr big5_decode_result big5_decode_one(I& current, S end) {
     if (cp == 0) {
         // WHATWG: if trail is ASCII, prepend it back
         char32_t repush = (trail < 0x80) ? static_cast<char32_t>(trail) : 0;
-        return {{}, repush, whatwg_error::invalid_byte, true};
+        return {{}, repush, whatwg::error::invalid_byte, true};
     }
 
     return {cp, {}, {}, false};

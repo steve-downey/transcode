@@ -7,12 +7,13 @@
 // whose element type already implies an encoding.
 
 #include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 #include <vector>
 
 void test() {
     std::vector<char8_t> v8{u8'A'};
     // std::vector<char8_t> is not a legacy_byte_range — should fail to compile
-    auto decoded = v8 | beman::transcoding::whatwg_decode<beman::transcoding::codec::utf_8>;
+    auto decoded = v8 | beman::transcoding::whatwg_decode<beman::transcoding::whatwg::encoding::utf_8>;
     (void)decoded;
 }

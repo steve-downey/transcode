@@ -4,10 +4,9 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_GBK_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/gbk.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -16,9 +15,9 @@
 namespace beman::transcoding::detail {
 
 struct gbk_decode_result {
-    char32_t     code_point{0xFFFD};
-    whatwg_error error{};
-    bool         is_error{false};
+    char32_t      code_point{0xFFFD};
+    whatwg::error error{};
+    bool          is_error{false};
 };
 
 struct gbk_encode_result {
@@ -46,7 +45,7 @@ constexpr gbk_encode_result gbk_encode_one(char32_t cp);
 template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr gbk_decode_result gbk_decode_one(I& current, S end) {
     if (current == end)
-        return {{}, whatwg_error::truncated_sequence, true};
+        return {{}, whatwg::error::truncated_sequence, true};
 
     auto lead = static_cast<unsigned char>(*current);
     ++current;
@@ -58,17 +57,17 @@ constexpr gbk_decode_result gbk_decode_one(I& current, S end) {
         return {static_cast<char32_t>(0x20AC), {}, false};
 
     if (lead < 0x81 || lead > 0xFE)
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
 
     if (current == end)
-        return {{}, whatwg_error::truncated_sequence, true};
+        return {{}, whatwg::error::truncated_sequence, true};
 
     auto trail = static_cast<unsigned char>(*current);
 
     if (trail < 0x40 || trail > 0xFE || trail == 0x7F) {
         if (trail >= 0x80)
             ++current;
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
     }
 
     ++current;
@@ -78,7 +77,7 @@ constexpr gbk_decode_result gbk_decode_one(I& current, S end) {
 
     char32_t cp = tables::gbk[index];
     if (cp == 0)
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
 
     return {cp, {}, false};
 }

@@ -4,8 +4,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF8_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -14,9 +13,9 @@
 namespace beman::transcoding::detail {
 
 struct utf8_result {
-    char32_t     code_point{};
-    whatwg_error error{};
-    bool         is_error{false};
+    char32_t      code_point{};
+    whatwg::error error{};
+    bool          is_error{false};
 };
 
 // Decode one UTF-8 codepoint from [current, end) following the WHATWG spec.
@@ -45,34 +44,34 @@ constexpr utf8_result utf8_decode_one(I& current, S end) {
     } else {
         // 0x80–0xBF: unexpected continuation; 0xC0–0xC1: always-overlong;
         // 0xF5–0xFF: out-of-range leads.
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
     }
 
     for (int i = 0; i < extra; ++i) {
         if (current == end)
-            return {{}, whatwg_error::truncated_sequence, true};
+            return {{}, whatwg::error::truncated_sequence, true};
         auto cont = static_cast<unsigned char>(*current);
         if ((cont & 0xC0) != 0x80)
-            return {{}, whatwg_error::invalid_byte, true}; // do NOT advance
+            return {{}, whatwg::error::invalid_byte, true}; // do NOT advance
         // WHATWG: validate first continuation byte ranges.
         if (i == 0) {
             if (byte == 0xE0 && cont < 0xA0)
-                return {{}, whatwg_error::overlong_encoding, true};
+                return {{}, whatwg::error::overlong_encoding, true};
             if (byte == 0xED && cont > 0x9F)
-                return {{}, whatwg_error::surrogate_code_point, true};
+                return {{}, whatwg::error::surrogate_code_point, true};
             if (byte == 0xF0 && cont < 0x90)
-                return {{}, whatwg_error::overlong_encoding, true};
+                return {{}, whatwg::error::overlong_encoding, true};
             if (byte == 0xF4 && cont > 0x8F)
-                return {{}, whatwg_error::out_of_range, true};
+                return {{}, whatwg::error::out_of_range, true};
         }
         ++current;
         cp = (cp << 6) | (cont & 0x3F);
     }
 
     if (cp >= 0xD800 && cp <= 0xDFFF)
-        return {{}, whatwg_error::surrogate_code_point, true};
+        return {{}, whatwg::error::surrogate_code_point, true};
     if (cp > 0x10FFFF)
-        return {{}, whatwg_error::out_of_range, true};
+        return {{}, whatwg::error::out_of_range, true};
 
     return {cp, {}, false};
 }

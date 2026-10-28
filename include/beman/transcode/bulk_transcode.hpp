@@ -31,6 +31,7 @@
     #include <beman/transcode/encode_view.hpp>
     #include <beman/transcode/whatwg_decode_view.hpp>
     #include <beman/transcode/whatwg_encode_view.hpp>
+    #include <beman/transcode/whatwg/encoding.hpp>
 
     #if !BEMAN_TRANSCODE_USE_MODULES()
         #include <algorithm>
@@ -43,28 +44,28 @@ namespace beman::transcoding {
 
 // \ref{transcode.bulk}, eager bulk conversion
 
-template <codec C, legacy_byte_range R>
+template <whatwg::encoding C, legacy_byte_range R>
 constexpr std::vector<char32_t> decode_to(R&& source);
 
-template <codec C, typename Container = std::string, unicode_scalar_range R>
+template <whatwg::encoding C, typename Container = std::string, unicode_scalar_range R>
 constexpr Container encode_to(R&& source);
 
-template <codec C, legacy_byte_range R, std::output_iterator<char32_t> Output>
+template <whatwg::encoding C, legacy_byte_range R, std::output_iterator<char32_t> Output>
 constexpr void decode_into(R&& source, Output output);
 
-template <codec C, unicode_scalar_range R, std::output_iterator<char> Output>
+template <whatwg::encoding C, unicode_scalar_range R, std::output_iterator<char> Output>
 constexpr void encode_into(R&& source, Output output);
 
-template <decode_codec Codec, legacy_byte_range R>
+template <text_decoder Codec, legacy_byte_range R>
 constexpr std::vector<char32_t> decode_to(Codec codec, R&& source);
 
-template <encode_codec Codec, typename Container = std::string, unicode_scalar_range R>
+template <text_encoder Codec, typename Container = std::string, unicode_scalar_range R>
 constexpr Container encode_to(Codec codec, R&& source);
 
-template <decode_codec Codec, legacy_byte_range R, std::output_iterator<char32_t> Output>
+template <text_decoder Codec, legacy_byte_range R, std::output_iterator<char32_t> Output>
 constexpr void decode_into(Codec codec, R&& source, Output output);
 
-template <encode_codec Codec, unicode_scalar_range R, std::output_iterator<char> Output>
+template <text_encoder Codec, unicode_scalar_range R, std::output_iterator<char> Output>
 constexpr void encode_into(Codec codec, R&& source, Output output);
 
 // ---------------------------------------------------------------------------
@@ -78,7 +79,7 @@ constexpr void encode_into(Codec codec, R&& source, Output output);
 //! them reported writes the pipeline with `whatwg_decode_or_error` instead.
 //! What they add is the name, for the case a caller wants the whole result
 //! rather than a view over it.
-template <codec C, legacy_byte_range R>
+template <whatwg::encoding C, legacy_byte_range R>
 constexpr std::vector<char32_t> decode_to(R&& source) {
     return std::forward<R>(source) | whatwg_decode<C> | std::ranges::to<std::vector<char32_t>>();
 }
@@ -86,19 +87,19 @@ constexpr std::vector<char32_t> decode_to(R&& source) {
 //! \returns-expr
 //! \remarks `Container` is the caller's choice of result, defaulted to
 //! `string` because that is what encoded bytes are usually wanted in.
-template <codec C, typename Container, unicode_scalar_range R>
+template <whatwg::encoding C, typename Container, unicode_scalar_range R>
 constexpr Container encode_to(R&& source) {
     return std::forward<R>(source) | whatwg_encode<C> | std::ranges::to<Container>();
 }
 
 //! \effects-equiv
-template <codec C, legacy_byte_range R, std::output_iterator<char32_t> Output>
+template <whatwg::encoding C, legacy_byte_range R, std::output_iterator<char32_t> Output>
 constexpr void decode_into(R&& source, Output output) {
     std::ranges::copy(std::forward<R>(source) | whatwg_decode<C>, output);
 }
 
 //! \effects-equiv
-template <codec C, unicode_scalar_range R, std::output_iterator<char> Output>
+template <whatwg::encoding C, unicode_scalar_range R, std::output_iterator<char> Output>
 constexpr void encode_into(R&& source, Output output) {
     std::ranges::copy(std::forward<R>(source) | whatwg_encode<C>, output);
 }
@@ -110,26 +111,26 @@ constexpr void encode_into(R&& source, Output output) {
 //! \returns-expr
 //! \remarks The same four operations over a codec supplied as a value
 //! \iref{transcode.custom.reqs}, for a codec chosen at run time or one the
-//! `codec` enumeration does not name.
-template <decode_codec Codec, legacy_byte_range R>
+//! `whatwg::encoding` enumeration does not name.
+template <text_decoder Codec, legacy_byte_range R>
 constexpr std::vector<char32_t> decode_to(Codec codec, R&& source) {
     return std::forward<R>(source) | decode(codec) | std::ranges::to<std::vector<char32_t>>();
 }
 
 //! \returns-expr
-template <encode_codec Codec, typename Container, unicode_scalar_range R>
+template <text_encoder Codec, typename Container, unicode_scalar_range R>
 constexpr Container encode_to(Codec codec, R&& source) {
     return std::forward<R>(source) | encode(codec) | std::ranges::to<Container>();
 }
 
 //! \effects-equiv
-template <decode_codec Codec, legacy_byte_range R, std::output_iterator<char32_t> Output>
+template <text_decoder Codec, legacy_byte_range R, std::output_iterator<char32_t> Output>
 constexpr void decode_into(Codec codec, R&& source, Output output) {
     std::ranges::copy(std::forward<R>(source) | decode(codec), output);
 }
 
 //! \effects-equiv
-template <encode_codec Codec, unicode_scalar_range R, std::output_iterator<char> Output>
+template <text_encoder Codec, unicode_scalar_range R, std::output_iterator<char> Output>
 constexpr void encode_into(Codec codec, R&& source, Output output) {
     std::ranges::copy(std::forward<R>(source) | encode(codec), output);
 }

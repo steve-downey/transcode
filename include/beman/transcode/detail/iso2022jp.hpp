@@ -11,10 +11,9 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_ISO2022JP_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -50,9 +49,9 @@ struct iso2022jp_decode_state {
 };
 
 struct iso2022jp_decode_result {
-    char32_t     code_point{0xFFFD};
-    whatwg_error error{};
-    bool         is_error{false};
+    char32_t      code_point{0xFFFD};
+    whatwg::error error{};
+    bool          is_error{false};
     // The input is exhausted and the state machine has nothing left to emit.
     bool done{false};
 };
@@ -96,7 +95,7 @@ constexpr iso2022jp_encode_result iso2022jp_encode_flush(iso2022jp_encode_state&
 
 template <typename I, typename S>
 constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& st, I& current, S end) {
-    const auto error = [&st](whatwg_error e) {
+    const auto error = [&st](whatwg::error e) {
         st.state       = st.output_state;
         st.output_flag = false;
         return iso2022jp_decode_result{0xFFFD, e, true, false};
@@ -117,12 +116,12 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                 return {0xFFFD, {}, false, true};
             case 4:
             case 5:
-                return error(whatwg_error::truncated_sequence);
+                return error(whatwg::error::truncated_sequence);
             case 6:
                 st.pending[0]    = st.lead;
                 st.pending_count = 1;
                 st.lead          = 0;
-                return error(whatwg_error::truncated_sequence);
+                return error(whatwg::error::truncated_sequence);
             }
         }
 
@@ -135,7 +134,7 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
             }
             st.pending[0]    = byte;
             st.pending_count = 1;
-            return error(whatwg_error::invalid_byte);
+            return error(whatwg::error::invalid_byte);
 
         case 6: {
             auto lead     = st.lead;
@@ -156,13 +155,13 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                 st.pending[0]    = lead;
                 st.pending[1]    = byte;
                 st.pending_count = 2;
-                return error(whatwg_error::invalid_byte);
+                return error(whatwg::error::invalid_byte);
             }
             st.output_state = new_state;
             st.state        = new_state;
             if (st.output_flag) {
                 st.output_flag = false;
-                return {0xFFFD, whatwg_error::invalid_byte, true, false};
+                return {0xFFFD, whatwg::error::invalid_byte, true, false};
             }
             st.output_flag = true;
             continue;
@@ -178,7 +177,7 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                 st.state = 4;
                 continue;
             }
-            return error(whatwg_error::invalid_byte);
+            return error(whatwg::error::invalid_byte);
 
         case 4: {
             if (byte == 0x1B) {
@@ -193,7 +192,7 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                 if (cp != 0)
                     return {cp, {}, false, false};
             }
-            return {0xFFFD, whatwg_error::invalid_byte, true, false};
+            return {0xFFFD, whatwg::error::invalid_byte, true, false};
         }
 
         default: // 0=ASCII, 1=Roman, 2=Katakana
@@ -203,13 +202,13 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
             }
             if (byte == 0x0E || byte == 0x0F) {
                 st.output_flag = false;
-                return {0xFFFD, whatwg_error::invalid_byte, true, false};
+                return {0xFFFD, whatwg::error::invalid_byte, true, false};
             }
             st.output_flag = false;
             if (st.state == 0) {
                 if (byte <= 0x7F)
                     return {static_cast<char32_t>(byte), {}, false, false};
-                return {0xFFFD, whatwg_error::invalid_byte, true, false};
+                return {0xFFFD, whatwg::error::invalid_byte, true, false};
             }
             if (st.state == 1) {
                 if (byte == 0x5C)
@@ -218,12 +217,12 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                     return {U'\x203E', {}, false, false};
                 if (byte <= 0x7F)
                     return {static_cast<char32_t>(byte), {}, false, false};
-                return {0xFFFD, whatwg_error::invalid_byte, true, false};
+                return {0xFFFD, whatwg::error::invalid_byte, true, false};
             }
             // Katakana: 0x21-0x5F → U+FF61-U+FF9F
             if (byte >= 0x21 && byte <= 0x5F)
                 return {static_cast<char32_t>(0xFF61 + byte - 0x21), {}, false, false};
-            return {0xFFFD, whatwg_error::invalid_byte, true, false};
+            return {0xFFFD, whatwg::error::invalid_byte, true, false};
         }
     }
 }
