@@ -317,6 +317,7 @@ bench-coverage: venv $(_build_path)/CMakeCache.txt ## Run benchmarks under Gcov 
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.utf "[benchmark][utf]"
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.dispatch "[benchmark][dispatch]"
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
 	$(CMAKE) --build $(_build_path) --config Gcov --target process_coverage
@@ -347,6 +348,10 @@ bench-whatwg: compile ## Run WHATWG legacy codec benchmarks
 .PHONY: bench-pluggable
 bench-pluggable: compile ## Run pluggable codec benchmarks
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+
+.PHONY: bench-dispatch
+bench-dispatch: compile ## Run runtime codec dispatch benchmarks (fixed codecs vs by codec vs by label)
+	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.dispatch "[benchmark][dispatch]"
 
 .PHONY: bench-iconv
 bench-iconv: compile ## Run iconv baseline benchmarks
@@ -482,6 +487,7 @@ bench-perf-all: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf config and ru
 	$(_PERF_BENCH)/beman.transcode.benchmarks.utf "[benchmark][utf]"
 	$(_PERF_BENCH)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
 	$(_PERF_BENCH)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+	$(_PERF_BENCH)/beman.transcode.benchmarks.dispatch "[benchmark][dispatch]"
 	$(_PERF_BENCH)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
 	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
 
@@ -497,6 +503,8 @@ bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core 
 		--reporter xml --out $(BENCH_RESULTS_DIR)/whatwg-Perf.xml
 	$(_PERF_BENCH)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]" \
 		--reporter xml --out $(BENCH_RESULTS_DIR)/pluggable-Perf.xml
+	$(_PERF_BENCH)/beman.transcode.benchmarks.dispatch "[benchmark][dispatch]" \
+		--reporter xml --out $(BENCH_RESULTS_DIR)/dispatch-Perf.xml
 	$(_PERF_BENCH)/beman.transcode.benchmarks.iconv "[benchmark][iconv]" \
 		--reporter xml --out $(BENCH_RESULTS_DIR)/iconv-Perf.xml
 	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]" \
@@ -511,6 +519,7 @@ bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core 
 		$(BENCH_RESULTS_DIR)/utf-Perf.xml \
 		$(BENCH_RESULTS_DIR)/whatwg-Perf.xml \
 		$(BENCH_RESULTS_DIR)/pluggable-Perf.xml \
+		$(BENCH_RESULTS_DIR)/dispatch-Perf.xml \
 		$(BENCH_RESULTS_DIR)/iconv-Perf.xml \
 		$(BENCH_RESULTS_DIR)/boundary-Perf.xml
 
@@ -519,7 +528,7 @@ bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core 
 # starts, so the libraries in one repeat see much the same machine state.  The
 # report combines the repeats of each benchmark; see docs/benchmarks/README.md.
 BENCH_REPEATS ?= 5
-BENCH_REPEAT_SUITES ?= smoke utf whatwg pluggable iconv boundary
+BENCH_REPEAT_SUITES ?= smoke utf whatwg pluggable dispatch iconv boundary
 BENCH_REPEAT_DIR ?= $(BENCH_RESULTS_DIR)/repeats
 
 .PHONY: bench-repeat
@@ -591,6 +600,26 @@ bench-instructions: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, count in
 		--svg-dir $(BENCH_INSTRUCTION_DIR)/svg \
 		--vegalite $(BENCH_INSTRUCTION_DIR)/report.vl.json \
 		$(BENCH_INSTRUCTION_DIR)
+
+# Count only the dispatch suite, and tabulate each runtime path's instructions
+# per call against the same conversion with the codecs fixed at compile time.
+# Dispatch costs the same per call whatever the input, so the table keeps
+# counts per call rather than per byte; see tools/dispatch_overhead.py.
+BENCH_DISPATCH_DIR ?= $(BENCH_RESULTS_DIR)/dispatch-instructions
+
+.PHONY: bench-dispatch-instructions
+bench-dispatch-instructions: BENCH_INSTRUCTION_SUITES = dispatch
+bench-dispatch-instructions: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, count runtime codec dispatch under callgrind, tabulate overhead per call
+	@command -v valgrind >/dev/null || { echo "bench-dispatch-instructions needs valgrind"; exit 2; }
+	@if ls $(BENCH_DISPATCH_DIR)/*.xml >/dev/null 2>&1; then \
+		echo "$(BENCH_DISPATCH_DIR) already holds results; move them or set BENCH_DISPATCH_DIR"; \
+		exit 2; \
+	fi
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf --target beman.transcode.benchmarks.dispatch
+	@mkdir -p $(BENCH_DISPATCH_DIR)
+	@$(call bench_count_suites,$(_PERF_BENCH),$(BENCH_DISPATCH_DIR))
+	$(UV) run python tools/dispatch_overhead.py $(BENCH_DISPATCH_DIR) \
+		--markdown $(BENCH_DISPATCH_DIR)/dispatch-overhead.md
 
 # One job of the runner-stability workflow
 # (.github/workflows/bench-runner-stability.yml): run the core suites once
