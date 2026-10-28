@@ -30,6 +30,7 @@ set(BEMAN_TRANSCODE_HEADERS
     whatwg/bom_sniff.hpp
     whatwg/bulk.hpp
     whatwg/decode_view.hpp
+    whatwg/decoder.hpp
     whatwg/encode_view.hpp
     whatwg/encoding.hpp
     whatwg/error.hpp

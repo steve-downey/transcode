@@ -12,6 +12,7 @@
 #include <beman/transcode/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <concepts>
     #include <expected>
     #include <iterator>
     #include <ranges>
@@ -127,7 +128,7 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
     //! \expos
     R base_;
     //! \expos
-    Codec codec_;
+    [[no_unique_address]] Codec codec_;
 
     //! \expos
     //! \seebelow
@@ -149,7 +150,7 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
         //! \expos
         base_sent end_{};
         //! \expos
-        Codec codec_;
+        [[no_unique_address]] Codec codec_{};
         //! \expos
         result_t value_{};
         //! \expos
@@ -191,7 +192,12 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
         {
             if (lhs.done_ || rhs.done_)
                 return lhs.done_ == rhs.done_;
-            return lhs.current_ == rhs.current_ && lhs.done_ == rhs.done_;
+            if (!(lhs.current_ == rhs.current_ && lhs.value_ == rhs.value_))
+                return false;
+            if constexpr (std::equality_comparable<Codec>)
+                return lhs.codec_ == rhs.codec_;
+            else
+                return true;
         }
 
         constexpr friend bool operator==(const iterator& it, std::default_sentinel_t) { return it.done_; }
@@ -428,25 +434,30 @@ constexpr auto decode_view<Codec, R, E>::iterator::terminal() -> iterator
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr void decode_view<Codec, R, E>::iterator::load() {
-    if (current_ == end_) {
-        if constexpr (flushable_text_decoder<Codec>) {
-            auto flushed = codec_.flush();
-            if (flushed) {
-                if (flushed->is_error)
-                    value_ = error_result(flushed->error);
-                else
-                    value_ = flushed->code_point;
-                return;
+    while (true) {
+        if (current_ == end_) {
+            if constexpr (flushable_text_decoder<Codec>) {
+                auto flushed = codec_.flush();
+                if (flushed && !flushed->is_empty) {
+                    if (flushed->is_error)
+                        value_ = error_result(flushed->error);
+                    else
+                        value_ = flushed->code_point;
+                    return;
+                }
             }
+            done_ = true;
+            return;
         }
-        done_ = true;
+        auto r = codec_.decode_one(current_, end_);
+        if (r.is_empty)
+            continue;
+        if (r.is_error)
+            value_ = error_result(r.error);
+        else
+            value_ = r.code_point;
         return;
     }
-    auto r = codec_.decode_one(current_, end_);
-    if (r.is_error)
-        value_ = error_result(r.error);
-    else
-        value_ = r.code_point;
 }
 
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
@@ -459,10 +470,11 @@ constexpr auto decode_view<Codec, R, E>::iterator::operator*() const -> result_t
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \effects Decodes the next element of the base range, or, if none remains,
-//! makes `*this` equal to `end()`.  When `Codec` models
+//! makes `*this` equal to `end()`.  A `decode_one` result with `is_empty`
+//! yields no element and decoding goes on.  When `Codec` models
 //! `flushable_text_decoder`, exhausting the base range calls `flush()`, and
 //! calls it again after each engaged result, yielding what it returns until
-//! it returns `nullopt`.
+//! it returns `nullopt` or a result with `is_empty`.
 //! \returns `*this`.
 constexpr auto decode_view<Codec, R, E>::iterator::operator++() -> iterator& {
     load();

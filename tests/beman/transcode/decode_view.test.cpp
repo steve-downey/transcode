@@ -16,6 +16,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 using namespace beman::transcoding;
@@ -167,6 +168,77 @@ TEST_CASE("decode_view: stateful codec via pipe", "[decode_view]") {
     CHECK(result[0] == char32_t(0x10 ^ 1));
     CHECK(result[1] == char32_t(0x10 ^ 2));
     CHECK(result[2] == char32_t(0x10 ^ 3));
+}
+
+namespace {
+// A decoder with state in itself: 'X' decodes to 'X' and leaves 'Y' owed, which
+// the next call returns without consuming, or flush() returns at the end of the
+// input; '-' is consumed and produces nothing.
+struct owing_codec {
+    bool owes = false;
+
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, [[maybe_unused]] S end) {
+        if (owes) {
+            owes = false;
+            return {U'Y', {}, false};
+        }
+        auto byte = static_cast<unsigned char>(*current);
+        ++current;
+        if (byte == '-')
+            return {.is_empty = true};
+        if (byte == 'X') {
+            owes = true;
+            return {U'X', {}, false};
+        }
+        return {static_cast<char32_t>(byte), {}, false};
+    }
+
+    constexpr std::optional<decode_result> flush() {
+        if (!owes)
+            return std::nullopt;
+        owes = false;
+        return decode_result{U'Y', {}, false};
+    }
+
+    friend constexpr bool operator==(const owing_codec&, const owing_codec&) = default;
+};
+
+static_assert(flushable_text_decoder<owing_codec>);
+
+std::u32string decode_owing(std::string_view src) {
+    std::u32string out;
+    for (char32_t cp : std::span<const char>(src.data(), src.size()) | decode(owing_codec{}))
+        out.push_back(cp);
+    return out;
+}
+} // namespace
+
+TEST_CASE("decode_view: a result with is_empty yields nothing and decoding goes on", "[decode_view]") {
+    CHECK(decode_owing("a-b") == U"ab");
+    CHECK(decode_owing("-a") == U"a");
+    CHECK(decode_owing("--").empty());
+    CHECK(decode_owing("a-").size() == 1);
+    CHECK(decode_owing("").empty());
+}
+
+TEST_CASE("decode_view: owed output is yielded after the input ends", "[decode_view]") {
+    CHECK(decode_owing("X") == U"XY");
+    CHECK(decode_owing("X-") == U"XY");
+    CHECK(decode_owing("XaX") == U"XYaXY");
+}
+
+TEST_CASE("decode_view: iterator equality sees the codec's state", "[decode_view]") {
+    std::string src = "Xa";
+    auto        v   = std::span<const char>(src) | decode(owing_codec{});
+    auto        i1  = v.begin();
+    auto        i2  = v.begin();
+    CHECK(i1 == i2);
+    ++i2; // same offset in the base, different decoded element and decoder state
+    CHECK(i1.base() == i2.base());
+    CHECK(i1 != i2);
+    ++i1;
+    CHECK(i1 == i2);
 }
 
 // ---------------------------------------------------------------------------
