@@ -71,7 +71,7 @@ template<decode_codec Codec> constexpr $see below$ decode(Codec codec = {});
 template<decode_codec Codec> constexpr $see below$ decode_or_error(Codec codec = {});
 ```
 
-[#]{.pnum} *Returns*: `decode(codec)` with `transcode_error_kind::expected`: the view it adapts to has value type `expected<char32_t, whatwg_error>`, and a decoding error is the error rather than U+FFFD.
+[#]{.pnum} *Returns*: `decode(codec)` with `error_mode::report`: the view it adapts to has value type `expected<char32_t, whatwg_error>`, and a decoding error is the error rather than U+FFFD.
 
 ### Class `decode_view::iterator` [transcode.custom.decode.iterator] {-}
 

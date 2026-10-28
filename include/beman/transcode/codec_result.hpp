@@ -25,7 +25,7 @@ struct decode_result {
 //! encode failed -- the encoding has no representation for that scalar value.
 //! When it did not, `count` is the number of bytes written and `bytes[0]`
 //! through `bytes[count - 1]` are the encoded form; when it did, `count` is
-//! zero and the view substitutes or reports the error as its error kind says.
+//! zero and the view substitutes or reports the error as its error mode says.
 struct encode_result {
     unsigned char bytes[8]{};
     int           count{0};

@@ -53,7 +53,7 @@ order the compiler needs and need not match.
 |---|---|---|---|---|
 | `transcode.general` | — | General | scope, terms, the byte/scalar model | authored in the paper |
 | `transcode.syn` | 2 | Header `<transcode>` synopsis | everything below, gathered | `transcode.hpp`'s region and the sixteen headers included in it, done 2026-09-07 |
-| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error`, `transcode_error_kind` | `error.hpp` routes to it, done 2026-09-06 |
+| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error`, `error_mode` | `error.hpp` routes to it, done 2026-09-06 |
 | `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` routes to it, done 2026-09-06 |
 | `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp`, done 2026-09-07 |
 | `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `label.hpp`, done 2026-09-07 |
@@ -230,11 +230,11 @@ adaptor over a C string that this proposal happens to need.
 
 - ~~**The `_or_error` split.**~~  Settled in P5-Step 3c, before the clauses were
   written.  Each family is one view template parameterized on
-  `transcode_error_kind`, so `transcode.whatwg.decode`,
+  `error_mode`, so `transcode.whatwg.decode`,
   `transcode.whatwg.encode`, `transcode.custom.decode` and
   `transcode.custom.encode` each specify **one** class template and two closure
   objects rather than two of each.  `transcode.errors` gains
-  `transcode_error_kind`, and its wording must not fix an underlying type for
+  `error_mode`, and its wording must not fix an underlying type for
   either enum (P2728 R13).
 - ~~**Whether iconv is proposed at all**~~  Settled in Step 9: **iconv is
   proposed**, with full wording, and no feature-test-macro condition.  The
@@ -253,7 +253,7 @@ adaptor over a C string that this proposal happens to need.
   put to SG16 rather than one to settle silently.
 - **Two error vocabularies.**  `transcode.iconv` reports `iconv_error` while
   every other clause reports `whatwg_error`, and Step 3c's unification does not
-  merge them: it unified the *view* pairs on `transcode_error_kind`, which is
+  merge them: it unified the *view* pairs on `error_mode`, which is
   orthogonal to what an error *is*.  They stay separate because the failures
   are not the same failures.  `whatwg_error` names what the Encoding Standard
   says went wrong in a byte sequence the library itself decoded;

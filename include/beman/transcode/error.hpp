@@ -81,7 +81,7 @@ enum class iconv_error {
     system_error,
 };
 
-// transcode_error_kind — how a view reports a codec failure, as a template
+// error_mode — how a view reports a codec failure, as a template
 // parameter rather than as a separate class template.  Modelled on P2728's
 // `to_utf_view_error_kind` (see docs/p2728-alignment.md): an enum rather than a
 // bool so that kinds beyond these two can be added, such as one that also
@@ -89,10 +89,10 @@ enum class iconv_error {
 //
 //   replacement — substitute U+FFFD on decode and for ill-formed UTF-32;
 //                 substitute '?' when an encoder cannot represent a scalar
-//   expected    — the value type becomes expected<T, whatwg_error>
-//! \remarks A view's error kind says how it reports a failure of the codec it
+//   report      — the value type becomes expected<T, whatwg_error>
+//! \remarks A view's error mode says how it reports a failure of the codec it
 //! drives.  The enumerators have the meanings in the following table.
-//! \libtab2[transcode.errors.kind]{Enum class `transcode_error_kind`}
+//! \libtab2[transcode.errors.kind]{Enum class `error_mode`}
 //! \column Constant
 //! \column Meaning
 //! \row `replacement`
@@ -100,13 +100,13 @@ enum class iconv_error {
 //! UTF-32 input is first replaced with U+FFFD and then encoded normally; when
 //! an encoder cannot represent a scalar value, the encode view yields `'?'`.
 //! The view's value type is the codec's own.
-//! \row `expected`
+//! \row `report`
 //! \cell the view's value type is `expected<T, whatwg_error>`, and a failure
 //! yields an `unexpected` holding the error that occurred.
 //! \endlibtab2
-enum class transcode_error_kind {
+enum class error_mode {
     replacement,
-    expected,
+    report,
 };
 
 } // namespace beman::transcoding
