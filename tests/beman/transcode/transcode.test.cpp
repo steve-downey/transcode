@@ -24,18 +24,18 @@ TEST_CASE("transcode.hpp: views::null_term accessible", "[transcoding::umbrella]
     CHECK(std::ranges::distance(r) == 5);
 }
 
-TEST_CASE("transcode.hpp: whatwg_decode accessible via pipe", "[transcoding::umbrella]") {
+TEST_CASE("transcode.hpp: whatwg::decode accessible via pipe", "[transcoding::umbrella]") {
     std::vector<char> utf8{'h', 'e', 'l', 'l', 'o'};
     std::u32string    result;
-    for (char32_t cp : utf8 | whatwg_decode<whatwg::encoding::utf_8>)
+    for (char32_t cp : utf8 | whatwg::decode<whatwg::encoding::utf_8>)
         result.push_back(cp);
     CHECK(result == U"hello");
 }
 
-TEST_CASE("transcode.hpp: whatwg_encode accessible via pipe", "[transcoding::umbrella]") {
+TEST_CASE("transcode.hpp: whatwg::encode accessible via pipe", "[transcoding::umbrella]") {
     std::u32string src = U"hello";
     std::string    result;
-    for (char b : src | whatwg_encode<whatwg::encoding::utf_8>)
+    for (char b : src | whatwg::encode<whatwg::encoding::utf_8>)
         result.push_back(b);
     CHECK(result == "hello");
 }
@@ -58,12 +58,12 @@ TEST_CASE("transcode.hpp: decode+encode round-trip via umbrella header", "[trans
     std::vector<char> utf8{'\xE4', '\xB8', '\xAD'};
 
     std::u32string codepoints;
-    for (char32_t cp : utf8 | whatwg_decode<whatwg::encoding::utf_8>)
+    for (char32_t cp : utf8 | whatwg::decode<whatwg::encoding::utf_8>)
         codepoints.push_back(cp);
     CHECK(codepoints == U"中");
 
     std::vector<char> result;
-    for (char b : codepoints | whatwg_encode<whatwg::encoding::utf_8>)
+    for (char b : codepoints | whatwg::encode<whatwg::encoding::utf_8>)
         result.push_back(b);
     CHECK(result == utf8);
 }
@@ -76,7 +76,7 @@ TEST_CASE("transcode.hpp: consteval whatwg::bom_sniff via umbrella", "[transcodi
 TEST_CASE("transcode.hpp: null_term + decode round-trip", "[transcoding::umbrella]") {
     const char*    s = "hi";
     std::u32string result;
-    for (char32_t cp : views::null_term(s) | whatwg_decode<whatwg::encoding::utf_8>)
+    for (char32_t cp : views::null_term(s) | whatwg::decode<whatwg::encoding::utf_8>)
         result.push_back(cp);
     CHECK(result == U"hi");
 }

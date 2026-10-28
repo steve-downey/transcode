@@ -15,9 +15,9 @@ TEST_CASE("smoke benchmark — UTF-8 decode ASCII corpus", "[smoke][benchmark]")
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
 
-    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
-    BENCHMARK_ADVANCED("whatwg_decode utf_8 en_mars corpus")(Catch::Benchmark::Chronometer meter) {
+    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg::decode view"});
+    BENCHMARK_ADVANCED("whatwg::decode utf_8 en_mars corpus")(Catch::Benchmark::Chronometer meter) {
         auto input = corpus_span("en_mars_utf8.txt");
-        measure(meter, [&] { return count_elements(input | whatwg_decode<whatwg::encoding::utf_8>); });
+        measure(meter, [&] { return count_elements(input | whatwg::decode<whatwg::encoding::utf_8>); });
     };
 }

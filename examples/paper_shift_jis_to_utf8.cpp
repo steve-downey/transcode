@@ -72,8 +72,8 @@ namespace after_example {
 std::string shift_jis_to_utf8(
     std::string_view input) {
   return input
-    | whatwg_decode<whatwg::encoding::shift_jis>
-    | whatwg_encode<whatwg::encoding::utf_8>
+    | whatwg::decode<whatwg::encoding::shift_jis>
+    | whatwg::encode<whatwg::encoding::utf_8>
     | std::ranges::to<std::string>();
 }
 // 307799ab-fe64-4f57-9d10-063361239a41 end

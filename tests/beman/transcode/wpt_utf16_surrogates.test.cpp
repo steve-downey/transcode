@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/error.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
@@ -19,7 +19,7 @@ namespace {
 std::vector<char32_t> decode_utf16le(const std::vector<uint8_t>& input) {
     std::vector<char>     bytes(input.begin(), input.end());
     std::vector<char32_t> result;
-    for (char32_t cp : bytes | whatwg_decode<whatwg::encoding::utf_16le>)
+    for (char32_t cp : bytes | whatwg::decode<whatwg::encoding::utf_16le>)
         result.push_back(cp);
     return result;
 }
@@ -27,7 +27,7 @@ std::vector<char32_t> decode_utf16le(const std::vector<uint8_t>& input) {
 std::vector<std::expected<char32_t, whatwg::error>> decode_utf16le_or_error(const std::vector<uint8_t>& input) {
     std::vector<char>                                   bytes(input.begin(), input.end());
     std::vector<std::expected<char32_t, whatwg::error>> result;
-    for (auto&& r : bytes | whatwg_decode_or_error<whatwg::encoding::utf_16le>)
+    for (auto&& r : bytes | whatwg::decode_or_error<whatwg::encoding::utf_16le>)
         result.push_back(r);
     return result;
 }

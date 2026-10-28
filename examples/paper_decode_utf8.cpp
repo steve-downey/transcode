@@ -57,7 +57,7 @@ namespace after_example {
 std::vector<char32_t> decode_utf8(
     std::string_view input) {
   return input
-    | whatwg_decode<whatwg::encoding::utf_8>
+    | whatwg::decode<whatwg::encoding::utf_8>
     | std::ranges::to<std::vector>();
 }
 // 352e080f-46ee-46de-8da4-9280c42866e4 end

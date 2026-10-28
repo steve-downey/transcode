@@ -15,7 +15,7 @@ constexpr R base() &&;
 [#]{.pnum} *Returns*: `move($base$)`.
 
 ```cpp
-constexpr explicit whatwg_encode_view(R base);
+constexpr explicit encode_view(R base);
 ```
 
 [#]{.pnum} *Effects*: Initializes `$base$` with `std::move(base)`.
@@ -62,18 +62,18 @@ constexpr default_sentinel_t end() const;
 [#]{.pnum} *Returns*: `default_sentinel`.
 
 ```cpp
-template<whatwg::encoding C> inline constexpr $unspecified$ whatwg_encode;
+template<whatwg::encoding C> inline constexpr $unspecified$ encode;
 ```
 
-[#]{.pnum} *Remarks*: The name `whatwg_encode<C>` denotes a range adaptor object.  Given a subexpression `E` that models `unicode_scalar_range`, the expression `whatwg_encode<C>(E)` and `E | whatwg_encode<C>` are each expression-equivalent to a `whatwg_encode_view<C, views::all_t<decltype((E))>>` over `E`.  An `E` of array type is ill-formed.
+[#]{.pnum} *Remarks*: The name `whatwg::encode<C>` denotes a range adaptor object.  Given a subexpression `E` that models `unicode_scalar_range`, the expression `whatwg::encode<C>(E)` and `E | whatwg::encode<C>` are each expression-equivalent to a `whatwg::encode_view<C, views::all_t<decltype((E))>>` over `E`.  An `E` of array type is ill-formed.
 
 ```cpp
-template<whatwg::encoding C> inline constexpr $unspecified$ whatwg_encode_or_error;
+template<whatwg::encoding C> inline constexpr $unspecified$ encode_or_error;
 ```
 
-[#]{.pnum} *Remarks*: `whatwg_encode_or_error<C>` is `whatwg_encode<C>` with `error_mode::report`: the view it adapts to has value type `expected<char, whatwg::error>`, and validation and encoding errors are reported rather than replaced.
+[#]{.pnum} *Remarks*: `whatwg::encode_or_error<C>` is `whatwg::encode<C>` with `error_mode::report`: the view it adapts to has value type `expected<char, whatwg::error>`, and validation and encoding errors are reported rather than replaced.
 
-### Class `whatwg_encode_view::iterator` [transcode.whatwg.encode.iterator] {-}
+### Class `whatwg::encode_view::iterator` [transcode.whatwg.encode.iterator] {-}
 
 ```cpp
 constexpr iterator(base_iter current, base_sent end);

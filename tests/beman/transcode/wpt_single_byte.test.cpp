@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/wpt_single_byte_vectors.hpp>
@@ -21,7 +21,7 @@ void check_single_byte_index(const WptSingleByteIndex& idx) {
         auto                  byte = static_cast<uint8_t>(i + 0x80);
         std::vector<char>     input{static_cast<char>(byte)};
         std::vector<char32_t> result;
-        for (char32_t cp : input | whatwg_decode<C>)
+        for (char32_t cp : input | whatwg::decode<C>)
             result.push_back(cp);
         REQUIRE(result.size() == 1);
         INFO("encoding=" << idx.name << " byte=0x" << std::hex << static_cast<int>(byte));

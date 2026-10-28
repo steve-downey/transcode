@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/error.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
@@ -32,19 +32,19 @@ std::vector<std::expected<char32_t, beman::transcoding::whatwg::error>> collect_
 using namespace beman::transcoding;
 
 // ---------------------------------------------------------------------------
-// whatwg_decode<whatwg::encoding::gb18030>
+// whatwg::decode<whatwg::encoding::gb18030>
 // ---------------------------------------------------------------------------
 
 TEST_CASE("gb18030 decode ASCII passthrough 'A'", "[transcoding::gb18030]") {
     std::vector<char> bytes{'\x41'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'A');
 }
 
 TEST_CASE("gb18030 decode ASCII passthrough NUL", "[transcoding::gb18030]") {
     std::vector<char> bytes{'\x00'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\0');
 }
@@ -52,14 +52,14 @@ TEST_CASE("gb18030 decode ASCII passthrough NUL", "[transcoding::gb18030]") {
 TEST_CASE("gb18030 decode 0x80 -> U+20AC (EURO SIGN)", "[transcoding::gb18030]") {
     // Special case: 0x80 maps to U+20AC per WHATWG spec
     std::vector<char> bytes{'\x80'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'€');
 }
 
 TEST_CASE("gb18030 decode 2-byte GBK sequence 0x81 0x40 -> U+4E02", "[transcoding::gb18030]") {
     std::vector<char> bytes{'\x81', '\x40'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\x4E02');
 }
@@ -67,7 +67,7 @@ TEST_CASE("gb18030 decode 2-byte GBK sequence 0x81 0x40 -> U+4E02", "[transcodin
 TEST_CASE("gb18030 decode 4-byte U+10000: 0x90 0x30 0x81 0x30", "[transcoding::gb18030]") {
     // U+10000 is encoded as 0x90 0x30 0x81 0x30 in GB18030
     std::vector<char> bytes{'\x90', '\x30', '\x81', '\x30'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\U00010000');
 }
@@ -75,14 +75,14 @@ TEST_CASE("gb18030 decode 4-byte U+10000: 0x90 0x30 0x81 0x30", "[transcoding::g
 TEST_CASE("gb18030 decode invalid lead byte -> U+FFFD", "[transcoding::gb18030]") {
     // 0xFF > 0xFE: invalid lead
     std::vector<char> bytes{'\xFF'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
 
 TEST_CASE("gb18030 decode truncated 2-byte -> U+FFFD", "[transcoding::gb18030]") {
     std::vector<char> bytes{'\x81'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
@@ -90,14 +90,14 @@ TEST_CASE("gb18030 decode truncated 2-byte -> U+FFFD", "[transcoding::gb18030]")
 TEST_CASE("gb18030 decode truncated 4-byte sequence -> U+FFFD", "[transcoding::gb18030]") {
     // Lead + second digit byte but no third/fourth
     std::vector<char> bytes{'\x81', '\x30'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'\xFFFD');
 }
 
 TEST_CASE("gb18030 decode mixed ASCII and 2-byte", "[transcoding::gb18030]") {
     std::vector<char> bytes{'\x41', '\x81', '\x40'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 2);
     CHECK(result[0] == U'A');
     CHECK(result[1] == U'\x4E02');
@@ -107,7 +107,7 @@ TEST_CASE("gb18030 decode pipe syntax with span", "[transcoding::gb18030]") {
     std::vector<char>     bytes{'\x41'};
     std::span<const char> sp(bytes);
     std::vector<char32_t> result;
-    for (char32_t cp : sp | whatwg_decode<whatwg::encoding::gb18030>)
+    for (char32_t cp : sp | whatwg::decode<whatwg::encoding::gb18030>)
         result.push_back(cp);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == U'A');
@@ -118,18 +118,18 @@ TEST_CASE("gb18030 decode consteval ASCII", "[transcoding::gb18030]") {
     constexpr auto decode_a = []() consteval {
         constexpr char        bytes[] = {'\x41'};
         std::span<const char> sp(bytes, 1);
-        return *(sp | whatwg_decode<whatwg::encoding::gb18030>).begin();
+        return *(sp | whatwg::decode<whatwg::encoding::gb18030>).begin();
     };
     CHECK(constify(decode_a()) == U'A');
 }
 
 // ---------------------------------------------------------------------------
-// whatwg_decode_or_error<whatwg::encoding::gb18030>
+// whatwg::decode_or_error<whatwg::encoding::gb18030>
 // ---------------------------------------------------------------------------
 
 TEST_CASE("gb18030 or_error: ASCII passthrough", "[transcoding::gb18030_or_error]") {
     std::vector<char> bytes{'\x41'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == U'A');
@@ -137,7 +137,7 @@ TEST_CASE("gb18030 or_error: ASCII passthrough", "[transcoding::gb18030_or_error
 
 TEST_CASE("gb18030 or_error: 0x80 -> U+20AC", "[transcoding::gb18030_or_error]") {
     std::vector<char> bytes{'\x80'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == U'€');
@@ -145,7 +145,7 @@ TEST_CASE("gb18030 or_error: 0x80 -> U+20AC", "[transcoding::gb18030_or_error]")
 
 TEST_CASE("gb18030 or_error: valid 2-byte GBK", "[transcoding::gb18030_or_error]") {
     std::vector<char> bytes{'\x81', '\x40'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == U'\x4E02');
@@ -153,7 +153,7 @@ TEST_CASE("gb18030 or_error: valid 2-byte GBK", "[transcoding::gb18030_or_error]
 
 TEST_CASE("gb18030 or_error: valid 4-byte U+10000", "[transcoding::gb18030_or_error]") {
     std::vector<char> bytes{'\x90', '\x30', '\x81', '\x30'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].has_value());
     CHECK(result[0].value() == U'\U00010000');
@@ -161,7 +161,7 @@ TEST_CASE("gb18030 or_error: valid 4-byte U+10000", "[transcoding::gb18030_or_er
 
 TEST_CASE("gb18030 or_error: invalid lead byte yields error", "[transcoding::gb18030_or_error]") {
     std::vector<char> bytes{'\xFF'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::invalid_byte);
@@ -169,7 +169,7 @@ TEST_CASE("gb18030 or_error: invalid lead byte yields error", "[transcoding::gb1
 
 TEST_CASE("gb18030 or_error: truncated 2-byte yields error", "[transcoding::gb18030_or_error]") {
     std::vector<char> bytes{'\x81'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::truncated_sequence);
@@ -177,7 +177,7 @@ TEST_CASE("gb18030 or_error: truncated 2-byte yields error", "[transcoding::gb18
 
 TEST_CASE("gb18030 or_error: truncated 4-byte yields error", "[transcoding::gb18030_or_error]") {
     std::vector<char> bytes{'\x81', '\x30'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 1);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::truncated_sequence);
@@ -192,7 +192,7 @@ TEST_CASE("gb18030 or_error: truncated 4-byte yields error", "[transcoding::gb18
 //   Replay 41 → U'A'
 TEST_CASE("gb18030 decode: replay with high lead byte", "[transcoding::gb18030]") {
     std::vector<char> bytes{'\x81', '\x30', '\x81', '\xFF', '\x41'};
-    auto              result = collect(bytes | whatwg_decode<whatwg::encoding::gb18030>);
+    auto              result = collect(bytes | whatwg::decode<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 4);
     CHECK(result[0] == U'\xFFFD');
     CHECK(result[1] == U'0');
@@ -202,7 +202,7 @@ TEST_CASE("gb18030 decode: replay with high lead byte", "[transcoding::gb18030]"
 
 TEST_CASE("gb18030 or_error: replay with high lead byte", "[transcoding::gb18030_or_error]") {
     std::vector<char> bytes{'\x81', '\x30', '\x81', '\xFF', '\x41'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 4);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::invalid_byte);
@@ -219,7 +219,7 @@ TEST_CASE("gb18030 or_error: replay high lead re-errors", "[transcoding::gb18030
     // 81 30 81 FF 40: error (FF invalid 4th), replay=[30,81], FF not consumed.
     // Replay 30='0'. Replay 81: reads FF,40 → error (FF bad trail), replay 40='@'.
     std::vector<char> bytes{'\x81', '\x30', '\x81', '\xFF', '\x40'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 4);
     CHECK(!result[0].has_value());
     REQUIRE(result[1].has_value());
@@ -234,7 +234,7 @@ TEST_CASE("gb18030 or_error: replay high lead valid 2-byte GBK", "[transcoding::
     // 81 30 81 40: invalid 4th (0x40 not 0x30-0x39), replay=[30,81], 0x40 not consumed.
     // Replay 30='0'. Replay 81: reads 0x40 → valid GBK(81,40) = U+4E02.
     std::vector<char> bytes{'\x81', '\x30', '\x81', '\x40'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 3);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::invalid_byte);
@@ -249,7 +249,7 @@ TEST_CASE("gb18030 or_error: 4-byte invalid 3rd byte triggers replay", "[transco
     // 81 30 FF 41 → third byte 0xFF invalid (not 0x81-0xFE), replay=[30], FF not consumed.
     // Then replay 0x30='0', then 0xFF (invalid lead, consumed), then 0x41='A'.
     std::vector<char> bytes{'\x81', '\x30', '\xFF', '\x41'};
-    auto              result = collect_or_error(bytes | whatwg_decode_or_error<whatwg::encoding::gb18030>);
+    auto              result = collect_or_error(bytes | whatwg::decode_or_error<whatwg::encoding::gb18030>);
     REQUIRE(result.size() == 4);
     CHECK(!result[0].has_value());
     CHECK(result[0].error() == whatwg::error::invalid_byte);

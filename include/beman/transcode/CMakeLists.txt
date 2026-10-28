@@ -26,12 +26,16 @@ set(BEMAN_TRANSCODE_HEADERS
     null_term.hpp
     todo.hpp
     transcode.hpp
-    transcode_string.hpp
     transcode_view.hpp
     whatwg/bom_sniff.hpp
+    whatwg/bulk.hpp
+    whatwg/decode_view.hpp
+    whatwg/encode_view.hpp
     whatwg/encoding.hpp
     whatwg/error.hpp
     whatwg/label.hpp
+    whatwg/transcode_string.hpp
+    whatwg/transcode_view.hpp
     detail/big5.hpp
     detail/euc_jp.hpp
     detail/euc_kr.hpp
@@ -90,8 +94,6 @@ set(BEMAN_TRANSCODE_HEADERS
     iconv_real.hpp
     iconv_transcode_view.hpp
     iconv_transcode_or_error_view.hpp
-    whatwg_decode_view.hpp
-    whatwg_encode_view.hpp
     "${PROJECT_BINARY_DIR}/include/beman/transcode/config_generated.hpp"
 )
 

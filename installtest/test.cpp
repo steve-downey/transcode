@@ -14,29 +14,29 @@
 using namespace beman::transcoding;
 
 int main() {
-    // Test 1: whatwg_decode
+    // Test 1: whatwg::decode
     std::vector<char> utf8_input{'h', 'e', 'l', 'l', 'o'};
     std::u32string    decoded;
-    for (char32_t cp : utf8_input | whatwg_decode<whatwg::encoding::utf_8>) {
+    for (char32_t cp : utf8_input | whatwg::decode<whatwg::encoding::utf_8>) {
         decoded.push_back(cp);
     }
     if (decoded != U"hello") {
-        std::cerr << "FAIL: whatwg_decode\n";
+        std::cerr << "FAIL: whatwg::decode\n";
         return 1;
     }
-    std::cout << "PASS: whatwg_decode\n";
+    std::cout << "PASS: whatwg::decode\n";
 
-    // Test 2: whatwg_encode
+    // Test 2: whatwg::encode
     std::u32string encoded_input = U"hello";
     std::string    encoded;
-    for (char b : encoded_input | whatwg_encode<whatwg::encoding::utf_8>) {
+    for (char b : encoded_input | whatwg::encode<whatwg::encoding::utf_8>) {
         encoded.push_back(b);
     }
     if (encoded != "hello") {
-        std::cerr << "FAIL: whatwg_encode\n";
+        std::cerr << "FAIL: whatwg::encode\n";
         return 1;
     }
-    std::cout << "PASS: whatwg_encode\n";
+    std::cout << "PASS: whatwg::encode\n";
 
     // Test 3: whatwg::get_encoding label lookup
     if (whatwg::get_encoding("utf-8") != whatwg::encoding::utf_8) {
@@ -78,11 +78,11 @@ int main() {
     // Test 7: Round-trip UTF-8 decode/encode
     std::vector<char> roundtrip_input{'\xE4', '\xB8', '\xAD'}; // 中 in UTF-8
     std::u32string    rt_decoded;
-    for (char32_t cp : roundtrip_input | whatwg_decode<whatwg::encoding::utf_8>) {
+    for (char32_t cp : roundtrip_input | whatwg::decode<whatwg::encoding::utf_8>) {
         rt_decoded.push_back(cp);
     }
     std::vector<char> rt_encoded;
-    for (char b : rt_decoded | whatwg_encode<whatwg::encoding::utf_8>) {
+    for (char b : rt_decoded | whatwg::encode<whatwg::encoding::utf_8>) {
         rt_encoded.push_back(b);
     }
     if (rt_encoded != roundtrip_input) {

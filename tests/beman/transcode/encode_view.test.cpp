@@ -110,10 +110,10 @@ TEST_CASE("encode_view: pipe with span of char32_t", "[encode_view]") {
 }
 
 // ---------------------------------------------------------------------------
-// encode_or_error_view tests
+// encode_view with error_mode::report tests
 // ---------------------------------------------------------------------------
 
-TEST_CASE("encode_or_error_view: ASCII codepoints succeed", "[encode_view]") {
+TEST_CASE("encode_view with error_mode::report: ASCII codepoints succeed", "[encode_view]") {
     std::u32string src  = U"Hi";
     auto           view = src | encode_or_error(latin1_codec{});
     auto           it   = view.begin();
@@ -131,7 +131,7 @@ TEST_CASE("encode_or_error_view: ASCII codepoints succeed", "[encode_view]") {
     CHECK(it == std::default_sentinel);
 }
 
-TEST_CASE("encode_or_error_view: unmapped codepoint yields unexpected", "[encode_view]") {
+TEST_CASE("encode_view with error_mode::report: unmapped codepoint yields unexpected", "[encode_view]") {
     std::u32string src{U'\x1F600'}; // emoji, not in Latin-1
     auto           view = src | encode_or_error(latin1_codec{});
     auto           it   = view.begin();
@@ -141,7 +141,7 @@ TEST_CASE("encode_or_error_view: unmapped codepoint yields unexpected", "[encode
     CHECK(r.error() == whatwg::error::unmapped_codepoint);
 }
 
-TEST_CASE("encode_or_error_view: custom codecs do not receive ill-formed UTF-32", "[encode_view]") {
+TEST_CASE("encode_view with error_mode::report: custom codecs do not receive ill-formed UTF-32", "[encode_view]") {
     std::u32string src{static_cast<char32_t>(0x110000)};
     auto           view = src | encode_or_error(replacement_aware_codec{});
     auto           r    = *view.begin();
@@ -149,7 +149,7 @@ TEST_CASE("encode_or_error_view: custom codecs do not receive ill-formed UTF-32"
     CHECK(r.error() == whatwg::error::out_of_range);
 }
 
-TEST_CASE("encode_or_error_view: sparse table unmapped yields unexpected", "[encode_view]") {
+TEST_CASE("encode_view with error_mode::report: sparse table unmapped yields unexpected", "[encode_view]") {
     std::u32string src{U'\x0080'}; // index 0 is 0x80, which is unmapped in sparse_table
     auto           view = src | encode_or_error(sparse_codec{});
     auto           it   = view.begin();
@@ -159,7 +159,7 @@ TEST_CASE("encode_or_error_view: sparse table unmapped yields unexpected", "[enc
     CHECK(r.error() == whatwg::error::unmapped_codepoint);
 }
 
-TEST_CASE("encode_or_error_view: mixed success and error", "[encode_view]") {
+TEST_CASE("encode_view with error_mode::report: mixed success and error", "[encode_view]") {
     std::u32string                                  src{U'A', U'\x1F600', U'B'}; // A, emoji, B
     std::vector<std::expected<char, whatwg::error>> result;
     for (auto v : src | encode_or_error(latin1_codec{}))

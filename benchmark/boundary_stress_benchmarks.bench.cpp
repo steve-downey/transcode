@@ -34,7 +34,7 @@ alignas(64) std::array<char, 256> mock_out_buf;
 
 } // namespace
 
-// ── Chunked whatwg_decode restart overhead ──────────────────────────────────
+// ── Chunked whatwg::decode restart overhead ──────────────────────────────────
 //
 // Each chunk is a fresh view instantiation: no cross-chunk state is preserved.
 // The "hostile" case splits Arabic 2-byte sequences at 3-byte boundaries so
@@ -48,15 +48,15 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
 
-    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
+    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg::decode view"});
     BENCHMARK_ADVANCED("Chunked whatwg UTF-8→char32: Arabic full corpus (baseline)")
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("ar_mars_utf8.txt");
-        measure(meter, [&] { return count_elements(data | whatwg_decode<whatwg::encoding::utf_8>); });
+        measure(meter, [&] { return count_elements(data | whatwg::decode<whatwg::encoding::utf_8>); });
     };
 
     describe(
-        {.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view, 4-byte chunks"});
+        {.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg::decode view, 4-byte chunks"});
     BENCHMARK_ADVANCED("Chunked whatwg UTF-8→char32: Arabic 4-byte chunks (friendly)")
     (Catch::Benchmark::Chronometer meter) {
         auto data   = load_corpus("ar_mars_utf8.txt");
@@ -65,13 +65,13 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
             std::size_t n = 0;
             for (auto chunk : chunks)
                 n += count_elements(std::span<const char>(chunk.data(), chunk.size()) |
-                                    whatwg_decode<whatwg::encoding::utf_8>);
+                                    whatwg::decode<whatwg::encoding::utf_8>);
             return n;
         });
     };
 
     describe(
-        {.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view, 3-byte chunks"});
+        {.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg::decode view, 3-byte chunks"});
     BENCHMARK_ADVANCED("Chunked whatwg UTF-8→char32: Arabic 3-byte chunks (hostile)")
     (Catch::Benchmark::Chronometer meter) {
         auto data   = load_corpus("ar_mars_utf8.txt");
@@ -80,7 +80,7 @@ TEST_CASE("Chunked whatwg decode: restart overhead", "[benchmark][boundary]") {
             std::size_t n = 0;
             for (auto chunk : chunks)
                 n += count_elements(std::span<const char>(chunk.data(), chunk.size()) |
-                                    whatwg_decode<whatwg::encoding::utf_8>);
+                                    whatwg::decode<whatwg::encoding::utf_8>);
             return n;
         });
     };

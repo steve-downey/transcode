@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/wpt_fatal_single_byte_vectors.hpp>
@@ -22,7 +22,7 @@ void check_fatal_single_byte(const WptFatalSingleByteCase& c) {
         char                ch = static_cast<char>(static_cast<uint8_t>(b));
         std::array<char, 1> input{ch};
         bool                has_error = false;
-        for (auto&& r : input | whatwg_decode_or_error<C>) {
+        for (auto&& r : input | whatwg::decode_or_error<C>) {
             if (!r.has_value()) {
                 has_error = true;
                 break;

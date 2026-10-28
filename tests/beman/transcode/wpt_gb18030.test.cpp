@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/wpt_gb18030_vectors.hpp>
@@ -17,7 +17,7 @@ template <whatwg::encoding C>
 std::vector<char32_t> decode_bytes(const std::vector<uint8_t>& input) {
     std::vector<char>     bytes(input.begin(), input.end());
     std::vector<char32_t> result;
-    for (char32_t cp : bytes | whatwg_decode<C>)
+    for (char32_t cp : bytes | whatwg::decode<C>)
         result.push_back(cp);
     return result;
 }

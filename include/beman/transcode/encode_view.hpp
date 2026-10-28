@@ -28,7 +28,7 @@ namespace beman::transcoding {
 
 // \ref{transcode.custom.encode}, class template encode_view
 
-//! \remarks `encode_view<Codec, R, E>` is `whatwg_encode_view`
+//! \remarks `encode_view<Codec, R, E>` is `whatwg::encode_view`
 //! \iref{transcode.whatwg.encode} with the codec supplied as a value rather
 //! than named by an enumerator: it validates the `char32_t` elements of `R` as
 //! UTF-32, presents the resulting scalar values as the bytes `Codec` encodes
@@ -344,13 +344,6 @@ constexpr auto encode_closure<Codec, E>::operator()(R&& r) const {
     auto all     = std::views::all(std::forward<R>(r));
     return encode_view<Codec, view_t, E>(std::move(all), codec_);
 }
-
-// The names the paired views had before they were unified.
-template <text_encoder Codec, std::ranges::input_range R>
-using encode_or_error_view = encode_view<Codec, R, error_mode::report>;
-
-template <text_encoder Codec>
-using encode_or_error_closure = encode_closure<Codec, error_mode::report>;
 
 } // namespace beman::transcoding
 

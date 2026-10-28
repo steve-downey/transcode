@@ -41,7 +41,7 @@ namespace after_example {
 // 742abae0-4d08-4faf-9db8-759404fd46d9
 auto from_cstring(const char* s) {
   return views::null_term(s)
-    | whatwg_decode<whatwg::encoding::utf_8>;
+    | whatwg::decode<whatwg::encoding::utf_8>;
   // Returns lazy view of char32_t
   // No global state
   // Portable Unicode scalars

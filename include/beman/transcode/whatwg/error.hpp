@@ -10,8 +10,8 @@ namespace beman::transcoding::whatwg {
 // \ref{transcode.errors}, error types
 
 // error — error categories defined by the WHATWG Encoding Standard.
-// Used by whatwg_decode_or_error, whatwg_encode_or_error, and all pluggable
-// codec _or_error views (decode_or_error_view, encode_or_error_view).
+// Used by whatwg::decode_or_error, whatwg::encode_or_error, and all pluggable
+// codec views spelled with error_mode::report.
 // Pluggable codecs adopt WHATWG error semantics as the common framework;
 // custom codec decode_one() and encode_one() return these values directly.
 //! \remarks An operation that fails to decode or to encode reports one of

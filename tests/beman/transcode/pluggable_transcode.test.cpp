@@ -33,7 +33,7 @@ using latin1_codec = table_codec<latin1_upper>;
 TEST_CASE("pluggable transcode: ASCII identity round-trip via pipe", "[pluggable_transcode]") {
     std::string src = "Hello";
     std::string result;
-    for (char c : src | pluggable_transcode(latin1_codec{}, latin1_codec{}))
+    for (char c : src | transcode(latin1_codec{}, latin1_codec{}))
         result += c;
     CHECK(result == "Hello");
 }
@@ -41,7 +41,7 @@ TEST_CASE("pluggable transcode: ASCII identity round-trip via pipe", "[pluggable
 TEST_CASE("pluggable transcode: upper-half identity round-trip via pipe", "[pluggable_transcode]") {
     std::string src{'\xC0', '\xC1', '\xC2'};
     std::string result;
-    for (char c : src | pluggable_transcode(latin1_codec{}, latin1_codec{}))
+    for (char c : src | transcode(latin1_codec{}, latin1_codec{}))
         result += c;
     CHECK(result == src);
 }
@@ -49,7 +49,7 @@ TEST_CASE("pluggable transcode: upper-half identity round-trip via pipe", "[plug
 TEST_CASE("pluggable transcode: empty input via pipe", "[pluggable_transcode]") {
     std::string src;
     std::string result;
-    for (char c : src | pluggable_transcode(latin1_codec{}, latin1_codec{}))
+    for (char c : src | transcode(latin1_codec{}, latin1_codec{}))
         result += c;
     CHECK(result.empty());
 }
@@ -57,7 +57,7 @@ TEST_CASE("pluggable transcode: empty input via pipe", "[pluggable_transcode]") 
 TEST_CASE("pluggable transcode: mixed ASCII and upper-half bytes", "[pluggable_transcode]") {
     std::string src{'\x41', '\xC0', '\x42', '\xC1'};
     std::string result;
-    for (char c : src | pluggable_transcode(latin1_codec{}, latin1_codec{}))
+    for (char c : src | transcode(latin1_codec{}, latin1_codec{}))
         result += c;
     REQUIRE(result.size() == 4);
     CHECK(result[0] == '\x41');
@@ -72,7 +72,7 @@ TEST_CASE("pluggable transcode: mixed ASCII and upper-half bytes", "[pluggable_t
 
 TEST_CASE("pluggable transcode: operator() called directly", "[pluggable_transcode]") {
     std::string src     = "Hi";
-    auto        closure = pluggable_transcode(latin1_codec{}, latin1_codec{});
+    auto        closure = transcode(latin1_codec{}, latin1_codec{});
     std::string result;
     for (char c : closure(src))
         result += c;
@@ -87,7 +87,7 @@ TEST_CASE("pluggable transcode: span<const char> input", "[pluggable_transcode]"
     std::string           src{'\x41', '\xC0', '\xC1'};
     std::span<const char> sp(src);
     std::string           result;
-    for (char c : sp | pluggable_transcode(latin1_codec{}, latin1_codec{}))
+    for (char c : sp | transcode(latin1_codec{}, latin1_codec{}))
         result += c;
     REQUIRE(result.size() == 3);
     CHECK(result[0] == '\x41');
@@ -104,7 +104,7 @@ TEST_CASE("pluggable transcode: constexpr ASCII round-trip", "[pluggable_transco
         std::array<unsigned char, 3> src{0x41, 0x42, 0x43};
         std::array<char, 3>          out{};
         int                          idx = 0;
-        for (char c : src | pluggable_transcode(latin1_codec{}, latin1_codec{}))
+        for (char c : src | transcode(latin1_codec{}, latin1_codec{}))
             out[static_cast<std::size_t>(idx++)] = c;
         return out;
     }();
@@ -118,7 +118,7 @@ TEST_CASE("pluggable transcode: constexpr upper-half round-trip", "[pluggable_tr
         std::array<unsigned char, 2> src{0xC0, 0xC1};
         std::array<unsigned char, 2> out{};
         int                          idx = 0;
-        for (char c : src | pluggable_transcode(latin1_codec{}, latin1_codec{}))
+        for (char c : src | transcode(latin1_codec{}, latin1_codec{}))
             out[static_cast<std::size_t>(idx++)] = static_cast<unsigned char>(c);
         return out;
     }();

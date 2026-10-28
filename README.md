@@ -88,14 +88,14 @@ validation error.
 
 ### Decode Views — Bytes to Unicode
 
-Pipe any byte range through `whatwg_decode<C>` to get a lazy `char32_t` view:
+Pipe any byte range through `whatwg::decode<C>` to get a lazy `char32_t` view:
 
 ```cpp
 #include <beman/transcode/transcode.hpp>
 
 std::vector<char32_t> decode_utf8(std::string_view input) {
     std::vector<char32_t> result;
-    for (char32_t cp : input | beman::transcoding::whatwg_decode<beman::transcoding::whatwg::encoding::utf_8>) {
+    for (char32_t cp : input | beman::transcoding::whatwg::decode<beman::transcoding::whatwg::encoding::utf_8>) {
         result.push_back(cp);
     }
     return result;
@@ -106,7 +106,7 @@ For explicit error visibility, use the `_or_error` variant which yields
 `std::expected<char32_t, whatwg::error>`:
 
 ```cpp
-for (auto result : input | beman::transcoding::whatwg_decode_or_error<beman::transcoding::whatwg::encoding::utf_8>) {
+for (auto result : input | beman::transcoding::whatwg::decode_or_error<beman::transcoding::whatwg::encoding::utf_8>) {
     if (!result.has_value()) {
         // result.error() is whatwg::error::invalid_byte, ::truncated_sequence, etc.
     }
@@ -118,7 +118,7 @@ C strings work via `views::null_term`:
 ```cpp
 auto decode_cstring(const char* text) {
     return beman::transcoding::views::null_term(text)
-         | beman::transcoding::whatwg_decode<beman::transcoding::whatwg::encoding::utf_8>;
+         | beman::transcoding::whatwg::decode<beman::transcoding::whatwg::encoding::utf_8>;
 }
 ```
 
@@ -128,12 +128,12 @@ The reverse direction encodes Unicode scalars back to bytes:
 
 ```cpp
 // char32_t range → char range (UTF-8 bytes)
-auto encoded = codepoints | beman::transcoding::whatwg_encode<beman::transcoding::whatwg::encoding::utf_8>;
+auto encoded = codepoints | beman::transcoding::whatwg::encode<beman::transcoding::whatwg::encoding::utf_8>;
 ```
 
 The WHATWG Encoding Standard does not define encoders for UTF-16BE or UTF-16LE;
 those codecs are exposed for byte-stream decoding, label lookup, and BOM
-sniffing, but not through `whatwg_encode` or `whatwg_encode_or_error`.
+sniffing, but not through `whatwg::encode` or `whatwg::encode_or_error`.
 
 Encode input is validated as UTF-32.  Every decoded value produced by this
 library is already a Unicode scalar value; raw `char32_t` sources receive the
@@ -149,7 +149,7 @@ Compose decode and encode into a single pipeline:
 
 std::string shift_jis_to_utf8(std::string_view input) {
     std::string result;
-    for (char byte : input | beman::transcoding::transcode<beman::transcoding::whatwg::encoding::shift_jis, beman::transcoding::whatwg::encoding::utf_8>) {
+    for (char byte : input | beman::transcoding::whatwg::transcode<beman::transcoding::whatwg::encoding::shift_jis, beman::transcoding::whatwg::encoding::utf_8>) {
         result.push_back(byte);
     }
     return result;
@@ -159,7 +159,7 @@ std::string shift_jis_to_utf8(std::string_view input) {
 For runtime codec selection (e.g., from HTTP headers):
 
 ```cpp
-auto result = beman::transcoding::transcode_string(data, "shift_jis", "utf-8");
+auto result = beman::transcoding::whatwg::transcode_string(data, "shift_jis", "utf-8");
 // returns std::optional<std::string>
 ```
 
@@ -256,20 +256,20 @@ Legend: ✅ implemented · n/a architectural model doesn't support this ·
 | API | WHATWG | Pluggable codec | iconv | P2728 |
 |-----|--------|-----------------|-------|----------|
 | **Codec identity** | `whatwg::encoding::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
-| **Decode view** | ✅ `whatwg_decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(f,t,buf)` | ✅ `views::to_utf32` |
-| **Decode or-error view** | ✅ `whatwg_decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
-| **Encode view** | ✅ `whatwg_encode<C>` | ✅ `encode(codec)` | n/a ¹ | ✅ `views::to_utf8` / `to_utf16` |
-| **Encode or-error view** | ✅ `whatwg_encode_or_error<C>` | ✅ `encode_or_error(codec)` | n/a ¹ | ✅ `views::to_utf8_or_error` |
-| **Transcode pipeline** | ✅ `transcode<From,To>` | ✅ `pluggable_transcode(f,t)` | ✅ `iconv_transcode(f,t,buf)` | ✅ compose views via `\|` |
-| **Bulk decode → container** | ✅ `decode_to<C>(r)` | ✅ `decode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
-| **Bulk encode → container** | ✅ `encode_to<C,Cont>(r)` | ✅ `encode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
+| **Decode view** | ✅ `whatwg::decode<C>` | ✅ `decode(codec)` | ✅ `iconv_transcode(f,t,buf)` | ✅ `views::to_utf32` |
+| **Decode or-error view** | ✅ `whatwg::decode_or_error<C>` | ✅ `decode_or_error(codec)` | ✅ `iconv_transcode_or_error(…)` | ✅ `views::to_utf32_or_error` |
+| **Encode view** | ✅ `whatwg::encode<C>` | ✅ `encode(codec)` | n/a ¹ | ✅ `views::to_utf8` / `to_utf16` |
+| **Encode or-error view** | ✅ `whatwg::encode_or_error<C>` | ✅ `encode_or_error(codec)` | n/a ¹ | ✅ `views::to_utf8_or_error` |
+| **Transcode pipeline** | ✅ `whatwg::transcode<From,To>` | ✅ `transcode(f,t)` | ✅ `iconv_transcode(f,t,buf)` | ✅ compose views via `\|` |
+| **Bulk decode → container** | ✅ `whatwg::decode_to<C>(r)` | ✅ `decode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
+| **Bulk encode → container** | ✅ `whatwg::encode_to<C,Cont>(r)` | ✅ `encode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
 | **Bulk transcode → container** | n/a ² | n/a ² | ✅ `iconv_transcode_to(range,f,t)` | n/a ² |
-| **Bulk decode → output iter** | ✅ `decode_into<C>(r,out)` | ✅ `decode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
-| **Bulk encode → output iter** | ✅ `encode_into<C>(r,out)` | ✅ `encode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
+| **Bulk decode → output iter** | ✅ `whatwg::decode_into<C>(r,out)` | ✅ `decode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
+| **Bulk encode → output iter** | ✅ `whatwg::encode_into<C>(r,out)` | ✅ `encode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
 | **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
 | **Null-terminated input** | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | ✅ `views::null_term(ptr)` | n/a ³ |
 | **Runtime label lookup** | ✅ `whatwg::get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
-| **Runtime transcode** | ✅ `transcode_string(src,from,to)` | n/a ⁴ | ✅ `iconv_transcode_to(r,f,t)` | n/a ⁵ |
+| **Runtime transcode** | ✅ `whatwg::transcode_string(src,from,to)` | n/a ⁴ | ✅ `iconv_transcode_to(r,f,t)` | n/a ⁵ |
 | **BOM sniffing** | ✅ `whatwg::bom_sniff(range)` | n/a ⁶ | n/a ⁶ | n/a ⁷ |
 | **Error type** | `whatwg::error` | `whatwg::error` | `iconv_error` | `utf_transcoding_error` |
 | **Output element type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
@@ -321,21 +321,21 @@ named helpers are provided for the same four operations:
 using namespace beman::transcoding;
 
 // Decode to vector — view | ranges::to
-auto cps = bytes | whatwg_decode<whatwg::encoding::utf_8> | std::ranges::to<std::vector<char32_t>>();
+auto cps = bytes | whatwg::decode<whatwg::encoding::utf_8> | std::ranges::to<std::vector<char32_t>>();
 
 // Encode to string — view | ranges::to
-auto encoded = codepoints | whatwg_encode<whatwg::encoding::shift_jis> | std::ranges::to<std::string>();
+auto encoded = codepoints | whatwg::encode<whatwg::encoding::shift_jis> | std::ranges::to<std::string>();
 
 // Output-iterator — ranges::copy
-std::ranges::copy(bytes | whatwg_decode<whatwg::encoding::utf_8>, std::back_inserter(vec));
+std::ranges::copy(bytes | whatwg::decode<whatwg::encoding::utf_8>, std::back_inserter(vec));
 ```
 
 ```cpp
 // The same four operations, named:
-auto cps2     = decode_to<whatwg::encoding::utf_8>(bytes);
-auto encoded2 = encode_to<whatwg::encoding::shift_jis, std::string>(codepoints);
-decode_into<whatwg::encoding::utf_8>(bytes, std::back_inserter(vec));
-encode_into<whatwg::encoding::utf_8>(codepoints, std::back_inserter(str));
+auto cps2     = whatwg::decode_to<whatwg::encoding::utf_8>(bytes);
+auto encoded2 = whatwg::encode_to<whatwg::encoding::shift_jis, std::string>(codepoints);
+whatwg::decode_into<whatwg::encoding::utf_8>(bytes, std::back_inserter(vec));
+whatwg::encode_into<whatwg::encoding::utf_8>(codepoints, std::back_inserter(str));
 ```
 
 Each helper is a one-line forward to the pipeline it names, with no measurable
@@ -375,7 +375,7 @@ labels you already have.
   enum constants used as non-type template parameters, so there is no
   per-element dispatch and decoding runs at compile time
 - **Runtime label resolution** via `whatwg::get_encoding("utf-8")` and
-  `transcode_string(data, "shift_jis", "utf-8")` — for cases where the encoding
+  `whatwg::transcode_string(data, "shift_jis", "utf-8")` — for cases where the encoding
   name comes from user input, HTTP headers, or HTML meta tags
 - **System iconv interop** via `iconv_transcode("UTF-8", "EUC-TW", buffer)` —
   string labels passed directly to the platform's iconv, giving access to every
@@ -532,8 +532,8 @@ Single-element streaming views on a 4 KB synthetic corpus of upper-half bytes
 | `view\|ranges::to` decode iso-8859-15 | 11 KB Russian | 15.7 µs | 684 MiB/s |
 | `view\|ranges::to` encode iso-8859-15 | 11 KB Russian | 131 µs | 82 MiB/s |
 | `view\|ranges::to` decode UTF-8 | 57 KB English | 25.2 µs | 2.1 GiB/s |
-| `transcode<windows_1252, utf_8>` | 4 KB synthetic | 5.88 µs | 664 MiB/s |
-| `transcode<utf_8, windows_1252>` | 57 KB English | 27.8 µs | 1.9 GiB/s |
+| `whatwg::transcode<windows_1252, utf_8>` | 4 KB synthetic | 5.88 µs | 664 MiB/s |
+| `whatwg::transcode<utf_8, windows_1252>` | 57 KB English | 27.8 µs | 1.9 GiB/s |
 
 ¹ Random-access sized range; GCC elides the iteration loop (O(1) pointer
 arithmetic).
@@ -545,8 +545,8 @@ stay in L1.  Real-world mixed-content throughput will be lower.
 
 | API | Corpus | Mean | Throughput |
 |-----|--------|------|-----------|
-| `whatwg_decode<utf_8> \| ranges::to` | 57 KB English | 21.4 µs | 2.5 GiB/s |
-| `whatwg_decode<utf_8> \| ranges::to` | 3.1 MB War & Peace | 1.77 ms | 1.7 GiB/s |
+| `whatwg::decode<utf_8> \| ranges::to` | 57 KB English | 21.4 µs | 2.5 GiB/s |
+| `whatwg::decode<utf_8> \| ranges::to` | 3.1 MB War & Peace | 1.77 ms | 1.7 GiB/s |
 | decode + encode round-trip `\| ranges::to` | 57 KB English | 75.5 µs | 721 MiB/s |
 | decode + encode round-trip `\| ranges::to` | 3.1 MB War & Peace | 4.77 ms | 658 MiB/s |
 
