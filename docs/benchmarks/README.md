@@ -454,3 +454,15 @@ grep "^#" data/benchmarks/results/matrix-20260527.txt
 | `make bench-repeat` | core suites, GCC-16 Perf, `BENCH_REPEATS` times → Markdown + HTML + SVG + Vega-Lite | — |
 | `make bench-instructions` | core suites, GCC-16 Perf, under callgrind → instruction counts, Markdown + HTML + SVG + Vega-Lite | — |
 | `make bench-stability-job` | core suites from prebuilt `BENCH_BIN_DIR`, timed then counted → one runner-stability job's results | — |
+
+The `benchmarks.whatwg` binary also holds the label benchmarks
+(`benchmark/label_benchmarks.bench.cpp`, tag `[label]`), so the core-suite
+targets run them with the rest of `whatwg`.  They time `get_encoding` alone,
+and `transcode_string` on the same input three ways: with the codecs fixed at
+compile time, by `codec` value, and by label.  The differences between the
+three are the cost of the switch to the codec's instantiation and of the two
+label lookups.  To run only these:
+
+```bash
+.build/build-system/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg "[label]"
+```
