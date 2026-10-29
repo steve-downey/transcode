@@ -130,6 +130,12 @@ namespace std {
   };
 
   template<typename C>
+  concept single_byte_text_encoder =
+      text_encoder<C> && requires(const C& c, char32_t scalar) {
+        { c.encode_byte(scalar) } -> same_as<optional<unsigned char>>;
+      };
+
+  template<typename C>
   concept flushable_text_decoder = text_decoder<C> && requires(C& c) {
     { c.flush() } -> same_as<optional<decode_result>>;
   };
@@ -178,6 +184,9 @@ namespace std {
 
   public:
     constexpr encode_result encode_one(char32_t scalar);
+
+    constexpr optional<unsigned char> encode_byte(char32_t scalar) const
+      requires $random-access-encode-codec$<C>;
 
     constexpr optional<encode_result> flush()
       requires(C == encoding::iso_2022_jp);
@@ -447,7 +456,7 @@ constexpr optional<decode_result> flush();
 
 [#]{.pnum} *Returns*: `nullopt` if nothing is owed.  Otherwise a scalar value still pending, or the error for a sequence the input ended in the middle of.
 
-[#]{.pnum} *Remarks*: `whatwg::encoder<C>` is the encoder, as a codec object, for the encoding `C`, which is required to be an encoding the Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and `whatwg::encoder` is not defined for them.  It models `text_encoder` ([transcode.custom.reqs]) and the encode adaptor over it ([transcode.custom.encode]) yields what `whatwg::encode<C>` does.  It models `flushable_text_encoder` when `C` is `encoding::iso_2022_jp`, which owes an escape sequence returning to ASCII after the last scalar value.  It is equality comparable.
+[#]{.pnum} *Remarks*: `whatwg::encoder<C>` is the encoder, as a codec object, for the encoding `C`, which is required to be an encoding the Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and `whatwg::encoder` is not defined for them.  It models `text_encoder` ([transcode.custom.reqs]) and the encode adaptor over it ([transcode.custom.encode]) yields what `whatwg::encode<C>` does.  It models `flushable_text_encoder` when `C` is `encoding::iso_2022_jp`, which owes an escape sequence returning to ASCII after the last scalar value.  It models `single_byte_text_encoder` when `C` names a single-byte encoding.  It is equality comparable.
 
 ```cpp
 constexpr encode_result encode_one(char32_t scalar);
@@ -456,6 +465,14 @@ constexpr encode_result encode_one(char32_t scalar);
 [#]{.pnum} *Effects*: Encodes `scalar`, which is a Unicode scalar value, as the encoding `C` says, updating the encoder's state if `C` has one.
 
 [#]{.pnum} *Returns*: The encoded bytes, or, if `C` has no representation for `scalar`, a result with `is_error`.  An error from `iso_2022_jp` carries the bytes that replace `scalar`: an escape sequence returning to ASCII if the output was not in it, then `'?'`.
+
+```cpp
+constexpr optional<unsigned char> encode_byte(char32_t scalar) const;
+```
+
+[#]{.pnum} *Constraints*: `C` models `$random-access-encode-codec$`.
+
+[#]{.pnum} *Returns*: The byte `scalar` encodes to in the encoding `C`, or `nullopt` if `C` has no representation for it.  Present for the single-byte encodings.
 
 ```cpp
 constexpr optional<encode_result> flush();
@@ -478,6 +495,8 @@ template<typename R> constexpr auto operator()(R&& r) const;
 [#]{.pnum} *Constraints*: `$whatwg-encode-input$<C, R>` is satisfied.
 
 [#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg::encode_view` ([transcode.whatwg.encode]) with the codec supplied as a value rather than named by an enumerator: it validates the `char32_t` elements of `R` as UTF-32, presents the resulting scalar values as the bytes `Codec` encodes them to, reports an error as `E` says, and encodes lazily.  Ill-formed UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in replacement mode and is reported without calling the codec in report mode.  A custom codec therefore receives only Unicode scalar values.  When `Codec::encode_one` fails and supplies bytes, the view in replacement mode yields those bytes as the replacement; if it supplies none, the replacement is `'?'`.  In report mode the bytes are ignored.
+
+[#]{.pnum} The view models `random_access_range` when `Codec` models `single_byte_text_encoder` and `R` models `random_access_range`. When it does, a scalar value for which `Codec::encode_byte` returns `nullopt` is reported as `whatwg::error::unmapped_codepoint` in report mode and yields `'?'` in replacement mode.
 
 ```cpp
 static constexpr $iterator$ $terminal$();

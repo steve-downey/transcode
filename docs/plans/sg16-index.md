@@ -322,7 +322,13 @@ did. Revisit if SG16 or LEWG would rather the BOM rule live in the adaptor
 
 ## single_byte_text_encoder {#single-byte-encoder}
 
-**Provisional, step 11.** This is added only so that `whatwg::encode<C>` keeps
+**Provisional; implemented in step 11** (`codec_concepts.hpp`,
+`random_access_encode_view` in `encode_view.hpp`, `whatwg::encoder::encode_byte`
+for the single-byte encodings; `encode(e)` selects the view when the base is
+random access). The wording omits `random_access_encode_view` with `\omit`, and
+its const `begin`/`end`/`size` definitions carry their own `\omit` because
+specgen otherwise attributes them to `whatwg::random_access_encode_view`, which
+has the same unqualified name until step 12 deletes it. This is added only so that `whatwg::encode<C>` keeps
 `random_access_range` for the single-byte encodings once it is defined in
 terms of `encode(whatwg::encoder<C>{})`. It requires
 `c.encode_byte(char32_t scalar) -> std::optional<unsigned char>`, where
