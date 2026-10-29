@@ -132,7 +132,7 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
     //! \expos
     R base_;
     //! \expos
-    Codec codec_;
+    [[no_unique_address]] Codec codec_;
 
     //! \expos
     //! \seebelow

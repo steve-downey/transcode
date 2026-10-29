@@ -22,6 +22,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 using namespace beman::transcoding;
@@ -46,6 +47,10 @@ inline constexpr std::array<char32_t, 128> sparse_table = [] {
 }();
 
 using sparse_codec = table_codec<sparse_table>;
+
+// A stateless codec costs the view no storage: the view is its base, nothing more.
+static_assert(std::is_empty_v<latin1_codec>);
+static_assert(sizeof(encode_view<latin1_codec, std::u32string_view>) == sizeof(std::u32string_view));
 
 struct replacement_aware_codec {
     constexpr encode_result encode_one(char32_t cp) {

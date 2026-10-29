@@ -30,13 +30,13 @@ template <single_byte_text_decoder Codec, std::ranges::random_access_range R, er
     requires legacy_byte_range<R>
 class random_access_decode_view : public std::ranges::view_interface<random_access_decode_view<Codec, R, E>> {
     R     base_;
-    Codec codec_;
+    [[no_unique_address]] Codec codec_;
 
     class iterator {
         using base_iter = detail::compatible_iterator_t<R>;
 
         base_iter current_{};
-        Codec     codec_{};
+        [[no_unique_address]] Codec codec_{};
 
       public:
         using value_type =
