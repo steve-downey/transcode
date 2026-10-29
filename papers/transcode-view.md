@@ -78,7 +78,7 @@ The removed facets allocated on every call and dispatched through a virtual inte
 The WHATWG Encoding Standard specified the missing part, for exactly the encodings the web still carries.
 It gives the byte-to-scalar mapping for every byte value, says what each malformed sequence produces, and the Web Platform Tests [@wpt-encoding] pin all of it across the browser engines.
 C++ has since added `std::text_encoding`, which names an encoding.
-Nothing in the standard converts one.
+Nothing in the standard converts one, and "Why Not `text_encoding::id`?" says why this proposal does not start from it.
 
 Everyone should be using UTF-8.
 Postel's law applies anyway: conservative in what we emit, liberal in what we accept.
@@ -362,6 +362,39 @@ A general specification with no implementations to agree with would be worse.
 
 Targeting it means a C++ program decodes a page the way the browser that fetched it did, and parses HTML and JSON with the same error handling.
 
+### Why Not `text_encoding::id`?
+
+`std::text_encoding::id` is the obvious name for an encoding, and the library does not use it as its own.
+An `id` names an entry in the IANA registry, as "Context and Motivation" describes.
+It carries no decoding semantics.
+The registry says a document is Shift_JIS, and it does not say what `0x5C` decodes to.
+
+The backend decides, and two backends given the same `id` can answer differently.
+`examples/text_encoding_two_answers.cpp` takes `id::ShiftJIS` and decodes the bytes `5C 7E` twice, once through WHATWG and once through iconv with the id's registered name.
+On Linux with GCC 16.2 and glibc 2.39 it prints:
+
+```
+WHATWG shift_jis: U+005C U+007E
+iconv Shift_JIS  : U+00A5 U+203E
+```
+
+The Encoding Standard maps the single-byte range of `shift_jis` as ASCII.
+glibc's `SHIFT_JIS` maps it as JIS X 0201 Roman, so a backslash is a yen sign and a tilde is an overline.
+Neither is a bug. Each backend was asked what the name means, and answered for itself.
+The example is not a test, because the iconv answer depends on the platform's tables.
+
+The label mapping differs too.
+WHATWG maps `latin1`, `iso-8859-1` and `ascii` to windows-1252, so `id::ISOLatin1` and `id::ASCII` resolve to `whatwg::encoding::windows_1252`.
+A program that passes `id::ISOLatin1` to WHATWG gets windows-1252, which is what a browser does with that label.
+
+So the library keeps its own enumeration.
+It is a closed set of specifications, and an `id` is only a name.
+The library bridges to `id` in both directions.
+`whatwg::get_encoding(text_encoding::id)` applies the WHATWG label lookup to the id's registered names, and `whatwg::to_text_encoding_id(e)` goes back through the encoding's WHATWG name.
+Three encodings have no id: `replacement`, `x_user_defined` and `x_mac_cyrillic`.
+For every other encoding the round trip returns the encoding it started with.
+Both functions are available only when `<text_encoding>` is, which is C++26.
+
 ### Why Forward-Only Iterators?
 
 The proposed decode, encode, and `iconv` transcode views all model `input_range`.
@@ -388,7 +421,26 @@ The encodings are like that. The implementation has no choice.
 
 ### Overview
 
-The proposal adds four user-facing adaptor families:
+The proposal has three layers.
+
+**WHATWG.**
+A closed set of encodings, each with a decoder, `whatwg::decoder<C>`, and, where the Encoding Standard defines one, an encoder, `whatwg::encoder<C>`.
+The Web Platform Tests pin their behavior, and all of it is `constexpr`.
+This is what almost every program wants.
+
+**Codec objects.**
+The `text_decoder` and `text_encoder` concepts, and the `decode`, `encode` and `transcode(from, to)` adaptors over them.
+The WHATWG adaptors are specified as these adaptors applied to the library's own codec objects, so there is one decode view and one encode view, not two families.
+The layer is also the extension point for an encoding WHATWG does not define.
+We hope few programs need to write one.
+
+**System iconv.**
+Everything else, with whatever semantics the platform has.
+
+WHATWG plus iconv should cover the real world.
+The codec-object layer lets a program fill a gap without waiting for either.
+
+The proposal adds five user-facing adaptor families:
 
 - **`whatwg::decode<C>`**: Decodes a byte range to `char32_t` (Unicode scalar values).
   Decode errors are replaced with U+FFFD.
@@ -407,6 +459,10 @@ The proposal adds four user-facing adaptor families:
   adaptor above with a different `error_mode`, so
   `whatwg::decode_or_error<C>` is `decode_or_error` applied to
   `whatwg::decoder<C>`, and produces a `decode_view` in report mode.
+
+- **`decode(d)` / `encode(e)` / `transcode(d, e)`**: The same adaptors over any codec object, including a program's own.
+  `d` models `text_decoder` and `e` models `text_encoder`; `decode_or_error(d)` and `encode_or_error(e)` are the report-mode forms.
+  `whatwg::decode<C>` is `decode(whatwg::decoder<C>{})`, and `whatwg::transcode<From, To>` is `transcode(whatwg::decoder<From>{}, whatwg::encoder<To>{})`.
 
 - **`iconv_transcode_view` / `iconv_transcode(from, to, buf)`** and **`iconv_transcode_or_error_view` / `iconv_transcode_or_error(from, to, buf)`**:
   Runtime-selected transcoding through the platform `iconv` implementation, using caller-provided staging storage.
@@ -475,13 +531,13 @@ is the standard's `replacement` encoding, which decodes any non-empty input to
 a single U+FFFD REPLACEMENT CHARACTER, and `whatwg::encoding::x_user_defined`
 is its `x-user-defined`.
 
-The codec is a template parameter and not a runtime value, so there is no
+The encoding is a template parameter and not a runtime value, so there is no
 per-element dispatch, and transcoding can run at compile time.
 
-### Label Lookup for Runtime Codec Selection
+### Label Lookup for Runtime Encoding Selection
 
 The WHATWG Encoding Standard §4.2 defines over 200 string labels that map to canonical encodings.
-For example, `"shift_jis"`, `"sjis"`, `"x-sjis"`, `"ms_kanji"`, and `"csshiftjis"` all refer to the same Shift_JIS codec.
+For example, `"shift_jis"`, `"sjis"`, `"x-sjis"`, `"ms_kanji"`, and `"csshiftjis"` all refer to the same Shift_JIS encoding.
 This mapping is essential for:
 
 - Parsing `charset` attributes in HTML `<meta>` tags
@@ -627,6 +683,147 @@ Use `views::null_term` for null-terminated strings or wrap counted byte buffers 
 
 The `char8_t` type is not accepted because it implies UTF-8 encoding, conflicting with the codec parameter.
 Similarly, `wchar_t` is rejected due to its platform-dependent size.
+
+### Decoder and Encoder Concepts
+
+The range concepts constrain what goes into a view.
+These constrain the codec object the view is built over:
+
+```cpp
+struct decode_result {
+    char32_t      code_point{};
+    whatwg::error error{};
+    bool          is_error{false};
+    bool          is_empty{false};
+};
+
+struct encode_result {
+    unsigned char bytes[8]{};
+    int           count{0};
+    bool          is_error{false};
+};
+
+template <typename C>
+concept text_decoder = semiregular<C> &&
+    requires(C& c, const unsigned char*& iter, const unsigned char* sentinel) {
+        { c.decode_one(iter, sentinel) } -> same_as<decode_result>;
+    };
+
+template <typename C>
+concept text_encoder = semiregular<C> && requires(C& c, char32_t cp) {
+    { c.encode_one(cp) } -> same_as<encode_result>;
+};
+
+template <typename C>
+concept flushable_text_decoder = text_decoder<C> && requires(C& c) {
+    { c.flush() } -> same_as<optional<decode_result>>;
+};
+
+template <typename C>
+concept flushable_text_encoder = text_encoder<C> && requires(C& c) {
+    { c.flush() } -> same_as<optional<encode_result>>;
+};
+
+template <typename C>
+concept single_byte_text_decoder = text_decoder<C> && requires(const C& c, unsigned char byte) {
+    { c.decode_byte(byte) } -> same_as<char32_t>;
+};
+
+template <typename C>
+concept single_byte_text_encoder = text_encoder<C> && requires(const C& c, char32_t scalar) {
+    { c.encode_byte(scalar) } -> same_as<optional<unsigned char>>;
+};
+```
+
+[transcode.codec.reqs] is the normative text.
+
+A codec is a value.
+It is `semiregular` because a view owns one and copies it, and it holds its own state, so every `begin()` starts from a fresh copy.
+The state lives in the codec and not in the range.
+
+`decode_one` reads from an iterator up to a sentinel, advances the iterator past what it consumed, and returns one `decode_result`.
+`is_empty` means the call consumed input and produced nothing, as an escape sequence that only changes the decoder's mode does.
+The view asks again.
+A decoder that also models `bom_aware_text_decoder` has `decode_first` called for the first element in place of `decode_one`, which is how the UTF decoders drop a leading U+FEFF.
+
+An encoder never sees a bad input.
+The view validates its UTF-32 before it calls `encode_one`, so the argument is always a Unicode scalar value.
+What the encoder can fail on is a scalar value its encoding has no representation for.
+In replacement mode the view then yields the bytes the encoder supplied in `bytes` and `count`, and `'?'` if it supplied none.
+
+`flush` is how a stateful codec settles at the end of input.
+The view calls it when the input is exhausted, and again after each engaged result, until it returns `nullopt`.
+ISO-2022-JP is the motivating case: an encoder that has shifted out of ASCII owes the escape sequence that shifts back.
+A decoder owes a truncation error for a sequence that ended mid-way.
+
+The single-byte refinements exist so that random access survives the generic path.
+When every byte decodes independently, the *n*th element is the *n*th byte, and a view over a `single_byte_text_decoder` is a `random_access_range`.
+The same holds for a `single_byte_text_encoder` and the scalar values going in.
+`single_byte_text_encoder`, with random-access encode, is the part of this section that SG16 may prefer to drop.
+The decode side is what the WHATWG single-byte encodings need, and the encode side is there to keep `whatwg::encode<C>` a `random_access_range` for them.
+
+These concepts are not in `whatwg::`, because they describe the generic protocol, and any codec can model them.
+The one-to-one mapping to the Encoding Standard is on the codec objects.
+As the Standard puts it, "each encoding has an associated decoder and most of them have an associated encoder".
+So `whatwg::decoder<C>` models `text_decoder` for every `whatwg::encoding`, and `whatwg::encoder<C>` exists only for the encodings that have an encoder.
+The error vocabulary is still `whatwg::error`, because the protocol adopts WHATWG's error model.
+
+The names split into verb and noun.
+`whatwg::decode<C>` is the adaptor, and it is `decode(whatwg::decoder<C>{})`.
+`whatwg::transcode<From, To>` is `transcode(whatwg::decoder<From>{}, whatwg::encoder<To>{})`.
+There is no transcoder type.
+
+#### A Codec the Library Does Not Ship
+
+WHATWG has no ISO-8859-1.
+Its `latin1` and `iso-8859-1` labels mean windows-1252, which differs in `0x80` to `0x9F`.
+A program that needs the ISO encoding has a real gap, and fills it by modeling the two concepts:
+
+```cpp
+struct iso_8859_1 {
+    template <input_iterator I, sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, S end) const;
+
+    constexpr encode_result encode_one(char32_t cp) const;
+};
+
+template <input_iterator I, sentinel_for<I> S>
+constexpr decode_result iso_8859_1::decode_one(I& current, S end) const {
+    const auto byte = static_cast<unsigned char>(*current);
+    ++current;
+    return {char32_t{byte}, {}, false};
+}
+
+constexpr encode_result iso_8859_1::encode_one(char32_t cp) const {
+    if (cp > 0xFF)
+        return {{}, 0, true};
+    encode_result result{};
+    result.bytes[0] = static_cast<unsigned char>(cp);
+    result.count    = 1;
+    return result;
+}
+
+static_assert(text_decoder<iso_8859_1> && text_encoder<iso_8859_1>);
+```
+
+`char32_t` is the seam between codecs, so the custom decoder pipes into a WHATWG encoder and a WHATWG decoder into the custom encoder:
+
+```cpp
+// ISO-8859-1 to UTF-8
+for (char b : latin1 | decode(iso_8859_1{}) | whatwg::encode<whatwg::encoding::utf_8>)
+    out.push_back(b);
+
+// UTF-8 to ISO-8859-1; a scalar value with no ISO-8859-1 byte becomes '?'
+for (char b : utf8 | whatwg::decode<whatwg::encoding::utf_8> | encode(iso_8859_1{}))
+    out.push_back(b);
+
+// windows-1252 to ISO-8859-1 in one pipeline
+for (char b : bytes | transcode(whatwg::decoder<whatwg::encoding::windows_1252>{}, iso_8859_1{}))
+    out.push_back(b);
+```
+
+The example is `examples/paper_custom_codec.cpp`.
+It is compiled and run as a test, and its conversions are also `static_assert`ed, so the claims above are checked at compile time.
 
 ### Constexpr Support
 
