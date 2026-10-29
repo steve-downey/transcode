@@ -36,6 +36,7 @@ set(BEMAN_TRANSCODE_HEADERS
     whatwg/encoding.hpp
     whatwg/error.hpp
     whatwg/label.hpp
+    whatwg/text_encoding.hpp
     whatwg/transcode_string.hpp
     whatwg/transcode_view.hpp
     detail/big5.hpp

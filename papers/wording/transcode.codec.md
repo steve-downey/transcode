@@ -59,6 +59,20 @@ constexpr optional<encoding> get_encoding(string_view label) noexcept;
 
 [#]{.pnum} *Remarks*: An encoding's labels are the alternative names a document may spell it with -- `latin1`, `iso-8859-1` and `windows-1252` are all labels of `whatwg::encoding::windows_1252` -- so a lookup that fails is a name no encoding claims, not an encoding that cannot be represented.
 
+```cpp
+constexpr optional<encoding> get_encoding(text_encoding::id id) noexcept;
+```
+
+[#]{.pnum} *Returns*: `get_encoding(label)` ([transcode.codec.label]) for the first of the name and the aliases of `std::text_encoding(id)` that is a label of an encoding, and `nullopt` if there is none, which includes `id::other` and `id::unknown`.
+
+[#]{.pnum} *Remarks*: This is the Encoding Standard's "get an encoding" applied to the registered names, so `std::text_encoding::id::ISOLatin1` is `encoding::windows_1252`.
+
+```cpp
+constexpr optional<text_encoding::id> to_text_encoding_id(encoding e) noexcept;
+```
+
+[#]{.pnum} *Returns*: The `id` of the registered name that is a label of `e`, and `nullopt` if no label of `e` is a registered name, which includes `encoding::replacement` and `encoding::x_user_defined`.
+
 ### Byte order mark sniffing [transcode.codec.sniff] {-}
 
 ```cpp

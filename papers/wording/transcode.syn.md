@@ -95,6 +95,12 @@ namespace std {
 
   constexpr optional<encoding> get_encoding(string_view label) noexcept;
 
+  // @[transcode.codec.label]@, label lookup
+
+  constexpr optional<encoding> get_encoding(text_encoding::id id) noexcept;
+
+  constexpr optional<text_encoding::id> to_text_encoding_id(encoding e) noexcept;
+
   // @[transcode.custom.reqs]@, codec requirements
 
   struct decode_result {

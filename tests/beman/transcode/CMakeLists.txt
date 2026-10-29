@@ -1514,3 +1514,26 @@ set_tests_properties(
         PASS_REGULAR_EXPRESSION
             "transcode: reverse_index stores pointer \\+ 1 in 16 bits"
 )
+
+# <text_encoding> is declared only in C++26 mode (libstdc++), so this target is
+# built as C++26 and exists only where the top-level probe says it can.
+if(BEMAN_TRANSCODE_HAS_TEXT_ENCODING)
+    add_executable(beman.transcode.tests.text_encoding)
+    target_sources(
+        beman.transcode.tests.text_encoding
+        PRIVATE text_encoding.test.cpp
+    )
+    target_include_directories(
+        beman.transcode.tests.text_encoding
+        PRIVATE ${TEST_INCLUDE_DIR}
+    )
+    target_link_libraries(
+        beman.transcode.tests.text_encoding
+        PRIVATE beman::transcode Catch2::Catch2WithMain
+    )
+    set_target_properties(
+        beman.transcode.tests.text_encoding
+        PROPERTIES CXX_STANDARD 26 CXX_STANDARD_REQUIRED ON
+    )
+    catch_discover_tests(beman.transcode.tests.text_encoding)
+endif()
