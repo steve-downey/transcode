@@ -52,9 +52,9 @@ few editorial corrections.
   supply, and `iconv_t` is that interface's type. R0 conditioned them on "an
   implementation that supplies an iconv conversion facility" and left `iconv_t`
   implementation-defined.
-- [transcode.custom.encode] declares the adaptor's call operator and its
+- [transcode.codec.encode] declares the adaptor's call operator and its
   constraint, which R0 omitted.
-- `sniff_encoding` and the `null_term` sentinel's comparison state their
+- `whatwg::bom_sniff` and the `null_term` sentinel's comparison state their
   constraints as *Constraints:* paragraphs rather than as requires-clauses in
   the declarations.
 - The paragraph on `<codecvt>` names the removed facets as what allocated and
@@ -132,13 +132,13 @@ std::vector<char32_t> decode_utf8(
 }
 ```
 
-#### After: `whatwg_decode`
+#### After: `whatwg::decode`
 
 ```cpp
 std::vector<char32_t> decode_utf8(
     std::string_view input) {
   return input
-    | whatwg_decode<codec::utf_8>
+    | whatwg::decode<whatwg::encoding::utf_8>
     | std::ranges::to<std::vector>();
 }
 ```
@@ -203,8 +203,8 @@ std::string shift_jis_to_utf8(
 std::string shift_jis_to_utf8(
     std::string_view input) {
   return input
-    | whatwg_decode<codec::shift_jis>
-    | whatwg_encode<codec::utf_8>
+    | whatwg::decode<whatwg::encoding::shift_jis>
+    | whatwg::encode<whatwg::encoding::utf_8>
     | std::ranges::to<std::string>();
 }
 ```
@@ -240,7 +240,7 @@ std::wstring from_cstring(const char* s) {
 ```cpp
 auto from_cstring(const char* s) {
   return views::null_term(s)
-    | whatwg_decode<codec::utf_8>;
+    | whatwg::decode<whatwg::encoding::utf_8>;
   // Returns lazy view of char32_t
   // No global state
   // Portable Unicode scalars
@@ -276,7 +276,7 @@ if (has_errors) {
 
 ```cpp
 for (auto r : input
-    | whatwg_decode_or_error<codec::utf_8>) {
+    | whatwg::decode_or_error<whatwg::encoding::utf_8>) {
   if (r.has_value()) {
     process(*r);
   } else {
@@ -299,7 +299,7 @@ std::vector<char32_t> decode_utf8(
     std::string_view input) {
   std::vector<char32_t> result;
   for (char32_t cp : input
-      | whatwg_decode<codec::utf_8>) {
+      | whatwg::decode<whatwg::encoding::utf_8>) {
     result.push_back(cp);
   }
   return result;
@@ -311,7 +311,7 @@ std::vector<char32_t> decode_utf8(
 ```cpp
 std::vector<char32_t> decode_utf8(
     std::string_view input) {
-  return decode_to<codec::utf_8>(input);
+  return whatwg::decode_to<whatwg::encoding::utf_8>(input);
 }
 ```
 
@@ -324,7 +324,7 @@ algorithms already do the job, and there is no measurable difference in speed
 between a named `decode_to` and the equivalent `view | ranges::to` composition.
 
 The names are worth having anyway. Converting a buffer to a container is the
-operation users come for, and `decode_to<codec::utf_8>(input)` is what they
+operation users come for, and `whatwg::decode_to<whatwg::encoding::utf_8>(input)` is what they
 look for first. Withholding the name only moves the question to every code
 review and every committee discussion of this facility. Each helper is a
 one-line forward to the pipeline it names; what the proposal adds is four names
@@ -333,10 +333,10 @@ and the wording that specifies them.
 The named helpers and pipelines are the same operations:
 
 ```cpp
-decode_to<C>(r)         is  r | whatwg_decode<C> | ranges::to<vector<char32_t>>()
-encode_to<C, Cont>(r)   is  r | whatwg_encode<C> | ranges::to<Cont>()
-decode_into<C>(r, out)  is  ranges::copy(r | whatwg_decode<C>, out)
-encode_into<C>(r, out)  is  ranges::copy(r | whatwg_encode<C>, out)
+whatwg::decode_to<C>(r)         is  r | whatwg::decode<C> | ranges::to<vector<char32_t>>()
+whatwg::encode_to<C, Cont>(r)   is  r | whatwg::encode<C> | ranges::to<Cont>()
+whatwg::decode_into<C>(r, out)  is  ranges::copy(r | whatwg::decode<C>, out)
+whatwg::encode_into<C>(r, out)  is  ranges::copy(r | whatwg::encode<C>, out)
 ```
 
 ## Design Rationale
@@ -390,45 +390,47 @@ The encodings are like that. The implementation has no choice.
 
 The proposal adds four user-facing adaptor families:
 
-- **`whatwg_decode_view<C>` / `whatwg_decode<C>`**: Decodes a byte range to `char32_t` (Unicode scalar values).
+- **`whatwg::decode<C>`**: Decodes a byte range to `char32_t` (Unicode scalar values).
   Decode errors are replaced with U+FFFD.
+  It is the codec-object adaptor `decode` applied to `whatwg::decoder<C>`, so the result is a `decode_view`.
 
-- **`whatwg_encode_view<C>` / `whatwg_encode<C>`**: Encodes a `char32_t` range to bytes.
+- **`whatwg::encode<C>`**: Encodes a `char32_t` range to bytes.
   Input is validated as UTF-32: an ill-formed code unit is replaced with U+FFFD,
   then encoded through `C`. A scalar value that `C` cannot represent is replaced
   with `'?'`.
   The WHATWG UTF-16BE and UTF-16LE encodings are decode-only in this interface,
   matching the Encoding Standard's lack of UTF-16BE/LE encoders.
 
-- **`whatwg_decode_or_error<C>` / `whatwg_encode_or_error<C>`**:
-  Error-reporting variants yielding `expected<T, whatwg_error>`.
+- **`whatwg::decode_or_error<C>` / `whatwg::encode_or_error<C>`**:
+  Error-reporting variants yielding `expected<T, whatwg::error>`.
   These are adaptor objects rather than separate view templates: each is the
-  view above with a different `transcode_error_kind`, so
-  `whatwg_decode_or_error<C>` produces
-  `whatwg_decode_view<C, R, transcode_error_kind::expected>`.
+  adaptor above with a different `error_mode`, so
+  `whatwg::decode_or_error<C>` is `decode_or_error` applied to
+  `whatwg::decoder<C>`, and produces a `decode_view` in report mode.
 
 - **`iconv_transcode_view` / `iconv_transcode(from, to, buf)`** and **`iconv_transcode_or_error_view` / `iconv_transcode_or_error(from, to, buf)`**:
   Runtime-selected transcoding through the platform `iconv` implementation, using caller-provided staging storage.
 
 Four eager bulk helpers, each specified as the pipeline it names:
 
-- **`decode_to<C>(r)` / `encode_to<C, Container>(r)`**: Collect the decoded or encoded result into a container.
+- **`whatwg::decode_to<C>(r)` / `whatwg::encode_to<C, Container>(r)`**: Collect the decoded or encoded result into a container.
 
-- **`decode_into<C>(r, out)` / `encode_into<C>(r, out)`**: Write the result through an output iterator.
+- **`whatwg::decode_into<C>(r, out)` / `whatwg::encode_into<C>(r, out)`**: Write the result through an output iterator.
 
 And three utility entry points:
 
-- **`transcode<From, To>`**: Convenience composition of `whatwg_decode<From>` followed by `whatwg_encode<To>`, for `To` codecs that have a WHATWG encoder.
+- **`whatwg::transcode<From, To>`**: Convenience composition of `whatwg::decode<From>` followed by `whatwg::encode<To>`, for `To` codecs that have a WHATWG encoder.
 
-- **`transcode_string(source, from, to)`**: Eager convenience helper for runtime-selected WHATWG transcoding by codec or by label. It returns an engaged `optional<string>` containing the converted bytes, including an empty string for an empty input, or `nullopt` if the target codec has no WHATWG encoder.
+- **`whatwg::transcode_string(source, from, to)`**: Eager convenience helper for runtime-selected WHATWG transcoding by codec or by label. It returns an engaged `optional<string>` containing the converted bytes, including an empty string for an empty input, or `nullopt` if the target codec has no WHATWG encoder.
 
 - **`null_term_view` / `views::null_term`**: Adapts a pointer to a null-terminated string into a range.
-  `views::null_term(cstr) | whatwg_decode<codec::utf_8>` then composes.
+  `views::null_term(cstr) | whatwg::decode<whatwg::encoding::utf_8>` then composes.
 
-### Codec Enumeration
+### The Encoding Enumeration
 
 ```cpp
-enum class codec {
+namespace whatwg {
+enum class encoding {
   utf_8,
 
   // WHATWG special
@@ -456,11 +458,22 @@ enum class codec {
   iso_2022_jp,
   euc_kr,
 };
+}
 ```
 
-The enumerator order is the one [transcode.codec] specifies, comments aside.
-This paper does not fix the enumerators' values, but it does fix their order,
-so the two have to agree.
+The synopsis in [transcode.whatwg.encoding] declares the enumerators without
+initializers, so their values are fixed by that declaration, as for any
+enumeration. Nothing in the proposal depends on them. The order is the Encoding
+Standard's table order, chosen for the reader, and the comments above are not
+part of the wording.
+
+Each enumerator names the encoding of the same name in the WHATWG Encoding
+Standard, whose table of encodings is normative and is not restated here. An
+encoding is what that standard says it is, and a copy of the list in this
+paper would be a second one to keep current. `whatwg::encoding::replacement`
+is the standard's `replacement` encoding, which decodes any non-empty input to
+a single U+FFFD REPLACEMENT CHARACTER, and `whatwg::encoding::x_user_defined`
+is its `x-user-defined`.
 
 The codec is a template parameter and not a runtime value, so there is no
 per-element dispatch, and transcoding can run at compile time.
@@ -475,29 +488,29 @@ This mapping is essential for:
 - Parsing `charset` parameters in `Content-Type` headers
 - Web-compatible encoding sniffing algorithms
 
-A `get_encoding` function provides runtime codec selection:
+A `whatwg::get_encoding` function provides runtime codec selection:
 
 ```cpp
-constexpr std::optional<codec> get_encoding(std::string_view label) noexcept;
+constexpr std::optional<whatwg::encoding> whatwg::get_encoding(std::string_view label) noexcept;
 ```
 
 The function performs ASCII case-insensitive matching and strips leading/trailing ASCII whitespace, per WHATWG §4.2:
 
 ```cpp
-static_assert(get_encoding("UTF-8") == codec::utf_8);
-static_assert(get_encoding("utf-8") == codec::utf_8);
-static_assert(get_encoding("  utf-8  ") == codec::utf_8);
-static_assert(get_encoding("shift_jis") == codec::shift_jis);
-static_assert(get_encoding("SJIS") == codec::shift_jis);
-static_assert(get_encoding("x-sjis") == codec::shift_jis);
-static_assert(get_encoding("unknown") == std::nullopt);
+static_assert(whatwg::get_encoding("UTF-8") == whatwg::encoding::utf_8);
+static_assert(whatwg::get_encoding("utf-8") == whatwg::encoding::utf_8);
+static_assert(whatwg::get_encoding("  utf-8  ") == whatwg::encoding::utf_8);
+static_assert(whatwg::get_encoding("shift_jis") == whatwg::encoding::shift_jis);
+static_assert(whatwg::get_encoding("SJIS") == whatwg::encoding::shift_jis);
+static_assert(whatwg::get_encoding("x-sjis") == whatwg::encoding::shift_jis);
+static_assert(whatwg::get_encoding("unknown") == std::nullopt);
 ```
 
 Runtime dispatch on external metadata follows:
 
 ```cpp
 std::string_view charset = parse_content_type(headers);
-if (auto c = get_encoding(charset)) {
+if (auto c = whatwg::get_encoding(charset)) {
     // Use std::visit or switch to dispatch to appropriate view
 }
 ```
@@ -506,16 +519,17 @@ if (auto c = get_encoding(charset)) {
 
 Two WHATWG error handling strategies are provided:
 
-1. **Replacement mode** (`whatwg_decode`, `whatwg_encode`, and `transcode`): Invalid byte sequences decode to U+FFFD. Ill-formed UTF-32 input is replaced with U+FFFD before encoding, while a scalar value the target encoding cannot represent is replaced with `'?'`.
+1. **Replacement mode** (`whatwg::decode`, `whatwg::encode`, and `whatwg::transcode`): Invalid byte sequences decode to U+FFFD. Ill-formed UTF-32 input is replaced with U+FFFD before encoding, while a scalar value the target encoding cannot represent is replaced with `'?'`.
   This follows the WHATWG replacement model and is appropriate for most text processing where halting on errors is undesirable.
 
-2. **Inspection mode** (`whatwg_decode_or_error`, `whatwg_encode_or_error`): Each output element is `expected<T, whatwg_error>`.
+2. **Report mode** (`whatwg::decode_or_error`, `whatwg::encode_or_error`): Each output element is `expected<T, whatwg::error>`.
   This allows callers to log errors, apply custom replacement, or abort processing.
 
-For WHATWG codecs, the error enumeration provides specific failure reasons:
+For the WHATWG encodings, the error enumeration provides specific failure reasons:
 
 ```cpp
-enum class whatwg_error {
+namespace whatwg {
+enum class error {
   invalid_byte,        // Byte not valid in this position
   truncated_sequence,  // End of input mid-character
   overlong_encoding,   // UTF-8 overlong sequence
@@ -523,6 +537,7 @@ enum class whatwg_error {
   out_of_range,        // Decoded or UTF-32 input value is above U+10FFFF
   unmapped_codepoint,  // Encode: no mapping exists
 };
+}
 ```
 
 #### Relationship to `utf_transcoding_error` (P2728)
@@ -530,20 +545,20 @@ enum class whatwg_error {
 P2728 (beman.utf_view) defines `utf_transcoding_error` for its `_or_error` views.
 The two enumerations are distinct types. Most values correspond directly:
 
-| `whatwg_error` | `utf_transcoding_error` (P2728) | Notes |
+| `whatwg::error` | `utf_transcoding_error` (P2728) | Notes |
 |---|---|---|
-| `truncated_sequence` | `truncated_utf8_sequence` | Same concept; `whatwg_error` applies to all codecs, not just UTF-8 |
+| `truncated_sequence` | `truncated_utf8_sequence` | Same concept; `whatwg::error` applies to all codecs, not just UTF-8 |
 | `overlong_encoding` | `overlong` | Identical semantics |
 | `surrogate_code_point` | `encoded_surrogate` | Identical semantics for UTF-8 and UTF-32 |
 | `out_of_range` | `out_of_range` | Identical semantics |
 | `invalid_byte` | `invalid_utf8_leading_byte` + `unexpected_utf8_continuation_byte` | P2728 distinguishes two invalid-byte cases; WHATWG conflates them because its spec produces U+FFFD for both without differentiating |
 | `unmapped_codepoint` | *(no equivalent)* | See below |
-| *(not needed)* | `unpaired_high_surrogate` / `unpaired_low_surrogate` | UTF-16 code-unit-level concepts; this library operates on byte streams with explicit endianness (`codec::utf_16be`/`utf_16le`), so there is no paired/unpaired distinction at the byte level |
+| *(not needed)* | `unpaired_high_surrogate` / `unpaired_low_surrogate` | UTF-16 code-unit-level concepts; this library operates on byte streams with explicit endianness (`whatwg::encoding::utf_16be`/`utf_16le`), so there is no paired/unpaired distinction at the byte level |
 
 `unmapped_codepoint` is the reason reusing `utf_transcoding_error` directly is not possible.
 P2728's Unicode-only encoders can encode every Unicode scalar value, so P2728 never needs to report "no mapping exists for this code point."
 Legacy codecs cannot: windows-1252 has no representation for U+4E2D (中), Shift-JIS has no representation for U+00E9 (é), and so on for most of the Unicode range.
-`whatwg_encode_or_error<codec::windows_1252>` must be able to report this condition through the same error type as `whatwg_encode_or_error<codec::utf_8>`, so the error type must accommodate it uniformly across the WHATWG encode surface.
+`whatwg::encode_or_error<whatwg::encoding::windows_1252>` must be able to report this condition through the same error type as `whatwg::encode_or_error<whatwg::encoding::utf_8>`, so the error type must accommodate it uniformly across the WHATWG encode surface.
 
 The `iconv` adaptors use a separate `iconv_error` enumeration:
 
@@ -559,13 +574,14 @@ enum class iconv_error {
 
 Two error vocabularies in one header wants a defence, so here it is.
 They are separate because the failures are not the same failures.
-`whatwg_error` names what the Encoding Standard says went wrong in a byte sequence this library decoded, and every one of its enumerators corresponds to a step in an algorithm the paper specifies.
+`whatwg::error` names what the Encoding Standard says went wrong in a byte sequence this library decoded, and every one of its enumerators corresponds to a step in an algorithm the paper specifies.
 `iconv_error` names what the platform reported about a conversion this library did not perform: `EILSEQ`, `EINVAL`, `E2BIG`, a descriptor that would not open, or an unexpected system failure.
+Those codes say *that* a byte sequence is not valid, not why, so the WHATWG error vocabulary would be claiming knowledge the operating system does not return.
 A single enumeration would have to either drop that distinction — reporting `invalid_byte` for a failure whose meaning is "the platform's tables say so", with no algorithm behind it a reader can consult — or carry both sets, which is two vocabularies with one name.
 Nothing composes them, either: the `iconv` adaptor is byte↔byte and does not appear in a `decode | encode` pipeline, so no expression ever has to reconcile the two.
 
 This is separate from the unification of the `_or_error` views.
-Those pairs collapsed into one view template parameterized on `transcode_error_kind`, which selects whether errors are *reported* or replaced.
+Those pairs collapsed into one view template parameterized on `error_mode`, which selects whether errors are *reported* or replaced.
 What an error *is* remains the codec family's own question.
 
 ### Concepts
@@ -596,7 +612,7 @@ library's scalar-value interchange representation, but it cannot prove that each
 their input as UTF-32 and perform the conversion to scalar values above codec
 dispatch, just as the Web Platform converts strings before invoking a WHATWG
 encoder.  Surrogates and values above U+10FFFF become U+FFFD in replacement mode
-or their corresponding errors in inspection mode.
+or their corresponding errors in report mode.
 
 The two are not symmetric: `legacy_byte_range` requires `ranges::range`, where
 `unicode_scalar_range` requires `ranges::input_range`.
@@ -622,7 +638,7 @@ Decoding therefore runs in a constant expression:
 constexpr auto decoded = []() consteval {
     constexpr char bytes[] = {'\xC3', '\xA9'};
     std::span<const char> sp(bytes, 2);
-    return *(sp | whatwg_decode<codec::utf_8>).begin();
+    return *(sp | whatwg::decode<whatwg::encoding::utf_8>).begin();
 }();
 static_assert(decoded == U'é');
 ```
@@ -633,25 +649,25 @@ The views support both function call and pipe syntax:
 
 ```cpp
 // Function call
-auto v1 = whatwg_decode<codec::utf_8>(bytes);
+auto v1 = whatwg::decode<whatwg::encoding::utf_8>(bytes);
 
 // Pipe
-auto v2 = bytes | whatwg_decode<codec::utf_8>;
+auto v2 = bytes | whatwg::decode<whatwg::encoding::utf_8>;
 
 // Composition
 auto v3 = bytes
-  | whatwg_decode<codec::shift_jis>
-  | whatwg_encode<codec::utf_8>;
+  | whatwg::decode<whatwg::encoding::shift_jis>
+  | whatwg::encode<whatwg::encoding::utf_8>;
 
 // Convenience closure
-auto v4 = bytes | transcode<codec::shift_jis, codec::utf_8>;
+auto v4 = bytes | whatwg::transcode<whatwg::encoding::shift_jis, whatwg::encoding::utf_8>;
 ```
 
 ### Range Properties and Const Support
 
 All of the views are valid `input_range`s, and the WHATWG views preserve stronger range properties where they can.
 
-- **Const iteration**: `whatwg_decode`, `whatwg_encode`, and their `_or_error` variants support `begin() const` and `end() const` when the underlying range supports compatible const iteration.
+- **Const iteration**: `whatwg::decode`, `whatwg::encode`, and their `_or_error` variants support `begin() const` and `end() const` when the underlying range supports compatible const iteration.
   This includes owning views after construction.
 
 - **`common_range` and `borrowed_range`**: These properties are preserved from the base range when the codec can support them.
@@ -666,8 +682,8 @@ The separate decode and encode entry points make the pipeline direction explicit
 ```cpp
 std::vector<char> utf8 = {'H', 'i', '\xE2', '\x82', '\xAC'};
 
-auto code_points = utf8 | whatwg_decode<codec::utf_8>;
-auto round_trip  = code_points | whatwg_encode<codec::utf_8>;
+auto code_points = utf8 | whatwg::decode<whatwg::encoding::utf_8>;
+auto round_trip  = code_points | whatwg::encode<whatwg::encoding::utf_8>;
 ```
 
 Collecting into owned storage uses `std::ranges::to`, or the named helpers:
@@ -675,15 +691,15 @@ Collecting into owned storage uses `std::ranges::to`, or the named helpers:
 ```cpp
 std::string bytes = "caf\xE9";
 auto scalars = bytes
-  | whatwg_decode<codec::windows_1252>
+  | whatwg::decode<whatwg::encoding::windows_1252>
   | std::ranges::to<std::vector<char32_t>>();
 
 auto utf8 = scalars
-  | whatwg_encode<codec::utf_8>
+  | whatwg::encode<whatwg::encoding::utf_8>
   | std::ranges::to<std::string>();
 
-auto scalars2 = decode_to<codec::windows_1252>(bytes);
-auto utf8_2   = encode_to<codec::utf_8, std::string>(scalars2);
+auto scalars2 = whatwg::decode_to<whatwg::encoding::windows_1252>(bytes);
+auto utf8_2   = whatwg::encode_to<whatwg::encoding::utf_8, std::string>(scalars2);
 ```
 
 Writing into an output iterator uses `std::ranges::copy`, or `decode_into` and
@@ -691,23 +707,23 @@ Writing into an output iterator uses `std::ranges::copy`, or `decode_into` and
 
 ```cpp
 std::vector<char32_t> scalars;
-std::ranges::copy(bytes | whatwg_decode<codec::utf_8>,
+std::ranges::copy(bytes | whatwg::decode<whatwg::encoding::utf_8>,
                   std::back_inserter(scalars));
 
 std::string encoded;
-std::ranges::copy(scalars | whatwg_encode<codec::utf_8>,
+std::ranges::copy(scalars | whatwg::encode<whatwg::encoding::utf_8>,
                   std::back_inserter(encoded));
 
-decode_into<codec::utf_8>(bytes, std::back_inserter(scalars));
-encode_into<codec::utf_8>(scalars, std::back_inserter(encoded));
+whatwg::decode_into<whatwg::encoding::utf_8>(bytes, std::back_inserter(scalars));
+whatwg::encode_into<whatwg::encoding::utf_8>(scalars, std::back_inserter(encoded));
 ```
 
-The convenience `transcode<From, To>` adaptor is useful when the intermediate Unicode range is not otherwise needed:
+The convenience `whatwg::transcode<From, To>` adaptor is useful when the intermediate Unicode range is not otherwise needed:
 
 ```cpp
 std::string latin1 = "caf\xE9";
 auto utf8 = latin1
-  | transcode<codec::windows_1252, codec::utf_8>
+  | whatwg::transcode<whatwg::encoding::windows_1252, whatwg::encoding::utf_8>
   | std::ranges::to<std::string>();
 ```
 
@@ -716,14 +732,14 @@ Null-terminated inputs compose through `views::null_term`:
 ```cpp
 const char* cstr = "hello";
 std::u32string scalars = views::null_term(cstr)
-  | whatwg_decode<codec::utf_8>
+  | whatwg::decode<whatwg::encoding::utf_8>
   | std::ranges::to<std::u32string>();
 ```
 
 Runtime labels can be resolved through WHATWG's alias table before dispatch:
 
 ```cpp
-if (auto utf8 = transcode_string(bytes, "shift_jis", "utf-8")) {
+if (auto utf8 = whatwg::transcode_string(bytes, "shift_jis", "utf-8")) {
   consume(*utf8);
 }
 ```
@@ -746,7 +762,7 @@ The `legacy_byte_range` concept accepts `char`, `signed char`, `unsigned char`, 
 It explicitly rejects:
 
 - **`char8_t`**: Implies UTF-8 encoding, which conflicts with explicit codec selection.
-  If you have `char8_t` data, you already know it's UTF-8 — passing it to `whatwg_decode<codec::shift_jis>` would be a logic error.
+  If you have `char8_t` data, you already know it's UTF-8 — passing it to `whatwg::decode<whatwg::encoding::shift_jis>` would be a logic error.
 
 - **`wchar_t`**: Platform-dependent width (16-bit on Windows, 32-bit on POSIX) makes it unsuitable as an interchange format. It also implies "already decoded" where what is wanted is "raw bytes."
 
@@ -768,14 +784,14 @@ std::vector<unsigned char> v2;
 std::vector<std::byte> v3;
 std::span<const signed char> s;
 
-v1 | whatwg_decode<codec::utf_8>;  // OK
-v2 | whatwg_decode<codec::utf_8>;  // OK
-v3 | whatwg_decode<codec::utf_8>;  // OK
-s  | whatwg_decode<codec::utf_8>;  // OK
+v1 | whatwg::decode<whatwg::encoding::utf_8>;  // OK
+v2 | whatwg::decode<whatwg::encoding::utf_8>;  // OK
+v3 | whatwg::decode<whatwg::encoding::utf_8>;  // OK
+s  | whatwg::decode<whatwg::encoding::utf_8>;  // OK
 
 // These are rejected at compile time:
 std::u8string u8s;
-u8s | whatwg_decode<codec::utf_8>;  // Error: char8_t implies UTF-8
+u8s | whatwg::decode<whatwg::encoding::utf_8>;  // Error: char8_t implies UTF-8
 ```
 
 ### Template Parameter vs Runtime Selection
@@ -784,7 +800,7 @@ Making the codec a template parameter gives inlined codec logic, no dispatch per
 
 What it gives up is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter cannot be spelled from a runtime string.
 However, the dispatch has to happen exactly once, at the point where the label is resolved, and it is a `switch` over an enumeration.
-`get_encoding` and `transcode_string` provide that dispatch, and runtime selection can be layered further via `variant` or `any`.
+`whatwg::get_encoding` and `whatwg::transcode_string` provide that dispatch, and runtime selection can be layered further via `variant` or `any`.
 Dispatching on every code point instead would give up `constexpr` decoding for all callers to spare one `switch` for some of them.
 
 ### char32_t as the Interchange Type
@@ -795,7 +811,7 @@ The type is an interchange representation. Nothing about `char32_t` validates wh
 Decode views produce scalar values before an encoder sees them; a range of
 `char32_t` supplied from outside a decode pipeline is validated as UTF-32 by
 the encode view. Ill-formed code units are replaced with U+FFFD or reported,
-according to the view's error kind, before the selected codec is invoked.
+according to the view's error mode, before the selected codec is invoked.
 
 UTF-32 is the wasteful choice. A `char32_t` per scalar is four bytes where UTF-8 would often use one. However, these are lazy views, so nothing is stored unless a caller collects it, and a single code point is trivial to inspect. All other interchange types are worse.
 
@@ -804,11 +820,11 @@ UTF-32 is the wasteful choice. A `char32_t` per scalar is four bytes where UTF-8
 Rather than a single primary "transcode from A to B" adaptor, decode and
 encode are separate operations composed via pipes. This enables:
 
-- Processing Unicode without re-encoding: `bytes | whatwg_decode<codec::utf_8> | filter(...)`
-- Encoding to multiple targets: `codepoints | tee(whatwg_encode<codec::utf_8>(...), whatwg_encode<codec::shift_jis>(...))`
+- Processing Unicode without re-encoding: `bytes | whatwg::decode<whatwg::encoding::utf_8> | filter(...)`
+- Encoding to multiple targets: `codepoints | tee(whatwg::encode<whatwg::encoding::utf_8>(...), whatwg::encode<whatwg::encoding::shift_jis>(...))`
 - Clear mental model: decode produces `char32_t`, encode consumes `char32_t`
 
-The `transcode<From, To>` convenience closure is layered on top of this composition model for the common case where the intermediate `char32_t` stream is not observed.
+The `whatwg::transcode<From, To>` convenience closure is layered on top of this composition model for the common case where the intermediate `char32_t` stream is not observed.
 The eager bulk helpers are layered on the same decode and encode semantics, but package the common collection patterns directly.
 
 ### Leading BOM Stripping for UTF Decoders
@@ -816,16 +832,30 @@ The eager bulk helpers are layered on the same decode and encode semantics, but 
 The WHATWG UTF decoders strip a leading BOM when it matches the selected codec.
 This matches browser behavior and the Web Platform Tests [@wpt-encoding] for UTF-8, UTF-16LE, and UTF-16BE.
 
-When the codec is not yet known, a separate `sniff_encoding` helper can examine the byte stream for a BOM before dispatch:
+When the codec is not yet known, a separate `whatwg::bom_sniff` helper can examine the byte stream for a BOM before dispatch:
 
 ```cpp
-if (auto codec = sniff_encoding(bytes)) {
+if (auto enc = whatwg::bom_sniff(bytes)) {
   // Dispatch according to the detected BOM.
 }
 ```
 
 Non-matching BOMs are not stripped.
 For example, a UTF-8 decoder does not remove a UTF-16LE BOM prefix.
+
+`whatwg::bom_sniff` is the byte order mark half of the Encoding Standard's
+"decide the fallback encoding" step. What to do when there is no mark is a
+question about the document and its transport, which a library cannot answer.
+The mark itself is not consumed, because a decode view strips a leading U+FEFF
+for the UTF codecs on its own, so the range can be passed on unchanged.
+
+`R` is required to be a `forward_range` for that last sentence to be true.
+Examining the mark means advancing an iterator over it, and on a single-pass
+range those bytes are not there afterwards. Sniffing a stream and then decoding
+it would drop the prefix, and sniffing a stream with no mark, the common case,
+would drop the first two bytes of the document. Nothing in the signature would
+say so. A caller holding an `input_range` has to materialize enough of it to
+look twice.
 
 ### No Normalization
 
@@ -894,7 +924,7 @@ Every operation that should be `constexpr` has a `consteval` test verifying comp
 constexpr auto result = []() consteval {
     constexpr char bytes[] = {'\xE2', '\x82', '\xAC'};
     std::span<const char> sp(bytes, 3);
-    return *(sp | whatwg_decode<codec::utf_8>).begin();
+    return *(sp | whatwg::decode<whatwg::encoding::utf_8>).begin();
 }();
 static_assert(result == U'€');
 ```
@@ -919,7 +949,8 @@ This proposal adds new headers and does not modify existing standard library com
 ### Headers
 
 ```cpp
-#include <transcode>   // whatwg_decode, whatwg_encode, transcode, iconv_transcode, transcode_string
+#include <transcode>   // whatwg::decode, whatwg::encode, whatwg::transcode, transcode,
+                       // iconv_transcode, whatwg::transcode_string
 #include <null_term>   // null_term_view
 ```
 
@@ -927,7 +958,7 @@ Or combined into `<ranges>` additions.
 
 ## Open Question for SG16
 
-The random-access custom codec protocol reserves U+FFFD as the in-band signal
+The random-access custom codec protocol, `single_byte_text_decoder`, reserves U+FFFD as the in-band signal
 that a byte `0x80` or above decodes to nothing. That keeps `decode_byte` cheap,
 but it prevents a custom codec from mapping such a byte to the actual U+FFFD
 scalar: replacement mode returns U+FFFD, while error-reporting mode calls the
@@ -943,21 +974,21 @@ extension is a change the group should weigh.
 The decisions embodied in the design, and in the wording that follows:
 
 - **Decode and encode are separate adaptors**, composed by pipe.
-  `transcode<From, To>` is the composed convenience for when the intermediate
+  `whatwg::transcode<From, To>` is the composed convenience for when the intermediate
   `char32_t` stream is not observed.
 - **The codec is a template parameter.** Codec logic inlines, nothing
   dispatches per element, and transcoding runs at compile time. Runtime
-  selection happens once, where the label is resolved, through `get_encoding`
-  and `transcode_string`.
+  selection happens once, where the label is resolved, through `whatwg::get_encoding`
+  and `whatwg::transcode_string`.
 - **`char32_t` is the interchange type.** Nothing about it validates what it
   holds, so a `char32_t` range from outside a decode pipeline is validated as
   UTF-32 by the encode view.
 - **Input is byte-like or it is rejected**: `char`, `signed char`,
   `unsigned char`, `std::byte`. `char8_t`, `wchar_t` and raw arrays do not
   participate.
-- **Errors come in two vocabularies**, `whatwg_error` and `iconv_error`,
+- **Errors come in two vocabularies**, `whatwg::error` and `iconv_error`,
   because the failures are not the same failures. Whether an error is reported
-  or replaced is one view template parameterized on `transcode_error_kind`.
+  or replaced is one view template parameterized on `error_mode`.
 - **The views model `input_range`** and preserve more where the codec and base
   permit, up to `random_access_range` for indexed codecs.
 - **Four named bulk helpers are proposed**, specified as the pipelines they
@@ -982,7 +1013,12 @@ either skipped or surfaced as an `iconv_error` — and it leaves the conversion
 to the implementation, as `<locale>` leaves a locale's tables to it. That
 guarantee is the reason to propose it at all: the C interface hands a program a
 descriptor it must remember to close, and an adaptor is where that stops being
-the program's problem.
+the program's problem. It also does not restate a table it does not own.
+
+The iconv views take the C interface as a template parameter, `iconv_functions`,
+rather than calling `::iconv` directly, so that a program can supply a
+different implementation of the same interface, whether another library's or a
+test's. `make_real_iconv_fns` is the one bound to the platform's.
 
 ## Wording
 
