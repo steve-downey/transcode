@@ -18,7 +18,7 @@
 #endif
 namespace beman::transcoding::whatwg {
 
-// \ref{transcode.codec.sniff}, byte order mark sniffing
+// \ref{transcode.whatwg.sniff}, byte order mark sniffing
 
 template <legacy_byte_range R>
     requires std::ranges::forward_range<R>
@@ -29,20 +29,7 @@ constexpr std::optional<encoding> bom_sniff(R&& r) noexcept;
 //! \item `whatwg::encoding::utf_16be`, if `r` begins with `FE FF`;
 //! \item `whatwg::encoding::utf_16le`, if `r` begins with `FF FE`;
 //! \item `nullopt` otherwise.
-//! \remarks This is the byte order mark half of the Encoding Standard's
-//! "decide the fallback encoding" step: what to do when there is no mark is a
-//! question about the document and its transport, which a library cannot
-//! answer.  The mark itself is not consumed -- a decode view strips a leading
-//! U+FEFF for the UTF codecs on its own -- so the range can be passed on
-//! unchanged.
-//!
-//! `R` is required to be a `forward_range` for that last sentence to be true.
-//! Examining the mark means advancing an iterator over it, and on a
-//! single-pass range those bytes are not there afterwards: sniffing a stream
-//! and then decoding it would drop the prefix, and sniffing a stream with no
-//! mark -- the common case -- would drop the first two bytes of the document.
-//! Nothing in the signature would say so.  A caller holding an `input_range`
-//! has to materialize enough of it to look twice.
+//! \remarks The mark is not consumed: `r` can be passed on unchanged.
 template <legacy_byte_range R>
     requires std::ranges::forward_range<R>
 constexpr std::optional<encoding> bom_sniff(R&& r) noexcept {

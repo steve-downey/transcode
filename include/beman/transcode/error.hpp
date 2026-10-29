@@ -56,7 +56,7 @@ enum class iconv_error {
 //   report      — the value type becomes expected<T, whatwg::error>
 //! \remarks A view's error mode says how it reports a failure of the codec it
 //! drives.  The enumerators have the meanings in the following table.
-//! \libtab2[transcode.errors.kind]{Enum class `error_mode`}
+//! \libtab2[transcode.errors.mode]{Enum class `error_mode`}
 //! \column Constant
 //! \column Meaning
 //! \row `replacement`

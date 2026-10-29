@@ -60,8 +60,6 @@ constexpr void encode_into(R&& source, Output output);
 //! add no behaviour to it: the errors are the decoding view's, substituted
 //! rather than reported \iref{transcode.whatwg.decode}, and a caller who wants
 //! them reported writes the pipeline with `whatwg::decode_or_error` instead.
-//! What they add is the name, for the case a caller wants the whole result
-//! rather than a view over it.
 template <encoding C, legacy_byte_range R>
 constexpr std::vector<char32_t> decode_to(R&& source) {
     return std::forward<R>(source) | decode<C> | std::ranges::to<std::vector<char32_t>>();
@@ -69,7 +67,7 @@ constexpr std::vector<char32_t> decode_to(R&& source) {
 
 //! \returns-expr
 //! \remarks `Container` is the caller's choice of result, defaulted to
-//! `string` because that is what encoded bytes are usually wanted in.
+//! `string`.
 template <encoding C, typename Container, unicode_scalar_range R>
 constexpr Container encode_to(R&& source) {
     return std::forward<R>(source) | encode<C> | std::ranges::to<Container>();

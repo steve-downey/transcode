@@ -15,7 +15,7 @@ namespace beman::transcoding::whatwg {
 
 //! \seebelow
 //! \remarks `whatwg::decode<C>` is `decode(whatwg::decoder<C>{})`
-//! \iref{transcode.custom.decode}.  It is the codec-object adaptor over the
+//! \iref{transcode.codec.decode}.  It is the codec-object adaptor over the
 //! library's decoder for the encoding `C`, the decoder as the Encoding
 //! Standard defines it.  The value type, the reporting of decoding errors,
 //! the laziness and the range properties of the view it adapts to are those
@@ -28,7 +28,7 @@ inline constexpr auto decode = transcoding::decode(whatwg::decoder<C>{});
 
 //! \seebelow
 //! \remarks `whatwg::decode_or_error<C>` is
-//! `decode_or_error(whatwg::decoder<C>{})` \iref{transcode.custom.decode}: it
+//! `decode_or_error(whatwg::decoder<C>{})` \iref{transcode.codec.decode}: it
 //! is `whatwg::decode<C>` with `error_mode::report`.  The view it adapts to
 //! has value type `expected<char32_t, whatwg::error>`, and a decoding error
 //! is the error rather than U+FFFD.

@@ -342,7 +342,7 @@ transcode_string(std::span<const char> src, whatwg::encoding from, whatwg::encod
 
 //! \returns `whatwg::transcode_string(src, *whatwg::get_encoding(from_label),
 //! *whatwg::get_encoding(to_label))`, and `nullopt` if either label names no encoding
-//! \iref{transcode.codec.label} or the target encoding has no WHATWG encoder.
+//! \iref{transcode.whatwg.label} or the target encoding has no WHATWG encoder.
 //! \remarks This is the overload a program uses when the encodings are a
 //! runtime choice -- a `Content-Type` header, a command-line option -- which
 //! is what labels are for.

@@ -14,7 +14,7 @@
 #endif
 namespace beman::transcoding {
 
-// \ref{transcode.custom.reqs}, codec requirements
+// \ref{transcode.codec.reqs}, codec requirements
 
 //! \remarks A type models `text_decoder` if it can decode one Unicode scalar
 //! value from a byte sequence.  `c.decode_one(iter, sentinel)` reads from
@@ -23,9 +23,8 @@ namespace beman::transcoding {
 //! called only with `iter != sentinel`.  A codec that consumes no byte does
 //! not terminate the view that drives it.
 //!
-//! A codec is a value: `semiregular` because a view owns one and copies it,
-//! and a codec that decodes a sequence with state keeps that state in itself,
-//! not in the range.
+//! A codec that decodes a sequence with state keeps that state in itself, not
+//! in the range.
 template <typename C>
 concept text_decoder =
     std::semiregular<C> && requires(C& c, const unsigned char*& iter, const unsigned char* sentinel) {

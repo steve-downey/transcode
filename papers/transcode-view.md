@@ -1028,3 +1028,16 @@ Add a new clause [transcode], "Text transcoding", as follows.
 `[transcode.syn]` and `[null.term.syn]` are the two header synopses; every
 other clause specifies what one of them declares.
 --- *end note*]
+
+[*Editor's note*: the synopsis below is rendered without its nested namespace
+blocks.  The declarations of `[transcode.whatwg.encoding]`,
+`[transcode.whatwg.label]`, `[transcode.whatwg.sniff]`,
+`[transcode.whatwg.decoders]`, `[transcode.whatwg.encoders]`,
+`[transcode.whatwg.decode]` and `[transcode.whatwg.encode]` are members of
+namespace `std::whatwg`, as is every other name the synopsis spells with the
+`whatwg::` prefix, including `whatwg::transcode` in `[transcode.pipeline]`,
+`whatwg::transcode_string` in `[transcode.string]` and the `whatwg::` forms of
+`decode_to`, `encode_to`, `decode_into` and `encode_into` in `[transcode.bulk]`.
+In `[null.term.syn]`, `null_term` is a member of namespace `std::views`.  The
+remaining declarations are members of namespace `std`.
+--- *end note*]

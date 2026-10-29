@@ -33,6 +33,7 @@ namespace beman::transcoding {
 //
 // The iterator is move-only for the same reason as iconv_transcode_view:
 // iconv_t is an OS-managed handle that cannot be copied.
+//! \at transcode.iconv
 //! \remarks `iconv_transcode_or_error_view<IconvFns, R>` is
 //! `iconv_transcode_view` \iref{transcode.iconv} with the errors reported
 //! rather than skipped: its value type is `expected<char, iconv_error>`, and a

@@ -31,22 +31,27 @@ namespace beman::transcoding::whatwg {
 
 // \ref{transcode.whatwg.decoders}, decoders
 
+//! \at transcode.whatwg.decoders
 //! \remarks `whatwg::decoder<C>` is the decoder, as a codec object, for the
 //! encoding `C` the Encoding Standard defines.  It models `text_decoder`
-//! \iref{transcode.custom.reqs} for every encoding, and the decode adaptor
-//! over it \iref{transcode.custom.decode} yields what `whatwg::decode<C>`
+//! \iref{transcode.codec.reqs} for every encoding, and the decode adaptor
+//! over it \iref{transcode.codec.decode} yields what `whatwg::decode<C>`
 //! does.  It models `single_byte_text_decoder` when `C` names an encoding that
 //! decodes one byte to one scalar value, `flushable_text_decoder` when
 //! `C` names an encoding whose decoding can leave a result owed after the last
 //! byte, and `bom_aware_text_decoder` when `C` names a UTF encoding: its
 //! `decode_first` discards one leading U+FEFF BYTE ORDER MARK from the text it
-//! decodes.  It is equality comparable.
+//! decodes.  `$strips-leading-bom$<C>` is `true` when `C` is `utf_8`,
+//! `utf_16be` or `utf_16le`, and `$random-access-decode-codec$<C>` is `true`
+//! when `C` is `x_user_defined` or one of the Encoding Standard's single-byte
+//! encodings.  It is equality comparable.
 template <encoding C>
 class decoder {
     //! \expos
     [[no_unique_address]] detail::decode_state_t<C> state_{};
 
   public:
+    // \ref{transcode.whatwg.decoders}, decoding
     template <std::input_iterator I, std::sentinel_for<I> S>
     constexpr decode_result decode_one(I& current, S end);
 
@@ -67,12 +72,12 @@ class decoder {
 // Out-of-line definitions: whatwg::decoder
 // ---------------------------------------------------------------------------
 
-template <encoding C>
-template <std::input_iterator I, std::sentinel_for<I> S>
 //! \effects Decodes one scalar value from `[current, end)` as the encoding
 //! `C` says, advancing `current` past the bytes it consumed.
 //! \returns The scalar value or the error, or, for an escape sequence that
 //! produced no scalar value, a result with `is_empty`.
+template <encoding C>
+template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr decode_result decoder<C>::decode_one(I& current, S end) {
     const auto failure = [](whatwg::error e) { return decode_result{U'\xFFFD', e, true}; };
     const auto success = [](char32_t cp) { return decode_result{cp, {}, false}; };
@@ -130,13 +135,13 @@ constexpr decode_result decoder<C>::decode_one(I& current, S end) {
     }
 }
 
-template <encoding C>
-template <std::input_iterator I, std::sentinel_for<I> S>
 //! \effects Decodes one scalar value as `decode_one(current, end)` does.  If
 //! that is U+FEFF, it is discarded and, unless the input is exhausted, the next
 //! scalar value decoded in its place.
 //! \returns The scalar value or the error, or, for a U+FEFF discarded with no
 //! input after it, a result with `is_empty`.
+template <encoding C>
+template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr decode_result decoder<C>::decode_first(I& current, S end)
     requires detail::strips_leading_bom<C>
 {

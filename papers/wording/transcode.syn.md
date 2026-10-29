@@ -46,7 +46,7 @@ namespace std {
       ranges::input_range<R> && !is_array_v<remove_cvref_t<R>> &&
       same_as<remove_cv_t<ranges::range_value_t<R>>, char32_t>;
 
-  // @[transcode.codec]@, encodings
+  // @[transcode.whatwg.encoding]@, encodings
 
   enum class encoding {
     utf_8,
@@ -91,17 +91,17 @@ namespace std {
     euc_kr,
   };
 
-  // @[transcode.codec.label]@, label lookup
+  // @[transcode.whatwg.label]@, label lookup
 
   constexpr optional<encoding> get_encoding(string_view label) noexcept;
 
-  // @[transcode.codec.label]@, label lookup
+  // @[transcode.whatwg.label]@, label lookup
 
   constexpr optional<encoding> get_encoding(text_encoding::id id) noexcept;
 
   constexpr optional<text_encoding::id> to_text_encoding_id(encoding e) noexcept;
 
-  // @[transcode.custom.reqs]@, codec requirements
+  // @[transcode.codec.reqs]@, codec requirements
 
   struct decode_result {
     char32_t code_point{};
@@ -116,7 +116,7 @@ namespace std {
     bool is_error{false};
   };
 
-  // @[transcode.custom.reqs]@, codec requirements
+  // @[transcode.codec.reqs]@, codec requirements
 
   template<typename C>
   concept text_decoder = semiregular<C> && requires(C& c, const unsigned char*& iter,
@@ -165,6 +165,7 @@ namespace std {
     [[no_unique_address]] detail::decode_state_t<C> $state${}; // exposition only
 
   public:
+    // @[transcode.whatwg.decoders]@, decoding
     template<input_iterator I, sentinel_for<I> S>
     constexpr decode_result decode_one(I& current, S end);
 
@@ -189,6 +190,7 @@ namespace std {
     [[no_unique_address]] detail::encode_state_t<C> $state${}; // exposition only
 
   public:
+    // @[transcode.whatwg.encoders]@, encoding
     constexpr encode_result encode_one(char32_t scalar);
 
     constexpr optional<unsigned char> encode_byte(char32_t scalar) const
@@ -254,7 +256,7 @@ namespace std {
   template<text_encoder Codec, unicode_scalar_range R, output_iterator<char> Output>
   constexpr void encode_into(Codec codec, R&& source, Output output);
 
-  // @[transcode.codec.sniff]@, byte order mark sniffing
+  // @[transcode.whatwg.sniff]@, byte order mark sniffing
 
   template<legacy_byte_range R>
     requires ranges::forward_range<R>
@@ -355,78 +357,5 @@ namespace std {
                                                                const char* to);
 }
 ```
-
-[#]{.pnum} *Remarks*: What a codec's `decode_one` returns.  `is_error` says whether the decode failed.  When it did, `error` says why and `code_point` is U+FFFD REPLACEMENT CHARACTER; when it did not, `code_point` is the decoded Unicode scalar value and `error` is unspecified.  `is_empty` says the call consumed input but produced nothing -- an escape sequence that only changes the decoder's mode, a byte order mark with nothing after it: when it is `true`, `code_point`, `error` and `is_error` are unspecified and the view asks again, or, if the input is exhausted, finishes.
-
-[#]{.pnum} *Remarks*: What a codec's `encode_one` returns.  `is_error` says whether the encode failed -- the encoding has no representation for that scalar value. When it did not, `count` is the number of bytes written and `bytes[0]` through `bytes[count - 1]` are the encoded form.  When it did, the view reports the error in report mode.  In replacement mode it yields `bytes[0]` through `bytes[count - 1]` as the replacement if `count` is greater than zero, as an encoding does that must return to its initial state before the replacement, and `'?'` if `count` is zero.
-
-[#]{.pnum} *Remarks*: `whatwg::decoder<C>` is the decoder, as a codec object, for the encoding `C` the Encoding Standard defines.  It models `text_decoder` ([transcode.custom.reqs]) for every encoding, and the decode adaptor over it ([transcode.custom.decode]) yields what `whatwg::decode<C>` does.  It models `single_byte_text_decoder` when `C` names an encoding that decodes one byte to one scalar value, `flushable_text_decoder` when `C` names an encoding whose decoding can leave a result owed after the last byte, and `bom_aware_text_decoder` when `C` names a UTF encoding: its `decode_first` discards one leading U+FEFF BYTE ORDER MARK from the text it decodes.  It is equality comparable.
-
-```cpp
-template<input_iterator I, sentinel_for<I> S>
-constexpr decode_result decode_first(I& current, S end);
-```
-
-[#]{.pnum} *Constraints*: `C` models `$strips-leading-bom$`.
-
-```cpp
-constexpr char32_t decode_byte(unsigned char byte) const;
-```
-
-[#]{.pnum} *Constraints*: `C` models `$random-access-decode-codec$`.
-
-[#]{.pnum} *Returns*: `0xFFFD` if `byte` decodes to nothing in `C`, otherwise the scalar value `byte` decodes to.
-
-```cpp
-constexpr optional<decode_result> flush();
-```
-
-[#]{.pnum} *Constraints*: `same_as<detail::decode_state_t<C>, detail::no_decode_state>` is `false`.
-
-[#]{.pnum} *Effects*: Decodes what the end of the input leaves owed, from an empty range.
-
-[#]{.pnum} *Returns*: `nullopt` if nothing is owed.  Otherwise a scalar value still pending, or the error for a sequence the input ended in the middle of.
-
-[#]{.pnum} *Remarks*: `whatwg::encoder<C>` is the encoder, as a codec object, for the encoding `C`, which is required to be an encoding the Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and `whatwg::encoder` is not defined for them.  It models `text_encoder` ([transcode.custom.reqs]) and the encode adaptor over it ([transcode.custom.encode]) yields what `whatwg::encode<C>` does.  It models `flushable_text_encoder` when `C` is `encoding::iso_2022_jp`, which owes an escape sequence returning to ASCII after the last scalar value.  It models `single_byte_text_encoder` when `C` names a single-byte encoding.  It is equality comparable.
-
-```cpp
-constexpr encode_result encode_one(char32_t scalar);
-```
-
-[#]{.pnum} *Effects*: Encodes `scalar`, which is a Unicode scalar value, as the encoding `C` says, updating the encoder's state if `C` has one.
-
-[#]{.pnum} *Returns*: The encoded bytes, or, if `C` has no representation for `scalar`, a result with `is_error`.  An error from `iso_2022_jp` carries the bytes that replace `scalar`: an escape sequence returning to ASCII if the output was not in it, then `'?'`.
-
-```cpp
-constexpr optional<unsigned char> encode_byte(char32_t scalar) const;
-```
-
-[#]{.pnum} *Constraints*: `C` models `$random-access-encode-codec$`.
-
-[#]{.pnum} *Returns*: The byte `scalar` encodes to in the encoding `C`, or `nullopt` if `C` has no representation for it.  Present for the single-byte encodings.
-
-```cpp
-constexpr optional<encode_result> flush();
-```
-
-[#]{.pnum} *Constraints*: `C == encoding::iso_2022_jp` is `true`.
-
-[#]{.pnum} *Effects*: Returns the encoder to its initial state.
-
-[#]{.pnum} *Returns*: `nullopt` if the output is already in ASCII.  Otherwise the escape sequence that returns it there.
-
-[#]{.pnum} *Remarks*: The three POSIX `iconv` entry points a view calls, as a value the program supplies.  `open` opens a conversion descriptor, `convert` converts, and `close` closes it; each has the signature and the semantics POSIX gives the function of the same name.  The views take this as a template parameter rather than calling `::iconv` directly so that a program can supply a different implementation of the same interface -- another library's, or a test's -- and `make_real_iconv_fns` is the one bound to the platform's.
-
-[#]{.pnum} The facilities in this subclause are provided only when a POSIX-conforming `iconv` interface, including the required constants and typedefs, is available.  The interface may be supplied by the operating system or by a third-party library.  The type `iconv_t` is the type supplied by that interface and denotes its conversion descriptors.
-
-[#]{.pnum} *Remarks*: `iconv_transcode_view<IconvFns, R>` presents the bytes of `R` converted from the encoding named by `from` to the encoding named by `to`, one element per output byte, using the `iconv` implementation `IconvFns` names.  Conversion is lazy and proceeds in batches: the view converts into the caller's buffer, yields those bytes, and converts again.
-
-[#]{.pnum} What the encoding names mean, which pairs convert, and what a conversion does with input the source encoding does not allow are determined by the supplied `iconv` interface, not this specification.  That is the point of the adaptor: it gives an interface a program already has a ranges shape and a lifetime, and it does not restate a table it does not own.
-
-[#]{.pnum} A conversion failure is reported as `iconv_error` ([transcode.errors]), which is the granularity POSIX reports at: `EILSEQ`, `EINVAL` and `E2BIG` say *that* a byte sequence is not valid, not why, so the WHATWG error vocabulary the other views use would be claiming knowledge the OS does not return.
-
-[#]{.pnum} The output buffer is the caller's, and is not owned by the view. Its contents between two increments are unspecified, and the program must keep it alive for the lifetime of every iterator the view produces. If `iconv` reports `E2BIG` without producing a byte, the range ends because its `char` value type has no error channel.  A program that needs to detect that condition uses `iconv_transcode_or_error`, which reports `iconv_error::output_full` instead.
-
-[#]{.pnum} *Remarks*: `iconv_transcode_or_error_view<IconvFns, R>` is `iconv_transcode_view` ([transcode.iconv]) with the errors reported rather than skipped: its value type is `expected<char, iconv_error>`, and a conversion failure is an element holding the `iconv_error` POSIX reported rather than input the range passes over. The buffer has no minimum-size precondition.  If it cannot hold one indivisible conversion or flush unit, the view reports `iconv_error::output_full`.
 
 :::

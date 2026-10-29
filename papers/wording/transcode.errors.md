@@ -36,7 +36,7 @@ enum class error_mode {
 |---|---|
 | `replacement` | a failure to decode yields U+FFFD REPLACEMENT CHARACTER.  Ill-formed UTF-32 input is first replaced with U+FFFD and then encoded normally; when an encoder cannot represent a scalar value, the encode view yields `'?'`. The view's value type is the codec's own. |
 | `report` | the view's value type is `expected<T, whatwg::error>`, and a failure yields an `unexpected` holding the error that occurred. |
-: [Enum class `error_mode`]{#transcode.errors.kind}
+: [Enum class `error_mode`]{#transcode.errors.mode}
 
 ```cpp
 enum class error {

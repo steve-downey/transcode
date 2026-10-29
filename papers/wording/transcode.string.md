@@ -22,7 +22,7 @@ optional<string> transcode_string(span<const char> src, string_view from_label,
                                   string_view to_label);
 ```
 
-[#]{.pnum} *Returns*: `whatwg::transcode_string(src, *whatwg::get_encoding(from_label), *whatwg::get_encoding(to_label))`, and `nullopt` if either label names no encoding ([transcode.codec.label]) or the target encoding has no WHATWG encoder.
+[#]{.pnum} *Returns*: `whatwg::transcode_string(src, *whatwg::get_encoding(from_label), *whatwg::get_encoding(to_label))`, and `nullopt` if either label names no encoding ([transcode.whatwg.label]) or the target encoding has no WHATWG encoder.
 
 [#]{.pnum} *Remarks*: This is the overload a program uses when the encodings are a runtime choice -- a `Content-Type` header, a command-line option -- which is what labels are for.
 

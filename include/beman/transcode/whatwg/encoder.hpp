@@ -27,12 +27,14 @@ namespace beman::transcoding::whatwg {
 
 // \ref{transcode.whatwg.encoders}, encoders
 
+//! \at transcode.whatwg.encoders
 //! \remarks `whatwg::encoder<C>` is the encoder, as a codec object, for the
-//! encoding `C`, which is required to be an encoding the Encoding Standard
-//! defines an encoder for.  It defines none for `utf_16be`, `utf_16le`,
-//! `replacement` or `x_user_defined`, and `whatwg::encoder` is not defined for
-//! them.  It models `text_encoder` \iref{transcode.custom.reqs} and the encode
-//! adaptor over it \iref{transcode.custom.encode} yields what
+//! encoding `C`.  `$whatwg-encode-codec$<C>` is `true` for every encoding but
+//! `utf_16be`, `utf_16le`, `replacement` and `x_user_defined`, for which the
+//! Encoding Standard defines no encoder, and `$random-access-encode-codec$<C>`
+//! is `true` when `C` is one of the Encoding Standard's single-byte encodings
+//! other than `x_user_defined`.  It models `text_encoder` \iref{transcode.codec.reqs} and the encode
+//! adaptor over it \iref{transcode.codec.encode} yields what
 //! `whatwg::encode<C>` does.  It models `flushable_text_encoder` when `C` is
 //! `encoding::iso_2022_jp`, which owes an escape sequence returning to ASCII
 //! after the last scalar value.  It models `single_byte_text_encoder` when
@@ -44,6 +46,7 @@ class encoder {
     [[no_unique_address]] detail::encode_state_t<C> state_{};
 
   public:
+    // \ref{transcode.whatwg.encoders}, encoding
     constexpr encode_result encode_one(char32_t scalar);
 
     constexpr std::optional<unsigned char> encode_byte(char32_t scalar) const
