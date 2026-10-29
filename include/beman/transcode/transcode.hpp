@@ -42,12 +42,12 @@ import beman.transcode;
     #include <beman/transcode/codec_concepts.hpp>
     #include <beman/transcode/whatwg/decoder.hpp>
     #include <beman/transcode/whatwg/encoder.hpp>
-    #include <beman/transcode/whatwg/decode_view.hpp>
-    #include <beman/transcode/whatwg/encode_view.hpp>
     #include <beman/transcode/decode_view.hpp>
     #include <beman/transcode/encode_view.hpp>
-    #include <beman/transcode/whatwg/transcode_view.hpp>
+    #include <beman/transcode/whatwg/decode_view.hpp>
+    #include <beman/transcode/whatwg/encode_view.hpp>
     #include <beman/transcode/transcode_view.hpp>
+    #include <beman/transcode/whatwg/transcode_view.hpp>
     #include <beman/transcode/whatwg/transcode_string.hpp>
     #include <beman/transcode/whatwg/bulk.hpp>
     #include <beman/transcode/bulk_transcode.hpp>

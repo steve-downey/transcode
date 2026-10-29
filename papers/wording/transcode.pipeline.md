@@ -3,6 +3,15 @@
 ## Transcoding pipelines [transcode.pipeline] {-}
 
 ```cpp
+template<text_decoder From, text_encoder To>
+constexpr $see below$ transcode(From from, To to);
+```
+
+[#]{.pnum} *Returns*: A range adaptor object over `from` and `to`.  Given a subexpression `E` that models `legacy_byte_range`, `transcode(from, to)(E)` and `E | transcode(from, to)` are each expression-equivalent to `E | decode(from) | encode(to)`.
+
+[#]{.pnum} *Remarks*: `from` and `to` may be the library's codec objects (`whatwg::decoder`, `whatwg::encoder`) or a program's own, in any combination.  `whatwg::transcode<From, To>` ([transcode.pipeline]) is defined in terms of this function, with codecs named by enumerators rather than supplied as values.
+
+```cpp
 template<encoding From, encoding To> inline constexpr $unspecified$ transcode;
 ```
 

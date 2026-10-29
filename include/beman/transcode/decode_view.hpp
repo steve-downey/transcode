@@ -104,6 +104,7 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 
 // \ref{transcode.codec.decode}, class template decode_view
 
+//! \at transcode.codec.decode
 //! \remarks `decode_view<Codec, R, E>` is `whatwg::decode_view`
 //! \iref{transcode.whatwg.decode} with the codec supplied as a value rather
 //! than named by an enumerator: it presents the bytes of `R` as the Unicode
@@ -375,6 +376,7 @@ constexpr auto random_access_decode_view<Codec, R, E>::begin() -> iterator {
 
 template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
+//! \omit
 constexpr auto random_access_decode_view<Codec, R, E>::begin() const -> iterator
     requires detail::const_iterator_compatible_range<R>
 {
@@ -389,6 +391,7 @@ constexpr auto random_access_decode_view<Codec, R, E>::end() -> iterator {
 
 template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
+//! \omit
 constexpr auto random_access_decode_view<Codec, R, E>::end() const -> iterator
     requires detail::const_iterator_compatible_range<R> && std::ranges::range<const R>
 {
@@ -397,6 +400,7 @@ constexpr auto random_access_decode_view<Codec, R, E>::end() const -> iterator
 
 template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
+//! \omit
 constexpr auto random_access_decode_view<Codec, R, E>::size() const
     requires std::ranges::sized_range<R>
 {
@@ -428,6 +432,7 @@ constexpr decode_view<Codec, R, E>::iterator::iterator(base_iter current, base_s
 
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
+//! \omit
 constexpr auto decode_view<Codec, R, E>::iterator::terminal() -> iterator
     requires std::ranges::forward_range<R>
 {

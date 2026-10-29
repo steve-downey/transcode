@@ -107,6 +107,7 @@ class random_access_encode_view : public std::ranges::view_interface<random_acce
 
 // \ref{transcode.codec.encode}, class template encode_view
 
+//! \at transcode.codec.encode
 //! \remarks `encode_view<Codec, R, E>` is `whatwg::encode_view`
 //! \iref{transcode.whatwg.encode} with the codec supplied as a value rather
 //! than named by an enumerator: it validates the `char32_t` elements of `R` as
@@ -426,6 +427,7 @@ constexpr encode_view<Codec, R, E>::iterator::iterator(base_iter current, base_s
 
 template <text_encoder Codec, std::ranges::input_range R, error_mode E>
     requires unicode_scalar_range<R>
+//! \omit
 constexpr auto encode_view<Codec, R, E>::iterator::terminal() -> iterator
     requires std::ranges::forward_range<R>
 {
