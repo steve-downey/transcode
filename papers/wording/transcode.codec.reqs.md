@@ -74,6 +74,6 @@ concept flushable_text_encoder = text_encoder<C> && requires(C& c) {
 };
 ```
 
-[#]{.pnum} *Remarks*: A type models `flushable_text_encoder` if it can owe output after the last scalar value, as an encoding with shift states must return to its initial state.  `c.flush()` is called when the input is exhausted, and again after each engaged result, until it returns `nullopt`.  It returns the bytes the codec still owes, or `nullopt` if it owes nothing.  A codec that does not model this concept is asked for nothing at the end of the input.
+[#]{.pnum} *Remarks*: A type models `flushable_text_encoder` if it can owe output after the last scalar value, as an encoding with shift states must return to its initial state.  `c.flush()` is called when the input is exhausted, and again after each engaged result, until it returns `nullopt`.  It returns the bytes the codec still owes, or `nullopt` if it owes nothing.  A codec that does not model this concept is asked for nothing at the end of the input.  An engaged result with `count == 0` and `is_error` false owes nothing and ends the view.  An error result's bytes are used as an `encode_one` error's are.
 
 :::

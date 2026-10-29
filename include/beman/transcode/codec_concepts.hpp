@@ -96,7 +96,9 @@ concept bom_aware_text_decoder =
 //! again after each engaged result, until it returns `nullopt`.  It returns
 //! the bytes the codec still owes, or `nullopt` if it owes nothing.  A codec
 //! that does not model this concept is asked for nothing at the end of the
-//! input.
+//! input.  An engaged result with `count == 0` and `is_error` false owes
+//! nothing and ends the view.  An error result's bytes are used as an
+//! `encode_one` error's are.
 template <typename C>
 concept flushable_text_encoder = text_encoder<C> && requires(C& c) {
     { c.flush() } -> std::same_as<std::optional<encode_result>>;
