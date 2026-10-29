@@ -37,6 +37,7 @@ import beman.transcode;
     #include <beman/transcode/concepts.hpp>
     #include <beman/transcode/whatwg/encoding.hpp>
     #include <beman/transcode/whatwg/label.hpp>
+    #include <beman/transcode/whatwg/text_encoding.hpp>
     #include <beman/transcode/codec_result.hpp>
     #include <beman/transcode/codec_concepts.hpp>
     #include <beman/transcode/whatwg/decoder.hpp>

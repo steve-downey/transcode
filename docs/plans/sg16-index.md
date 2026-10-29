@@ -354,7 +354,31 @@ random-access encode, if SG16 or LEWG object to the extra public name.
 
 ## std::text_encoding bridge {#text-encoding-bridge}
 
-**Provisional, step 14.**
+**Final, step 14.** Header `whatwg/text_encoding.hpp`, in the
+`[transcode.codec.label]` clause. The probe is
+`BEMAN_TRANSCODE_HAS_TEXT_ENCODING` in the top-level `CMakeLists.txt` (it
+sets `CMAKE_CXX_STANDARD 26` for the probe); the test target
+`beman.transcode.tests.text_encoding` and the example are built as C++26 only
+when it passes.
+
+Findings, asserted in `text_encoding.test.cpp` (nothing invented):
+
+- **Encodings with no id: `replacement`, `x_user_defined`, `x_mac_cyrillic`.**
+  The third is the one the user did not expect; its labels are not IANA names.
+- The round trip `get_encoding(*to_text_encoding_id(e)) == e` holds for every
+  other encoding, with no exceptions.
+- The id given back is the first label of the encoding in label-table
+  (alphabetical) order that is a registered name, and some are surprising:
+  `windows_1252` gives `US-ASCII` (mib 3, label `ansi_x3.4-1968`; the Encoding
+  Standard really does decode ASCII as windows-1252), `iso_8859_8` gives
+  `ISO-8859-8-E` (84), `utf_16le` gives `ISO-10646-UCS-2` (1000, label
+  `ucs-2`), `gbk` gives `GB2312` (57), `windows_1254` gives `ISO-8859-9` (12).
+  `get_encoding(id)` maps `id::ISOLatin1`, `id::windows1252` and `id::ASCII`
+  all to `windows_1252`.
+- Example output on Linux (WSL2) x86-64, GCC 16.2, glibc 2.39:
+  `WHATWG shift_jis: U+005C U+007E` and `iconv Shift_JIS  : U+00A5 U+203E`.
+
+Original plan, for reference:
 
 - `constexpr std::optional<whatwg::encoding> whatwg::get_encoding(std::text_encoding::id id) noexcept;`
   applies the WHATWG label lookup to `std::text_encoding{id}.name()` and then
