@@ -35,7 +35,10 @@ namespace beman::transcoding {
 //! them to, reports an error as `E` says, and encodes lazily.  Ill-formed
 //! UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in
 //! replacement mode and is reported without calling the codec in report
-//! mode.  A custom codec therefore receives only Unicode scalar values.
+//! mode.  A custom codec therefore receives only Unicode scalar values.  When
+//! `Codec::encode_one` fails and supplies bytes, the view in replacement mode
+//! yields those bytes as the replacement; if it supplies none, the
+//! replacement is `'?'`.  In report mode the bytes are ignored.
 template <text_encoder Codec, std::ranges::input_range R, error_mode E = error_mode::replacement>
     requires unicode_scalar_range<R>
 class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>> {
@@ -249,7 +252,9 @@ constexpr void encode_view<Codec, R, E>::iterator::load() {
         }
     }
     auto r = codec_.encode_one(validation.code_point);
-    if (r.is_error) {
+    // An error that carries bytes, in replacement mode, is the codec's own
+    // replacement and is yielded as it is; otherwise the view substitutes '?'.
+    if (r.is_error && (E == error_mode::report || r.count == 0)) {
         is_error_ = true;
         error_    = whatwg::error::unmapped_codepoint;
         len_      = 1;

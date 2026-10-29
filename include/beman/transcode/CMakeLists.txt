@@ -31,6 +31,7 @@ set(BEMAN_TRANSCODE_HEADERS
     whatwg/bulk.hpp
     whatwg/decode_view.hpp
     whatwg/decoder.hpp
+    whatwg/encoder.hpp
     whatwg/encode_view.hpp
     whatwg/encoding.hpp
     whatwg/error.hpp

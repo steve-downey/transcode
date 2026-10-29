@@ -6,6 +6,7 @@ WORDING_MD := \
 	wording/transcode.reqs.md \
 	wording/transcode.codec.md \
 	wording/transcode.whatwg.decoders.md \
+	wording/transcode.whatwg.encoders.md \
 	wording/transcode.whatwg.decode.md \
 	wording/transcode.whatwg.encode.md \
 	wording/transcode.custom.reqs.md \

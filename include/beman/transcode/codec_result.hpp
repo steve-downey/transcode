@@ -28,8 +28,11 @@ struct decode_result {
 //! \remarks What a codec's `encode_one` returns.  `is_error` says whether the
 //! encode failed -- the encoding has no representation for that scalar value.
 //! When it did not, `count` is the number of bytes written and `bytes[0]`
-//! through `bytes[count - 1]` are the encoded form; when it did, `count` is
-//! zero and the view substitutes or reports the error as its error mode says.
+//! through `bytes[count - 1]` are the encoded form.  When it did, the view
+//! reports the error in report mode.  In replacement mode it yields
+//! `bytes[0]` through `bytes[count - 1]` as the replacement if `count` is
+//! greater than zero, as an encoding does that must return to its initial
+//! state before the replacement, and `'?'` if `count` is zero.
 struct encode_result {
     unsigned char bytes[8]{};
     int           count{0};

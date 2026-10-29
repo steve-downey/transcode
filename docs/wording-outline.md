@@ -59,6 +59,7 @@ order the compiler needs and need not match.
 | `transcode.codec.label` | 3 | Label lookup | `whatwg::get_encoding` | `label.hpp`, done 2026-09-07 |
 | `transcode.codec.sniff` | 3 | Byte order mark sniffing | `whatwg::bom_sniff` | `sniff.hpp`, done 2026-09-07 |
 | `transcode.whatwg.decoders` | 2 | Decoders | `whatwg::decoder` | `whatwg/decoder.hpp`, added step 08 of the SG16 response |
+| `transcode.whatwg.encoders` | 2 | Encoders | `whatwg::encoder` | `whatwg/encoder.hpp`, added step 10 of the SG16 response |
 | `transcode.whatwg.decode` | 2 | Decoding adaptors | the two variable templates `whatwg::decode<C>` / `whatwg::decode_or_error<C>`, each the codec-object adaptor over `whatwg::decoder<C>` | `whatwg/decode_view.hpp`, reduced to the two variables in step 09 of the SG16 response |
 | `transcode.whatwg.encode` | 2 | Encoding views | `whatwg::encode_view`, likewise | `whatwg/encode_view.hpp`, done 2026-09-08 |
 | `transcode.whatwg.encode.iterator` | 3 | Class `whatwg::encode_view::iterator` | likewise | `whatwg/encode_view.hpp`, done 2026-09-08 |

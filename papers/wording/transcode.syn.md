@@ -169,6 +169,22 @@ namespace std {
     friend constexpr bool operator==(const decoder&, const decoder&) = default;
   };
 
+  // @[transcode.whatwg.encoders]@, encoders
+
+  template<encoding C>
+    requires $whatwg-encode-codec$<C>
+  class encoder {
+    [[no_unique_address]] detail::encode_state_t<C> $state${}; // exposition only
+
+  public:
+    constexpr encode_result encode_one(char32_t scalar);
+
+    constexpr optional<encode_result> flush()
+      requires(C == encoding::iso_2022_jp);
+
+    friend constexpr bool operator==(const encoder&, const encoder&) = default;
+  };
+
   // @[transcode.whatwg.decode]@, decoding adaptors
 
   template<whatwg::encoding C> inline constexpr $unspecified$ decode;
@@ -402,7 +418,7 @@ namespace std {
 
 [#]{.pnum} *Remarks*: What a codec's `decode_one` returns.  `is_error` says whether the decode failed.  When it did, `error` says why and `code_point` is U+FFFD REPLACEMENT CHARACTER; when it did not, `code_point` is the decoded Unicode scalar value and `error` is unspecified.  `is_empty` says the call consumed input but produced nothing -- an escape sequence that only changes the decoder's mode, a byte order mark with nothing after it: when it is `true`, `code_point`, `error` and `is_error` are unspecified and the view asks again, or, if the input is exhausted, finishes.
 
-[#]{.pnum} *Remarks*: What a codec's `encode_one` returns.  `is_error` says whether the encode failed -- the encoding has no representation for that scalar value. When it did not, `count` is the number of bytes written and `bytes[0]` through `bytes[count - 1]` are the encoded form; when it did, `count` is zero and the view substitutes or reports the error as its error mode says.
+[#]{.pnum} *Remarks*: What a codec's `encode_one` returns.  `is_error` says whether the encode failed -- the encoding has no representation for that scalar value. When it did not, `count` is the number of bytes written and `bytes[0]` through `bytes[count - 1]` are the encoded form.  When it did, the view reports the error in report mode.  In replacement mode it yields `bytes[0]` through `bytes[count - 1]` as the replacement if `count` is greater than zero, as an encoding does that must return to its initial state before the replacement, and `'?'` if `count` is zero.
 
 [#]{.pnum} *Remarks*: `whatwg::decoder<C>` is the decoder, as a codec object, for the encoding `C` the Encoding Standard defines.  It models `text_decoder` ([transcode.custom.reqs]) for every encoding, and the decode adaptor over it ([transcode.custom.decode]) yields what `whatwg::decode<C>` does.  It models `single_byte_text_decoder` when `C` names an encoding that decodes one byte to one scalar value, `flushable_text_decoder` when `C` names an encoding whose decoding can leave a result owed after the last byte, and `bom_aware_text_decoder` when `C` names a UTF encoding: its `decode_first` discards one leading U+FEFF BYTE ORDER MARK from the text it decodes.  It is equality comparable.
 
@@ -431,6 +447,26 @@ constexpr optional<decode_result> flush();
 
 [#]{.pnum} *Returns*: `nullopt` if nothing is owed.  Otherwise a scalar value still pending, or the error for a sequence the input ended in the middle of.
 
+[#]{.pnum} *Remarks*: `whatwg::encoder<C>` is the encoder, as a codec object, for the encoding `C`, which is required to be an encoding the Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and `whatwg::encoder` is not defined for them.  It models `text_encoder` ([transcode.custom.reqs]) and the encode adaptor over it ([transcode.custom.encode]) yields what `whatwg::encode<C>` does.  It models `flushable_text_encoder` when `C` is `encoding::iso_2022_jp`, which owes an escape sequence returning to ASCII after the last scalar value.  It is equality comparable.
+
+```cpp
+constexpr encode_result encode_one(char32_t scalar);
+```
+
+[#]{.pnum} *Effects*: Encodes `scalar`, which is a Unicode scalar value, as the encoding `C` says, updating the encoder's state if `C` has one.
+
+[#]{.pnum} *Returns*: The encoded bytes, or, if `C` has no representation for `scalar`, a result with `is_error`.  An error from `iso_2022_jp` carries the bytes that replace `scalar`: an escape sequence returning to ASCII if the output was not in it, then `'?'`.
+
+```cpp
+constexpr optional<encode_result> flush();
+```
+
+[#]{.pnum} *Constraints*: `C == encoding::iso_2022_jp` is `true`.
+
+[#]{.pnum} *Effects*: Returns the encoder to its initial state.
+
+[#]{.pnum} *Returns*: `nullopt` if the output is already in ASCII.  Otherwise the escape sequence that returns it there.
+
 [#]{.pnum} *Remarks*: `whatwg::encode_view<C, R, E>` validates the `char32_t` elements of `R` as UTF-32 and presents them as the bytes the encoding `C` encodes them to, one element per byte.  In replacement mode, an ill-formed UTF-32 code unit is replaced with U+FFFD and that scalar value is encoded normally; in report mode it yields an `unexpected` holding `whatwg::error::surrogate_code_point` or `whatwg::error::out_of_range`.  A scalar value the encoding cannot represent yields `'?'` in replacement mode and `whatwg::error::unmapped_codepoint` in report mode.  Encoding is lazy, and one input element can produce several output elements.
 
 [#]{.pnum} `C` is required to be an encoding the WHATWG Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and the view does not accept them.
@@ -441,7 +477,7 @@ template<typename R> constexpr auto operator()(R&& r) const;
 
 [#]{.pnum} *Constraints*: `$whatwg-encode-input$<C, R>` is satisfied.
 
-[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg::encode_view` ([transcode.whatwg.encode]) with the codec supplied as a value rather than named by an enumerator: it validates the `char32_t` elements of `R` as UTF-32, presents the resulting scalar values as the bytes `Codec` encodes them to, reports an error as `E` says, and encodes lazily.  Ill-formed UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in replacement mode and is reported without calling the codec in report mode.  A custom codec therefore receives only Unicode scalar values.
+[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg::encode_view` ([transcode.whatwg.encode]) with the codec supplied as a value rather than named by an enumerator: it validates the `char32_t` elements of `R` as UTF-32, presents the resulting scalar values as the bytes `Codec` encodes them to, reports an error as `E` says, and encodes lazily.  Ill-formed UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in replacement mode and is reported without calling the codec in report mode.  A custom codec therefore receives only Unicode scalar values.  When `Codec::encode_one` fails and supplies bytes, the view in replacement mode yields those bytes as the replacement; if it supplies none, the replacement is `'?'`.  In report mode the bytes are ignored.
 
 ```cpp
 static constexpr $iterator$ $terminal$();
