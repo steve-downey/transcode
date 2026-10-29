@@ -5,62 +5,47 @@
 
 #include <beman/transcode/config.hpp>
 
-#include <beman/transcode/concepts.hpp>
-#include <beman/transcode/whatwg/decode_view.hpp>
-#include <beman/transcode/whatwg/encode_view.hpp>
+#include <beman/transcode/detail/whatwg_encode_select.hpp>
+#include <beman/transcode/transcode_view.hpp>
+#include <beman/transcode/whatwg/decoder.hpp>
+#include <beman/transcode/whatwg/encoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 
-#if !BEMAN_TRANSCODE_USE_MODULES()
-    #include <type_traits>
-    #include <utility>
+namespace beman::transcoding::detail {
 
-#endif
+// What `whatwg::transcode<From, To>` initializes from.  `whatwg::encoder<To>`
+// is constrained to the encodings WHATWG defines an encoder for, so the check
+// that names the reason comes first.
+//! \omit
+template <whatwg::encoding From, whatwg::encoding To>
+constexpr auto make_whatwg_transcode_adaptor() {
+    static_assert(whatwg_encode_codec<To>, "transcode: WHATWG does not define an encoder for this encoding");
+    if constexpr (whatwg_encode_codec<To>)
+        return transcoding::transcode(whatwg::decoder<From>{}, whatwg::encoder<To>{});
+}
+
+} // namespace beman::transcoding::detail
+
 namespace beman::transcoding::whatwg {
 
 // \ref{transcode.pipeline}, transcoding pipelines
 
-//! \omit
-template <encoding From, encoding To>
-struct transcode_closure {
-    template <legacy_byte_range R>
-    constexpr auto operator()(R&& r) const;
-
-    template <legacy_byte_range R>
-    constexpr friend auto operator|(R&& r, const transcode_closure& self) {
-        return self(std::forward<R>(r));
-    }
-
-    template <typename R>
-        requires std::is_array_v<std::remove_cvref_t<R>>
-    friend auto operator|(R&&, const transcode_closure&) {
-        static_assert(!std::is_array_v<std::remove_cvref_t<R>>,
-                      "transcode: raw arrays are not valid input to transcode; "
-                      "use beman::transcoding::views::null_term to get a range from a "
-                      "null-terminated string");
-    }
-};
-
 //! \seebelow
-//! \remarks The name `whatwg::transcode<From, To>` denotes a range adaptor
-//! object.  Given a subexpression `E` that models `legacy_byte_range`,
-//! `whatwg::transcode<From, To>(E)` and `E | whatwg::transcode<From, To>` are
-//! each expression-equivalent to `E | whatwg::decode<From> | whatwg::encode<To>`.
-//! An `E` of array type is ill-formed.
+//! \remarks `whatwg::transcode<From, To>` is
+//! `transcode(whatwg::decoder<From>{}, whatwg::encoder<To>{})`
+//! \iref{transcode.pipeline}, and so is `E | whatwg::decode<From> |
+//! whatwg::encode<To>` for a subexpression `E` that models
+//! `legacy_byte_range`.  An `E` of array type is ill-formed.
 //!
 //! The composition is the specification: the pipeline decodes and
 //! re-encodes one element at a time, and it is lazy because its parts are.
 //! A scalar value `To` cannot represent is an encoding error, reported as
 //! `whatwg::encode` reports one; a byte sequence `From` does not allow is a
 //! decoding error, and the U+FFFD it decodes to is what gets encoded.
+//!
+//! *Mandates:* The Encoding Standard defines an encoder for `To`.
 template <encoding From, encoding To>
-inline constexpr auto transcode = transcode_closure<From, To>{};
-
-// Out-of-line definition: transcode_closure::operator()
-template <encoding From, encoding To>
-template <legacy_byte_range R>
-constexpr auto transcode_closure<From, To>::operator()(R&& r) const {
-    return std::forward<R>(r) | decode<From> | encode<To>;
-}
+inline constexpr auto transcode = detail::make_whatwg_transcode_adaptor<From, To>();
 
 } // namespace beman::transcoding::whatwg
 

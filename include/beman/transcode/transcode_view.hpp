@@ -52,8 +52,11 @@ struct pluggable_transcode_closure {
 //! subexpression `E` that models `legacy_byte_range`,
 //! `transcode(from, to)(E)` and `E | transcode(from, to)`
 //! are each expression-equivalent to `E | decode(from) | encode(to)`.
-//! \remarks This is `whatwg::transcode` \iref{transcode.pipeline} with codecs
-//! supplied as values rather than named by enumerators.
+//! \remarks `from` and `to` may be the library's codec objects
+//! (`whatwg::decoder`, `whatwg::encoder`) or a program's own, in any
+//! combination.  `whatwg::transcode<From, To>` \iref{transcode.pipeline} is
+//! defined in terms of this function, with codecs named by enumerators rather
+//! than supplied as values.
 template <text_decoder From, text_encoder To>
 constexpr pluggable_transcode_closure<From, To> transcode(From from, To to) {
     return {from, to};
