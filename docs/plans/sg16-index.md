@@ -562,6 +562,9 @@ The integration review reads this section.
   is unmerged. It is independent of this series and touches only
   `papers/wg21org/` and `papers/README.md`, which no step edits. Merging and
   pushing it is the user's call.
+- The paper cites PR #128 (dispatch numbers) by URL in prose; there is no
+  bibliography entry. If #128 is not merged when R1 goes out, the link points
+  at an open PR.
 - specgen does not render nested namespaces (`whatwg::`, `views::`) in a
   synopsis. That needs a specgen change.
 - The uncommitted work in
