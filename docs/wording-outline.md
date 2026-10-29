@@ -61,8 +61,7 @@ order the compiler needs and need not match.
 | `transcode.whatwg.decoders` | 2 | Decoders | `whatwg::decoder` | `whatwg/decoder.hpp`, added step 08 of the SG16 response |
 | `transcode.whatwg.encoders` | 2 | Encoders | `whatwg::encoder` | `whatwg/encoder.hpp`, added step 10 of the SG16 response |
 | `transcode.whatwg.decode` | 2 | Decoding adaptors | the two variable templates `whatwg::decode<C>` / `whatwg::decode_or_error<C>`, each the codec-object adaptor over `whatwg::decoder<C>` | `whatwg/decode_view.hpp`, reduced to the two variables in step 09 of the SG16 response |
-| `transcode.whatwg.encode` | 2 | Encoding views | `whatwg::encode_view`, likewise | `whatwg/encode_view.hpp`, done 2026-09-08 |
-| `transcode.whatwg.encode.iterator` | 3 | Class `whatwg::encode_view::iterator` | likewise | `whatwg/encode_view.hpp`, done 2026-09-08 |
+| `transcode.whatwg.encode` | 2 | Encoding adaptors | the two variable templates `whatwg::encode<C>` / `whatwg::encode_or_error<C>`, each the codec-object adaptor over `whatwg::encoder<C>` | `whatwg/encode_view.hpp`, reduced to the two variables in step 12 of the SG16 response |
 | `transcode.custom.reqs` | 2 | Codec requirements | `text_decoder`, `text_encoder`, `flushable_text_decoder`, `bom_aware_text_decoder`, `single_byte_text_decoder`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp`, done 2026-09-08 |
 | `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp`, done 2026-09-08 |
 | `transcode.custom.decode.iterator` | 3 | Class `decode_view::iterator` | the iterator operations | `decode_view.hpp`, done 2026-09-08 |

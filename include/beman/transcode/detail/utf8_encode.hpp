@@ -4,37 +4,33 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_UTF8_ENCODE_HPP
 
 #include <beman/transcode/config.hpp>
+#include <beman/transcode/codec_result.hpp>
 
 namespace beman::transcoding::detail {
 
-struct utf8_encode_result {
-    char bytes[4]{};
-    int  count{};
-};
+constexpr encode_result utf8_encode_one(char32_t cp);
 
-constexpr utf8_encode_result utf8_encode_one(char32_t cp);
-
-constexpr utf8_encode_result utf8_encode_one(char32_t cp) {
+constexpr encode_result utf8_encode_one(char32_t cp) {
     // The encode views validate their UTF-32 input before codec dispatch, so
     // this encoder receives only Unicode scalar values.
-    utf8_encode_result r{};
+    encode_result r{};
     if (cp < 0x80) {
-        r.bytes[0] = static_cast<char>(cp);
+        r.bytes[0] = static_cast<unsigned char>(cp);
         r.count    = 1;
     } else if (cp < 0x800) {
-        r.bytes[0] = static_cast<char>(0xC0 | (cp >> 6));
-        r.bytes[1] = static_cast<char>(0x80 | (cp & 0x3F));
+        r.bytes[0] = static_cast<unsigned char>(0xC0 | (cp >> 6));
+        r.bytes[1] = static_cast<unsigned char>(0x80 | (cp & 0x3F));
         r.count    = 2;
     } else if (cp < 0x10000) {
-        r.bytes[0] = static_cast<char>(0xE0 | (cp >> 12));
-        r.bytes[1] = static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
-        r.bytes[2] = static_cast<char>(0x80 | (cp & 0x3F));
+        r.bytes[0] = static_cast<unsigned char>(0xE0 | (cp >> 12));
+        r.bytes[1] = static_cast<unsigned char>(0x80 | ((cp >> 6) & 0x3F));
+        r.bytes[2] = static_cast<unsigned char>(0x80 | (cp & 0x3F));
         r.count    = 3;
     } else {
-        r.bytes[0] = static_cast<char>(0xF0 | (cp >> 18));
-        r.bytes[1] = static_cast<char>(0x80 | ((cp >> 12) & 0x3F));
-        r.bytes[2] = static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
-        r.bytes[3] = static_cast<char>(0x80 | (cp & 0x3F));
+        r.bytes[0] = static_cast<unsigned char>(0xF0 | (cp >> 18));
+        r.bytes[1] = static_cast<unsigned char>(0x80 | ((cp >> 12) & 0x3F));
+        r.bytes[2] = static_cast<unsigned char>(0x80 | ((cp >> 6) & 0x3F));
+        r.bytes[3] = static_cast<unsigned char>(0x80 | (cp & 0x3F));
         r.count    = 4;
     }
     return r;

@@ -2,6 +2,7 @@
 
 #include <beman/transcode/whatwg/encode_view.hpp>
 #include <beman/transcode/whatwg/encode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/wpt_surrogates_utf8_vectors.hpp>

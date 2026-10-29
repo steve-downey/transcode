@@ -4,6 +4,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_SHIFT_JIS_HPP
 
 #include <beman/transcode/config.hpp>
+#include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
 #include <beman/transcode/whatwg/error.hpp>
@@ -17,12 +18,6 @@ namespace beman::transcoding::detail {
 struct shift_jis_decode_result {
     char32_t      code_point{0xFFFD};
     whatwg::error error{};
-    bool          is_error{false};
-};
-
-struct shift_jis_encode_result {
-    unsigned char bytes[2]{};
-    int           count{0};
     bool          is_error{false};
 };
 
@@ -40,7 +35,7 @@ constexpr shift_jis_decode_result shift_jis_decode_one(I& current, S end);
 // U+FF61-U+FF9F (half-width katakana) map to 0xA1-0xDF.
 // Other codepoints are looked up in shift_jis_index.
 // Returns is_error=true if the codepoint is not representable in Shift_JIS.
-constexpr shift_jis_encode_result shift_jis_encode_one(char32_t cp);
+constexpr encode_result shift_jis_encode_one(char32_t cp);
 
 // WHATWG's "index Shift_JIS pointer": the first pointer for a code point in
 // index jis0208, excluding pointers 8272-8835.  Those are the NEC-selected
@@ -95,10 +90,10 @@ constexpr shift_jis_decode_result shift_jis_decode_one(I& current, S end) {
     return {cp, {}, false};
 }
 
-constexpr shift_jis_encode_result shift_jis_encode_one(char32_t cp) {
+constexpr encode_result shift_jis_encode_one(char32_t cp) {
     // ASCII passthrough
     if (cp < 0x80) {
-        shift_jis_encode_result r{};
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>(cp);
         r.count    = 1;
         return r;
@@ -106,13 +101,13 @@ constexpr shift_jis_encode_result shift_jis_encode_one(char32_t cp) {
 
     // WHATWG special cases
     if (cp == 0x00A5) {
-        shift_jis_encode_result r{};
+        encode_result r{};
         r.bytes[0] = 0x5C;
         r.count    = 1;
         return r;
     }
     if (cp == 0x203E) {
-        shift_jis_encode_result r{};
+        encode_result r{};
         r.bytes[0] = 0x7E;
         r.count    = 1;
         return r;
@@ -120,7 +115,7 @@ constexpr shift_jis_encode_result shift_jis_encode_one(char32_t cp) {
 
     // Half-width katakana (U+FF61-U+FF9F)
     if (cp >= 0xFF61 && cp <= 0xFF9F) {
-        shift_jis_encode_result r{};
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>(0xA1 + (cp - 0xFF61));
         r.count    = 1;
         return r;
@@ -128,11 +123,11 @@ constexpr shift_jis_encode_result shift_jis_encode_one(char32_t cp) {
 
     int pointer = shift_jis_index.find(cp);
     if (pointer >= 0) {
-        int                     lead_offset  = pointer / 188;
-        int                     trail_offset = pointer % 188;
-        int                     lead         = (lead_offset < 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1;
-        int                     trail        = (trail_offset < 63) ? trail_offset + 0x40 : trail_offset + 0x41;
-        shift_jis_encode_result r{};
+        int           lead_offset  = pointer / 188;
+        int           trail_offset = pointer % 188;
+        int           lead         = (lead_offset < 0x1F) ? lead_offset + 0x81 : lead_offset + 0xC1;
+        int           trail        = (trail_offset < 63) ? trail_offset + 0x40 : trail_offset + 0x41;
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>(lead);
         r.bytes[1] = static_cast<unsigned char>(trail);
         r.count    = 2;

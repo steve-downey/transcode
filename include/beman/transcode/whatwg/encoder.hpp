@@ -8,6 +8,7 @@
 #include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <beman/transcode/detail/whatwg_encode_select.hpp>
+#include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/single_byte.hpp>
 #include <beman/transcode/detail/big5.hpp>
 #include <beman/transcode/detail/euc_jp.hpp>
@@ -67,48 +68,33 @@ template <encoding C>
 //! that replace `scalar`: an escape sequence returning to ASCII if the output
 //! was not in it, then `'?'`.
 constexpr encode_result encoder<C>::encode_one(char32_t scalar) {
-    const auto failure = encode_result{.is_error = true};
-    const auto copy    = [](const auto& r) {
-        encode_result out;
-        for (int i = 0; i < r.count; ++i)
-            out.bytes[i] = static_cast<unsigned char>(r.bytes[i]);
-        out.count = r.count;
-        return out;
-    };
+    // Each detail encoder builds the encode_result itself, and it is returned
+    // as a prvalue: a copy here, or a whole-array copy anywhere on the way to
+    // the view's buffer, makes GCC spill the result to the stack per element.
     if constexpr (C == encoding::utf_8) {
-        return copy(detail::utf8_encode_one(scalar));
+        return detail::utf8_encode_one(scalar);
     } else if constexpr (detail::random_access_encode_codec<C>) {
-        const auto r = detail::single_byte_encode_one<detail::random_access_encode_table<C>()>(scalar);
-        if (r.is_error)
-            return failure;
+        const auto    r = detail::single_byte_encode_one<detail::random_access_encode_table<C>()>(scalar);
         encode_result out;
         out.bytes[0] = r.byte;
-        out.count    = 1;
+        out.count    = r.is_error ? 0 : 1;
+        out.is_error = r.is_error;
         return out;
     } else if constexpr (C == encoding::gbk) {
-        const auto r = detail::gbk_encode_one(scalar);
-        return r.is_error ? failure : copy(r);
+        return detail::gbk_encode_one(scalar);
     } else if constexpr (C == encoding::gb18030) {
-        const auto r = detail::gb18030_encode_one(scalar);
-        return r.is_error ? failure : copy(r);
+        return detail::gb18030_encode_one(scalar);
     } else if constexpr (C == encoding::big5) {
-        const auto r = detail::big5_encode_one(scalar);
-        return r.is_error ? failure : copy(r);
+        return detail::big5_encode_one(scalar);
     } else if constexpr (C == encoding::shift_jis) {
-        const auto r = detail::shift_jis_encode_one(scalar);
-        return r.is_error ? failure : copy(r);
+        return detail::shift_jis_encode_one(scalar);
     } else if constexpr (C == encoding::euc_jp) {
-        const auto r = detail::euc_jp_encode_one(scalar);
-        return r.is_error ? failure : copy(r);
+        return detail::euc_jp_encode_one(scalar);
     } else if constexpr (C == encoding::iso_2022_jp) {
-        const auto r   = detail::iso2022jp_encode_one(state_, scalar);
-        auto       out = copy(r);
-        out.is_error   = r.is_error;
-        return out;
+        return detail::iso2022jp_encode_one(state_, scalar);
     } else {
         static_assert(C == encoding::euc_kr);
-        const auto r = detail::euc_kr_encode_one(scalar);
-        return r.is_error ? failure : copy(r);
+        return detail::euc_kr_encode_one(scalar);
     }
 }
 
@@ -119,10 +105,15 @@ template <encoding C>
 constexpr std::optional<unsigned char> encoder<C>::encode_byte(char32_t scalar) const
     requires detail::random_access_encode_codec<C>
 {
-    const auto r = detail::single_byte_encode_one<detail::random_access_encode_table<C>()>(scalar);
-    if (r.is_error)
+    // Straight from the table into the optional: going through
+    // single_byte_encode_one's {byte, is_error} pair costs GCC a second test
+    // per element.
+    if (scalar < 0x80)
+        return static_cast<unsigned char>(scalar);
+    const int pointer = detail::reverse_index_for<detail::random_access_encode_table<C>()>.find(scalar);
+    if (pointer < 0)
         return std::nullopt;
-    return static_cast<unsigned char>(r.byte);
+    return static_cast<unsigned char>(0x80 + pointer);
 }
 
 template <encoding C>
@@ -136,11 +127,7 @@ constexpr std::optional<encode_result> encoder<C>::flush()
     const auto r = detail::iso2022jp_encode_flush(state_);
     if (r.count == 0)
         return std::nullopt;
-    encode_result out;
-    for (int i = 0; i < r.count; ++i)
-        out.bytes[i] = static_cast<unsigned char>(r.bytes[i]);
-    out.count = r.count;
-    return out;
+    return r;
 }
 
 } // namespace beman::transcoding::whatwg

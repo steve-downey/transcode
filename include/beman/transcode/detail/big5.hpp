@@ -4,6 +4,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_BIG5_HPP
 
 #include <beman/transcode/config.hpp>
+#include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/big5.hpp>
 #include <beman/transcode/whatwg/error.hpp>
@@ -37,12 +38,6 @@ struct big5_decode_result {
     bool          is_error{false};
 };
 
-struct big5_encode_result {
-    unsigned char bytes[2]{};
-    int           count{0};
-    bool          is_error{false};
-};
-
 // Decode one Big5 character from [current, end).
 // ASCII bytes (0x00–0x7F) pass through directly (1 byte consumed).
 // Lead bytes 0x81–0xFE are followed by a trail byte in 0x40–0x7E or 0xA1–0xFE.
@@ -55,7 +50,7 @@ constexpr big5_decode_result big5_decode_one(I& current, S end);
 // ASCII (cp < 0x80) outputs 1 byte. Non-ASCII searches the decode table for
 // the lowest pointer that maps to cp, then converts pointer to lead/trail bytes.
 // Returns is_error=true if the codepoint is not representable in Big5.
-constexpr big5_encode_result big5_encode_one(char32_t cp);
+constexpr encode_result big5_encode_one(char32_t cp);
 
 // WHATWG's "index Big5 pointer".  The encoder leaves out pointers below
 // (0xA1 - 0x81) * 157 = 5024, the Hong Kong Supplementary Character Set, so
@@ -153,9 +148,9 @@ constexpr int big5_index_pointer(char32_t cp) {
     return big5_index.find(cp);
 }
 
-constexpr big5_encode_result big5_encode_one(char32_t cp) {
+constexpr encode_result big5_encode_one(char32_t cp) {
     if (cp < 0x80) {
-        big5_encode_result r{};
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>(cp);
         r.count    = 1;
         return r;
@@ -163,10 +158,10 @@ constexpr big5_encode_result big5_encode_one(char32_t cp) {
 
     int pointer = big5_index_pointer(cp);
     if (pointer >= 0) {
-        int                lead   = (pointer / 157) + 0x81;
-        int                offset = pointer % 157;
-        int                trail  = (offset < 63) ? offset + 0x40 : offset + 0x62;
-        big5_encode_result r{};
+        int           lead   = (pointer / 157) + 0x81;
+        int           offset = pointer % 157;
+        int           trail  = (offset < 63) ? offset + 0x40 : offset + 0x62;
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>(lead);
         r.bytes[1] = static_cast<unsigned char>(trail);
         r.count    = 2;

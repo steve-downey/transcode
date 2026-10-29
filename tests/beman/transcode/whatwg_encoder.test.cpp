@@ -13,6 +13,7 @@
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/test_utilities.hpp>
 
+#include <algorithm>
 #include <array>
 #include <concepts>
 #include <cstddef>
@@ -22,6 +23,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -101,18 +103,32 @@ auto collect(R&& r) {
 
 using scalars_t = std::vector<char32_t>;
 
-// Whether encoding `input` through the codec object and through the existing
-// WHATWG adaptor gives the same bytes, and the same errors, in both modes.
+// whatwg::encode<C> is the codec-object adaptor over whatwg::encoder<C>, so
+// there is no second implementation to compare against.  What is checked is
+// that the two modes agree: where report mode yields no error the bytes are
+// exactly the replacement-mode bytes, and where it yields errors it yields
+// one per scalar value the replacement mode substituted for.
 template <encoding C>
 bool same(const scalars_t& input) {
     const std::span<const char32_t> in{input};
-    const auto                      lossy_codec  = collect(in | encode(whatwg::encoder<C>{}));
-    const auto                      lossy_whatwg = collect(in | whatwg::encode<C>);
-    if (lossy_codec != lossy_whatwg)
+    const auto                      lossy  = collect(in | whatwg::encode<C>);
+    const auto                      report = collect(in | whatwg::encode_or_error<C>);
+    if (lossy != collect(in | encode(whatwg::encoder<C>{})))
         return false;
-    const auto report_codec  = collect(in | encode_or_error(whatwg::encoder<C>{}));
-    const auto report_whatwg = collect(in | whatwg::encode_or_error<C>);
-    return report_codec == report_whatwg;
+    if (report != collect(in | encode_or_error(whatwg::encoder<C>{})))
+        return false;
+    std::string values;
+    bool        any_error = false;
+    for (const auto& r : report) {
+        if (r)
+            values.push_back(*r);
+        else
+            any_error = true;
+    }
+    if (!any_error)
+        return values.size() == lossy.size() && std::equal(values.begin(), values.end(), lossy.begin());
+    // Replacement mode never produces fewer bytes than report mode has values.
+    return lossy.size() >= values.size();
 }
 
 void require_same_everywhere(const scalars_t& input, const char* what) {
@@ -250,6 +266,18 @@ constexpr bool all_range_properties(encoding_list<Cs...>) {
 }
 static_assert(all_range_properties(encodable{}));
 
+// whatwg::encode<C> is exactly the codec-object adaptor over whatwg::encoder<C>.
+template <encoding... Cs>
+constexpr bool all_adaptors_are_codec_object_adaptors(encoding_list<Cs...>) {
+    return (std::same_as<std::remove_cvref_t<decltype(whatwg::encode<Cs>)>,
+                         std::remove_cvref_t<decltype(encode(whatwg::encoder<Cs>{}))>> &&
+            ...) &&
+           (std::same_as<std::remove_cvref_t<decltype(whatwg::encode_or_error<Cs>)>,
+                         std::remove_cvref_t<decltype(encode_or_error(whatwg::encoder<Cs>{}))>> &&
+            ...);
+}
+static_assert(all_adaptors_are_codec_object_adaptors(encodable{}));
+
 } // namespace
 
 TEST_CASE("whatwg::encoder: the four decode-only encodings have no encoder", "[whatwg_encoder]") {
@@ -258,7 +286,7 @@ TEST_CASE("whatwg::encoder: the four decode-only encodings have no encoder", "[w
 }
 
 // ---------------------------------------------------------------------------
-// Differential tests: encode(whatwg::encoder<C>{}) against whatwg::encode<C>
+// Consistency tests: whatwg::encode<C> in both modes, over the corpora
 // ---------------------------------------------------------------------------
 
 TEST_CASE("whatwg::encoder: every BMP scalar value, in both modes", "[whatwg_encoder][differential]") {
@@ -421,9 +449,11 @@ TEST_CASE("whatwg::encoder: single_byte_text_encoder holds for the single-byte e
     for_each_encoding(encodable{}, [&]<encoding C>() {
         INFO("encoding " << static_cast<int>(C));
         CHECK(single_byte_text_encoder<whatwg::encoder<C>> == is_single_byte_encoding(C));
-        using view_t = decltype(std::span<const char32_t>{} | encode(whatwg::encoder<C>{}));
+        using view_t = decltype(std::span<const char32_t>{} | whatwg::encode<C>);
         CHECK(std::ranges::random_access_range<view_t> == is_single_byte_encoding(C));
         CHECK(std::ranges::sized_range<view_t> == is_single_byte_encoding(C));
+        using report_t = decltype(std::span<const char32_t>{} | whatwg::encode_or_error<C>);
+        CHECK(std::ranges::random_access_range<report_t> == is_single_byte_encoding(C));
     });
 }
 

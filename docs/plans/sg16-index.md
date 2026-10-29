@@ -255,6 +255,18 @@ did. Revisit if SG16 or LEWG would rather the BOM rule live in the adaptor
   attribute (`[[gnu::always_inline]]`, `__attribute__`) or macro goes on a
   declaration in a specification header: specgen renders attributes verbatim
   into the wording. Measured with `tmp/plan/ir-bench/ir-compare.sh`.
+- **Result-copy rule (amendment 12).** A codec's
+  per-element `encode_result` reaches the view's buffer in exactly one copy,
+  byte by byte and bounded by `count`, written as a compile-time unrolled
+  sequence (the `index_sequence` fold in `encode_view::iterator::load()`).
+  GCC 16 spills the result to the stack on any of: a second copy (a
+  `whatwg::encoder` converting a per-codec result struct into `encode_result`),
+  a whole-array copy (it then materializes the zeroed bytes past `count`), a
+  loop bounded by the runtime `count` (it becomes a call to `memcpy`), a
+  `std::array` buffer, or storing the `encode_result` itself in the iterator.
+  So the `detail::*_encode_one` functions return `encode_result` directly and
+  `whatwg::encoder::encode_one` returns their prvalue. None of this changes a
+  declaration in a specification header.
 
 - The views and their iterators hold the codec as
   `[[no_unique_address]] Codec`, so a stateless codec costs no storage
@@ -305,7 +317,12 @@ did. Revisit if SG16 or LEWG would rather the BOM rule live in the adaptor
   dispatch over `C` (copied from `whatwg::encode_view::iterator::load()`, which
   step 12 deletes), with `[[no_unique_address]] detail::encode_state_t<C>
   state_` (empty except for ISO-2022-JP) and a `flush()` constrained to
-  `C == encoding::iso_2022_jp`. There is no once-only flag. The negative tests
+  `C == encoding::iso_2022_jp`. There is no once-only flag. Since step 12
+  (amendment 12) the `detail::*_encode_one` functions return `encode_result`
+  themselves (the per-codec `*_encode_result` structs are gone), `encode_one`
+  returns them unchanged, and `encode_byte` reads the reverse index straight
+  into its `std::optional<unsigned char>` rather than through
+  `single_byte_encode_one`'s `{byte, is_error}` pair. The negative tests
   are `whatwg_encoder_reject_fail` (naming `encoder<utf_16be>`) and
   `whatwg_encoder_flush_reject_fail`.
 - Done in step 09 for decode (step 12 for encode): `whatwg::decode<C>` is
@@ -443,7 +460,12 @@ Steps 09 and 12 compare release-build benchmarks before and after the switch.
 - The before/after table goes in the commit message body. Steps record the
   base commit SHA of each comparison here:
   - step 09 base: 505359dc1fd9d032358588baf42ca3f209fe1ddc
-  - step 12 base: (filled by step 12)
+  - step 12 base: 17f14a9c33a33256775e10be37344ae407f5df7c
+- Step 12 (amendment 12): every encode row is at or
+  below the base under gcc-16 (-4% to -44%) and clang-20 (0% to -54%).
+  Under gcc-13 `-O2` (not gated) EUC-KR is +45%, EUC-JP +16%, ISO-2022-JP
+  +12%: GCC 13 at `-O2` calls `load()` out of line, the same inlining-budget
+  effect as decode; step 12a moves the preset to `-O3`.
 
 ## Follow-ups (not steps) {#follow-ups}
 

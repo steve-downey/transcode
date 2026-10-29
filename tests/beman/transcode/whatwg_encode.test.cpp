@@ -24,7 +24,7 @@ std::vector<char> collect(View&& v) {
 
 using namespace beman::transcoding;
 
-TEST_CASE("whatwg::encode_view satisfies input_range", "[transcoding::whatwg::encode]") {
+TEST_CASE("whatwg::encode adaptor satisfies input_range", "[transcoding::whatwg::encode]") {
     std::vector<char32_t> cps{U'A'};
     auto                  view = cps | whatwg::encode<whatwg::encoding::windows_1252>;
     static_assert(std::ranges::input_range<decltype(view)>);
@@ -43,7 +43,7 @@ TEST_CASE("whatwg::encode_view satisfies input_range", "[transcoding::whatwg::en
     static_assert(std::same_as<std::ranges::range_value_t<decltype(view)>, char>);
 }
 
-TEST_CASE("whatwg::encode_view const iteration also works for owning views", "[transcoding::whatwg::encode]") {
+TEST_CASE("whatwg::encode adaptor const iteration also works for owning views", "[transcoding::whatwg::encode]") {
     auto view = std::vector<char32_t>{U'A'} | whatwg::encode<whatwg::encoding::utf_8>;
     static_assert(std::ranges::range<const decltype(view)>);
 }
@@ -54,7 +54,7 @@ TEST_CASE("whatwg::encode iso_2022_jp is common when base is common", "[transcod
     static_assert(std::ranges::common_range<decltype(view)>);
 }
 
-TEST_CASE("whatwg::encode_view keeps UTF-8 as non-random-access", "[transcoding::whatwg::encode]") {
+TEST_CASE("whatwg::encode adaptor keeps UTF-8 as non-random-access", "[transcoding::whatwg::encode]") {
     std::vector<char32_t> cps{U'\x20AC'};
     auto                  view = cps | whatwg::encode<whatwg::encoding::utf_8>;
     static_assert(std::ranges::forward_range<decltype(view)>);
@@ -64,7 +64,7 @@ TEST_CASE("whatwg::encode_view keeps UTF-8 as non-random-access", "[transcoding:
     CHECK(collect(view) == std::vector<char>{'\xE2', '\x82', '\xAC'});
 }
 
-TEST_CASE("whatwg::encode_view forward iterators are multipass for UTF-8", "[transcoding::whatwg::encode]") {
+TEST_CASE("whatwg::encode adaptor forward iterators are multipass for UTF-8", "[transcoding::whatwg::encode]") {
     std::vector<char32_t> cps{U'\x20AC'};
     auto                  view  = cps | whatwg::encode<whatwg::encoding::utf_8>;
     auto                  first = view.begin();
@@ -76,7 +76,7 @@ TEST_CASE("whatwg::encode_view forward iterators are multipass for UTF-8", "[tra
     CHECK(*first == '\x82');
 }
 
-TEST_CASE("whatwg::encode_view supports indexing for indexed codecs", "[transcoding::whatwg::encode]") {
+TEST_CASE("whatwg::encode adaptor supports indexing for indexed codecs", "[transcoding::whatwg::encode]") {
     std::vector<char32_t> cps{U'A', U'\x20AC', U'B'};
     auto                  view = cps | whatwg::encode<whatwg::encoding::windows_1252>;
     REQUIRE(view.size() == 3);

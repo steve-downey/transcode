@@ -200,81 +200,11 @@ namespace std {
 
   template<whatwg::encoding C> inline constexpr $unspecified$ decode_or_error;
 
-  // @[transcode.whatwg.encode]@, encoding views
-
-  template<whatwg::encoding C, ranges::input_range R,
-           error_mode E = error_mode::replacement>
-    requires $whatwg-encode-input$<C, R>
-  class encode_view : public ranges::view_interface<encode_view<C, R, E>> {
-    R $base$; // exposition only
-
-    class $iterator$; // exposition only
-
-  public:
-    // @[transcode.whatwg.encode]@, construction and access
-    constexpr explicit encode_view(R base);
-
-    constexpr const R& base() const& noexcept;
-    constexpr R base() &&;
-
-    constexpr $iterator$ begin();
-    constexpr $iterator$ begin() const
-      requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-    constexpr $iterator$ end()
-      requires ranges::forward_range<R> && ranges::common_range<R>;
-    constexpr $iterator$ end() const
-      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
-               $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-    constexpr default_sentinel_t end() const;
-  };
+  // @[transcode.whatwg.encode]@, encoding adaptors
 
   template<whatwg::encoding C> inline constexpr $unspecified$ encode;
 
   template<whatwg::encoding C> inline constexpr $unspecified$ encode_or_error;
-
-  template<whatwg::encoding C, input_range R, error_mode E>
-    requires $whatwg-encode-input$<C, R>
-  inline constexpr bool enable_borrowed_range<whatwg::encode_view<C, R, E>> =
-      borrowed_range<R>;
-
-  // @[transcode.custom.encode]@, class template encode_view
-
-  template<text_encoder Codec, ranges::input_range R,
-           error_mode E = error_mode::replacement>
-    requires unicode_scalar_range<R>
-  class encode_view : public ranges::view_interface<encode_view<Codec, R, E>> {
-    R $base$;      // exposition only
-    Codec $codec$; // exposition only
-
-    class $iterator$; // exposition only
-
-  public:
-    // @[transcode.custom.encode]@, construction and access
-    constexpr explicit encode_view(R base, Codec codec = {});
-
-    constexpr const R& base() const& noexcept;
-    constexpr R base() &&;
-
-    constexpr $iterator$ begin();
-    constexpr $iterator$ begin() const
-      requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-    constexpr $iterator$ end()
-      requires ranges::forward_range<R> && ranges::common_range<R>;
-    constexpr $iterator$ end() const
-      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
-               $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-    constexpr default_sentinel_t end() const;
-  };
-
-  template<text_encoder Codec> constexpr encode_closure<Codec> encode(Codec codec = {});
-
-  template<text_encoder Codec>
-  constexpr encode_closure<Codec, error_mode::report> encode_or_error(Codec codec = {});
-
-  template<text_encoder Codec, input_range R, error_mode E>
-    requires unicode_scalar_range<R>
-  inline constexpr bool enable_borrowed_range<encode_view<Codec, R, E>> =
-      borrowed_range<R>;
 
   // @[transcode.pipeline]@, transcoding pipelines
 
@@ -483,26 +413,6 @@ constexpr optional<encode_result> flush();
 [#]{.pnum} *Effects*: Returns the encoder to its initial state.
 
 [#]{.pnum} *Returns*: `nullopt` if the output is already in ASCII.  Otherwise the escape sequence that returns it there.
-
-[#]{.pnum} *Remarks*: `whatwg::encode_view<C, R, E>` validates the `char32_t` elements of `R` as UTF-32 and presents them as the bytes the encoding `C` encodes them to, one element per byte.  In replacement mode, an ill-formed UTF-32 code unit is replaced with U+FFFD and that scalar value is encoded normally; in report mode it yields an `unexpected` holding `whatwg::error::surrogate_code_point` or `whatwg::error::out_of_range`.  A scalar value the encoding cannot represent yields `'?'` in replacement mode and `whatwg::error::unmapped_codepoint` in report mode.  Encoding is lazy, and one input element can produce several output elements.
-
-[#]{.pnum} `C` is required to be an encoding the WHATWG Encoding Standard defines an encoder for.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`, and the view does not accept them.
-
-```cpp
-template<typename R> constexpr auto operator()(R&& r) const;
-```
-
-[#]{.pnum} *Constraints*: `$whatwg-encode-input$<C, R>` is satisfied.
-
-[#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` is `whatwg::encode_view` ([transcode.whatwg.encode]) with the codec supplied as a value rather than named by an enumerator: it validates the `char32_t` elements of `R` as UTF-32, presents the resulting scalar values as the bytes `Codec` encodes them to, reports an error as `E` says, and encodes lazily.  Ill-formed UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in replacement mode and is reported without calling the codec in report mode.  A custom codec therefore receives only Unicode scalar values.  When `Codec::encode_one` fails and supplies bytes, the view in replacement mode yields those bytes as the replacement; if it supplies none, the replacement is `'?'`.  In report mode the bytes are ignored.
-
-[#]{.pnum} The view models `random_access_range` when `Codec` models `single_byte_text_encoder` and `R` models `random_access_range`. When it does, a scalar value for which `Codec::encode_byte` returns `nullopt` is reported as `whatwg::error::unmapped_codepoint` in report mode and yields `'?'` in replacement mode.
-
-```cpp
-static constexpr $iterator$ $terminal$();
-```
-
-[#]{.pnum} *Constraints*: `R` models `forward_range`.
 
 [#]{.pnum} *Remarks*: The three POSIX `iconv` entry points a view calls, as a value the program supplies.  `open` opens a conversion descriptor, `convert` converts, and `close` closes it; each has the signature and the semantics POSIX gives the function of the same name.  The views take this as a template parameter rather than calling `::iconv` directly so that a program can supply a different implementation of the same interface -- another library's, or a test's -- and `make_real_iconv_fns` is the one bound to the platform's.
 

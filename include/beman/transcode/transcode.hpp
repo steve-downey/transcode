@@ -87,8 +87,6 @@ import beman.transcode;
 
     // \rSec2[transcode.whatwg.encode]{Encoding views}
 
-    // \rSec3[transcode.whatwg.encode.iterator]{Class `whatwg::encode_view::iterator`}
-
     // \rSec2[transcode.custom.reqs]{Codec requirements}
 
     // \rSec2[transcode.custom.decode]{Class template `decode_view`}

@@ -4,6 +4,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_GB18030_HPP
 
 #include <beman/transcode/config.hpp>
+#include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/gb18030_ranges.hpp>
 #include <beman/transcode/detail/tables/gbk.hpp>
@@ -43,12 +44,6 @@ struct gb18030_decode_result {
     int           replay_count{0};
 };
 
-struct gb18030_encode_result {
-    unsigned char bytes[4]{};
-    int           count{0};
-    bool          is_error{false};
-};
-
 // ---------------------------------------------------------------------------
 // Declarations
 // ---------------------------------------------------------------------------
@@ -71,7 +66,7 @@ constexpr gb18030_decode_result gb18030_decode_one(gb18030_decode_state& st, I& 
 
 // Encode one Unicode codepoint as GB18030.
 // WHATWG maps U+E5E5 to an encoder error for deployed-content compatibility.
-constexpr gb18030_encode_result gb18030_encode_one(char32_t cp);
+constexpr encode_result gb18030_encode_one(char32_t cp);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -207,8 +202,8 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
     return {cp, {}, false};
 }
 
-constexpr gb18030_encode_result gb18030_encode_one(char32_t cp) {
-    gb18030_encode_result r{};
+constexpr encode_result gb18030_encode_one(char32_t cp) {
+    encode_result r{};
 
     // ASCII passthrough
     if (cp < 0x80) {
