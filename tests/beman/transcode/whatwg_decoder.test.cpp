@@ -302,6 +302,28 @@ TEST_CASE("whatwg::decoder decode_byte", "[transcoding::whatwg::decoder]") {
     CHECK(constify(latin3.decode_byte(0xA5)) == U'\xFFFD');
 }
 
+namespace {
+constexpr char32_t decode_first_of_bom_then_x() {
+    constexpr unsigned char in[] = {0xEF, 0xBB, 0xBF, 'x'};
+    whatwg::decoder<encoding::utf_8> d;
+    const unsigned char*             it = in;
+    return d.decode_first(it, in + 4).code_point == U'x' ? U'x' : U'?';
+}
+
+constexpr bool flush_after_big5_pair() {
+    constexpr unsigned char in[] = {0x88, 0x62};
+    whatwg::decoder<encoding::big5> d;
+    const unsigned char*            it = in;
+    (void)d.decode_one(it, in + 2);
+    return d.flush().has_value();
+}
+} // namespace
+
+TEST_CASE("whatwg::decoder decode_first and flush in a constant expression", "[transcoding::whatwg::decoder]") {
+    CHECK(constify(decode_first_of_bom_then_x()) == U'x');
+    CHECK(constify(flush_after_big5_pair()));
+}
+
 TEST_CASE("whatwg::decoder compares its state", "[transcoding::whatwg::decoder]") {
     const bytes_t                   in{0x88, 0x62};
     whatwg::decoder<encoding::big5> a;
