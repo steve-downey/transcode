@@ -71,7 +71,9 @@ constexpr optional<encoding> get_encoding(text_encoding::id id) noexcept;
 constexpr optional<text_encoding::id> to_text_encoding_id(encoding e) noexcept;
 ```
 
-[#]{.pnum} *Returns*: The `id` of the registered name that is a label of `e`, and `nullopt` if no label of `e` is a registered name, which includes `encoding::replacement` and `encoding::x_user_defined`.
+[#]{.pnum} *Returns*: The `id` of the registered encoding whose name is the name of `e` in the Encoding Standard, and `nullopt` if that name has no registry entry, which includes `encoding::replacement`, `encoding::x_user_defined` and `encoding::x_mac_cyrillic`.
+
+[#]{.pnum} *Remarks*: IANA registers the Encoding Standard's names, so `encoding::windows_1252` is `std::text_encoding::id::windows1252` and not one of its aliases.
 
 ### Byte order mark sniffing [transcode.codec.sniff] {-}
 

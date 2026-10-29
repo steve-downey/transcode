@@ -34,11 +34,34 @@ def parse_encodings_json(path: Path) -> list[tuple[str, str]]:
     return entries
 
 
-def render_labels_hpp(entries: list[tuple[str, str]]) -> str:
-    """Render the labels.hpp header from sorted (label, codec_value) pairs."""
+def parse_encoding_names(path: Path) -> list[tuple[str, str]]:
+    """Parse encodings.json.
+
+    Return the (name, codec_value) pair of every encoding, in file order.  The
+    name is the Encoding Standard's canonical name, in its own case.
+    """
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return [
+        (enc["name"], name_to_codec_value(enc["name"]))
+        for group in data
+        for enc in group["encodings"]
+    ]
+
+
+def render_labels_hpp(
+    entries: list[tuple[str, str]], names: list[tuple[str, str]]
+) -> str:
+    """Render the labels.hpp header.
+
+    entries are sorted (label, codec_value) pairs; names are
+    (name, codec_value) pairs.
+    """
     table_rows = "\n".join(
         f'    {{"{label}", whatwg::encoding::{codec_val}}},'
         for label, codec_val in entries
+    )
+    name_rows = "\n".join(
+        f'    {{"{name}", whatwg::encoding::{codec_val}}},' for name, codec_val in names
     )
     return f"""\
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -60,6 +83,15 @@ inline constexpr label_entry label_table[] = {{
 {table_rows}
 }};
 
+struct name_entry {{
+    const char* name;
+    whatwg::encoding value;
+}};
+
+inline constexpr name_entry name_table[] = {{
+{name_rows}
+}};
+
 }} // namespace beman::transcoding::detail
 
 #endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
@@ -71,7 +103,8 @@ def main() -> None:
     output_path = INCLUDE_DETAIL / "labels.hpp"
 
     entries = parse_encodings_json(encodings_path)
-    content = render_labels_hpp(entries)
+    names = parse_encoding_names(encodings_path)
+    content = render_labels_hpp(entries, names)
 
     output_path.write_text(content, encoding="utf-8")
 

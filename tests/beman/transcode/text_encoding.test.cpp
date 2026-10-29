@@ -34,13 +34,10 @@ struct mapping {
 };
 
 // Every whatwg::encoding enumerator, with the id to_text_encoding_id gives it:
-// the first label of the encoding, in label-table order, that names a
-// registered encoding.  The mib comments name what each one is.  The ones that
-// surprise: windows_1252 gives US-ASCII (the label "ansi_x3.4-1968" sorts
-// first, and the Encoding Standard really does decode ASCII as windows-1252),
-// iso_8859_8 gives ISO-8859-8-E, utf_16le gives ISO-10646-UCS-2 and gbk gives
-// GB2312, all for the same reason.  The round trip below still holds for
-// each, because the id is always a name that is a label of the encoding.
+// the id registered for the encoding's name in the Encoding Standard.  The
+// mib comments name what each one is.  Only the encodings whose name has no
+// registry entry (replacement, x-user-defined, x-mac-cyrillic) have no id.
+// The round trip below holds for each id.
 constexpr mapping all_encodings[] = {
     {whatwg::encoding::utf_8, mib(106), "utf_8"}, // UTF-8
     {whatwg::encoding::replacement, std::nullopt, "replacement"},
@@ -52,7 +49,7 @@ constexpr mapping all_encodings[] = {
     {whatwg::encoding::iso_8859_5, mib(8), "iso_8859_5"},      // ISO-8859-5
     {whatwg::encoding::iso_8859_6, mib(9), "iso_8859_6"},      // ISO-8859-6
     {whatwg::encoding::iso_8859_7, mib(10), "iso_8859_7"},     // ISO-8859-7
-    {whatwg::encoding::iso_8859_8, mib(84), "iso_8859_8"},     // ISO-8859-8-E
+    {whatwg::encoding::iso_8859_8, mib(11), "iso_8859_8"},     // ISO-8859-8
     {whatwg::encoding::iso_8859_8_i, mib(85), "iso_8859_8_i"}, // ISO-8859-8-I
     {whatwg::encoding::iso_8859_10, mib(13), "iso_8859_10"},   // ISO-8859-10
     {whatwg::encoding::iso_8859_13, mib(109), "iso_8859_13"},  // ISO-8859-13
@@ -62,20 +59,20 @@ constexpr mapping all_encodings[] = {
     {whatwg::encoding::koi8_r, mib(2084), "koi8_r"},           // KOI8-R
     {whatwg::encoding::koi8_u, mib(2088), "koi8_u"},           // KOI8-U
     {whatwg::encoding::macintosh, mib(2027), "macintosh"},     // macintosh
-    {whatwg::encoding::windows_874, mib(2259), "windows_874"}, // windows-874
+    {whatwg::encoding::windows_874, mib(2109), "windows_874"}, // windows-874
     {whatwg::encoding::windows_1250, mib(2250), "windows_1250"},
     {whatwg::encoding::windows_1251, mib(2251), "windows_1251"},
-    {whatwg::encoding::windows_1252, mib(3), "windows_1252"}, // US-ASCII
+    {whatwg::encoding::windows_1252, mib(2252), "windows_1252"}, // windows-1252
     {whatwg::encoding::windows_1253, mib(2253), "windows_1253"},
-    {whatwg::encoding::windows_1254, mib(12), "windows_1254"}, // ISO-8859-9
+    {whatwg::encoding::windows_1254, mib(2254), "windows_1254"}, // windows-1254
     {whatwg::encoding::windows_1255, mib(2255), "windows_1255"},
     {whatwg::encoding::windows_1256, mib(2256), "windows_1256"},
     {whatwg::encoding::windows_1257, mib(2257), "windows_1257"},
     {whatwg::encoding::windows_1258, mib(2258), "windows_1258"},
     {whatwg::encoding::x_mac_cyrillic, std::nullopt, "x_mac_cyrillic"},
     {whatwg::encoding::utf_16be, mib(1013), "utf_16be"},     // UTF-16BE
-    {whatwg::encoding::utf_16le, mib(1000), "utf_16le"},     // ISO-10646-UCS-2, from the label "ucs-2"
-    {whatwg::encoding::gbk, mib(57), "gbk"},                 // GB2312
+    {whatwg::encoding::utf_16le, mib(1014), "utf_16le"},     // UTF-16LE
+    {whatwg::encoding::gbk, mib(113), "gbk"},                // GBK
     {whatwg::encoding::gb18030, mib(114), "gb18030"},        // GB18030
     {whatwg::encoding::big5, mib(2026), "big5"},             // Big5
     {whatwg::encoding::shift_jis, mib(17), "shift_jis"},     // Shift_JIS
@@ -122,6 +119,17 @@ TEST_CASE("to_text_encoding_id: table covers every enumerator in order", "[trans
     CHECK(i == static_cast<int>(whatwg::encoding::euc_kr) + 1);
 }
 
+TEST_CASE("to_text_encoding_id: the name, not an alias", "[transcoding::text_encoding]") {
+    CHECK(whatwg::to_text_encoding_id(whatwg::encoding::windows_1252) == std::optional<id>{id::windows1252});
+    CHECK(whatwg::to_text_encoding_id(whatwg::encoding::utf_16le) == std::optional<id>{id::UTF16LE});
+    CHECK(whatwg::to_text_encoding_id(whatwg::encoding::utf_16be) == std::optional<id>{id::UTF16BE});
+    CHECK(whatwg::to_text_encoding_id(whatwg::encoding::gbk) == std::optional<id>{id::GBK});
+    CHECK(whatwg::to_text_encoding_id(whatwg::encoding::iso_8859_8) == std::optional<id>{id::ISOLatinHebrew});
+    CHECK(whatwg::to_text_encoding_id(whatwg::encoding::iso_8859_8_i) == std::optional<id>{mib(85)});
+    CHECK(whatwg::to_text_encoding_id(whatwg::encoding::utf_8) == std::optional<id>{id::UTF8});
+    CHECK(whatwg::to_text_encoding_id(whatwg::encoding::shift_jis) == std::optional<id>{id::ShiftJIS});
+}
+
 TEST_CASE("text_encoding bridge: round trip", "[transcoding::text_encoding]") {
     for (const auto& m : all_encodings) {
         if (!m.expected)
@@ -137,5 +145,6 @@ TEST_CASE("text_encoding bridge: constant evaluation", "[transcoding::text_encod
     CHECK(constify(whatwg::get_encoding(id::other)) == std::nullopt);
     CHECK(constify(whatwg::to_text_encoding_id(whatwg::encoding::shift_jis)) == std::optional<id>{id::ShiftJIS});
     CHECK(constify(whatwg::to_text_encoding_id(whatwg::encoding::utf_8)) == std::optional<id>{id::UTF8});
+    CHECK(constify(whatwg::to_text_encoding_id(whatwg::encoding::windows_1252)) == std::optional<id>{id::windows1252});
     CHECK(constify(whatwg::to_text_encoding_id(whatwg::encoding::replacement)) == std::nullopt);
 }

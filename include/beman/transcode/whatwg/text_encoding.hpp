@@ -52,18 +52,23 @@ constexpr std::optional<encoding> get_encoding(std::text_encoding::id id) noexce
     return std::nullopt;
 }
 
-//! \returns The `id` of the registered name that is a label of `e`, and
-//! `nullopt` if no label of `e` is a registered name, which includes
-//! `encoding::replacement` and `encoding::x_user_defined`.
+//! \returns The `id` of the registered encoding whose name is the name of `e`
+//! in the Encoding Standard, and `nullopt` if that name has no registry entry,
+//! which includes `encoding::replacement`, `encoding::x_user_defined` and
+//! `encoding::x_mac_cyrillic`.
+//! \remarks IANA registers the Encoding Standard's names, so
+//! `encoding::windows_1252` is `std::text_encoding::id::windows1252` and not
+//! one of its aliases.
 constexpr std::optional<std::text_encoding::id> to_text_encoding_id(encoding e) noexcept {
     if (e == encoding::replacement || e == encoding::x_user_defined)
         return std::nullopt;
-    for (const auto& entry : detail::label_table) {
+    for (const auto& entry : detail::name_table) {
         if (entry.value != e)
             continue;
-        const std::text_encoding registered{std::string_view{entry.label}};
+        const std::text_encoding registered{std::string_view{entry.name}};
         if (registered.mib() != std::text_encoding::id::other && registered.mib() != std::text_encoding::id::unknown)
             return registered.mib();
+        return std::nullopt;
     }
     return std::nullopt;
 }
