@@ -466,6 +466,9 @@ Steps 09 and 12 compare release-build benchmarks before and after the switch.
   Under gcc-13 `-O2` (not gated) EUC-KR is +45%, EUC-JP +16%, ISO-2022-JP
   +12%: GCC 13 at `-O2` calls `load()` out of line, the same inlining-budget
   effect as decode; step 12a moves the preset to `-O3`.
+- From step 12a, the Catch2 wall-time tables are value-consuming and at a
+  real `-O3`. The step 09 and step 12 commit tables were not, and are not
+  comparable with later ones.
 
 ## Follow-ups (not steps) {#follow-ups}
 
@@ -482,14 +485,23 @@ The integration review reads this section.
   For a hand-specialized view GCC then deletes the table lookups, so a decode
   benchmark measures parsing (amendment 09: Shift_JIS, EUC-KR and UTF-8 looked
   +36% to +144% slower through the generic view in count mode and were 0% to
-  +2% with the values used). Before step 18 quotes decode numbers, the user
-  should decide whether the sink should consume values.
-- The `gcc-release` preset is effectively `-O2`: `infra/cmake/gnu-toolchain.cmake`
+  +2% with the values used). **Resolved, step 12a**: `count_elements` folds
+  every element's value into an accumulator published through `volatile_sink`.
+- **Resolved, step 12a** (CMakePresets.json; `infra/` untouched): the
+  `gcc-release` preset was effectively `-O2`: `infra/cmake/gnu-toolchain.cmake`
   sets `-O3` in the `_INIT` flags and CMake appends its own `-O2 -g`, so the
   compile line is `-O3 -O2 -g`. The Perf configuration (`etc/gcc-flags.cmake`)
   is a real `-O3`. Under `-O2`, GCC 13 does not inline the codec-object chain
   as far, and UTF-16, Big5 and gb18030 decode are +23% to +78% in
   instructions after step 09. `infra/` is the Beman infrastructure subtree.
+  Step 12a added a hidden `_release-o3-base` preset (cache variables
+  `CMAKE_{C,CXX}_FLAGS_RELWITHDEBINFO=-O3 -g -DNDEBUG`) inherited by
+  `gcc-release`, `gcc-release-lto`, `llvm-release` and `llvm-release-lto`.
+  It is not in `_release-base` itself because the MSVC and AppleClang
+  presets share that base and `-O3` is wrong for MSVC (`/O2`).
+- Upstream Beman infra bug: the toolchain files' `RELWITHDEBINFO_INIT`
+  approach yields `-O3 -O2` for every Beman library. Reporting it upstream is
+  the user's call.
 - The project `CLAUDE.md` "Architecture" section names the old headers and
   identifiers. Agents may not edit `CLAUDE.md`, so the user updates it after
   merge.

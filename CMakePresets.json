@@ -28,6 +28,15 @@
       }
     },
     {
+      "name": "_release-o3-base",
+      "hidden": true,
+      "inherits": "_release-base",
+      "cacheVariables": {
+        "CMAKE_C_FLAGS_RELWITHDEBINFO": "-O3 -g -DNDEBUG",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O3 -g -DNDEBUG"
+      }
+    },
+    {
       "name": "gcc-debug",
       "displayName": "GCC Debug Build",
       "inherits": [
@@ -43,7 +52,7 @@
       "displayName": "GCC Release Build",
       "inherits": [
         "_root-config",
-        "_release-base"
+        "_release-o3-base"
       ],
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "infra/cmake/gnu-toolchain.cmake"
@@ -65,7 +74,7 @@
       "displayName": "Clang Release Build",
       "inherits": [
         "_root-config",
-        "_release-base"
+        "_release-o3-base"
       ],
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "infra/cmake/llvm-toolchain.cmake"
@@ -127,7 +136,7 @@
       "displayName": "GCC Release Build with LTO",
       "inherits": [
         "_root-config",
-        "_release-base",
+        "_release-o3-base",
         "_lto-base"
       ],
       "cacheVariables": {
@@ -139,7 +148,7 @@
       "displayName": "Clang Release Build with LTO",
       "inherits": [
         "_root-config",
-        "_release-base",
+        "_release-o3-base",
         "_lto-base"
       ],
       "cacheVariables": {
