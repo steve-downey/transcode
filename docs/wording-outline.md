@@ -51,7 +51,7 @@ order the compiler needs and need not match.
 | `transcode.syn` | 2 | Header `<transcode>` synopsis | everything below, gathered | `transcode.hpp`'s region and the sixteen headers included in it, done 2026-09-07 |
 | `transcode.errors` | 2 | Error types | `whatwg::error`, `iconv_error`, `error_mode` | `error.hpp` routes to it, done 2026-09-06 |
 | `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` routes to it, done 2026-09-06 |
-| `transcode.codec.reqs` | 2 | Codec requirements | `text_decoder`, `text_encoder`, `flushable_text_decoder`, `bom_aware_text_decoder`, `single_byte_text_decoder`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp`, done 2026-09-08 |
+| `transcode.codec.reqs` | 2 | Codec requirements | `text_decoder`, `text_encoder`, `flushable_text_decoder`, `flushable_text_encoder`, `bom_aware_text_decoder`, `single_byte_text_decoder`, `single_byte_text_encoder`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp`, done 2026-09-08 |
 | `transcode.codec.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp`, done 2026-09-08 |
 | `transcode.codec.decode.iterator` | 3 | Class `decode_view::iterator` | the iterator operations | `decode_view.hpp`, done 2026-09-08 |
 | `transcode.codec.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp`, done 2026-09-08 |
@@ -107,7 +107,7 @@ so no step has to decide twice.
 | `detail::legacy_byte_type` | `$legacy-byte-type$` | a real conjunct of `legacy_byte_range`; the draft would spell it out.  Marked in Step 4 |
 | every view's `base_`, `codec_`, `buf_`, iterator state | exposition names | the wording describes what they hold |
 | a view's nested `iterator` | `class $iterator$;` | `\expos` with bare `\seebelow`, which renders the declaration and leaves the state out of the synopsis -- [range.transform.view]'s shape.  Needed specgen#80 |
-| the closure types (`whatwg::decode_closure` and the seven others) | ideally `unspecified` | unblocked 2026-09-05; specgen#24 fixed |
+| the closure types (`decode_closure`, `encode_closure`, `transcode_closure`, `iconv_transcode_closure`, `iconv_transcode_or_error_closure`) | `unspecified`; the `decode`, `encode` and `transcode(from, to)` functions declare a deduced `auto` return type, so the synopsis names none of them | unblocked 2026-09-05; specgen#24 fixed; the `whatwg::` closures went with the WHATWG view classes in steps 09 and 12 |
 | `detail::const_iterator_compatible_range`, `detail::const_sentinel_compatible_range` | `$const-iterator-compatible-range$`, `$const-sentinel-compatible-range$` | the const-compatibility chain the views constrain `begin`/`end` on |
 | `detail::random_access_decode_codec`, `detail::random_access_encode_codec` | `$random-access-decode-codec$`, `$random-access-encode-codec$` | which codecs are O(1) per element; a property of the specification, not of the tables |
 | `detail::whatwg_encode_codec`, `detail::whatwg_encode_input` | `$whatwg-encode-codec$`, `$whatwg-encode-input$` | WHATWG defines no encoder for some codecs; the constraint says which |
@@ -116,7 +116,8 @@ so no step has to decide twice.
 
 | Entity | Why |
 |---|---|
-| `whatwg::random_access_decode_view` and the encode and pluggable equivalents, and the `enable_borrowed_range` specializations written for them | decision W1 below |
+| `random_access_decode_view` and `random_access_encode_view`, and the `enable_borrowed_range` specializations written for them | decision W1 below |
+| `decode_closure`, `encode_closure`, `transcode_closure` | the adaptor objects' types are unspecified; the clauses say what `decode(codec)`, `encode(codec)` and `transcode(from, to)` return, not what type carries it |
 | `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; index U4 no longer applies |
 | `detail::null_term_fn`, `detail::null_term_adaptor` | the adaptor object's type is unspecified |
 | `detail::label_entry`, `label_table` | generated data behind `whatwg::get_encoding`, and all `tools/generate_labels.py` emits since Step 5 |
@@ -197,7 +198,10 @@ gets there however it likes.  Omitting them also removes
 `detail::random_access_decode_codec` from every spec-visible signature, which
 D7 requires anyway.  The alternative — specifying eight view templates instead
 of four — doubles the clause for no reader benefit.  If SG16 wants the
-distinction visible, it comes back as a *Remarks* paragraph, not as a type.
+distinction visible, it comes back as a *Remarks* paragraph, not as a type.  Since the WHATWG view
+classes were deleted (steps 09 and 12), W1 applies to `decode_view` and
+`encode_view` over a `single_byte_text_decoder` or `single_byte_text_encoder`
+codec, which is where the random-access property now lives.
 
 **W2 — the WHATWG enumeration is specified by reference.**  `enum class codec`
 has 39 enumerators; the wording says each names the WHATWG encoding of the
@@ -228,10 +232,12 @@ adaptor over a C string that this proposal happens to need.
 
 - ~~**The `_or_error` split.**~~  Settled in P5-Step 3c, before the clauses were
   written.  Each family is one view template parameterized on
-  `error_mode`, so `transcode.whatwg.decode`,
-  `transcode.whatwg.encode`, `transcode.codec.decode` and
-  `transcode.codec.encode` each specify **one** class template and two closure
-  objects rather than two of each.  `transcode.errors` gains
+  `error_mode`, so `transcode.codec.decode` and `transcode.codec.encode` each
+  specify **one** class template and two adaptor functions rather than two of
+  each.  (Since steps 09 and 12, `transcode.whatwg.decode` and
+  `transcode.whatwg.encode` specify no class: they are variable templates
+  defined as the codec-object adaptors over `whatwg::decoder<C>` and
+  `whatwg::encoder<C>`.)  `transcode.errors` gains
   `error_mode`, and its wording must not fix an underlying type for
   either enum (P2728 R13).
 - ~~**Whether iconv is proposed at all**~~  Settled in Step 9: **iconv is

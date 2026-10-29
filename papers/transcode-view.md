@@ -56,6 +56,7 @@ The design changed, and the wording is regenerated from the reference implementa
   The WHATWG adaptors are specified as the codec-object adaptors over them, so `whatwg::decode<C>` is `decode(whatwg::decoder<C>{})`, and there is one decode view and one encode view.
   `transcode(from, to)` composes any decoder with any encoder, so built-in and program-defined codecs mix.
 - New concepts and protocol pieces: `flushable_text_encoder`, `bom_aware_text_decoder`, `single_byte_text_encoder`, `decode_result::is_empty`, and encoder replacement bytes.
+  An encoder's replacement bytes also apply to what `flush()` returns: in replacement mode the view yields them, or `'?'` if there are none, and in report mode the error is a single element.
   The codec-object views model `borrowed_range` when their base does.
   See [Decoder and Encoder Concepts](#decoder-and-encoder-concepts).
 - The bridge to `std::text_encoding::id` goes in both directions, `whatwg::get_encoding(text_encoding::id)` and `whatwg::to_text_encoding_id`, and [Why Not `text_encoding::id`?](#why-not-text_encodingid) says why it is a bridge and not the interface.
@@ -69,6 +70,8 @@ The design changed, and the wording is regenerated from the reference implementa
 - Remarks that had lost their clauses are routed to the clauses they belong to.
 - *Mandates* and *Constraints* replace "is required to be".
 - The clause headings carry stable names, and an editor's note covers the nested namespaces.
+- The synopsis no longer names the adaptor closure types.
+  `decode`, `decode_or_error`, `encode`, `encode_or_error` and `transcode(from, to)` are declared `constexpr auto`, the way `std::ranges::to` is in [range.utility.conv], and their clauses say what they return.
 
 ### Other corrections
 
@@ -77,8 +80,6 @@ The design changed, and the wording is regenerated from the reference implementa
   supply, and `iconv_t` is that interface's type. R0 conditioned them on "an
   implementation that supplies an iconv conversion facility" and left `iconv_t`
   implementation-defined.
-- [transcode.codec.encode] declares the adaptor's call operator and its
-  constraint, which R0 omitted.
 - `whatwg::bom_sniff` and the `null_term` sentinel's comparison state their
   constraints as *Constraints:* paragraphs rather than as requires-clauses in
   the declarations.
