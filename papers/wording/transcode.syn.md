@@ -231,10 +231,9 @@ namespace std {
     constexpr default_sentinel_t end() const;
   };
 
-  template<text_decoder Codec> constexpr decode_closure<Codec> decode(Codec codec = {});
+  template<text_decoder Codec> constexpr auto decode(Codec codec = {});
 
-  template<text_decoder Codec>
-  constexpr decode_closure<Codec, error_mode::report> decode_or_error(Codec codec = {});
+  template<text_decoder Codec> constexpr auto decode_or_error(Codec codec = {});
 
   template<text_decoder Codec, input_range R, error_mode E>
     requires legacy_byte_range<R>
@@ -270,10 +269,9 @@ namespace std {
     constexpr default_sentinel_t end() const;
   };
 
-  template<text_encoder Codec> constexpr encode_closure<Codec> encode(Codec codec = {});
+  template<text_encoder Codec> constexpr auto encode(Codec codec = {});
 
-  template<text_encoder Codec>
-  constexpr encode_closure<Codec, error_mode::report> encode_or_error(Codec codec = {});
+  template<text_encoder Codec> constexpr auto encode_or_error(Codec codec = {});
 
   template<text_encoder Codec, input_range R, error_mode E>
     requires unicode_scalar_range<R>
@@ -295,7 +293,7 @@ namespace std {
   // @[transcode.pipeline]@, transcoding pipelines
 
   template<text_decoder From, text_encoder To>
-  constexpr pluggable_transcode_closure<From, To> transcode(From from, To to);
+  constexpr auto transcode(From from, To to);
 
   // @[transcode.pipeline]@, transcoding pipelines
 

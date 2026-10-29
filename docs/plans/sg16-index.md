@@ -129,7 +129,7 @@ an encoding, `E` for the error mode, `Codec` for a codec object) do not change.
 | `whatwg_encode_view` / `random_access_whatwg_encode_view` / `whatwg_encode_closure` | `whatwg::encode_view` / ... Interim only: deleted in 12 | 06 |
 | `*_or_error_view`, `*_or_error_closure` compatibility aliases (WHATWG and pluggable) | deleted. Spell the view with `error_mode::report` instead | 06 |
 | `transcode<From, To>` / `transcode_closure` | `whatwg::transcode<From, To>` / `whatwg::transcode_closure` | 06 |
-| `pluggable_transcode(from, to)` | `transcode(from, to)`. Closure type name `pluggable_transcode_closure` unchanged (`\omit`) | 06 |
+| `pluggable_transcode(from, to)` | `transcode(from, to)`. The closure type is renamed `transcode_closure` (step 19; the name was free once `whatwg::transcode_closure` went in step 13). It is not named in the synopsis: `decode`, `decode_or_error`, `encode`, `encode_or_error` and `transcode(from, to)` are declared with a deduced `auto` return type, which renders as `auto`, and their clauses say `$see below$` | 06 |
 | `transcode_string(...)` (both overloads) | `whatwg::transcode_string(...)` | 06 |
 | `has_whatwg_encoder(codec)` | `whatwg::has_encoder(whatwg::encoding)` | 06 |
 | `decode_to<C>`, `encode_to<C, Container>`, `decode_into<C>`, `encode_into<C>` | `whatwg::decode_to<C>` and so on | 06 |
@@ -221,7 +221,10 @@ it again until it returns `nullopt`. The first real consumer is
 `whatwg::encoder<encoding::iso_2022_jp>` in step 10. Until then, the only
 consumer is the toy `shift_state_encoder` in `tests/beman/transcode/encode_view.test.cpp`.
 An engaged result with `count == 0` and no error is treated as "owes nothing"
-(the view finishes), so a buggy codec cannot loop forever. Both `flush()`
+(the view finishes), so a buggy codec cannot loop forever. An error result
+from `flush()` follows the `encode_one` rule (step 19): in replacement mode
+its `bytes[0, count)` are yielded, or `'?'` if `count == 0`; in report mode it
+is one `unexpected` element. Both `flush()`
 docblocks (decoder and encoder) now say "called until `nullopt`".
 
 ## bom_aware_text_decoder {#bom-aware-decoder}
@@ -270,7 +273,8 @@ did. Revisit if SG16 or LEWG would rather the BOM rule live in the adaptor
 
 - The views and their iterators hold the codec as
   `[[no_unique_address]] Codec`, so a stateless codec costs no storage
-  (steps 07 and 08).
+  (steps 07 and 08; step 19 completed it: `encode_view::codec_` and both
+  `random_access_decode_view` members).
 - Iterator `operator==` also compares the codec (and, for decode, the loaded
   value) when `std::equality_comparable<Codec>`. Two iterators at the same
   byte position with different codec state are different positions
@@ -578,3 +582,8 @@ The integration review reads this section.
   `whatwg::decoder::flush` and the `whatwg::encoder` class. Fixing them needs
   either specgen's nested-namespace support or an exposition-only name for
   the state test; neither is a markup-only change.
+- specgen should render a `\seebelow` return type as `$see below$` in the
+  synopsis. Today the five adaptor functions (`decode`, `decode_or_error`,
+  `encode`, `encode_or_error`, `transcode(from, to)`) are declared `auto` to
+  keep the closure types out of `[transcode.syn]`, and render as `auto`
+  there, whereas variable templates declared `auto` render `$unspecified$`.

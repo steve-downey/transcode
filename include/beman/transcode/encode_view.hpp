@@ -255,8 +255,8 @@ struct encode_closure {
 //! `encode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of
 //! `codec`.
 template <text_encoder Codec>
-constexpr encode_closure<Codec> encode(Codec codec = {}) {
-    return {codec};
+constexpr auto encode(Codec codec = {}) {
+    return encode_closure<Codec>{codec};
 }
 
 //! \seebelow
@@ -264,8 +264,8 @@ constexpr encode_closure<Codec> encode(Codec codec = {}) {
 //! adapts to has value type `expected<char, whatwg::error>`, and an encoding
 //! or UTF-32 validation error is reported rather than replaced.
 template <text_encoder Codec>
-constexpr encode_closure<Codec, error_mode::report> encode_or_error(Codec codec = {}) {
-    return {codec};
+constexpr auto encode_or_error(Codec codec = {}) {
+    return encode_closure<Codec, error_mode::report>{codec};
 }
 
 // ===========================================================================

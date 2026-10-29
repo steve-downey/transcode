@@ -259,8 +259,8 @@ struct decode_closure {
 //! `decode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of
 //! `codec`.  An `E` of array type is ill-formed.
 template <text_decoder Codec>
-constexpr decode_closure<Codec> decode(Codec codec = {}) {
-    return {codec};
+constexpr auto decode(Codec codec = {}) {
+    return decode_closure<Codec>{codec};
 }
 
 //! \seebelow
@@ -268,8 +268,8 @@ constexpr decode_closure<Codec> decode(Codec codec = {}) {
 //! adapts to has value type `expected<char32_t, whatwg::error>`, and a decoding
 //! error is the error rather than U+FFFD.
 template <text_decoder Codec>
-constexpr decode_closure<Codec, error_mode::report> decode_or_error(Codec codec = {}) {
-    return {codec};
+constexpr auto decode_or_error(Codec codec = {}) {
+    return decode_closure<Codec, error_mode::report>{codec};
 }
 
 // ===========================================================================
