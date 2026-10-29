@@ -28,7 +28,7 @@ The alternative to a specified transcoder is the world we have, where every prog
 WHATWG has already done the work of pinning down what every byte means.
 What this proposal inherits is that work.
 
-We propose a set of transcoding facilities for text between character encodings, centered on separate WHATWG decode and encode adaptors, eager bulk decode and encode helpers, a convenience composed transcoder, and an `iconv`-based adaptor for broader encoding support.
+We propose a set of transcoding facilities for text between character encodings, centered on separate WHATWG decode and encode adaptors built over codec objects that a program can also supply, eager bulk decode and encode helpers, a convenience composed transcoder, and an `iconv`-based adaptor for broader encoding support.
 
 The views are lazy and compose in pipelines: decode byte sequences to Unicode scalar values, encode Unicode back to bytes.
 The eager bulk operations collect into containers or write through output iterators, for when a concrete result is more convenient than a view pipeline.
@@ -43,9 +43,34 @@ The check is a `make` target, so a reviewer need not take the claim on faith.
 
 ## Changes since R0
 
-The design is unchanged from P4246R0. The wording is regenerated from the
-reference implementation as it stands after the mailing, and the prose has a
-few editorial corrections.
+This revision responds to SG16's review of P4246R0.
+The design changed, and the wording is regenerated from the reference implementation as it now stands.
+
+### Design
+
+- The WHATWG vocabulary and adaptors moved into `whatwg::`: `whatwg::encoding` (was `codec`), `whatwg::error`, `whatwg::get_encoding`, `whatwg::bom_sniff`, `whatwg::decode<C>`, `whatwg::encode<C>`, `whatwg::transcode<From, To>`.
+  The generic codec concepts were renamed `text_decoder` and `text_encoder`, with `flushable_` and `single_byte_` refinements, and stay at the top level.
+  [The `whatwg` Namespace](#the-whatwg-namespace) explains the split and flags it as open.
+- `transcode_error_kind::{replacement, expected}` is now `error_mode::{replacement, report}`.
+- The WHATWG codecs are available as codec objects, `whatwg::decoder<C>` and, where the Encoding Standard defines an encoder, `whatwg::encoder<C>`.
+  The WHATWG adaptors are specified as the codec-object adaptors over them, so `whatwg::decode<C>` is `decode(whatwg::decoder<C>{})`, and there is one decode view and one encode view.
+  `transcode(from, to)` composes any decoder with any encoder, so built-in and program-defined codecs mix.
+- New concepts and protocol pieces: `flushable_text_encoder`, `bom_aware_text_decoder`, `single_byte_text_encoder`, `decode_result::is_empty`, and encoder replacement bytes.
+  The codec-object views model `borrowed_range` when their base does.
+  See [Decoder and Encoder Concepts](#decoder-and-encoder-concepts).
+- The bridge to `std::text_encoding::id` goes in both directions, `whatwg::get_encoding(text_encoding::id)` and `whatwg::to_text_encoding_id`, and [Why Not `text_encoding::id`?](#why-not-text_encodingid) says why it is a bridge and not the interface.
+- The Design section opens with the three layers, WHATWG, codec objects and system `iconv`, and a worked example of a codec the library does not ship.
+- The cost of runtime selection is measured, and [Template Parameter vs Runtime Selection](#template-parameter-vs-runtime-selection) reports it.
+- The namespace and `single_byte_text_encoder` are open questions for SG16.
+
+### Wording
+
+- The enumerator-value claim is corrected, and the rationale is removed from [transcode.whatwg.encoding].
+- Remarks that had lost their clauses are routed to the clauses they belong to.
+- *Mandates* and *Constraints* replace "is required to be".
+- The clause headings carry stable names, and an editor's note covers the nested namespaces.
+
+### Other corrections
 
 - [transcode.iconv] conditions its facilities on an available POSIX-conforming
   `iconv` interface, which the operating system or a third-party library may
@@ -720,6 +745,12 @@ concept flushable_text_decoder = text_decoder<C> && requires(C& c) {
 };
 
 template <typename C>
+concept bom_aware_text_decoder =
+    text_decoder<C> && requires(C& c, const unsigned char*& iter, const unsigned char* sentinel) {
+        { c.decode_first(iter, sentinel) } -> same_as<decode_result>;
+    };
+
+template <typename C>
 concept flushable_text_encoder = text_encoder<C> && requires(C& c) {
     { c.flush() } -> same_as<optional<encode_result>>;
 };
@@ -998,7 +1029,34 @@ Making the codec a template parameter gives inlined codec logic, no dispatch per
 What it gives up is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter cannot be spelled from a runtime string.
 However, the dispatch has to happen exactly once, at the point where the label is resolved, and it is a `switch` over an enumeration.
 `whatwg::get_encoding` and `whatwg::transcode_string` provide that dispatch, and runtime selection can be layered further via `variant` or `any`.
-Dispatching on every code point instead would give up `constexpr` decoding for all callers to spare one `switch` for some of them.
+
+We measured what that costs.
+The reference implementation has a dispatch-overhead benchmark (pull request 128 on [the implementation repository](https://github.com/steve-downey/transcode/pull/128)) that counts instructions instead of timing them.
+Dispatching by encoding at run time costs about 121 instructions per call, whatever the encoding and whatever the size of the input.
+That is an upper bound, because it includes the wrapper in `whatwg::transcode_string`.
+Each `whatwg::get_encoding` label lookup costs about 550 instructions.
+Together they are under 1% of the work on whole corpora, and 3-5% on 32-byte inputs.
+
+So a runtime caller pays almost nothing for the template parameter.
+Dispatching on every code point instead would give up `constexpr` decoding for all callers to spare one `switch` for some of them, and the `switch` is the part that costs almost nothing.
+
+### The `whatwg` Namespace {#the-whatwg-namespace}
+
+The WHATWG surface is in `std::whatwg`, so that its names are the Encoding Standard's own: `whatwg::encoding`, `whatwg::decoder<C>`, `whatwg::encoder<C>`, `whatwg::get_encoding`, `whatwg::bom_sniff`.
+The generic plumbing stays in `std`.
+That includes the codec concepts, `text_decoder`, `text_encoder` and their refinements, because they describe the pluggable protocol and not WHATWG.
+
+This is a choice about how many names the proposal adds to `std`, and it is open.
+The paper asks for direction, below.
+
+It has a cost.
+The enum-keyed adaptors, `whatwg::decode<C>`, and the codec-object adaptors, `decode(d)`, have the same name one namespace apart.
+A variable template and a function template cannot share a scope, so they cannot live in one.
+A program that applies `using namespace` to both gets an ambiguity on the unqualified name.
+Distinct spellings, such as `decode_with(d)` for the codec-object adaptor, would remove the collision and cost a name in `std`.
+
+`single_byte_text_encoder` is in the same position.
+It exists only to keep random access on the encode path, and it could be dropped along with it.
 
 ### char32_t as the Interchange Type
 
@@ -1153,8 +1211,11 @@ This proposal adds new headers and does not modify existing standard library com
 
 Or combined into `<ranges>` additions.
 
-## Open Question for SG16
+## Open Questions for SG16
 
+There are three.
+
+**The U+FFFD reservation.**
 The random-access custom codec protocol, `single_byte_text_decoder`, reserves U+FFFD as the in-band signal
 that a byte `0x80` or above decodes to nothing. That keeps `decode_byte` cheap,
 but it prevents a custom codec from mapping such a byte to the actual U+FFFD
@@ -1166,17 +1227,37 @@ not choose between them before SG16 review: no WHATWG single-byte codec needs
 the foreclosed mapping, and changing the indexed path for a hypothetical
 extension is a change the group should weigh.
 
+**The `whatwg` namespace.**
+The WHATWG names are in `std::whatwg` ([The `whatwg` Namespace](#the-whatwg-namespace)).
+Should the proposal add that many names to `std`, and under that namespace?
+The alternatives are to keep it, to flatten the names into `std` with a `whatwg_` prefix, or to keep the namespace and give the codec-object adaptors distinct names such as `decode_with(d)`, so that a use-directive on both namespaces is not ambiguous.
+
+**`single_byte_text_encoder`.**
+It exists only to keep `whatwg::encode<C>` a `random_access_range` for the single-byte encodings.
+Should it stay, or should random-access encode be dropped, and the concept with it?
+Dropping it removes a public name and `random_access_encode_view`, and `whatwg::encode<C>` becomes a forward range for every encoding.
+
 ## Summary of the Design
 
 The decisions embodied in the design, and in the wording that follows:
 
+- **There are three layers**: the WHATWG encodings, codec objects, and system
+  `iconv`. The WHATWG adaptors are the codec-object adaptors applied to
+  `whatwg::decoder<C>` and `whatwg::encoder<C>`, and a program can supply a
+  codec the library does not ship.
 - **Decode and encode are separate adaptors**, composed by pipe.
-  `whatwg::transcode<From, To>` is the composed convenience for when the intermediate
-  `char32_t` stream is not observed.
-- **The codec is a template parameter.** Codec logic inlines, nothing
-  dispatches per element, and transcoding runs at compile time. Runtime
-  selection happens once, where the label is resolved, through `whatwg::get_encoding`
-  and `whatwg::transcode_string`.
+  `transcode(from, to)` and `whatwg::transcode<From, To>` are the composed
+  convenience for when the intermediate `char32_t` stream is not observed.
+- **The codec is a template parameter for the WHATWG adaptors, and a value for
+  codec objects.** Codec logic inlines, nothing dispatches per element, and
+  transcoding runs at compile time. Runtime selection happens once, where the
+  label is resolved, through `whatwg::get_encoding` and
+  `whatwg::transcode_string`, and it costs about 121 instructions a call and
+  about 550 a lookup.
+- **The codec concepts are generic.** `text_decoder` and `text_encoder`, with
+  the `flushable_text_decoder`, `bom_aware_text_decoder`,
+  `flushable_text_encoder` and `single_byte_` refinements, are in `std`; the
+  WHATWG names are in `std::whatwg`, which is an open question.
 - **`char32_t` is the interchange type.** Nothing about it validates what it
   holds, so a `char32_t` range from outside a decode pipeline is validated as
   UTF-32 by the encode view.
@@ -1187,7 +1268,9 @@ The decisions embodied in the design, and in the wording that follows:
   because the failures are not the same failures. Whether an error is reported
   or replaced is one view template parameterized on `error_mode`.
 - **The views model `input_range`** and preserve more where the codec and base
-  permit, up to `random_access_range` for indexed codecs.
+  permit, up to `random_access_range` for indexed codecs. That comes from the
+  codec-object views, `decode_view` and `encode_view`, which are also
+  `borrowed_range` when their base is.
 - **Four named bulk helpers are proposed**, specified as the pipelines they
   name. They add no semantics beyond those pipelines; they make the common
   operation discoverable.
