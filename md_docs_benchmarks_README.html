@@ -396,7 +396,9 @@ Benchmark Suites</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>make bench-stability-job</code>   </td><td class="markdownTableBodyNone">core suites from prebuilt <code>BENCH_BIN_DIR</code>, timed then counted → one runner-stability job's results   </td><td class="markdownTableBodyNone">—   </td></tr>
 </table>
-</div></div><!-- contents -->
+<p>The <code>benchmarks.whatwg</code> binary also holds the label benchmarks (<code>benchmark/label_benchmarks.bench.cpp</code>, tag <code>[label]</code>), so the core-suite targets run them with the rest of <code>whatwg</code>. They time <code>get_encoding</code> alone, and <code>transcode_string</code> on the same input three ways: with the codecs fixed at compile time, by <code>codec</code> value, and by label. The differences between the three are the cost of the switch to the codec's instantiation and of the two label lookups. To run only these:</p>
+<div class="fragment"><div class="line">.build/build-system/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg &quot;[label]&quot;</div>
+</div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <!-- start footer part -->
