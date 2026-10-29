@@ -17,10 +17,12 @@
 #include <concepts>
 #include <cstddef>
 #include <expected>
+#include <optional>
 #include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 using namespace beman::transcoding;
@@ -388,4 +390,75 @@ TEST_CASE("whatwg::encoder: encoding in a constant expression", "[whatwg_encoder
     CHECK(trailing[5] == '\x1B');
     CHECK(trailing[6] == '(');
     CHECK(trailing[7] == 'B');
+}
+
+// ---------------------------------------------------------------------------
+// single_byte_text_encoder and random access
+// ---------------------------------------------------------------------------
+
+namespace {
+
+constexpr bool is_single_byte_encoding(encoding c) {
+    switch (c) {
+    case encoding::utf_8:
+    case encoding::gbk:
+    case encoding::gb18030:
+    case encoding::big5:
+    case encoding::shift_jis:
+    case encoding::euc_jp:
+    case encoding::iso_2022_jp:
+    case encoding::euc_kr:
+        return false;
+    default:
+        return true;
+    }
+}
+
+} // namespace
+
+TEST_CASE("whatwg::encoder: single_byte_text_encoder holds for the single-byte encodings",
+          "[whatwg_encoder][random_access]") {
+    for_each_encoding(encodable{}, [&]<encoding C>() {
+        INFO("encoding " << static_cast<int>(C));
+        CHECK(single_byte_text_encoder<whatwg::encoder<C>> == is_single_byte_encoding(C));
+        using view_t = decltype(std::span<const char32_t>{} | encode(whatwg::encoder<C>{}));
+        CHECK(std::ranges::random_access_range<view_t> == is_single_byte_encoding(C));
+        CHECK(std::ranges::sized_range<view_t> == is_single_byte_encoding(C));
+    });
+}
+
+TEST_CASE("whatwg::encoder: encode_byte agrees with encode_one", "[whatwg_encoder][random_access]") {
+    whatwg::encoder<encoding::windows_1252> e;
+    for (char32_t cp = 0; cp <= 0xFFFF; ++cp) {
+        if (cp >= 0xD800 && cp <= 0xDFFF)
+            continue;
+        const auto byte = e.encode_byte(cp);
+        const auto r    = e.encode_one(cp);
+        if (r.is_error) {
+            CHECK(!byte);
+        } else {
+            REQUIRE(byte);
+            CHECK(r.count == 1);
+            CHECK(r.bytes[0] == *byte);
+        }
+    }
+    CHECK(e.encode_byte(U'\x20AC') == std::optional<unsigned char>{0x80});
+    CHECK(!e.encode_byte(U'\x3042'));
+}
+
+TEST_CASE("whatwg::encoder: the codec-object view over windows-1252 is random access",
+          "[whatwg_encoder][random_access]") {
+    const std::u32string src{U'a', U'\x20AC', U'b', U'\xE9', U'\x3042', U'z'};
+    const auto           v = std::span<const char32_t>{src} | encode(whatwg::encoder<encoding::windows_1252>{});
+    static_assert(std::ranges::random_access_range<decltype(v)>);
+    REQUIRE(v.size() == src.size());
+    CHECK(v[0] == 'a');
+    CHECK(static_cast<unsigned char>(v[1]) == 0x80);
+    CHECK(static_cast<unsigned char>(v[3]) == 0xE9);
+    CHECK(v[4] == '?');
+    CHECK(v.end() - v.begin() == 6);
+    CHECK(collect(v) == collect(std::span<const char32_t>{src} | whatwg::encode<encoding::windows_1252>));
+
+    const auto r = std::span<const char32_t>{src} | encode_or_error(whatwg::encoder<encoding::windows_1252>{});
+    CHECK(r[4] == std::unexpected{whatwg::error::unmapped_codepoint});
 }

@@ -34,7 +34,8 @@ namespace beman::transcoding::whatwg {
 //! adaptor over it \iref{transcode.custom.encode} yields what
 //! `whatwg::encode<C>` does.  It models `flushable_text_encoder` when `C` is
 //! `encoding::iso_2022_jp`, which owes an escape sequence returning to ASCII
-//! after the last scalar value.  It is equality comparable.
+//! after the last scalar value.  It models `single_byte_text_encoder` when
+//! `C` names a single-byte encoding.  It is equality comparable.
 template <encoding C>
     requires detail::whatwg_encode_codec<C>
 class encoder {
@@ -43,6 +44,9 @@ class encoder {
 
   public:
     constexpr encode_result encode_one(char32_t scalar);
+
+    constexpr std::optional<unsigned char> encode_byte(char32_t scalar) const
+        requires detail::random_access_encode_codec<C>;
 
     constexpr std::optional<encode_result> flush()
         requires(C == encoding::iso_2022_jp);
@@ -106,6 +110,19 @@ constexpr encode_result encoder<C>::encode_one(char32_t scalar) {
         const auto r = detail::euc_kr_encode_one(scalar);
         return r.is_error ? failure : copy(r);
     }
+}
+
+template <encoding C>
+    requires detail::whatwg_encode_codec<C>
+//! \returns The byte `scalar` encodes to in the encoding `C`, or `nullopt` if
+//! `C` has no representation for it.  Present for the single-byte encodings.
+constexpr std::optional<unsigned char> encoder<C>::encode_byte(char32_t scalar) const
+    requires detail::random_access_encode_codec<C>
+{
+    const auto r = detail::single_byte_encode_one<detail::random_access_encode_table<C>()>(scalar);
+    if (r.is_error)
+        return std::nullopt;
+    return static_cast<unsigned char>(r.byte);
 }
 
 template <encoding C>

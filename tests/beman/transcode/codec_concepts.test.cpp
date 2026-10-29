@@ -72,6 +72,9 @@ static_assert(text_encoder<latin1_codec>);
 static_assert(!flushable_text_decoder<latin1_codec>);
 static_assert(!bom_aware_text_decoder<latin1_codec>);
 static_assert(!flushable_text_encoder<latin1_codec>);
+static_assert(!single_byte_text_encoder<latin1_codec>);
+static_assert(!single_byte_text_encoder<not_a_codec>);
+static_assert(!single_byte_text_encoder<int>);
 
 static_assert(text_decoder<sparse_codec>);
 static_assert(single_byte_text_decoder<sparse_codec>);

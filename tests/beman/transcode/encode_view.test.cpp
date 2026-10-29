@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <expected>
 #include <iterator>
+#include <list>
 #include <optional>
 #include <ranges>
 #include <span>
@@ -517,4 +518,110 @@ TEST_CASE("encode_view: replacement bytes in a constant expression", "[encode_vi
     CHECK(bytes[1] == '<');
     CHECK(bytes[2] == '>');
     CHECK(bytes[3] == 'b');
+}
+
+// ---------------------------------------------------------------------------
+// random_access_encode_view: a single-byte encoder
+// ---------------------------------------------------------------------------
+
+namespace {
+
+// Latin-1: each scalar value up to U+00FF is its own byte.
+struct latin1_encoder {
+    constexpr std::optional<unsigned char> encode_byte(char32_t cp) const {
+        if (cp <= 0xFF)
+            return static_cast<unsigned char>(cp);
+        return std::nullopt;
+    }
+    constexpr encode_result encode_one(char32_t cp) const {
+        encode_result r{};
+        if (auto b = encode_byte(cp)) {
+            r.bytes[0] = *b;
+            r.count    = 1;
+        } else {
+            r.is_error = true;
+        }
+        return r;
+    }
+};
+
+static_assert(single_byte_text_encoder<latin1_encoder>);
+static_assert(!single_byte_text_encoder<replacement_aware_codec>);
+static_assert(!single_byte_text_encoder<latin1_codec>);
+
+constexpr std::array<char, 4> latin1_through_view() {
+    constexpr std::array<char32_t, 4> src{U'a', U'\xE9', U'\x3042', U'z'};
+    std::array<char, 4>               out{};
+    auto                              v = std::span<const char32_t>{src} | encode(latin1_encoder{});
+    for (std::size_t i = 0; i < out.size(); ++i)
+        out[i] = v[static_cast<std::ptrdiff_t>(i)];
+    return out;
+}
+
+} // namespace
+
+TEST_CASE("encode_view: a single-byte encoder over a random-access base is random access",
+          "[encode_view][random_access]") {
+    const std::u32string src = U"a\xE9\x3042z";
+    auto                 v   = std::span<const char32_t>{src} | encode(latin1_encoder{});
+    using view_t             = decltype(v);
+    STATIC_REQUIRE(std::ranges::random_access_range<view_t>);
+    STATIC_REQUIRE(std::ranges::sized_range<view_t>);
+    STATIC_REQUIRE(std::ranges::borrowed_range<view_t>);
+    CHECK(v.size() == 4);
+    CHECK(v.end() - v.begin() == 4);
+    auto it = v.begin();
+    CHECK(it[0] == 'a');
+    CHECK(it[1] == '\xE9');
+    CHECK(it[2] == '?');
+    CHECK(it[3] == 'z');
+    CHECK(*(v.end() - 1) == 'z');
+
+    std::string reversed;
+    for (char c : v | std::views::reverse)
+        reversed.push_back(c);
+    CHECK(reversed == "z?\xE9"
+                      "a");
+}
+
+TEST_CASE("encode_view: a single-byte encoder in report mode", "[encode_view][random_access]") {
+    const std::u32string src{U'a', U'\x3042', char32_t{0xD800}, char32_t{0x110000}, U'\xE9'};
+    auto                 v = std::span<const char32_t>{src} | encode_or_error(latin1_encoder{});
+    STATIC_REQUIRE(std::ranges::random_access_range<decltype(v)>);
+    REQUIRE(v.size() == 5);
+    CHECK(v[0] == 'a');
+    REQUIRE_FALSE(v[1].has_value());
+    CHECK(v[1].error() == whatwg::error::unmapped_codepoint);
+    REQUIRE_FALSE(v[2].has_value());
+    CHECK(v[2].error() == whatwg::error::surrogate_code_point);
+    REQUIRE_FALSE(v[3].has_value());
+    CHECK(v[3].error() == whatwg::error::out_of_range);
+    CHECK(v[4] == '\xE9');
+}
+
+TEST_CASE("encode_view: a single-byte encoder replaces ill-formed UTF-32 with U+FFFD",
+          "[encode_view][random_access]") {
+    // U+FFFD is not representable in Latin-1, so the replacement is '?'.
+    const std::u32string src{U'a', char32_t{0xD800}, char32_t{0x110000}};
+    auto                 v = std::span<const char32_t>{src} | encode(latin1_encoder{});
+    CHECK(v[0] == 'a');
+    CHECK(v[1] == '?');
+    CHECK(v[2] == '?');
+}
+
+TEST_CASE("encode_view: a single-byte encoder over a non-random-access base is an encode_view",
+          "[encode_view][random_access]") {
+    std::list<char32_t> src{U'a', U'\xE9'};
+    auto                v = src | encode(latin1_encoder{});
+    STATIC_REQUIRE(!std::ranges::random_access_range<decltype(v)>);
+    STATIC_REQUIRE(std::ranges::forward_range<decltype(v)>);
+    CHECK(collect_bytes(v) == "a\xE9");
+}
+
+TEST_CASE("encode_view: a single-byte encoder in a constant expression", "[encode_view][random_access]") {
+    constexpr auto bytes = constify(latin1_through_view());
+    CHECK(bytes[0] == 'a');
+    CHECK(bytes[1] == '\xE9');
+    CHECK(bytes[2] == '?');
+    CHECK(bytes[3] == 'z');
 }

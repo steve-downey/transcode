@@ -849,6 +849,34 @@ set_tests_properties(
             "required for the satisfaction of .+random_access_decode_codec<C>.+ \\[with C = .+encoding::shift_jis\\]"
 )
 
+# an encode view over an encoder that is not single-byte is not random access
+add_library(beman.transcode.tests.random_access_encode_view_reject_fail OBJECT)
+target_sources(
+    beman.transcode.tests.random_access_encode_view_reject_fail
+    PRIVATE random_access_encode_view_reject_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.random_access_encode_view_reject_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.random_access_encode_view_reject_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME random_access_encode_view_reject_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.random_access_encode_view_reject_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    random_access_encode_view_reject_fail
+    PROPERTIES
+        PASS_REGULAR_EXPRESSION
+            "required for the satisfaction of .+random_access_range<R>.+ \\[with R = .+encode_view<multibyte_encoder"
+)
+
 # whatwg::encoder<C> is not defined for an encoding WHATWG gives no encoder
 add_library(beman.transcode.tests.whatwg_encoder_reject_fail OBJECT)
 target_sources(
