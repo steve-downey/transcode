@@ -244,6 +244,54 @@ inline constexpr label_entry label_table[] = {
     {"x-x-big5", whatwg::encoding::big5},
 };
 
+struct name_entry {
+    const char*      name;
+    whatwg::encoding value;
+};
+
+inline constexpr name_entry name_table[] = {
+    {"UTF-8", whatwg::encoding::utf_8},
+    {"IBM866", whatwg::encoding::ibm866},
+    {"ISO-8859-2", whatwg::encoding::iso_8859_2},
+    {"ISO-8859-3", whatwg::encoding::iso_8859_3},
+    {"ISO-8859-4", whatwg::encoding::iso_8859_4},
+    {"ISO-8859-5", whatwg::encoding::iso_8859_5},
+    {"ISO-8859-6", whatwg::encoding::iso_8859_6},
+    {"ISO-8859-7", whatwg::encoding::iso_8859_7},
+    {"ISO-8859-8", whatwg::encoding::iso_8859_8},
+    {"ISO-8859-8-I", whatwg::encoding::iso_8859_8_i},
+    {"ISO-8859-10", whatwg::encoding::iso_8859_10},
+    {"ISO-8859-13", whatwg::encoding::iso_8859_13},
+    {"ISO-8859-14", whatwg::encoding::iso_8859_14},
+    {"ISO-8859-15", whatwg::encoding::iso_8859_15},
+    {"ISO-8859-16", whatwg::encoding::iso_8859_16},
+    {"KOI8-R", whatwg::encoding::koi8_r},
+    {"KOI8-U", whatwg::encoding::koi8_u},
+    {"macintosh", whatwg::encoding::macintosh},
+    {"windows-874", whatwg::encoding::windows_874},
+    {"windows-1250", whatwg::encoding::windows_1250},
+    {"windows-1251", whatwg::encoding::windows_1251},
+    {"windows-1252", whatwg::encoding::windows_1252},
+    {"windows-1253", whatwg::encoding::windows_1253},
+    {"windows-1254", whatwg::encoding::windows_1254},
+    {"windows-1255", whatwg::encoding::windows_1255},
+    {"windows-1256", whatwg::encoding::windows_1256},
+    {"windows-1257", whatwg::encoding::windows_1257},
+    {"windows-1258", whatwg::encoding::windows_1258},
+    {"x-mac-cyrillic", whatwg::encoding::x_mac_cyrillic},
+    {"GBK", whatwg::encoding::gbk},
+    {"gb18030", whatwg::encoding::gb18030},
+    {"Big5", whatwg::encoding::big5},
+    {"EUC-JP", whatwg::encoding::euc_jp},
+    {"ISO-2022-JP", whatwg::encoding::iso_2022_jp},
+    {"Shift_JIS", whatwg::encoding::shift_jis},
+    {"EUC-KR", whatwg::encoding::euc_kr},
+    {"replacement", whatwg::encoding::replacement},
+    {"UTF-16BE", whatwg::encoding::utf_16be},
+    {"UTF-16LE", whatwg::encoding::utf_16le},
+    {"x-user-defined", whatwg::encoding::x_user_defined},
+};
+
 } // namespace beman::transcoding::detail
 
 #endif // INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP

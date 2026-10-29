@@ -6,7 +6,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from generate_labels import name_to_codec_value, parse_encodings_json, render_labels_hpp
+from generate_labels import (
+    name_to_codec_value,
+    parse_encoding_names,
+    parse_encodings_json,
+    render_labels_hpp,
+)
 
 ENCODINGS_JSON = (
     Path(__file__).parent.parent.parent / "docs" / "whatwg" / "encodings.json"
@@ -61,7 +66,7 @@ def test_parse_encodings_json_shift_jis_labels() -> None:
 
 def test_render_labels_hpp_has_guard() -> None:
     entries = parse_encodings_json(ENCODINGS_JSON)
-    hpp = render_labels_hpp(entries)
+    hpp = render_labels_hpp(entries, parse_encoding_names(ENCODINGS_JSON))
     assert "INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP" in hpp
 
 
@@ -74,18 +79,33 @@ def test_render_labels_hpp_is_table_only() -> None:
     output must never need is an edit.
     """
     entries = parse_encodings_json(ENCODINGS_JSON)
-    hpp = render_labels_hpp(entries)
+    hpp = render_labels_hpp(entries, parse_encoding_names(ENCODINGS_JSON))
     assert "label_table" in hpp
     assert "get_encoding" not in hpp
 
 
 def test_render_labels_hpp_has_utf8_entry() -> None:
     entries = parse_encodings_json(ENCODINGS_JSON)
-    hpp = render_labels_hpp(entries)
+    hpp = render_labels_hpp(entries, parse_encoding_names(ENCODINGS_JSON))
     assert '"utf-8", whatwg::encoding::utf_8' in hpp
 
 
 def test_render_labels_hpp_has_shift_jis_entry() -> None:
     entries = parse_encodings_json(ENCODINGS_JSON)
-    hpp = render_labels_hpp(entries)
+    hpp = render_labels_hpp(entries, parse_encoding_names(ENCODINGS_JSON))
     assert '"shift_jis", whatwg::encoding::shift_jis' in hpp
+
+
+def test_parse_encoding_names_canonical() -> None:
+    names = dict(parse_encoding_names(ENCODINGS_JSON))
+    assert names["Shift_JIS"] == "shift_jis"
+    assert names["windows-1252"] == "windows_1252"
+    assert names["UTF-16LE"] == "utf_16le"
+    assert len(names) == 40
+
+
+def test_render_labels_hpp_has_name_entries() -> None:
+    entries = parse_encodings_json(ENCODINGS_JSON)
+    hpp = render_labels_hpp(entries, parse_encoding_names(ENCODINGS_JSON))
+    assert '"Shift_JIS", whatwg::encoding::shift_jis' in hpp
+    assert '"windows-1252", whatwg::encoding::windows_1252' in hpp

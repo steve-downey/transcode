@@ -367,14 +367,31 @@ Findings, asserted in `text_encoding.test.cpp` (nothing invented):
   The third is the one the user did not expect; its labels are not IANA names.
 - The round trip `get_encoding(*to_text_encoding_id(e)) == e` holds for every
   other encoding, with no exceptions.
-- The id given back is the first label of the encoding in label-table
-  (alphabetical) order that is a registered name, and some are surprising:
-  `windows_1252` gives `US-ASCII` (mib 3, label `ansi_x3.4-1968`; the Encoding
-  Standard really does decode ASCII as windows-1252), `iso_8859_8` gives
-  `ISO-8859-8-E` (84), `utf_16le` gives `ISO-10646-UCS-2` (1000, label
-  `ucs-2`), `gbk` gives `GB2312` (57), `windows_1254` gives `ISO-8859-9` (12).
-  `get_encoding(id)` maps `id::ISOLatin1`, `id::windows1252` and `id::ASCII`
-  all to `windows_1252`.
+- **Revised by step 14a (user decision, 2026-10-29).** `to_text_encoding_id(e)`
+  is `std::text_encoding(name(e)).mib()`, where `name(e)` is the Encoding
+  Standard's canonical name, and `nullopt` when that is `id::other` or
+  `id::unknown`. Step 14 had returned the first label, in alphabetical
+  label-table order, that is a registered name, which gave aliases (the
+  `windows_1252` entry came back as an ASCII alias, `utf_16le` as a UCS-2
+  alias). IANA registers the Encoding Standard's own names, so the by-name rule
+  stays 1:1 with the spec. Checked on GCC 16 libstdc++:
+
+  | WHATWG name | mib |
+  |---|---|
+  | `UTF-8` | 106 |
+  | `windows-1252` | 2252 |
+  | `UTF-16LE` / `UTF-16BE` | 1014 / 1013 |
+  | `GBK` / `gb18030` | 113 / 114 |
+  | `ISO-8859-8` / `ISO-8859-8-I` | 11 / 85 |
+  | `Big5`, `EUC-JP`, `ISO-2022-JP`, `Shift_JIS`, `EUC-KR` | 2026, 18, 39, 17, 38 |
+  | `IBM866`, `KOI8-R`, `KOI8-U`, `macintosh`, `windows-874` | 2086, 2084, 2088, 2027, 2109 |
+  | `x-mac-cyrillic` | none (`other`) |
+
+  The names come from `detail::name_table`, emitted by
+  `tools/generate_labels.py` next to `label_table` (the label table cannot
+  say which label is the canonical name). `get_encoding(id)` is unchanged and
+  maps `id::ISOLatin1`, `id::windows1252` and `id::ASCII` all to
+  `windows_1252`.
 - Example output on Linux (WSL2) x86-64, GCC 16.2, glibc 2.39:
   `WHATWG shift_jis: U+005C U+007E` and `iconv Shift_JIS  : U+00A5 U+203E`.
 
