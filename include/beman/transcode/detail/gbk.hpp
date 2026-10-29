@@ -4,6 +4,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_GBK_HPP
 
 #include <beman/transcode/config.hpp>
+#include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/gbk.hpp>
 #include <beman/transcode/whatwg/error.hpp>
@@ -20,12 +21,6 @@ struct gbk_decode_result {
     bool          is_error{false};
 };
 
-struct gbk_encode_result {
-    unsigned char bytes[2]{};
-    int           count{0};
-    bool          is_error{false};
-};
-
 // Decode one GBK character from the range [current, end).
 // ASCII bytes (0x00–0x7F) are direct passthroughs (1 byte consumed).
 // Lead bytes 0x81–0xFE are followed by a trail byte 0x40–0xFE (not 0x7F).
@@ -36,7 +31,7 @@ constexpr gbk_decode_result gbk_decode_one(I& current, S end);
 // Encode one Unicode codepoint as GBK.
 // ASCII (cp < 0x80) outputs 1 byte. Non-ASCII searches the decode table.
 // Returns is_error=true if the codepoint is not representable in GBK.
-constexpr gbk_encode_result gbk_encode_one(char32_t cp);
+constexpr encode_result gbk_encode_one(char32_t cp);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -82,9 +77,9 @@ constexpr gbk_decode_result gbk_decode_one(I& current, S end) {
     return {cp, {}, false};
 }
 
-constexpr gbk_encode_result gbk_encode_one(char32_t cp) {
+constexpr encode_result gbk_encode_one(char32_t cp) {
     if (cp < 0x80) {
-        gbk_encode_result r{};
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>(cp);
         r.count    = 1;
         return r;
@@ -93,7 +88,7 @@ constexpr gbk_encode_result gbk_encode_one(char32_t cp) {
     // WHATWG: the GBK encoder writes U+20AC as the single byte 0x80, the
     // byte its decoder reads back as U+20AC.  GB18030 uses the index instead.
     if (cp == 0x20AC) {
-        gbk_encode_result r{};
+        encode_result r{};
         r.bytes[0] = 0x80;
         r.count    = 1;
         return r;
@@ -104,7 +99,7 @@ constexpr gbk_encode_result gbk_encode_one(char32_t cp) {
         int trail = (pointer % 190) + 0x40;
         if (trail >= 0x7F)
             ++trail;
-        gbk_encode_result r{};
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>(lead);
         r.bytes[1] = static_cast<unsigned char>(trail);
         r.count    = 2;

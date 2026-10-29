@@ -13,7 +13,6 @@
 #include <beman/transcode/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-    #include <array>
     #include <compare>
     #include <cstddef>
     #include <expected>
@@ -21,6 +20,7 @@
     #include <optional>
     #include <ranges>
     #include <type_traits>
+    #include <utility>
 
 #endif
 namespace beman::transcoding {
@@ -146,7 +146,7 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
         //! \expos
         [[no_unique_address]] Codec codec_{};
         //! \expos
-        std::array<unsigned char, 8> buf_{};
+        unsigned char buf_[8]{};
         //! \expos
         int len_{0};
         //! \expos
@@ -444,6 +444,7 @@ constexpr void encode_view<Codec, R, E>::iterator::load() {
                 if (flushed->is_error) {
                     is_error_ = true;
                     error_    = whatwg::error::unmapped_codepoint;
+                    buf_[0]   = '?';
                     len_      = 1;
                 } else {
                     is_error_ = false;
@@ -465,6 +466,7 @@ constexpr void encode_view<Codec, R, E>::iterator::load() {
         if (validation.is_error) {
             is_error_ = true;
             error_    = validation.error;
+            buf_[0]   = '?';
             len_      = 1;
             pos_      = 0;
             return;
@@ -476,11 +478,17 @@ constexpr void encode_view<Codec, R, E>::iterator::load() {
     if (r.is_error && (E == error_mode::report || r.count == 0)) {
         is_error_ = true;
         error_    = whatwg::error::unmapped_codepoint;
+        buf_[0]   = '?';
         len_      = 1;
     } else {
         is_error_ = false;
-        for (int i = 0; i < r.count; ++i)
-            buf_[static_cast<std::size_t>(i)] = r.bytes[static_cast<std::size_t>(i)];
+        // Byte by byte under `count`, unrolled: a loop bounded by the runtime
+        // `count` becomes a call to memcpy, and a whole-array copy makes the
+        // compiler build every byte of `r`, so either spills it to the stack.
+        static_assert(std::extent_v<decltype(buf_)> == std::extent_v<decltype(r.bytes)>);
+        [&]<std::size_t... I>(std::index_sequence<I...>) {
+            (void)((static_cast<int>(I) < r.count && (buf_[I] = r.bytes[I], true)) && ...);
+        }(std::make_index_sequence<std::extent_v<decltype(buf_)>>{});
         len_ = r.count;
     }
     pos_ = 0;
@@ -491,12 +499,11 @@ template <text_encoder Codec, std::ranges::input_range R, error_mode E>
 //! \returns The byte at the current position of the encoded element, or the
 //! error the encoding of that element produced.
 constexpr auto encode_view<Codec, R, E>::iterator::operator*() const -> result_t {
-    if (is_error_) {
-        // A codec failure substitutes '?'; the report view reports why.
-        if constexpr (E == error_mode::report)
+    // load() stores the '?' that replaces a failure in buf_, so only the
+    // report view tests is_error_ here; it reports why.
+    if constexpr (E == error_mode::report) {
+        if (is_error_)
             return result_t(std::unexpect, error_);
-        else
-            return '?';
     }
     return static_cast<char>(buf_[static_cast<std::size_t>(pos_)]);
 }
@@ -511,13 +518,9 @@ template <text_encoder Codec, std::ranges::input_range R, error_mode E>
 //! until it returns `nullopt`.
 //! \returns `*this`.
 constexpr auto encode_view<Codec, R, E>::iterator::operator++() -> iterator& {
-    if (is_error_) {
+    ++pos_;
+    if (pos_ == len_)
         load();
-    } else {
-        ++pos_;
-        if (pos_ == len_)
-            load();
-    }
     return *this;
 }
 

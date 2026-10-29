@@ -5,6 +5,7 @@
 
 #include <beman/transcode/config.hpp>
 
+#include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/label.hpp>
 #include <beman/transcode/whatwg/encode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

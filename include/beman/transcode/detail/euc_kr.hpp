@@ -4,6 +4,7 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_EUC_KR_HPP
 
 #include <beman/transcode/config.hpp>
+#include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/euc_kr.hpp>
 #include <beman/transcode/whatwg/error.hpp>
@@ -20,12 +21,6 @@ struct euc_kr_decode_result {
     bool          is_error{false};
 };
 
-struct euc_kr_encode_result {
-    unsigned char bytes[2]{};
-    int           count{0};
-    bool          is_error{false};
-};
-
 // Decode one EUC-KR character from the range [current, end).
 // ASCII bytes (0x00-0x7F) pass through directly (1 byte consumed).
 // Lead 0x81-0xFE followed by trail 0x41-0xFE (excluding 0x7F) yields 2 bytes.
@@ -36,7 +31,7 @@ constexpr euc_kr_decode_result euc_kr_decode_one(I& current, S end);
 // Encode one Unicode codepoint as EUC-KR.
 // ASCII (cp < 0x80) outputs 1 byte. Non-ASCII searches the decode table.
 // Returns is_error=true if the codepoint is not representable in EUC-KR.
-constexpr euc_kr_encode_result euc_kr_encode_one(char32_t cp);
+constexpr encode_result euc_kr_encode_one(char32_t cp);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -75,16 +70,16 @@ constexpr euc_kr_decode_result euc_kr_decode_one(I& current, S end) {
     return {cp, {}, false};
 }
 
-constexpr euc_kr_encode_result euc_kr_encode_one(char32_t cp) {
+constexpr encode_result euc_kr_encode_one(char32_t cp) {
     if (cp < 0x80) {
-        euc_kr_encode_result r{};
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>(cp);
         r.count    = 1;
         return r;
     }
 
     if (int pointer = reverse_index_for<tables::euc_kr>.find(cp); pointer >= 0) {
-        euc_kr_encode_result r{};
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>((pointer / 190) + 0x81);
         r.bytes[1] = static_cast<unsigned char>((pointer % 190) + 0x41);
         r.count    = 2;
