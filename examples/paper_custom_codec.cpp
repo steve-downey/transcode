@@ -7,13 +7,16 @@
 // that needs the ISO encoding writes it against the codec concepts, and the
 // pluggable `decode` and `encode` adaptors drive it.  `char32_t` is the seam
 // between codecs, so the custom decoder pipes straight into a WHATWG encoder,
-// and a WHATWG decoder into the custom encoder.
+// and a WHATWG decoder into the custom encoder.  `transcode(from, to)` joins
+// the two in one step, whichever of the codecs are the library's.
 
 #include <beman/transcode/codec_concepts.hpp>
 #include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <beman/transcode/decode_view.hpp>
 #include <beman/transcode/encode_view.hpp>
+#include <beman/transcode/transcode_view.hpp>
+#include <beman/transcode/whatwg/decoder.hpp>
 #include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/encode_view.hpp>
 
@@ -68,7 +71,19 @@ constexpr std::string from_utf8(std::string_view utf8) {
     return out;
 }
 
+// windows-1252 to ISO-8859-1 in one pipeline: `transcode(from, to)` takes the
+// library's decoder object and the custom encoder alike.  The two encodings
+// agree except in 0x80-0x9F.
+constexpr std::string windows_1252_to_latin1(std::string_view bytes) {
+    std::string out;
+    for (char b : bytes | transcode(whatwg::decoder<whatwg::encoding::windows_1252>{}, iso_8859_1{}))
+        out.push_back(b);
+    return out;
+}
+
 // 0x80 is a C1 control in ISO-8859-1 and the euro sign in windows-1252.
+static_assert(windows_1252_to_latin1("caf\xE9") == "caf\xE9");
+static_assert(windows_1252_to_latin1("\x80") == "?"); // the euro sign has no ISO-8859-1 byte
 static_assert(to_utf8("\x80") == "\xC2\x80");
 static_assert(to_utf8("caf\xE9") == "caf\xC3\xA9");
 static_assert(from_utf8("caf\xC3\xA9") == "caf\xE9");
@@ -76,4 +91,9 @@ static_assert(from_utf8("\xE2\x82\xAC") == "?"); // U+20AC has no ISO-8859-1 byt
 
 } // namespace
 
-int main() { return to_utf8("caf\xE9") == "caf\xC3\xA9" && from_utf8("\xE2\x82\xAC") == "?" ? 0 : 1; }
+int main() {
+    return to_utf8("caf\xE9") == "caf\xC3\xA9" && from_utf8("\xE2\x82\xAC") == "?" &&
+                   windows_1252_to_latin1("\x80\xE9") == "?\xE9"
+               ? 0
+               : 1;
+}

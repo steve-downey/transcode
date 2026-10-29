@@ -1124,7 +1124,7 @@ set_tests_properties(
     PROPERTIES PASS_REGULAR_EXPRESSION "legacy_byte_range"
 )
 
-# transcode_closure rejects raw arrays (char[N]) via a constrained operator|
+# The transcode adaptor rejects raw arrays (char[N]) via a constrained operator|
 # with a static_assert that fires when the input is an array type.
 add_library(beman.transcode.tests.transcode_view_reject_array_fail OBJECT)
 target_sources(
@@ -1151,6 +1151,58 @@ set_tests_properties(
     PROPERTIES
         PASS_REGULAR_EXPRESSION
             "transcode: raw arrays are not valid input to transcode"
+)
+
+# transcode(from, to) requires a text_encoder second; a decoder must be rejected.
+add_library(beman.transcode.tests.transcode_decoder_as_encoder_fail OBJECT)
+target_sources(
+    beman.transcode.tests.transcode_decoder_as_encoder_fail
+    PRIVATE transcode_decoder_as_encoder_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.transcode_decoder_as_encoder_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.transcode_decoder_as_encoder_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME transcode_decoder_as_encoder_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.transcode_decoder_as_encoder_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    transcode_decoder_as_encoder_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "text_encoder"
+)
+
+# whatwg::transcode<From, To> needs an encoder for To; WHATWG has no UTF-16BE encoder.
+add_library(beman.transcode.tests.whatwg_transcode_utf16be_reject_fail OBJECT)
+target_sources(
+    beman.transcode.tests.whatwg_transcode_utf16be_reject_fail
+    PRIVATE whatwg_transcode_utf16be_reject_fail.cpp
+)
+target_link_libraries(
+    beman.transcode.tests.whatwg_transcode_utf16be_reject_fail
+    PRIVATE beman::transcode
+)
+set_target_properties(
+    beman.transcode.tests.whatwg_transcode_utf16be_reject_fail
+    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
+)
+add_test(
+    NAME whatwg_transcode_utf16be_reject_fail
+    COMMAND
+        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
+        beman.transcode.tests.whatwg_transcode_utf16be_reject_fail --config
+        $<CONFIGURATION>
+)
+set_tests_properties(
+    whatwg_transcode_utf16be_reject_fail
+    PROPERTIES PASS_REGULAR_EXPRESSION "WHATWG does not define an encoder"
 )
 
 # whatwg::bom_sniff requires legacy_byte_range; char32_t ranges must be rejected.

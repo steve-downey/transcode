@@ -210,11 +210,6 @@ namespace std {
 
   template<encoding From, encoding To> inline constexpr $unspecified$ transcode;
 
-  // @[transcode.pipeline]@, transcoding pipelines
-
-  template<text_decoder From, text_encoder To>
-  constexpr pluggable_transcode_closure<From, To> transcode(From from, To to);
-
   // @[transcode.string]@, eager transcoding
 
   constexpr bool has_encoder(whatwg::encoding encoding) noexcept;
