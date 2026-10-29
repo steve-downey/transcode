@@ -22,6 +22,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 using namespace beman::transcoding;
@@ -46,6 +47,10 @@ inline constexpr std::array<char32_t, 128> sparse_table = [] {
 }();
 
 using sparse_codec = table_codec<sparse_table>;
+
+// A stateless codec costs the view no storage: the view is its base, nothing more.
+static_assert(std::is_empty_v<latin1_codec>);
+static_assert(sizeof(encode_view<latin1_codec, std::u32string_view>) == sizeof(std::u32string_view));
 
 struct replacement_aware_codec {
     constexpr encode_result encode_one(char32_t cp) {
@@ -454,6 +459,86 @@ TEST_CASE("encode_view: flushable encoder in a constant expression", "[encode_vi
     CHECK(static_cast<unsigned char>(bytes[1]) == 0x0E);
     CHECK(static_cast<unsigned char>(bytes[2]) == 0xE9);
     CHECK(static_cast<unsigned char>(bytes[3]) == 0x0F);
+}
+
+// ---------------------------------------------------------------------------
+// flush(): an error result is treated as an encode_one error is
+// ---------------------------------------------------------------------------
+
+namespace {
+// Encodes ASCII as itself.  At the end of the input flush() returns one error
+// result, which carries `Fill` bytes of '!' (none if Fill is 0), then nullopt.
+template <int Fill>
+struct flush_error_encoder {
+    int flushes{0};
+
+    constexpr encode_result encode_one(char32_t cp) {
+        encode_result r{};
+        r.bytes[0] = static_cast<unsigned char>(cp);
+        r.count    = 1;
+        return r;
+    }
+
+    constexpr std::optional<encode_result> flush() {
+        if (flushes++ != 0)
+            return std::nullopt;
+        encode_result r{};
+        r.is_error = true;
+        for (int i = 0; i < Fill; ++i)
+            r.bytes[r.count++] = '!';
+        return r;
+    }
+};
+
+static_assert(flushable_text_encoder<flush_error_encoder<2>>);
+
+template <int Fill>
+constexpr std::array<char, 4> flush_error_replacement() {
+    std::array<char, 4> out{};
+    std::size_t         n = 0;
+    for (char c : std::u32string_view{U"a"} | encode(flush_error_encoder<Fill>{}))
+        out[n++] = c;
+    return out;
+}
+
+template <int Fill>
+constexpr int flush_error_report_count() {
+    int errors = 0;
+    int total  = 0;
+    for (auto r : std::u32string_view{U"a"} | encode_or_error(flush_error_encoder<Fill>{})) {
+        ++total;
+        if (!r)
+            ++errors;
+    }
+    return errors * 10 + total;
+}
+} // namespace
+
+TEST_CASE("encode_view: a flush() error with bytes yields them in replacement mode", "[encode_view][flush]") {
+    using namespace std::string_literals;
+    CHECK(collect_bytes(std::u32string_view{U"a"} | encode(flush_error_encoder<2>{})) == "a!!"s);
+    CHECK(collect_bytes(std::u32string_view{U"a"} | encode(flush_error_encoder<0>{})) == "a?"s);
+}
+
+TEST_CASE("encode_view: a flush() error is one unexpected element in report mode", "[encode_view][flush]") {
+    for (auto r : std::u32string_view{U"a"} | encode_or_error(flush_error_encoder<2>{})) {
+        if (!r) {
+            CHECK(r.error() == whatwg::error::unmapped_codepoint);
+        }
+    }
+    CHECK(flush_error_report_count<2>() == 12);
+    CHECK(flush_error_report_count<0>() == 12);
+}
+
+TEST_CASE("encode_view: a flush() error in a constant expression", "[encode_view][flush]") {
+    constexpr auto with_bytes = constify(flush_error_replacement<2>());
+    CHECK(with_bytes[0] == 'a');
+    CHECK(with_bytes[1] == '!');
+    CHECK(with_bytes[2] == '!');
+    constexpr auto without = constify(flush_error_replacement<0>());
+    CHECK(without[1] == '?');
+    CHECK(constify(flush_error_report_count<2>()) == 12);
+    CHECK(constify(flush_error_report_count<0>()) == 12);
 }
 
 // ---------------------------------------------------------------------------

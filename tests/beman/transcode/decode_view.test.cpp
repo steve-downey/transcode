@@ -17,6 +17,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 using namespace beman::transcoding;
@@ -51,6 +52,11 @@ inline constexpr std::array<char32_t, 128> replacement_sentinel_table = [] {
 }();
 
 using replacement_sentinel_codec = table_codec<replacement_sentinel_table>;
+
+// A stateless codec costs the view no storage: the view is its base, nothing more.
+static_assert(std::is_empty_v<latin1_codec>);
+static_assert(sizeof(decode_view<latin1_codec, std::string_view>) == sizeof(std::string_view));
+static_assert(sizeof(random_access_decode_view<latin1_codec, std::string_view>) == sizeof(std::string_view));
 
 // A stateful codec: XORs each byte with incrementing state
 struct xor_codec {

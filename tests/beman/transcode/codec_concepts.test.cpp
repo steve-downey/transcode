@@ -59,6 +59,24 @@ struct stateful_test_codec {
     }
 };
 
+// A decoder that treats its first element specially, as bom_aware_text_decoder
+// requires: decode_first returns a decode_result
+struct first_aware_codec {
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, S end) {
+        if (current == end)
+            return {{}, whatwg::error::truncated_sequence, true};
+        auto byte = static_cast<unsigned char>(*current);
+        ++current;
+        return {static_cast<char32_t>(byte), {}, false};
+    }
+
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_first(I& current, S end) {
+        return decode_one(current, end);
+    }
+};
+
 // A type that does NOT satisfy text_decoder (missing decode_one)
 struct not_a_codec {};
 
@@ -86,6 +104,9 @@ static_assert(!text_encoder<stateful_test_codec>);
 static_assert(flushable_text_decoder<stateful_test_codec>);
 static_assert(!bom_aware_text_decoder<stateful_test_codec>);
 static_assert(!flushable_text_encoder<stateful_test_codec>);
+
+static_assert(text_decoder<first_aware_codec>);
+static_assert(bom_aware_text_decoder<first_aware_codec>);
 
 static_assert(!text_decoder<not_a_codec>);
 static_assert(!bom_aware_text_decoder<not_a_codec>);

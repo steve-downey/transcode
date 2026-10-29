@@ -476,6 +476,12 @@ TEST_CASE("whatwg::encoder: encode_byte agrees with encode_one", "[whatwg_encode
     CHECK(!e.encode_byte(U'\x3042'));
 }
 
+TEST_CASE("whatwg::encoder: encode_byte in a constant expression", "[whatwg_encoder][random_access]") {
+    constexpr whatwg::encoder<encoding::windows_1252> e;
+    CHECK(constify(e.encode_byte(U'\x20AC')) == std::optional<unsigned char>{0x80});
+    CHECK(!constify(e.encode_byte(U'\x3042')));
+}
+
 TEST_CASE("whatwg::encoder: the codec-object view over windows-1252 is random access",
           "[whatwg_encoder][random_access]") {
     const std::u32string src{U'a', U'\x20AC', U'b', U'\xE9', U'\x3042', U'z'};

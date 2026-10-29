@@ -29,14 +29,14 @@ namespace beman::transcoding {
 template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E = error_mode::replacement>
     requires legacy_byte_range<R>
 class random_access_decode_view : public std::ranges::view_interface<random_access_decode_view<Codec, R, E>> {
-    R     base_;
-    Codec codec_;
+    R                           base_;
+    [[no_unique_address]] Codec codec_;
 
     class iterator {
         using base_iter = detail::compatible_iterator_t<R>;
 
-        base_iter current_{};
-        Codec     codec_{};
+        base_iter                   current_{};
+        [[no_unique_address]] Codec codec_{};
 
       public:
         using value_type =
@@ -259,8 +259,8 @@ struct decode_closure {
 //! `decode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of
 //! `codec`.  An `E` of array type is ill-formed.
 template <text_decoder Codec>
-constexpr decode_closure<Codec> decode(Codec codec = {}) {
-    return {codec};
+constexpr auto decode(Codec codec = {}) {
+    return decode_closure<Codec>{codec};
 }
 
 //! \seebelow
@@ -268,8 +268,8 @@ constexpr decode_closure<Codec> decode(Codec codec = {}) {
 //! adapts to has value type `expected<char32_t, whatwg::error>`, and a decoding
 //! error is the error rather than U+FFFD.
 template <text_decoder Codec>
-constexpr decode_closure<Codec, error_mode::report> decode_or_error(Codec codec = {}) {
-    return {codec};
+constexpr auto decode_or_error(Codec codec = {}) {
+    return decode_closure<Codec, error_mode::report>{codec};
 }
 
 // ===========================================================================
