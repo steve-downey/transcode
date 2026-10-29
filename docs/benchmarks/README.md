@@ -367,6 +367,12 @@ BENCHMARK_ADVANCED("Shift-JIS -> UTF-8 streaming (transcode pipe)")
 };
 ```
 
+`count_elements` traverses the range, returns the element count, and folds
+every element's value into an accumulator that escapes through
+`volatile_sink`.  That prevents dead-code elimination of the traversal and of
+the computation that produced each value (a table lookup the optimizer could
+otherwise see is unused).
+
 A plain `BENCHMARK` is timed by Catch2 directly, and count mode never sees it.
 
 `corpus_span` and `load_corpus` record their input.  A benchmark over generated

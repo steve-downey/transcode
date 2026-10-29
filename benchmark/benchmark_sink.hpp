@@ -4,6 +4,8 @@
 #define BENCHMARK_BENCHMARK_SINK_HPP
 
 #include <cstddef>
+#include <cstdint>
+#include <type_traits>
 
 namespace beman::transcoding::bench {
 
@@ -21,13 +23,39 @@ void volatile_sink(const T& value) {
     p = nullptr;
 }
 
+// Reduce one traversed element to an integer so its value can be folded into
+// an accumulator. Handles integral and enumeration elements, std::byte, and
+// expected-like elements (the value, or the error).
+template <typename T>
+constexpr std::uintmax_t element_value(const T& x) {
+    if constexpr (requires { x.has_value(); }) {
+        if (x.has_value())
+            return element_value(*x);
+        return element_value(x.error());
+    } else if constexpr (std::is_enum_v<T>) {
+        return static_cast<std::uintmax_t>(static_cast<std::underlying_type_t<T>>(x));
+    } else if constexpr (requires { std::to_integer<unsigned char>(x); }) {
+        return std::to_integer<unsigned char>(x);
+    } else {
+        return static_cast<std::uintmax_t>(x);
+    }
+}
+
 // Count elements in a range. Returns the count as the benchmark result,
-// preventing DCE of the range traversal.
+// preventing DCE of the range traversal. Every element's value is also folded
+// into an accumulator that escapes through volatile_sink at runtime, so the
+// computation that produced each value cannot be deleted either.
 template <typename Range>
 constexpr std::size_t count_elements(Range&& r) {
-    std::size_t n = 0;
-    for ([[maybe_unused]] auto&& x : r)
+    std::size_t    n   = 0;
+    std::uintmax_t acc = 0;
+    for (auto&& x : r) {
+        acc += element_value(x);
         ++n;
+    }
+    if !consteval {
+        volatile_sink(acc);
+    }
     return n;
 }
 
