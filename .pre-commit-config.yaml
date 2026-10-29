@@ -47,7 +47,9 @@ repos:
         # that should not be mass-edited by the spell checker.
         # papers/wording/ is generated from the header markup: a fix belongs in
         # the header, not in the fragment, which the next run would overwrite.
-        exclude: ^(docs/whatwg/|docs/wpt/|papers/wg21/generated/|papers/wording/)
+        # metrics/ holds raw run records, appended and never edited, whose
+        # notes quote tool output verbatim.
+        exclude: ^(docs/whatwg/|docs/wpt/|metrics/|papers/wg21/generated/|papers/wording/)
         args:
           - --ignore-words-list=implementors,unexpect,caf
 
