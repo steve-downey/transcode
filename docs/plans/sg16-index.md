@@ -195,12 +195,15 @@ always done, and step 07 corrects the docblock that said "called once".
 
 ## Codec contract: encode_result {#encode-result-contract}
 
-**Provisional, step 10.** When `is_error` is true and `count > 0`,
+**Done, step 10.** When `is_error` is true and `count > 0`,
 `bytes[0..count)` is the encoder's own replacement for the unencodable scalar,
 and replacement mode yields those bytes instead of `'?'`. ISO-2022-JP needs
 this, because its replacement carries the escape back to ASCII. A result with
 `is_error` true and `count == 0` still means `'?'`, so existing custom encoders
 are unaffected. Report mode yields one `unexpected` element either way.
+`encode_view::iterator::load()` implements it (the bytes are loaded as for a
+success when `E == replacement && count > 0`), and the `encode_result` and
+`encode_view` remarks say so.
 
 ## flushable_text_encoder {#flushable-encoder}
 
@@ -271,7 +274,7 @@ did. Revisit if SG16 or LEWG would rather the BOM rule live in the adaptor
 
 ## Codec objects for the WHATWG encodings {#codec-objects}
 
-**Decoder done in step 08; encoder provisional, step 10.**
+**Decoder done in step 08; encoder done in step 10 (no `encode_byte` yet, step 11).**
 
 - `whatwg::decoder<C>` (`whatwg/decoder.hpp`) is defined for every
   `whatwg::encoding`. It models `text_decoder`, and it models `single_byte_text_decoder`
@@ -297,7 +300,14 @@ did. Revisit if SG16 or LEWG would rather the BOM rule live in the adaptor
   `whatwg::transcode<F, T>`, through a `detail::` helper that
   `static_assert`s before naming `whatwg::encoder<C>` (steps 12 and 13). It
   models `text_encoder`, models `single_byte_text_encoder` for
-  the single-byte encodings, and models `flushable_text_encoder` for ISO-2022-JP.
+  the single-byte encodings (step 11), and models `flushable_text_encoder` for ISO-2022-JP.
+  Structure as built: one class template; `encode_one` is `if constexpr`
+  dispatch over `C` (copied from `whatwg::encode_view::iterator::load()`, which
+  step 12 deletes), with `[[no_unique_address]] detail::encode_state_t<C>
+  state_` (empty except for ISO-2022-JP) and a `flush()` constrained to
+  `C == encoding::iso_2022_jp`. There is no once-only flag. The negative tests
+  are `whatwg_encoder_reject_fail` (naming `encoder<utf_16be>`) and
+  `whatwg_encoder_flush_reject_fail`.
 - Done in step 09 for decode (step 12 for encode): `whatwg::decode<C>` is
   `transcoding::decode(whatwg::decoder<C>{})`,
   `whatwg::decode_or_error<C>` is `transcoding::decode_or_error(whatwg::decoder<C>{})`,

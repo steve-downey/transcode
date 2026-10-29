@@ -14,6 +14,7 @@
 #include <array>
 #include <concepts>
 #include <cstddef>
+#include <expected>
 #include <iterator>
 #include <optional>
 #include <ranges>
@@ -452,4 +453,68 @@ TEST_CASE("encode_view: flushable encoder in a constant expression", "[encode_vi
     CHECK(static_cast<unsigned char>(bytes[1]) == 0x0E);
     CHECK(static_cast<unsigned char>(bytes[2]) == 0xE9);
     CHECK(static_cast<unsigned char>(bytes[3]) == 0x0F);
+}
+
+// ---------------------------------------------------------------------------
+// encode_result: an error that carries its own replacement bytes
+// ---------------------------------------------------------------------------
+
+namespace {
+// Encodes ASCII as itself.  Anything else is an error, and the error carries
+// the two bytes "<>" as its own replacement.
+struct bracket_replacement_encoder {
+    constexpr encode_result encode_one(char32_t cp) {
+        encode_result r{};
+        if (cp < 0x80) {
+            r.bytes[0] = static_cast<unsigned char>(cp);
+            r.count    = 1;
+        } else {
+            r.is_error = true;
+            r.bytes[0] = '<';
+            r.bytes[1] = '>';
+            r.count    = 2;
+        }
+        return r;
+    }
+};
+static_assert(text_encoder<bracket_replacement_encoder>);
+
+constexpr std::array<char, 8> bracket_encode_a_e_acute_b() {
+    std::array<char, 8> out{};
+    std::size_t         n = 0;
+    for (auto b : std::u32string_view{U"aéb"} | encode(bracket_replacement_encoder{}))
+        out[n++] = b;
+    return out;
+}
+} // namespace
+
+TEST_CASE("encode_view: an error with bytes yields them as the replacement", "[encode_view][replacement_bytes]") {
+    using namespace std::string_literals;
+    CHECK(collect_bytes(std::u32string_view{U"aéb"} | encode(bracket_replacement_encoder{})) == "a<>b"s);
+    CHECK(collect_bytes(std::u32string_view{U"é"} | encode(bracket_replacement_encoder{})) == "<>"s);
+    CHECK(collect_bytes(std::u32string_view{U"ab"} | encode(bracket_replacement_encoder{})) == "ab"s);
+}
+
+TEST_CASE("encode_view: an error with no bytes still yields '?'", "[encode_view][replacement_bytes]") {
+    using namespace std::string_literals;
+    CHECK(collect_bytes(std::u32string_view{U"aéb"} | encode(replacement_aware_codec{})) == "???"s);
+}
+
+TEST_CASE("encode_view: report mode ignores an error's replacement bytes", "[encode_view][replacement_bytes]") {
+    std::vector<std::expected<char, whatwg::error>> out;
+    for (auto r : std::u32string_view{U"aéb"} | encode_or_error(bracket_replacement_encoder{}))
+        out.push_back(r);
+    REQUIRE(out.size() == 3);
+    CHECK(out[0] == 'a');
+    REQUIRE_FALSE(out[1].has_value());
+    CHECK(out[1].error() == whatwg::error::unmapped_codepoint);
+    CHECK(out[2] == 'b');
+}
+
+TEST_CASE("encode_view: replacement bytes in a constant expression", "[encode_view][replacement_bytes]") {
+    constexpr auto bytes = constify(bracket_encode_a_e_acute_b());
+    CHECK(bytes[0] == 'a');
+    CHECK(bytes[1] == '<');
+    CHECK(bytes[2] == '>');
+    CHECK(bytes[3] == 'b');
 }
