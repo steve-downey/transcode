@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef INCLUDE_BEMAN_TRANSCODE_TRANSCODE_STRING_HPP
-#define INCLUDE_BEMAN_TRANSCODE_TRANSCODE_STRING_HPP
+#ifndef INCLUDE_BEMAN_TRANSCODE_WHATWG_TRANSCODE_STRING_HPP
+#define INCLUDE_BEMAN_TRANSCODE_WHATWG_TRANSCODE_STRING_HPP
 
 #include <beman/transcode/config.hpp>
 
@@ -357,4 +357,4 @@ transcode_string(std::span<const char> src, std::string_view from_label, std::st
 
 } // namespace beman::transcoding::whatwg
 
-#endif // INCLUDE_BEMAN_TRANSCODE_TRANSCODE_STRING_HPP
+#endif // INCLUDE_BEMAN_TRANSCODE_WHATWG_TRANSCODE_STRING_HPP

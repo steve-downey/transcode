@@ -202,6 +202,84 @@ namespace std {
     friend constexpr bool operator==(const encoder&, const encoder&) = default;
   };
 
+  // @[transcode.codec.decode]@, class template decode_view
+
+  template<text_decoder Codec, ranges::input_range R,
+           error_mode E = error_mode::replacement>
+    requires legacy_byte_range<R>
+  class decode_view : public ranges::view_interface<decode_view<Codec, R, E>> {
+    R $base$;                            // exposition only
+    [[no_unique_address]] Codec $codec$; // exposition only
+
+    class $iterator$; // exposition only
+
+  public:
+    // @[transcode.codec.decode]@, construction and access
+    constexpr explicit decode_view(R base, Codec codec = {});
+
+    constexpr const R& base() const& noexcept;
+    constexpr R base() &&;
+
+    constexpr $iterator$ begin();
+    constexpr $iterator$ begin() const
+      requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
+    constexpr $iterator$ end()
+      requires ranges::forward_range<R> && ranges::common_range<R>;
+    constexpr $iterator$ end() const
+      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
+               $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
+    constexpr default_sentinel_t end() const;
+  };
+
+  template<text_decoder Codec> constexpr decode_closure<Codec> decode(Codec codec = {});
+
+  template<text_decoder Codec>
+  constexpr decode_closure<Codec, error_mode::report> decode_or_error(Codec codec = {});
+
+  template<text_decoder Codec, input_range R, error_mode E>
+    requires legacy_byte_range<R>
+  inline constexpr bool enable_borrowed_range<decode_view<Codec, R, E>> =
+      borrowed_range<R>;
+
+  // @[transcode.codec.encode]@, class template encode_view
+
+  template<text_encoder Codec, ranges::input_range R,
+           error_mode E = error_mode::replacement>
+    requires unicode_scalar_range<R>
+  class encode_view : public ranges::view_interface<encode_view<Codec, R, E>> {
+    R $base$;      // exposition only
+    Codec $codec$; // exposition only
+
+    class $iterator$; // exposition only
+
+  public:
+    // @[transcode.codec.encode]@, construction and access
+    constexpr explicit encode_view(R base, Codec codec = {});
+
+    constexpr const R& base() const& noexcept;
+    constexpr R base() &&;
+
+    constexpr $iterator$ begin();
+    constexpr $iterator$ begin() const
+      requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
+    constexpr $iterator$ end()
+      requires ranges::forward_range<R> && ranges::common_range<R>;
+    constexpr $iterator$ end() const
+      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
+               $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
+    constexpr default_sentinel_t end() const;
+  };
+
+  template<text_encoder Codec> constexpr encode_closure<Codec> encode(Codec codec = {});
+
+  template<text_encoder Codec>
+  constexpr encode_closure<Codec, error_mode::report> encode_or_error(Codec codec = {});
+
+  template<text_encoder Codec, input_range R, error_mode E>
+    requires unicode_scalar_range<R>
+  inline constexpr bool enable_borrowed_range<encode_view<Codec, R, E>> =
+      borrowed_range<R>;
+
   // @[transcode.whatwg.decode]@, decoding adaptors
 
   template<whatwg::encoding C> inline constexpr $unspecified$ decode;
@@ -213,6 +291,11 @@ namespace std {
   template<whatwg::encoding C> inline constexpr $unspecified$ encode;
 
   template<whatwg::encoding C> inline constexpr $unspecified$ encode_or_error;
+
+  // @[transcode.pipeline]@, transcoding pipelines
+
+  template<text_decoder From, text_encoder To>
+  constexpr pluggable_transcode_closure<From, To> transcode(From from, To to);
 
   // @[transcode.pipeline]@, transcoding pipelines
 
