@@ -32,13 +32,9 @@ by the clause numbering the paper prints.  Two consequences:
 Heading level follows from mpark's fixed `base_heading_level = 2` (index U2):
 `\rSec2` prints as `##`, `\rSec3` as `###`.
 
-Declaration-level descriptions remain beside their declarations in a synopsis.
-This is deliberate specgen behaviour, not accidental leakage: the descriptions
-of the view class templates explain what each declared type is, while their
-dedicated semantic clauses specify constructors, accessors and iterator
-operations.  `specgen render --validate` accepts that placement.  Moving those
-descriptions into the semantic clauses would leave the synopsis declarations
-undescribed rather than remove duplicated wording.
+A class's own description is routed to its clause with `\at`, as a member's
+is with a `\ref` group header; the synopsis fragment holds the synopsis and
+nothing else.
 
 ## `<transcode>`
 
@@ -55,30 +51,33 @@ order the compiler needs and need not match.
 | `transcode.syn` | 2 | Header `<transcode>` synopsis | everything below, gathered | `transcode.hpp`'s region and the sixteen headers included in it, done 2026-09-07 |
 | `transcode.errors` | 2 | Error types | `whatwg::error`, `iconv_error`, `error_mode` | `error.hpp` routes to it, done 2026-09-06 |
 | `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` routes to it, done 2026-09-06 |
-| `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp`, done 2026-09-07 |
-| `transcode.codec.label` | 3 | Label lookup | `whatwg::get_encoding` | `label.hpp`, done 2026-09-07 |
-| `transcode.codec.sniff` | 3 | Byte order mark sniffing | `whatwg::bom_sniff` | `sniff.hpp`, done 2026-09-07 |
+| `transcode.codec.reqs` | 2 | Codec requirements | `text_decoder`, `text_encoder`, `flushable_text_decoder`, `bom_aware_text_decoder`, `single_byte_text_decoder`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp`, done 2026-09-08 |
+| `transcode.codec.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp`, done 2026-09-08 |
+| `transcode.codec.decode.iterator` | 3 | Class `decode_view::iterator` | the iterator operations | `decode_view.hpp`, done 2026-09-08 |
+| `transcode.codec.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp`, done 2026-09-08 |
+| `transcode.codec.encode.iterator` | 3 | Class `encode_view::iterator` | likewise | `encode_view.hpp`, done 2026-09-08 |
+| `transcode.pipeline` | 2 | Transcoding pipelines | `whatwg::transcode`, `transcode(from, to)` | `whatwg/transcode_view.hpp`, `transcode_view.hpp`, done 2026-09-08 |
+| `transcode.whatwg.encoding` | 2 | Encodings | `enum class whatwg::encoding` | `whatwg/encoding.hpp`, done 2026-09-07 |
+| `transcode.whatwg.label` | 3 | Label lookup | `whatwg::get_encoding` | `whatwg/label.hpp`, `whatwg/text_encoding.hpp`, done 2026-09-07 |
+| `transcode.whatwg.sniff` | 3 | Byte order mark sniffing | `whatwg::bom_sniff` | `whatwg/bom_sniff.hpp`, done 2026-09-07 |
 | `transcode.whatwg.decoders` | 2 | Decoders | `whatwg::decoder` | `whatwg/decoder.hpp`, added step 08 of the SG16 response |
 | `transcode.whatwg.encoders` | 2 | Encoders | `whatwg::encoder` | `whatwg/encoder.hpp`, added step 10 of the SG16 response |
 | `transcode.whatwg.decode` | 2 | Decoding adaptors | the two variable templates `whatwg::decode<C>` / `whatwg::decode_or_error<C>`, each the codec-object adaptor over `whatwg::decoder<C>` | `whatwg/decode_view.hpp`, reduced to the two variables in step 09 of the SG16 response |
 | `transcode.whatwg.encode` | 2 | Encoding adaptors | the two variable templates `whatwg::encode<C>` / `whatwg::encode_or_error<C>`, each the codec-object adaptor over `whatwg::encoder<C>` | `whatwg/encode_view.hpp`, reduced to the two variables in step 12 of the SG16 response |
-| `transcode.custom.reqs` | 2 | Codec requirements | `text_decoder`, `text_encoder`, `flushable_text_decoder`, `bom_aware_text_decoder`, `single_byte_text_decoder`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp`, done 2026-09-08 |
-| `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp`, done 2026-09-08 |
-| `transcode.custom.decode.iterator` | 3 | Class `decode_view::iterator` | the iterator operations | `decode_view.hpp`, done 2026-09-08 |
-| `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp`, done 2026-09-08 |
-| `transcode.custom.encode.iterator` | 3 | Class `encode_view::iterator` | likewise | `encode_view.hpp`, done 2026-09-08 |
-| `transcode.pipeline` | 2 | Transcoding pipelines | `whatwg::transcode`, `transcode(from, to)` | `whatwg/transcode_view.hpp`, `transcode_view.hpp`, done 2026-09-08 |
 | `transcode.string` | 2 | Eager transcoding | `whatwg::transcode_string`, both overloads | `whatwg/transcode_string.hpp`, done 2026-09-08 |
 | `transcode.bulk` | 2 | Eager bulk conversion | `decode_to`, `encode_to`, `decode_into`, `encode_into`, each in a WHATWG and a pluggable form | `whatwg/bulk.hpp`, `bulk_transcode.hpp`, done 2026-09-08 |
 | `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers, done 2026-09-08 |
 | `transcode.iconv.iterator` | 3 | The two iconv iterators | `iconv_transcode_view::$iterator$`, `iconv_transcode_or_error_view::$iterator$` | the same headers, done 2026-09-08 |
 
-`transcode.custom.*` rather than `transcode.decode` / `transcode.encode` for the
-codec-parameterized family: the WHATWG views are what most readers reach for, so
-they get the short names, and grouping the extension point under one prefix says
-what it is for.  It also keeps `transcode.codec.*` (the enumeration and its
-lookups) from colliding with the codec *requirements*, which are a different
-subject entirely.
+`transcode.codec.*` rather than `transcode.decode` / `transcode.encode` for the
+codec-object layer: the library's own codecs (`whatwg::decoder<C>` and
+`whatwg::encoder<C>`) and a program's are the same kind of thing, and the
+WHATWG adaptors are defined in terms of that layer, so the layer's clauses
+(requirements, the decode and encode views, and the `transcode(from, to)`
+pipeline) come first and the `transcode.whatwg.*` clauses after them.  The
+WHATWG encoding enumeration and its lookups are `transcode.whatwg.encoding`,
+`.label` and `.sniff`, which keeps them from colliding with the codec
+*requirements*, a different subject entirely.
 
 ## `<null_term>`
 
@@ -230,8 +229,8 @@ adaptor over a C string that this proposal happens to need.
 - ~~**The `_or_error` split.**~~  Settled in P5-Step 3c, before the clauses were
   written.  Each family is one view template parameterized on
   `error_mode`, so `transcode.whatwg.decode`,
-  `transcode.whatwg.encode`, `transcode.custom.decode` and
-  `transcode.custom.encode` each specify **one** class template and two closure
+  `transcode.whatwg.encode`, `transcode.codec.decode` and
+  `transcode.codec.encode` each specify **one** class template and two closure
   objects rather than two of each.  `transcode.errors` gains
   `error_mode`, and its wording must not fix an underlying type for
   either enum (P2728 R13).

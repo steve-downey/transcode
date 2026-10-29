@@ -22,7 +22,7 @@
     #endif
 namespace beman::transcoding::whatwg {
 
-// \ref{transcode.codec.label}, label lookup
+// \ref{transcode.whatwg.label}, label lookup
 
 constexpr std::optional<encoding> get_encoding(std::text_encoding::id id) noexcept;
 
@@ -32,7 +32,7 @@ constexpr std::optional<std::text_encoding::id> to_text_encoding_id(encoding e) 
 // Out-of-line definitions
 // ---------------------------------------------------------------------------
 
-//! \returns `get_encoding(label)` \iref{transcode.codec.label} for the first of
+//! \returns `get_encoding(label)` \iref{transcode.whatwg.label} for the first of
 //! the name and the aliases of `std::text_encoding(id)` that is a label of an
 //! encoding, and `nullopt` if there is none, which includes `id::other` and
 //! `id::unknown`.

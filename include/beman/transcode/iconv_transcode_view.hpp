@@ -40,14 +40,11 @@ enum class iconv_flush_state { not_started, in_progress, done };
 
 } // namespace detail
 
+//! \at transcode.iconv
 //! \remarks The three POSIX `iconv` entry points a view calls, as a value the
 //! program supplies.  `open` opens a conversion descriptor, `convert`
 //! converts, and `close` closes it; each has the signature and the semantics
-//! POSIX gives the function of the same name.  The views take this as a
-//! template parameter rather than calling `::iconv` directly so that a program
-//! can supply a different implementation of the same interface -- another
-//! library's, or a test's -- and `make_real_iconv_fns` is the one bound to the
-//! platform's.
+//! POSIX gives the function of the same name.
 //!
 //! The facilities in this subclause are provided only when a POSIX-conforming
 //! `iconv` interface, including the required constants and typedefs, is
@@ -69,6 +66,7 @@ struct iconv_functions {
 //
 // The caller provides an external output buffer (std::span<char>) to avoid
 // internal heap allocation.
+//! \at transcode.iconv
 //! \remarks `iconv_transcode_view<IconvFns, R>` presents the bytes of `R`
 //! converted from the encoding named by `from` to the encoding named by `to`,
 //! one element per output byte, using the `iconv` implementation `IconvFns`
@@ -77,15 +75,10 @@ struct iconv_functions {
 //!
 //! What the encoding names mean, which pairs convert, and what a conversion
 //! does with input the source encoding does not allow are determined by the
-//! supplied `iconv` interface, not this specification.  That is the point of
-//! the adaptor: it gives an interface a program already has a ranges shape and
-//! a lifetime, and it does not restate a table it does not own.
+//! supplied `iconv` interface, not this specification.
 //!
 //! A conversion failure is reported as `iconv_error`
-//! \iref{transcode.errors}, which is the granularity POSIX reports at:
-//! `EILSEQ`, `EINVAL` and `E2BIG` say *that* a byte sequence is not valid,
-//! not why, so the WHATWG error vocabulary the other views use would be
-//! claiming knowledge the OS does not return.
+//! \iref{transcode.errors}.
 //!
 //! The output buffer is the caller's, and is not owned by the view.
 //! Its contents between two increments are unspecified, and the program must

@@ -16,7 +16,7 @@
 #endif
 namespace beman::transcoding::whatwg {
 
-// \ref{transcode.codec.label}, label lookup
+// \ref{transcode.whatwg.label}, label lookup
 
 constexpr std::optional<encoding> get_encoding(std::string_view label) noexcept;
 

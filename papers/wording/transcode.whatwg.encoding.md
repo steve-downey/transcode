@@ -1,6 +1,6 @@
 ::: wording
 
-## Encodings [transcode.codec] {-}
+## Encodings [transcode.whatwg.encoding] {-}
 
 ```cpp
 enum class encoding {
@@ -47,9 +47,9 @@ enum class encoding {
 };
 ```
 
-[#]{.pnum} *Remarks*: Each enumerator names the encoding of the same name in the WHATWG Encoding Standard, whose table of encodings is normative and is not restated here: an encoding is what that standard says it is, and a specification that copied the list would be a second one to keep current. `whatwg::encoding::replacement` is that standard's `replacement` encoding, which decodes any non-empty input to a single U+FFFD REPLACEMENT CHARACTER, and `whatwg::encoding::x_user_defined` its `x-user-defined`.
+[#]{.pnum} *Remarks*: Each enumerator denotes the encoding that the WHATWG Encoding Standard names correspondingly.
 
-### Label lookup [transcode.codec.label] {-}
+### Label lookup [transcode.whatwg.label] {-}
 
 ```cpp
 constexpr optional<encoding> get_encoding(string_view label) noexcept;
@@ -63,7 +63,7 @@ constexpr optional<encoding> get_encoding(string_view label) noexcept;
 constexpr optional<encoding> get_encoding(text_encoding::id id) noexcept;
 ```
 
-[#]{.pnum} *Returns*: `get_encoding(label)` ([transcode.codec.label]) for the first of the name and the aliases of `std::text_encoding(id)` that is a label of an encoding, and `nullopt` if there is none, which includes `id::other` and `id::unknown`.
+[#]{.pnum} *Returns*: `get_encoding(label)` ([transcode.whatwg.label]) for the first of the name and the aliases of `std::text_encoding(id)` that is a label of an encoding, and `nullopt` if there is none, which includes `id::other` and `id::unknown`.
 
 [#]{.pnum} *Remarks*: This is the Encoding Standard's "get an encoding" applied to the registered names, so `std::text_encoding::id::ISOLatin1` is `encoding::windows_1252`.
 
@@ -75,7 +75,7 @@ constexpr optional<text_encoding::id> to_text_encoding_id(encoding e) noexcept;
 
 [#]{.pnum} *Remarks*: IANA registers the Encoding Standard's names, so `encoding::windows_1252` is `std::text_encoding::id::windows1252` and not one of its aliases.
 
-### Byte order mark sniffing [transcode.codec.sniff] {-}
+### Byte order mark sniffing [transcode.whatwg.sniff] {-}
 
 ```cpp
 template<legacy_byte_range R> constexpr optional<encoding> bom_sniff(R&& r) noexcept;
@@ -90,8 +90,6 @@ template<legacy_byte_range R> constexpr optional<encoding> bom_sniff(R&& r) noex
 - [#.#]{.pnum} `whatwg::encoding::utf_16le`, if `r` begins with `FF FE`;
 - [#.#]{.pnum} `nullopt` otherwise.
 
-[#]{.pnum} *Remarks*: This is the byte order mark half of the Encoding Standard's "decide the fallback encoding" step: what to do when there is no mark is a question about the document and its transport, which a library cannot answer.  The mark itself is not consumed -- a decode view strips a leading U+FEFF for the UTF codecs on its own -- so the range can be passed on unchanged.
-
-[#]{.pnum} `R` is required to be a `forward_range` for that last sentence to be true. Examining the mark means advancing an iterator over it, and on a single-pass range those bytes are not there afterwards: sniffing a stream and then decoding it would drop the prefix, and sniffing a stream with no mark -- the common case -- would drop the first two bytes of the document. Nothing in the signature would say so.  A caller holding an `input_range` has to materialize enough of it to look twice.
+[#]{.pnum} *Remarks*: The mark is not consumed: `r` can be passed on unchanged.
 
 :::

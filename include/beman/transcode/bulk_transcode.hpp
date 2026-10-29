@@ -62,7 +62,7 @@ constexpr void encode_into(Codec codec, R&& source, Output output);
 
 //! \returns-expr
 //! \remarks The same four operations as the `whatwg::` forms over a codec
-//! supplied as a value \iref{transcode.custom.reqs}, for a codec chosen at run
+//! supplied as a value \iref{transcode.codec.reqs}, for a codec chosen at run
 //! time or one the `whatwg::encoding` enumeration does not name.
 template <text_decoder Codec, legacy_byte_range R>
 constexpr std::vector<char32_t> decode_to(Codec codec, R&& source) {

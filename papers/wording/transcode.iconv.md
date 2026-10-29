@@ -32,6 +32,18 @@ inline constexpr size_t iconv_min_buffer_size = 4;
 
 [#]{.pnum} *Remarks*: The smallest output buffer accepted by `iconv_transcode_view`. An `iconv` implementation can still report `E2BIG` without producing a byte when a destination encoding needs a larger indivisible output unit.
 
+[#]{.pnum} *Remarks*: The three POSIX `iconv` entry points a view calls, as a value the program supplies.  `open` opens a conversion descriptor, `convert` converts, and `close` closes it; each has the signature and the semantics POSIX gives the function of the same name.
+
+[#]{.pnum} The facilities in this subclause are provided only when a POSIX-conforming `iconv` interface, including the required constants and typedefs, is available.  The interface may be supplied by the operating system or by a third-party library.  The type `iconv_t` is the type supplied by that interface and denotes its conversion descriptors.
+
+[#]{.pnum} *Remarks*: `iconv_transcode_view<IconvFns, R>` presents the bytes of `R` converted from the encoding named by `from` to the encoding named by `to`, one element per output byte, using the `iconv` implementation `IconvFns` names.  Conversion is lazy and proceeds in batches: the view converts into the caller's buffer, yields those bytes, and converts again.
+
+[#]{.pnum} What the encoding names mean, which pairs convert, and what a conversion does with input the source encoding does not allow are determined by the supplied `iconv` interface, not this specification.
+
+[#]{.pnum} A conversion failure is reported as `iconv_error` ([transcode.errors]).
+
+[#]{.pnum} The output buffer is the caller's, and is not owned by the view. Its contents between two increments are unspecified, and the program must keep it alive for the lifetime of every iterator the view produces. If `iconv` reports `E2BIG` without producing a byte, the range ends because its `char` value type has no error channel.  A program that needs to detect that condition uses `iconv_transcode_or_error`, which reports `iconv_error::output_full` instead.
+
 ```cpp
 explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to,
                               span<char> buf);
@@ -54,6 +66,8 @@ default_sentinel_t end() const;
 ```
 
 [#]{.pnum} *Returns*: `default_sentinel`.
+
+[#]{.pnum} *Remarks*: `iconv_transcode_or_error_view<IconvFns, R>` is `iconv_transcode_view` ([transcode.iconv]) with the errors reported rather than skipped: its value type is `expected<char, iconv_error>`, and a conversion failure is an element holding the `iconv_error` POSIX reported rather than input the range passes over. The buffer has no minimum-size precondition.  If it cannot hold one indivisible conversion or flush unit, the view reports `iconv_error::output_full`.
 
 ```cpp
 explicit iconv_transcode_or_error_view(R base, IconvFns fns, const char* from,

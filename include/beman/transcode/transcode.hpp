@@ -74,11 +74,23 @@ import beman.transcode;
 
     // \rSec2[transcode.reqs]{Range requirements}
 
-    // \rSec2[transcode.codec]{Encodings}
+    // \rSec2[transcode.codec.reqs]{Codec requirements}
 
-    // \rSec3[transcode.codec.label]{Label lookup}
+    // \rSec2[transcode.codec.decode]{Class template `decode_view`}
 
-    // \rSec3[transcode.codec.sniff]{Byte order mark sniffing}
+    // \rSec3[transcode.codec.decode.iterator]{Class `decode_view::iterator`}
+
+    // \rSec2[transcode.codec.encode]{Class template `encode_view`}
+
+    // \rSec3[transcode.codec.encode.iterator]{Class `encode_view::iterator`}
+
+    // \rSec2[transcode.pipeline]{Transcoding pipelines}
+
+    // \rSec2[transcode.whatwg.encoding]{Encodings}
+
+    // \rSec3[transcode.whatwg.label]{Label lookup}
+
+    // \rSec3[transcode.whatwg.sniff]{Byte order mark sniffing}
 
     // \rSec2[transcode.whatwg.decoders]{Decoders}
 
@@ -87,18 +99,6 @@ import beman.transcode;
     // \rSec2[transcode.whatwg.decode]{Decoding views}
 
     // \rSec2[transcode.whatwg.encode]{Encoding views}
-
-    // \rSec2[transcode.custom.reqs]{Codec requirements}
-
-    // \rSec2[transcode.custom.decode]{Class template `decode_view`}
-
-    // \rSec3[transcode.custom.decode.iterator]{Class `decode_view::iterator`}
-
-    // \rSec2[transcode.custom.encode]{Class template `encode_view`}
-
-    // \rSec3[transcode.custom.encode.iterator]{Class `encode_view::iterator`}
-
-    // \rSec2[transcode.pipeline]{Transcoding pipelines}
 
     // \rSec2[transcode.string]{Eager transcoding}
 

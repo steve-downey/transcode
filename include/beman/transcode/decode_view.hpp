@@ -102,7 +102,7 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 // decode_view — decodes bytes to expected<char32_t, whatwg::error>
 // ---------------------------------------------------------------------------
 
-// \ref{transcode.custom.decode}, class template decode_view
+// \ref{transcode.codec.decode}, class template decode_view
 
 //! \remarks `decode_view<Codec, R, E>` is `whatwg::decode_view`
 //! \iref{transcode.whatwg.decode} with the codec supplied as a value rather
@@ -121,7 +121,7 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 //! `Codec::decode_byte` returns U+FFFD is reported as
 //! `whatwg::error::invalid_byte` in report mode and yields U+FFFD in
 //! replacement mode.  This follows from the U+FFFD reservation required by
-//! `single_byte_text_decoder` \iref{transcode.custom.reqs}.
+//! `single_byte_text_decoder` \iref{transcode.codec.reqs}.
 template <text_decoder Codec, std::ranges::input_range R, error_mode E = error_mode::replacement>
     requires legacy_byte_range<R>
 class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>> {
@@ -175,7 +175,7 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
         static constexpr iterator terminal()
             requires std::ranges::forward_range<R>;
 
-        // \ref{transcode.custom.decode.iterator}, iterator operations
+        // \ref{transcode.codec.decode.iterator}, iterator operations
         constexpr iterator(base_iter current, base_sent end, Codec codec);
 
         //! \returns The iterator into `R` this iterator reads from, positioned
@@ -206,7 +206,7 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
     };
 
   public:
-    // \ref{transcode.custom.decode}, construction and access
+    // \ref{transcode.codec.decode}, construction and access
     constexpr explicit decode_view(R base, Codec codec = {});
 
     //! \returns-expr

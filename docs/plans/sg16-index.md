@@ -355,7 +355,7 @@ random-access encode, if SG16 or LEWG object to the extra public name.
 ## std::text_encoding bridge {#text-encoding-bridge}
 
 **Final, step 14.** Header `whatwg/text_encoding.hpp`, in the
-`[transcode.codec.label]` clause. The probe is
+`[transcode.whatwg.label]` clause. The probe is
 `BEMAN_TRANSCODE_HAS_TEXT_ENCODING` in the top-level `CMakeLists.txt` (it
 sets `CMAKE_CXX_STANDARD 26` for the probe); the test target
 `beman.transcode.tests.text_encoding` and the example are built as C++26 only
@@ -439,7 +439,19 @@ Original plan, for reference:
   saying which declarations are in `std::whatwg` (and `std::views`).
 - specgen emits a class's own doc comment in the synopsis fragment when the
   class has no item declaration in a subclause. That is what produces the
-  orphaned *Remarks* paragraphs. Step 15 fixes this through header markup.
+  orphaned *Remarks* paragraphs. **Resolved, step 15**: `\at stable.name` on the
+  class docblock routes the description to its clause, a `// \ref{...}` group
+  header inside the class routes its members, and the docblock of an
+  out-of-line member template of a class template goes *above* the first
+  `template` line (between the two `template` lines it does not render).
+  The synopsis fragment holds only the synopsis.
+- Stable names after step 15: `transcode.errors`, `transcode.reqs`,
+  `transcode.codec.{reqs,decode,decode.iterator,encode,encode.iterator}`,
+  `transcode.pipeline`, `transcode.whatwg.{encoding,label,sniff,decoders,
+  encoders,decode,encode}`, `transcode.string`, `transcode.bulk`,
+  `transcode.iconv`, `transcode.iconv.iterator`, in clause order (the
+  codec-object layer first). `[transcode.errors.mode]` is the table anchor
+  for `error_mode`. `docs/wording-outline.md` holds the map.
 
 ## Paper scope {#paper-scope}
 
@@ -555,3 +567,11 @@ The integration review reads this section.
 - The uncommitted work in
   `/home/sdowney/src/steve-downey/transcode/paper-pluggable-runtime` was
   folded in by step 02. The user decides whether to discard that worktree.
+- `make wording-validate` still reports 47 findings (57 before step 15), all
+  of one kind: a namespace qualifier (`whatwg`, `detail`) or a `detail::`
+  entity (`decode_state_t`, `no_decode_state`, `encode_state_t`) that appears
+  in rendered output but is not a documented entity. The `detail::` ones come
+  from the `\constraints` derived from the requires-clauses of
+  `whatwg::decoder::flush` and the `whatwg::encoder` class. Fixing them needs
+  either specgen's nested-namespace support or an exposition-only name for
+  the state test; neither is a markup-only change.

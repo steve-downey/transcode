@@ -105,7 +105,7 @@ class random_access_encode_view : public std::ranges::view_interface<random_acce
 // encode_view — encodes char32_t scalars to expected<char, whatwg::error>
 // ---------------------------------------------------------------------------
 
-// \ref{transcode.custom.encode}, class template encode_view
+// \ref{transcode.codec.encode}, class template encode_view
 
 //! \remarks `encode_view<Codec, R, E>` is `whatwg::encode_view`
 //! \iref{transcode.whatwg.encode} with the codec supplied as a value rather
@@ -175,7 +175,7 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
         static constexpr iterator terminal()
             requires std::ranges::forward_range<R>;
 
-        // \ref{transcode.custom.encode.iterator}, iterator operations
+        // \ref{transcode.codec.encode.iterator}, iterator operations
         constexpr iterator(base_iter current, base_sent end, Codec codec);
 
         constexpr result_t  operator*() const;
@@ -203,7 +203,7 @@ class encode_view : public std::ranges::view_interface<encode_view<Codec, R, E>>
     };
 
   public:
-    // \ref{transcode.custom.encode}, construction and access
+    // \ref{transcode.codec.encode}, construction and access
     constexpr explicit encode_view(R base, Codec codec = {});
 
     //! \returns-expr
