@@ -246,8 +246,8 @@ namespace std {
            error_mode E = error_mode::replacement>
     requires unicode_scalar_range<R>
   class encode_view : public ranges::view_interface<encode_view<Codec, R, E>> {
-    R $base$;      // exposition only
-    Codec $codec$; // exposition only
+    R $base$;                            // exposition only
+    [[no_unique_address]] Codec $codec$; // exposition only
 
     class $iterator$; // exposition only
 

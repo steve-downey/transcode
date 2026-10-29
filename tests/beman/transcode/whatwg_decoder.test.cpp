@@ -304,14 +304,14 @@ TEST_CASE("whatwg::decoder decode_byte", "[transcoding::whatwg::decoder]") {
 
 namespace {
 constexpr char32_t decode_first_of_bom_then_x() {
-    constexpr unsigned char in[] = {0xEF, 0xBB, 0xBF, 'x'};
+    constexpr unsigned char          in[] = {0xEF, 0xBB, 0xBF, 'x'};
     whatwg::decoder<encoding::utf_8> d;
     const unsigned char*             it = in;
     return d.decode_first(it, in + 4).code_point == U'x' ? U'x' : U'?';
 }
 
 constexpr bool flush_after_big5_pair() {
-    constexpr unsigned char in[] = {0x88, 0x62};
+    constexpr unsigned char         in[] = {0x88, 0x62};
     whatwg::decoder<encoding::big5> d;
     const unsigned char*            it = in;
     (void)d.decode_one(it, in + 2);

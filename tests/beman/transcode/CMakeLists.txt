@@ -878,7 +878,10 @@ set_tests_properties(
 )
 
 # whatwg::decoder::decode_first is not callable for an encoding that does not strip a BOM
-add_library(beman.transcode.tests.whatwg_decoder_decode_first_reject_fail OBJECT)
+add_library(
+    beman.transcode.tests.whatwg_decoder_decode_first_reject_fail
+    OBJECT
+)
 target_sources(
     beman.transcode.tests.whatwg_decoder_decode_first_reject_fail
     PRIVATE whatwg_decoder_decode_first_reject_fail.cpp
