@@ -82,8 +82,6 @@ import beman.transcode;
 
     // \rSec2[transcode.whatwg.decode]{Decoding views}
 
-    // \rSec3[transcode.whatwg.decode.iterator]{Class `whatwg::decode_view::iterator`}
-
     // \rSec2[transcode.whatwg.encode]{Encoding views}
 
     // \rSec3[transcode.whatwg.encode.iterator]{Class `whatwg::encode_view::iterator`}

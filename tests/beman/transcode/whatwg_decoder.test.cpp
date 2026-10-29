@@ -13,8 +13,6 @@
 #include <concepts>
 #include <cstddef>
 #include <expected>
-#include <filesystem>
-#include <fstream>
 #include <iterator>
 #include <list>
 #include <ranges>
@@ -56,15 +54,31 @@ auto collect(R&& r) {
     return out;
 }
 
-// Whether the codec-object decode and the enumerator decode yield the same
-// sequence for `input`, in both error modes.
+// Whether the lossy and the reporting decode of `input` agree with each other,
+// element for element, and present only Unicode scalar values.
 template <encoding C, typename Input>
-bool same(const Input& input) {
-    const auto lossy_new  = collect(input | decode(whatwg::decoder<C>{}));
-    const auto lossy_old  = collect(input | whatwg::decode<C>);
-    const auto report_new = collect(input | decode_or_error(whatwg::decoder<C>{}));
-    const auto report_old = collect(input | whatwg::decode_or_error<C>);
-    return lossy_new == lossy_old && report_new == report_old;
+bool consistent(const Input& input) {
+    const auto lossy  = collect(input | whatwg::decode<C>);
+    const auto report = collect(input | whatwg::decode_or_error<C>);
+    if (lossy.size() != report.size())
+        return false;
+    for (std::size_t i = 0; i < lossy.size(); ++i) {
+        const char32_t cp = lossy[i];
+        if ((cp >= 0xD800 && cp <= 0xDFFF) || cp > 0x10FFFF)
+            return false;
+        if (report[i].has_value() ? *report[i] != cp : cp != U'\xFFFD')
+            return false;
+    }
+    return true;
+}
+
+// Whether decoding `input` from a contiguous range and from a list, which
+// takes the forward-iteration path with no random access, gives one answer.
+template <encoding C>
+bool same_through_a_list(const bytes_t& input) {
+    const std::list<unsigned char> as_list(input.begin(), input.end());
+    return collect(input | whatwg::decode<C>) == collect(as_list | whatwg::decode<C>) &&
+           collect(input | whatwg::decode_or_error<C>) == collect(as_list | whatwg::decode_or_error<C>);
 }
 
 std::string describe(const bytes_t& b) {
@@ -145,53 +159,21 @@ std::vector<bytes_t> edge_inputs() {
     };
 }
 
-bytes_t read_file(const std::filesystem::path& p) {
-    std::ifstream f(p, std::ios::binary);
-    return bytes_t(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
-}
-
 template <encoding C>
 void check_encoding() {
     INFO("encoding " << static_cast<int>(C));
 
-    // every single byte, and every lead byte >= 0x80 with every trail byte
-    for (int b = 0; b < 256; ++b) {
-        const bytes_t in{static_cast<unsigned char>(b)};
-        if (!same<C>(in))
-            FAIL("single byte differs: " << describe(in));
-    }
-    for (int lead = 0x80; lead < 256; ++lead) {
-        for (int trail = 0; trail < 256; ++trail) {
-            const bytes_t in{static_cast<unsigned char>(lead), static_cast<unsigned char>(trail)};
-            if (!same<C>(in))
-                FAIL("two bytes differ: " << describe(in));
-        }
-    }
-
     for (const auto& in : edge_inputs()) {
-        if (!same<C>(in))
-            FAIL("edge input differs: " << describe(in));
-        // the same through a range that is not contiguous or random access
-        const std::list<unsigned char> as_list(in.begin(), in.end());
-        if (!same<C>(as_list))
+        if (!consistent<C>(in))
+            FAIL("edge input is inconsistent between the modes: " << describe(in));
+        if (!same_through_a_list<C>(in))
             FAIL("edge input differs through a list: " << describe(in));
     }
-}
-
-template <encoding C>
-void check_corpus(const bytes_t& corpus, const std::string& name) {
-    INFO("encoding " << static_cast<int>(C) << ", corpus " << name);
-    CHECK(same<C>(corpus));
 }
 
 template <std::size_t... I>
 void check_all_encodings(std::index_sequence<I...>) {
     (check_encoding<all_encodings[I]>(), ...);
-}
-
-template <std::size_t... I>
-void check_all_corpora(const bytes_t& corpus, const std::string& name, std::index_sequence<I...>) {
-    (check_corpus<all_encodings[I]>(corpus, name), ...);
 }
 
 // -- property static_asserts ------------------------------------------------
@@ -207,10 +189,11 @@ constexpr bool decoder_properties() {
     static_assert(text_decoder<D>);
     static_assert(single_byte_text_decoder<D> == detail::random_access_decode_codec<C>);
     static_assert(flushable_text_decoder<D> == is_stateful_encoding<C>);
+    static_assert(bom_aware_text_decoder<D> ==
+                  (C == encoding::utf_8 || C == encoding::utf_16be || C == encoding::utf_16le));
     static_assert(std::equality_comparable<D>);
 
     using V = decltype(std::declval<std::span<const char>>() | decode(D{}));
-    using O = decltype(std::declval<std::span<const char>>() | whatwg::decode<C>);
     if constexpr (detail::random_access_decode_codec<C>)
         static_assert(std::ranges::random_access_range<V>);
     else
@@ -218,12 +201,6 @@ constexpr bool decoder_properties() {
     static_assert(std::ranges::borrowed_range<V>);
     static_assert(std::ranges::common_range<V>);
     static_assert(std::ranges::range<const V>);
-    // what step 09 must preserve: the replacement for the old view has the old view's properties
-    static_assert(std::ranges::random_access_range<V> == std::ranges::random_access_range<O>);
-    static_assert(std::ranges::forward_range<V> == std::ranges::forward_range<O>);
-    static_assert(std::ranges::borrowed_range<V> == std::ranges::borrowed_range<O>);
-    static_assert(std::ranges::common_range<V> == std::ranges::common_range<O>);
-    static_assert(std::ranges::range<const V> == std::ranges::range<const O>);
     return true;
 }
 
@@ -239,7 +216,7 @@ template <encoding C, std::size_t N>
 constexpr std::pair<std::array<char32_t, N>, std::size_t> decode_all(const std::array<unsigned char, N>& in) {
     std::array<char32_t, N> out{};
     std::size_t             n = 0;
-    for (char32_t cp : in | decode(whatwg::decoder<C>{}))
+    for (char32_t cp : in | whatwg::decode<C>)
         out[n++] = cp;
     return {out, n};
 }
@@ -249,23 +226,31 @@ constexpr std::array<unsigned char, 7> utf8_bom_input{0xEF, 0xBB, 0xBF, 'h', 'i'
 
 } // namespace
 
-TEST_CASE("whatwg::decoder is equivalent to whatwg::decode for every encoding", "[transcoding::whatwg::decoder]") {
+TEST_CASE("whatwg::decode is consistent between modes and range kinds for every encoding",
+          "[transcoding::whatwg::decoder]") {
     check_all_encodings(std::make_index_sequence<all_encodings.size()>{});
 }
 
-TEST_CASE("whatwg::decoder is equivalent to whatwg::decode over the benchmark corpora",
-          "[transcoding::whatwg::decoder]") {
-    const std::filesystem::path dir{BENCHMARK_CORPUS_DIR};
-    REQUIRE(std::filesystem::is_directory(dir));
-    std::size_t files = 0;
-    for (const auto& entry : std::filesystem::directory_iterator(dir)) {
-        const auto name = entry.path().filename().string();
-        if (!(name.ends_with(".bin") || name.ends_with("_utf8.txt")))
-            continue;
-        ++files;
-        check_all_corpora(read_file(entry.path()), name, std::make_index_sequence<all_encodings.size()>{});
-    }
-    CHECK(files >= 10);
+TEST_CASE("whatwg::decode of edge inputs", "[transcoding::whatwg::decoder]") {
+    using cps = std::vector<char32_t>;
+    // a byte order mark is how the encoding was chosen, not text
+    CHECK(collect(bytes_t{0xFF, 0xFE, 'h', 0x00, 'i', 0x00} | whatwg::decode<encoding::utf_16le>) == cps{U'h', U'i'});
+    CHECK(collect(bytes_t{0xFE, 0xFF, 0x00, 'h', 0x00, 'i'} | whatwg::decode<encoding::utf_16be>) == cps{U'h', U'i'});
+    CHECK(collect(bytes_t{0xEF, 0xBB, 0xBF, 'h', 'i'} | whatwg::decode<encoding::utf_8>) == cps{U'h', U'i'});
+    // Big5: one pair of bytes, two code points
+    CHECK(collect(bytes_t{0x88, 0x62} | whatwg::decode<encoding::big5>) == cps{U'\x00CA', U'\x0304'});
+    CHECK(collect(bytes_t{0x88, 0x62, 'A'} | whatwg::decode<encoding::big5>) == cps{U'\x00CA', U'\x0304', U'A'});
+    // ISO-2022-JP: an escape sequence changes the decoder's mode
+    CHECK(collect(bytes_t{0x1B, '$', 'B', 0x30, 0x21, 0x1B, '(', 'B', 'y'} | whatwg::decode<encoding::iso_2022_jp>) ==
+          cps{U'\x4E9C', U'y'});
+    // truncated input is an error, not a read past the end
+    CHECK(collect(bytes_t{0xE3, 0x81} | whatwg::decode<encoding::utf_8>) == cps{U'\xFFFD'});
+    CHECK(collect(bytes_t{0x00, 0x41, 0x00} | whatwg::decode<encoding::utf_16be>) == cps{U'A', U'\xFFFD'});
+    CHECK(collect(bytes_t{0xD8, 0x00} | whatwg::decode<encoding::utf_16be>) == cps{U'\xFFFD'});
+    CHECK(collect(bytes_t{'A'} | whatwg::decode<encoding::windows_1252>) == cps{U'A'});
+    CHECK(collect(bytes_t{'A'} | whatwg::decode<encoding::shift_jis>) == cps{U'A'});
+    CHECK(collect(bytes_t{'A'} | whatwg::decode<encoding::iso_2022_jp>) == cps{U'A'});
+    CHECK(collect(bytes_t{'A'} | whatwg::decode<encoding::replacement>) == cps{U'\xFFFD'});
 }
 
 TEST_CASE("whatwg::decoder drops one leading byte order mark", "[transcoding::whatwg::decoder]") {
@@ -276,6 +261,21 @@ TEST_CASE("whatwg::decoder drops one leading byte order mark", "[transcoding::wh
     // a copy of the decoder made before decoding restarts the rule: each begin() copies a fresh codec
     auto view = two | decode(whatwg::decoder<encoding::utf_8>{});
     CHECK(collect(view) == collect(view));
+    using cps = std::vector<char32_t>;
+    // UTF-16: a byte order mark of the decoder's own byte order only
+    CHECK(collect(bytes_t{0xFE, 0xFF, 0x00, 'A'} | whatwg::decode<encoding::utf_16be>) == cps{U'A'});
+    CHECK(collect(bytes_t{0xFF, 0xFE, 'A', 0x00} | whatwg::decode<encoding::utf_16le>) == cps{U'A'});
+    CHECK(collect(bytes_t{0xFE, 0xFF} | whatwg::decode<encoding::utf_16be>).empty());
+    CHECK(collect(bytes_t{0xFE, 0xFF, 0x00} | whatwg::decode<encoding::utf_16be>) == cps{U'\xFFFD'});
+    CHECK(collect(bytes_t{0xFF, 0xFE, 'A', 0x00} | whatwg::decode<encoding::utf_16be>) == cps{U'\xFFFE', U'\x4100'});
+    // decode_one never drops one; decode_first does, once
+    whatwg::decoder<encoding::utf_8> d;
+    auto                             it = alone.begin();
+    CHECK(d.decode_one(it, alone.end()).code_point == U'\xFEFF');
+    it = alone.begin();
+    CHECK(d.decode_first(it, alone.end()).is_empty);
+    it = two.begin();
+    CHECK(d.decode_first(it, two.end()).code_point == U'\xFEFF');
 }
 
 TEST_CASE("whatwg::decoder decodes in a constant expression", "[transcoding::whatwg::decoder]") {

@@ -595,10 +595,6 @@ target_include_directories(
     beman.transcode.tests.whatwg_decoder
     PRIVATE ${TEST_INCLUDE_DIR}
 )
-target_compile_definitions(
-    beman.transcode.tests.whatwg_decoder
-    PRIVATE "BENCHMARK_CORPUS_DIR=\"${PROJECT_SOURCE_DIR}/benchmark/corpus\""
-)
 target_link_libraries(
     beman.transcode.tests.whatwg_decoder
     PRIVATE beman::transcode Catch2::Catch2WithMain
@@ -860,7 +856,7 @@ set_tests_properties(
     concepts_reject_arrays_fail
     PROPERTIES
         PASS_REGULAR_EXPRESSION
-            "transcode: raw arrays are not valid input to whatwg::decode"
+            "transcode: raw arrays are not valid input to decode; use beman::transcoding::views::null_term"
 )
 
 # legacy_byte_range rejects unicode char types (char8_t etc.) via legacy_byte_type disjunction
@@ -1175,7 +1171,7 @@ set_tests_properties(
     decode_view_reject_arrays_fail
     PROPERTIES
         PASS_REGULAR_EXPRESSION
-            "transcode: raw arrays are not valid input to decode"
+            "transcode: raw arrays are not valid input to decode; use beman::transcoding::views::null_term"
 )
 
 # Negative compile test: a decode view over an owning base is not borrowed

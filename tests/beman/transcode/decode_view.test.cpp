@@ -228,6 +228,58 @@ TEST_CASE("decode_view: owed output is yielded after the input ends", "[decode_v
     CHECK(decode_owing("XaX") == U"XYaXY");
 }
 
+namespace {
+// Decodes each byte as itself, except that decode_first, which the view calls
+// once for the first element, turns a leading '^' into nothing and any other
+// first byte into its upper case.
+struct start_codec {
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, [[maybe_unused]] S end) {
+        auto byte = static_cast<unsigned char>(*current);
+        ++current;
+        return {static_cast<char32_t>(byte), {}, false};
+    }
+
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_first(I& current, [[maybe_unused]] S end) {
+        auto byte = static_cast<unsigned char>(*current);
+        ++current;
+        if (byte == '^')
+            return {.is_empty = true};
+        if (byte >= 'a' && byte <= 'z')
+            byte = static_cast<unsigned char>(byte - 'a' + 'A');
+        return {static_cast<char32_t>(byte), {}, false};
+    }
+
+    friend constexpr bool operator==(const start_codec&, const start_codec&) = default;
+};
+
+static_assert(bom_aware_text_decoder<start_codec>);
+static_assert(!bom_aware_text_decoder<owing_codec>);
+
+constexpr std::u32string decode_start(std::string_view src) {
+    std::u32string out;
+    for (char32_t cp : src | decode(start_codec{}))
+        out.push_back(cp);
+    return out;
+}
+} // namespace
+
+TEST_CASE("decode_view: decode_first decodes the first element, once", "[decode_view]") {
+    CHECK(decode_start("abc") == U"Abc");
+    CHECK(decode_start("^abc") == U"abc");
+    CHECK(decode_start("^^a") == U"^a");
+    CHECK(decode_start("^").empty());
+    CHECK(decode_start("").empty());
+    // each begin() starts again
+    std::string_view src = "ab";
+    auto             v   = src | decode(start_codec{});
+    CHECK(*v.begin() == U'A');
+    CHECK(*v.begin() == U'A');
+    CHECK(constify(decode_start("^xy").size()) == 2);
+    CHECK(constify(decode_start("xy")[0]) == U'X');
+}
+
 TEST_CASE("decode_view: iterator equality sees the codec's state", "[decode_view]") {
     std::string src = "Xa";
     auto        v   = std::span<const char>(src) | decode(owing_codec{});

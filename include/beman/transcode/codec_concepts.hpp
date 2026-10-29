@@ -65,6 +65,18 @@ concept flushable_text_decoder = text_decoder<C> && requires(C& c) {
     { c.flush() } -> std::same_as<std::optional<decode_result>>;
 };
 
+//! \remarks A type models `bom_aware_text_decoder` if it decodes the
+//! start of a text differently from the rest, as a decoder that discards a
+//! leading byte order mark does.  `c.decode_first(iter, sentinel)` is called
+//! instead of `decode_one` for the first element of a non-empty input, once,
+//! and has the same contract.  A codec that does not model this concept has
+//! `decode_one` called for every element.
+template <typename C>
+concept bom_aware_text_decoder =
+    text_decoder<C> && requires(C& c, const unsigned char*& iter, const unsigned char* sentinel) {
+        { c.decode_first(iter, sentinel) } -> std::same_as<decode_result>;
+    };
+
 //! \remarks A type models `flushable_text_encoder` if it can owe output after
 //! the last scalar value, as an encoding with shift states must return to its
 //! initial state.  `c.flush()` is called when the input is exhausted, and
