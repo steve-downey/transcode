@@ -158,6 +158,8 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
 
         //! \expos
         constexpr void load();
+        //! \expos
+        constexpr void load_first();
 
       public:
         using iterator_concept =
@@ -244,7 +246,7 @@ struct decode_closure {
         requires std::is_array_v<std::remove_cvref_t<R>>
     friend auto operator|(R&&, const decode_closure&) {
         static_assert(!std::is_array_v<std::remove_cvref_t<R>>,
-                      "transcode: raw arrays are not valid input to decode_or_error; "
+                      "transcode: raw arrays are not valid input to decode; "
                       "use beman::transcoding::views::null_term to get a range from a "
                       "null-terminated string");
     }
@@ -415,10 +417,13 @@ template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \effects Initializes `$current$` with `std::move(current)`, `$end$` with
 //! `std::move(end)` and the iterator's own copy of the codec with `codec`,
-//! then decodes the first element.
+//! then decodes the first element.  When `Codec` models
+//! `bom_aware_text_decoder` and `current != end`, that element is
+//! decoded by `decode_first`, and, if its result has `is_empty`, decoding goes
+//! on as `operator++` does.
 constexpr decode_view<Codec, R, E>::iterator::iterator(base_iter current, base_sent end, Codec codec)
     : current_(current), end_(end), codec_(codec) {
-    load();
+    load_first();
 }
 
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
@@ -429,6 +434,24 @@ constexpr auto decode_view<Codec, R, E>::iterator::terminal() -> iterator
     iterator it;
     it.done_ = true;
     return it;
+}
+
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
+    requires legacy_byte_range<R>
+constexpr void decode_view<Codec, R, E>::iterator::load_first() {
+    if constexpr (bom_aware_text_decoder<Codec>) {
+        if (current_ != end_) {
+            auto r = codec_.decode_first(current_, end_);
+            if (!r.is_empty) {
+                if (r.is_error)
+                    value_ = error_result(r.error);
+                else
+                    value_ = r.code_point;
+                return;
+            }
+        }
+    }
+    load();
 }
 
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>

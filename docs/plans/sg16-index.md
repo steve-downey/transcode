@@ -182,7 +182,8 @@ top level.
 **Done, step 08.** `decode_result` gains a trailing, defaulted
 `bool is_empty{false}`. It says the decoder consumed input but produced no
 scalar value. The WHATWG cases are an ISO-2022-JP escape sequence at the end of
-the input, and a UTF byte order mark with nothing after it. `decode_view::iterator::load()` loops: at the end of the input it flushes (an
+the input, and a UTF byte order mark with nothing after it (returned by
+`decode_first`, see #bom-aware-decoder). `decode_view::iterator::load()` loops: at the end of the input it flushes (an
 engaged result with `is_empty` ends the range like `nullopt`), otherwise it
 calls `decode_one` and goes round again on an `is_empty` result. Existing three-member
 brace-initialisation keeps compiling. Revisit if a consumer needs to
@@ -220,7 +221,37 @@ An engaged result with `count == 0` and no error is treated as "owes nothing"
 (the view finishes), so a buggy codec cannot loop forever. Both `flush()`
 docblocks (decoder and encoder) now say "called until `nullopt`".
 
+## bom_aware_text_decoder {#bom-aware-decoder}
+
+**Provisional, step 09 (amendment 09, name approved).**
+
+```cpp
+template <typename C>
+concept bom_aware_text_decoder =
+    text_decoder<C> && requires(C& c, const unsigned char*& iter, const unsigned char* sentinel) {
+        { c.decode_first(iter, sentinel) } -> std::same_as<decode_result>;
+    };
+```
+
+`decode_view::iterator`'s constructor (`load_first()`, exposition-only) calls
+`decode_first` instead of `decode_one` for the first element of a non-empty
+input, once, then behaves as `operator++` does. It is the start-of-input twin of
+`flushable_text_decoder`'s `flush()` at the end. It exists so that once-only
+behaviour (the UTF byte order mark) stays out of the per-element path: the
+generic view then decodes as fast as the deleted hand-specialized WHATWG views
+did. Revisit if SG16 or LEWG would rather the BOM rule live in the adaptor
+(`whatwg::decode<C>` as BOM-strip plus `decode(decoder)`, which would break
+"`whatwg::decode<C>` is `decode(whatwg::decoder<C>{})`").
+
 ## Pluggable view invariants {#pluggable-view-invariants}
+
+- **Hot-path rule (amendment 09).** The per-element path of a codec-object view
+  (`load()` and the codec's `decode_one`/`encode_one`) carries no once-only
+  test: start-of-input behaviour goes in an optional hook called once
+  (`decode_first`), end-of-input behaviour in `flush()`. No compiler-specific
+  attribute (`[[gnu::always_inline]]`, `__attribute__`) or macro goes on a
+  declaration in a specification header: specgen renders attributes verbatim
+  into the wording. Measured with `tmp/plan/ir-bench/ir-compare.sh`.
 
 - The views and their iterators hold the codec as
   `[[no_unique_address]] Codec`, so a stateless codec costs no storage
@@ -246,16 +277,15 @@ docblocks (decoder and encoder) now say "called until `nullopt`".
   `whatwg::encoding`. It models `text_decoder`, and it models `single_byte_text_decoder`
   exactly when `detail::random_access_decode_codec<C>`. It models
   `flushable_text_decoder` exactly when the encoding keeps state between calls
-  (UTF-16BE/LE, GBK/gb18030, Big5, ISO-2022-JP). The UTF decoders keep an
-  "at start" flag and drop a leading U+FEFF. It is `equality_comparable`.
-  The flag is the member `bom_` of type `detail::leading_bom_state_t<C>`
-  (`detail/whatwg_decode_select.hpp`): `{bool first}` for UTF-8 and UTF-16, and
-  the empty `detail::no_decode_state` for the rest, held as
-  `[[no_unique_address]]`. The per-encoding dispatch is the private
-  `decode_scalar`; `decode_one` wraps it with the BOM rule, and `flush()`
-  runs `decode_scalar` over an empty range. `decode_view` and
-  `random_access_decode_view` need no change for the decoder: the codec is
-  copied per `begin()`, so the flag restarts per traversal.
+  (UTF-16BE/LE, GBK/gb18030, Big5, ISO-2022-JP). It is `equality_comparable`.
+  The UTF decoders (exposition-only concept `detail::strips_leading_bom<C>`,
+  rendered `$strips-leading-bom$`) also model `bom_aware_text_decoder`:
+  their `decode_first` drops one leading U+FEFF, and `decode_one` never does.
+  There is no "at start" flag: step 08's `bom_` member and
+  `detail::leading_bom_state_t` were removed in step 09 (amendment 09),
+  because testing the flag on every element cost UTF-16 decode +21% (gcc-16)
+  to +83% (clang-20) in instructions. `decode_one` is the per-encoding dispatch, and `flush()`
+  runs it over an empty range.
 - `whatwg::encoder<C>` (`whatwg/encoder.hpp`) exists only where
   `whatwg::has_encoder(C)`: it is a **constrained primary template**
   (`requires detail::whatwg_encode_codec<C>`). It is not a `static_assert`
@@ -268,7 +298,7 @@ docblocks (decoder and encoder) now say "called until `nullopt`".
   `static_assert`s before naming `whatwg::encoder<C>` (steps 12 and 13). It
   models `text_encoder`, models `single_byte_text_encoder` for
   the single-byte encodings, and models `flushable_text_encoder` for ISO-2022-JP.
-- After steps 09 and 12, `whatwg::decode<C>` is
+- Done in step 09 for decode (step 12 for encode): `whatwg::decode<C>` is
   `transcoding::decode(whatwg::decoder<C>{})`,
   `whatwg::decode_or_error<C>` is `transcoding::decode_or_error(whatwg::decoder<C>{})`,
   and the encode side is the same. The WHATWG view classes are gone. Range
@@ -381,12 +411,22 @@ Steps 09 and 12 compare release-build benchmarks before and after the switch.
   `beman.transcode.benchmarks.whatwg`, `.utf` and `.pluggable`, and run them
   with the Catch2 tags `[benchmark][whatwg]`, `[benchmark][utf]` and
   `[benchmark][pluggable]`.
-- Threshold: a decode or encode benchmark whose mean regresses by more than
-  10% is a finding. Write `amendment-NN.md` with the table and do not tune
-  blindly.
+- Threshold (revised by amendment 09): the gate is **instruction counts** from
+  `tmp/plan/ir-bench/ir-compare.sh` (callgrind, a value-consuming loop, the
+  benchmark corpora), under gcc-16 `-O3 -march=native` (the Perf configuration
+  the paper's numbers come from) and clang-20 `-O3`. A decode or encode row
+  that regresses by more than 10% under either is a finding. The gcc-13 `-O2`
+  column (the `gcc-release` preset's effective level; see #follow-ups) and the
+  Catch2 wall-time tables are reported, not gated: wall time on these
+  100-1000 ns benchmarks moved +-20% between identical binaries, and
+  `count_elements` discards the values, so it rewards a view whose table
+  lookups the optimizer can delete.
+- Known residual at step 09: Big5 decode +9% to +16% under gcc-16 (about five
+  instructions per character, a fully register-allocated loop; clang-20 +2%).
+  Accepted in amendment 09 as code-layout variance, not abstraction cost.
 - The before/after table goes in the commit message body. Steps record the
   base commit SHA of each comparison here:
-  - step 09 base: (filled by step 09)
+  - step 09 base: 505359dc1fd9d032358588baf42ca3f209fe1ddc
   - step 12 base: (filled by step 12)
 
 ## Follow-ups (not steps) {#follow-ups}
@@ -400,6 +440,18 @@ The integration review reads this section.
   `benchmark/*.cpp` uses `codec::`, `transcode_string` and `get_encoding`.
   #127 rewrites `tools/generate_labels.py` and `detail/labels.hpp` to
   `string_view`, and that collides with step 05's generator change.
+- `benchmark/benchmark_sink.hpp`'s `count_elements` never reads the elements.
+  For a hand-specialized view GCC then deletes the table lookups, so a decode
+  benchmark measures parsing (amendment 09: Shift_JIS, EUC-KR and UTF-8 looked
+  +36% to +144% slower through the generic view in count mode and were 0% to
+  +2% with the values used). Before step 18 quotes decode numbers, the user
+  should decide whether the sink should consume values.
+- The `gcc-release` preset is effectively `-O2`: `infra/cmake/gnu-toolchain.cmake`
+  sets `-O3` in the `_INIT` flags and CMake appends its own `-O2 -g`, so the
+  compile line is `-O3 -O2 -g`. The Perf configuration (`etc/gcc-flags.cmake`)
+  is a real `-O3`. Under `-O2`, GCC 13 does not inline the codec-object chain
+  as far, and UTF-16, Big5 and gb18030 decode are +23% to +78% in
+  instructions after step 09. `infra/` is the Beman infrastructure subtree.
 - The project `CLAUDE.md` "Architecture" section names the old headers and
   identifiers. Agents may not edit `CLAUDE.md`, so the user updates it after
   merge.

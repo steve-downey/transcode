@@ -98,21 +98,13 @@ struct decode_state_of<whatwg::encoding::big5> {
 template <whatwg::encoding C>
 using decode_state_t = decode_state_of<C>::type;
 
-// Whether a decoder of C is still to drop a leading U+FEFF: the UTF encodings
-// strip a byte order mark from the start of the text, and every other
-// encoding keeps nothing for it.
+// Whether a decoder of C drops a leading U+FEFF: the UTF encodings strip a
+// byte order mark from the start of the text, in decode_first, which the view
+// calls once, so the per-element decode carries no flag for it.
+//! \expos
 template <whatwg::encoding C>
-inline constexpr bool strips_leading_bom =
+concept strips_leading_bom =
     C == whatwg::encoding::utf_8 || C == whatwg::encoding::utf_16be || C == whatwg::encoding::utf_16le;
-
-struct leading_bom_state {
-    bool first{true};
-
-    friend constexpr bool operator==(const leading_bom_state&, const leading_bom_state&) = default;
-};
-
-template <whatwg::encoding C>
-using leading_bom_state_t = std::conditional_t<strips_leading_bom<C>, leading_bom_state, no_decode_state>;
 
 //! \expos
 template <whatwg::encoding C>

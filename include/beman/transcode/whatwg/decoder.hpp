@@ -36,24 +36,23 @@ namespace beman::transcoding::whatwg {
 //! \iref{transcode.custom.reqs} for every encoding, and the decode adaptor
 //! over it \iref{transcode.custom.decode} yields what `whatwg::decode<C>`
 //! does.  It models `single_byte_text_decoder` when `C` names an encoding that
-//! decodes one byte to one scalar value, and `flushable_text_decoder` when
+//! decodes one byte to one scalar value, `flushable_text_decoder` when
 //! `C` names an encoding whose decoding can leave a result owed after the last
-//! byte.  The decoder for a UTF encoding discards one leading U+FEFF BYTE ORDER
-//! MARK from the text it decodes.  It is equality comparable.
+//! byte, and `bom_aware_text_decoder` when `C` names a UTF encoding: its
+//! `decode_first` discards one leading U+FEFF BYTE ORDER MARK from the text it
+//! decodes.  It is equality comparable.
 template <encoding C>
 class decoder {
     //! \expos
     [[no_unique_address]] detail::decode_state_t<C> state_{};
-    //! \expos
-    [[no_unique_address]] detail::leading_bom_state_t<C> bom_{};
-
-    //! \expos
-    template <std::input_iterator I, std::sentinel_for<I> S>
-    constexpr decode_result decode_scalar(I& current, S end);
 
   public:
     template <std::input_iterator I, std::sentinel_for<I> S>
     constexpr decode_result decode_one(I& current, S end);
+
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_first(I& current, S end)
+        requires detail::strips_leading_bom<C>;
 
     constexpr char32_t decode_byte(unsigned char byte) const
         requires detail::random_access_decode_codec<C>;
@@ -70,7 +69,11 @@ class decoder {
 
 template <encoding C>
 template <std::input_iterator I, std::sentinel_for<I> S>
-constexpr decode_result decoder<C>::decode_scalar(I& current, S end) {
+//! \effects Decodes one scalar value from `[current, end)` as the encoding
+//! `C` says, advancing `current` past the bytes it consumed.
+//! \returns The scalar value or the error, or, for an escape sequence that
+//! produced no scalar value, a result with `is_empty`.
+constexpr decode_result decoder<C>::decode_one(I& current, S end) {
     const auto failure = [](whatwg::error e) { return decode_result{U'\xFFFD', e, true}; };
     const auto success = [](char32_t cp) { return decode_result{cp, {}, false}; };
     if constexpr (C == encoding::big5) {
@@ -129,27 +132,21 @@ constexpr decode_result decoder<C>::decode_scalar(I& current, S end) {
 
 template <encoding C>
 template <std::input_iterator I, std::sentinel_for<I> S>
-//! \effects Decodes one scalar value from `[current, end)` as the encoding
-//! `C` says, advancing `current` past the bytes it consumed.  When `C` is a
-//! UTF encoding and this is the first call, a decoded U+FEFF is discarded and
-//! the next scalar value decoded in its place.
+//! \effects Decodes one scalar value as `decode_one(current, end)` does.  If
+//! that is U+FEFF, it is discarded and, unless the input is exhausted, the next
+//! scalar value decoded in its place.
 //! \returns The scalar value or the error, or, for a U+FEFF discarded with no
-//! input after it or for an escape sequence that produced no scalar value, a
-//! result with `is_empty`.
-constexpr decode_result decoder<C>::decode_one(I& current, S end) {
-    if constexpr (detail::strips_leading_bom<C>) {
-        if (bom_.first) {
-            bom_.first = false;
-            auto r     = decode_scalar(current, end);
-            if (!r.is_error && r.code_point == U'\xFEFF') {
-                if (current == end && state_.at_end())
-                    return decode_result{.is_empty = true};
-                return decode_scalar(current, end);
-            }
-            return r;
-        }
+//! input after it, a result with `is_empty`.
+constexpr decode_result decoder<C>::decode_first(I& current, S end)
+    requires detail::strips_leading_bom<C>
+{
+    auto r = decode_one(current, end);
+    if (!r.is_error && r.code_point == U'\xFEFF') {
+        if (current == end && state_.at_end())
+            return decode_result{.is_empty = true};
+        return decode_one(current, end);
     }
-    return decode_scalar(current, end);
+    return r;
 }
 
 template <encoding C>
@@ -175,7 +172,7 @@ constexpr std::optional<decode_result> decoder<C>::flush()
     if (state_.at_end())
         return std::nullopt;
     const unsigned char* none = nullptr;
-    auto                 r    = decode_scalar(none, none);
+    auto                 r    = decode_one(none, none);
     if (r.is_empty)
         return std::nullopt;
     return r;
