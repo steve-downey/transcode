@@ -1,38 +1,39 @@
 var annotated_dup =
 [
     [ "anonymous_namespace{custom_single_byte_decoder.cpp}", "namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html", [
-      [ "fractional_codec", "structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec.html", "structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec" ]
+      [ "fractional_codec", "structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec.html", "structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec" ],
+      [ "decode_result", "structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1decode__result.html", "structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1decode__result" ]
     ] ],
     [ "beman", "namespacebeman.html", [
       [ "transcoding", "namespacebeman_1_1transcoding.html", [
-        [ "decode_closure", "structbeman_1_1transcoding_1_1decode__closure.html", "structbeman_1_1transcoding_1_1decode__closure" ],
         [ "decode_result", "structbeman_1_1transcoding_1_1decode__result.html", "structbeman_1_1transcoding_1_1decode__result" ],
-        [ "decode_view", "classbeman_1_1transcoding_1_1decode__view.html", "classbeman_1_1transcoding_1_1decode__view" ],
-        [ "encode_closure", "structbeman_1_1transcoding_1_1encode__closure.html", "structbeman_1_1transcoding_1_1encode__closure" ],
         [ "encode_result", "structbeman_1_1transcoding_1_1encode__result.html", "structbeman_1_1transcoding_1_1encode__result" ],
-        [ "encode_view", "classbeman_1_1transcoding_1_1encode__view.html", "classbeman_1_1transcoding_1_1encode__view" ],
+        [ "random_access_decode_view", "classbeman_1_1transcoding_1_1random__access__decode__view.html", "classbeman_1_1transcoding_1_1random__access__decode__view" ],
+        [ "decode_view", "classbeman_1_1transcoding_1_1decode__view.html", "classbeman_1_1transcoding_1_1decode__view" ],
+        [ "decode_closure", "structbeman_1_1transcoding_1_1decode__closure.html", "structbeman_1_1transcoding_1_1decode__closure" ],
+        [ "single_byte_decode_view", "classbeman_1_1transcoding_1_1single__byte__decode__view.html", "classbeman_1_1transcoding_1_1single__byte__decode__view" ],
+        [ "single_byte_decode_closure", "structbeman_1_1transcoding_1_1single__byte__decode__closure.html", "structbeman_1_1transcoding_1_1single__byte__decode__closure" ],
+        [ "single_byte_encode_view", "classbeman_1_1transcoding_1_1single__byte__encode__view.html", "classbeman_1_1transcoding_1_1single__byte__encode__view" ],
+        [ "single_byte_encode_closure", "structbeman_1_1transcoding_1_1single__byte__encode__closure.html", "structbeman_1_1transcoding_1_1single__byte__encode__closure" ],
+        [ "table_codec", "structbeman_1_1transcoding_1_1table__codec.html", "structbeman_1_1transcoding_1_1table__codec" ],
         [ "full_table_codec", "structbeman_1_1transcoding_1_1full__table__codec.html", "structbeman_1_1transcoding_1_1full__table__codec" ],
-        [ "iconv_functions", "structbeman_1_1transcoding_1_1iconv__functions.html", "structbeman_1_1transcoding_1_1iconv__functions" ],
-        [ "iconv_transcode_closure", "structbeman_1_1transcoding_1_1iconv__transcode__closure.html", "structbeman_1_1transcoding_1_1iconv__transcode__closure" ],
-        [ "iconv_transcode_or_error_closure", "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html", "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure" ],
+        [ "encode_view", "classbeman_1_1transcoding_1_1encode__view.html", "classbeman_1_1transcoding_1_1encode__view" ],
+        [ "encode_closure", "structbeman_1_1transcoding_1_1encode__closure.html", "structbeman_1_1transcoding_1_1encode__closure" ],
         [ "iconv_transcode_or_error_view", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view" ],
+        [ "iconv_transcode_or_error_closure", "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html", "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure" ],
+        [ "iconv_functions", "structbeman_1_1transcoding_1_1iconv__functions.html", "structbeman_1_1transcoding_1_1iconv__functions" ],
         [ "iconv_transcode_view", "classbeman_1_1transcoding_1_1iconv__transcode__view.html", "classbeman_1_1transcoding_1_1iconv__transcode__view" ],
+        [ "iconv_transcode_closure", "structbeman_1_1transcoding_1_1iconv__transcode__closure.html", "structbeman_1_1transcoding_1_1iconv__transcode__closure" ],
         [ "null_sentinel_t", "structbeman_1_1transcoding_1_1null__sentinel__t.html", "structbeman_1_1transcoding_1_1null__sentinel__t" ],
         [ "null_term_view", "classbeman_1_1transcoding_1_1null__term__view.html", "classbeman_1_1transcoding_1_1null__term__view" ],
-        [ "pluggable_transcode_closure", "structbeman_1_1transcoding_1_1pluggable__transcode__closure.html", "structbeman_1_1transcoding_1_1pluggable__transcode__closure" ],
-        [ "random_access_decode_view", "classbeman_1_1transcoding_1_1random__access__decode__view.html", "classbeman_1_1transcoding_1_1random__access__decode__view" ],
-        [ "random_access_whatwg_decode_view", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view" ],
-        [ "random_access_whatwg_encode_view", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__view" ],
-        [ "single_byte_decode_closure", "structbeman_1_1transcoding_1_1single__byte__decode__closure.html", "structbeman_1_1transcoding_1_1single__byte__decode__closure" ],
-        [ "single_byte_decode_view", "classbeman_1_1transcoding_1_1single__byte__decode__view.html", "classbeman_1_1transcoding_1_1single__byte__decode__view" ],
-        [ "single_byte_encode_closure", "structbeman_1_1transcoding_1_1single__byte__encode__closure.html", "structbeman_1_1transcoding_1_1single__byte__encode__closure" ],
-        [ "single_byte_encode_view", "classbeman_1_1transcoding_1_1single__byte__encode__view.html", "classbeman_1_1transcoding_1_1single__byte__encode__view" ],
-        [ "table_codec", "structbeman_1_1transcoding_1_1table__codec.html", "structbeman_1_1transcoding_1_1table__codec" ],
         [ "transcode_closure", "structbeman_1_1transcoding_1_1transcode__closure.html", "structbeman_1_1transcoding_1_1transcode__closure" ],
-        [ "whatwg_decode_closure", "structbeman_1_1transcoding_1_1whatwg__decode__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__closure" ],
+        [ "pluggable_transcode_closure", "structbeman_1_1transcoding_1_1pluggable__transcode__closure.html", "structbeman_1_1transcoding_1_1pluggable__transcode__closure" ],
+        [ "random_access_whatwg_decode_view", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__decode__view" ],
         [ "whatwg_decode_view", "classbeman_1_1transcoding_1_1whatwg__decode__view.html", "classbeman_1_1transcoding_1_1whatwg__decode__view" ],
-        [ "whatwg_encode_closure", "structbeman_1_1transcoding_1_1whatwg__encode__closure.html", "structbeman_1_1transcoding_1_1whatwg__encode__closure" ],
-        [ "whatwg_encode_view", "classbeman_1_1transcoding_1_1whatwg__encode__view.html", "classbeman_1_1transcoding_1_1whatwg__encode__view" ]
+        [ "whatwg_decode_closure", "structbeman_1_1transcoding_1_1whatwg__decode__closure.html", "structbeman_1_1transcoding_1_1whatwg__decode__closure" ],
+        [ "random_access_whatwg_encode_view", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__view.html", "classbeman_1_1transcoding_1_1random__access__whatwg__encode__view" ],
+        [ "whatwg_encode_view", "classbeman_1_1transcoding_1_1whatwg__encode__view.html", "classbeman_1_1transcoding_1_1whatwg__encode__view" ],
+        [ "whatwg_encode_closure", "structbeman_1_1transcoding_1_1whatwg__encode__closure.html", "structbeman_1_1transcoding_1_1whatwg__encode__closure" ]
       ] ]
     ] ]
 ];

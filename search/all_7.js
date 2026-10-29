@@ -1,9 +1,12 @@
 var searchData=
 [
-  ['handle_5f_0',['handle_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3fcae46ebebc5e9e79e61bcfe1375f23',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::handle_()'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#aea361942e397fb4f4953b11eb0db6f9e',1,'beman::transcoding::iconv_transcode_view::iterator::handle_()']]],
-  ['handoff_2dnext_2emd_1',['handoff-next.md',['../handoff-next_8md.html',1,'']]],
-  ['handoff_3a_20coverage_20audit_20complete_20—_20ready_20for_20phase_205_20planning_2',['Handoff: Coverage Audit Complete — Ready for Phase 5 Planning',['../md_docs_plans_handoff_next.html',1,'']]],
-  ['has_5ferror_5f_3',['has_error_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a3f5e8cf2c0a2c63c44d9bba7a5bc307f',1,'beman::transcoding::iconv_transcode_or_error_view::iterator']]],
-  ['has_5fwhatwg_5fencoder_4',['has_whatwg_encoder',['../namespacebeman_1_1transcoding.html#a68679b5a8feb5e13bae2bd9cb925467b',1,'beman::transcoding']]],
-  ['holds_5',['holds',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#af79436057270211206e332d3ba00a83c',1,'beman::transcoding::whatwg_decode_view::iterator']]]
+  ['7_0',['Handoff to Step 7',['../md_docs_2plans_2p3-step6-iconv-baselines.html#autotoc_md215',1,'']]],
+  ['7_20codecs_20each_20with_20unique_20algorithm_1',['Multi-byte (7 codecs, each with unique algorithm)',['../md_docs_2plans_2phase2-index.html#autotoc_md572',1,'']]],
+  ['7_20tests_2',['&lt;span class=&quot;tt&quot;&gt;tests/beman/transcode/iconv_bulk.test.cpp&lt;/span&gt; (+7 tests)',['../md_docs_2plans_2handoff-next.html#autotoc_md110',1,'']]],
+  ['7_3a_20markup_20—_20codec_20requirements_20and_20pluggable_20views_3',['P5-Step 7: Markup — Codec Requirements and Pluggable Views',['../md_docs_2plans_2p5-step7-pluggable-codecs.html',1,'']]],
+  ['7_3a_20std_3a_3acodecvt_20negative_20baseline_4',['P3-Step 7: &lt;span class=&quot;tt&quot;&gt;std::codecvt&lt;/span&gt; Negative Baseline',['../md_docs_2plans_2p3-step7-codecvt-baseline.html',1,'']]],
+  ['7_3a_20std_3a_3acodecvt_20negative_20baseline_5',['&lt;a class=&quot;el&quot; href=&quot;md_docs_2plans_2p3-step7-codecvt-baseline.html&quot;&gt;P3-Step 7: &lt;span class=&quot;tt&quot;&gt;std::codecvt&lt;/span&gt; negative baseline&lt;/a&gt;',['../md_docs_2plans_2phase3-index.html#autotoc_md650',1,'']]],
+  ['7_3a_20std_3a_3acodecvt_20negative_20baseline_20p3_20step7_20codecvt_20baseline_6',['P3-Step 7: &lt;span class=&quot;tt&quot;&gt;std::codecvt&lt;/span&gt; negative baseline (&lt;span class=&quot;tt&quot;&gt;p3-step7-codecvt-baseline&lt;/span&gt;)',['../md_docs_2plans_2phase3-checklist.html#autotoc_md609',1,'']]],
+  ['7_3a_20the_20code_20blocks_20and_20one_20thing_20this_20step_20did_20not_20fix_7',['Task 7: the code blocks, and one thing this step did not fix',['../md_docs_2plans_2p5-step10-paper-assembly.html#autotoc_md325',1,'']]],
+  ['7_3a_20u_20fffd_20is_20reserved_20and_20the_20cost_20is_20stated_8',['P6-Step 7: U+FFFD Is Reserved, and the Cost Is Stated',['../md_docs_2plans_2p6-step7-fffd-reservation.html',1,'']]]
 ];

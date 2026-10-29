@@ -106,7 +106,7 @@ var menudata={children:[
 {text:"i",url:"functions_type.html#index_i"},
 {text:"r",url:"functions_type.html#index_r"},
 {text:"v",url:"functions_type.html#index_v"}]},
-{text:"Related Functions",url:"functions_rela.html",children:[
+{text:"Related Symbols",url:"functions_rela.html",children:[
 {text:"i",url:"functions_rela.html#index_i"},
 {text:"o",url:"functions_rela.html#index_o"}]}]}]},
 {text:"Files",url:"files.html",children:[
