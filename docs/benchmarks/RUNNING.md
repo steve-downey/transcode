@@ -13,6 +13,7 @@ make bench           # smoke: ASCII corpus
 make bench-utf       # UTF-family benchmarks
 make bench-whatwg    # WHATWG legacy codec benchmarks
 make bench-pluggable # pluggable codec benchmarks
+make bench-dispatch  # runtime codec dispatch vs fixed codecs
 make bench-iconv     # iconv baseline benchmarks
 make bench-boundary  # boundary stress benchmarks
 ```

@@ -2,25 +2,21 @@
 
 // The cost of naming an encoding at run time.  A program that takes its
 // encoding from a Content-Type header or a command-line option pays for
-// get_encoding(label) and then for a switch from the codec value to the
-// codec's template instantiation.  These benchmarks time both, alone and
-// inside transcode_string, against the same conversion with the codecs fixed
-// at compile time, so the difference is the overhead of choosing late.
+// get_encoding(label).  These benchmarks time the lookup alone; the switch
+// from the codec value to the codec's template instantiation, and the whole
+// runtime path against fixed codecs, are in dispatch_benchmarks.bench.cpp.
 
 #include <benchmark/benchmark_fixture.hpp>
 #include <benchmark/benchmark_measure.hpp>
 #include <beman/transcode/label.hpp>
 #include <beman/transcode/codec.hpp>
 #include <beman/transcode/detail/labels.hpp>
-#include <beman/transcode/transcode_string.hpp>
 
 #include <catch2/benchmark/catch_optimizer.hpp>
 #include <catch2/catch_all.hpp>
 
-#include <algorithm>
 #include <cstddef>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -29,9 +25,8 @@ namespace {
 
 using beman::transcoding::codec;
 
-// Hide a value from the optimizer.  get_encoding is constexpr and
-// transcode_string's switch is inlinable, so a label or codec the compiler
-// can see is folded to its answer and the benchmark times nothing.
+// Hide a value from the optimizer.  get_encoding is constexpr, so a label the
+// compiler can see is folded to its answer and the benchmark times nothing.
 template <typename T>
 const T& opaque(T& value) {
     Catch::Benchmark::keep_memory(&value);
@@ -40,20 +35,11 @@ const T& opaque(T& value) {
 
 std::optional<codec> lookup(std::string& label) { return beman::transcoding::get_encoding(opaque(label)); }
 
-// What transcode_string does once it has both codecs, with no dispatch.
-template <codec From, codec To>
-std::string transcode_fixed(std::span<const char> src) {
-    using namespace beman::transcoding;
-    return detail::transcode_encode_all<To>(detail::transcode_decode_all<From>(src));
-}
-
 } // namespace
 
 TEST_CASE("Label lookup benchmarks", "[benchmark][whatwg][label]") {
     using namespace beman::transcoding;
     using namespace beman::transcoding::bench;
-
-    // --- get_encoding on its own ---
 
     describe({.conversion = "label → codec", .library = "beman.transcode", .api = "get_encoding"});
     BENCHMARK_ADVANCED("get_encoding: canonical name (utf-8)")
@@ -93,49 +79,4 @@ TEST_CASE("Label lookup benchmarks", "[benchmark][whatwg][label]") {
             return found;
         });
     };
-
-    // --- transcode_string: fixed codecs, runtime codecs, labels ---
-    //
-    // Each conversion is timed three ways.  The fixed codecs are the floor;
-    // the codec overload adds the switch to the codec's instantiation; the
-    // label overload adds two get_encoding calls on top.  A short input shows
-    // the overhead as a share of a small conversion, where it is largest; the
-    // whole corpus shows it amortized.
-
-    const auto corpus = corpus_span("ru_mars_windows1251.bin");
-    // A header-field-sized piece.  windows-1251 is single-byte, so any cut is
-    // on a character boundary.
-    const auto short_input = corpus.first(std::min<std::size_t>(corpus.size(), 32));
-
-    struct input {
-        const char*           name;
-        std::span<const char> bytes;
-    };
-    for (const input in : {input{"32 bytes", short_input}, input{"whole corpus", corpus}}) {
-        const std::string suffix = std::string{" windows-1251 → UTF-8, Russian, "} + in.name;
-
-        describe({.conversion = "windows-1251 → UTF-8", .library = "beman.transcode", .api = "fixed codecs"});
-        BENCHMARK_ADVANCED("transcode_string fixed codecs:" + suffix)
-        (Catch::Benchmark::Chronometer meter) {
-            measure(meter, [&] { return transcode_fixed<codec::windows_1251, codec::utf_8>(in.bytes); });
-        };
-
-        describe(
-            {.conversion = "windows-1251 → UTF-8", .library = "beman.transcode", .api = "transcode_string codec"});
-        BENCHMARK_ADVANCED("transcode_string by codec:" + suffix)
-        (Catch::Benchmark::Chronometer meter) {
-            codec from = codec::windows_1251;
-            codec to   = codec::utf_8;
-            measure(meter, [&] { return transcode_string(in.bytes, opaque(from), opaque(to)); });
-        };
-
-        describe(
-            {.conversion = "windows-1251 → UTF-8", .library = "beman.transcode", .api = "transcode_string label"});
-        BENCHMARK_ADVANCED("transcode_string by label:" + suffix)
-        (Catch::Benchmark::Chronometer meter) {
-            std::string from = "windows-1251";
-            std::string to   = "utf-8";
-            measure(meter, [&] { return transcode_string(in.bytes, opaque(from), opaque(to)); });
-        };
-    }
 }

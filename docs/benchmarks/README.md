@@ -170,7 +170,7 @@ target refuses to write into a directory that already holds results.
 | Variable | Default |
 |----------|---------|
 | `BENCH_REPEATS` | `5` |
-| `BENCH_REPEAT_SUITES` | `smoke utf whatwg pluggable iconv boundary` |
+| `BENCH_REPEAT_SUITES` | `smoke utf whatwg pluggable dispatch iconv boundary` |
 | `BENCH_REPEAT_DIR` | `$(BENCH_RESULTS_DIR)/repeats` |
 
 The report treats several files of one suite in one run as repeats, ordered by
@@ -440,6 +440,7 @@ grep "^#" data/benchmarks/results/matrix-20260527.txt
 | `make bench-utf` | `benchmarks.utf` | `[benchmark][utf]` |
 | `make bench-whatwg` | `benchmarks.whatwg` | `[benchmark][whatwg]` |
 | `make bench-pluggable` | `benchmarks.pluggable` | `[benchmark][pluggable]` |
+| `make bench-dispatch` | `benchmarks.dispatch` | `[benchmark][dispatch]` |
 | `make bench-iconv` | `benchmarks.iconv` | `[benchmark][iconv]` |
 | `make bench-codecvt` | `benchmarks.codecvt` | `[benchmark][codecvt]` |
 | `make bench-encoding-rs` | `benchmarks.encoding_rs` | `[benchmark][encoding_rs]` |
@@ -453,16 +454,45 @@ grep "^#" data/benchmarks/results/matrix-20260527.txt
 | `make bench-compare` | two result directories → comparison Markdown + HTML + Vega-Lite | — |
 | `make bench-repeat` | core suites, GCC-16 Perf, `BENCH_REPEATS` times → Markdown + HTML + SVG + Vega-Lite | — |
 | `make bench-instructions` | core suites, GCC-16 Perf, under callgrind → instruction counts, Markdown + HTML + SVG + Vega-Lite | — |
+| `make bench-dispatch-instructions` | dispatch suite, GCC-16 Perf, under callgrind → runtime dispatch overhead per call, Markdown | — |
 | `make bench-stability-job` | core suites from prebuilt `BENCH_BIN_DIR`, timed then counted → one runner-stability job's results | — |
 
 The `benchmarks.whatwg` binary also holds the label benchmarks
 (`benchmark/label_benchmarks.bench.cpp`, tag `[label]`), so the core-suite
-targets run them with the rest of `whatwg`.  They time `get_encoding` alone,
-and `transcode_string` on the same input three ways: with the codecs fixed at
-compile time, by `codec` value, and by label.  The differences between the
-three are the cost of the switch to the codec's instantiation and of the two
-label lookups.  To run only these:
+targets run them with the rest of `whatwg`.  They time `get_encoding` alone.
+To run only these:
 
 ```bash
 .build/build-system/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg "[label]"
 ```
+
+### Runtime codec dispatch
+
+`get_encoding` returns a `codec` value, one type for every encoding, while the
+views take their codec as a template argument.  A program that chooses its
+encoding at run time therefore goes through a switch from the value to the
+codec's instantiation; `transcode_string(src, codec, codec)` holds that
+switch.  `benchmarks.dispatch` (`benchmark/dispatch_benchmarks.bench.cpp`, tag
+`[benchmark][dispatch]`) runs each of three conversions three ways on the same
+input:
+
+| API | What it adds |
+|-----|--------------|
+| `fixed codecs` | nothing: `transcode_string`'s body with both codecs as template arguments, the floor |
+| `by codec` | the switch from each `codec` value to its instantiation |
+| `by label` | two `get_encoding` lookups, then the switch |
+
+The conversions are windows-1251 → UTF-8 (single-byte decode), UTF-8 →
+windows-1251 (single-byte encode) and Shift_JIS → UTF-8 (multi-byte decode),
+each on a 32-byte prefix cut on a character boundary and on its whole corpus.
+
+The overhead is paid once per call, and it is too small for wall time to
+resolve.  `make bench-dispatch-instructions` counts the suite under callgrind
+into `BENCH_DISPATCH_DIR` (default
+`data/benchmarks/results/dispatch-instructions/`) and runs
+`tools/dispatch_overhead.py`, which prints, and writes to
+`dispatch-overhead.md`, each runtime path's instructions per call and its
+difference from `fixed codecs`.  Counts per call, not per byte, since the
+difference does not grow with the input.  `make bench-dispatch` times the same
+suite, and `dispatch` is one of the core suites, so `bench-repeat` and
+`bench-instructions` include it.

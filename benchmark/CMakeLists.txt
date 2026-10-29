@@ -82,6 +82,21 @@ target_link_libraries(
         Catch2::Catch2WithMain
 )
 
+# Runtime codec dispatch: transcode_string by codec value and by label,
+# against the same conversion with the codecs fixed at compile time.
+add_executable(beman.transcode.benchmarks.dispatch)
+target_sources(
+    beman.transcode.benchmarks.dispatch
+    PRIVATE dispatch_benchmarks.bench.cpp
+)
+target_link_libraries(
+    beman.transcode.benchmarks.dispatch
+    PRIVATE
+        beman::transcode
+        beman.transcode.benchmark_fixture
+        Catch2::Catch2WithMain
+)
+
 add_executable(beman.transcode.benchmarks.pluggable)
 target_sources(
     beman.transcode.benchmarks.pluggable
