@@ -34,7 +34,7 @@ intermediate step toward another general text framework.
 | -------- | ------- | --------------- |
 | **Input types** | `char8_t`, `char16_t`, `char32_t` | `char`, `signed char`, `unsigned char`, `std::byte` |
 | **UTF-16 model** | `char16_t` code units (native order) | Byte stream with explicit BE/LE |
-| **Encodings** | UTF-8, UTF-16, UTF-32 only | 40 codec identifiers, including WHATWG special and decode-only entries |
+| **Encodings** | UTF-8, UTF-16, UTF-32 only | 40 `whatwg::encoding` enumerators, including WHATWG special and decode-only entries |
 | **Focus** | Strict Unicode processing | Web/legacy interoperability |
 | **Use case** | Internal Unicode manipulation | External data ingestion |
 
@@ -49,10 +49,10 @@ auto codepoints = s | std::uc::to_utf32;
 
 // This proposal: byte input with explicit byte order
 std::vector<std::byte> network_data = read_socket();
-auto codepoints = network_data | whatwg_decode<codec::utf_16be>;
+auto codepoints = network_data | whatwg::decode<whatwg::encoding::utf_16be>;
 ```
 
-When UTF-16 data arrives from external sources — network protocols, file formats, binary blobs — it arrives as bytes with a specific byte order, determined by the protocol or the BOM. The host's own endianness does not enter into it. The `codec::utf_16be` and `codec::utf_16le` variants decode these byte streams correctly either way.
+When UTF-16 data arrives from external sources — network protocols, file formats, binary blobs — it arrives as bytes with a specific byte order, determined by the protocol or the BOM. The host's own endianness does not enter into it. The `whatwg::encoding::utf_16be` and `whatwg::encoding::utf_16le` variants decode these byte streams correctly either way.
 
 The proposals are complementary:
 
@@ -75,23 +75,23 @@ column shows the parallel design in the proposed standard UTF transcoding views.
 
 | API | WHATWG | Pluggable codec | iconv | P2728 |
 |-----|--------|-----------------|-------|----------|
-| **Codec identity** | `codec::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
-| **Decode view** | `whatwg_decode<C>` | `decode(codec)` | `iconv_transcode(f,t,buf)` | `views::to_utf32` |
-| **Decode or-error view** | `whatwg_decode_or_error<C>` | `decode_or_error(codec)` | `iconv_transcode_or_error(…)` | `views::to_utf32_or_error` |
-| **Encode view** | `whatwg_encode<C>` | `encode(codec)` | n/a ¹ | `views::to_utf8` / `to_utf16` |
-| **Encode or-error view** | `whatwg_encode_or_error<C>` | `encode_or_error(codec)` | n/a ¹ | `views::to_utf8_or_error` |
-| **Transcode pipeline** | `transcode<From,To>` | `pluggable_transcode(f,t)` | `iconv_transcode(f,t,buf)` | compose via `|` |
-| **Bulk decode → container** | `decode_to<C>(r)` | `decode_to(codec,r)` | n/a ¹ | `v\|ranges::to<>()` |
-| **Bulk encode → container** | `encode_to<C,Cont>(r)` | `encode_to(codec,r)` | n/a ¹ | `v\|ranges::to<>()` |
+| **Codec identity** | `whatwg::encoding::utf_8` enum | `my_codec{}` type | `"UTF-8"` string | `char8_t`/`char16_t`/`char32_t` |
+| **Decode view** | `whatwg::decode<C>` | `decode(codec)` | `iconv_transcode(f,t,buf)` | `views::to_utf32` |
+| **Decode or-error view** | `whatwg::decode_or_error<C>` | `decode_or_error(codec)` | `iconv_transcode_or_error(…)` | `views::to_utf32_or_error` |
+| **Encode view** | `whatwg::encode<C>` | `encode(codec)` | n/a ¹ | `views::to_utf8` / `to_utf16` |
+| **Encode or-error view** | `whatwg::encode_or_error<C>` | `encode_or_error(codec)` | n/a ¹ | `views::to_utf8_or_error` |
+| **Transcode pipeline** | `whatwg::transcode<From,To>` | `transcode(f,t)` | `iconv_transcode(f,t,buf)` | compose via `|` |
+| **Bulk decode → container** | `whatwg::decode_to<C>(r)` | `decode_to(codec,r)` | n/a ¹ | `v\|ranges::to<>()` |
+| **Bulk encode → container** | `whatwg::encode_to<C,Cont>(r)` | `encode_to(codec,r)` | n/a ¹ | `v\|ranges::to<>()` |
 | **Bulk transcode → container** | n/a ² | n/a ² | `iconv_transcode_to(range,f,t)` | n/a ² |
-| **Bulk decode → output iter** | `decode_into<C>(r,out)` | `decode_into(codec,r,out)` | n/a ¹ | `ranges::copy(v, out)` |
-| **Bulk encode → output iter** | `encode_into<C>(r,out)` | `encode_into(codec,r,out)` | n/a ¹ | `ranges::copy(v, out)` |
+| **Bulk decode → output iter** | `whatwg::decode_into<C>(r,out)` | `decode_into(codec,r,out)` | n/a ¹ | `ranges::copy(v, out)` |
+| **Bulk encode → output iter** | `whatwg::encode_into<C>(r,out)` | `encode_into(codec,r,out)` | n/a ¹ | `ranges::copy(v, out)` |
 | **Bulk transcode → output iter** | n/a ² | n/a ² | `iconv_transcode_into(range,f,t,out)` | n/a ² |
 | **Null-terminated input** | `views::null_term(ptr)` | `views::null_term(ptr)` | `views::null_term(ptr)` | n/a ³ |
-| **Runtime label lookup** | `get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
-| **Runtime transcode** | `optional<string> transcode_string(src,from,to)` | n/a ⁴ | `iconv_transcode_to(r,f,t)` | n/a ⁵ |
-| **BOM sniffing** | `sniff_encoding(range)` | n/a ⁶ | n/a ⁶ | n/a ⁷ |
-| **Error type** | `whatwg_error` | `whatwg_error` | `iconv_error` | `utf_transcoding_error` |
+| **Runtime label lookup** | `whatwg::get_encoding("utf-8")` | n/a ⁴ | n/a (string labels are the API) | n/a ⁵ |
+| **Runtime transcode** | `optional<string> whatwg::transcode_string(src,from,to)` | n/a ⁴ | `iconv_transcode_to(r,f,t)` | n/a ⁵ |
+| **BOM sniffing** | `whatwg::bom_sniff(range)` | n/a ⁶ | n/a ⁶ | n/a ⁷ |
+| **Error type** | `whatwg::error` | `whatwg::error` | `iconv_error` | `utf_transcoding_error` |
 | **Output element type** | `char32_t` | `char32_t` | `char` (raw bytes) | `char32_t` |
 | **Input element type** | `char`/`byte` (legacy) | `char`/`byte` (legacy) | `char` (any byte encoding) | `char8_t`/`char16_t`/`char32_t` |
 | **constexpr** | yes | yes | no (POSIX userland library) | yes |
@@ -107,7 +107,7 @@ are outside its model.
 helpers forward to `view | ranges::to<Container>()` and
 `ranges::copy(view, output)`, and a bulk transcode is `decode | encode`
 composed with `|` and collected the same way, so there is no separate
-compile-time-selected helper for it.  `transcode_string` is the eager
+compile-time-selected helper for it.  `whatwg::transcode_string` is the eager
 transcoder, and it is in the *Runtime transcode* row below rather than this
 one because its codecs are values and not template parameters, which is the
 reason it exists.  iconv performs single-pass byte→byte conversion and exposes
@@ -127,8 +127,8 @@ determined by the character types (`char8_t`, `char16_t`, `char32_t`), so
 runtime label lookup and runtime transcode are outside its model.
 
 ⁶ **BOM sniffing is a property of the byte stream.**
-`sniff_encoding()` examines the first bytes of a stream to detect UTF-8,
-UTF-16BE or UTF-16LE BOMs and returns the appropriate `codec` enum value.  This
+`whatwg::bom_sniff()` examines the first bytes of a stream to detect UTF-8,
+UTF-16BE or UTF-16LE BOMs and returns the appropriate `whatwg::encoding` value.  This
 is a WHATWG-specific facility; pluggable codecs and iconv operate on
 already-identified encodings.
 
