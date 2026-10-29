@@ -105,13 +105,12 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
 // \ref{transcode.codec.decode}, class template decode_view
 
 //! \at transcode.codec.decode
-//! \remarks `decode_view<Codec, R, E>` is `whatwg::decode_view`
-//! \iref{transcode.whatwg.decode} with the codec supplied as a value rather
-//! than named by an enumerator: it presents the bytes of `R` as the Unicode
-//! scalar values `Codec` decodes them to, reports a decoding error as `E`
-//! says, and decodes lazily.  Everything that clause says about the value
-//! type, the error mode and the laziness holds here, of a codec the program
-//! wrote rather than one the Encoding Standard defines.  The view does not
+//! \remarks `decode_view<Codec, R, E>` presents the bytes of `R` as the
+//! Unicode scalar values `Codec` decodes them to, and decodes lazily.  When
+//! `E` is `error_mode::replacement`, its value type is `char32_t` and a
+//! decoding error yields U+FFFD.  When `E` is `error_mode::report`, its value
+//! type is `expected<char32_t, whatwg::error>` and a decoding error yields an
+//! element holding the error.  The view does not
 //! validate a successful `code_point`; the program-supplied `Codec` is
 //! responsible for returning Unicode scalar values as required by
 //! `text_decoder`.

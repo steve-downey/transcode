@@ -108,11 +108,12 @@ class random_access_encode_view : public std::ranges::view_interface<random_acce
 // \ref{transcode.codec.encode}, class template encode_view
 
 //! \at transcode.codec.encode
-//! \remarks `encode_view<Codec, R, E>` is `whatwg::encode_view`
-//! \iref{transcode.whatwg.encode} with the codec supplied as a value rather
-//! than named by an enumerator: it validates the `char32_t` elements of `R` as
-//! UTF-32, presents the resulting scalar values as the bytes `Codec` encodes
-//! them to, reports an error as `E` says, and encodes lazily.  Ill-formed
+//! \remarks `encode_view<Codec, R, E>` validates the `char32_t` elements of
+//! `R` as UTF-32, presents the resulting scalar values as the bytes `Codec`
+//! encodes them to, and encodes lazily.  When `E` is
+//! `error_mode::replacement`, its value type is `char`.  When `E` is
+//! `error_mode::report`, its value type is `expected<char, whatwg::error>` and
+//! an error yields an element holding the error.  Ill-formed
 //! UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in
 //! replacement mode and is reported without calling the codec in report
 //! mode.  A custom codec therefore receives only Unicode scalar values.  When

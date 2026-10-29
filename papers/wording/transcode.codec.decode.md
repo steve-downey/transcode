@@ -14,7 +14,7 @@ constexpr R base() &&;
 
 [#]{.pnum} *Returns*: `move($base$)`.
 
-[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` is `whatwg::decode_view` ([transcode.whatwg.decode]) with the codec supplied as a value rather than named by an enumerator: it presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, reports a decoding error as `E` says, and decodes lazily.  Everything that clause says about the value type, the error mode and the laziness holds here, of a codec the program wrote rather than one the Encoding Standard defines.  The view does not validate a successful `code_point`; the program-supplied `Codec` is responsible for returning Unicode scalar values as required by `text_decoder`.
+[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, and decodes lazily.  When `E` is `error_mode::replacement`, its value type is `char32_t` and a decoding error yields U+FFFD.  When `E` is `error_mode::report`, its value type is `expected<char32_t, whatwg::error>` and a decoding error yields an element holding the error.  The view does not validate a successful `code_point`; the program-supplied `Codec` is responsible for returning Unicode scalar values as required by `text_decoder`.
 
 [#]{.pnum} The view models `random_access_range` when `Codec` models `single_byte_text_decoder` and `R` models `random_access_range`. When it does, a byte whose value is `0x80` or above and for which `Codec::decode_byte` returns U+FFFD is reported as `whatwg::error::invalid_byte` in report mode and yields U+FFFD in replacement mode.  This follows from the U+FFFD reservation required by `single_byte_text_decoder` ([transcode.codec.reqs]).
 
