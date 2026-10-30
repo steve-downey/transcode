@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Phase 4: API Surface Gap Closure - beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/phase4-index.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#phase-4-api-surface-gap-closure"
+id="toc-phase-4-api-surface-gap-closure">Phase 4: API Surface Gap
+Closure</a>
+<ul>
+<li><a href="#context" id="toc-context">Context</a></li>
+<li><a href="#step-index" id="toc-step-index">Step Index</a></li>
+<li><a href="#standing-conventions"
+id="toc-standing-conventions">Standing Conventions</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="phase-4-api-surface-gap-closure">Phase 4: API Surface Gap
+Closure</h1>
+<h2 id="context">Context</h2>
+<p>The API Surface Matrix in the README identifies gaps where the
+pluggable codec and iconv backends lack operations that the WHATWG
+backend provides. Custom codecs are second-class citizens (no encode
+views, no bulk ops), and iconv has no bulk path (15-20x overhead vs raw
+iconv for "transcode this string").</p>
+<p>This phase closes those gaps so all three backends present matching
+named interfaces.</p>
+<h2 id="step-index">Step Index</h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Branch</th>
+<th>Deliverable</th>
+<th>Depends on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>p4-step1-pluggable-encode</code></td>
+<td>Pluggable encode view + encode_or_error</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>p4-step2-pluggable-bulk</code></td>
+<td>Bulk decode_to/encode_to/into for pluggable codecs</td>
+<td>Step 1</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>p4-step3-pluggable-transcode</code></td>
+<td>transcode pipeline for pluggable codecs</td>
+<td>Step 1</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>p4-step4-iconv-bulk</code></td>
+<td>iconv_transcode_to / iconv_transcode_into</td>
+<td>—</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>p4-step5-iconv-null-term</code></td>
+<td>null_term support for iconv views</td>
+<td>—</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>p4-step6-error-coherence</code></td>
+<td>Unify or document error enum naming</td>
+<td>Steps 1-5</td>
+</tr>
+</tbody>
+</table>
+<p>Steps 1-3 are the pluggable codec family (sequential dependency).
+Steps 4-5 are the iconv family (independent of pluggable work). Step 6
+ties up naming coherence after all new APIs exist.</p>
+<h2 id="standing-conventions">Standing Conventions</h2>
+<p>Same as Phase 3 — see <code>docs/plans/phase3-handoff.md</code> for
+branch discipline, coding rules, testing requirements, and commit
+conventions.</p>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase4-index.md">docs/plans/phase4-index.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

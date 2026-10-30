@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P5-Step 1: specgen Harness and Paper Transclusion -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p5-step1-specgen-harness.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p5-step-1-specgen-harness-and-paper-transclusion"
+id="toc-p5-step-1-specgen-harness-and-paper-transclusion">P5-Step 1:
+specgen Harness and Paper Transclusion</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#context-for-executing-agent"
+id="toc-context-for-executing-agent">Context for executing
+agent</a></li>
+<li><a href="#tasks" id="toc-tasks">Tasks</a></li>
+<li><a href="#acceptance" id="toc-acceptance">Acceptance</a></li>
+<li><a href="#notes" id="toc-notes">Notes</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p5-step-1-specgen-harness-and-paper-transclusion">P5-Step 1:
+specgen Harness and Paper Transclusion</h1>
+<p><strong>Branch:</strong> <code>p5-step1-specgen-harness</code>
+<strong>Depends on:</strong> nothing <strong>Read first:</strong>
+<code>docs/plans/phase5-index.md</code>,
+<code>~/src/specgen/main/docs/user-guide.md</code></p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Stand up the whole generate → commit → transclude → check loop, and
+prove it end to end on one small header, before any wording markup
+exists. After this step, adding wording is only ever "write markup, run
+<code>make wording</code>".</p>
+<h2 id="context-for-executing-agent">Context for executing agent</h2>
+<p><code>papers/</code> is a flat mpark/wg21 layout:
+<code>papers/transcode-view.md</code> beside the vendored
+<code>papers/wg21/</code> subtree, outputs in
+<code>papers/generated/</code>. <code>papers/Makefile</code> is two
+lines of TLS environment plus <code>include wg21/flat.mk</code>.</p>
+<p>Two facts about that framework drive the design:</p>
+<ul>
+<li><code>base.mk</code> builds its pandoc command as
+<code>pandoc $(DATADIR)/srefs.defs $(filter %.md, $^) -o $@ ...</code>.
+<strong>Every markdown prerequisite is an input, concatenated in
+prerequisite order.</strong> That is the transclusion mechanism (index
+D3); nothing else is needed.</li>
+<li><code>flat.mk</code> sets <code>src := $(wildcard *.md)</code> (less
+CHANGELOG/LICENSE/README) and makes a paper target of each. Generated
+fragments must therefore live in a subdirectory (index D4).</li>
+</ul>
+<h2 id="tasks">Tasks</h2>
+<ol type="1">
+<li><p><strong><code>papers/wording/generate.sh</code></strong> — the
+single pinned invocation (index, standing conventions). It must:</p>
+<ul>
+<li>default <code>SPECGEN</code> to <code>specgen</code> and allow an
+override;</li>
+<li>export
+<code>LD_LIBRARY_PATH=/home/sdowney/install/gcc-16/lib64:...</code>;</li>
+<li>take the header list and the parse tail from one place:
+<code>-std=c++2c --gcc-toolchain=/home/sdowney/install/gcc-16 -I include -I .build/build-system/include</code>
+with <code>--no-compile-commands</code>;</li>
+<li>run <code>generate --emit-ir</code> per spec-facing header, then
+<code>render --from-ir</code> with
+<code>--backend mpark --split papers/wording --root transcode.syn</code>;</li>
+<li>write the printed manifest to <code>papers/wording/wording.mk</code>
+as a make variable in document order, e.g.
+<code>WORDING_MD := wording/transcode.syn.md wording/transcode.errors.md ...</code>;</li>
+<li>fail loudly if specgen or the Clang runtime is missing, rather than
+silently emitting nothing. Regeneration must be idempotent: two runs
+produce byte-identical files. <code>--split</code> does not delete stale
+files, so the script removes the previous <code>*.md</code> and
+<code>wording.mk</code> first and rewrites them from the manifest.</li>
+</ul></li>
+<li><p><strong><code>make wording</code> and
+<code>make wording-check</code></strong> in the top-level
+<code>Makefile</code>, beside <code>make lint</code> /
+<code>make pytest</code>. <code>wording</code> runs the script;
+<code>wording-check</code> runs it into a scratch directory and
+<code>diff -r</code>s against <code>papers/wording/</code>, exiting
+non-zero on any difference. <code>wording-check</code> is what CI runs
+and what every later step runs before committing.</p></li>
+<li><p><strong>Paper transclusion</strong> in
+<code>papers/Makefile</code>. After the <code>flat.mk</code> include,
+<code>-include wording/wording.mk</code> and an explicit rule per output
+that overrides the pattern rule so prerequisite order is ours and not
+make's:</p>
+<pre class="make"><code>$(OUTDIR)/transcode-view.html $(OUTDIR)/transcode-view.latex $(OUTDIR)/transcode-view.pdf: \
+    $(OUTDIR)/transcode-view.%: transcode-view.md $(WORDING_MD) $(DEPS) | $(OUTDIR)
+    $(PANDOC)</code></pre>
+<p>Do not rely on make appending explicit prerequisites to an implicit
+rule's; write the recipe.</p></li>
+<li><p><strong>Prove it.</strong> Add a <code>//! \effects</code>-level
+docblock and a <code>\rSec2</code> section marker to
+<code>detail/null_term.hpp</code> — the smallest spec-facing header,
+which already generates a clean class synopsis — enough to produce one
+real fragment. Build <code>make -C papers transcode-view.html</code> and
+confirm the generated clause appears in the output with its
+<code>[stable.name]{- .sref}</code> heading intact and no pandoc warning
+about the sref.</p></li>
+<li><p><strong>Bibliography placement.</strong> Fragments are
+concatenated after <code>transcode-view.md</code>, and citeproc places
+the bibliography at the end of the document. Confirm where it lands and,
+if it lands after the wording, add an explicit <code>::: {#refs}</code>
+div at the intended place in <code>transcode-view.md</code>. Record the
+answer in the step's commit message; Step 10 depends on it.</p></li>
+<li><p><strong><code>.gitignore</code> / lint.</strong>
+<code>papers/wording/*.md</code> is committed (index D2) but is
+generated: exclude it from markdown lint rules that would fight
+specgen's output, and say so in <code>papers/wording/README.md</code>
+(one paragraph: generated, do not edit, regenerate with
+<code>make wording</code>).</p></li>
+</ol>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li><code>make wording</code> twice in a row leaves the tree clean.</li>
+<li><code>make wording-check</code> exits 0 on a clean tree and non-zero
+after touching a fragment by hand.</li>
+<li><code>make -C papers transcode-view.pdf</code> builds and contains
+the proved clause.</li>
+<li><code>make lint</code> and <code>make test</code> green.</li>
+<li>No specgen invocation anywhere but
+<code>papers/wording/generate.sh</code>.</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The <code>-I .build/build-system/include</code> entry is for
+<code>config_generated.hpp</code>, which CMake writes into the build
+tree. A fresh clone must therefore <code>make compile</code> once before
+<code>make wording</code> works; make that a documented prerequisite of
+the target rather than a surprise.</li>
+<li>Keep the fragment directory flat. <code>--split</code> names files
+from stable names, so <code>transcode.whatwg.decode.md</code> is a
+filename, not a path.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step1-specgen-harness.md">docs/plans/p5-step1-specgen-harness.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

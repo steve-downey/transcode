@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P3-Step 2: Benchmark Corpus Acquisition and Provenance -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p3-step2-benchmark-data.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p3-step-2-benchmark-corpus-acquisition-and-provenance"
+id="toc-p3-step-2-benchmark-corpus-acquisition-and-provenance">P3-Step
+2: Benchmark Corpus Acquisition and Provenance</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#context-for-executing-agent"
+id="toc-context-for-executing-agent">Context for Executing
+Agent</a></li>
+<li><a href="#deliverables" id="toc-deliverables">Deliverables</a></li>
+<li><a href="#corpus-manifest-schema"
+id="toc-corpus-manifest-schema">Corpus Manifest Schema</a></li>
+<li><a href="#fallback-corpus-checked-in"
+id="toc-fallback-corpus-checked-in">Fallback Corpus (checked
+in)</a></li>
+<li><a href="#procedure" id="toc-procedure">Procedure</a></li>
+<li><a href="#verification" id="toc-verification">Verification</a></li>
+<li><a href="#handoff-to-step-3" id="toc-handoff-to-step-3">Handoff to
+Step 3</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p3-step-2-benchmark-corpus-acquisition-and-provenance">P3-Step
+2: Benchmark Corpus Acquisition and Provenance</h1>
+<p><strong>Branch:</strong> <code>p3-step2-benchmark-data</code>
+<strong>Depends on:</strong> <a
+href="p3-step1-benchmark-harness.html">p3-step1-benchmark-harness.md</a>
+<strong>Read first:</strong> <code>docs/plans/phase3-handoff.md</code>
+and <code>docs/plans/handoff-next.md</code></p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Acquire and document the benchmark corpora called for in the
+benchmarking report, with the same provenance discipline used for WHATWG
+and WPT inputs.</p>
+<h2 id="context-for-executing-agent">Context for Executing Agent</h2>
+<p>The project has a <code>benchmark/</code> directory with a smoke
+benchmark (from Step 1). Python tooling uses <code>uv run</code> and
+lives in <code>tools/</code>. Python tests are in
+<code>tools/tests/</code> and run via <code>make pytest</code>. The
+<code>data/</code> directory contains generated codec lookup tables
+under <code>data/tables/</code>.</p>
+<p>The benchmarking methodology requires Wikipedia "Mars" article
+extracts as real-world corpora. Each language targets a specific
+encoding stress path:</p>
+<table>
+<thead>
+<tr>
+<th>Language</th>
+<th>Encoding Stress</th>
+<th>File to produce</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>English</td>
+<td>ASCII-heavy UTF-8</td>
+<td><code>en_mars_utf8.txt</code></td>
+</tr>
+<tr>
+<td>Arabic</td>
+<td>Mixed 1/2-byte UTF-8</td>
+<td><code>ar_mars_utf8.txt</code></td>
+</tr>
+<tr>
+<td>Russian</td>
+<td>Cyrillic / windows-1251</td>
+<td><code>ru_mars_utf8.txt</code>,
+<code>ru_mars_windows1251.bin</code></td>
+</tr>
+<tr>
+<td>Japanese</td>
+<td>CJK / Shift-JIS</td>
+<td><code>ja_mars_utf8.txt</code>,
+<code>ja_mars_shiftjis.bin</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="mediawiki-api-for-extraction">MediaWiki API for extraction</h3>
+<pre><code>https://en.wikipedia.org/w/api.php?action=query&amp;titles=Mars&amp;prop=extracts&amp;explaintext=true&amp;format=json</code></pre>
+<p>Replace <code>en.wikipedia.org</code> with <code>ar.</code>,
+<code>ru.</code>, <code>ja.</code> for other languages.</p>
+<h3 id="python-encoding-conversion">Python encoding conversion</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>text.encode(<span class="st">&quot;windows-1251&quot;</span>, errors<span class="op">=</span><span class="st">&quot;replace&quot;</span>)  <span class="co"># UTF-8 -&gt; windows-1251 bytes</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>text.encode(<span class="st">&quot;shift_jis&quot;</span>, errors<span class="op">=</span><span class="st">&quot;replace&quot;</span>)  <span class="co"># UTF-8 -&gt; Shift-JIS bytes</span></span></code></pre></div>
+<h2 id="deliverables">Deliverables</h2>
+<ol type="1">
+<li><code>tools/download_benchmark_corpora.py</code> — download +
+convert + manifest</li>
+<li><code>tools/tests/test_download_benchmark_corpora.py</code> — unit
+tests</li>
+<li><code>docs/benchmarks/SOURCE.md</code> — provenance
+documentation</li>
+<li><code>data/benchmarks/corpus_manifest.json</code> — generated
+manifest (gitignored)</li>
+<li><code>benchmark/corpus/</code> — small checked-in fallback files
+(~100-200 bytes each)</li>
+<li>Update <code>.gitignore</code> to exclude
+<code>data/benchmarks/</code></li>
+</ol>
+<h2 id="corpus-manifest-schema">Corpus Manifest Schema</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;file&quot;</span><span class="fu">:</span> <span class="st">&quot;en_mars_utf8.txt&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;lang&quot;</span><span class="fu">:</span> <span class="st">&quot;en&quot;</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;encoding&quot;</span><span class="fu">:</span> <span class="st">&quot;utf-8&quot;</span><span class="fu">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;bytes&quot;</span><span class="fu">:</span> <span class="dv">123456</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;sha256&quot;</span><span class="fu">:</span> <span class="st">&quot;abc123...&quot;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<h2 id="fallback-corpus-checked-in">Fallback Corpus (checked in)</h2>
+<p>Create <code>benchmark/corpus/</code> with small representative
+samples:</p>
+<ul>
+<li><code>en_mars_utf8.txt</code> — "Mars is the fourth planet from the
+Sun..."</li>
+<li><code>ar_mars_utf8.txt</code> — Arabic equivalent (~100 bytes)</li>
+<li><code>ru_mars_utf8.txt</code> — Russian equivalent</li>
+<li><code>ja_mars_utf8.txt</code> — Japanese equivalent</li>
+</ul>
+<p>These enable <code>make bench</code> to work without network
+access.</p>
+<h2 id="procedure">Procedure</h2>
+<ol type="1">
+<li>Create worktree branch <code>p3-step2-benchmark-data</code> from
+<code>main</code></li>
+<li>Create <code>tools/download_benchmark_corpora.py</code></li>
+<li>Create fallback corpus files in <code>benchmark/corpus/</code></li>
+<li>Create <code>docs/benchmarks/SOURCE.md</code></li>
+<li>Add <code>data/benchmarks/</code> to <code>.gitignore</code></li>
+<li>Create
+<code>tools/tests/test_download_benchmark_corpora.py</code></li>
+<li>Run <code>make pytest</code> — Python tests pass</li>
+<li>Run <code>make test</code> — existing tests pass</li>
+<li>Run <code>make lint</code></li>
+<li>Optionally run the download tool to verify it works</li>
+<li>Commit, merge to main (non-ff), push both remotes</li>
+<li>Update <code>docs/plans/handoff-next.md</code></li>
+</ol>
+<h2 id="verification">Verification</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> test</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> lint</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> pytest</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Optionally: uv run python tools/download_benchmark_corpora.py</span></span></code></pre></div>
+<h2 id="handoff-to-step-3">Handoff to Step 3</h2>
+<p>Write to <code>docs/plans/handoff-next.md</code>:</p>
+<ul>
+<li>Step 2 is done</li>
+<li>Next: read <code>p3-step3-benchmark-fixtures.md</code></li>
+<li>Fallback corpus files: <code>benchmark/corpus/*.txt</code></li>
+<li>Generated corpus: <code>data/benchmarks/</code> (run download tool
+to populate)</li>
+<li>Manifest: <code>data/benchmarks/corpus_manifest.json</code></li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p3-step2-benchmark-data.md">docs/plans/p3-step2-benchmark-data.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P6-Step 1: `sniff_encoding` Requires a Forward Range -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p6-step1-sniff-forward-range.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p6-step-1-sniff_encoding-requires-a-forward-range"
+id="toc-p6-step-1-sniff_encoding-requires-a-forward-range">P6-Step 1:
+<code>sniff_encoding</code> Requires a Forward Range</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#why" id="toc-why">Why</a></li>
+<li><a href="#what-to-change" id="toc-what-to-change">What to
+change</a></li>
+<li><a href="#tests" id="toc-tests">Tests</a></li>
+<li><a href="#watch-for" id="toc-watch-for">Watch for</a></li>
+<li><a href="#done-when" id="toc-done-when">Done when</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p6-step-1-sniff_encoding-requires-a-forward-range">P6-Step 1:
+<code>sniff_encoding</code> Requires a Forward Range</h1>
+<p><strong>Branch:</strong> <code>p6-step1-sniff-forward-range</code>
+<strong>Depends on:</strong> Step 0 <strong>Finding:</strong> C-01
+<strong>Read first:</strong> <code>docs/plans/phase6-index.md</code></p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Make the docblock true.</p>
+<h2 id="why">Why</h2>
+<p><code>sniff_encoding</code> is constrained on
+<code>legacy_byte_range</code>, which requires only
+<code>input_range</code>. It then does <code>++it</code> at
+<code>sniff.hpp:44</code> and again at <code>:49</code> while reading up
+to three bytes -- so on a single-pass range, two bytes are gone by the
+time it returns. Its own <code>\remarks</code> at lines 30-35 says:</p>
+<blockquote>
+<p>The mark itself is not consumed -- a decode view strips a leading
+U+FEFF for the UTF codecs on its own -- so the range can be passed on
+unchanged.</p>
+</blockquote>
+<p>For <code>std::ranges::istream_view&lt;char&gt;</code>, sniffing a
+BOM and then decoding gives you the payload minus two bytes, silently.
+Sniffing a <em>non</em>-BOM stream, which is the common case, costs the
+same two bytes off the front of the document. That is data loss in
+exactly the stream-oriented use the function exists for.</p>
+<p>Of the three fixes the review offers -- require forward, return an
+advanced range, or make consumption part of the contract -- requiring
+forward is the one that keeps the promise rather than retracting it.
+Returning a replayable range changes a one-word predicate into a
+two-value result for every caller, and admitting consumption makes the
+composition in the paper (<code>sniff</code>, then decode the same
+range) wrong.</p>
+<h2 id="what-to-change">What to change</h2>
+<p><code>include/beman/transcode/sniff.hpp</code>. Add
+<code>std::ranges::forward_range&lt;R&gt;</code> to the constraint on
+both the declaration (line 22-23) and the definition (line 36-37); they
+must stay identical or the declaration is not a declaration of the
+definition.</p>
+<p>The docblock needs one added sentence saying the range must be a
+forward range <em>because</em> the mark is not consumed -- the
+constraint and the promise are the same fact, and a reader who sees only
+one of them will wonder about the other.</p>
+<p>Nothing else changes. The body is already correct for a forward
+range.</p>
+<h2 id="tests">Tests</h2>
+<p><code>tests/beman/transcode/sniff.test.cpp</code> and a new negative
+compile test.</p>
+<ol type="1">
+<li><strong>Runtime</strong> — add cases over a
+forward-but-not-contiguous range, so the fix is exercised on something
+that is not a <code>span</code>. A
+<code>std::forward_list&lt;char&gt;</code> holding <code>EF BB BF</code>
+and one holding two bytes that are not a BOM. Confirm the range is
+intact afterwards by decoding it and comparing against the whole
+input.</li>
+<li><strong>Negative compile</strong> —
+<code>sniff_reject_input_range_fail.cpp</code>, feeding a genuinely
+single-pass range. Hand-roll the input-only range rather than using
+<code>istream_view</code>, so the test does not depend on a stream and
+stays <code>constexpr</code>-clean; the existing
+<code>sniff_reject_char32_range_fail.cpp</code> is the shape to copy.
+Register it in <code>tests/beman/transcode/CMakeLists.txt</code>
+following the block at lines 935-958: an <code>OBJECT</code> library
+with <code>EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true</code>,
+an <code>add_test</code> that invokes
+<code>${CMAKE_COMMAND} --build ... --target ...</code>, and a
+<code>PASS_REGULAR_EXPRESSION</code>. The expression must name
+<code>forward_range</code>, not <code>legacy_byte_range</code> --
+otherwise the test passes when the <em>wrong</em> constraint fires and
+tells you nothing.</li>
+<li><strong>Consteval</strong> —
+<code>constify(sniff_encoding(...))</code> for a BOM and a non-BOM case,
+per the <code>constify()</code> convention in
+<code>tests/beman/transcode/test_utilities.hpp</code>.</li>
+</ol>
+<h2 id="watch-for">Watch for</h2>
+<p><code>views::null_term(ptr)</code> produces a
+<code>null_term_view</code> over a <code>contiguous_iterator</code>,
+which satisfies <code>forward_range</code>, so the
+<code>null_term | sniff</code> composition keeps working. Check that it
+still compiles before assuming so; a <code>null_term_view</code>'s
+<code>end()</code> is <code>null_sentinel_t</code>, and
+<code>forward_range</code> only needs the iterator, not a common
+range.</p>
+<h2 id="done-when">Done when</h2>
+<ul>
+<li><code>sniff_encoding</code> rejects a single-pass range with a
+diagnostic naming <code>forward_range</code>.</li>
+<li>The three test kinds above exist and pass.</li>
+<li><code>make test</code> and <code>make lint</code> pass.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step1-sniff-forward-range.md">docs/plans/p6-step1-sniff-forward-range.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

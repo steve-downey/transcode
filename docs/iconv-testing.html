@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Testing C++ Range Adapters over `iconv` -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../index.html">beman.transcode</a> <a href="../doxygen/index.html">Doxygen</a> <a href="../mrdocs/index.html">MrDocs</a> <a href="../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/iconv-testing.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#testing-c-range-adapters-over-iconv"
+id="toc-testing-c-range-adapters-over-iconv">Testing C++ Range Adapters
+over <code>iconv</code></a>
+<ul>
+<li><a href="#1-the-iconv-view-boundary-conditions"
+id="toc-1-the-iconv-view-boundary-conditions">1. The <code>iconv</code>
+View Boundary Conditions</a></li>
+<li><a href="#2-mocking-iconv-for-deterministic-view-testing"
+id="toc-2-mocking-iconv-for-deterministic-view-testing">2. Mocking
+<code>iconv</code> for Deterministic View Testing</a></li>
+<li><a href="#3-testing-execution-plan"
+id="toc-3-testing-execution-plan">3. Testing Execution Plan</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="testing-c-range-adapters-over-iconv">Testing C++ Range Adapters
+over <code>iconv</code></h1>
+<p>Testing the range adapter that wraps the <code>iconv</code> C API is
+a different job from testing a codec. It does not need megabytes of WPT
+JSON. A small set of vectors aimed at the boundary conditions of the
+<code>iconv</code> state machine is enough.</p>
+<p>The view has to translate range iteration into <code>char**</code>
+buffer manipulation, so what the tests have to pin down is whether it
+reads <code>iconv</code>'s return values correctly and carries its
+internal buffers across iterations intact.</p>
+<h2 id="1-the-iconv-view-boundary-conditions">1. The <code>iconv</code>
+View Boundary Conditions</h2>
+<p>POSIX <code>iconv</code> communicates state through its return value
+(<code>(size_t)-1</code>) and <code>errno</code>. There are four cases
+the iterator has to get right. Simple UTF-8 to UTF-16 or UTF-32
+conversions trigger all of them.</p>
+<h3 id="a-buffer-exhaustion-e2big">A. Buffer Exhaustion
+(<code>E2BIG</code>)</h3>
+<p>A view that processes data in chunks will see <code>E2BIG</code> when
+the output buffer fills before the input is consumed.</p>
+<ul>
+<li><strong>Test vector:</strong> a long valid string, say 100
+repetitions of <code>A</code>.</li>
+<li><strong>Expected:</strong> the iterator yields the converted
+characters from the filled buffer, and on the next increment resumes by
+passing the <em>unconsumed</em> input pointer back into
+<code>iconv</code>. No characters dropped.</li>
+</ul>
+<h3 id="b-the-split-multi-byte-sequence-einval">B. The Split Multi-byte
+Sequence (<code>EINVAL</code>)</h3>
+<p>This is the test a range adapter is most likely to fail. When the
+underlying data source delivers bytes in chunks — a socket, a file — a
+multi-byte character can be sliced in half at the chunk boundary, and
+<code>iconv</code> stops with <code>EINVAL</code>.</p>
+<ul>
+<li><strong>Test vector:</strong> the UTF-8 sequence for "𝄞" (U+1D11E),
+<code>0xF0 0x9D 0x84 0x9E</code>.</li>
+<li><strong>Procedure:</strong> feed the view an input range that yields
+<code>0xF0 0x9D</code> on the first iteration and <code>0x84 0x9E</code>
+on the second.</li>
+<li><strong>Expected:</strong> the view caches the leftover bytes,
+prepends them to the next chunk it pulls from the underlying range, and
+yields the code point. No error.</li>
+</ul>
+<h3 id="c-invalid-byte-sequences-eilseq">C. Invalid Byte Sequences
+(<code>EILSEQ</code>)</h3>
+<p>The view keeps going past malformed data, per the C++ API design: a
+replacement character, or a <code>std::expected</code> error state.</p>
+<ul>
+<li><strong>Test vector:</strong> <code>0xFF 0xFF</code>.</li>
+<li><strong>Expected:</strong> the view sees
+<code>errno == EILSEQ</code> and does not infinite-loop. It either
+advances the input pointer past the bad bytes (usually by one) and emits
+a replacement character, or halts the range and surfaces the error.</li>
+</ul>
+<h3 id="d-end-of-range-stateful-flush">D. End-of-Range Stateful
+Flush</h3>
+<p>Legacy encodings use shift states. At the end of a sequence
+<code>iconv</code> needs a final call with <code>inbuf == nullptr</code>
+to flush the reset bytes — switching back to ASCII, say — into the
+output buffer.</p>
+<ul>
+<li><strong>Test vector:</strong> ISO-2022-JP encoding of "あ",
+<code>0x1B 0x24 0x42 0x24 0x22</code>.</li>
+<li><strong>Expected:</strong> when the underlying input range reaches
+<code>std::ranges::end</code>, the iterator makes the flush call. If the
+flush produces bytes, the iterator yields them before it compares equal
+to the sentinel.</li>
+</ul>
+<hr />
+<h2 id="2-mocking-iconv-for-deterministic-view-testing">2. Mocking
+<code>iconv</code> for Deterministic View Testing</h2>
+<p>Testing <em>view logic</em> against the system <code>iconv</code> is
+unreliable, because system implementations vary in how strictly they
+handle <code>EILSEQ</code> and in which encodings they know about at
+all.</p>
+<p>The view therefore takes its three <code>iconv</code> entry points
+through the <code>iconv_functions</code> struct, so a test can
+substitute its own. <code>tests/beman/transcode/iconv_mock.hpp</code> is
+that substitute: it exercises the API contract without depending on the
+platform's tables.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cerrno&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cstdint&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cstddef&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string_view&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;vector&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> beman<span class="op">::</span>transcoding<span class="op">::</span>tests <span class="op">{</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">// A mock signature matching the POSIX iconv API</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> mock_iconv<span class="op">(</span><span class="dt">void</span><span class="op">*</span> <span class="co">/*cd*/</span><span class="op">,</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">char</span><span class="op">**</span> inbuf<span class="op">,</span> <span class="dt">size_t</span><span class="op">*</span> inbytesleft<span class="op">,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">char</span><span class="op">**</span> outbuf<span class="op">,</span> <span class="dt">size_t</span><span class="op">*</span> outbytesleft<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>inbuf <span class="op">==</span> <span class="kw">nullptr</span> <span class="op">||</span> <span class="op">*</span>inbuf <span class="op">==</span> <span class="kw">nullptr</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Simulate end-of-range flush (e.g., write 1 byte of state reset)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(*</span>outbytesleft <span class="op">&lt;</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>            errno <span class="op">=</span> E2BIG<span class="op">;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="op">(</span><span class="dt">size_t</span><span class="op">)-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">**</span>outbuf <span class="op">=</span> <span class="bn">0x0F</span><span class="op">;</span> <span class="co">// Mock shift-in byte</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        <span class="op">(*</span>outbuf<span class="op">)++;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        <span class="op">(*</span>outbytesleft<span class="op">)--;</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Simulate EINVAL (Incomplete sequence at the end of input)</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// If the input is exactly the byte 0xF0, pretend it needs more bytes.</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(*</span>inbytesleft <span class="op">==</span> <span class="dv">1</span> <span class="op">&amp;&amp;</span> <span class="kw">static_cast</span><span class="op">&lt;</span><span class="dt">uint8_t</span><span class="op">&gt;((*</span>inbuf<span class="op">)[</span><span class="dv">0</span><span class="op">])</span> <span class="op">==</span> <span class="bn">0xF0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        errno <span class="op">=</span> EINVAL<span class="op">;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">(</span><span class="dt">size_t</span><span class="op">)-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Simulate E2BIG (Output buffer full)</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(*</span>outbytesleft <span class="op">==</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> <span class="op">*</span>inbytesleft <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        errno <span class="op">=</span> E2BIG<span class="op">;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">(</span><span class="dt">size_t</span><span class="op">)-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ... Implementation for simply passing bytes through for EILSEQ checks ...</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span> <span class="co">// Success</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> <span class="co">// namespace beman::transcoding::tests</span></span></code></pre></div>
+<hr />
+<h2 id="3-testing-execution-plan">3. Testing Execution Plan</h2>
+<p>Three steps. Build the pipeline —
+<code>auto transcoded = input_bytes | views::iconv_transcode("UTF-8", "UTF-16");</code>.
+Force <code>EINVAL</code> across chunk boundaries by running the test
+vectors through <code>std::views::chunk</code> before piping them into
+the transcode view. Force <code>E2BIG</code> with a tiny static buffer
+in the test loop, which is what shows whether the iterator drops state
+between increments.</p>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/iconv-testing.md">docs/iconv-testing.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

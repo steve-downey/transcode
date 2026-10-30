@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P6-Step 0: Revise the Wording Staleness Gate -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p6-step0-wording-gate.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p6-step-0-revise-the-wording-staleness-gate"
+id="toc-p6-step-0-revise-the-wording-staleness-gate">P6-Step 0: Revise
+the Wording Staleness Gate</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#why" id="toc-why">Why</a></li>
+<li><a href="#design" id="toc-design">Design</a></li>
+<li><a href="#what-to-change" id="toc-what-to-change">What to
+change</a></li>
+<li><a href="#tests" id="toc-tests">Tests</a></li>
+<li><a href="#done-when" id="toc-done-when">Done when</a></li>
+<li><a href="#note-on-specgen" id="toc-note-on-specgen">Note on
+specgen</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p6-step-0-revise-the-wording-staleness-gate">P6-Step 0: Revise
+the Wording Staleness Gate</h1>
+<p><strong>Branch:</strong> <code>p6-step0-wording-gate</code>
+<strong>Depends on:</strong> nothing <strong>Read first:</strong>
+<code>docs/plans/phase6-index.md</code>,
+<code>papers/wording/README.md</code>, <code>Makefile</code> lines
+220-273</p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Stop <code>make wording-inputs-check</code> from being a merge
+blocker for drift that is known, intentional and in progress, without
+giving up its guard against drift that is none of those things.</p>
+<h2 id="why">Why</h2>
+<p>The check hashes every spec-facing header and diffs against
+<code>papers/wording/inputs.sha256</code>. A header that moved without
+<code>make wording</code> fails the pull request.
+<code>make wording</code> needs a <code>specgen</code> built from
+<code>papers/wording/specgen-ref</code>, and specgen links LLVM's Clang
+front end.</p>
+<p>So the check's real cost is not the hash. It is that changing one
+line of a docblock obliges the contributor to build a compiler front
+end, and it obliges this phase -- eight steps of header edits -- to
+serialize behind one tool.</p>
+<p><code>papers/wording/README.md</code> already states the flaw
+plainly: the check "over- reports by construction," because "an edit
+that changes no wording still needs a regeneration to say so." That was
+the right trade when the alternative was no check at all, and it is the
+wrong trade as a gate on a tree that is knowingly mid-revision.</p>
+<p>What the check is genuinely for is catching the header edit that
+nobody meant to leave the wording behind. That purpose survives an
+explicit opt-out; it does not survive being switched off.</p>
+<h2 id="design">Design</h2>
+<p>Add a pending list. <code>papers/wording/PENDING</code> names the
+spec-facing headers that are knowingly ahead of the committed fragments,
+one repo-relative path per line, <code>#</code> comments allowed. It is
+authored, not generated.</p>
+<p><code>make wording-inputs-check</code> then behaves as follows:</p>
+<ul>
+<li>a hash mismatch for a header <strong>on</strong> the list is
+reported and does not fail;</li>
+<li>a hash mismatch for a header <strong>not</strong> on the list fails
+exactly as it does today;</li>
+<li>a header on the list whose hash <em>matches</em> is reported as a
+stale entry, and fails, so the list cannot rot into a permanent
+exemption;</li>
+<li>an empty or absent <code>PENDING</code> reproduces today's behaviour
+byte for byte.</li>
+</ul>
+<p><code>make wording</code> clears the file when it regenerates -- the
+fragments are then current, so nothing is pending.</p>
+<p><code>make wording-check</code>, the real check that regenerates and
+diffs, <strong>ignores the list entirely</strong>. A paper revision
+still cannot go out against stale wording. That is what makes the
+opt-out safe: it defers a staleness report, it does not defer
+correctness.</p>
+<h2 id="what-to-change">What to change</h2>
+<ul>
+<li><strong><code>Makefile</code></strong> lines 231-254. Read
+<code>PENDING</code>, partition the diff, and choose the exit code. Keep
+the existing message for an unlisted header; it is a good message. Add a
+distinct one for a listed header that says the entry must be removed by
+<code>make wording</code> before the paper goes out.</li>
+<li><strong><code>papers/wording/generate.sh</code></strong>.
+<code>--authored</code> is the one list of what lives in
+<code>papers/wording/</code> without being generated into it, and both
+<code>wording-check</code> and generate.sh's own cleanup read it.
+<code>PENDING</code> is authored, so it goes in that list -- otherwise
+<code>wording-check</code> reports it missing from a scratch directory
+and calls the fragments stale. Have <code>generate.sh</code> truncate
+<code>PENDING</code> on a real (non-<code>--out</code>) run.</li>
+<li><strong><code>.github/workflows/test_makefile.yaml</code></strong>.
+No change to the step; the target's exit code carries the decision. Add
+a separate job, or a condition on the existing one, that fails when
+<code>PENDING</code> is non-empty on a tag or on a paper-release branch
+-- the point at which deferred is no longer acceptable.</li>
+<li><strong><code>papers/wording/README.md</code></strong>. Document the
+list under "The drift gate," next to the paragraph that already explains
+why the check over-reports. Say what puts a name on it and what takes
+one off.</li>
+</ul>
+<h2 id="tests">Tests</h2>
+<p><code>tests/tools/</code> holds the Python tool tests that
+<code>make pytest</code> runs; the shell plumbing here is better covered
+by a small set of cases driven from the same place, or by a
+<code>bats</code>-style script if that is already the local habit.
+Cover:</p>
+<ul>
+<li>empty/absent <code>PENDING</code> — behaves exactly as today, both
+pass and fail cases</li>
+<li>listed header changed — reports, exits zero</li>
+<li>unlisted header changed — fails, with the existing message</li>
+<li>listed header unchanged — fails as a stale entry</li>
+<li><code>make wording</code> empties the list</li>
+</ul>
+<h2 id="done-when">Done when</h2>
+<ul>
+<li>The four cases above behave as described.</li>
+<li><code>make wording-inputs-check</code> passes on an unmodified tree
+with an empty <code>PENDING</code>, and the hash file is unchanged by
+this step.</li>
+<li><code>papers/wording/README.md</code> describes the list.</li>
+<li>No fragment under <code>papers/wording/</code> is edited by
+hand.</li>
+</ul>
+<h2 id="note-on-specgen">Note on specgen</h2>
+<p>This step does not remove the need for specgen; it removes the need
+for it <em>eight times</em>. Step 8 still has to build it from
+<code>papers/wording/specgen-ref</code> and regenerate. Whoever picks up
+Step 8 should start that build early -- it is the long pole -- and
+should confirm the tool reproduces the committed fragments on an
+unmodified tree before trusting any diff it produces.</p>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step0-wording-gate.md">docs/plans/p6-step0-wording-gate.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

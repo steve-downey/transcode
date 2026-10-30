@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Repository review findings — 2026-09-11 closeout -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../index.html">beman.transcode</a> <a href="../doxygen/index.html">Doxygen</a> <a href="../mrdocs/index.html">MrDocs</a> <a href="../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/review-findings-2026-09-11-closeout.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#repository-review-findings--2026-09-11-closeout"
+id="toc-repository-review-findings--2026-09-11-closeout">Repository
+review findings — 2026-09-11 closeout</a>
+<ul>
+<li><a href="#finding-accounting" id="toc-finding-accounting">Finding
+accounting</a></li>
+<li><a href="#verification-results"
+id="toc-verification-results">Verification results</a></li>
+</ul></li>
+</ul>
+</nav>
+<!--
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+<h1 id="repository-review-findings--2026-09-11-closeout">Repository
+review findings — 2026-09-11 closeout</h1>
+<p>This closes the findings in <a
+href="review-findings-2026-09-11.html"><code>review-findings-2026-09-11.md</code></a>
+against the integrated Phase 6 tree. The review contained 27 numbered
+findings. Planning and implementation found three more (C-08, D-14 and
+D-15), so the accounting below has 30 rows.</p>
+<p>"Documented" means the behavior is intentional and is now stated
+accurately; it does not mean that SG16 has made the design decision. In
+particular, P-01, P-02 and S-03 remain questions for SG16 rather than
+accidental omissions in the implementation or proposal.</p>
+<h2 id="finding-accounting">Finding accounting</h2>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Disposition</th>
+<th>Commit(s)</th>
+<th>What closed it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-01</td>
+<td>Closed</td>
+<td><code>3fd83a60</code></td>
+<td><code>sniff_encoding</code> now requires a forward range, with
+positive and negative constraint tests.</td>
+</tr>
+<tr>
+<td>C-02</td>
+<td>Closed</td>
+<td><code>c24f9183</code></td>
+<td>The iconv views specify and enforce a minimum working-buffer size;
+boundary tests cover the former silent-empty result.</td>
+</tr>
+<tr>
+<td>C-03</td>
+<td>Closed</td>
+<td><code>c24f9183</code></td>
+<td>Flush state is resumable across <code>E2BIG</code>; mock tests
+require multiple flush calls and cover flush failures.</td>
+</tr>
+<tr>
+<td>C-04</td>
+<td>Closed</td>
+<td><code>063b380d</code></td>
+<td>Lossy eager iconv conversion skips rejected input instead of
+appending an encoding-independent <code>0x3f</code>. UTF-16 and
+eager/lazy parity tests cover the policy.</td>
+</tr>
+<tr>
+<td>C-05</td>
+<td>Closed</td>
+<td><code>c24f9183</code>, <code>75e52502</code></td>
+<td><code>open_failed</code> and <code>system_error</code> are explicit
+<code>iconv_error</code> values and unexpected platform failures are no
+longer misclassified; focused tests cover every flush-error
+classification.</td>
+</tr>
+<tr>
+<td>C-06</td>
+<td>Closed</td>
+<td><code>3e1f07d2</code></td>
+<td><code>null_term_view</code> states its reachable-terminator and
+lifetime preconditions; its stored iterator is value-initialized and the
+singular state is documented.</td>
+</tr>
+<tr>
+<td>C-07</td>
+<td>Closed</td>
+<td><code>51d33e0e</code></td>
+<td>Runtime codec and label overloads return
+<code>optional&lt;string&gt;</code> and reject encoder-less targets
+before decoding, so empty success is unambiguous.</td>
+</tr>
+<tr>
+<td>C-08</td>
+<td>Closed</td>
+<td><code>621d12c6</code></td>
+<td>The newly found non-UTF-8 inconsistency is removed by validating
+UTF-32 input once, before codec dispatch, for all 40 codecs.</td>
+</tr>
+<tr>
+<td>P-01</td>
+<td>Documented</td>
+<td><code>b3d69e53</code></td>
+<td>The README and paper now say that the WHATWG implementation is
+portable header-only source while the reference package currently
+requires platform iconv.</td>
+</tr>
+<tr>
+<td>P-02</td>
+<td>Documented</td>
+<td><code>b3d69e53</code></td>
+<td>The iconv facility and <code>iconv_t</code> handle are explicitly
+implementation-defined, and the paper asks SG16 whether the POSIX
+adaptor should progress separately.</td>
+</tr>
+<tr>
+<td>S-01</td>
+<td>Closed</td>
+<td><code>621d12c6</code>, <code>b3d69e53</code></td>
+<td>The scalar-value precondition was removed. Surrogates and
+out-of-range <code>char32_t</code> values are uniformly replaced or
+reported before encoding.</td>
+</tr>
+<tr>
+<td>S-02</td>
+<td>Closed</td>
+<td><code>063b380d</code></td>
+<td>Lazy and eager lossy iconv APIs now share the documented skip
+policy.</td>
+</tr>
+<tr>
+<td>S-03</td>
+<td>Documented</td>
+<td><code>37ff0fd1</code>, <code>b3d69e53</code></td>
+<td>U+FFFD is explicitly reserved as the indexed decode sentinel; the
+extensibility cost and possible replacement designs are referred to
+SG16.</td>
+</tr>
+<tr>
+<td>S-04</td>
+<td>Closed</td>
+<td><code>b3d69e53</code></td>
+<td>The wording outline records that declaration-level descriptions
+beside synopsis declarations are intentional specgen output; validation
+accepts the placement.</td>
+</tr>
+<tr>
+<td>S-05</td>
+<td>Closed</td>
+<td><code>b3d69e53</code></td>
+<td>Platform, performance, browser-engine and WHATWG codec-set claims
+were narrowed to what the repository and cited benchmark support.</td>
+</tr>
+<tr>
+<td>D-01</td>
+<td>Closed</td>
+<td><code>b3d69e53</code></td>
+<td>The duplicate author email key was removed.</td>
+</tr>
+<tr>
+<td>D-02</td>
+<td>Closed</td>
+<td><code>b3d69e53</code></td>
+<td>Feature-test macro placeholders now consistently use
+<code>202XXXL</code>.</td>
+</tr>
+<tr>
+<td>D-03</td>
+<td>Closed</td>
+<td><code>b3d69e53</code></td>
+<td>README and paper text now limit BOM sniffing to UTF-8, UTF-16BE and
+UTF-16LE.</td>
+</tr>
+<tr>
+<td>D-04</td>
+<td>Closed</td>
+<td><code>b3d69e53</code></td>
+<td>D4246 and P2728 revision references were reconciled; generic P2728
+labels are used where an exact revision is not material.</td>
+</tr>
+<tr>
+<td>D-05</td>
+<td>Closed</td>
+<td><code>15a61282</code></td>
+<td>Contributor documentation names Catch2 3 and requests C++23 in every
+manual configuration example.</td>
+</tr>
+<tr>
+<td>D-06</td>
+<td>Closed</td>
+<td><code>c20d92c2</code>, <code>35ca56e7</code></td>
+<td>CMake probes the required library capabilities rather than a Clang
+version, and the README distinguishes tested configurations from
+capability-gated ones.</td>
+</tr>
+<tr>
+<td>D-07</td>
+<td>Closed</td>
+<td><code>41fbf060</code></td>
+<td>The custom codec example implements the public codec protocol and
+uses <code>decode</code>/<code>decode_or_error</code>; README no longer
+presents <code>detail::table_codec</code> as public API.</td>
+</tr>
+<tr>
+<td>D-08</td>
+<td>Closed</td>
+<td><code>07a547b3</code></td>
+<td>ICU is described as a separate backend requiring an adaptor, not as
+a provider of the POSIX iconv API.</td>
+</tr>
+<tr>
+<td>D-09</td>
+<td>Closed</td>
+<td><code>32d331d3</code></td>
+<td>The tracked root file named <code>-</code> was removed and a
+filename hygiene hook prevents recurrence.</td>
+</tr>
+<tr>
+<td>D-10</td>
+<td>Closed</td>
+<td><code>d6ccff14</code></td>
+<td>The Phase 4 handoff is prominently dated and marked historical while
+retaining its useful coverage audit.</td>
+</tr>
+<tr>
+<td>D-11</td>
+<td>Closed</td>
+<td><code>f62c3af5</code></td>
+<td>The duplicate CI lint step was removed; <code>lint-manual</code>
+remains as the future manual-stage entry point.</td>
+</tr>
+<tr>
+<td>D-12</td>
+<td>Closed</td>
+<td><code>364eac09</code>, <code>e4db58b7</code>,
+<code>cf87e1cd</code></td>
+<td>The module unit is licensed, its include graph is installed, CMake
+4.4 import-std activation is correct, and clean installed-package
+consumers pass in header and module modes.</td>
+</tr>
+<tr>
+<td>D-13</td>
+<td>Closed</td>
+<td><code>43c7d9ef</code></td>
+<td>The telemetry script's shebang is now its first line.</td>
+</tr>
+<tr>
+<td>D-14</td>
+<td>Closed</td>
+<td><code>6e94f7af</code></td>
+<td>The newly found gitleaks hook selects the installed CLI spelling and
+reports unsupported versions clearly.</td>
+</tr>
+<tr>
+<td>D-15</td>
+<td>Closed</td>
+<td><code>621d12c6</code>, <code>b3d69e53</code></td>
+<td>The newly found encode-error prose now describes U+FFFD substitution
+rather than a raw question mark.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="verification-results">Verification results</h2>
+<p>The supported project matrix is native GCC 16.2.1 and Clang 22.1.8
+through the repository toolchain files. Containers and external images
+are strictly off limits and were not used. The review's request for a
+second iconv implementation is out of scope; the focused iconv
+regressions run against the supported system implementation.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GCC 16 ASan</td>
+<td>750/750 C++ tests and 265/265 Python tests passed.</td>
+</tr>
+<tr>
+<td>GCC 16 Debug</td>
+<td>The current tree built and 750/750 C++ tests passed.</td>
+</tr>
+<tr>
+<td>GCC 16 RelWithDebInfo</td>
+<td>The current tree built successfully.</td>
+</tr>
+<tr>
+<td>Clang 22 ASan</td>
+<td>750/750 C++ tests and 265/265 Python tests passed.</td>
+</tr>
+<tr>
+<td>Clang 22 Debug</td>
+<td>The current tree built and 750/750 C++ tests passed; 265/265 Python
+tests also passed.</td>
+</tr>
+<tr>
+<td>Clang 22 RelWithDebInfo</td>
+<td>The current tree built successfully.</td>
+</tr>
+<tr>
+<td>GCC 16 coverage</td>
+<td>750/750 tests passed; coverage was 72.9% of lines, 89.8% of
+functions and 42.1% of branches.</td>
+</tr>
+<tr>
+<td>Module modes</td>
+<td>The non-module suites above passed, and the module integration test
+passed 1/1.</td>
+</tr>
+<tr>
+<td>Installed consumers</td>
+<td>The header consumer passed 1/1; the module and header-shim consumers
+passed 2/2.</td>
+</tr>
+<tr>
+<td>Examples</td>
+<td>All seven example programs built and ran successfully.</td>
+</tr>
+<tr>
+<td>Wording</td>
+<td><code>wording-check</code>, <code>wording-inputs-check</code> and
+<code>wording-validate</code> passed with no pending regeneration. The
+full check used the installed <code>specgen</code>.</td>
+</tr>
+<tr>
+<td>Lint</td>
+<td><code>make lint</code> and <code>make lint-manual</code> passed,
+including codespell, mypy, clang-tidy and the configured pre-commit
+hooks.</td>
+</tr>
+</tbody>
+</table>
+<p>The optimized GCC build emitted a <code>-Warray-bounds</code>
+diagnostic in inlined libstdc++ vector-growth code; inspection found no
+project defect behind it. It also emitted
+<code>-Wdangling-pointer</code> for
+<code>benchmark/benchmark_sink.hpp</code> storing an argument address in
+<code>volatile_sink</code> beyond the argument's lifetime. That genuine
+warning is confined to the benchmark-only dead-code-elimination helper,
+which never dereferences the stored pointer. Reworking that helper is
+explicitly deferred as a benchmark-harness follow-up and does not affect
+the installed library or the verification results above.</p>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/review-findings-2026-09-11-closeout.md">docs/review-findings-2026-09-11-closeout.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

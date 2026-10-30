@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P5-Step 3: Spec-Facing Header Shape - beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p5-step3-spec-header-shape.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p5-step-3-spec-facing-header-shape"
+id="toc-p5-step-3-spec-facing-header-shape">P5-Step 3: Spec-Facing
+Header Shape</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#context-for-executing-agent"
+id="toc-context-for-executing-agent">Context for executing
+agent</a></li>
+<li><a href="#tasks" id="toc-tasks">Tasks</a></li>
+<li><a href="#outcome-and-what-is-deferred"
+id="toc-outcome-and-what-is-deferred">Outcome, and what is
+deferred</a></li>
+<li><a href="#acceptance" id="toc-acceptance">Acceptance</a></li>
+<li><a href="#notes" id="toc-notes">Notes</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p5-step-3-spec-facing-header-shape">P5-Step 3: Spec-Facing
+Header Shape</h1>
+<p><strong>Branch:</strong> <code>p5-step3-spec-header-shape</code>
+(expect several sub-branches) <strong>Depends on:</strong> Step 2 (the
+outline says what belongs where) <strong>Read first:</strong>
+<code>docs/plans/phase5-index.md</code>,
+<code>~/src/specgen/main/docs/architecture.md</code> §1, §3.4, §3.5,
+§9</p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Make each spec-facing header's set of main-file declarations equal to
+the specification surface of the standard header it stands for, so that
+specgen's synopsis <em>is</em> the synopsis and its coverage roster
+<em>is</em> the API. This is the refactoring the phase depends on and
+the only step that changes semantics-free C++ at scale.</p>
+<h2 id="context-for-executing-agent">Context for executing agent</h2>
+<p>specgen processes only declarations whose location is in the
+<strong>main file</strong>. Anything reached through
+<code>#include</code> is invisible: it does not enter the synopsis, the
+coverage roster, or the leakage report. That single rule is the lever.
+Implementation that moves into <code>detail/</code> headers disappears
+from the wording for free; implementation left in the spec-facing header
+must be individually <code>\omit</code>ted or <code>\expos</code>ed,
+forever.</p>
+<p>Three concrete problems in today's layout:</p>
+<ol type="1">
+<li><strong>Public entities live under <code>detail/</code>.</strong>
+<code>legacy_byte_range</code> and <code>unicode_scalar_range</code>
+(<code>detail/concepts.hpp</code>), <code>whatwg_error</code> and
+<code>iconv_error</code> (<code>detail/error.hpp</code>),
+<code>sniff_encoding</code> (<code>detail/sniff.hpp</code>),
+<code>transcode_string</code>
+(<code>detail/transcode_string.hpp</code>), <code>transcode</code> and
+<code>pluggable_transcode</code>
+(<code>detail/transcode_view.hpp</code>), <code>null_term_view</code>
+and <code>views::null_term</code> (<code>detail/null_term.hpp</code>)
+are all part of the proposed API but sit in the implementation
+directory. The directory name is not the problem — the namespace is
+<code>beman::transcoding</code> for all of them, which is correct — but
+the file placement is what decides which specgen document they land
+in.</li>
+<li><strong>Implementation lives in spec-facing headers.</strong>
+<code>whatwg_decode_view.hpp</code> is 1,772 lines, of which the
+<code>namespace detail</code> block (the
+<code>random_access_decode_codec</code> concept,
+<code>random_access_decode_table()</code>, the table selection
+machinery) and the ~800-line <code>iterator::load()</code> codec state
+machines are implementation. <code>whatwg_encode_view.hpp</code> (1,323
+lines) has the same shape. Every one of those is a declaration specgen
+must be told to ignore, and every <code>detail::</code> qualifier they
+leave in a spec-visible signature is a leakage error (index D7).</li>
+<li><strong>The umbrella declares nothing.</strong>
+<code>transcode.hpp</code> is includes only, so there is no document
+whose root fragment is the <code>&lt;transcode&gt;</code> synopsis
+(index D1).</li>
+</ol>
+<h2 id="tasks">Tasks</h2>
+<p>Work header family by header family; each is its own commit and can
+be its own branch. After each, <code>make test</code> and
+<code>make wording-check</code> must still pass.</p>
+<ol type="1">
+<li><strong>Promote the public entities out of
+<code>detail/</code>.</strong> New headers under
+<code>include/beman/transcode/</code>: <code>error.hpp</code>,
+<code>concepts.hpp</code>, <code>null_term.hpp</code>,
+<code>sniff.hpp</code>, <code>transcode_string.hpp</code>,
+<code>transcode_view.hpp</code>. Move the declarations; leave the
+private helpers behind in <code>detail/</code>. Update every
+<code>#include</code> (angle brackets, full path, per
+<code>CLAUDE.md</code>), the module interface
+<code>transcode.cppm</code>, and the CMake <code>FILE_SET</code> lists
+in <code>include/beman/transcode/CMakeLists.txt</code>. No forwarding
+shims: this library is pre-release, and a shim is a second spelling to
+keep working.</li>
+<li><strong>Thin the WHATWG views.</strong> Move
+<code>namespace detail</code> out of <code>whatwg_decode_view.hpp</code>
+and <code>whatwg_encode_view.hpp</code> into
+<code>detail/whatwg_codec_select.hpp</code> (or per-codec headers where
+one already exists), and push each codec's <code>load()</code> state
+machine down to the <code>detail::&lt;codec&gt;_decode_one</code> /
+<code>_encode_one</code> functions that <code>big5.hpp</code>,
+<code>gb18030.hpp</code>, <code>euc_jp.hpp</code> and friends already
+establish as the pattern. The iterator's <code>load()</code> should end
+up dispatching, not deciding. This is the largest single piece of work
+in the phase; it is also a straightforward mechanical refactor with the
+existing test suite as the safety net, and it improves the headers
+independently of the paper.</li>
+<li><strong>Remove <code>detail::</code> from spec-visible
+signatures.</strong> After (2), audit every remaining
+<code>detail::</code> in a class-scope or namespace-scope declaration of
+a spec-facing header. Each is either promoted (it is really
+specification) or destined for <code>\expos</code> in Steps 4-9. Record
+which, in the outline from Step 2; do not add the markup yet.</li>
+<li><strong>Make the umbrella a real document.</strong>
+<code>transcode.hpp</code> becomes the spec-facing header for
+<code>&lt;transcode&gt;</code>: it carries the
+<code>\rSec2[transcode.syn]</code> gathered-synopsis region
+(architecture §3.4 — the region runs to a matching
+<code>/// END [transcode.syn]</code> fence) and the clause markers, with
+the family headers included beneath it. Decide here, and record, whether
+the entities themselves move into <code>transcode.hpp</code> (D1's
+preferred shape: one document, one synopsis) or stay in family headers
+with a gathered synopsis assembled per family (D1's fallback). Prefer
+the former; the measurement to make the call is how many lines the
+spec-facing surface is once (1) and (2) are done. Index U4 (a deduction
+guide corrupts a gathered <code>.syn</code> region) does not apply:
+<code>null_term_view</code>'s is the only deduction guide in the
+library, and it is in the other header.</li>
+<li><strong>Keep the parse working.</strong> <code>transcode.hpp</code>
+must still parse standalone for specgen, which needs
+<code>-I .build/build-system/include</code> for
+<code>config_generated.hpp</code>. Verify with the Step 1 script, not by
+eye.</li>
+</ol>
+<h2 id="outcome-and-what-is-deferred">Outcome, and what is deferred</h2>
+<p>Tasks 1 and 3 are done and verified; task 2 is half done; task 4 is
+deferred, for a reason task 2 measured.</p>
+<ul>
+<li><p><strong>Task 2, done:</strong> the <code>namespace detail</code>
+blocks left both WHATWG headers
+(<code>detail/whatwg_decode_select.hpp</code>,
+<code>detail/whatwg_encode_select.hpp</code>), and
+<code>enum class codec</code> moved to its own specification header,
+<code>codec.hpp</code>, which broke the cycle that kept the selection
+machinery pinned next to the views.</p></li>
+<li><p><strong>Task 2, deferred:</strong> the codec state machines are
+still inline. Two <code>iterator::load()</code> bodies are 862 of
+<code>whatwg_decode_view.hpp</code>'s 1,645 lines (52%) and 505 of
+<code>whatwg_encode_view.hpp</code>'s 1,246 (41%). Pushing them down to
+the <code>detail::&lt;codec&gt;_decode_one</code> functions the CJK
+codecs already use is about 1,370 lines of mechanical extraction. It
+does <strong>not</strong> gate the wording: <code>load()</code> is a
+private member, private members are filtered out of the synopsis, and no
+clause extracts a private body. It is worth doing for the headers' own
+sake, as its own step, and it is what makes task 4 viable.</p></li>
+<li><p><strong>Task 4, done 2026-09-07 — and not by merging.</strong>
+The measurement the deferral was waiting for came out at ~3,460 lines of
+declarations across sixteen headers once the pushdown landed, which
+specgen can handle. But the merge was never the point: what D1 needs is
+one <em>document</em> per proposed header, and "document" meant "file"
+only because the tool said so. specgen now follows the headers
+<code>#include</code>d inside a gathered <code>.syn</code> region
+(specgen#77, PR #78), so <code>transcode.hpp</code> carries the region
+and the component headers stay exactly where they are. Nothing moved, no
+include site changed, and <code>[transcode.syn]</code> is a generated
+1,160-line synopsis of all sixteen.</p>
+<p>That is D7 for the second time: the answer to "the tool cannot see
+what the library writes" is to fix the tool, not the library. The first
+time cost six <code>\expos</code> comments instead of a refactor; this
+time it cost one upstream feature instead of a 3,500-line header.</p>
+<p>Running it on the real library is what found three defects the tool's
+own corpus could not: a late-instantiated member arriving as a top-level
+declaration (a private member's body in the synopsis), a function
+definition folded in with its body, and a body whose spliced range was
+then re-edited by a qualifier drop. All three are fixed in PR
+#78.</p></li>
+</ul>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li><code>make test</code> green at every commit, including the negative
+compile tests.</li>
+<li><code>make lint</code> green; no <code>#pragma once</code>, no
+quoted includes, no relative paths.</li>
+<li>The module build (<code>BEMAN_TRANSCODE_USE_MODULES=ON</code>) still
+configures and builds.</li>
+<li><code>specgen generate --emit-ir include/beman/transcode/transcode.hpp ...</code>
+exits 0.</li>
+<li><code>render --validate</code> on each spec-facing header reports
+<strong>no <code>detail</code> leakage findings</strong>. Coverage
+findings are expected and are Steps 4-9's work; <code>ranges</code>
+findings are index U1's known noise.</li>
+<li><code>docs/wording-outline.md</code> updated with the
+promoted/exposed/omitted decision for every entity.</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Header moves are the kind of change that quietly breaks the
+benchmark tree and the installtest. Grep <code>benchmark/</code>,
+<code>installtest/</code>, <code>tools/</code>, <code>tests/</code> for
+the old paths, not just <code>include/</code>.</li>
+<li>If (2) turns out to be more than a week of work, it can be deferred
+per codec: a codec whose <code>load()</code> is still inline costs one
+<code>\omit</code> marker and nothing else. The refactor is worth doing
+for its own sake, but it is not on the critical path for any single
+clause.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step3-spec-header-shape.md">docs/plans/p5-step3-spec-header-shape.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P3-Step 3: Benchmark Fixture Library and Result Schema -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p3-step3-benchmark-fixtures.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p3-step-3-benchmark-fixture-library-and-result-schema"
+id="toc-p3-step-3-benchmark-fixture-library-and-result-schema">P3-Step
+3: Benchmark Fixture Library and Result Schema</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#context-for-executing-agent"
+id="toc-context-for-executing-agent">Context for Executing
+Agent</a></li>
+<li><a href="#deliverables" id="toc-deliverables">Deliverables</a></li>
+<li><a href="#api-design" id="toc-api-design">API Design</a></li>
+<li><a href="#procedure" id="toc-procedure">Procedure</a></li>
+<li><a href="#verification" id="toc-verification">Verification</a></li>
+<li><a href="#handoff-to-step-4" id="toc-handoff-to-step-4">Handoff to
+Step 4</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p3-step-3-benchmark-fixture-library-and-result-schema">P3-Step
+3: Benchmark Fixture Library and Result Schema</h1>
+<p><strong>Branch:</strong> <code>p3-step3-benchmark-fixtures</code>
+<strong>Depends on:</strong> <a
+href="p3-step2-benchmark-data.html">p3-step2-benchmark-data.md</a>
+<strong>Read first:</strong> <code>docs/plans/phase3-handoff.md</code>
+and <code>docs/plans/handoff-next.md</code></p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Build the reusable support layer that later benchmarks share: corpus
+loading, chunking helpers, sink utilities that prevent dead-code
+elimination, and metadata capture. Unit-test all reusable helpers.</p>
+<h2 id="context-for-executing-agent">Context for Executing Agent</h2>
+<p>The project has <code>benchmark/smoke.bench.cpp</code> and corpus
+data:</p>
+<ul>
+<li>Checked-in fallback: <code>benchmark/corpus/*.txt</code> (small,
+~100 bytes each)</li>
+<li>Generated (optional): <code>data/benchmarks/*.txt</code> and
+<code>*.bin</code> (larger)</li>
+</ul>
+<p>Catch2 3.x <code>BENCHMARK_ADVANCED</code> separates setup from
+measurement:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>BENCHMARK_ADVANCED<span class="op">(</span><span class="st">&quot;name&quot;</span><span class="op">)(</span>Catch<span class="op">::</span>Benchmark<span class="op">::</span>Chronometer meter<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> data <span class="op">=</span> load_data<span class="op">();</span>  <span class="co">// not timed</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    meter<span class="op">.</span>measure<span class="op">([&amp;]</span> <span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> process<span class="op">(</span>data<span class="op">);</span>  <span class="co">// timed, return prevents DCE</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">});</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
+<p>Project convention: reusable helpers get unit tests in
+<code>tests/beman/transcode/</code> and are registered in
+<code>tests/beman/transcode/CMakeLists.txt</code>.</p>
+<h2 id="deliverables">Deliverables</h2>
+<ol type="1">
+<li><code>benchmark/benchmark_fixture.hpp</code> — corpus loading and
+chunking</li>
+<li><code>benchmark/benchmark_sink.hpp</code> — anti-DCE sink
+utilities</li>
+<li><code>tests/beman/transcode/benchmark_fixture.test.cpp</code> — unit
+tests</li>
+<li>Updated <code>benchmark/smoke.bench.cpp</code> — uses fixtures</li>
+<li>Registration in
+<code>tests/beman/transcode/CMakeLists.txt</code></li>
+</ol>
+<h2 id="api-design">API Design</h2>
+<h3 id="benchmark_fixturehpp">benchmark_fixture.hpp</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef BENCHMARK_BENCHMARK_FIXTURE_HPP</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define BENCHMARK_BENCHMARK_FIXTURE_HPP</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;span&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string_view&gt;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;vector&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> beman<span class="op">::</span>transcoding<span class="op">::</span>bench <span class="op">{</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Load a corpus file. Tries data/benchmarks/&lt;name&gt; first, falls back to</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">// benchmark/corpus/&lt;name&gt;. Caches in static storage (load once per process).</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>string_view load_corpus<span class="op">(</span><span class="at">const</span> <span class="dt">char</span><span class="op">*</span> filename<span class="op">);</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">// Same as load_corpus but returns span&lt;const char&gt; for direct piping.</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>span<span class="op">&lt;</span><span class="at">const</span> <span class="dt">char</span><span class="op">&gt;</span> corpus_span<span class="op">(</span><span class="at">const</span> <span class="dt">char</span><span class="op">*</span> filename<span class="op">);</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">// Split data into chunks. Last chunk may be smaller.</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="bu">std::</span>string_view<span class="op">&gt;</span> chunk_corpus<span class="op">(</span><span class="bu">std::</span>string_view data<span class="op">,</span> <span class="bu">std::</span>size_t chunk_size<span class="op">);</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> <span class="co">// namespace beman::transcoding::bench</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span></code></pre></div>
+<h3 id="benchmark_sinkhpp">benchmark_sink.hpp</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef BENCHMARK_BENCHMARK_SINK_HPP</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define BENCHMARK_BENCHMARK_SINK_HPP</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cstddef&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> beman<span class="op">::</span>transcoding<span class="op">::</span>bench <span class="op">{</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">// Store a value where the compiler cannot prove it&#39;s unused.</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> volatile_sink<span class="op">(</span><span class="at">const</span> T<span class="op">&amp;</span> value<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="at">volatile</span> <span class="at">const</span> T<span class="op">*</span> p<span class="op">;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="op">&amp;</span>value<span class="op">;</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">// Count elements without storing them. Returns the count.</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Range<span class="op">&gt;</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>size_t count_elements<span class="op">(</span>Range<span class="op">&amp;&amp;</span> r<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>size_t n <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span><span class="op">&amp;&amp;</span> x <span class="op">:</span> r<span class="op">)</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">++</span>n<span class="op">;</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> n<span class="op">;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> <span class="co">// namespace beman::transcoding::bench</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span></code></pre></div>
+<h2 id="procedure">Procedure</h2>
+<ol type="1">
+<li>Create worktree branch <code>p3-step3-benchmark-fixtures</code> from
+<code>main</code></li>
+<li>Create <code>benchmark/benchmark_fixture.hpp</code> and
+<code>.cpp</code> (if file I/O needed)</li>
+<li>Create <code>benchmark/benchmark_sink.hpp</code></li>
+<li>Create
+<code>tests/beman/transcode/benchmark_fixture.test.cpp</code></li>
+<li>Register test in
+<code>tests/beman/transcode/CMakeLists.txt</code></li>
+<li>Update <code>benchmark/smoke.bench.cpp</code> to use
+<code>corpus_span()</code> and <code>count_elements()</code></li>
+<li>If the fixture has a <code>.cpp</code> file, update
+<code>benchmark/CMakeLists.txt</code> to link it (or make it a small
+static library)</li>
+<li>Run <code>make test</code> — fixture tests pass</li>
+<li>Run <code>make lint</code></li>
+<li>Run <code>make bench</code> — smoke uses real corpus</li>
+<li>Commit, merge to main (non-ff), push both remotes</li>
+<li>Update <code>docs/plans/handoff-next.md</code></li>
+</ol>
+<h2 id="verification">Verification</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> test      <span class="co"># fixture unit tests pass (among all others)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> lint</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench     <span class="co"># smoke benchmark uses fixtures</span></span></code></pre></div>
+<h2 id="handoff-to-step-4">Handoff to Step 4</h2>
+<p>Write to <code>docs/plans/handoff-next.md</code>:</p>
+<ul>
+<li>Step 3 is done</li>
+<li>Next: read <code>p3-step4-utf-benchmarks.md</code></li>
+<li>Fixture API: <code>corpus_span("en_mars_utf8.txt")</code>,
+<code>count_elements(range)</code></li>
+<li>Include paths: <code>"benchmark_fixture.hpp"</code>,
+<code>"benchmark_sink.hpp"</code> (from benchmark/)</li>
+<li>The <code>benchmark/CMakeLists.txt</code> may need
+include_directories for benchmark/</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p3-step3-benchmark-fixtures.md">docs/plans/p3-step3-benchmark-fixtures.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Phase 3 Progress Checklist - beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/phase3-checklist.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#phase-3-progress-checklist"
+id="toc-phase-3-progress-checklist">Phase 3 Progress Checklist</a>
+<ul>
+<li><a
+href="#p3-step-1-benchmark-harness-scaffolding-p3-step1-benchmark-harness"
+id="toc-p3-step-1-benchmark-harness-scaffolding-p3-step1-benchmark-harness">P3-Step
+1: Benchmark harness scaffolding
+(<code>p3-step1-benchmark-harness</code>)</a></li>
+<li><a
+href="#p3-step-2-benchmark-corpus-acquisition-and-provenance-p3-step2-benchmark-data"
+id="toc-p3-step-2-benchmark-corpus-acquisition-and-provenance-p3-step2-benchmark-data">P3-Step
+2: Benchmark corpus acquisition and provenance
+(<code>p3-step2-benchmark-data</code>)</a></li>
+<li><a
+href="#p3-step-3-benchmark-fixture-library-and-result-schema-p3-step3-benchmark-fixtures"
+id="toc-p3-step-3-benchmark-fixture-library-and-result-schema-p3-step3-benchmark-fixtures">P3-Step
+3: Benchmark fixture library and result schema
+(<code>p3-step3-benchmark-fixtures</code>)</a></li>
+<li><a
+href="#p3-step-4-utf-family-and-ascii-fast-path-benchmarks-p3-step4-utf-benchmarks"
+id="toc-p3-step-4-utf-family-and-ascii-fast-path-benchmarks-p3-step4-utf-benchmarks">P3-Step
+4: UTF-family and ASCII fast-path benchmarks
+(<code>p3-step4-utf-benchmarks</code>)</a></li>
+<li><a
+href="#p3-step-5-legacy-whatwg-codec-benchmarks-p3-step5-legacy-whatwg-benchmarks"
+id="toc-p3-step-5-legacy-whatwg-codec-benchmarks-p3-step5-legacy-whatwg-benchmarks">P3-Step
+5: Legacy WHATWG codec benchmarks
+(<code>p3-step5-legacy-whatwg-benchmarks</code>)</a></li>
+<li><a href="#p3-step-6-iconv-baselines-p3-step6-iconv-baselines"
+id="toc-p3-step-6-iconv-baselines-p3-step6-iconv-baselines">P3-Step 6:
+<code>iconv</code> baselines
+(<code>p3-step6-iconv-baselines</code>)</a></li>
+<li><a
+href="#p3-step-7-stdcodecvt-negative-baseline-p3-step7-codecvt-baseline"
+id="toc-p3-step-7-stdcodecvt-negative-baseline-p3-step7-codecvt-baseline">P3-Step
+7: <code>std::codecvt</code> negative baseline
+(<code>p3-step7-codecvt-baseline</code>)</a></li>
+<li><a
+href="#p3-step-8-encoding_rs-baseline-p3-step8-encoding-rs-baseline"
+id="toc-p3-step-8-encoding_rs-baseline-p3-step8-encoding-rs-baseline">P3-Step
+8: <code>encoding_rs</code> baseline
+(<code>p3-step8-encoding-rs-baseline</code>)</a></li>
+<li><a
+href="#p3-step-9-simdutf-ceiling-baseline-p3-step9-simdutf-baseline"
+id="toc-p3-step-9-simdutf-ceiling-baseline-p3-step9-simdutf-baseline">P3-Step
+9: <code>simdutf</code> ceiling baseline
+(<code>p3-step9-simdutf-baseline</code>)</a></li>
+<li><a
+href="#p3-step-10-chunkedlazy-boundary-stress-benchmarks-p3-step10-boundary-stress"
+id="toc-p3-step-10-chunkedlazy-boundary-stress-benchmarks-p3-step10-boundary-stress">P3-Step
+10: Chunked/lazy boundary stress benchmarks
+(<code>p3-step10-boundary-stress</code>)</a></li>
+<li><a
+href="#p3-step-11-toolchain-matrix-automation-p3-step11-toolchain-matrix"
+id="toc-p3-step-11-toolchain-matrix-automation-p3-step11-toolchain-matrix">P3-Step
+11: Toolchain matrix automation
+(<code>p3-step11-toolchain-matrix</code>)</a></li>
+<li><a
+href="#p3-step-12-reporting-dashboard-and-reproducibility-pack-p3-step12-reporting-and-repro"
+id="toc-p3-step-12-reporting-dashboard-and-reproducibility-pack-p3-step12-reporting-and-repro">P3-Step
+12: Reporting, dashboard, and reproducibility pack
+(<code>p3-step12-reporting-and-repro</code>)</a></li>
+<li><a href="#notes" id="toc-notes">Notes</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="phase-3-progress-checklist">Phase 3 Progress Checklist</h1>
+<p>Mark items <code>[x]</code> as they complete. Read this file first
+when resuming work.</p>
+<p><strong>Current state:</strong> Not started. Phase 2 remains the
+correctness track. Phase 3 is the benchmarking track and uses
+<code>P3-stepN</code> identifiers.</p>
+<hr />
+<h2
+id="p3-step-1-benchmark-harness-scaffolding-p3-step1-benchmark-harness">P3-Step
+1: Benchmark harness scaffolding
+(<code>p3-step1-benchmark-harness</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step1-benchmark-harness</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add dedicated top-level
+<code>benchmark/</code> CMake surface and Catch2 benchmark executable
+pattern</label></li>
+<li><label><input type="checkbox" />Ensure benchmark code is compiled in
+normal project builds/CI</label></li>
+<li><label><input type="checkbox" />Add Makefile benchmark smoke target
+that does not affect default <code>make test</code></label></li>
+<li><label><input type="checkbox" />Add unit-test coverage strategy for
+reusable benchmark support code</label></li>
+<li><label><input type="checkbox" />Add one trivial benchmark proving
+the harness works and output is stable</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the benchmark smoke Makefile
+target</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-2-benchmark-corpus-acquisition-and-provenance-p3-step2-benchmark-data">P3-Step
+2: Benchmark corpus acquisition and provenance
+(<code>p3-step2-benchmark-data</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step2-benchmark-data</code> from <code>main</code></label></li>
+<li><label><input type="checkbox" />Add typed download/materialization
+tooling for benchmark corpora</label></li>
+<li><label><input type="checkbox" />Add pristine source data +
+<code>SOURCE.md</code>/<code>source.bib</code> provenance</label></li>
+<li><label><input type="checkbox" />Generate a corpus manifest with
+sizes, encodings, and tags</label></li>
+<li><label><input type="checkbox" />Add Python tests for the
+tooling</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the data-tool smoke
+check</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-3-benchmark-fixture-library-and-result-schema-p3-step3-benchmark-fixtures">P3-Step
+3: Benchmark fixture library and result schema
+(<code>p3-step3-benchmark-fixtures</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step3-benchmark-fixtures</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add benchmark fixture helpers for
+corpus loading, chunking, sinks, and metadata</label></li>
+<li><label><input type="checkbox" />Add stable JSON/CSV result schema
+and writer helpers</label></li>
+<li><label><input type="checkbox" />Add ordinary unit tests for reusable
+benchmark fixture/schema helpers</label></li>
+<li><label><input type="checkbox" />Add smoke benchmarks using the
+helpers</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the benchmark smoke
+command</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-4-utf-family-and-ascii-fast-path-benchmarks-p3-step4-utf-benchmarks">P3-Step
+4: UTF-family and ASCII fast-path benchmarks
+(<code>p3-step4-utf-benchmarks</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step4-utf-benchmarks</code> from <code>main</code></label></li>
+<li><label><input type="checkbox" />Add UTF-8/UTF-16 eager benchmarks
+for <code>beman::transcode</code></label></li>
+<li><label><input type="checkbox" />Add ASCII fast-path corpus
+cases</label></li>
+<li><label><input type="checkbox" />Add smoke benchmark subset and
+expected labels</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the UTF benchmark smoke
+command</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-5-legacy-whatwg-codec-benchmarks-p3-step5-legacy-whatwg-benchmarks">P3-Step
+5: Legacy WHATWG codec benchmarks
+(<code>p3-step5-legacy-whatwg-benchmarks</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step5-legacy-whatwg-benchmarks</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add single-byte representative
+benchmarks</label></li>
+<li><label><input type="checkbox" />Add multi-byte/CJK representative
+benchmarks</label></li>
+<li><label><input type="checkbox" />Ensure corpus-to-codec mapping is
+encoded in metadata</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the legacy benchmark smoke
+command</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2 id="p3-step-6-iconv-baselines-p3-step6-iconv-baselines">P3-Step 6:
+<code>iconv</code> baselines
+(<code>p3-step6-iconv-baselines</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step6-iconv-baselines</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add raw <code>iconv</code> C
+baseline benchmark kernels</label></li>
+<li><label><input type="checkbox" />Add
+<code>iconv_transcode_view</code> benchmark kernels with comparable
+inputs</label></li>
+<li><label><input type="checkbox" />Add smoke comparisons for at least
+UTF-8 and one legacy codec</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the <code>iconv</code> benchmark
+smoke command</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-7-stdcodecvt-negative-baseline-p3-step7-codecvt-baseline">P3-Step
+7: <code>std::codecvt</code> negative baseline
+(<code>p3-step7-codecvt-baseline</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step7-codecvt-baseline</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add conditional
+<code>std::codecvt</code> benchmark support or explicit skip
+path</label></li>
+<li><label><input type="checkbox" />Document compiler/library
+limitations in the benchmark README</label></li>
+<li><label><input type="checkbox" />Keep non-supporting environments
+green</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the <code>codecvt</code> smoke
+command or verify documented skip</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-8-encoding_rs-baseline-p3-step8-encoding-rs-baseline">P3-Step
+8: <code>encoding_rs</code> baseline
+(<code>p3-step8-encoding-rs-baseline</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step8-encoding-rs-baseline</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add optional build/invocation path
+for <code>encoding_rs</code> benchmarks</label></li>
+<li><label><input type="checkbox" />Isolate the FFI or helper-binary
+boundary from core library code</label></li>
+<li><label><input type="checkbox" />Add smoke comparisons on matching
+corpora/codecs</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the <code>encoding_rs</code>
+smoke command</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-9-simdutf-ceiling-baseline-p3-step9-simdutf-baseline">P3-Step
+9: <code>simdutf</code> ceiling baseline
+(<code>p3-step9-simdutf-baseline</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step9-simdutf-baseline</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add optional <code>simdutf</code>
+dependency wiring</label></li>
+<li><label><input type="checkbox" />Add UTF benchmark kernels aligned
+with P3-Step 4 cases</label></li>
+<li><label><input type="checkbox" />Add smoke comparisons and clear
+feature gating</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the <code>simdutf</code> smoke
+command</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-10-chunkedlazy-boundary-stress-benchmarks-p3-step10-boundary-stress">P3-Step
+10: Chunked/lazy boundary stress benchmarks
+(<code>p3-step10-boundary-stress</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step10-boundary-stress</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add chunked-range benchmark cases
+for <code>beman::transcode</code></label></li>
+<li><label><input type="checkbox" />Add deterministic mock-iconv
+<code>EINVAL</code> / <code>E2BIG</code> stress kernels</label></li>
+<li><label><input type="checkbox" />Add synthetic failure/error corpora
+to the benchmark fixture set</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run the boundary benchmark smoke
+command</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-11-toolchain-matrix-automation-p3-step11-toolchain-matrix">P3-Step
+11: Toolchain matrix automation
+(<code>p3-step11-toolchain-matrix</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step11-toolchain-matrix</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add scripts/presets and Makefile
+targets for GCC <code>-O3</code>, GCC <code>-O3 -flto</code>, Clang
+<code>-O3 -flto</code></label></li>
+<li><label><input type="checkbox" />Capture compiler, CPU, OS, and build
+metadata alongside results</label></li>
+<li><label><input type="checkbox" />Add reproducible matrix runner
+documentation</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run at least one automated matrix
+smoke slice</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<h2
+id="p3-step-12-reporting-dashboard-and-reproducibility-pack-p3-step12-reporting-and-repro">P3-Step
+12: Reporting, dashboard, and reproducibility pack
+(<code>p3-step12-reporting-and-repro</code>)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Create branch
+<code>p3-step12-reporting-and-repro</code> from
+<code>main</code></label></li>
+<li><label><input type="checkbox" />Add result post-processing from
+Catch2 timing to GiB/s tables</label></li>
+<li><label><input type="checkbox" />Add Vega-Lite or equivalent chart
+generation</label></li>
+<li><label><input type="checkbox" />Write reproducibility/reporting docs
+for future reruns</label></li>
+<li><label><input type="checkbox" /><code>make test</code> +
+<code>make lint</code></label></li>
+<li><label><input type="checkbox" />Run reporting generation on a smoke
+dataset</label></li>
+<li><label><input type="checkbox" />Push both remotes + merge to
+<code>main</code></label></li>
+</ul>
+<hr />
+<h2 id="notes">Notes</h2>
+<ul>
+<li><strong>Agent docs:</strong> Read <code>phase3-handoff.md</code> +
+step doc + <code>handoff-next.md</code> before each step</li>
+<li>Each step's detailed plan:
+<code>docs/plans/p3-step&lt;N&gt;-&lt;slug&gt;.md</code></li>
+<li>Phase 3 overview: <code>docs/plans/phase3-index.md</code></li>
+<li>General handoff: <code>docs/plans/phase3-handoff.md</code></li>
+<li>Per-step handoff: <code>docs/plans/handoff-next.md</code>
+(overwritten each step)</li>
+<li><strong>Worktree per step:</strong>
+<code>git worktree add .claude/worktrees/p3-step&lt;N&gt; -b p3-step&lt;N&gt;-&lt;slug&gt; main</code></li>
+<li><strong>Non-ff merges:</strong>
+<code>git merge --no-ff p3-step&lt;N&gt;-&lt;slug&gt; -m "Merge ..."</code></li>
+<li>Keep full matrix runs out of routine step validation unless the step
+says otherwise</li>
+<li><code>make test</code> should include unit tests for
+benchmark-support code but should not execute benchmark workloads</li>
+<li>Benchmark smoke and matrix runs should be exposed via documented
+<code>make</code> targets</li>
+<li>Record smoke commands and dependency caveats in
+<code>handoff-next.md</code></li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase3-checklist.md">docs/plans/phase3-checklist.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

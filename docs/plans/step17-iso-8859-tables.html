@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Step 17: Data Tooling — WHATWG Index Acquisition &amp; Table
+Generation - beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/step17-iso-8859-tables.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a
+href="#step-17-data-tooling--whatwg-index-acquisition--table-generation"
+id="toc-step-17-data-tooling--whatwg-index-acquisition--table-generation">Step
+17: Data Tooling — WHATWG Index Acquisition &amp; Table Generation</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#why-this-step-exists" id="toc-why-this-step-exists">Why
+This Step Exists</a></li>
+<li><a href="#whatwg-index-data-sources"
+id="toc-whatwg-index-data-sources">WHATWG Index Data Sources</a></li>
+<li><a href="#directory-layout" id="toc-directory-layout">Directory
+Layout</a></li>
+<li><a href="#provenance-docswhatwgsourcemd"
+id="toc-provenance-docswhatwgsourcemd">Provenance:
+<code>docs/whatwg/SOURCE.md</code></a></li>
+<li><a href="#provenance-docswhatwgsourcebib"
+id="toc-provenance-docswhatwgsourcebib">Provenance:
+<code>docs/whatwg/source.bib</code></a></li>
+<li><a href="#python-quality-requirements"
+id="toc-python-quality-requirements">Python Quality
+Requirements</a></li>
+<li><a href="#deliverables" id="toc-deliverables">Deliverables</a></li>
+<li><a href="#procedure" id="toc-procedure">Procedure</a></li>
+<li><a href="#verification" id="toc-verification">Verification</a></li>
+<li><a href="#notes" id="toc-notes">Notes</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1
+id="step-17-data-tooling--whatwg-index-acquisition--table-generation">Step
+17: Data Tooling — WHATWG Index Acquisition &amp; Table Generation</h1>
+<p><strong>Branch:</strong> <code>step17-data-tooling</code>
+<strong>Depends on:</strong> Step 16 (single-byte infrastructure exists,
+proves the table pattern)</p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Build the offline tooling pipeline that acquires WHATWG encoding
+index data and generates <code>#embed</code>-able binary table files for
+all codecs. This step produces no runtime library code — only data
+files, provenance documentation, and the scripts to regenerate tables.
+It unblocks the loop over all remaining single-byte codecs (step 18) and
+later the multi-byte codecs.</p>
+<h2 id="why-this-step-exists">Why This Step Exists</h2>
+<p>The WHATWG Encoding Standard defines <strong>22 single-byte
+encodings</strong> and <strong>7 multi-byte encodings</strong> (plus
+UTF-16). Each has an official index file — the normative source of truth
+for byte↔︎codepoint mappings. Hand-transcribing tables (as done for
+<code>windows_1252</code> in step 16) does not scale to 28+ codecs with
+tables ranging from 128 entries (single-byte) to ~23,000 entries
+(multi-byte). We need:</p>
+<ol type="1">
+<li>A canonical copy of the index data in the repo (for
+reproducibility)</li>
+<li>A provenance document recording source, license, and
+constraints</li>
+<li>A Python script to parse the raw indexes and emit binary data</li>
+<li>Binary files suitable for C++23 <code>#embed</code> (or constexpr
+array fallback)</li>
+</ol>
+<h2 id="whatwg-index-data-sources">WHATWG Index Data Sources</h2>
+<h3 id="single-byte-indexes-one-per-codec">Single-byte indexes (one per
+codec)</h3>
+<p>URL pattern:
+<code>https://encoding.spec.whatwg.org/index-&lt;name&gt;.txt</code></p>
+<p>Format: each line is
+<code>&lt;pointer&gt;\t&lt;codepoint&gt;\t# &lt;comment&gt;</code> where
+pointer is the byte offset (0–127, for bytes 0x80–0xFF) and codepoint is
+the Unicode scalar value in hex.</p>
+<p>Complete list (22 files):</p>
+<ul>
+<li><code>index-ibm866.txt</code></li>
+<li><code>index-iso-8859-2.txt</code> through
+<code>index-iso-8859-16.txt</code> (skipping 1, 9, 11, 12)</li>
+<li><code>index-koi8-r.txt</code>, <code>index-koi8-u.txt</code></li>
+<li><code>index-macintosh.txt</code></li>
+<li><code>index-windows-874.txt</code></li>
+<li><code>index-windows-1250.txt</code> through
+<code>index-windows-1258.txt</code></li>
+<li><code>index-x-mac-cyrillic.txt</code></li>
+</ul>
+<p>Note: <code>iso-8859-8</code> and <code>iso-8859-8-i</code> share the
+same index (differ only in bidi handling).</p>
+<h3 id="multi-byte-indexes">Multi-byte indexes</h3>
+<ul>
+<li><code>index-big5.txt</code> (~20,000 pointer→codepoint pairs)</li>
+<li><code>index-euc-kr.txt</code> (~17,000 pairs)</li>
+<li><code>index-gb18030.txt</code> (~23,000 pairs)</li>
+<li><code>index-gb18030-ranges.txt</code> (range-based supplementary
+mapping)</li>
+<li><code>index-jis0208.txt</code> (~7,000 pairs)</li>
+<li><code>index-jis0212.txt</code> (~6,000 pairs)</li>
+<li><code>index-iso-2022-jp-katakana.txt</code> (small)</li>
+</ul>
+<h3 id="metadata">Metadata</h3>
+<ul>
+<li><code>encodings.json</code> — codec names, labels, aliases</li>
+</ul>
+<h2 id="directory-layout">Directory Layout</h2>
+<h3 id="docswhatwg--pristine-upstream-data"><code>docs/whatwg/</code> —
+pristine upstream data</h3>
+<p>Unmodified copies of downloaded WHATWG Encoding Standard files.
+Nothing in this directory is processed or edited. Includes:</p>
+<ul>
+<li>All <code>index-*.txt</code> files (single-byte + multi-byte)</li>
+<li><code>encodings.json</code></li>
+<li><code>SOURCE.md</code> — human-readable provenance (see below)</li>
+<li><code>source.bib</code> — BibTeX citation entry</li>
+</ul>
+<h3 id="docswpt--web-platform-tests-future"><code>docs/wpt/</code> — Web
+Platform Tests (future)</h3>
+<p>Unmodified test vectors from the WPT encoding test suite, if/when
+needed for conformance validation. Same provenance discipline: pristine
+files + SOURCE.md + BibTeX.</p>
+<h3 id="data--our-derivedprocessed-artifacts"><code>data/</code> — our
+derived/processed artifacts</h3>
+<p>Generated tables, test vectors, processed binary data. Everything
+here is reproducible from the pristine upstream in <code>docs/</code>
+plus the scripts in <code>tools/</code>.</p>
+<ul>
+<li><code>data/tables/</code> — generated <code>.bin</code> and
+<code>.hpp</code> files for <code>#embed</code> and constexpr
+fallback</li>
+<li><code>data/test-vectors/</code> — derived test fixtures
+(future)</li>
+</ul>
+<h2 id="provenance-docswhatwgsourcemd">Provenance:
+<code>docs/whatwg/SOURCE.md</code></h2>
+<p>Human-readable document recording:</p>
+<ul>
+<li><strong>Title:</strong> WHATWG Encoding Standard — Index Data</li>
+<li><strong>Source:</strong> Each file's full URL</li>
+<li><strong>Retrieved:</strong> ISO-8601 date of download</li>
+<li><strong>SHA-256:</strong> Checksum of each file at time of
+download</li>
+<li><strong>License:</strong> CC-BY 4.0 (data/documentation),
+BSD-3-Clause (code portions derived from the spec)</li>
+<li><strong>Attribution:</strong> Derived from the WHATWG Encoding
+Standard, <a
+href="https://encoding.spec.whatwg.org/">https://encoding.spec.whatwg.org/</a>
+, Living Standard, maintained by the WHATWG community.</li>
+<li><strong>Conditions:</strong> CC-BY 4.0 requires attribution. No
+additional restrictions. Data files are non-normative but are the
+canonical reference for implementors.</li>
+<li><strong>How to refresh:</strong>
+<code>uv run tools/download_indexes.py</code></li>
+</ul>
+<h2 id="provenance-docswhatwgsourcebib">Provenance:
+<code>docs/whatwg/source.bib</code></h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">@misc</span>{<span class="ot">whatwg</span>-<span class="ot">encoding</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>        = {Encoding Standard},</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>       = {{WHATWG}},</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">howpublished</span> = {Living Standard},</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">url</span>          = {https://encoding.spec.whatwg.org/},</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">note</span>         = {Index data retrieved [DATE]},</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>         = {2024},</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">license</span>      = {CC-BY-4.0 and BSD-3-Clause}</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h2 id="python-quality-requirements">Python Quality Requirements</h2>
+<p>The <code>tools/</code> scripts are adjunct code but must be
+production quality.</p>
+<p><strong>Type annotations:</strong> Full type hints on all functions
+and module-level variables. No <code>Any</code> escape hatches unless
+genuinely needed.</p>
+<p><strong>Testing:</strong> Unit tests in <code>tools/tests/</code>
+using <code>pytest</code>. Cover parsing logic, table generation
+correctness (spot-check known mappings), and provenance output format.
+Tests run via <code>uv run pytest tools/tests/</code>.</p>
+<p><strong>Formatting + linting:</strong> <code>ruff</code> for
+formatting and linting. Add a <code>[tool.ruff]</code> section to
+<code>pyproject.toml</code>. Add a ruff pre-commit hook to
+<code>.pre-commit-config.yaml</code>.</p>
+<p><strong>Type checking:</strong> <code>mypy</code> in strict mode. Add
+<code>[tool.mypy]</code> to <code>pyproject.toml</code>. Add mypy to the
+dev dependency group.</p>
+<p><strong>Dev dependencies to add to <code>pyproject.toml</code>
+<code>[dependency-groups]</code>:</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[dependency-groups]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">dev</span> <span class="op">=</span> <span class="op">[</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... existing entries ...</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;mypy&gt;=1.15&quot;</span><span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;pytest&gt;=8.0&quot;</span><span class="op">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;ruff&gt;=0.11&quot;</span><span class="op">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">]</span></span></code></pre></div>
+<p><strong>Pre-commit hooks to add to
+<code>.pre-commit-config.yaml</code>:</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">repo</span><span class="kw">:</span><span class="at"> https://github.com/astral-sh/ruff-pre-commit</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rev</span><span class="kw">:</span><span class="at"> v0.11.13</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">hooks</span><span class="kw">:</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> ruff</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">args</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">--fix</span><span class="kw">]</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> ruff-format</span></span></code></pre></div>
+<p><strong>Verification:</strong> <code>make lint</code> must pass with
+the new hooks active. <code>uv run pytest tools/tests/</code> must pass.
+<code>uv run mypy tools/</code> must pass.</p>
+<h2 id="deliverables">Deliverables</h2>
+<h3 id="script-toolsdownload_indexespy">Script:
+<code>tools/download_indexes.py</code></h3>
+<p>Typed Python script (stdlib only for runtime deps) that downloads all
+WHATWG index files into <code>docs/whatwg/</code>. Idempotent — checks
+SHA-256 before re-downloading. Generates/updates <code>SOURCE.md</code>
+and <code>source.bib</code> with checksums and download date.</p>
+<h3 id="script-toolsgenerate_tablespy">Script:
+<code>tools/generate_tables.py</code></h3>
+<p>Typed Python script (stdlib only for runtime deps) that:</p>
+<ol type="1">
+<li>Reads <code>docs/whatwg/index-*.txt</code> files</li>
+<li>For single-byte codecs: emits a 128-entry binary file (128 × 4
+bytes, little-endian uint32 per codepoint, 0 = unmapped)</li>
+<li>For multi-byte codecs: emits appropriate binary structures (format
+TBD per codec in later steps)</li>
+<li>Generates C++ header fallbacks (constexpr arrays) for compilers
+without <code>#embed</code></li>
+</ol>
+<p>Output directory: <code>data/tables/</code></p>
+<h3 id="tests-toolstests">Tests: <code>tools/tests/</code></h3>
+<p>Pytest tests for both scripts. At minimum:</p>
+<ul>
+<li>Parsing a sample WHATWG index-*.txt file produces correct table</li>
+<li>Known mappings spot-checked (e.g., windows-1252 0x80 → U+20AC)</li>
+<li>Generated .hpp content is syntactically valid</li>
+<li>SOURCE.md includes required provenance fields</li>
+</ul>
+<h3 id="generated-files-single-byte-22-total">Generated files
+(single-byte, 22 total)</h3>
+<p>Each codec gets a <code>.bin</code> (for future <code>#embed</code>)
+and a <code>.hpp</code> (constexpr array fallback). The
+<code>.hpp</code> files are included from
+<code>include/beman/transcode/detail/tables/</code> which will contain
+thin wrappers or direct includes of the generated data.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// </span><span class="an">SPDX-License-Identifier:</span><span class="co"> Apache-2.0 WITH LLVM-exception</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">// GENERATED — do not edit. Regenerate: uv run tools/generate_tables.py</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Source: WHATWG Encoding Standard index-iso-8859-2.txt</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef DATA_TABLES_ISO_8859_2_HPP</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DATA_TABLES_ISO_8859_2_HPP</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> beman<span class="op">::</span>transcoding<span class="op">::</span>detail::tables <span class="op">{</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">constexpr</span> <span class="dt">char32_t</span> iso_8859_2<span class="op">[</span><span class="dv">128</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="co">/* ... */</span> <span class="op">};</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> <span class="co">// namespace beman::transcoding::detail::tables</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span></code></pre></div>
+<h2 id="procedure">Procedure</h2>
+<ol type="1">
+<li>Create branch <code>step17-data-tooling</code> from
+<code>main</code></li>
+<li>Add ruff, mypy, pytest to <code>pyproject.toml</code> dev deps</li>
+<li>Add ruff pre-commit hook to
+<code>.pre-commit-config.yaml</code></li>
+<li>Add <code>[tool.ruff]</code> and <code>[tool.mypy]</code> sections
+to <code>pyproject.toml</code></li>
+<li>Write <code>tools/download_indexes.py</code> — typed, fetch all
+index files</li>
+<li>Write <code>tools/tests/test_download.py</code></li>
+<li>Run download script → creates <code>docs/whatwg/</code> with
+pristine data + SOURCE.md + source.bib</li>
+<li>Commit the downloaded data + provenance + script + tests</li>
+<li>Write <code>tools/generate_tables.py</code> — typed, parse indexes,
+emit <code>.hpp</code> + <code>.bin</code> into
+<code>data/tables/</code></li>
+<li>Write <code>tools/tests/test_generate.py</code></li>
+<li>Run generate script → populates <code>data/tables/</code></li>
+<li>Commit generated files + script + tests</li>
+<li><code>uv run pytest tools/tests/</code> — all pass</li>
+<li><code>uv run mypy tools/</code> — clean</li>
+<li><code>make test</code> — all existing C++ tests still pass</li>
+<li><code>make lint</code> — clean (including new ruff hooks)</li>
+<li>Push both remotes</li>
+<li>Merge to main</li>
+</ol>
+<h2 id="verification">Verification</h2>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Python quality</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run pytest tools/tests/</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run mypy tools/</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Scripts produce output</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run tools/download_indexes.py</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run tools/generate_tables.py</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># C++ tests still pass (no runtime changes)</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> test</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co"># All lint (C++ + Python) passes</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> lint</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Coverage — no regressions (no new C++ code in this step,</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># but verify the report still generates cleanly)</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> coverage</span></code></pre></div>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The hand-written <code>detail/tables/windows_1252.hpp</code> from
+step 16 will be superseded by the generated version in step 18. Keep it
+for now; step 18 will replace it.</li>
+<li>Multi-byte table generation is deferred to those codec steps; this
+step focuses on the single-byte pipeline and acquiring all raw
+data.</li>
+<li><code>#embed</code> is C23/C++26. The <code>.bin</code> files are
+forward-looking; the generated <code>.hpp</code> fallbacks provide the
+tables today.</li>
+<li>WPT test vectors (<code>docs/wpt/</code>) are a future addition when
+we need conformance testing against the web-platform-tests suite.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/step17-iso-8859-tables.md">docs/plans/step17-iso-8859-tables.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

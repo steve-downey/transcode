@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Phase 3: Benchmarking and Performance Characterization -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/phase3-index.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#phase-3-benchmarking-and-performance-characterization"
+id="toc-phase-3-benchmarking-and-performance-characterization">Phase 3:
+Benchmarking and Performance Characterization</a>
+<ul>
+<li><a href="#overview" id="toc-overview">Overview</a></li>
+<li><a href="#why-phase-3-is-separate"
+id="toc-why-phase-3-is-separate">Why Phase 3 Is Separate</a></li>
+<li><a href="#phase-scope" id="toc-phase-scope">Phase Scope</a></li>
+<li><a href="#p3-steps" id="toc-p3-steps">P3 Steps</a></li>
+<li><a href="#key-architecture-decisions"
+id="toc-key-architecture-decisions">Key Architecture Decisions</a></li>
+<li><a href="#agent-execution-model"
+id="toc-agent-execution-model">Agent Execution Model</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="phase-3-benchmarking-and-performance-characterization">Phase 3:
+Benchmarking and Performance Characterization</h1>
+<h2 id="overview">Overview</h2>
+<p>Builds a reproducible benchmarking program for
+<code>beman::transcode</code> that measures the library's throughput,
+latency-sensitive boundary behavior, and abstraction costs against the
+baselines called out in the benchmarking report: raw <code>iconv</code>,
+<code>iconv_transcode_view</code>, <code>std::codecvt</code>,
+<code>encoding_rs</code>, and <code>simdutf</code>. The success
+condition is a benchmark suite whose code is always compiled in normal
+project builds, whose reusable support code is covered by ordinary unit
+tests, and whose benchmark execution can be run in small smoke mode
+during ordinary step work and in a full matrix mode for proposal-quality
+reporting.</p>
+<p><strong>Preconditions:</strong> Phase 2 feature work is functionally
+stable on <code>main</code>. Step 50 is complete. <code>make test</code>
+and <code>make lint</code> are green before starting.</p>
+<p><strong>Workflow per P3 step:</strong> Branch
+<code>p3-step&lt;N&gt;-&lt;slug&gt;</code> from <code>main</code> -&gt;
+add the smallest missing benchmark/test/tooling slice -&gt; run
+<code>make test</code> and <code>make lint</code> -&gt; run the step's
+required benchmark smoke check through the Makefile workflow -&gt;
+update <code>handoff-next.md</code> with the next <code>P3-stepN</code>
+file, expected <code>make</code> targets, and any environment
+caveats.</p>
+<p><strong>Progress:</strong> See <a
+href="phase3-checklist.html">phase3-checklist.md</a> for status.</p>
+<hr />
+<h2 id="why-phase-3-is-separate">Why Phase 3 Is Separate</h2>
+<p>Phase 2 is still free to grow with additional conformance and quality
+work. This phase therefore uses an independent <code>P3-stepN</code>
+namespace instead of continuing the Phase 2 numeric sequence. That keeps
+the benchmarking track stable even if more P2 items are added later.</p>
+<p>This phase also needs a different execution discipline than P2:</p>
+<ol type="1">
+<li>Ordinary step work should validate with a narrow smoke benchmark,
+not the entire hardware/compiler matrix.</li>
+<li>Expensive comparative runs should be deferred until the harness,
+corpora, and reporting format are stable.</li>
+<li>Performance regressions and correctness bugs found during
+benchmarking should usually be handed back to P2 as targeted quality
+steps instead of silently folded into benchmark work.</li>
+<li>Benchmark code must compile continuously with the project, but
+benchmark execution must remain outside the fast <code>make test</code>
+path.</li>
+<li>Reusable benchmark support code should have ordinary unit tests,
+just like any other non-trivial code.</li>
+<li>Benchmark execution should be reachable through stable Makefile
+targets, rather than through direct binary invocation or ad hoc shell
+commands.</li>
+</ol>
+<hr />
+<h2 id="phase-scope">Phase Scope</h2>
+<p>The benchmarking report calls for four dimensions:</p>
+<ol type="1">
+<li><strong>Implementations:</strong> <code>beman::transcode</code>,
+<code>iconv</code>, <code>iconv_transcode_view</code>,
+<code>std::codecvt</code>, <code>encoding_rs</code>,
+<code>simdutf</code></li>
+<li><strong>Corpora:</strong> Wikipedia Mars language sets, WPT-derived
+edge vectors, fuzz/error corpora</li>
+<li><strong>Pipeline topologies:</strong> monolithic/eager versus
+chunked/lazy</li>
+<li><strong>Toolchains:</strong> GCC <code>-O3</code>, GCC
+<code>-O3 -flto</code>, Clang <code>-O3 -flto</code></li>
+</ol>
+<p>The plan below stages these dimensions so each step is isolated and
+leaves the tree green.</p>
+<hr />
+<h2 id="p3-steps">P3 Steps</h2>
+<h3 id="harness-and-data-foundations">Harness and data foundations</h3>
+<h4 id="p3-step-1-benchmark-harness-scaffolding"><a
+href="p3-step1-benchmark-harness.html">P3-Step 1: Benchmark harness
+scaffolding</a></h4>
+<p>Create the dedicated top-level <code>benchmark/</code> build surface,
+CMake wiring, Catch2 benchmark executable pattern, benchmark labels, and
+smoke-run entry points. This step establishes the rule that benchmark
+code is always built, benchmark support code is testable, and benchmark
+runs do not occur in the default <code>make test</code> path.</p>
+<h4 id="p3-step-2-benchmark-corpus-acquisition-and-provenance"><a
+href="p3-step2-benchmark-data.html">P3-Step 2: Benchmark corpus
+acquisition and provenance</a></h4>
+<p>Acquire the real-world and synthetic corpora called for by the
+report, including provenance, checksums, and a generated manifest. No
+benchmark logic yet.</p>
+<h4 id="p3-step-3-benchmark-fixture-library-and-result-schema"><a
+href="p3-step3-benchmark-fixtures.html">P3-Step 3: Benchmark fixture
+library and result schema</a></h4>
+<p>Add reusable corpus-loading, chunking, sink, and metadata helpers
+plus a stable output schema for later post-processing to GiB/s and
+charts.</p>
+<h3 id="native-bemantranscode-measurement">Native
+<code>beman::transcode</code> measurement</h3>
+<h4 id="p3-step-4-utf-family-and-ascii-fast-path-benchmarks"><a
+href="p3-step4-utf-benchmarks.html">P3-Step 4: UTF-family and ASCII
+fast-path benchmarks</a></h4>
+<p>Measure the core algorithmic UTF paths for
+<code>beman::transcode</code>, including ASCII fast paths and UTF-8
+&lt;-&gt; UTF-16 conversions.</p>
+<h4 id="p3-step-5-legacy-whatwg-codec-benchmarks"><a
+href="p3-step5-legacy-whatwg-benchmarks.html">P3-Step 5: Legacy WHATWG
+codec benchmarks</a></h4>
+<p>Measure representative single-byte and multi-byte WHATWG codecs, with
+corpora chosen to expose table lookups, branch pressure, and
+trie/state-machine costs.</p>
+<h3 id="baseline-implementations">Baseline implementations</h3>
+<h4 id="p3-step-6-iconv-baselines"><a
+href="p3-step6-iconv-baselines.html">P3-Step 6: <code>iconv</code>
+baselines</a></h4>
+<p>Add raw <code>iconv</code> and <code>iconv_transcode_view</code>
+benchmarks so the zero-cost wrapper claim can be quantified
+directly.</p>
+<h4 id="p3-step-7-stdcodecvt-negative-baseline"><a
+href="p3-step7-codecvt-baseline.html">P3-Step 7:
+<code>std::codecvt</code> negative baseline</a></h4>
+<p>Add the deprecated standard-library comparison path as a conditional
+benchmark surface with clear skip behavior when unavailable or
+broken.</p>
+<h4 id="p3-step-8-encoding_rs-baseline"><a
+href="p3-step8-encoding-rs-baseline.html">P3-Step 8:
+<code>encoding_rs</code> baseline</a></h4>
+<p>Integrate an <code>encoding_rs</code> benchmark baseline through an
+isolated FFI or helper binary path, matching the existing oracle
+direction in repository docs.</p>
+<h4 id="p3-step-9-simdutf-ceiling-baseline"><a
+href="p3-step9-simdutf-baseline.html">P3-Step 9: <code>simdutf</code>
+ceiling baseline</a></h4>
+<p>Add the hardware-accelerated ceiling baseline, gated behind an
+optional build switch so the normal tree stays portable.</p>
+<h3 id="stress-paths-and-final-reporting">Stress paths and final
+reporting</h3>
+<h4 id="p3-step-10-chunkedlazy-boundary-stress-benchmarks"><a
+href="p3-step10-boundary-stress.html">P3-Step 10: Chunked/lazy boundary
+stress benchmarks</a></h4>
+<p>Add chunked-range, <code>EINVAL</code>, <code>E2BIG</code>, and
+mock-iconv stress benchmarks to measure the real abstraction penalty of
+lazy pipelines at boundaries.</p>
+<h4 id="p3-step-11-toolchain-matrix-automation"><a
+href="p3-step11-toolchain-matrix.html">P3-Step 11: Toolchain matrix
+automation</a></h4>
+<p>Automate the compiler/flag matrix and capture environment metadata so
+results are comparable across runs and machines.</p>
+<h4 id="p3-step-12-reporting-dashboard-and-reproducibility-pack"><a
+href="p3-step12-reporting-and-repro.html">P3-Step 12: Reporting,
+dashboard, and reproducibility pack</a></h4>
+<p>Turn Catch2 timing output plus benchmark metadata into proposal-ready
+tables, GiB/s summaries, and reproducible documentation for future
+reruns.</p>
+<hr />
+<h2 id="key-architecture-decisions">Key Architecture Decisions</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Separate top-level <code>benchmark/</code> tree from library code
+while still compiling it in normal builds</td>
+<td>Keeps benchmark implementation out of the shipped library surface
+without letting it rot unbuilt</td>
+</tr>
+<tr>
+<td>Smoke mode first, full matrix last</td>
+<td>Prevents routine step work from turning into multi-hour hardware
+experiments</td>
+</tr>
+<tr>
+<td>Provenanced corpora under <code>docs/</code> + derived manifests
+under <code>data/</code></td>
+<td>Matches the repository's existing WHATWG/WPT data discipline</td>
+</tr>
+<tr>
+<td>Reusable benchmark fixture layer before implementation-specific
+suites</td>
+<td>Keeps later baseline additions narrow and consistent</td>
+</tr>
+<tr>
+<td>Benchmark-support helpers get ordinary unit tests</td>
+<td>Keeps non-trivial support code in the same quality loop as the rest
+of the project</td>
+</tr>
+<tr>
+<td>Benchmark runs exposed through Makefile targets</td>
+<td>Keeps the workflow discoverable and consistent with the rest of the
+project</td>
+</tr>
+<tr>
+<td>External baselines are optional CMake features</td>
+<td>Preserves portability and prevents missing dependencies from
+breaking normal work</td>
+</tr>
+<tr>
+<td>Performance findings that imply functional bugs go back to P2</td>
+<td>Avoids hiding correctness fixes inside benchmark-only steps</td>
+</tr>
+<tr>
+<td>Stable JSON/CSV output schema before charting</td>
+<td>Makes later reporting scripts mechanical rather than ad hoc</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="agent-execution-model">Agent Execution Model</h2>
+<p>Each step is executed by a <strong>stateless agent</strong> that has
+no memory of prior steps. Before starting any step, the agent reads
+exactly three documents:</p>
+<ol type="1">
+<li><strong><code>docs/plans/phase3-handoff.md</code></strong> —
+standing project conventions, API surface, build commands, coding rules.
+Read this first every time.</li>
+<li><strong><code>docs/plans/p3-step&lt;N&gt;-&lt;slug&gt;.md</code></strong>
+— the step-specific plan with full context, deliverables, procedure, and
+verification.</li>
+<li><strong><code>docs/plans/handoff-next.md</code></strong> —
+step-specific notes left by the previous agent: what was done, what
+files exist, any surprises.</li>
+</ol>
+<h3 id="worktree-discipline">Worktree Discipline</h3>
+<p>Each step works in its own git worktree so nothing steps on anything
+else:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> worktree add .claude/worktrees/p3-step<span class="op">&lt;</span>N<span class="op">&gt;</span> -b p3-step<span class="op">&lt;</span>N<span class="op">&gt;</span>-<span class="op">&lt;</span>slug<span class="op">&gt;</span> main</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> .claude/worktrees/p3-step<span class="op">&lt;</span>N<span class="op">&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ... do the work ...</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># merge back to main:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="op">&lt;</span>main-repo<span class="op">&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> merge <span class="at">--no-ff</span> p3-step<span class="op">&lt;</span>N<span class="op">&gt;</span>-<span class="op">&lt;</span>slug<span class="op">&gt;</span> -m <span class="st">&quot;Merge p3-step&lt;N&gt;-&lt;slug&gt;&quot;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin main <span class="kw">&amp;&amp;</span> <span class="fu">git</span> push bbgithub main</span></code></pre></div>
+<h3 id="what-to-write-in-handoff-nextmd">What to write in
+handoff-next.md</h3>
+<p>After completing a step, <strong>overwrite</strong>
+<code>docs/plans/handoff-next.md</code> with:</p>
+<ul>
+<li>Which step was just completed</li>
+<li>The next step file to read</li>
+<li>Files created that the next step depends on</li>
+<li>Any surprises, deviations, or decisions not in the step doc</li>
+<li>The exact <code>make</code> targets now expected to work</li>
+<li>Whether any optional dependency is required for the next step</li>
+</ul>
+<h3 id="rules">Rules</h3>
+<ol type="1">
+<li>Name the active <code>P3-stepN</code> file explicitly in
+prompts.</li>
+<li>Run the step's <strong>smoke benchmark</strong> only, not the full
+matrix.</li>
+<li><code>make test</code> covers benchmark-support unit tests but does
+not execute benchmark workloads.</li>
+<li>Prefer documented <code>make</code> targets over raw binary
+invocation.</li>
+<li>No Co-Author trailer in commits.</li>
+</ol>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase3-index.md">docs/plans/phase3-index.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P5-Step 2: Wording Outline and Stable Names -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p5-step2-wording-outline.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p5-step-2-wording-outline-and-stable-names"
+id="toc-p5-step-2-wording-outline-and-stable-names">P5-Step 2: Wording
+Outline and Stable Names</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#context-for-executing-agent"
+id="toc-context-for-executing-agent">Context for executing
+agent</a></li>
+<li><a href="#tasks" id="toc-tasks">Tasks</a></li>
+<li><a href="#acceptance" id="toc-acceptance">Acceptance</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p5-step-2-wording-outline-and-stable-names">P5-Step 2: Wording
+Outline and Stable Names</h1>
+<p><strong>Branch:</strong> <code>p5-step2-wording-outline</code>
+<strong>Depends on:</strong> nothing (do it in parallel with Step 1)
+<strong>Read first:</strong> <code>docs/plans/phase5-index.md</code></p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Decide the clause tree once, in a document, so that nine markup steps
+do not each invent a stable name. No code changes.</p>
+<h2 id="context-for-executing-agent">Context for executing agent</h2>
+<p>specgen's <code>\rSec&lt;depth&gt;[stable.name]{Title}</code> markers
+are what build the document tree, <code>--split</code> names one
+fragment per top-level section from its stable name, and the mpark
+backend renders each stable name as a <code>{- .sref}</code> span. The
+names are therefore simultaneously the clause identifiers in the paper,
+the fragment filenames, and the ordering key of the transclusion list.
+Changing one later renames a file and a heading and a cross-reference at
+once.</p>
+<p>The names must also read like the working draft's. Look at how
+<code>[range.adaptors]</code>, <code>[text.encoding]</code> and
+<code>[char.traits]</code> are spelled before inventing anything.</p>
+<h2 id="tasks">Tasks</h2>
+<ol type="1">
+<li><p>Write <code>docs/wording-outline.md</code> containing, for each
+proposed clause: stable name, title, depth, the header it is generated
+from, and the entities it covers. Proposed starting point, to be argued
+with rather than accepted:</p>
+<table>
+<thead>
+<tr>
+<th>Stable name</th>
+<th>Title</th>
+<th>Covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>transcode.general</code></td>
+<td>General</td>
+<td>scope, terms</td>
+</tr>
+<tr>
+<td><code>transcode.syn</code></td>
+<td>Header <code>&lt;transcode&gt;</code> synopsis</td>
+<td>root fragment</td>
+</tr>
+<tr>
+<td><code>transcode.errors</code></td>
+<td>Error types</td>
+<td><code>whatwg_error</code>, <code>iconv_error</code></td>
+</tr>
+<tr>
+<td><code>transcode.reqs</code></td>
+<td>Range requirements</td>
+<td><code>legacy_byte_range</code>,
+<code>unicode_scalar_range</code></td>
+</tr>
+<tr>
+<td><code>transcode.codec</code></td>
+<td>Encodings</td>
+<td><code>enum class codec</code>, <code>get_encoding</code>,
+<code>sniff_encoding</code></td>
+</tr>
+<tr>
+<td><code>transcode.whatwg.decode</code></td>
+<td>Class template <code>whatwg_decode_view</code></td>
+<td>the four decode views and closures</td>
+</tr>
+<tr>
+<td><code>transcode.whatwg.encode</code></td>
+<td>Class template <code>whatwg_encode_view</code></td>
+<td>the four encode views and closures</td>
+</tr>
+<tr>
+<td><code>transcode.codec.reqs</code></td>
+<td>Codec requirements</td>
+<td><code>decode_codec</code>, <code>encode_codec</code>,
+<code>flushable_decode_codec</code></td>
+</tr>
+<tr>
+<td><code>transcode.decode</code></td>
+<td>Class template <code>decode_view</code></td>
+<td>pluggable decode views</td>
+</tr>
+<tr>
+<td><code>transcode.encode</code></td>
+<td>Class template <code>encode_view</code></td>
+<td>pluggable encode views</td>
+</tr>
+<tr>
+<td><code>transcode.pipeline</code></td>
+<td>Transcoding pipelines</td>
+<td><code>transcode</code>, <code>pluggable_transcode</code></td>
+</tr>
+<tr>
+<td><code>transcode.string</code></td>
+<td>Eager transcoding</td>
+<td><code>transcode_string</code></td>
+</tr>
+<tr>
+<td><code>transcode.iconv</code></td>
+<td>iconv adaptors</td>
+<td>the iconv views and bulk helpers</td>
+</tr>
+<tr>
+<td><code>null.term</code></td>
+<td>Header <code>&lt;null_term&gt;</code> synopsis</td>
+<td><code>null_term_view</code>, <code>views::null_term</code></td>
+</tr>
+</tbody>
+</table></li>
+<li><p>Fix the <strong>fragment order</strong>, which is the order the
+clauses appear in the paper. It is the document order specgen prints in
+its manifest, which is the order of the <code>\rSec</code> markers in
+the header — so the outline is also a statement about where markers go
+in the source.</p></li>
+<li><p>Decide the <strong>depths</strong>. <code>\rSec2</code> for the
+clause, <code>\rSec3</code> for its subclauses is the natural fit for a
+paper whose own sections are <code>##</code>; note the interaction with
+<code>base_heading_level = 2</code> (index U2).</p></li>
+<li><p>Record which entities are <strong>exposition-only</strong>
+(<code>\expos</code>) and which are <code>\omit</code>ted outright, per
+family. This is the input Step 3 refactors toward and Steps 4-9 mark up;
+disagreeing about it later means editing headers twice.</p></li>
+<li><p>Cross-check the outline against the paper's existing "API Surface
+Comparison" table: every ✅ in the WHATWG, pluggable and iconv columns
+must land in some clause, or be explicitly listed as
+not-proposed.</p></li>
+</ol>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li><code>docs/wording-outline.md</code> exists, is linked from
+<code>docs/plans/phase5-index.md</code>, and every row names a header
+and a set of entities.</li>
+<li>No entity in the API surface table is unaccounted for.</li>
+<li><code>make lint</code> green.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step2-wording-outline.md">docs/plans/p5-step2-wording-outline.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

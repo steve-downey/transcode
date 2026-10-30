@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Phase 5: Specification Wording from the Headers -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/phase5-index.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#phase-5-specification-wording-from-the-headers"
+id="toc-phase-5-specification-wording-from-the-headers">Phase 5:
+Specification Wording from the Headers</a>
+<ul>
+<li><a href="#context" id="toc-context">Context</a></li>
+<li><a href="#measurements-taken-before-planning-2026-09-03"
+id="toc-measurements-taken-before-planning-2026-09-03">Measurements
+taken before planning (2026-09-03)</a></li>
+<li><a href="#decisions" id="toc-decisions">Decisions</a></li>
+<li><a href="#step-index" id="toc-step-index">Step index</a></li>
+<li><a href="#standing-conventions"
+id="toc-standing-conventions">Standing conventions</a></li>
+<li><a href="#external-dependencies-work-in-srcspecgenmain"
+id="toc-external-dependencies-work-in-srcspecgenmain">External
+dependencies (work in <code>~/src/specgen/main</code>)</a></li>
+<li><a href="#risks" id="toc-risks">Risks</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="phase-5-specification-wording-from-the-headers">Phase 5:
+Specification Wording from the Headers</h1>
+<h2 id="context">Context</h2>
+<p><code>papers/transcode-view.md</code> (D4246R0) has an abstract,
+motivation, comparison tables, design rationale and a P2728 comparison.
+It has no <strong>Wording</strong>. Writing that wording by hand would
+create a second source of truth for the API that drifts from
+<code>include/</code> on the first refactor.</p>
+<p><code>beman.specgen</code> (<code>~/src/specgen/main</code>,
+installed as <code>~/.local/bin/specgen</code>, 0.1.0) exists to close
+that gap: it lowers a marked-up C++26 header to a semantic IR and
+renders draft LaTeX, mpark/wg21 markdown, or org. Phase 5 adopts it: the
+wording clauses of the paper are <strong>generated from the shipping
+headers</strong> and transcluded into the paper by the mpark/wg21 build,
+and any drift between them is a build failure.</p>
+<p>Read <code>~/src/specgen/main/docs/user-guide.md</code> (markup
+vocabulary, commands, diagnostics) and
+<code>~/src/specgen/main/docs/architecture.md</code> (§1 input contract,
+§3.4 synopsis extraction, §3.5 namespace mapping, §9 validation) before
+executing any step.</p>
+<h2 id="measurements-taken-before-planning-2026-09-03">Measurements
+taken before planning (2026-09-03)</h2>
+<p>These are facts from running the installed <code>specgen 0.1.0</code>
+against this worktree, not estimates. They are what the steps below are
+sized against.</p>
+<ul>
+<li><p>Every public header parses under specgen's Clang 22 front end in
+about a second with this tail — no compilation database involved:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">LD_LIBRARY_PATH</span><span class="op">=</span>/home/sdowney/install/gcc-16/lib64:<span class="va">$LD_LIBRARY_PATH</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">specgen</span> generate <span class="at">--emit-ir</span> include/beman/transcode/whatwg_decode_view.hpp <span class="dt">\</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--no-compile-commands</span> <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">-std</span><span class="op">=</span>c++2c <span class="at">--gcc-toolchain</span><span class="op">=</span>/home/sdowney/install/gcc-16 <span class="at">-I</span> include</span></code></pre></div>
+<p><code>whatwg_decode_view.hpp</code> 1.12 s,
+<code>whatwg_encode_view.hpp</code> 1.05 s, <code>decode_view.hpp</code>
+0.86 s, <code>encode_view.hpp</code> 0.92 s,
+<code>detail/null_term.hpp</code> instant. Parse cost is not a
+constraint.</p></li>
+<li><p>The umbrella <code>transcode.hpp</code> is the one header that
+fails to parse: <code>beman/transcode/config_generated.hpp</code> is
+generated into the build tree, so the tail needs
+<code>-I .build/build-system/include</code> as well.</p></li>
+<li><p><code>render --validate</code> on today's
+<code>whatwg_decode_view.hpp</code> reports 64 findings. They are of
+exactly three kinds, all expected for an unmarked header: coverage
+(<code>X is declared in the synopsis but is not described</code>), and
+two leakage classes — <code>detail</code> (a qualifier resolving to
+<code>beman::transcoding::detail</code>) and <code>ranges</code> (a
+qualifier resolving to <code>std::ranges</code>). There is no fourth
+surprise. That number is the worklist size for one header, and it
+shrinks monotonically as markup lands.</p></li>
+<li><p><code>include/</code> contains <strong>no</strong>
+<code>//!</code>, <code>/*!</code>, <code>///</code> or
+<code>/** */</code> comments today, so the specgen markup namespace is
+unoccupied and no comment has to be reclassified.
+<code>.clang-format</code> has <code>ReflowComments: true</code> at
+<code>ColumnLimit: 119</code>; docblock lines stay under that so reflow
+never rewrites markup.</p></li>
+<li><p>The mpark backend emits <code>::: wording</code> divs with
+headings <code>## Title [stable.name]{- .sref} {-}</code>, starting at
+heading level 2 (<code>base_heading_level = 2</code>, not exposed on the
+command line).</p></li>
+<li><p>specgen's own corpus has no header that uses a <code>std::</code>
+sub-namespace, so the <code>ranges::</code> leakage finding above is an
+<strong>upstream gap</strong>, not a transcode defect. See "External
+dependencies".</p></li>
+</ul>
+<h2 id="decisions">Decisions</h2>
+<p><strong>D1 — One specgen document per proposed standard
+header.</strong> The paper proposes <code>&lt;transcode&gt;</code> and
+<code>&lt;null_term&gt;</code>. Each maps to exactly one spec-facing
+header in this repo, and that header is what specgen is run over.</p>
+<p><strong>How a document reaches more than one file, settled
+2026-09-07.</strong> specgen used to process only declarations located
+in the main file, which would have made this decision "put the whole of
+<code>&lt;transcode&gt;</code> in one 3,500-line file". It does not: a
+gathered <code>.syn</code> region now gathers the declarations of the
+headers <code>#include</code>d inside it (specgen#77, PR #78), so
+<code>transcode.hpp</code> stays the umbrella it already was and the
+sixteen component headers stay where they are. The region is the
+statement of which includes are the specification surface;
+<code>detail/</code> includes sit outside it. This is D7 again -- the
+tool renders what the library writes -- and it is why Step 3's task 4
+cost a rewrite of one umbrella rather than a rewrite of the library.
+Confirmed working on 2026-09-05: <code>&lt;null_term&gt;</code> renders
+a real gathered <code>[null.term.syn]</code> beside its per-class
+clauses, validating clean. The fallback this decision carried -- one
+document per header family with a hand-authored
+<code>[transcode.syn]</code> -- is retired; it existed because a
+deduction guide corrupted the gathered region (specgen#22), and that is
+fixed.</p>
+<p><strong>D2 — Generated fragments are committed and checked.</strong>
+<code>make wording</code> regenerates <code>papers/wording/*.md</code>;
+<code>make wording-check</code> regenerates into a temporary directory
+and diffs. CI runs the check. Committing the fragments keeps the paper
+buildable on a machine with no specgen and no Clang 22, which is the
+normal case for a co-author.</p>
+<p><strong>D3 — Transclusion is native pandoc multi-file input.</strong>
+<code>base.mk</code> builds its pandoc command from
+<code>$(filter %.md, $^)</code>, so a target with several markdown
+prerequisites is concatenated in prerequisite order. The paper targets
+get the fragment list as ordered prerequisites; the order comes from the
+manifest <code>specgen render --split</code> prints. No new markdown
+preprocessor, no include syntax to invent.</p>
+<p><strong>D4 — Fragments live in <code>papers/wording/</code>.</strong>
+<code>flat.mk</code> turns every <code>papers/*.md</code> into its own
+paper; a subdirectory is invisible to that wildcard.</p>
+<p><strong>D5 — Stable names root at <code>transcode.</code></strong>,
+with <code>null.term</code> for the second header. <code>--split</code>
+derives the root fragment name from the common prefix, so the header
+synopsis fragment is <code>transcode.syn.md</code> — spelled explicitly
+with <code>--root</code> rather than left to derivation.</p>
+<p><strong>D6 — No <code>--paper</code> mode.</strong>
+<code>--paper</code> wraps everything in <code>::: add</code> and
+underlines it. This paper adds whole new clauses; an authored editing
+instruction ("Add a new clause [transcode] as follows:") reads better
+than several hundred underlined lines. The switch is one flag if that
+judgement changes.</p>
+<p><strong>D7 — <code>detail::</code> never appears in a spec-visible
+signature, and the headers do not move to achieve that.</strong> A
+<code>detail::</code> name reaching the wording is a real finding: the
+published text must not name something the reader cannot see. What was
+wrong in the original decision is the remedy it accepted. It said such a
+name "either moves out of <code>detail</code> ... or is marked
+<code>\expos</code>", and relocating a helper out of <code>detail</code>
+changes name lookup, ADL and the library's effective public surface — a
+real change to the library, taken on for a documentation tool. It was
+recorded as the single largest source of the refactoring in Step 3,
+which is the clearest sign it was pointed the wrong way.</p>
+<p>The rule now: a <code>detail::</code> name in a spec-visible
+signature renders exposition-only or <code>unspecified</code>, and the
+header keeps the spelling it wants. <code>\expos</code> covers it, and
+since specgen#36 it reaches entities declared in an included
+<code>detail/</code> header too. Measured on 2026-09-05: marking the six
+concepts <code>\expos</code> in the headers that declare them takes the
+qualifier findings from nine to three, with nothing moved and nothing
+renamed. The three survivors are class-head constraints (N6) and wait
+for specgen#48. The pattern of a synopsis plus out-of-line definitions
+is all a spec-facing header should have to be.</p>
+<h2 id="step-index">Step index</h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Branch</th>
+<th>Deliverable</th>
+<th>Depends on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>p5-step1-specgen-harness</code></td>
+<td><code>papers/wording/</code>, pinned generate script,
+<code>make wording</code> / <code>wording-check</code>, paper
+transclusion rule, proved end to end on one header</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>p5-step2-wording-outline</code></td>
+<td><a
+href="../wording-outline.html"><code>docs/wording-outline.md</code></a>:
+clause tree, stable names, header→clause map, fragment order</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>p5-step3-spec-header-shape</code></td>
+<td>Headers refactored so each spec-facing header's main-file decls are
+exactly the spec surface</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3b</td>
+<td><code>p5-step3b-codec-pushdown</code></td>
+<td>Codec implementation out of the WHATWG view headers; partly done,
+remainder ordered behind the <code>_or_error</code> unification</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>p5-step4-errors-concepts-null-term</code></td>
+<td>Markup for the error enums, the range concepts, and
+<code>null_term</code></td>
+<td>1, 3</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>p5-step5-codec-labels-sniff</code></td>
+<td>Markup for <code>codec</code>, <code>get_encoding</code>,
+<code>sniff_encoding</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>p5-step6-whatwg-views</code></td>
+<td>Markup for the four WHATWG decode views and four encode views</td>
+<td>5</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>p5-step7-pluggable-codecs</code></td>
+<td>Markup for the codec concepts and the pluggable decode/encode
+views</td>
+<td>6</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>p5-step8-transcode-pipeline</code></td>
+<td>Markup for <code>transcode</code>, <code>pluggable_transcode</code>,
+<code>transcode_string</code></td>
+<td>7</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>p5-step9-iconv</code></td>
+<td>Markup for the iconv views and bulk helpers, or a recorded decision
+to omit them from the wording</td>
+<td>8</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>p5-step10-paper-assembly</code></td>
+<td>Wording section of the paper: editing instructions, fragment order,
+clean <code>--validate</code>, CI drift gate</td>
+<td>4-9</td>
+</tr>
+</tbody>
+</table>
+<p>Steps 4-9 are the same loop nine times: mark up a clause, regenerate,
+drive <code>--validate</code> findings for that clause to zero, commit
+headers and fragments together. They are separated by clause so a step
+is reviewable and so a mid-phase stop still leaves the paper
+buildable.</p>
+<p><strong>Step 3's task 4 is landed</strong> (2026-09-07):
+<code>transcode.hpp</code> is the document for
+<code>&lt;transcode&gt;</code>, the sixteen component headers stay where
+they are, and <code>[transcode.syn]</code> is a generated 1,160-line
+header synopsis holding all of them. Step 3b's remainder -- the stateful
+codec pushdown -- landed with it. See
+<code>docs/plans/p5-step3-spec-header-shape.md</code>, "Outcome".</p>
+<p><strong>Step 4 is landed</strong> (2026-09-06), all three clauses, at
+the price of two upstream fixes: <code>[transcode.errors]</code> needed
+specgen to be able to specify an enumeration at all, and
+<code>[null.term.adaptor]</code> needed a folded-in declaration's
+description to reach its clause. Both are merged (specgen #70 and #71);
+see <code>docs/plans/p5-step4-errors-concepts-null-term.md</code>,
+"Outcome".</p>
+<h2 id="standing-conventions">Standing conventions</h2>
+<ul>
+<li>Branch and worktree per step, rooted from <code>main</code>, per
+<code>CLAUDE.md</code>.</li>
+<li><code>make lint</code> and <code>make test</code> green before every
+commit; <code>make lint</code> covers the markdown as well as the
+C++.</li>
+<li><code>make wording-check</code> green before every commit from Step
+1 onward.</li>
+<li><code>papers/wording/*.md</code> is generated output. Never
+hand-edit it; edit the header markup and regenerate.</li>
+<li>The specgen invocation lives in exactly one place,
+<code>papers/wording/generate.sh</code>. No step adds a second spelling
+of the parse tail.</li>
+<li>Markup is <code>//!</code> and <code>/*! */</code> only, with one
+exception: a gathered header synopsis is closed by a
+<code>/// END [x.syn]</code> fence, which specgen requires and which
+nothing else in the repo spells. <code>/** */</code> stays unused, and
+<code>///</code> is reserved for that fence alone, so no comment is
+ambiguous between Doxygen and specgen.</li>
+<li>Docblock lines stay under 119 columns so <code>ReflowComments</code>
+never touches them.</li>
+</ul>
+<h2 id="external-dependencies-work-in-srcspecgenmain">External
+dependencies (work in <code>~/src/specgen/main</code>)</h2>
+<p>These are upstream changes to specgen. They are tracked here because
+they gate transcode steps, but they are executed in the specgen
+repository.</p>
+<p><strong>Re-measured 2026-09-07</strong> against specgen at
+<code>1b4e10f</code>. <strong>Every defect this project has filed is
+closed</strong>, including the two Step 4 filed -- #68 (an enumeration
+produced no wording) and #69 (a folded-in declaration's description was
+dropped), fixed by specgen PRs #70 and #71, both merged. The same round
+brought one change of specgen's own, #72, which sizes each sentinel to
+the text that replaces it; it moves no fragment of this paper.</p>
+<p><strong>163 findings across the seventeen spec-facing
+headers</strong>, and the <em>same</em> 163 the previous binary reports
+on the same headers: the update unblocked two clauses and moved nothing
+else. The 114 this section used to quote counted a smaller set of
+headers, so the two numbers are not comparable -- what the count is for
+is the size of Steps 5-9's worklist, which makes the denominator worth
+writing down. All 163 are coverage or leakage findings against clauses
+nobody has written yet: 117 "declared in the synopsis but is not
+described", 42 "used in wording but is not a documented entity", 4
+unmarked private members. <strong>No qualifier finding
+anywhere</strong>: <code>detail::</code> still reaches no spec-facing
+header's wording. The three headers Step 4 marked up --
+<code>error.hpp</code>, <code>concepts.hpp</code>,
+<code>null_term.hpp</code> -- validate clean, at zero.</p>
+<p><strong>Note for anyone regenerating</strong>: the committed
+fragments require a specgen at or after <code>c881026</code>, which is
+where a document reaches the headers it includes (specgen#77) -- what
+makes <code>transcode.hpp</code> a document at all. An installed specgen
+from that commit or later regenerates every fragment byte for byte, with
+no <code>SPECGEN=</code> override; an older one renders
+<code>[transcode.syn]</code> as an empty heading. 0.1.0 at
+<code>b90faa7</code> cannot generate <code>transcode.errors.md</code> or
+<code>null.term.adaptor.md</code> at all and reports them stale. A
+specgen installed from current <code>main</code> regenerates every
+committed fragment byte for byte, so no <code>SPECGEN=</code> override
+is needed.</p>
+<p>The recheck also found three things and filed all three, none of
+which moves a fragment of this paper: specgen PR #75 (a route this
+project's own clause depends on could name a section that does not exist
+and lose its paragraph silently -- the check a class member already
+had), PR #76 (<code>\expos</code> and <code>\seebelow</code> on an
+enumeration, the two markers #70 left behind), and issue #74 (the
+draft's enumerator table is two columns flat and only the
+two-dimensional table exists). The first two are defects in what this
+project asked for last round, which is what a recheck is for; the third
+is why <code>[transcode.errors]</code> states its enumerator meanings as
+an <code>\item</code> list.</p>
+<ul>
+<li><strong>N6 closed</strong> (#48, <code>fa9af1c</code>). The
+exposition-only rename now reaches a class template's own
+requires-clause, which was the last three qualifier findings. D7 is
+satisfied in full, by six <code>\expos</code> comments and nothing else
+-- no declaration moved, no name changed.</li>
+<li><strong>N8 closed</strong> (#55, <code>5b04bf2</code>, apply the
+declaration masks inside a gathered region).
+<code>views::null_term</code> drops its <code>\omit</code> and renders
+<code>inline constexpr $unspecified$ null_term;</code> in the header
+synopsis, which is what the draft writes.
+<code>[null.term.adaptor]</code> is unblocked; only its prose is
+outstanding, and that is authorship, not tooling.</li>
+</ul>
+<p>The same round also tightened the template head's namespace drop
+(<code>fa9af1c</code>), so
+<code>template&lt;std::contiguous_iterator I&gt;</code> renders as
+<code>template&lt;contiguous_iterator I&gt;</code>. That is the draft's
+spelling, and it moved the committed fragments -- regenerated and
+committed here, which is D2 working as intended.</p>
+<h3 id="the-gathered-region-pattern">The gathered-region pattern</h3>
+<p><strong>Five</strong> defects turned out to be one shape: a marker or
+a check that works at namespace scope and is skipped for a declaration
+folded into a gathered region. N3 (#34, a routed member's description),
+N7 (#45, coverage checking), N8 (#55, declaration masks), the class-head
+half of N6 (#48), and #69 (a namespace entity's whole description). All
+five are fixed. Each of the first four was recorded here as the last of
+them, which is the reason to keep the shape written down rather than the
+count: Steps 5-9 gather <code>&lt;transcode&gt;</code>, a far larger
+surface than <code>&lt;null_term&gt;</code>, and the failure mode is
+silent. A dropped entity has an empty roster, so coverage has nothing to
+report about it, and a clean <code>--validate</code> does not prove an
+authored paragraph arrived. Read the fragment.</p>
+<h3 id="closed">Closed</h3>
+<ul>
+<li><strong>U1 / U9 — leakage checker discriminator.</strong> #3-era
+fix, <code>b1054dd</code>.</li>
+<li><strong>U4 / N2 — a deduction guide corrupted a gathered
+<code>.syn</code> synopsis.</strong> #22.</li>
+<li><strong>U5 — a docblock on an in-class hidden friend is not
+attached.</strong> #20. Never about hidden friends: the trigger was a
+requires-clause holding a requires-expression.</li>
+<li><strong>U7 — no way to mask a variable's type.</strong> #24,
+completed by #55.</li>
+<li><strong>U8 — <code>\expos</code> on class and alias
+templates.</strong> #23.</li>
+<li><strong>N1 — a constructor's member-initializer list rendered into
+the synopsis.</strong> #21.</li>
+<li><strong>N3 — a routed member description dropped inside a gathered
+region.</strong> #34.</li>
+<li><strong>N4 — the private-member check keyed by bare name.</strong>
+#35.</li>
+<li><strong>N5 — <code>detail::</code> could not render exposition-only
+from an included header.</strong> #36. The one that made D7 cheap.</li>
+<li><strong>N6 — the exposition-only rename skipped a class template's
+own requires-clause.</strong> #48.</li>
+<li><strong>N7 — a class folded into a gathered synopsis was not
+coverage-checked.</strong> #45.</li>
+<li><strong>N8 — bare <code>\seebelow</code> on a variable was not
+applied inside a gathered region.</strong> #55.</li>
+<li><strong>specgen#68 — a documented enumeration produced no
+wording.</strong> #70, <code>f64f043</code>. A docblock on an
+<code>enum class</code> was rejected as an unsupported entity kind, and
+there was no other spelling: a gathered region rendered the declaration
+and still refused the docblock, a detached docblock was dropped, and a
+<code>\verbatim-itemdecl</code> before the enum attached to it and hit
+the same error. An enumeration is now a documented namespace entity like
+the others, its declaration is the itemdecl and its description says
+what the enumerators mean. <code>[transcode.errors]</code> could not be
+written at all without it.</li>
+<li><strong>specgen#69 — a folded-in declaration's description was
+dropped, and <code>\at</code> did not route it.</strong> #71,
+<code>b746da6</code>. A described namespace entity's wording now travels
+to the section <code>\at</code> names, else to the one its
+<code>\ref</code> group header names, else out beside the synopsis.
+<code>[null.term.adaptor]</code> is the clause that needed it, and a
+range adaptor object is the case with no way around it: a variable with
+an initializer has no out-of-line definition to carry a description into
+a later clause, and moving its declaration out of the region would take
+it out of the header synopsis.</li>
+</ul>
+<h3 id="open">Open</h3>
+<ul>
+<li><p><strong>U2 — <code>--base-heading-level</code> on the command
+line.</strong> Still absent. <code>render --help</code> lists
+<code>--backend</code>, <code>--validate</code>, <code>--paper</code>,
+<code>--split</code>, <code>--root</code> and <code>-o</code>, and
+nothing else. <strong>Step 10 accepted flat headings</strong>: the
+clauses are <code>##</code>, which is the level the paper's own sections
+use, so they are siblings of "Design" rather than children of "Wording".
+The table of contents reads as a clause list under the Wording heading,
+which is close enough to right that spending an upstream flag on it was
+not worth another cross-repository dependency. <code>toc-depth: 2</code>
+is what makes it read that way; a nested rendering would need the flag
+<em>and</em> <code>toc-depth: 3</code>.</p></li>
+<li><p><del><strong>specgen#93 — a documented enumerator is reported as
+a foreign name when a generated table shares its
+spelling.</strong></del> <strong>Closed.</strong> Filed 2026-09-09
+against the bare-name leakage check in specgen <code>8caa569</code>,
+which text-matched names declared outside the run and so could not tell
+<code>codec::windows_1252</code> from
+<code>detail::tables::windows_1252</code>. <code>--validate</code> is
+back to <strong>zero findings</strong> over this document, and nothing
+was marked <code>\expos</code> to get there.</p></li>
+<li><p><del><strong>specgen#94 — <code>--new-root</code> takes one
+name.</strong></del> <strong>Closed and adopted.</strong> The flag
+repeats now, so <code>generate.sh</code> renders with
+<code>--new-root transcode --new-root null.term</code> and the
+<code>sed</code> that stripped the <code>.sref</code> class is gone. The
+fragments came out byte-identical to what the <code>sed</code> produced,
+which is the check that the two mechanisms agreed before one replaced
+the other.</p></li>
+<li><p><strong>U3 — namespace mapping is automatic.</strong> Nothing to
+do; recorded so no step goes looking for a mapping option that does not
+exist.</p></li>
+<li><p><del><strong>specgen#74 — an enumerator table is two columns
+flat.</strong></del> <strong>Closed and adopted.</strong>
+<code>\libtab2</code> landed upstream (specgen <code>93c248c</code>),
+and all three enumerations in <code>[transcode.errors]</code> now print
+a Constant/Meaning table -- [fs.enum.file.type]'s shape, which is what
+an enumeration's meanings look like in the draft. The <code>\item</code>
+list they used while the two-dimensional table was the only one is
+gone.</p></li>
+<li><p><strong>U6 — every generated clause heading warns at paper-build
+time.</strong> An mpark warning, not a specgen finding:
+<code>stable name &lt;x&gt; not found</code>, once per clause. It is
+what a stable name that is not in the draft yet looks like, so it is one
+per clause the phase adds -- seventeen by Step 10.</p>
+<p><strong>Worked around downstream in Step 10, and still open
+upstream.</strong> The warning was the visible half; the other half is
+that mpark emits a link anyway, so every clause heading and every
+cross-reference in the published paper pointed at a
+<code>c++draft</code> page that does not exist. <code>generate.sh</code>
+now drops the <code>.sref</code> class from names under this paper's own
+two stable-name roots, after rendering and before the fragments are
+committed, which leaves <code>[transcode.iconv]</code> -- what the draft
+itself prints. It is keyed on the roots on purpose: a citation of a
+clause that <em>is</em> in the draft keeps its <code>.sref</code> and
+still resolves.</p>
+<p>Filed as <a
+href="https://github.com/steve-downey/specgen/issues/89">specgen#89</a>
+and fixed upstream as <code>render --new-root</code>, which needed a
+second round (<a
+href="https://github.com/steve-downey/specgen/issues/94">#94</a>) before
+it could take both of this paper's roots. <strong>The <code>sed</code>
+is gone</strong>; <code>generate.sh</code> passes the roots instead. The
+build is warning-free either way.</p></li>
+</ul>
+<h2 id="risks">Risks</h2>
+<ul>
+<li><strong>The refactor in Step 3 is the real cost of the
+phase.</strong> Everything else is comment authoring. If Step 3 stalls,
+Steps 4-10 still work per header family under D1's fallback, at the
+price of a hand-written synopsis.</li>
+<li><strong>Clang 22 and GCC 16 are required to regenerate</strong>, but
+not to build the paper (D2). A contributor without them can still edit
+prose and build a PDF; they cannot change the wording.</li>
+<li><strong>specgen is under development.</strong> Its IR and output can
+change under us. The committed fragments plus
+<code>make wording-check</code> make that visible as a diff rather than
+as a silent divergence.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase5-index.md">docs/plans/phase5-index.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

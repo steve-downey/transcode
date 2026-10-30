@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P5-Step 5: Markup — Encodings, Labels, BOM Sniffing -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p5-step5-codec-labels-sniff.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p5-step-5-markup--encodings-labels-bom-sniffing"
+id="toc-p5-step-5-markup--encodings-labels-bom-sniffing">P5-Step 5:
+Markup — Encodings, Labels, BOM Sniffing</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#what-is-different-here"
+id="toc-what-is-different-here">What is different here</a></li>
+<li><a href="#acceptance" id="toc-acceptance">Acceptance</a></li>
+<li><a href="#outcome-2026-09-07" id="toc-outcome-2026-09-07">Outcome
+(2026-09-07)</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p5-step-5-markup--encodings-labels-bom-sniffing">P5-Step 5:
+Markup — Encodings, Labels, BOM Sniffing</h1>
+<p><strong>Branch:</strong> <code>p5-step5-codec-labels-sniff</code>
+<strong>Depends on:</strong> Step 4 <strong>Read first:</strong>
+<code>docs/plans/p5-step4-errors-concepts-null-term.md</code> ("the
+markup loop")</p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Wording for <code>[transcode.codec]</code>: the <code>codec</code>
+enumeration, the label lookup <code>get_encoding</code>, and
+<code>sniff_encoding</code>.</p>
+<h2 id="what-is-different-here">What is different here</h2>
+<ul>
+<li><strong>The enumeration has 39 enumerators and is normatively the
+WHATWG list.</strong> The wording should not restate the table; it
+should say that each enumerator names the WHATWG encoding of the
+corresponding name and cite the standard. The paper's bibliography
+already has <code>@whatwg-encoding</code>; specgen's
+<code>\iref{stable.name}</code> is for standard subclauses, so a
+citation to a non-ISO document belongs in authored prose in the paper
+around the clause, not inside a generated element. Decide and record how
+a normative reference to WHATWG is spelled; Step 10 has to render
+it.</li>
+<li><strong><code>detail/labels.hpp</code> is generated</strong> by
+<code>tools/generate_labels.py</code> and must not be hand-edited
+(<code>CLAUDE.md</code>). If <code>get_encoding</code>'s declaration
+needs markup, it needs it in the <em>generator template</em>, not the
+output — or <code>get_encoding</code> moves to a hand-written header
+that includes the generated table. Prefer the move: a generator that
+emits specification markup is a generator with two jobs.</li>
+<li><strong><code>sniff_encoding</code> returns
+<code>optional&lt;codec&gt;</code></strong> and is specified against
+WHATWG §8.2. It is a good candidate for <code>\returns-equiv</code> if
+the body is a single return, and a good candidate for an authored table
+of BOM → codec otherwise.</li>
+</ul>
+<h2 id="acceptance">Acceptance</h2>
+<p>As Step 4, for <code>papers/wording/transcode.codec.md</code>.</p>
+<hr />
+<h2 id="outcome-2026-09-07">Outcome (2026-09-07)</h2>
+<p>All three clauses are written, and <code>--validate</code> reports
+nothing about any of their entities.</p>
+<ul>
+<li><p><strong><code>[transcode.codec]</code></strong> — a
+<code>\ref</code> group header and one <em>Remarks</em> on the
+enumeration, saying that each enumerator names the encoding of the same
+name in the WHATWG Encoding Standard and that the table is not restated
+here. W2's question -- how the normative reference is spelled -- is
+answered in <code>docs/wording-outline.md</code> where W2 is: named in
+prose in the wording, a dated [intro.refs] entry in the paper, and
+whether SG16 accepts a normative reference to a living standard at all
+is a question for the paper's prose.</p>
+<p>The clause repeats all 39 enumerators above that one paragraph,
+because a documented entity renders its declaration. The draft would
+print the declaration once, in the synopsis, and give the clause the
+prose alone; a one-line <code>\verbatim-itemdecl</code>
+(<code>enum class codec;</code>) would do that here at the price of one
+authored spelling. Left as it is, and left to Step 10 to judge with the
+whole paper in front of it -- it is a presentation question, and it is
+the same question for every long declaration in the phase.</p></li>
+<li><p><strong><code>[transcode.codec.label]</code></strong> —
+<code>get_encoding</code> moved out of the generated
+<code>detail/labels.hpp</code> into a hand-written
+<code>label.hpp</code>, which is what this step's plan preferred: a
+generator that emits specification markup is a generator with two jobs,
+and the one thing a generated file must never need is an edit.
+<code>tools/generate_labels.py</code> now emits the table and nothing
+else, and its test says so rather than asserting the function is in
+there. The generated header also stopped including
+<code>whatwg_decode_view.hpp</code> for the sake of the
+<code>codec</code> enum, which is now all it includes.</p></li>
+<li><p><strong><code>[transcode.codec.sniff]</code></strong> — a
+<em>Returns</em> itemization over the three byte order marks, and a
+<em>Remarks</em> saying what the function deliberately does not do: the
+fallback half of WHATWG §8.2 is a question about the document and its
+transport, and the mark is left in the range because a decode view
+strips a leading U+FEFF itself.</p></li>
+</ul>
+<p>Both functions carry their markup on the <strong>definition</strong>,
+not the declaration: a docblock on a function declaration is an error,
+because the definition is what places a function's wording (design
+§3.3). In a followed header both are in the same file, so this is easy
+to get wrong and loud when you do.</p>
+<p><code>get_encoding</code> moving is the only change to the library,
+and it is a file move: no signature, no name, no namespace.
+<code>label.hpp</code> joins the synopsis region in
+<code>transcode.hpp</code> next to <code>codec.hpp</code>, and
+<code>detail/labels.hpp</code> leaves the implementation list, since
+<code>label.hpp</code> includes it.</p>
+<p>Step 6 is next, and is the largest of the markup steps.</p>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step5-codec-labels-sniff.md">docs/plans/p5-step5-codec-labels-sniff.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

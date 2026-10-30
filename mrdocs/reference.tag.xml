@@ -1,0 +1,1081 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<tagfile>
+<compound kind="namespace">
+  <name>beman::transcoding</name>
+  <filename>beman/transcoding.html</filename>
+  <class kind="class">beman::transcoding::decode_or_error_closure</class>
+  <class kind="class">beman::transcoding::decode_or_error_view</class>
+  <class kind="class">beman::transcoding::encode_or_error_closure</class>
+  <class kind="class">beman::transcoding::encode_or_error_view</class>
+  <class kind="class">beman::transcoding::random_access_decode_or_error_view</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_decode_or_error_view</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_encode_or_error_view</class>
+  <class kind="class">beman::transcoding::whatwg_decode_or_error_closure</class>
+  <class kind="class">beman::transcoding::whatwg_decode_or_error_view</class>
+  <class kind="class">beman::transcoding::whatwg_encode_or_error_closure</class>
+  <class kind="class">beman::transcoding::whatwg_encode_or_error_view</class>
+  <class kind="class">beman::transcoding::decode_closure</class>
+  <class kind="class">beman::transcoding::decode_result</class>
+  <class kind="class">beman::transcoding::decode_view</class>
+  <class kind="class">beman::transcoding::decode_view</class>
+  <class kind="class">beman::transcoding::encode_closure</class>
+  <class kind="class">beman::transcoding::encode_result</class>
+  <class kind="class">beman::transcoding::encode_view</class>
+  <class kind="class">beman::transcoding::encode_view</class>
+  <class kind="class">beman::transcoding::full_table_codec</class>
+  <class kind="class">beman::transcoding::iconv_functions</class>
+  <class kind="class">beman::transcoding::iconv_transcode_closure</class>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_closure</class>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_view</class>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_view</class>
+  <class kind="class">beman::transcoding::iconv_transcode_view</class>
+  <class kind="class">beman::transcoding::iconv_transcode_view</class>
+  <class kind="class">beman::transcoding::null_sentinel_t</class>
+  <class kind="class">beman::transcoding::null_term_view</class>
+  <class kind="class">beman::transcoding::pluggable_transcode_closure</class>
+  <class kind="class">beman::transcoding::random_access_decode_view</class>
+  <class kind="class">beman::transcoding::random_access_decode_view</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_decode_view</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_decode_view</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_encode_view</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_encode_view</class>
+  <class kind="class">beman::transcoding::single_byte_decode_view</class>
+  <class kind="class">beman::transcoding::single_byte_decode_view</class>
+  <class kind="class">beman::transcoding::single_byte_encode_view</class>
+  <class kind="class">beman::transcoding::single_byte_encode_view</class>
+  <class kind="class">beman::transcoding::table_codec</class>
+  <class kind="class">beman::transcoding::transcode_closure</class>
+  <class kind="class">beman::transcoding::whatwg_decode_closure</class>
+  <class kind="class">beman::transcoding::whatwg_decode_view</class>
+  <class kind="class">beman::transcoding::whatwg_decode_view</class>
+  <class kind="class">beman::transcoding::whatwg_encode_closure</class>
+  <class kind="class">beman::transcoding::whatwg_encode_view</class>
+  <class kind="class">beman::transcoding::whatwg_encode_view</class>
+  <class kind="class">beman::transcoding::codec</class>
+  <class kind="class">beman::transcoding::iconv_error</class>
+  <class kind="class">beman::transcoding::transcode_error_kind</class>
+  <class kind="class">beman::transcoding::whatwg_error</class>
+  <class kind="class">beman::transcoding::decode_into</class>
+  <class kind="class">beman::transcoding::decode_to</class>
+  <class kind="class">beman::transcoding::encode_into</class>
+  <class kind="class">beman::transcoding::encode_to</class>
+  <class kind="class">beman::transcoding::iconv_transcode_into</class>
+  <class kind="class">beman::transcoding::iconv_transcode_to</class>
+  <class kind="class">beman::transcoding::iconv_transcode_to_or_error</class>
+  <class kind="class">beman::transcoding::operator+</class>
+  <class kind="class">beman::transcoding::operator|</class>
+  <class kind="class">beman::transcoding::transcode_string</class>
+  <class kind="class">beman::transcoding::operator==</class>
+  <class kind="class">beman::transcoding::operator&lt;=&gt;</class>
+  <class kind="class">beman::transcoding::iconv_error_rc</class>
+  <class kind="class">beman::transcoding::iconv_min_buffer_size</class>
+  <class kind="class">beman::transcoding::null_sentinel</class>
+  <class kind="class">beman::transcoding::transcode</class>
+  <class kind="class">beman::transcoding::whatwg_decode</class>
+  <class kind="class">beman::transcoding::whatwg_decode_or_error</class>
+  <class kind="class">beman::transcoding::whatwg_encode</class>
+  <class kind="class">beman::transcoding::whatwg_encode_or_error</class>
+  <class kind="class">beman::transcoding::decode_codec</class>
+  <class kind="class">beman::transcoding::encode_codec</class>
+  <class kind="class">beman::transcoding::flushable_decode_codec</class>
+  <class kind="class">beman::transcoding::legacy_byte_range</class>
+  <class kind="class">beman::transcoding::random_access_decode_codec_type</class>
+  <class kind="class">beman::transcoding::unicode_scalar_range</class>
+  <class kind="class">beman::transcoding::null_term_view</class>
+  <member kind="function">
+    <type>decode_closure&lt;Codec&gt;</type>
+    <name>decode</name>
+    <anchorfile>beman/transcoding/decode.html</anchorfile>
+    <anchor/>
+    <arglist>(Codec codec)</arglist>
+  </member>
+  <member kind="function">
+    <type>decode_closure&lt;Codec, transcode_error_kind::expected&gt;</type>
+    <name>decode_or_error</name>
+    <anchorfile>beman/transcoding/decode_or_error.html</anchorfile>
+    <anchor/>
+    <arglist>(Codec codec)</arglist>
+  </member>
+  <member kind="function">
+    <type>encode_closure&lt;Codec&gt;</type>
+    <name>encode</name>
+    <anchorfile>beman/transcoding/encode.html</anchorfile>
+    <anchor/>
+    <arglist>(Codec codec)</arglist>
+  </member>
+  <member kind="function">
+    <type>encode_closure&lt;Codec, transcode_error_kind::expected&gt;</type>
+    <name>encode_or_error</name>
+    <anchorfile>beman/transcoding/encode_or_error.html</anchorfile>
+    <anchor/>
+    <arglist>(Codec codec)</arglist>
+  </member>
+  <member kind="function">
+    <type>std::optional&lt;codec&gt;</type>
+    <name>get_encoding</name>
+    <anchorfile>beman/transcoding/get_encoding.html</anchorfile>
+    <anchor/>
+    <arglist>(std::string_view label)</arglist>
+  </member>
+  <member kind="function">
+    <type>bool</type>
+    <name>has_whatwg_encoder</name>
+    <anchorfile>beman/transcoding/has_whatwg_encoder.html</anchorfile>
+    <anchor/>
+    <arglist>(codec encoding)</arglist>
+  </member>
+  <member kind="function">
+    <type>auto</type>
+    <name>iconv_transcode</name>
+    <anchorfile>beman/transcoding/iconv_transcode.html</anchorfile>
+    <anchor/>
+    <arglist>(const char* from, const char* to, std::span&lt;char&gt; buf)</arglist>
+  </member>
+  <member kind="function">
+    <type>auto</type>
+    <name>iconv_transcode_or_error</name>
+    <anchorfile>beman/transcoding/iconv_transcode_or_error.html</anchorfile>
+    <anchor/>
+    <arglist>(const char* from, const char* to, std::span&lt;char&gt; buf)</arglist>
+  </member>
+  <member kind="function">
+    <type>iconv_functions</type>
+    <name>make_real_iconv_fns</name>
+    <anchorfile>beman/transcoding/make_real_iconv_fns.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>pluggable_transcode_closure&lt;From, To&gt;</type>
+    <name>pluggable_transcode</name>
+    <anchorfile>beman/transcoding/pluggable_transcode.html</anchorfile>
+    <anchor/>
+    <arglist>(From from, To to)</arglist>
+  </member>
+  <member kind="function">
+    <type>auto</type>
+    <name>single_byte_decode</name>
+    <anchorfile>beman/transcoding/single_byte_decode.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+  <member kind="function">
+    <type>auto</type>
+    <name>single_byte_encode</name>
+    <anchorfile>beman/transcoding/single_byte_encode.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+  <member kind="function">
+    <type>std::optional&lt;codec&gt;</type>
+    <name>sniff_encoding</name>
+    <anchorfile>beman/transcoding/sniff_encoding.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+</compound>
+<compound kind="namespace">
+  <name>beman::transcoding::views</name>
+  <filename>beman/transcoding/views.html</filename>
+  <class kind="class">beman::transcoding::views::null_term</class>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::views::null_term</name>
+  <filename>beman/transcoding/views/null_term.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_or_error_closure</name>
+  <filename>beman/transcoding/decode_or_error_closure.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_or_error_view</name>
+  <filename>beman/transcoding/decode_or_error_view.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_or_error_closure</name>
+  <filename>beman/transcoding/encode_or_error_closure.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_or_error_view</name>
+  <filename>beman/transcoding/encode_or_error_view.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_decode_or_error_view</name>
+  <filename>beman/transcoding/random_access_decode_or_error_view.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_decode_or_error_view</name>
+  <filename>beman/transcoding/random_access_whatwg_decode_or_error_view.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_encode_or_error_view</name>
+  <filename>beman/transcoding/random_access_whatwg_encode_or_error_view.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode_or_error_closure</name>
+  <filename>beman/transcoding/whatwg_decode_or_error_closure.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode_or_error_view</name>
+  <filename>beman/transcoding/whatwg_decode_or_error_view.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_or_error_closure</name>
+  <filename>beman/transcoding/whatwg_encode_or_error_closure.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_or_error_view</name>
+  <filename>beman/transcoding/whatwg_encode_or_error_view.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_closure</name>
+  <filename>beman/transcoding/decode_closure.html</filename>
+  <class kind="class">beman::transcoding::decode_closure::codec_</class>
+  <member kind="function">
+    <type>auto</type>
+    <name>operator()</name>
+    <anchorfile>beman/transcoding/decode_closure/operator_call.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_closure::codec_</name>
+  <filename>beman/transcoding/decode_closure/codec_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_result</name>
+  <filename>beman/transcoding/decode_result.html</filename>
+  <class kind="class">beman::transcoding::decode_result::code_point</class>
+  <class kind="class">beman::transcoding::decode_result::error</class>
+  <class kind="class">beman::transcoding::decode_result::is_error</class>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_result::code_point</name>
+  <filename>beman/transcoding/decode_result/code_point.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_result::error</name>
+  <filename>beman/transcoding/decode_result/error.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_result::is_error</name>
+  <filename>beman/transcoding/decode_result/is_error.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_view</name>
+  <filename>beman/transcoding/decode_view-0f.html</filename>
+  <class kind="class">beman::transcoding::decode_view::base</class>
+  <class kind="class">beman::transcoding::decode_view::begin</class>
+  <class kind="class">beman::transcoding::decode_view::end</class>
+  <member kind="function">
+    <type>void</type>
+    <name>decode_view</name>
+    <anchorfile>beman/transcoding/decode_view-0f/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base, Codec codec)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_view::base</name>
+  <filename>beman/transcoding/decode_view-0f/base-04.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_view::begin</name>
+  <filename>beman/transcoding/decode_view-0f/begin-08.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_view::end</name>
+  <filename>beman/transcoding/decode_view-0f/end-0a.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_view</name>
+  <filename>beman/transcoding/decode_view-01.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_closure</name>
+  <filename>beman/transcoding/encode_closure.html</filename>
+  <class kind="class">beman::transcoding::encode_closure::codec_</class>
+  <member kind="function">
+    <type>auto</type>
+    <name>operator()</name>
+    <anchorfile>beman/transcoding/encode_closure/operator_call.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_closure::codec_</name>
+  <filename>beman/transcoding/encode_closure/codec_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_result</name>
+  <filename>beman/transcoding/encode_result.html</filename>
+  <class kind="class">beman::transcoding::encode_result::bytes</class>
+  <class kind="class">beman::transcoding::encode_result::count</class>
+  <class kind="class">beman::transcoding::encode_result::is_error</class>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_result::bytes</name>
+  <filename>beman/transcoding/encode_result/bytes.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_result::count</name>
+  <filename>beman/transcoding/encode_result/count.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_result::is_error</name>
+  <filename>beman/transcoding/encode_result/is_error.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_view</name>
+  <filename>beman/transcoding/encode_view-0f.html</filename>
+  <class kind="class">beman::transcoding::encode_view::base</class>
+  <class kind="class">beman::transcoding::encode_view::begin</class>
+  <class kind="class">beman::transcoding::encode_view::end</class>
+  <member kind="function">
+    <type>void</type>
+    <name>encode_view</name>
+    <anchorfile>beman/transcoding/encode_view-0f/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base, Codec codec)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_view::base</name>
+  <filename>beman/transcoding/encode_view-0f/base-08.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_view::begin</name>
+  <filename>beman/transcoding/encode_view-0f/begin-0b.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_view::end</name>
+  <filename>beman/transcoding/encode_view-0f/end-0b.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_view</name>
+  <filename>beman/transcoding/encode_view-07.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::full_table_codec</name>
+  <filename>beman/transcoding/full_table_codec.html</filename>
+  <member kind="function">
+    <type>char32_t</type>
+    <name>decode_byte</name>
+    <anchorfile>beman/transcoding/full_table_codec/decode_byte.html</anchorfile>
+    <anchor/>
+    <arglist>(unsigned char byte)</arglist>
+  </member>
+  <member kind="function">
+    <type>decode_result</type>
+    <name>decode_one</name>
+    <anchorfile>beman/transcoding/full_table_codec/decode_one.html</anchorfile>
+    <anchor/>
+    <arglist>(I&amp; current, S end)</arglist>
+  </member>
+  <member kind="function">
+    <type>encode_result</type>
+    <name>encode_one</name>
+    <anchorfile>beman/transcoding/full_table_codec/encode_one.html</anchorfile>
+    <anchor/>
+    <arglist>(char32_t cp)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_functions</name>
+  <filename>beman/transcoding/iconv_functions.html</filename>
+  <class kind="class">beman::transcoding::iconv_functions::close</class>
+  <class kind="class">beman::transcoding::iconv_functions::convert</class>
+  <class kind="class">beman::transcoding::iconv_functions::open</class>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_functions::close</name>
+  <filename>beman/transcoding/iconv_functions/close.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_functions::convert</name>
+  <filename>beman/transcoding/iconv_functions/convert.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_functions::open</name>
+  <filename>beman/transcoding/iconv_functions/open.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_closure</name>
+  <filename>beman/transcoding/iconv_transcode_closure.html</filename>
+  <class kind="class">beman::transcoding::iconv_transcode_closure::buffer_</class>
+  <class kind="class">beman::transcoding::iconv_transcode_closure::fns_</class>
+  <class kind="class">beman::transcoding::iconv_transcode_closure::from_</class>
+  <class kind="class">beman::transcoding::iconv_transcode_closure::to_</class>
+  <member kind="function">
+    <type>auto</type>
+    <name>operator()</name>
+    <anchorfile>beman/transcoding/iconv_transcode_closure/operator_call.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_closure::buffer_</name>
+  <filename>beman/transcoding/iconv_transcode_closure/buffer_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_closure::fns_</name>
+  <filename>beman/transcoding/iconv_transcode_closure/fns_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_closure::from_</name>
+  <filename>beman/transcoding/iconv_transcode_closure/from_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_closure::to_</name>
+  <filename>beman/transcoding/iconv_transcode_closure/to_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_closure</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_closure.html</filename>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_closure::buffer_</class>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_closure::fns_</class>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_closure::from_</class>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_closure::to_</class>
+  <member kind="function">
+    <type>auto</type>
+    <name>operator()</name>
+    <anchorfile>beman/transcoding/iconv_transcode_or_error_closure/operator_call.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_closure::buffer_</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_closure/buffer_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_closure::fns_</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_closure/fns_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_closure::from_</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_closure/from_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_closure::to_</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_closure/to_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_view</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_view-00.html</filename>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_view::iterator</class>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_view::base</class>
+  <member kind="function">
+    <type>void</type>
+    <name>iconv_transcode_or_error_view</name>
+    <anchorfile>beman/transcoding/iconv_transcode_or_error_view-00/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base, IconvFns fns, const char* from, const char* to, std::span&lt;char&gt; buf)</arglist>
+  </member>
+  <member kind="function">
+    <type>iterator</type>
+    <name>begin</name>
+    <anchorfile>beman/transcoding/iconv_transcode_or_error_view-00/begin.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>std::default_sentinel_t</type>
+    <name>end</name>
+    <anchorfile>beman/transcoding/iconv_transcode_or_error_view-00/end.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_view::iterator</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_view-00/iterator.html</filename>
+  <class kind="class">beman::transcoding::iconv_transcode_or_error_view::iterator::operator++</class>
+  <member kind="function">
+    <type>void</type>
+    <name>iterator</name>
+    <anchorfile>beman/transcoding/iconv_transcode_or_error_view-00/iterator/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(iterator&amp;&amp; other)</arglist>
+  </member>
+  <member kind="function">
+    <type>void</type>
+    <name>~iterator</name>
+    <anchorfile>beman/transcoding/iconv_transcode_or_error_view-00/iterator/2destructor.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>iterator&amp;</type>
+    <name>operator=</name>
+    <anchorfile>beman/transcoding/iconv_transcode_or_error_view-00/iterator/operator_assign.html</anchorfile>
+    <anchor/>
+    <arglist>(iterator&amp;&amp; other)</arglist>
+  </member>
+  <member kind="function">
+    <type>std::expected&lt;char, iconv_error&gt;</type>
+    <name>operator*</name>
+    <anchorfile>beman/transcoding/iconv_transcode_or_error_view-00/iterator/operator_star.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_view::iterator::operator++</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_view-00/iterator/operator_inc-0d.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_view::base</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_view-00/base-0c.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_or_error_view</name>
+  <filename>beman/transcoding/iconv_transcode_or_error_view-08.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_view</name>
+  <filename>beman/transcoding/iconv_transcode_view-0d.html</filename>
+  <class kind="class">beman::transcoding::iconv_transcode_view::iterator</class>
+  <class kind="class">beman::transcoding::iconv_transcode_view::base</class>
+  <member kind="function">
+    <type>void</type>
+    <name>iconv_transcode_view</name>
+    <anchorfile>beman/transcoding/iconv_transcode_view-0d/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base, IconvFns fns, const char* from, const char* to, std::span&lt;char&gt; buf)</arglist>
+  </member>
+  <member kind="function">
+    <type>iterator</type>
+    <name>begin</name>
+    <anchorfile>beman/transcoding/iconv_transcode_view-0d/begin.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>std::default_sentinel_t</type>
+    <name>end</name>
+    <anchorfile>beman/transcoding/iconv_transcode_view-0d/end.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_view::iterator</name>
+  <filename>beman/transcoding/iconv_transcode_view-0d/iterator.html</filename>
+  <class kind="class">beman::transcoding::iconv_transcode_view::iterator::operator++</class>
+  <member kind="function">
+    <type>void</type>
+    <name>iterator</name>
+    <anchorfile>beman/transcoding/iconv_transcode_view-0d/iterator/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(iterator&amp;&amp; other)</arglist>
+  </member>
+  <member kind="function">
+    <type>void</type>
+    <name>~iterator</name>
+    <anchorfile>beman/transcoding/iconv_transcode_view-0d/iterator/2destructor.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>iterator&amp;</type>
+    <name>operator=</name>
+    <anchorfile>beman/transcoding/iconv_transcode_view-0d/iterator/operator_assign.html</anchorfile>
+    <anchor/>
+    <arglist>(iterator&amp;&amp; other)</arglist>
+  </member>
+  <member kind="function">
+    <type>char</type>
+    <name>operator*</name>
+    <anchorfile>beman/transcoding/iconv_transcode_view-0d/iterator/operator_star.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_view::iterator::operator++</name>
+  <filename>beman/transcoding/iconv_transcode_view-0d/iterator/operator_inc-0c.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_view::base</name>
+  <filename>beman/transcoding/iconv_transcode_view-0d/base-07.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_view</name>
+  <filename>beman/transcoding/iconv_transcode_view-0c.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::null_sentinel_t</name>
+  <filename>beman/transcoding/null_sentinel_t.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::null_term_view</name>
+  <filename>beman/transcoding/null_term_view-0d.html</filename>
+  <class kind="class">beman::transcoding::null_term_view::null_term_view</class>
+  <member kind="function">
+    <type>I</type>
+    <name>begin</name>
+    <anchorfile>beman/transcoding/null_term_view-0d/begin.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>null_sentinel_t</type>
+    <name>end</name>
+    <anchorfile>beman/transcoding/null_term_view-0d/end.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::null_term_view::null_term_view</name>
+  <filename>beman/transcoding/null_term_view-0d/2constructor-05.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::pluggable_transcode_closure</name>
+  <filename>beman/transcoding/pluggable_transcode_closure.html</filename>
+  <class kind="class">beman::transcoding::pluggable_transcode_closure::from_</class>
+  <class kind="class">beman::transcoding::pluggable_transcode_closure::to_</class>
+  <member kind="function">
+    <type>auto</type>
+    <name>operator()</name>
+    <anchorfile>beman/transcoding/pluggable_transcode_closure/operator_call.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::pluggable_transcode_closure::from_</name>
+  <filename>beman/transcoding/pluggable_transcode_closure/from_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::pluggable_transcode_closure::to_</name>
+  <filename>beman/transcoding/pluggable_transcode_closure/to_.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_decode_view</name>
+  <filename>beman/transcoding/random_access_decode_view-0a.html</filename>
+  <class kind="class">beman::transcoding::random_access_decode_view::base</class>
+  <class kind="class">beman::transcoding::random_access_decode_view::begin</class>
+  <class kind="class">beman::transcoding::random_access_decode_view::end</class>
+  <member kind="function">
+    <type>void</type>
+    <name>random_access_decode_view</name>
+    <anchorfile>beman/transcoding/random_access_decode_view-0a/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base, Codec codec)</arglist>
+  </member>
+  <member kind="function">
+    <type>auto</type>
+    <name>size</name>
+    <anchorfile>beman/transcoding/random_access_decode_view-0a/size.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_decode_view::base</name>
+  <filename>beman/transcoding/random_access_decode_view-0a/base-0f.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_decode_view::begin</name>
+  <filename>beman/transcoding/random_access_decode_view-0a/begin-00.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_decode_view::end</name>
+  <filename>beman/transcoding/random_access_decode_view-0a/end-0c.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_decode_view</name>
+  <filename>beman/transcoding/random_access_decode_view-0d.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_decode_view</name>
+  <filename>beman/transcoding/random_access_whatwg_decode_view-03.html</filename>
+  <class kind="class">beman::transcoding::random_access_whatwg_decode_view::base</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_decode_view::begin</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_decode_view::end</class>
+  <member kind="function">
+    <type>void</type>
+    <name>random_access_whatwg_decode_view</name>
+    <anchorfile>beman/transcoding/random_access_whatwg_decode_view-03/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base)</arglist>
+  </member>
+  <member kind="function">
+    <type>auto</type>
+    <name>size</name>
+    <anchorfile>beman/transcoding/random_access_whatwg_decode_view-03/size.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_decode_view::base</name>
+  <filename>beman/transcoding/random_access_whatwg_decode_view-03/base-0b.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_decode_view::begin</name>
+  <filename>beman/transcoding/random_access_whatwg_decode_view-03/begin-05.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_decode_view::end</name>
+  <filename>beman/transcoding/random_access_whatwg_decode_view-03/end-01.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_decode_view</name>
+  <filename>beman/transcoding/random_access_whatwg_decode_view-02.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_encode_view</name>
+  <filename>beman/transcoding/random_access_whatwg_encode_view-01a.html</filename>
+  <class kind="class">beman::transcoding::random_access_whatwg_encode_view::base</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_encode_view::begin</class>
+  <class kind="class">beman::transcoding::random_access_whatwg_encode_view::end</class>
+  <member kind="function">
+    <type>void</type>
+    <name>random_access_whatwg_encode_view</name>
+    <anchorfile>beman/transcoding/random_access_whatwg_encode_view-01a/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base)</arglist>
+  </member>
+  <member kind="function">
+    <type>auto</type>
+    <name>size</name>
+    <anchorfile>beman/transcoding/random_access_whatwg_encode_view-01a/size.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_encode_view::base</name>
+  <filename>beman/transcoding/random_access_whatwg_encode_view-01a/base-05.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_encode_view::begin</name>
+  <filename>beman/transcoding/random_access_whatwg_encode_view-01a/begin-00.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_encode_view::end</name>
+  <filename>beman/transcoding/random_access_whatwg_encode_view-01a/end-04.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_whatwg_encode_view</name>
+  <filename>beman/transcoding/random_access_whatwg_encode_view-010.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::single_byte_decode_view</name>
+  <filename>beman/transcoding/single_byte_decode_view-05.html</filename>
+  <member kind="function">
+    <type>void</type>
+    <name>single_byte_decode_view</name>
+    <anchorfile>beman/transcoding/single_byte_decode_view-05/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base)</arglist>
+  </member>
+  <member kind="function">
+    <type>iterator</type>
+    <name>begin</name>
+    <anchorfile>beman/transcoding/single_byte_decode_view-05/begin.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>iterator</type>
+    <name>end</name>
+    <anchorfile>beman/transcoding/single_byte_decode_view-05/end.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>auto</type>
+    <name>size</name>
+    <anchorfile>beman/transcoding/single_byte_decode_view-05/size.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::single_byte_decode_view</name>
+  <filename>beman/transcoding/single_byte_decode_view-0a.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::single_byte_encode_view</name>
+  <filename>beman/transcoding/single_byte_encode_view-06.html</filename>
+  <member kind="function">
+    <type>void</type>
+    <name>single_byte_encode_view</name>
+    <anchorfile>beman/transcoding/single_byte_encode_view-06/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base)</arglist>
+  </member>
+  <member kind="function">
+    <type>iterator</type>
+    <name>begin</name>
+    <anchorfile>beman/transcoding/single_byte_encode_view-06/begin.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>iterator</type>
+    <name>end</name>
+    <anchorfile>beman/transcoding/single_byte_encode_view-06/end.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>auto</type>
+    <name>size</name>
+    <anchorfile>beman/transcoding/single_byte_encode_view-06/size.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::single_byte_encode_view</name>
+  <filename>beman/transcoding/single_byte_encode_view-04.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::table_codec</name>
+  <filename>beman/transcoding/table_codec.html</filename>
+  <member kind="function">
+    <type>char32_t</type>
+    <name>decode_byte</name>
+    <anchorfile>beman/transcoding/table_codec/decode_byte.html</anchorfile>
+    <anchor/>
+    <arglist>(unsigned char byte)</arglist>
+  </member>
+  <member kind="function">
+    <type>decode_result</type>
+    <name>decode_one</name>
+    <anchorfile>beman/transcoding/table_codec/decode_one.html</anchorfile>
+    <anchor/>
+    <arglist>(I&amp; current, S end)</arglist>
+  </member>
+  <member kind="function">
+    <type>encode_result</type>
+    <name>encode_one</name>
+    <anchorfile>beman/transcoding/table_codec/encode_one.html</anchorfile>
+    <anchor/>
+    <arglist>(char32_t cp)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::transcode_closure</name>
+  <filename>beman/transcoding/transcode_closure.html</filename>
+  <member kind="function">
+    <type>auto</type>
+    <name>operator()</name>
+    <anchorfile>beman/transcoding/transcode_closure/operator_call.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode_closure</name>
+  <filename>beman/transcoding/whatwg_decode_closure.html</filename>
+  <member kind="function">
+    <type>auto</type>
+    <name>operator()</name>
+    <anchorfile>beman/transcoding/whatwg_decode_closure/operator_call.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode_view</name>
+  <filename>beman/transcoding/whatwg_decode_view-0dd.html</filename>
+  <class kind="class">beman::transcoding::whatwg_decode_view::base</class>
+  <class kind="class">beman::transcoding::whatwg_decode_view::begin</class>
+  <class kind="class">beman::transcoding::whatwg_decode_view::end</class>
+  <member kind="function">
+    <type>void</type>
+    <name>whatwg_decode_view</name>
+    <anchorfile>beman/transcoding/whatwg_decode_view-0dd/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode_view::base</name>
+  <filename>beman/transcoding/whatwg_decode_view-0dd/base-0d.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode_view::begin</name>
+  <filename>beman/transcoding/whatwg_decode_view-0dd/begin-07.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode_view::end</name>
+  <filename>beman/transcoding/whatwg_decode_view-0dd/end-01.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode_view</name>
+  <filename>beman/transcoding/whatwg_decode_view-0db.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_closure</name>
+  <filename>beman/transcoding/whatwg_encode_closure.html</filename>
+  <class kind="class">beman::transcoding::whatwg_encode_closure::operator()</class>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_closure::operator()</name>
+  <filename>beman/transcoding/whatwg_encode_closure/operator_call-06.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_view</name>
+  <filename>beman/transcoding/whatwg_encode_view-05.html</filename>
+  <class kind="class">beman::transcoding::whatwg_encode_view::base</class>
+  <class kind="class">beman::transcoding::whatwg_encode_view::begin</class>
+  <class kind="class">beman::transcoding::whatwg_encode_view::end</class>
+  <member kind="function">
+    <type>void</type>
+    <name>whatwg_encode_view</name>
+    <anchorfile>beman/transcoding/whatwg_encode_view-05/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>(R base)</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_view::base</name>
+  <filename>beman/transcoding/whatwg_encode_view-05/base-02.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_view::begin</name>
+  <filename>beman/transcoding/whatwg_encode_view-05/begin-05.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_view::end</name>
+  <filename>beman/transcoding/whatwg_encode_view-05/end-0b.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_view</name>
+  <filename>beman/transcoding/whatwg_encode_view-0c.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::codec</name>
+  <filename>beman/transcoding/codec.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_error</name>
+  <filename>beman/transcoding/iconv_error.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::transcode_error_kind</name>
+  <filename>beman/transcoding/transcode_error_kind.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_error</name>
+  <filename>beman/transcoding/whatwg_error.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_into</name>
+  <filename>beman/transcoding/decode_into-09.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_to</name>
+  <filename>beman/transcoding/decode_to-01.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_into</name>
+  <filename>beman/transcoding/encode_into-08.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_to</name>
+  <filename>beman/transcoding/encode_to-00.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_into</name>
+  <filename>beman/transcoding/iconv_transcode_into-05.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_to</name>
+  <filename>beman/transcoding/iconv_transcode_to-0c.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_transcode_to_or_error</name>
+  <filename>beman/transcoding/iconv_transcode_to_or_error-04.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::operator+</name>
+  <filename>beman/transcoding/operator_plus-02e.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::operator|</name>
+  <filename>beman/transcoding/operator_bitor-05.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::transcode_string</name>
+  <filename>beman/transcoding/transcode_string-0e7.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::operator==</name>
+  <filename>beman/transcoding/operator_eq-03f.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::operator&lt;=&gt;</name>
+  <filename>beman/transcoding/operator_3way-08.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_error_rc</name>
+  <filename>beman/transcoding/iconv_error_rc.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::iconv_min_buffer_size</name>
+  <filename>beman/transcoding/iconv_min_buffer_size.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::null_sentinel</name>
+  <filename>beman/transcoding/null_sentinel.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::transcode</name>
+  <filename>beman/transcoding/transcode.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode</name>
+  <filename>beman/transcoding/whatwg_decode.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_decode_or_error</name>
+  <filename>beman/transcoding/whatwg_decode_or_error.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode</name>
+  <filename>beman/transcoding/whatwg_encode.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg_encode_or_error</name>
+  <filename>beman/transcoding/whatwg_encode_or_error.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::decode_codec</name>
+  <filename>beman/transcoding/decode_codec.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::encode_codec</name>
+  <filename>beman/transcoding/encode_codec.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::flushable_decode_codec</name>
+  <filename>beman/transcoding/flushable_decode_codec.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::legacy_byte_range</name>
+  <filename>beman/transcoding/legacy_byte_range.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::random_access_decode_codec_type</name>
+  <filename>beman/transcoding/random_access_decode_codec_type.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::unicode_scalar_range</name>
+  <filename>beman/transcoding/unicode_scalar_range.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::null_term_view</name>
+  <filename>beman/transcoding/null_term_view-0e.html</filename>
+</compound>
+</tagfile>

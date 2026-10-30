@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Tracking P2728: UTF Transcoding alignment -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../index.html">beman.transcode</a> <a href="../doxygen/index.html">Doxygen</a> <a href="../mrdocs/index.html">MrDocs</a> <a href="../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/p2728-alignment.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#tracking-p2728-utf-transcoding-alignment"
+id="toc-tracking-p2728-utf-transcoding-alignment">Tracking P2728: UTF
+Transcoding alignment</a>
+<ul>
+<li><a href="#how-the-two-relate" id="toc-how-the-two-relate">How the
+two relate</a></li>
+<li><a href="#the-model-in-brief-p2728r13"
+id="toc-the-model-in-brief-p2728r13">The model in brief
+(P2728R13)</a></li>
+<li><a href="#revision-history-of-the-model"
+id="toc-revision-history-of-the-model">Revision history of the
+model</a></li>
+<li><a href="#where-bemantranscode-already-follows-the-model"
+id="toc-where-bemantranscode-already-follows-the-model">Where
+<code>beman.transcode</code> already follows the model</a></li>
+<li><a href="#where-it-diverges-and-how-to-track"
+id="toc-where-it-diverges-and-how-to-track">Where it diverges, and how
+to track</a></li>
+<li><a href="#action-items" id="toc-action-items">Action items</a></li>
+<li><a href="#future-bolt-ons-that-the-model-leaves-open"
+id="toc-future-bolt-ons-that-the-model-leaves-open">Future bolt-ons that
+the model leaves open</a></li>
+</ul></li>
+</ul>
+</nav>
+<!-- SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception -->
+
+<h1 id="tracking-p2728-utf-transcoding-alignment">Tracking P2728: UTF
+Transcoding alignment</h1>
+<p>This document records how <code>beman.transcode</code> relates to
+WG21 <a href="https://isocpp.org/files/papers/P2728R13.html">P2728
+"Unicode in the Library, Part 1: UTF Transcoding"</a> (Eddie Nolan;
+reference implementation <a
+href="https://github.com/bemanproject/utf_view"><code>beman.utf_view</code></a>),
+and what we should do to <strong>follow that model as closely as
+possible while tracking its evolution</strong>.</p>
+<p>Latest revision reviewed: <strong>P2728R13</strong> (2026-05-26).
+When a new revision lands, update the <a
+href="#revision-history-of-the-model">Revision history</a> and <a
+href="#action-items">Action items</a> sections below.</p>
+<h2 id="how-the-two-relate">How the two relate</h2>
+<p>P2728 is <strong>type-based</strong> transcoding: the encoding is
+carried in the character type (<code>char8_t</code> = UTF-8,
+<code>char16_t</code> = UTF-16, <code>char32_t</code> = UTF-32), and the
+view transcodes UTF-N → UTF-M between those types. The compiler
+statically tracks the encoding.</p>
+<p><code>beman.transcode</code> is <strong>byte-based</strong>
+transcoding: it decodes byte-like I/O (<code>char</code>,
+<code>signed char</code>, <code>unsigned char</code>,
+<code>std::byte</code>) to <code>char32_t</code> code points, where the
+codec is selected at compile time from the <code>codec</code> enum but
+corresponds to a runtime/protocol fact (HTTP <code>Content-Type</code>,
+BOM sniff, DB column metadata, an <code>iconv</code> label). It also
+wraps system <code>iconv</code>.</p>
+<p>These are <strong>complementary, non-overlapping</strong> problems —
+the repository README already says so. Therefore "follow the model as
+exactly as possible" means matching P2728's <strong>structural and
+error-handling patterns</strong>, <strong>not</strong> copying its
+<code>charN_t</code>-typed interface. The character-typed cast adaptors
+P2728 provides (<code>as_char8_t</code>, etc.) are the natural
+<em>interop seam</em> between the two libraries, not a feature gap.</p>
+<h2 id="the-model-in-brief-p2728r13">The model in brief (P2728R13)</h2>
+<ul>
+<li><strong>One view template:</strong>
+<code>to_utf_view&lt;V, E, ToType&gt;</code>, where <code>V</code>'s
+value type is a <code>code-unit</code>
+(<code>char8_t</code>/<code>char16_t</code>/<code>char32_t</code>),
+<code>ToType</code> is the target code-unit type, and <code>E</code> is
+a <code>to_utf_view_error_kind</code> constant.</li>
+<li><strong>Error handling is a template parameter, not separate
+classes:</strong>
+<code>enum class to_utf_view_error_kind { replacement, expected }</code>
+— modeled on <code>subrange_kind</code>. <code>replacement</code>
+substitutes U+FFFD; <code>expected</code> yields
+<code>expected&lt;ToType, utf_transcoding_error&gt;</code>.</li>
+<li><strong><code>utf_transcoding_error</code></strong> — eight
+enumerators (<code>truncated_utf8_sequence</code>,
+<code>unpaired_high_surrogate</code>,
+<code>unpaired_low_surrogate</code>,
+<code>unexpected_utf8_continuation_byte</code>, <code>overlong</code>,
+<code>encoded_surrogate</code>, <code>out_of_range</code>,
+<code>invalid_utf8_leading_byte</code>); <strong>unspecified underlying
+type</strong>.</li>
+<li><strong>CPOs:</strong> <code>views::to_utf&lt;ToType&gt;</code> /
+<code>to_utf_or_error&lt;ToType&gt;</code>, plus the fixed
+<code>to_utf8/16/32</code> and their <code>_or_error</code> variants.
+CTAD uses <code>to_utf_tag_t&lt;ToType&gt;</code> plus a
+<code>std::constant_wrapper&lt;E&gt;</code> constructor tag.</li>
+<li><strong>Iterator:</strong> small
+<code>inplace_vector&lt;value_type, 4/sizeof(ToType)&gt; buf_</code>,
+plus <code>buf_index_</code> and <code>to_increment_</code>; three
+iterators (<code>begin_</code>/<code>current_</code>/<code>end_</code>)
+for the bidirectional case; <code>base()</code> only for
+<code>forward_range</code>; up to <code>bidirectional_iterator</code>;
+borrowed when the base is.</li>
+<li><strong>Code-unit cast adaptors:</strong> <code>as_char</code>,
+<code>as_wchar_t</code>, <code>as_char8_t</code>,
+<code>as_char16_t</code>, <code>as_char32_t</code> (thin
+<code>transform_view</code> casts).</li>
+<li><code>null_term</code>; rejects raw arrays (string-literal
+null-terminator trap); does not cache <code>begin()</code>;
+double-transcode elision in the CPO; feature macro
+<code>__cpp_lib_unicode_transcoding</code>.</li>
+</ul>
+<h2 id="revision-history-of-the-model">Revision history of the
+model</h2>
+<p>The evolution we are tracking, most recent first:</p>
+<table>
+<thead>
+<tr>
+<th>Rev</th>
+<th>Change</th>
+<th>Relevance here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>R13</strong></td>
+<td>Both enums given <strong>unspecified underlying type</strong>
+(precedent
+<code>memory_order</code>/<code>launch</code>/<code>assertion_kind</code>);
+remove <code>base()</code> for input-not-forward; add
+<code>as_char</code>/<code>as_wchar_t</code> (reverse-direction casts);
+wording fixes.</td>
+<td>Latest polish to match.</td>
+</tr>
+<tr>
+<td><strong>R12</strong></td>
+<td>Removed the iterator's <strong>back-pointer to parent view</strong>,
+restoring the three-iterator design → <strong>borrowedness</strong>
+(precedent: <code>views::adjacent&lt;N&gt;</code>).</td>
+<td>Borrowed-range correctness.</td>
+</tr>
+<tr>
+<td><strong>R11</strong></td>
+<td><code>std::nontype</code> →
+<strong><code>std::constant_wrapper</code></strong> (P3948R1) for the
+compile-time error-kind.</td>
+<td>CTAD plumbing.</td>
+</tr>
+<tr>
+<td><strong>R10</strong></td>
+<td>Replaced separate <code>to_utfX_view</code> classes with a
+<strong>single <code>to_utf_view</code></strong> + tag constructors;
+replaced <code>bool OrError</code> with the
+<strong><code>to_utf_view_error_kind</code> enum</strong>; stopped
+caching <code>begin()</code>; reject <code>charN_t</code> arrays;
+double-transcode elision in CPOs.</td>
+<td>The big structural consolidation.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="design-intent-from-committee-review">Design intent from
+committee review</h3>
+<p>The SG9 review (Kona 2025, on R9) records the <em>reasoning</em>
+behind several of the above changes — useful because it tells us which
+patterns are load-bearing:</p>
+<ul>
+<li><strong>The error-kind enum is meant to stay open-ended.</strong> It
+is an enum named <code>_kind</code> (not a <code>bool</code>, not a
+type) specifically so future kinds beyond
+<code>{replacement, expected}</code> can be added (e.g. one that also
+surfaces the offending base code units).</li>
+<li><strong>Errors belong in the value type, never as an iterator
+member.</strong> An earlier design had a
+<code>.success()</code>/<code>.error()</code> member on the iterator;
+SG9 disliked inventing novel iterator member functions, and that
+rejection is <em>the reason the <code>_or_error</code> view exists at
+all</em>.</li>
+<li><strong><code>base()</code> / <code>base_code_units</code>.</strong>
+<code>base()</code> is forward-only and points at the code unit at the
+<strong>start of the current code point</strong>. A
+<code>base_code_units</code> helper
+(<code>subrange(it.base(), ranges::next(it).base())</code>) for error
+reporting was discussed only as a <strong>future bolt-on</strong>, not
+in the paper — and would be expressed through the value/error, not a new
+iterator member.</li>
+<li><strong>Borrowedness mirrors the base range;</strong> whether to use
+a smaller back-pointer form when the base is not borrowed is an
+ABI/stack-size QoI tradeoff (motivated by industrial users who avoid
+ranges over stack usage).</li>
+<li><strong>SIMD / eager read-ahead is in tension with lazy
+views.</strong> The room leaned toward keeping bulk/SIMD a
+<em>separate</em> mechanism rather than baking read-ahead into the lazy
+<code>operator++</code>.</li>
+<li><strong>Iterator category should not be over-downgraded</strong>
+(e.g. UTF-32 self- transcode should stay random access).</li>
+</ul>
+<h2 id="where-bemantranscode-already-follows-the-model">Where
+<code>beman.transcode</code> already follows the model</h2>
+<ul>
+<li><strong><code>_or_error</code> paired views</strong> with errors
+carried in the <code>value_type</code>
+(<code>expected&lt;char32_t, whatwg_error&gt;</code>) — and
+<strong>no</strong> error-query member on the iterator. This matches
+both the <code>_or_error</code> pattern and the explicit SG9 preference
+that produced it.</li>
+<li><strong>U+FFFD</strong> substitution on lossy decode.</li>
+<li><strong><code>views::null_term</code></strong> mirrors
+<code>std::null_term</code>.</li>
+<li><strong>Raw arrays are rejected</strong> with a targeted diagnostic
+(same null-terminator rationale as P2728 §10.1).</li>
+<li><strong><code>enable_borrowed_range</code></strong> is specialized
+to mirror the base range, and the iterators hold
+<code>current_</code>/<code>end_</code> with <strong>no parent
+back-pointer</strong> — the R12 direction.</li>
+<li><strong><code>begin()</code> is not cached</strong> (P2728
+§10.3).</li>
+<li><strong>Lazy views are kept separate from bulk paths</strong>
+(<code>detail/bulk_transcode.hpp</code>, <code>iconv_bulk.hpp</code>) —
+the structure SG9 is drifting toward for SIMD/throughput.</li>
+<li><strong>Strongest iterator category per codec</strong> — single-byte
+codecs get a dedicated <code>random_access_whatwg_decode_view</code>
+rather than a uniform floor.</li>
+<li><strong>Same-codec transcode is not a no-op</strong> (it sanitizes)
+— README §6.2 mirrors P2728 §6.2.</li>
+</ul>
+<h2 id="where-it-diverges-and-how-to-track">Where it diverges, and how
+to track</h2>
+<h3
+id="1-collapse-the-_view--_or_error_view-pairs-into-one-template--done">1.
+Collapse the <code>_view</code> / <code>_or_error_view</code> pairs into
+one template — <strong>done</strong></h3>
+<p>Closed in P5-Step 3c. All four families are now one template each,
+parameterized on
+<code>transcode_error_kind { replacement, expected }</code> (in
+<code>error.hpp</code>), with the <code>_or_error</code> spellings kept
+as alias templates and the closure objects selecting the kind:</p>
+<pre><code>whatwg_decode_view&lt;C, R, E&gt;       whatwg_encode_view&lt;C, R, E&gt;
+decode_view&lt;Codec, R, E&gt;          encode_view&lt;Codec, R, E&gt;</code></pre>
+<p>The enum is named <code>_kind</code> and left open for the reason SG9
+gave: a future kind that also surfaces the offending input bytes should
+be addable without a third class template. Errors stay in the
+<code>value_type</code>; no error-query member was added to any
+iterator.</p>
+<p>What the pairs had been, for the record:</p>
+<p>Track the model by unifying each pair into a single view template
+parameterized on an <strong>extensible error-kind enum</strong> — the
+analog of <code>to_utf_view_error_kind</code>:</p>
+<ul>
+<li>Name it for extension (e.g.
+<code>decode_error_kind</code>/<code>transcode_kind</code>), with at
+least <code>{ replacement, expected }</code>, leaving room for future
+kinds.</li>
+<li>Give the enum an <strong>unspecified underlying type</strong>
+(R13).</li>
+<li>Select <code>E</code> in the lossy vs <code>_or_error</code> CPOs;
+keep the <code>_or_error</code> suffix.</li>
+<li>Use <strong><code>std::constant_wrapper</code></strong> + a tag type
+for CTAD (R11), and do <strong>not</strong> add a bare constructor
+lacking a corresponding deduction guide (SG9 kept this
+deliberately).</li>
+<li>Keep errors in the <code>value_type</code>; do not add an
+error-query iterator member.</li>
+</ul>
+<h3 id="2-unspecified-underlying-type-for-the-error-enums-r13">2.
+Unspecified underlying type for the error enums (R13)</h3>
+<p><code>whatwg_error</code> currently has the implicit
+<code>int</code>. Match R13 by not depending on a fixed underlying type
+for the error / error-kind enums.</p>
+<h3 id="3-verify-base-semantics">3. Verify <code>base()</code>
+semantics</h3>
+<p>Confirm the decode <code>iterator::base()</code> returns the position
+at the <strong>start of the current code point's bytes</strong> (P2728's
+forward-range contract), not the next boundary — the repo's decoder
+advances eagerly in <code>load()</code>, so this is worth a test.</p>
+<h3
+id="intentional-non-convergent-differences-do-not-fix-toward-p2728">Intentional,
+non-convergent differences (do not "fix" toward P2728)</h3>
+<ul>
+<li><p>The uniform <code>buf_</code>/<code>to_increment_</code>
+small-buffer iterator and <strong>bidirectional</strong> traversal
+assume <em>stateless</em> UTF-N. The repo's CJK codecs (ISO-2022-JP,
+GB18030 replay) are inherently <strong>stateful and
+forward-only</strong>; bidirectional like P2728 is not achievable for
+them.</p></li>
+<li><p><code>as_charN_t</code> cast adaptors are pointless for a
+byte-in/<code>char32_t</code>-out pipeline — unless added deliberately
+as the interop seam to feed <code>char</code>-stored UTF into a
+P2728-typed pipeline.</p></li>
+<li><p><strong>No unified error codes across backends.</strong> P2728
+has a single error enum, <code>utf_transcoding_error</code>, because it
+covers UTF only. Here <code>whatwg_error</code> and
+<code>iconv_error</code> stay separate, and there is no shared error
+code or coarse category spanning them. Two cases settled this:</p>
+<ul>
+<li><code>output_full</code> (<code>E2BIG</code>) is an artifact of
+iconv's fixed output buffer. It says nothing about the input data, and
+no other backend can produce it.</li>
+<li>An unmapped code point is impossible for a UTF target, because every
+scalar value has a UTF encoding. The legacy encoders still need it.</li>
+</ul>
+<p>A unified scheme would make every client handle, forever, cases that
+cannot happen for its conversion. Doing it properly would take a paper
+of its own. This is about the error <em>codes</em>. Unifying the error
+<em>kind</em> (replacement vs <code>expected</code>, item 1 above) is a
+different axis, and it is done.</p></li>
+</ul>
+<h2 id="action-items">Action items</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />Unify
+<code>whatwg_decode_view</code> +
+<code>whatwg_decode_or_error_view</code> (and the encode and pluggable
+counterparts) under one error-kind-parameterized template. Done in
+P5-Step 3c.</label></li>
+<li><label><input type="checkbox" />Give the error / error-kind enums an
+unspecified underlying type. Nothing to change in the code — neither
+enum names an enum-base — so this is a constraint on the
+<em>wording</em>, which must not fix one either.</label></li>
+<li><label><input type="checkbox" />Add a test pinning
+<code>iterator::base()</code> to the start-of-code-point byte
+position.</label></li>
+<li><label><input type="checkbox" />Make the closures'
+<code>operator()</code> <code>static</code> (C++23) — small
+QoI.</label></li>
+<li><label><input type="checkbox" />(Future, not now) A "which input
+bytes failed" capability for error reporting, expressed as an error-kind
+/ error payload rather than a new iterator member.</label></li>
+</ul>
+<h2 id="future-bolt-ons-that-the-model-leaves-open">Future bolt-ons that
+the model leaves open</h2>
+<ul>
+<li>A <code>base_code_units</code>-style accessor for error reporting
+(forward ranges only), as syntactic sugar over
+<code>subrange(it.base(), ranges::next(it).base())</code>.</li>
+<li>A SIMD/bulk "kind" or separate view, kept out of the lazy
+<code>operator++</code>.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/p2728-alignment.md">docs/p2728-alignment.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

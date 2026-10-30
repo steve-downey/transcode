@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Wording outline - beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../index.html">beman.transcode</a> <a href="../doxygen/index.html">Doxygen</a> <a href="../mrdocs/index.html">MrDocs</a> <a href="../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/wording-outline.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#wording-outline" id="toc-wording-outline">Wording
+outline</a>
+<ul>
+<li><a href="#how-the-tree-maps-onto-fragments"
+id="toc-how-the-tree-maps-onto-fragments">How the tree maps onto
+fragments</a></li>
+<li><a href="#transcode"
+id="toc-transcode"><code>&lt;transcode&gt;</code></a></li>
+<li><a href="#null_term"
+id="toc-null_term"><code>&lt;null_term&gt;</code></a></li>
+<li><a href="#exposition-only-omitted-and-not-proposed"
+id="toc-exposition-only-omitted-and-not-proposed">Exposition-only,
+omitted, and not proposed</a></li>
+<li><a href="#the-detail-audit-step-3-task-3"
+id="toc-the-detail-audit-step-3-task-3">The <code>detail::</code> audit
+(Step 3 task 3)</a></li>
+<li><a href="#decisions-this-outline-settles"
+id="toc-decisions-this-outline-settles">Decisions this outline
+settles</a></li>
+<li><a href="#open-and-deliberately-not-settled-here"
+id="toc-open-and-deliberately-not-settled-here">Open, and deliberately
+not settled here</a></li>
+</ul></li>
+</ul>
+</nav>
+<!-- markdownlint-disable MD013 -->
+
+<h1 id="wording-outline">Wording outline</h1>
+<p>The clause tree the paper's wording is generated into, and the map
+from it back to the headers. This is the contract the markup steps
+(<code>docs/plans/p5-step4-*</code> through <code>p5-step9-*</code>)
+follow: a stable name, a title, a depth and an expos/omit decision are
+settled here once, because each of them is simultaneously a clause
+identifier, a fragment filename, an <code>{- .sref}</code> span and an
+ordering key. Changing one later renames a file, a heading and a
+cross-reference at once.</p>
+<p>See <code>docs/plans/phase5-index.md</code> for the plan, its
+decisions D1-D7, and the upstream specgen items U1-U9 referenced below,
+whose state was re-measured on 2026-09-04 (see the index).</p>
+<h2 id="how-the-tree-maps-onto-fragments">How the tree maps onto
+fragments</h2>
+<p><code>--split</code> writes one fragment per
+<strong>top-level</strong> section, so fragment granularity is decided
+by which <code>\rSec</code> markers are shallowest in a header, not by
+the clause numbering the paper prints. Two consequences:</p>
+<ul>
+<li>Every clause that needs to be a fragment of its own is a
+<code>\rSec2</code>. A <code>\rSec3</code> under it rides along inside
+that fragment. This is what lets Step 10 put an authored editing
+instruction between two clauses.</li>
+<li>The umbrella clause <code>[transcode]</code> is <strong>not</strong>
+generated. A <code>\rSec1</code> wrapping everything would collapse the
+whole header into a single fragment, and a <code>\rSec</code> section
+with no declarations under it renders as a bare heading (observed in
+Step 1). The umbrella, and <code>[transcode.general]</code>, are
+authored in the paper around the generated clauses.</li>
+</ul>
+<p>Heading level follows from mpark's fixed
+<code>base_heading_level = 2</code> (index U2): <code>\rSec2</code>
+prints as <code>##</code>, <code>\rSec3</code> as <code>###</code>.</p>
+<p>Declaration-level descriptions remain beside their declarations in a
+synopsis. This is deliberate specgen behaviour, not accidental leakage:
+the descriptions of the view class templates explain what each declared
+type is, while their dedicated semantic clauses specify constructors,
+accessors and iterator operations.
+<code>specgen render --validate</code> accepts that placement. Moving
+those descriptions into the semantic clauses would leave the synopsis
+declarations undescribed rather than remove duplicated wording.</p>
+<h2 id="transcode"><code>&lt;transcode&gt;</code></h2>
+<p>Generated from <code>transcode.hpp</code>, which is the umbrella of
+<code>#include</code>s it always was: specgen follows the headers
+included inside its <code>\rSec2[transcode.syn]</code> region (index
+D1), so the component headers are the document without being one file.
+Fragment order is the order of the <code>\rSec</code> markers in
+<code>transcode.hpp</code>, which is the order below; the
+<em>synopsis</em> reads in include order, which is the order the
+compiler needs and need not match.</p>
+<table>
+<thead>
+<tr>
+<th>Stable name</th>
+<th>Depth</th>
+<th>Title</th>
+<th>Entities</th>
+<th>Generated from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>transcode.general</code></td>
+<td>—</td>
+<td>General</td>
+<td>scope, terms, the byte/scalar model</td>
+<td>authored in the paper</td>
+</tr>
+<tr>
+<td><code>transcode.syn</code></td>
+<td>2</td>
+<td>Header <code>&lt;transcode&gt;</code> synopsis</td>
+<td>everything below, gathered</td>
+<td><code>transcode.hpp</code>'s region and the sixteen headers included
+in it, done 2026-09-07</td>
+</tr>
+<tr>
+<td><code>transcode.errors</code></td>
+<td>2</td>
+<td>Error types</td>
+<td><code>whatwg_error</code>, <code>iconv_error</code>,
+<code>transcode_error_kind</code></td>
+<td><code>error.hpp</code> routes to it, done 2026-09-06</td>
+</tr>
+<tr>
+<td><code>transcode.reqs</code></td>
+<td>2</td>
+<td>Range requirements</td>
+<td><code>legacy_byte_range</code>,
+<code>unicode_scalar_range</code></td>
+<td><code>concepts.hpp</code> routes to it, done 2026-09-06</td>
+</tr>
+<tr>
+<td><code>transcode.codec</code></td>
+<td>2</td>
+<td>Encodings</td>
+<td><code>enum class codec</code></td>
+<td><code>codec.hpp</code>, done 2026-09-07</td>
+</tr>
+<tr>
+<td><code>transcode.codec.label</code></td>
+<td>3</td>
+<td>Label lookup</td>
+<td><code>get_encoding</code></td>
+<td><code>label.hpp</code>, done 2026-09-07</td>
+</tr>
+<tr>
+<td><code>transcode.codec.sniff</code></td>
+<td>3</td>
+<td>Byte order mark sniffing</td>
+<td><code>sniff_encoding</code></td>
+<td><code>sniff.hpp</code>, done 2026-09-07</td>
+</tr>
+<tr>
+<td><code>transcode.whatwg.decode</code></td>
+<td>2</td>
+<td>Decoding views</td>
+<td><code>whatwg_decode_view</code>, its closures
+<code>whatwg_decode&lt;C&gt;</code> /
+<code>whatwg_decode_or_error&lt;C&gt;</code>, and its
+<code>enable_borrowed_range</code> specialization</td>
+<td><code>whatwg_decode_view.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.whatwg.decode.iterator</code></td>
+<td>3</td>
+<td>Class <code>whatwg_decode_view::iterator</code></td>
+<td>the iterator operations</td>
+<td><code>whatwg_decode_view.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.whatwg.encode</code></td>
+<td>2</td>
+<td>Encoding views</td>
+<td><code>whatwg_encode_view</code>, likewise</td>
+<td><code>whatwg_encode_view.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.whatwg.encode.iterator</code></td>
+<td>3</td>
+<td>Class <code>whatwg_encode_view::iterator</code></td>
+<td>likewise</td>
+<td><code>whatwg_encode_view.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.custom.reqs</code></td>
+<td>2</td>
+<td>Codec requirements</td>
+<td><code>decode_codec</code>, <code>encode_codec</code>,
+<code>flushable_decode_codec</code>,
+<code>random_access_decode_codec_type</code>,
+<code>decode_result</code>, <code>encode_result</code></td>
+<td><code>codec_concepts.hpp</code>, <code>codec_result.hpp</code>, done
+2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.custom.decode</code></td>
+<td>2</td>
+<td>Class template <code>decode_view</code></td>
+<td><code>decode_view</code>, <code>decode</code>,
+<code>decode_or_error</code></td>
+<td><code>decode_view.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.custom.decode.iterator</code></td>
+<td>3</td>
+<td>Class <code>decode_view::iterator</code></td>
+<td>the iterator operations</td>
+<td><code>decode_view.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.custom.encode</code></td>
+<td>2</td>
+<td>Class template <code>encode_view</code></td>
+<td><code>encode_view</code>, <code>encode</code>,
+<code>encode_or_error</code></td>
+<td><code>encode_view.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.custom.encode.iterator</code></td>
+<td>3</td>
+<td>Class <code>encode_view::iterator</code></td>
+<td>likewise</td>
+<td><code>encode_view.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.pipeline</code></td>
+<td>2</td>
+<td>Transcoding pipelines</td>
+<td><code>transcode</code>, <code>pluggable_transcode</code></td>
+<td><code>transcode_view.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.string</code></td>
+<td>2</td>
+<td>Eager transcoding</td>
+<td><code>transcode_string</code>, both overloads</td>
+<td><code>transcode_string.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.bulk</code></td>
+<td>2</td>
+<td>Eager bulk conversion</td>
+<td><code>decode_to</code>, <code>encode_to</code>,
+<code>decode_into</code>, <code>encode_into</code>, each in a WHATWG and
+a pluggable form</td>
+<td><code>bulk_transcode.hpp</code>, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.iconv</code></td>
+<td>2</td>
+<td>iconv adaptors</td>
+<td><code>iconv_functions</code>, the two views, the closures,
+<code>iconv_transcode</code>, <code>iconv_transcode_or_error</code>,
+<code>iconv_transcode_to</code>, <code>iconv_transcode_into</code>,
+<code>iconv_transcode_to_or_error</code></td>
+<td>the four <code>iconv_*.hpp</code> headers, done 2026-09-08</td>
+</tr>
+<tr>
+<td><code>transcode.iconv.iterator</code></td>
+<td>3</td>
+<td>The two iconv iterators</td>
+<td><code>iconv_transcode_view::$iterator$</code>,
+<code>iconv_transcode_or_error_view::$iterator$</code></td>
+<td>the same headers, done 2026-09-08</td>
+</tr>
+</tbody>
+</table>
+<p><code>transcode.custom.*</code> rather than
+<code>transcode.decode</code> / <code>transcode.encode</code> for the
+codec-parameterized family: the WHATWG views are what most readers reach
+for, so they get the short names, and grouping the extension point under
+one prefix says what it is for. It also keeps
+<code>transcode.codec.*</code> (the enumeration and its lookups) from
+colliding with the codec <em>requirements</em>, which are a different
+subject entirely.</p>
+<h2 id="null_term"><code>&lt;null_term&gt;</code></h2>
+<table>
+<thead>
+<tr>
+<th>Stable name</th>
+<th>Depth</th>
+<th>Title</th>
+<th>Entities</th>
+<th>Generated from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>null.term.syn</code></td>
+<td>root</td>
+<td>Header <code>&lt;null_term&gt;</code> synopsis</td>
+<td><code>null_sentinel_t</code>, <code>null_sentinel</code>,
+<code>null_term_view</code>, <code>views::null_term</code></td>
+<td>gathered region, done 2026-09-06</td>
+</tr>
+<tr>
+<td><code>null.term.sentinel</code></td>
+<td>2</td>
+<td>Class <code>null_sentinel_t</code></td>
+<td>the hidden friend <code>operator==</code></td>
+<td>done 2026-09-06</td>
+</tr>
+<tr>
+<td><code>null.term.view</code></td>
+<td>2</td>
+<td>Class template <code>null_term_view</code></td>
+<td>the constructor, <code>begin</code>, <code>end</code></td>
+<td>done in Step 1</td>
+</tr>
+<tr>
+<td><code>null.term.adaptor</code></td>
+<td>2</td>
+<td><code>views::null_term</code></td>
+<td>the range adaptor object</td>
+<td>done 2026-09-06; <code>$unspecified$</code> in the synopsis, routed
+prose in the clause</td>
+</tr>
+</tbody>
+</table>
+<p>Step 1 generates <code>null.term</code> (the root, un-gathered) and
+<code>null.term.view</code>. <code>null.term.sentinel</code> landed with
+the gathered region, and <code>null.term.adaptor</code> in Step 4: its
+declaration is folded into the synopsis and a
+<code>\ref{null.term.adaptor}</code> group header routes its prose to
+the clause, which is what specgen#69 made possible.</p>
+<h2 id="exposition-only-omitted-and-not-proposed">Exposition-only,
+omitted, and not proposed</h2>
+<p>The three ways a declaration stays out of the wording, decided per
+entity here so no step has to decide twice.</p>
+<h3 id="exposition-only-expos">Exposition-only
+(<code>\expos</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Rendered as</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>null_term_view::ptr_</code></td>
+<td><code>$ptr$</code></td>
+<td>the view's state, which the wording refers to</td>
+</tr>
+<tr>
+<td><code>detail::legacy_byte_type</code></td>
+<td><code>$legacy-byte-type$</code></td>
+<td>a real conjunct of <code>legacy_byte_range</code>; the draft would
+spell it out. Marked in Step 4</td>
+</tr>
+<tr>
+<td>every view's <code>base_</code>, <code>codec_</code>,
+<code>buf_</code>, iterator state</td>
+<td>exposition names</td>
+<td>the wording describes what they hold</td>
+</tr>
+<tr>
+<td>a view's nested <code>iterator</code></td>
+<td><code>class $iterator$;</code></td>
+<td><code>\expos</code> with bare <code>\seebelow</code>, which renders
+the declaration and leaves the state out of the synopsis --
+[range.transform.view]'s shape. Needed specgen#80</td>
+</tr>
+<tr>
+<td>the closure types (<code>whatwg_decode_closure</code> and the seven
+others)</td>
+<td>ideally <code>unspecified</code></td>
+<td>unblocked 2026-09-05; specgen#24 fixed</td>
+</tr>
+<tr>
+<td><code>detail::const_iterator_compatible_range</code>,
+<code>detail::const_sentinel_compatible_range</code></td>
+<td><code>$const-iterator-compatible-range$</code>,
+<code>$const-sentinel-compatible-range$</code></td>
+<td>the const-compatibility chain the views constrain
+<code>begin</code>/<code>end</code> on</td>
+</tr>
+<tr>
+<td><code>detail::random_access_decode_codec</code>,
+<code>detail::random_access_encode_codec</code></td>
+<td><code>$random-access-decode-codec$</code>,
+<code>$random-access-encode-codec$</code></td>
+<td>which codecs are O(1) per element; a property of the specification,
+not of the tables</td>
+</tr>
+<tr>
+<td><code>detail::whatwg_encode_codec</code>,
+<code>detail::whatwg_encode_input</code></td>
+<td><code>$whatwg-encode-codec$</code>,
+<code>$whatwg-encode-input$</code></td>
+<td>WHATWG defines no encoder for some codecs; the constraint says
+which</td>
+</tr>
+</tbody>
+</table>
+<h3 id="omitted-omit">Omitted (<code>\omit</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>random_access_whatwg_decode_view</code> and the encode and
+pluggable equivalents, and the <code>enable_borrowed_range</code>
+specializations written for them</td>
+<td>decision W1 below</td>
+</tr>
+<tr>
+<td>the <code>_or_error_view</code> / <code>_or_error_closure</code>
+alias templates</td>
+<td>transition spellings for the pre-unification names, not API</td>
+</tr>
+<tr>
+<td><code>null_term_view</code>'s deduction guide</td>
+<td>the implicit guide from the constructor is identical; index U4 no
+longer applies</td>
+</tr>
+<tr>
+<td><code>detail::null_term_fn</code>,
+<code>detail::null_term_adaptor</code></td>
+<td>the adaptor object's type is unspecified</td>
+</tr>
+<tr>
+<td><code>detail::label_entry</code>, <code>label_table</code></td>
+<td>generated data behind <code>get_encoding</code>, and all
+<code>tools/generate_labels.py</code> emits since Step 5</td>
+</tr>
+<tr>
+<td><code>detail::transcode_decode_all</code>,
+<code>detail::transcode_encode_all</code></td>
+<td>the loops <code>transcode_string</code> runs; they rendered in the
+synopsis as bare names until Step 11 <code>\omit</code>ted them, because
+the leakage check keys on a rendered qualifier and these had none</td>
+</tr>
+<tr>
+<td><code>detail::iconv_guard</code>, <code>iconv_input_buf</code></td>
+<td>RAII plumbing</td>
+</tr>
+<tr>
+<td><code>iconv_error_rc</code></td>
+<td>a POSIX return-value constant, not API</td>
+</tr>
+</tbody>
+</table>
+<h3 id="not-proposed-at-all">Not proposed at all</h3>
+<ul>
+<li><p><del><code>decode_to</code>, <code>encode_to</code>,
+<code>decode_into</code>, <code>encode_into</code>.</del>
+<strong>Settled: they are proposed</strong>, and
+<code>[transcode.bulk]</code> specifies them. This entry was wrong from
+the day it was written and stayed wrong for five days. Both halves of
+its justification were false: the header said the <em>opposite</em>
+("They are proposed"), and the paper's API surface table ticks all four
+in the WHATWG and pluggable columns -- the <code>n/a</code> rows it
+cited are <em>bulk transcode</em>, which is byte-to-byte and a different
+operation. The paper argues the case in "Bulk conversion to owned
+storage" and concludes "However, we propose the names"; that is commit
+<code>c3ced80</code> (2026-09-02), a day before this outline
+(<code>e82bcd1</code>) recorded the opposite without noting it was
+reversing anything.</p>
+<p>The cost of the error was that Step 3's promotion of the
+specification headers passed over <code>bulk_transcode.hpp</code> on
+this line's authority, leaving eight public functions --
+<code>beman::transcoding::decode_to</code>, not
+<code>detail::decode_to</code> -- in a <code>detail/</code>-pathed file,
+and <code>transcode.hpp</code> kept it outside the gathered region
+citing this section. The header is now
+<code>include/beman/transcode/bulk_transcode.hpp</code>, inside the
+region, and its wording is generated like everything else.</p>
+<p>The reason to propose them is not that they do much. Each is one
+line, and <code>ranges::to</code> and <code>ranges::copy</code> already
+do the work. It is that converting a buffer to a container is the
+operation people come for, and withholding the name they will look for
+only moves the question to every code review that ever uses this
+library.</p></li>
+<li><p><del><code>make_real_iconv_fns</code>, and
+<code>iconv_functions</code> as an injection seam.</del> Settled in Step
+9: both are proposed. <code>iconv_functions</code> is what makes the
+view testable without the platform's iconv tables
+(<code>tests/beman/transcode/iconv_mock.hpp</code>), and a seam that
+only the library's own tests can reach is a seam the library is keeping
+to itself. It is specified as a named requirement on the template
+parameter, and <code>make_real_iconv_fns</code> as the function that
+supplies the platform's.</p></li>
+</ul>
+<h2 id="the-detail-audit-step-3-task-3">The <code>detail::</code> audit
+(Step 3 task 3)</h2>
+<p>After Step 3, <code>specgen render --validate</code> reports
+<strong>no</strong> <code>detail</code> leakage in any specification
+header. Two chains got there differently, and the difference is worth
+recording because Steps 6 and 7 inherit it.</p>
+<ul>
+<li><code>detail::random_access_decode_codec</code> and
+<code>detail::random_access_encode_codec</code> appeared in the
+<code>random_access_*</code> views' requires-clauses. W1 omits those
+views, and Step 3 moved the concepts themselves into
+<code>detail/whatwg_decode_select.hpp</code> and
+<code>detail/whatwg_encode_select.hpp</code>, out of the specification
+headers entirely. Nothing left to decide.</li>
+<li><code>detail::const_iterator_compatible_range</code> and
+<code>const_sentinel_compatible_range</code> constrain every
+<code>begin() const</code> and <code>end() const</code>, so they are
+genuinely part of what the specification says. They are
+<strong>exposition-only in the wording</strong>, but they cannot be
+rendered that way yet: <code>\expos</code> works on a concept (verified)
+and not on the alias template and class template the concept is defined
+in terms of (index U8). They therefore stay in
+<code>detail/range_traits.hpp</code> for now, and <strong>Step 6
+chooses</strong> between restating the concept in the specification
+header without helper aliases so a single <code>\expos</code> covers it,
+and waiting for U8. Whichever it picks, the constraint is authored
+<code>\constraints</code> prose on the affected members rather than
+derived from the requires-clause.</li>
+</ul>
+<h2 id="decisions-this-outline-settles">Decisions this outline
+settles</h2>
+<p><strong>W1 — the <code>random_access_</code> view specializations are
+not separate specified entities.</strong> <em>Carried out in Step 6
+(2026-09-08): both are <code>\omit</code>ted, and each view's clause
+says instead that it models <code>random_access_range</code> when the
+codec decodes one byte to one scalar value and the base range does. That
+also removed the last <code>detail::</code> qualifier from the document,
+which was reaching the wording through those views'
+requires-clauses.</em> They exist so a single-byte codec gets O(1)
+indexing. That is a property of the view, not a second view: the
+specification says <code>whatwg_decode_view&lt;C, R&gt;</code> models
+<code>random_access_range</code> when <code>C</code> is a single-byte
+codec and <code>R</code> models <code>random_access_range</code>, and an
+implementation gets there however it likes. Omitting them also removes
+<code>detail::random_access_decode_codec</code> from every spec-visible
+signature, which D7 requires anyway. The alternative — specifying eight
+view templates instead of four — doubles the clause for no reader
+benefit. If SG16 wants the distinction visible, it comes back as a
+<em>Remarks</em> paragraph, not as a type.</p>
+<p><strong>W2 — the WHATWG enumeration is specified by
+reference.</strong> <code>enum class codec</code> has 39 enumerators;
+the wording says each names the WHATWG encoding of the corresponding
+name and cites the Encoding Standard, rather than restating a table that
+is normative somewhere else and changes there.</p>
+<p><em>Step 5's answer to how the reference is spelled</em>
+(2026-09-07), in two parts, because the question has two halves:</p>
+<ul>
+<li><strong>In the generated wording</strong>, the standard is named in
+prose -- "the WHATWG Encoding Standard" -- and nothing else. specgen's
+<code>\iref</code> points at a stable name in this draft and there is
+none to point at; a bibliography key is the paper's and would not
+survive into the working draft.</li>
+<li><strong>In the paper, and in the eventual working draft</strong>, it
+is a normative reference in the [intro.refs] sense: an entry naming the
+Encoding Standard, its URL, and the version it was read at. A living
+standard has no edition to cite, so the entry carries a date, and the
+paper says which snapshot <code>docs/whatwg/</code> was downloaded from.
+Step 10 writes that entry. Whether a normative reference to a living
+standard is acceptable at all is SG16's to answer, and it is a question
+about the paper's prose rather than something the wording can
+settle.</li>
+</ul>
+<p><strong>W3 — <code>&lt;null_term&gt;</code> stays a separate
+header.</strong> It is the paper's position already, and
+<code>views::null_term</code> has nothing to do with encodings; it is a
+range adaptor over a C string that this proposal happens to need.</p>
+<h2 id="open-and-deliberately-not-settled-here">Open, and deliberately
+not settled here</h2>
+<ul>
+<li><del><strong>The <code>_or_error</code> split.</strong></del>
+Settled in P5-Step 3c, before the clauses were written. Each family is
+one view template parameterized on <code>transcode_error_kind</code>, so
+<code>transcode.whatwg.decode</code>,
+<code>transcode.whatwg.encode</code>,
+<code>transcode.custom.decode</code> and
+<code>transcode.custom.encode</code> each specify <strong>one</strong>
+class template and two closure objects rather than two of each.
+<code>transcode.errors</code> gains <code>transcode_error_kind</code>,
+and its wording must not fix an underlying type for either enum (P2728
+R13).</li>
+<li><del><strong>Whether iconv is proposed at all</strong></del> Settled
+in Step 9: <strong>iconv is proposed</strong>, with full wording, and no
+feature-test-macro condition. The argument for dropping it was that
+POSIX <code>iconv</code> is implementation-defined across glibc, musl
+and the BSDs, so specifying a view over it specifies "whatever the
+implementation's iconv does". That is true and it is not disqualifying:
+the wording says what the <em>adaptor</em> guarantees -- one descriptor
+per <code>begin</code>, closed by the iterator that owns it, input the
+conversion refuses skipped or surfaced -- and leaves the conversion
+itself to the implementation, exactly as <code>&lt;locale&gt;</code>
+leaves the locale's own tables to it. The leak-freedom is the whole
+point of proposing it: the C interface hands out a descriptor that a
+program must remember to close, and a range adaptor is where that stops
+being the program's problem. <code>transcode.iconv</code> is still
+listed last, and it is still the one clause the paper can drop without
+renumbering anything else, which is what makes it a clean question to
+put to SG16 rather than one to settle silently.</li>
+<li><strong>Two error vocabularies.</strong>
+<code>transcode.iconv</code> reports <code>iconv_error</code> while
+every other clause reports <code>whatwg_error</code>, and Step 3c's
+unification does not merge them: it unified the <em>view</em> pairs on
+<code>transcode_error_kind</code>, which is orthogonal to what an error
+<em>is</em>. They stay separate because the failures are not the same
+failures. <code>whatwg_error</code> names what the Encoding Standard
+says went wrong in a byte sequence the library itself decoded;
+<code>iconv_error</code> names what POSIX reported --
+<code>EILSEQ</code>, <code>EINVAL</code>, <code>E2BIG</code>, or a
+descriptor that would not open -- about a conversion the library did not
+perform. A single enumeration would have to either drop the distinction
+or carry both sets, and the second is two vocabularies with one name.
+See <code>docs/p2728-alignment.md</code>.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/wording-outline.md">docs/wording-outline.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

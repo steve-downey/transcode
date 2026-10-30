@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P6-Step 7: U+FFFD Is Reserved, and the Cost Is Stated -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p6-step7-fffd-reservation.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p6-step-7-ufffd-is-reserved-and-the-cost-is-stated"
+id="toc-p6-step-7-ufffd-is-reserved-and-the-cost-is-stated">P6-Step 7:
+U+FFFD Is Reserved, and the Cost Is Stated</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#why" id="toc-why">Why</a></li>
+<li><a href="#what-to-change" id="toc-what-to-change">What to
+change</a></li>
+<li><a href="#paper" id="toc-paper">Paper</a></li>
+<li><a href="#tests" id="toc-tests">Tests</a></li>
+<li><a href="#done-when" id="toc-done-when">Done when</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p6-step-7-ufffd-is-reserved-and-the-cost-is-stated">P6-Step 7:
+U+FFFD Is Reserved, and the Cost Is Stated</h1>
+<p><strong>Branch:</strong> <code>p6-step7-fffd-reservation</code>
+<strong>Depends on:</strong> Step 0 <strong>Finding:</strong> S-03
+<strong>Read first:</strong> <code>docs/plans/phase6-index.md</code></p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Say out loud that a custom single-byte codec cannot map a high byte
+to the actual U+FFFD scalar, and put the question of whether that is
+acceptable in front of SG16 rather than answering it in a header.</p>
+<h2 id="why">Why</h2>
+<p><code>random_access_decode_codec_type</code> requires
+<code>decode_byte(byte)</code> to return "what <code>byte</code> alone
+decodes to, and U+FFFD if it decodes to nothing"
+(<code>codec_concepts.hpp:35-43</code>). The <code>_or_error</code> path
+then reads that value back (<code>decode_view.hpp:278-280</code>):</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">char32_t</span> cp <span class="op">=</span> <span class="va">codec_</span><span class="op">.</span>decode_byte<span class="op">(</span>byte<span class="op">);</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(</span>cp <span class="op">==</span> <span class="ch">U&#39;</span><span class="sc">\xFFFD</span><span class="ch">&#39;</span> <span class="op">&amp;&amp;</span> byte <span class="op">&gt;=</span> <span class="bn">0x80</span><span class="op">)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> error_result<span class="op">(</span>whatwg_error<span class="op">::</span>invalid_byte<span class="op">);</span></span></code></pre></div>
+<p>So U+FFFD is doing double duty: it is both a scalar value a codec
+might legitimately want to produce and the in-band signal that it
+produced nothing. A custom codec whose byte <code>0xFE</code> really
+does mean U+FFFD reports an error instead, in <code>_or_error</code>
+mode only -- the replacement-mode view returns the value correctly, so
+the two modes disagree about the same byte.</p>
+<p>The <code>byte &gt;= 0x80</code> guard limits the damage to high
+bytes, which is why this has not bitten anything: no WHATWG single-byte
+index maps a high byte to U+FFFD. It is a real limit on the
+<em>extension</em> point, though, and the extension point is part of
+what the paper proposes.</p>
+<p>The review offers three fixes. Returning a result type from
+<code>decode_byte</code>, or adding a separate validity query, both
+change the concept that makes <code>random_access_range</code> decoding
+possible -- and the whole reason <code>decode_byte</code> returns a bare
+<code>char32_t</code> is that it is the cheap indexed path. Paying a
+result type per byte on the random-access path to serve a mapping no
+real codec has is the wrong trade to make unilaterally.</p>
+<p>So: document it, cost it, and ask. If SG16 wants the mapping, the
+concept changes then, with a reason.</p>
+<h2 id="what-to-change">What to change</h2>
+<p>No behaviour. Three docblocks and a paper paragraph.</p>
+<ul>
+<li><code>include/beman/transcode/codec_concepts.hpp</code>, on
+<code>random_access_decode_codec_type</code> — state that U+FFFD is
+reserved as the "decodes to nothing" signal for bytes <code>0x80</code>
+and above, and that a codec therefore cannot map such a byte to U+FFFD
+itself. Say it as a requirement on the codec author, since that is who
+it constrains.</li>
+<li><code>include/beman/transcode/decode_view.hpp</code>, on the
+<code>_or_error</code> <code>operator*</code> — a <code>\remarks</code>
+saying that a high byte decoding to U+FFFD is reported as
+<code>invalid_byte</code>, and cross-referencing the concept. This is
+the place a reader finds the behaviour; it should not be the place they
+have to infer the rule.</li>
+<li>Note the asymmetry explicitly: replacement mode returns U+FFFD and
+<code>_or_error</code> mode reports <code>invalid_byte</code> for the
+same byte and the same codec. A reader who discovers that themselves
+will file it as a bug.</li>
+</ul>
+<h2 id="paper">Paper</h2>
+<p><code>papers/transcode-view.md</code> has a "Questions for SG16"
+section. Add this to it, briefly: the reserved sentinel, the mapping it
+forecloses, the three fixes, and the reason for not choosing one yet.
+Step 8 owns the paper, so either land the paragraph here and tell Step
+8, or hand Step 8 the text -- but do not leave it unwritten, because the
+point of this step is the question, not the docblock.</p>
+<h2 id="tests">Tests</h2>
+<p>A custom codec in
+<code>tests/beman/transcode/codec_concepts.test.cpp</code> (or
+<code>decode_view.test.cpp</code>, wherever the existing custom-codec
+fixtures live) that maps <code>0xFE</code> to U+FFFD, asserting the
+documented split: U+FFFD from the replacement view,
+<code>invalid_byte</code> from the <code>_or_error</code> view.</p>
+<p>This test pins current behaviour rather than desired behaviour, which
+is unusual and worth a comment saying so. If SG16 answers, the test
+changes with the concept -- and it is the thing that will tell whoever
+makes that change exactly what they are changing.</p>
+<h2 id="done-when">Done when</h2>
+<ul>
+<li>The reservation is stated on the concept and its consequence on the
+view.</li>
+<li>The mode asymmetry is documented, not merely present.</li>
+<li>A test pins both modes for a codec that maps a high byte to
+U+FFFD.</li>
+<li>The SG16 question is written down.</li>
+<li><code>make test</code> and <code>make lint</code> pass.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step7-fffd-reservation.md">docs/plans/p6-step7-fffd-reservation.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

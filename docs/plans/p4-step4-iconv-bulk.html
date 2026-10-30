@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P4-Step 4: iconv Bulk Operations - beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p4-step4-iconv-bulk.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p4-step-4-iconv-bulk-operations"
+id="toc-p4-step-4-iconv-bulk-operations">P4-Step 4: iconv Bulk
+Operations</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#context-for-executing-agent"
+id="toc-context-for-executing-agent">Context for Executing
+Agent</a></li>
+<li><a href="#deliverables" id="toc-deliverables">Deliverables</a></li>
+<li><a href="#constraints" id="toc-constraints">Constraints</a></li>
+<li><a href="#procedure" id="toc-procedure">Procedure</a></li>
+<li><a href="#verification" id="toc-verification">Verification</a></li>
+<li><a href="#handoff-to-step-5" id="toc-handoff-to-step-5">Handoff to
+Step 5</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p4-step-4-iconv-bulk-operations">P4-Step 4: iconv Bulk
+Operations</h1>
+<p><strong>Branch:</strong> <code>p4-step4-iconv-bulk</code>
+<strong>Depends on:</strong> None (independent of pluggable codec steps)
+<strong>Read first:</strong> docs/plans/phase3-handoff.md and
+docs/plans/handoff-next.md</p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Add <code>iconv_transcode_to&lt;Container&gt;(input, from, to)</code>
+and <code>iconv_transcode_into(input, from, to, output_iter)</code> that
+call raw <code>iconv()</code> with block buffers, bypassing per-byte
+iteration. Target: ~1.5-2x overhead vs raw iconv (down from the current
+~15-20x of <code>iconv_transcode_view</code>).</p>
+<h2 id="context-for-executing-agent">Context for Executing Agent</h2>
+<p>The <code>iconv_transcode_view</code> in
+<code>include/beman/transcode/iconv_transcode_view.hpp</code> wraps
+iconv as a per-byte range adaptor. Each <code>++iterator</code> may
+trigger an <code>iconv()</code> call that processes a few bytes into a
+small staging buffer, then doles them out one at a time. This is correct
+but slow.</p>
+<p>The bulk operation should implement the same logic as the "before"
+code in <code>examples/paper_iconv_view.cpp</code> (lines 12-56), but
+wrapped in a clean function with RAII and proper error handling:</p>
+<ol type="1">
+<li><code>iconv_open(to, from)</code> — RAII guard ensures
+<code>iconv_close()</code></li>
+<li>Loop: call <code>iconv()</code> with the full input as
+<code>inbuf</code>/<code>inbytesleft</code> and a growing output
+buffer</li>
+<li>Handle <code>E2BIG</code>: grow output buffer (2x), retry</li>
+<li>Handle <code>EILSEQ</code>: skip invalid byte, insert replacement
+char (U+FFFD as UTF-8: <code>\xEF\xBF\xBD</code> if output is UTF-8,
+else <code>?</code>)</li>
+<li>Handle <code>EINVAL</code>: incomplete sequence at end of input —
+insert replacement</li>
+<li>Return the completed container</li>
+</ol>
+<h3 id="dependency-injection">Dependency injection</h3>
+<p>Accept an <code>iconv_functions</code> struct (same pattern as the
+view in <code>iconv_transcode_view.hpp</code> lines 16-27) so tests can
+use <code>mock_iconv</code> from
+<code>tests/beman/transcode/iconv_mock.hpp</code>.</p>
+<p>Default to real iconv (from <code>iconv_real.hpp</code>).</p>
+<h3 id="key-files-to-reference">Key files to reference</h3>
+<ul>
+<li><code>include/beman/transcode/iconv_transcode_view.hpp</code> — the
+view implementation (shows how iconv_functions is injected, how staging
+works)</li>
+<li><code>include/beman/transcode/iconv_real.hpp</code> — the real iconv
+function pointers</li>
+<li><code>tests/beman/transcode/iconv_mock.hpp</code> — mock functions
+for testing</li>
+<li><code>examples/paper_iconv_view.cpp</code> — the "before" code to
+model</li>
+<li><code>include/beman/transcode/detail/error.hpp</code> —
+<code>iconv_error</code> enum</li>
+</ul>
+<h2 id="deliverables">Deliverables</h2>
+<ul>
+<li><code>include/beman/transcode/iconv_bulk.hpp</code> — new file:
+<ul>
+<li><code>iconv_transcode_to&lt;Container&gt;(range, from, to)</code> →
+Container</li>
+<li><code>iconv_transcode_to&lt;Container&gt;(range, from, to, fns)</code>
+→ Container (DI overload)</li>
+<li><code>iconv_transcode_into(range, from, to, output_iter)</code> →
+output_iter</li>
+<li><code>iconv_transcode_into(range, from, to, output_iter, fns)</code>
+→ output_iter</li>
+<li><code>iconv_transcode_to_or_error&lt;Container&gt;(range, from, to)</code>
+→ <code>std::expected&lt;Container, iconv_error&gt;</code> (stops on
+first error instead of replacing)</li>
+</ul></li>
+<li><code>tests/beman/transcode/iconv_bulk.test.cpp</code> — tests using
+mock_iconv</li>
+<li>Update <code>include/beman/transcode/transcode.hpp</code> to include
+the new header</li>
+</ul>
+<h2 id="constraints">Constraints</h2>
+<ul>
+<li>Input must satisfy <code>legacy_byte_range</code> (same as the
+view)</li>
+<li>The function must work with <code>std::string_view</code>,
+<code>std::span&lt;const char&gt;</code>,
+<code>std::vector&lt;char&gt;</code>, etc.</li>
+<li>For <code>iconv_transcode_into</code>, the output iterator receives
+<code>char</code> values</li>
+<li>The initial output buffer size should be
+<code>input.size() * 4</code> (worst case expansion for UTF-8 output),
+capped at some reasonable maximum to avoid huge allocations for small
+inputs</li>
+<li>The RAII guard for <code>iconv_t</code> should use a local struct or
+<code>std::unique_ptr</code> with a custom deleter</li>
+</ul>
+<h2 id="procedure">Procedure</h2>
+<ol type="1">
+<li>Create branch <code>p4-step4-iconv-bulk</code> from
+<code>main</code></li>
+<li>Create <code>include/beman/transcode/iconv_bulk.hpp</code>:
+<ul>
+<li>Include guard:
+<code>INCLUDE_BEMAN_TRANSCODE_ICONV_BULK_HPP</code></li>
+<li>Include: <code>&lt;beman/transcode/detail/concepts.hpp&gt;</code>,
+<code>&lt;beman/transcode/detail/error.hpp&gt;</code>,
+<code>&lt;beman/transcode/iconv_real.hpp&gt;</code>,
+<code>&lt;expected&gt;</code>, <code>&lt;span&gt;</code>,
+<code>&lt;string&gt;</code>, <code>&lt;vector&gt;</code></li>
+</ul></li>
+<li>Implement RAII guard:
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> iconv_guard <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">iconv_t</span> handle<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    IconvFns fns<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">~</span>iconv_guard<span class="op">()</span> <span class="op">{</span> <span class="cf">if</span> <span class="op">(</span>handle <span class="op">!=</span> <span class="op">(</span><span class="dt">iconv_t</span><span class="op">)-</span><span class="dv">1</span><span class="op">)</span> fns<span class="op">.</span>close<span class="op">(</span>handle<span class="op">);</span> <span class="op">}</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div></li>
+<li>Implement <code>iconv_transcode_to</code>:
+<ul>
+<li>Materialize input into contiguous buffer if not already
+contiguous</li>
+<li>Open iconv handle</li>
+<li>Allocate output buffer (initial size = max(input_size * 4,
+256))</li>
+<li>Loop: call iconv(), handle E2BIG (grow 2x), EILSEQ (skip + replace),
+EINVAL (replace at end)</li>
+<li>Resize output to actual bytes written, return</li>
+</ul></li>
+<li>Implement <code>iconv_transcode_into</code>:
+<ul>
+<li>Same loop but write to output iterator instead of growing
+container</li>
+<li>Need a fixed-size temporary buffer that gets flushed to the
+iterator</li>
+</ul></li>
+<li>Implement <code>_or_error</code> variant:
+<ul>
+<li>Same structure but return
+<code>std::unexpected(iconv_error::invalid_sequence)</code> on EILSEQ
+instead of inserting replacement</li>
+</ul></li>
+<li>Add <code>#include &lt;beman/transcode/iconv_bulk.hpp&gt;</code> to
+<code>transcode.hpp</code></li>
+<li>Write tests using mock_iconv:
+<ul>
+<li>Test identity transcode (mock that copies input to output)</li>
+<li>Test E2BIG recovery (mock that always returns E2BIG with 1 byte
+consumed)</li>
+<li>Test EILSEQ handling (mock that returns EILSEQ for specific
+bytes)</li>
+<li>Test real iconv:
+<code>iconv_transcode_to&lt;std::string&gt;(input, "UTF-8", "UTF-32LE")</code></li>
+</ul></li>
+<li>Register tests in CMakeLists.txt</li>
+<li>Run <code>make test</code> + <code>make lint</code></li>
+<li>Run <code>make bench-perf</code> and compare new bulk iconv vs view
+iconv numbers</li>
+<li>Update <code>handoff-next.md</code></li>
+</ol>
+<h2 id="verification">Verification</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> test</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> lint</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Performance check — should see ~10x improvement over iconv_transcode_view:</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-perf</span></code></pre></div>
+<h2 id="handoff-to-step-5">Handoff to Step 5</h2>
+<p>Step 4 done, next read
+<code>docs/plans/p4-step5-iconv-null-term.md</code>. The bulk operations
+close the iconv performance gap.</p>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p4-step4-iconv-bulk.md">docs/plans/p4-step4-iconv-bulk.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P5-Step 7: Markup — Codec Requirements and Pluggable Views -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p5-step7-pluggable-codecs.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p5-step-7-markup--codec-requirements-and-pluggable-views"
+id="toc-p5-step-7-markup--codec-requirements-and-pluggable-views">P5-Step
+7: Markup — Codec Requirements and Pluggable Views</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#what-is-different-here"
+id="toc-what-is-different-here">What is different here</a></li>
+<li><a href="#acceptance" id="toc-acceptance">Acceptance</a></li>
+<li><a href="#outcome-2026-09-08" id="toc-outcome-2026-09-08">Outcome
+(2026-09-08)</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1
+id="p5-step-7-markup--codec-requirements-and-pluggable-views">P5-Step 7:
+Markup — Codec Requirements and Pluggable Views</h1>
+<p><strong>Branch:</strong> <code>p5-step7-pluggable-codecs</code>
+<strong>Depends on:</strong> Step 6 <strong>Read first:</strong>
+<code>docs/plans/p5-step4-errors-concepts-null-term.md</code> ("the
+markup loop")</p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Wording for <code>[transcode.codec.reqs]</code>,
+<code>[transcode.decode]</code> and <code>[transcode.encode]</code>: the
+<code>decode_codec</code> / <code>encode_codec</code> /
+<code>flushable_decode_codec</code> /
+<code>random_access_decode_codec_type</code> concepts, the
+<code>decode_result</code> / <code>encode_result</code> structs, and the
+codec-parameterized views.</p>
+<h2 id="what-is-different-here">What is different here</h2>
+<ul>
+<li><strong>The concepts are the extension point, so their wording is
+the contract a user-written codec must satisfy.</strong> This is a
+<em>Requirements</em> clause in the draft's sense: what
+<code>decode_one(iter, sentinel)</code> must return, what
+<code>flush()</code> means, when <code>decode_byte(byte)</code> may be
+called. The existing negative compile tests are the specification's test
+suite; every constraint they pin should be a sentence here.</li>
+<li><strong><code>decode_result</code> and
+<code>encode_result</code></strong>
+(<code>detail/codec_result.hpp</code>) are part of that contract and so
+are specification, not detail — Step 3 task 1 should already have moved
+them. If it did not, do it here.</li>
+<li><strong>The pluggable views are structurally parallel to the WHATWG
+views</strong> but parameterized on a codec <em>object</em> rather than
+an enumerator. Where the wording is genuinely the same, say so by
+cross-reference (<code>\iref</code>) rather than duplicating paragraphs;
+where it is not, the difference is worth a sentence in the paper's
+design section too.</li>
+</ul>
+<h2 id="acceptance">Acceptance</h2>
+<p>As Step 4, for <code>papers/wording/transcode.codec.reqs.md</code>,
+<code>transcode.decode.md</code>, <code>transcode.encode.md</code>.</p>
+<hr />
+<h2 id="outcome-2026-09-08">Outcome (2026-09-08)</h2>
+<p>All three clauses are written and <code>--validate</code> reports
+nothing about any of their entities. The document's findings go from 79
+to 22, and every one of the 22 belongs to Step 8's pipeline closures or
+Step 9's iconv surface.</p>
+<p><strong>The clause names are the outline's</strong>, not this plan's.
+This document was written before Step 2 settled
+<code>transcode.custom.*</code> for the codec-parameterized family
+(<code>docs/wording-outline.md</code>, "<code>transcode.custom.*</code>
+rather than <code>transcode.decode</code> /
+<code>transcode.encode</code>"), so its Goal and Acceptance still say
+<code>transcode.codec.reqs</code>, <code>transcode.decode</code> and
+<code>transcode.encode</code>. The outline is the contract; these are
+<code>[transcode.custom.reqs]</code>,
+<code>[transcode.custom.decode]</code> and
+<code>[transcode.custom.encode]</code>.</p>
+<p><strong><code>[transcode.custom.reqs]</code> is a requirements
+clause</strong>, and the four concepts are the contract a user-written
+codec satisfies: what <code>decode_one</code> reads and advances, that
+it is called only with a non-empty range, that a codec is a value and
+keeps its own state, what <code>decode_byte</code> means and what it
+buys, when <code>flush()</code> is called and what <code>nullopt</code>
+means from it. <code>decode_result</code> and <code>encode_result</code>
+are described by their classes' own paragraphs, which needed specgen#82:
+a public data member is specification, and both §9 checks used to say
+otherwise.</p>
+<p><strong>The views cross-reference rather than repeat.</strong>
+<code>decode_view</code> is <code>whatwg_decode_view</code> with the
+codec supplied as a value rather than named by an enumerator, and its
+clause says so with an <code>\iref</code> instead of a second copy of
+the same three paragraphs. Where the difference is real it is stated:
+the random-access property is a property of the <em>codec</em> here
+(<code>random_access_decode_codec_type</code>) rather than of the
+enumerator, and <code>flushable_decode_codec</code> gives the pluggable
+decode an end-of-input step the WHATWG views have no equivalent of.</p>
+<p>The rest is the Step 6 pattern, unchanged: <code>\omit</code> on the
+<code>random_access_</code> specialization and the closure struct,
+<code>\expos</code> with bare <code>\seebelow</code> on each nested
+iterator, <code>\seebelow</code> on the factory functions so they return
+<em>see below</em>, <code>\returns-equiv</code> and
+<code>\effects-equiv</code> where the body is the specification,
+authored prose everywhere <code>load()</code> drives it.</p>
+<p>Steps 8 and 9 are what remain before the paper is assembled.</p>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step7-pluggable-codecs.md">docs/plans/p5-step7-pluggable-codecs.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

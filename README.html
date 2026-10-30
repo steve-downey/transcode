@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="index.html">beman.transcode</a> <a href="doxygen/index.html">Doxygen</a> <a href="mrdocs/index.html">MrDocs</a> <a href="paper/transcode-view.html">Paper</a> <span class="site-nav-path">README.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#bemantranscode"
+id="toc-bemantranscode">beman.transcode</a>
+<ul>
+<li><a href="#context-and-motivation"
+id="toc-context-and-motivation">Context and Motivation</a></li>
+<li><a href="#design-byte-oriented-io-transcoding"
+id="toc-design-byte-oriented-io-transcoding">Design: Byte-Oriented I/O
+Transcoding</a></li>
+<li><a href="#core-apis" id="toc-core-apis">Core APIs</a></li>
+<li><a href="#codec-identifiers-whatwg-iconv-and-stdtext_encoding"
+id="toc-codec-identifiers-whatwg-iconv-and-stdtext_encoding">Codec
+Identifiers: WHATWG, iconv, and <code>std::text_encoding</code></a></li>
+<li><a href="#performance" id="toc-performance">Performance</a></li>
+<li><a href="#dependencies" id="toc-dependencies">Dependencies</a></li>
+<li><a href="#development" id="toc-development">Development</a></li>
+<li><a href="#integrate-bemantranscode-into-your-project"
+id="toc-integrate-bemantranscode-into-your-project">Integrate
+beman.transcode into your project</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="bemantranscode">beman.transcode</h1>
+<p>A C++23 library for Unicode transcoding using ranges and views. Its
+WHATWG implementation is header-only; the reference package currently
+requires a platform <code>iconv</code> dependency as well. It provides
+two transcoding backends with a shared pipeline-oriented interface:</p>
+<ul>
+<li><strong>WHATWG codecs</strong> — a compile-time-safe,
+constexpr-capable implementation of the <a
+href="https://encoding.spec.whatwg.org/">WHATWG Encoding Standard</a>
+exposing 40 codec identifiers (UTF-8, the WHATWG-listed ISO-8859 and
+Windows variants, and CJK multi-byte encodings including GB18030, Big5,
+Shift-JIS, EUC-JP/KR, and ISO-2022-JP)</li>
+<li><strong>iconv range adaptor</strong> — a C++ ranges wrapper around
+the POSIX/system <code>iconv</code> API, giving safe, composable access
+to whatever encodings the platform provides</li>
+</ul>
+<p>For code that already uses <code>iconv</code>, the iconv view gives
+that platform facility a leak-free ranges interface, with no manual
+buffer management, composable with other range adaptors. The WHATWG
+views themselves are portable, header-only source with standardized
+error semantics for the codecs web and network protocols actually use,
+although the current CMake package does not build or install them
+separately from its required <code>iconv</code> dependency.</p>
+<p>Part of the <a href="https://github.com/bemanproject">Beman
+Project</a>, targeting C++29 standardization.</p>
+<p>The documentation site, <a
+href="https://steve-downey.github.io/transcode/">https://steve-downey.github.io/transcode/</a>,
+has the API reference as rendered by Doxygen and by MrDocs, the paper in
+HTML and PDF, and the design notes and plans under <code>docs/</code>
+and <code>papers/</code>. <code>make site</code> builds it; see <a
+href="CONTRIBUTING.html">CONTRIBUTING.md</a>.</p>
+<blockquote>
+<p>"It seems like a really messy situation and you're proposing to
+inherit that mess into the C++ standard." — Jan Schultke, personal
+correspondence</p>
+</blockquote>
+<h2 id="context-and-motivation">Context and Motivation</h2>
+<p>IANA registered names for character sets before anyone had specified
+what the names meant. The registry says a document is "Shift_JIS"; it
+does not say what <code>0x81 0x40</code> decodes to. C answered with the
+multibyte functions and POSIX standardized <code>iconv</code>, and both
+work, as long as you do not care which implementation you get: glibc,
+musl, and the macOS libraries disagree about error recovery and about
+which encodings exist at all. <code>std::codecvt</code> was deprecated
+in C++17 and removed in C++26. <code>std::text_encoding</code> names an
+encoding; nothing in the standard converts one.</p>
+<p>The WHATWG Encoding Standard specified the missing part, for exactly
+the encodings the web still carries, down to what each malformed
+sequence produces, and the Web Platform Tests pin it. That last part is
+what a C++ program needs, because there is a great deal of data in
+legacy encodings that backend systems have to read, and much of it is
+badly formed. Emails and web pages lie about their declared encodings,
+and concatenate mismatched encodings into a single payload. So the
+facility has to keep going past a bad byte and let the caller decide
+what that meant. Aborting on the first bad byte is not an option when
+the bytes are what you were sent.</p>
+<p>The argued version of this, including why the design is byte-oriented
+rather than type-oriented, is in <a
+href="paper/transcode-view.html"><code>papers/transcode-view.md</code></a>.</p>
+<h2 id="design-byte-oriented-io-transcoding">Design: Byte-Oriented I/O
+Transcoding</h2>
+<p>This library operates on <strong>byte-like types</strong>
+(<code>char</code>, <code>signed char</code>,
+<code>unsigned char</code>, <code>std::byte</code>), the types you get
+from files, sockets, and memory-mapped I/O. It deliberately does not use
+<code>char8_t</code>, <code>char16_t</code>, or <code>char32_t</code> as
+input types. This is a different, complementary use case from the
+type-based encoding approach in <a
+href="https://wg21.link/P2728R13">P2728R13</a> (Eddie Nolan's Unicode
+Transcoding paper), which uses distinct character types to statically
+track encoding at the type-system level.</p>
+<p>The two approaches serve non-overlapping problems:</p>
+<ul>
+<li><strong>P2728 (type-based)</strong>: transcoding between
+<code>std::u8string</code>, <code>std::u16string</code>,
+<code>std::u32string</code>; the encoding is carried in the type, and
+the compiler prevents mixing them</li>
+<li><strong>beman.transcode (byte-based)</strong>: transcoding I/O byte
+streams whose encoding is determined at runtime or by protocol (HTTP
+<code>Content-Type</code>, BOM sniffing, database column metadata,
+<code>iconv</code> string labels); the bytes are just bytes until you
+decode them</li>
+</ul>
+<p>The Unicode interchange type this library uses is
+<code>char32_t</code>, as the decoded codepoint and UTF-32 code-unit
+type. Using <code>char32_t</code> for codepoints is the agreed pattern
+in WG21 rather than introducing a distinct <code>code_point</code> type:
+since valid UTF-32 code units and Unicode code points are numerically
+identical, distinguishing them at the type level just introduces
+syntactic noise and "range casts" that alias without converting.</p>
+<p>The <code>unicode_scalar_range</code> concept checks the range's
+value type, not every value. Encode views validate its
+<code>char32_t</code> elements as UTF-32: replacement mode substitutes
+U+FFFD for surrogates and values above U+10FFFF before encoding through
+the selected codec, while error-reporting mode reports the corresponding
+validation error.</p>
+<h2 id="core-apis">Core APIs</h2>
+<h3 id="decode-views--bytes-to-unicode">Decode Views — Bytes to
+Unicode</h3>
+<p>Pipe any byte range through <code>whatwg_decode&lt;codec&gt;</code>
+to get a lazy <code>char32_t</code> view:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;beman/transcode/transcode.hpp&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">char32_t</span><span class="op">&gt;</span> decode_utf8<span class="op">(</span><span class="bu">std::</span>string_view input<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">char32_t</span><span class="op">&gt;</span> result<span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">char32_t</span> cp <span class="op">:</span> input <span class="op">|</span> beman<span class="op">::</span>transcoding<span class="op">::</span>whatwg_decode<span class="op">&lt;</span>beman<span class="op">::</span>transcoding<span class="op">::</span>codec<span class="op">::</span>utf_8<span class="op">&gt;)</span> <span class="op">{</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        result<span class="op">.</span>push_back<span class="op">(</span>cp<span class="op">);</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result<span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>For explicit error visibility, use the <code>_or_error</code> variant
+which yields
+<code>std::expected&lt;char32_t, whatwg_error&gt;</code>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span> result <span class="op">:</span> input <span class="op">|</span> beman<span class="op">::</span>transcoding<span class="op">::</span>whatwg_decode_or_error<span class="op">&lt;</span>beman<span class="op">::</span>transcoding<span class="op">::</span>codec<span class="op">::</span>utf_8<span class="op">&gt;)</span> <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>result<span class="op">.</span>has_value<span class="op">())</span> <span class="op">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="co">// result.error() is whatwg_error::invalid_byte, ::truncated_sequence, etc.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>C strings work via <code>views::null_term</code>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> decode_cstring<span class="op">(</span><span class="at">const</span> <span class="dt">char</span><span class="op">*</span> text<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> beman<span class="op">::</span>transcoding<span class="op">::</span>views<span class="op">::</span>null_term<span class="op">(</span>text<span class="op">)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>         <span class="op">|</span> beman<span class="op">::</span>transcoding<span class="op">::</span>whatwg_decode<span class="op">&lt;</span>beman<span class="op">::</span>transcoding<span class="op">::</span>codec<span class="op">::</span>utf_8<span class="op">&gt;;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="encode-views--unicode-to-bytes">Encode Views — Unicode to
+Bytes</h3>
+<p>The reverse direction encodes Unicode scalars back to bytes:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// char32_t range → char range (UTF-8 bytes)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> encoded <span class="op">=</span> codepoints <span class="op">|</span> beman<span class="op">::</span>transcoding<span class="op">::</span>whatwg_encode<span class="op">&lt;</span>beman<span class="op">::</span>transcoding<span class="op">::</span>codec<span class="op">::</span>utf_8<span class="op">&gt;;</span></span></code></pre></div>
+<p>The WHATWG Encoding Standard does not define encoders for UTF-16BE or
+UTF-16LE; those codecs are exposed for byte-stream decoding, label
+lookup, and BOM sniffing, but not through <code>whatwg_encode</code> or
+<code>whatwg_encode_or_error</code>.</p>
+<p>Encode input is validated as UTF-32. Every decoded value produced by
+this library is already a Unicode scalar value; raw
+<code>char32_t</code> sources receive the same replacement or
+error-reporting treatment when they contain an ill-formed code unit.</p>
+<h3 id="transcode--any-encoding-to-any-other">Transcode — Any Encoding
+to Any Other</h3>
+<p>Compose decode and encode into a single pipeline:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;beman/transcode/transcode.hpp&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>string shift_jis_to_utf8<span class="op">(</span><span class="bu">std::</span>string_view input<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>string result<span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">char</span> byte <span class="op">:</span> input <span class="op">|</span> beman<span class="op">::</span>transcoding<span class="op">::</span>transcode<span class="op">&lt;</span>beman<span class="op">::</span>transcoding<span class="op">::</span>codec<span class="op">::</span>shift_jis<span class="op">,</span> beman<span class="op">::</span>transcoding<span class="op">::</span>codec<span class="op">::</span>utf_8<span class="op">&gt;)</span> <span class="op">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        result<span class="op">.</span>push_back<span class="op">(</span>byte<span class="op">);</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result<span class="op">;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>For runtime codec selection (e.g., from HTTP headers):</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> result <span class="op">=</span> beman<span class="op">::</span>transcoding<span class="op">::</span>transcode_string<span class="op">(</span>data<span class="op">,</span> <span class="st">&quot;shift_jis&quot;</span><span class="op">,</span> <span class="st">&quot;utf-8&quot;</span><span class="op">);</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">// returns std::optional&lt;std::string&gt;</span></span></code></pre></div>
+<h3 id="the-pluggable-codec-protocol">The Pluggable Codec Protocol</h3>
+<p>Implement <code>decode_codec</code> or <code>encode_codec</code> to
+add your own encoding:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> C<span class="op">&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">concept</span> decode_codec <span class="op">=</span> <span class="bu">std::</span>semiregular<span class="op">&lt;</span>C<span class="op">&gt;</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">requires</span><span class="op">(</span>C<span class="op">&amp;</span> c<span class="op">,</span> <span class="at">const</span> <span class="dt">unsigned</span> <span class="dt">char</span><span class="op">*&amp;</span> iter<span class="op">,</span> <span class="at">const</span> <span class="dt">unsigned</span> <span class="dt">char</span><span class="op">*</span> sentinel<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span> c<span class="op">.</span>decode_one<span class="op">(</span>iter<span class="op">,</span> sentinel<span class="op">)</span> <span class="op">}</span> <span class="op">-&gt;</span> <span class="bu">std::</span>same_as<span class="op">&lt;</span>decode_result<span class="op">&gt;;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span></code></pre></div>
+<p>A type that satisfies it composes with <code>decode(codec)</code> and
+<code>decode_or_error(codec)</code> exactly as the built-in codecs do,
+including <code>constexpr</code> decoding:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> decoded <span class="op">=</span> input <span class="op">|</span> beman<span class="op">::</span>transcoding<span class="op">::</span>decode<span class="op">(</span>my_codec<span class="op">{});</span></span></code></pre></div>
+<p>See <a
+href="https://github.com/steve-downey/transcode/blob/main/examples/custom_single_byte_decoder.cpp"><code>examples/custom_single_byte_decoder.cpp</code></a>
+for a complete working example, in both error modes.</p>
+<p>There is a <code>table_codec&lt;Table&gt;</code> template for the
+case where the upper half of a single-byte encoding is a plain 128-entry
+lookup, and the built-in single-byte codecs are built on it — but it
+lives in <code>&lt;beman/transcode/detail/table_codec.hpp&gt;</code> and
+is <strong>not part of the proposed interface</strong>. Use it if it
+suits you and you are willing to track an implementation detail; the
+concept above is the supported extension point.</p>
+<h3 id="iconv-range-adaptor--system-encoding-support">iconv Range
+Adaptor — System Encoding Support</h3>
+<p>If your code already uses <code>iconv</code> (or uses a library that
+does), the iconv range adaptor is the interoperability path. On systems
+that provide it, implementations such as glibc, musl and GNU libiconv
+expose the same
+<code>iconv_open</code>/<code>iconv</code>/<code>iconv_close</code> API.
+Any encoding that implementation advertises is available through this
+view, with no need to reimplement the codec.</p>
+<p>ICU is not one of them. It is a transcoding backend of comparable
+reach, but its converter API is the <code>ucnv_*</code> family, so
+reaching it through this view would need an adaptor implementing
+<code>iconv_functions</code> against <code>ucnv_open</code> and
+<code>ucnv_convertEx</code>. Nothing here does that today.</p>
+<p>The raw <code>iconv</code> API requires manual buffer allocation,
+pointer arithmetic, error code inspection, and careful resource cleanup.
+The range adaptor handles all of that:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;beman/transcode/transcode.hpp&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;array&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>array<span class="op">&lt;</span><span class="dt">char</span><span class="op">,</span> <span class="dv">256</span><span class="op">&gt;</span> buffer<span class="op">{};</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">char</span> byte <span class="op">:</span> input <span class="op">|</span> beman<span class="op">::</span>transcoding<span class="op">::</span>iconv_transcode<span class="op">(</span><span class="st">&quot;UTF-8&quot;</span><span class="op">,</span> <span class="st">&quot;UTF-32LE&quot;</span><span class="op">,</span> <span class="bu">std::</span>span<span class="op">(</span>buffer<span class="op">)))</span> <span class="op">{</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    output<span class="op">.</span>push_back<span class="op">(</span>byte<span class="op">);</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Compare with the raw <code>iconv</code> equivalent, 30+ lines of
+buffer management, error handling, and resource cleanup, in <a
+href="https://github.com/steve-downey/transcode/blob/main/examples/paper_iconv_view.cpp"><code>examples/paper_iconv_view.cpp</code></a>.</p>
+<p>An <code>_or_error</code> variant yields
+<code>std::expected&lt;char, iconv_error&gt;</code> instead of
+replacement characters, for applications that need to distinguish
+<code>invalid_sequence</code>, <code>incomplete_sequence</code>,
+<code>output_full</code>, <code>open_failed</code>, and
+<code>system_error</code> conditions.</p>
+<p>Key design choices:</p>
+<ul>
+<li><strong>External buffer</strong>: caller provides the working
+<code>std::span&lt;char&gt;</code>; no hidden heap allocation</li>
+<li><strong>Dependency injection</strong>: the
+<code>iconv_functions</code> struct accepts callable pointers for
+<code>iconv_open</code>/<code>iconv</code>/<code>iconv_close</code>,
+enabling test mocking and allowing alternative iconv implementations
+(e.g., libiconv vs glibc)</li>
+<li><strong>Move-only iterator</strong>: safeguards the uncopyable
+<code>iconv_t</code> handle; copying the iterator would double-free</li>
+</ul>
+<p>Bulk operations
+<code>iconv_transcode_to&lt;std::string&gt;(input, from, to)</code> and
+<code>iconv_transcode_into(input, from, to, output_iter)</code> are now
+available. They call raw <code>iconv()</code> with properly-sized
+buffers, bypassing per-byte iteration. See the Performance section for
+measured overhead vs raw iconv.</p>
+<h3 id="api-surface-matrix">API Surface Matrix</h3>
+<p>All three implementation families now have matching API surfaces for
+the operations their encoding model supports. The P2728 (UTF
+transcoding) column shows the parallel standard proposal for type-safe
+UTF-to-UTF conversion.</p>
+<p>Legend: ✅ implemented · n/a architectural model doesn't support this
+· 🔴 not yet implemented</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>WHATWG</th>
+<th>Pluggable codec</th>
+<th>iconv</th>
+<th>P2728</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Codec identity</strong></td>
+<td><code>codec::utf_8</code> enum</td>
+<td><code>my_codec{}</code> type</td>
+<td><code>"UTF-8"</code> string</td>
+<td><code>char8_t</code>/<code>char16_t</code>/<code>char32_t</code></td>
+</tr>
+<tr>
+<td><strong>Decode view</strong></td>
+<td>✅ <code>whatwg_decode&lt;C&gt;</code></td>
+<td>✅ <code>decode(codec)</code></td>
+<td>✅ <code>iconv_transcode(f,t,buf)</code></td>
+<td>✅ <code>views::to_utf32</code></td>
+</tr>
+<tr>
+<td><strong>Decode or-error view</strong></td>
+<td>✅ <code>whatwg_decode_or_error&lt;C&gt;</code></td>
+<td>✅ <code>decode_or_error(codec)</code></td>
+<td>✅ <code>iconv_transcode_or_error(…)</code></td>
+<td>✅ <code>views::to_utf32_or_error</code></td>
+</tr>
+<tr>
+<td><strong>Encode view</strong></td>
+<td>✅ <code>whatwg_encode&lt;C&gt;</code></td>
+<td>✅ <code>encode(codec)</code></td>
+<td>n/a ¹</td>
+<td>✅ <code>views::to_utf8</code> / <code>to_utf16</code></td>
+</tr>
+<tr>
+<td><strong>Encode or-error view</strong></td>
+<td>✅ <code>whatwg_encode_or_error&lt;C&gt;</code></td>
+<td>✅ <code>encode_or_error(codec)</code></td>
+<td>n/a ¹</td>
+<td>✅ <code>views::to_utf8_or_error</code></td>
+</tr>
+<tr>
+<td><strong>Transcode pipeline</strong></td>
+<td>✅ <code>transcode&lt;From,To&gt;</code></td>
+<td>✅ <code>pluggable_transcode(f,t)</code></td>
+<td>✅ <code>iconv_transcode(f,t,buf)</code></td>
+<td>✅ compose views via <code>|</code></td>
+</tr>
+<tr>
+<td><strong>Bulk decode → container</strong></td>
+<td>✅ <code>decode_to&lt;C&gt;(r)</code></td>
+<td>✅ <code>decode_to(codec,r)</code></td>
+<td>n/a ¹</td>
+<td>✅ <code>v|ranges::to&lt;&gt;()</code></td>
+</tr>
+<tr>
+<td><strong>Bulk encode → container</strong></td>
+<td>✅ <code>encode_to&lt;C,Cont&gt;(r)</code></td>
+<td>✅ <code>encode_to(codec,r)</code></td>
+<td>n/a ¹</td>
+<td>✅ <code>v|ranges::to&lt;&gt;()</code></td>
+</tr>
+<tr>
+<td><strong>Bulk transcode → container</strong></td>
+<td>n/a ²</td>
+<td>n/a ²</td>
+<td>✅ <code>iconv_transcode_to(range,f,t)</code></td>
+<td>n/a ²</td>
+</tr>
+<tr>
+<td><strong>Bulk decode → output iter</strong></td>
+<td>✅ <code>decode_into&lt;C&gt;(r,out)</code></td>
+<td>✅ <code>decode_into(codec,r,out)</code></td>
+<td>n/a ¹</td>
+<td>✅ <code>ranges::copy(v, out)</code></td>
+</tr>
+<tr>
+<td><strong>Bulk encode → output iter</strong></td>
+<td>✅ <code>encode_into&lt;C&gt;(r,out)</code></td>
+<td>✅ <code>encode_into(codec,r,out)</code></td>
+<td>n/a ¹</td>
+<td>✅ <code>ranges::copy(v, out)</code></td>
+</tr>
+<tr>
+<td><strong>Bulk transcode → output iter</strong></td>
+<td>n/a ²</td>
+<td>n/a ²</td>
+<td>✅ <code>iconv_transcode_into(range,f,t,out)</code></td>
+<td>n/a ²</td>
+</tr>
+<tr>
+<td><strong>Null-terminated input</strong></td>
+<td>✅ <code>views::null_term(ptr)</code></td>
+<td>✅ <code>views::null_term(ptr)</code></td>
+<td>✅ <code>views::null_term(ptr)</code></td>
+<td>n/a ³</td>
+</tr>
+<tr>
+<td><strong>Runtime label lookup</strong></td>
+<td>✅ <code>get_encoding("utf-8")</code></td>
+<td>n/a ⁴</td>
+<td>n/a (string labels are the API)</td>
+<td>n/a ⁵</td>
+</tr>
+<tr>
+<td><strong>Runtime transcode</strong></td>
+<td>✅ <code>transcode_string(src,from,to)</code></td>
+<td>n/a ⁴</td>
+<td>✅ <code>iconv_transcode_to(r,f,t)</code></td>
+<td>n/a ⁵</td>
+</tr>
+<tr>
+<td><strong>BOM sniffing</strong></td>
+<td>✅ <code>sniff_encoding(range)</code></td>
+<td>n/a ⁶</td>
+<td>n/a ⁶</td>
+<td>n/a ⁷</td>
+</tr>
+<tr>
+<td><strong>Error type</strong></td>
+<td><code>whatwg_error</code></td>
+<td><code>whatwg_error</code></td>
+<td><code>iconv_error</code></td>
+<td><code>utf_transcoding_error</code></td>
+</tr>
+<tr>
+<td><strong>Output element type</strong></td>
+<td><code>char32_t</code></td>
+<td><code>char32_t</code></td>
+<td><code>char</code> (raw bytes)</td>
+<td><code>char32_t</code></td>
+</tr>
+<tr>
+<td><strong>Input element type</strong></td>
+<td><code>char</code>/<code>unsigned char</code>/<code>byte</code></td>
+<td><code>char</code>/<code>byte</code> (legacy)</td>
+<td><code>char</code> (any byte encoding)</td>
+<td><code>char8_t</code>/<code>char16_t</code>/<code>char32_t</code></td>
+</tr>
+<tr>
+<td><strong>constexpr</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>🔴 (POSIX userland library)</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes on n/a entries:</strong></p>
+<p>¹ <strong>iconv is a byte↔︎byte transcoder.</strong> It converts one
+byte encoding to another without exposing an intermediate
+<code>char32_t</code> codepoint stage. "Encode" (from
+<code>char32_t</code> to bytes) and "decode" (from bytes to
+<code>char32_t</code>) as distinct steps are outside its model — it only
+offers transcode.</p>
+<p>² <strong>WHATWG and pluggable codecs compose decode and
+encode.</strong> The named bulk helpers forward to
+<code>view | ranges::to&lt;Container&gt;()</code> and
+<code>ranges::copy(view, output)</code>. There is no separate bulk
+transcode helper: transcode remains <code>decode | encode</code>
+composed with <code>|</code>. iconv performs single-pass byte→byte
+conversion and exposes it as a first-class bulk operation.</p>
+<p>³ <strong>P2728 operates on typed Unicode character types</strong>
+(<code>char8_t</code>, <code>char16_t</code>, <code>char32_t</code>).
+<code>views::null_term</code> produces a range of <code>char</code>,
+which is a different type; adapting the two requires a reinterpret
+step.</p>
+<p>⁴ <strong>Pluggable codecs are identified by C++ type.</strong> There
+is no runtime name-to-codec registry by design — codec selection happens
+at compile time through the type system. Runtime transcode is similarly
+outside the model: you compose
+<code>decode(codec_a{}) | encode(codec_b{})</code> at compile time.</p>
+<p>⁵ <strong>P2728 selects its codec from the character type.</strong>
+Selection is determined by the character types (<code>char8_t</code>,
+<code>char16_t</code>, <code>char32_t</code>), so runtime label lookup
+and runtime transcode are outside its model.</p>
+<p>⁶ <strong>BOM sniffing is a property of the byte stream.</strong>
+<code>sniff_encoding()</code> examines the first bytes of a stream to
+detect UTF-8, UTF-16BE or UTF-16LE BOMs and returns the appropriate
+<code>codec</code> enum value. This is a WHATWG-specific facility;
+pluggable codecs and iconv operate on already-identified encodings.</p>
+<p>⁷ <strong>P2728 operates on in-memory typed data</strong> where the
+encoding is known from the type. BOM detection is an I/O concern; a
+separate endian-converting view proposal addresses byte-order
+issues.</p>
+<h3 id="bulk-operations">Bulk Operations</h3>
+<p>The views compose directly with <code>std::ranges::to</code> and
+<code>std::ranges::copy</code>, and named helpers are provided for the
+same four operations:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> beman<span class="op">::</span>transcoding<span class="op">;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Decode to vector — view | ranges::to</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> cps <span class="op">=</span> bytes <span class="op">|</span> whatwg_decode<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;</span> <span class="op">|</span> <span class="bu">std::</span>ranges::to<span class="op">&lt;</span><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">char32_t</span><span class="op">&gt;&gt;();</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Encode to string — view | ranges::to</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> encoded <span class="op">=</span> codepoints <span class="op">|</span> whatwg_encode<span class="op">&lt;</span>codec<span class="op">::</span>shift_jis<span class="op">&gt;</span> <span class="op">|</span> <span class="bu">std::</span>ranges::to<span class="op">&lt;</span><span class="bu">std::</span>string<span class="op">&gt;();</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co">// Output-iterator — ranges::copy</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>ranges::copy<span class="op">(</span>bytes <span class="op">|</span> whatwg_decode<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;,</span> <span class="bu">std::</span>back_inserter<span class="op">(</span>vec<span class="op">));</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// The same four operations, named:</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> cps2     <span class="op">=</span> decode_to<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;(</span>bytes<span class="op">);</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> encoded2 <span class="op">=</span> encode_to<span class="op">&lt;</span>codec<span class="op">::</span>shift_jis<span class="op">,</span> <span class="bu">std::</span>string<span class="op">&gt;(</span>codepoints<span class="op">);</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>decode_into<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;(</span>bytes<span class="op">,</span> <span class="bu">std::</span>back_inserter<span class="op">(</span>vec<span class="op">));</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>encode_into<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;(</span>codepoints<span class="op">,</span> <span class="bu">std::</span>back_inserter<span class="op">(</span>str<span class="op">));</span></span></code></pre></div>
+<p>Each helper is a one-line forward to the pipeline it names, with no
+measurable performance difference. Both spellings are supported, and
+both are proposed; see <code>papers/transcode-view.md</code> for the
+argument.</p>
+<h2 id="codec-identifiers-whatwg-iconv-and-stdtext_encoding">Codec
+Identifiers: WHATWG, iconv, and <code>std::text_encoding</code></h2>
+<p>Encodings can be identified by IANA name, by WHATWG label, or by the
+string labels that a system's <code>iconv</code> accepts. In most cases
+these overlap: you can look up a WHATWG codec by its IANA name or any of
+its aliases. Where WHATWG goes further is in nailing down the <em>exact
+algorithm and data tables</em> for each codec. This matters most for
+encodings where there was historical diverging practice: different
+implementations of "Shift_JIS" or "Big5" could disagree on edge cases,
+unmapped byte values, or error recovery. The WHATWG standard says what
+every byte sequence means.</p>
+<p><strong><code>std::text_encoding</code></strong> (P1885) provides
+IANA charset names as a C++ vocabulary type. It says which encoding a
+text is in; it does not say how to decode or encode it. It is purely for
+labeling. The explicit WHATWG API in <code>beman.transcode</code>
+reflects the tighter algorithmic specification but does not supersede
+<code>std::text_encoding</code>; the two serve different roles.</p>
+<p><strong>POSIX <code>iconv</code></strong> uses string labels
+(<code>"UTF-8"</code>, <code>"SHIFT_JIS"</code>,
+<code>"ISO-8859-1"</code>) to identify codecs at runtime. The set of
+available encodings depends on the system, and glibc's iconv supports
+hundreds. Whether any given iconv implementation accepts
+<code>std::text_encoding</code> labels is purely quality-of-
+implementation; the standard does not require it. It may become
+recommended practice for a compiler to identify an iconv function that
+interprets its <code>"literal"</code> and <code>"locale"</code>
+encodings, but this is not currently required. If your codebase already
+uses iconv, <code>iconv_transcode_view</code> accepts the same string
+labels you already have.</p>
+<p><code>beman.transcode</code> provides:</p>
+<ul>
+<li><strong>Compile-time WHATWG dispatch</strong> via
+<code>codec::utf_8</code>, <code>codec::shift_jis</code>, etc. — enum
+constants used as non-type template parameters, so there is no
+per-element dispatch and decoding runs at compile time</li>
+<li><strong>Runtime label resolution</strong> via
+<code>get_encoding("utf-8")</code> and
+<code>transcode_string(data, "shift_jis", "utf-8")</code> — for cases
+where the encoding name comes from user input, HTTP headers, or HTML
+meta tags</li>
+<li><strong>System iconv interop</strong> via
+<code>iconv_transcode("UTF-8", "EUC-TW", buffer)</code> — string labels
+passed directly to the platform's iconv, giving access to every encoding
+the system supports without this library needing to implement it</li>
+</ul>
+<h2 id="performance">Performance</h2>
+<p>Measured with GCC 16.1.1,
+<code>-O3 -march=native -mtune=native -flto=auto -fno-semantic-interposition</code>
+(Intel 13th-gen Alderlake, AVX2 enabled). Corpora are full Wikipedia
+Mars articles and the Project Gutenberg War and Peace text, downloaded
+via <code>uv run python tools/download_benchmark_corpora.py</code>.</p>
+<h3
+id="competitive-comparison-utf-8-decode-57-kb-english--char32_t">Competitive
+Comparison: UTF-8 Decode (57 KB English → char32_t)</h3>
+<p>This library is a naive scalar implementation, with no SIMD and no
+hand-tuned assembly. The comparison puts it in context against mature,
+production-optimized projects:</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Mean</th>
+<th>Throughput</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>simdutf</strong> (SIMD ceiling)</td>
+<td>6.93 µs</td>
+<td>7.7 GiB/s</td>
+<td>AVX2 vectorized, UTF-8→UTF-32</td>
+</tr>
+<tr>
+<td><strong>beman.transcode</strong> (this library)</td>
+<td>21.4 µs</td>
+<td>2.5 GiB/s</td>
+<td>Naive scalar, constexpr-capable</td>
+</tr>
+<tr>
+<td><code>mbstowcs</code> (glibc C89)</td>
+<td>31.1 µs</td>
+<td>1.7 GiB/s</td>
+<td>C standard library, locale-dependent</td>
+</tr>
+<tr>
+<td><code>std::codecvt</code> (libstdc++ C++11)</td>
+<td>75 µs</td>
+<td>724 MiB/s</td>
+<td>Deprecated C++17, removed C++26</td>
+</tr>
+<tr>
+<td><code>iconv_transcode_to</code> (this library)</td>
+<td>83 µs</td>
+<td>653 MiB/s</td>
+<td>Bulk API, pre-sized buffer</td>
+</tr>
+<tr>
+<td>Raw <code>iconv()</code> (glibc, 4 KB buffer)</td>
+<td>334 µs</td>
+<td>163 MiB/s</td>
+<td>Block API, looping over 4 KB</td>
+</tr>
+<tr>
+<td><code>iconv_transcode_view</code> (this library)</td>
+<td>351 µs</td>
+<td>155 MiB/s</td>
+<td>Batched range adaptor over iconv</td>
+</tr>
+</tbody>
+</table>
+<p>The ~3x gap between beman.transcode and simdutf is the price of a
+portable scalar decoder that also runs at compile time. SIMD backends
+could be plugged in behind the same range interface in the future
+without changing user code.</p>
+<p><code>mbstowcs</code> (C89, still current) and
+<code>std::codecvt</code> (deprecated C++17, removed C++26) represent
+the standard library's transcoding facilities. <code>mbstowcs</code> is
+a simple C API with no virtual dispatch overhead, which is why it
+outperforms <code>std::codecvt</code> by ~2x. Both are locale-dependent
+and UTF-only. <code>iconv_transcode_to</code> matches
+<code>std::codecvt</code> throughput while supporting all iconv
+encodings, not just UTF.</p>
+<h3 id="utf-8-decode-multibyte-142-kb-arabic-2-byte-sequences">UTF-8
+Decode: Multibyte (142 KB Arabic, 2-byte sequences)</h3>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Mean</th>
+<th>Throughput</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>simdutf</strong> (SIMD ceiling)</td>
+<td>58.6 µs</td>
+<td>2.3 GiB/s</td>
+</tr>
+<tr>
+<td><strong>beman.transcode</strong></td>
+<td>306 µs</td>
+<td>442 MiB/s</td>
+</tr>
+</tbody>
+</table>
+<p>The gap widens to ~5x on multi-byte text where SIMD branch-free
+algorithms excel. Scalar implementations pay per-byte continuation
+checks.</p>
+<h3 id="shift-jis--utf-8-28-kb-japanese-produces-output">Shift-JIS →
+UTF-8 (28 KB Japanese, produces output)</h3>
+<p>The critical comparison for legacy CJK codecs: each implementation
+decodes Shift-JIS and produces UTF-8 output bytes.</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Mean</th>
+<th>Throughput</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>beman.transcode</strong> streaming (<code>transcode</code>
+pipe)</td>
+<td>80 µs</td>
+<td>332 MiB/s</td>
+<td>Lazy views, <code>count_elements</code> only</td>
+</tr>
+<tr>
+<td><strong>encoding_rs</strong> (Rust bulk C FFI)</td>
+<td>103 µs</td>
+<td>258 MiB/s</td>
+<td>Single Rust call, opaque to optimizer</td>
+</tr>
+<tr>
+<td><strong><code>iconv_transcode_to</code></strong> (this library)</td>
+<td>120 µs</td>
+<td>222 MiB/s</td>
+<td>Bulk iconv, pre-sized buffer</td>
+</tr>
+<tr>
+<td><strong>beman.transcode</strong> bulk
+(<code>view | ranges::to&lt;string&gt;()</code>)</td>
+<td>237 µs</td>
+<td>112 MiB/s</td>
+<td>Two-step, char32_t intermediate</td>
+</tr>
+<tr>
+<td>Raw <code>iconv()</code> (4 KB buffer)</td>
+<td>369 µs</td>
+<td>72 MiB/s</td>
+<td>System iconv, many calls</td>
+</tr>
+<tr>
+<td><code>iconv_transcode_view</code> (streaming)</td>
+<td>368 µs</td>
+<td>72 MiB/s</td>
+<td>Batched range adaptor over iconv</td>
+</tr>
+</tbody>
+</table>
+<p>The WHATWG table-driven decoder in this library's streaming view (80
+µs, lazy evaluation) is competitive with encoding_rs's Rust
+implementation (103 µs, writing to a buffer). The encoding_rs C FFI
+boundary is opaque to the C++ optimizer, the same effect that any range
+adaptor wrapping a bulk API experiences.</p>
+<p>The two-step bulk approach (237 µs) pays for the intermediate
+<code>char32_t</code> vector allocation plus a second pass over the
+data.</p>
+<h3 id="non-utf--non-utf-euc-jp--shift-jis-30-kb-japanese">Non-UTF →
+Non-UTF: EUC-JP → Shift-JIS (30 KB Japanese)</h3>
+<p>The problem case for a decode-codepoint-encode architecture:
+transcoding between two legacy byte encodings that both represent the
+same characters.</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Mean</th>
+<th>Throughput</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>beman.transcode</strong> streaming (<code>transcode</code>
+pipe)</td>
+<td>138 µs</td>
+<td>213 MiB/s</td>
+<td>decode view | encode view</td>
+</tr>
+<tr>
+<td><strong><code>iconv_transcode_to</code></strong> (single pass)</td>
+<td>225 µs</td>
+<td>131 MiB/s</td>
+<td>Direct byte→byte via glibc iconv</td>
+</tr>
+<tr>
+<td><strong>beman.transcode</strong> bulk
+(<code>view | ranges::to&lt;string&gt;()</code>)</td>
+<td>308 µs</td>
+<td>96 MiB/s</td>
+<td>Two-step, char32_t intermediate</td>
+</tr>
+</tbody>
+</table>
+<p>Each code point is decoded from EUC-JP with a table lookup and
+encoded to Shift-JIS through a reverse index of the WHATWG table, built
+at compile time, so the encode side costs two loads per code point
+rather than a search. An earlier version of the encoder scanned the
+11,280-entry index for every code point and ran at about 5 ms on this
+corpus; the reverse index is what closed the gap to iconv.</p>
+<p>For non-UTF cross-encoding work the streaming view and
+<code>iconv_transcode_to</code> are within a factor of two of each
+other, in either direction depending on the corpus. The streaming views
+compose with other range adaptors and expose the intermediate
+<code>char32_t</code> representation for processing (filtering,
+normalization, etc); <code>iconv_transcode_to</code> covers encodings
+this library does not, when the system iconv has them.</p>
+<h3 id="whatwg-legacy-codecs-this-library">WHATWG Legacy Codecs (this
+library)</h3>
+<p>Decoded using WHATWG table-driven views. Corpora are full Wikipedia
+Mars articles in each language.</p>
+<table>
+<thead>
+<tr>
+<th>Codec</th>
+<th>Corpus</th>
+<th>Mean</th>
+<th>Throughput</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>windows-1251</td>
+<td>11 KB Russian</td>
+<td>&lt; 1 ns</td>
+<td>&gt; 10 GiB/s ¹</td>
+</tr>
+<tr>
+<td>Shift-JIS</td>
+<td>28 KB Japanese</td>
+<td>19.8 µs</td>
+<td>1.3 GiB/s</td>
+</tr>
+<tr>
+<td>UTF-8 (3-byte)</td>
+<td>40 KB Japanese</td>
+<td>27.8 µs</td>
+<td>1.4 GiB/s</td>
+</tr>
+<tr>
+<td>GB18030</td>
+<td>24 KB Chinese</td>
+<td>22.0 µs</td>
+<td>1.0 GiB/s</td>
+</tr>
+<tr>
+<td>Big5</td>
+<td>24 KB Trad. Chinese</td>
+<td>38.8 µs</td>
+<td>594 MiB/s</td>
+</tr>
+<tr>
+<td>EUC-JP</td>
+<td>28 KB Japanese</td>
+<td>16.5 µs</td>
+<td>1.5 GiB/s</td>
+</tr>
+<tr>
+<td>EUC-KR</td>
+<td>18 KB Korean</td>
+<td>30.8 µs</td>
+<td>549 MiB/s</td>
+</tr>
+<tr>
+<td>ISO-2022-JP</td>
+<td>31 KB Japanese</td>
+<td>31.1 µs</td>
+<td>938 MiB/s</td>
+</tr>
+<tr>
+<td>UTF-16LE</td>
+<td>6.2 MB War &amp; Peace</td>
+<td>1.84 ms</td>
+<td>3.3 GiB/s</td>
+</tr>
+<tr>
+<td>UTF-16BE</td>
+<td>6.2 MB War &amp; Peace</td>
+<td>1.81 ms</td>
+<td>3.3 GiB/s</td>
+</tr>
+</tbody>
+</table>
+<p>¹ The windows-1251 random-access view is a sized range; GCC elides
+the iteration loop entirely. The view itself is O(1) per element via
+pointer arithmetic on a 128-entry lookup table.</p>
+<h3 id="iconv-range-adaptor-vs-bulk-operations">iconv: Range Adaptor vs
+Bulk Operations</h3>
+<p>All measurements on real corpus data.</p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Corpus</th>
+<th>Mean</th>
+<th>Throughput</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Raw <code>iconv()</code> (4 KB buffer)</td>
+<td>57 KB English UTF-8→UTF-32LE</td>
+<td>334 µs</td>
+<td>163 MiB/s</td>
+</tr>
+<tr>
+<td><strong><code>iconv_transcode_to</code></strong></td>
+<td>57 KB English UTF-8→UTF-32LE</td>
+<td>83 µs</td>
+<td>653 MiB/s</td>
+</tr>
+<tr>
+<td><code>iconv_transcode_into</code></td>
+<td>57 KB English UTF-8→UTF-32LE</td>
+<td>470 µs</td>
+<td>116 MiB/s</td>
+</tr>
+<tr>
+<td><code>iconv_transcode_view</code></td>
+<td>57 KB English UTF-8→UTF-32LE</td>
+<td>351 µs</td>
+<td>155 MiB/s</td>
+</tr>
+<tr>
+<td>Raw <code>iconv()</code> (4 KB buffer)</td>
+<td>28 KB Japanese SJIS→UTF-8</td>
+<td>369 µs</td>
+<td>72 MiB/s</td>
+</tr>
+<tr>
+<td><strong><code>iconv_transcode_to</code></strong></td>
+<td>28 KB Japanese SJIS→UTF-8</td>
+<td>120 µs</td>
+<td>222 MiB/s</td>
+</tr>
+<tr>
+<td><code>iconv_transcode_view</code></td>
+<td>28 KB Japanese SJIS→UTF-8</td>
+<td>368 µs</td>
+<td>72 MiB/s</td>
+</tr>
+<tr>
+<td><strong><code>iconv_transcode_to</code></strong></td>
+<td>28 KB Japanese EUC-JP→SJIS</td>
+<td>144 µs</td>
+<td>185 MiB/s</td>
+</tr>
+</tbody>
+</table>
+<p><code>iconv_transcode_to</code> is <strong>faster than naive raw
+iconv</strong> because it pre-sizes the output buffer to
+<code>input_size * 4</code>, making a single iconv call for the entire
+conversion instead of looping over a 4 KB buffer.</p>
+<p><code>iconv_transcode_view</code> now batches input; for contiguous
+ranges it passes the entire remaining input to iconv in one call per
+output-buffer fill, matching raw iconv throughput within ~15%. The
+view's residual overhead vs <code>iconv_transcode_to</code> is the
+iterator machinery and the composability cost of yielding one byte at a
+time through <code>operator++</code>.</p>
+<h3 id="pluggable-codec-performance-phase-4-apis">Pluggable Codec
+Performance (Phase 4 APIs)</h3>
+<p>Single-element streaming views on a 4 KB synthetic corpus of
+upper-half bytes (0xC0), decoding/encoding with a custom
+<code>table_codec&lt;latin1_upper&gt;</code>.</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>Corpus</th>
+<th>Mean</th>
+<th>Throughput</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>decode(latin1_codec{})</code></td>
+<td>4 KB synthetic</td>
+<td>&lt; 1 ns</td>
+<td>&gt; 10 GiB/s ¹</td>
+</tr>
+<tr>
+<td><code>encode(latin1_codec{})</code></td>
+<td>4 KB synthetic</td>
+<td>221 ns</td>
+<td>~18 GiB/s ²</td>
+</tr>
+<tr>
+<td><code>view|ranges::to</code> decode iso-8859-15</td>
+<td>11 KB Russian</td>
+<td>15.7 µs</td>
+<td>684 MiB/s</td>
+</tr>
+<tr>
+<td><code>view|ranges::to</code> encode iso-8859-15</td>
+<td>11 KB Russian</td>
+<td>131 µs</td>
+<td>82 MiB/s</td>
+</tr>
+<tr>
+<td><code>view|ranges::to</code> decode UTF-8</td>
+<td>57 KB English</td>
+<td>25.2 µs</td>
+<td>2.1 GiB/s</td>
+</tr>
+<tr>
+<td><code>transcode&lt;windows_1252, utf_8&gt;</code></td>
+<td>4 KB synthetic</td>
+<td>5.88 µs</td>
+<td>664 MiB/s</td>
+</tr>
+<tr>
+<td><code>transcode&lt;utf_8, windows_1252&gt;</code></td>
+<td>57 KB English</td>
+<td>27.8 µs</td>
+<td>1.9 GiB/s</td>
+</tr>
+</tbody>
+</table>
+<p>¹ Random-access sized range; GCC elides the iteration loop (O(1)
+pointer arithmetic). ² Encode is a reverse-index lookup per codepoint,
+built at compile time from the table; the synthetic corpus repeats one
+codepoint, so the loads stay in L1. Real-world mixed-content throughput
+will be lower.</p>
+<h3 id="utf-8-via-view--rangesto">UTF-8 via
+<code>view | ranges::to</code></h3>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>Corpus</th>
+<th>Mean</th>
+<th>Throughput</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>whatwg_decode&lt;utf_8&gt; | ranges::to</code></td>
+<td>57 KB English</td>
+<td>21.4 µs</td>
+<td>2.5 GiB/s</td>
+</tr>
+<tr>
+<td><code>whatwg_decode&lt;utf_8&gt; | ranges::to</code></td>
+<td>3.1 MB War &amp; Peace</td>
+<td>1.77 ms</td>
+<td>1.7 GiB/s</td>
+</tr>
+<tr>
+<td>decode + encode round-trip <code>| ranges::to</code></td>
+<td>57 KB English</td>
+<td>75.5 µs</td>
+<td>721 MiB/s</td>
+</tr>
+<tr>
+<td>decode + encode round-trip <code>| ranges::to</code></td>
+<td>3.1 MB War &amp; Peace</td>
+<td>4.77 ms</td>
+<td>658 MiB/s</td>
+</tr>
+</tbody>
+</table>
+<h3 id="reproducing">Reproducing</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Download full corpus (Wikipedia articles + 3 MB War and Peace)</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run python tools/download_benchmark_corpora.py</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Build GCC-16 optimized config and run all core benchmarks</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-perf-all</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Competitive baselines (encoding_rs requires cargo; simdutf requires cmake flag)</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="ex">.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.encoding_rs</span> <span class="st">&quot;[benchmark]&quot;</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="ex">.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.simdutf</span> <span class="st">&quot;[benchmark]&quot;</span></span></code></pre></div>
+<p>Throughput formula: <code>input_bytes / mean_time_s / 2^20</code>
+MiB/s.</p>
+<hr />
+<p>Full runnable examples can be found in <a
+href="https://github.com/steve-downey/transcode/tree/main/examples"><code>examples/</code></a>.</p>
+<h2 id="dependencies">Dependencies</h2>
+<h3 id="build-environment">Build Environment</h3>
+<p>This project requires at least the following to build:</p>
+<ul>
+<li>A C++ compiler that conforms to the C++23 standard or greater</li>
+<li>CMake 3.30 or later</li>
+<li>(Test Only) Catch2 3</li>
+</ul>
+<p>You can disable building tests by setting CMake option
+<code>BEMAN_TRANSCODE_BUILD_TESTS</code> to <code>OFF</code> when
+configuring the project.</p>
+<h3 id="supported-platforms">Supported Platforms</h3>
+<p>Tested on every push, and nothing else is:</p>
+<table>
+<thead>
+<tr>
+<th>Compiler</th>
+<th>Version</th>
+<th>C++ Standards</th>
+<th>Standard Library</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GCC</td>
+<td>16-13</td>
+<td>C++26-C++23</td>
+<td>libstdc++</td>
+</tr>
+<tr>
+<td>Clang</td>
+<td>22-19</td>
+<td>C++26-C++23</td>
+<td>libstdc++</td>
+</tr>
+</tbody>
+</table>
+<p>That is the whole of <code>.github/workflows/ci_tests.yml</code>.
+Every row of that matrix selects <code>libstdc++</code>; there is no
+<code>libc++</code> job, and no Clang below 19.</p>
+<p>Other toolchains are not rejected by version. Configuring probes for
+the two standard-library capabilities this library needs — usable
+<code>std::expected</code> and <code>std::ranges::to</code> — and a
+toolchain that provides both can proceed. AppleClang, MSVC with its own
+STL, and Clang with <code>libc++</code> are expected to provide those
+capabilities, but are not verified here. Reports welcome.</p>
+<p>The WHATWG headers are portable to MSVC. Configuring the reference
+package also requires a separately supplied compatible
+<code>iconv</code> implementation because its CMake build currently
+finds <code>Iconv</code> unconditionally.</p>
+<p>A previously tested Clang/<code>libc++</code> combination failed with
+a constraint recursion (<code>depends on itself</code>) when
+<code>std::expected</code> was used within <code>std::vector</code>
+together with these iterators. That combination is not in CI. The
+configure probe rejects a toolchain whose basic
+<code>expected</code>/<code>vector</code> interaction is unusable; it
+does not claim to certify the whole build.</p>
+<p>An earlier version of this table listed Clang 18 and 17. Those rows
+were not merely untested: <code>CMakeLists.txt</code> refused any Clang
+below 19 outright, so the configurations the table advertised could not
+be configured at all. The bound was really about libstdc++'s
+<code>std::expected</code> needing
+<code>__cpp_concepts &gt;= 202002L</code>, which a version test cannot
+distinguish from a libc++ build of the same compiler, so it is now a
+capability probe. Whether Clang 18 with <code>libc++</code> works is
+once again an open question rather than a foreclosed one; it is not
+claimed here until someone runs it.</p>
+<h2 id="development">Development</h2>
+<p>See the <a href="CONTRIBUTING.html">Contributing Guidelines</a>.</p>
+<h2 id="integrate-bemantranscode-into-your-project">Integrate
+beman.transcode into your project</h2>
+<h3 id="build">Build</h3>
+<p>You can build transcode using a CMake workflow preset:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--workflow</span> <span class="at">--preset</span> gcc-release</span></code></pre></div>
+<p>To list available workflow presets, you can invoke:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--list-presets</span><span class="op">=</span>workflow</span></code></pre></div>
+<p>For details on building beman.transcode without using a CMake preset,
+refer to the <a href="CONTRIBUTING.html">Contributing
+Guidelines</a>.</p>
+<h3 id="installation">Installation</h3>
+<h4 id="vcpkg">Vcpkg</h4>
+<p>The preferred way to install transcode is via vcpkg. To do so, after
+installing vcpkg itself, you need to add support for the Beman project's
+<a href="https://github.com/bemanproject/vcpkg-registry">vcpkg
+registry</a> by configuring a <code>vcpkg-configuration.json</code> file
+(which transcode <a
+href="https://github.com/steve-downey/transcode/blob/main/vcpkg-configuration.json">provides</a>).</p>
+<p>Then, simply run <code>vcpkg install beman-transcode</code>.</p>
+<h4 id="manual">Manual</h4>
+<p>To install beman.transcode globally after building with the
+<code>gcc-release</code> preset, you can run:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> cmake <span class="at">--install</span> build/gcc-release</span></code></pre></div>
+<p>Alternatively, to install to a prefix, for example
+<code>/opt/beman</code>, you can run:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> cmake <span class="at">--install</span> build/gcc-release <span class="at">--prefix</span> /opt/beman</span></code></pre></div>
+<p>This will generate the following directory structure:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>/opt/beman</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>├── include</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>│   └── beman</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>│       └── transcode</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>│           ├── transcode.hpp</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>│           └── ...</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>└── lib</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    └── cmake</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        └── beman.transcode</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>            ├── beman.transcode-config-version.cmake</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>            ├── beman.transcode-config.cmake</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>            └── beman.transcode-targets.cmake</span></code></pre></div>
+<h3 id="cmake-configuration">CMake Configuration</h3>
+<p>If you installed beman.transcode to a prefix, you can specify that
+prefix to your CMake project using <code>CMAKE_PREFIX_PATH</code>; for
+example, <code>-DCMAKE_PREFIX_PATH=/opt/beman</code>.</p>
+<p>You need to bring in the <code>beman.transcode</code> package to
+define the <code>beman::transcode</code> CMake target:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode cmake"><code class="sourceCode cmake"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">find_package</span>(beman.transcode <span class="ot">REQUIRED</span>)</span></code></pre></div>
+<p>You will then need to add <code>beman::transcode</code> to the link
+libraries of any libraries or executables that include
+<code>beman.transcode</code> headers.</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode cmake"><code class="sourceCode cmake"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">target_link_libraries</span>(<span class="bn">yourlib</span> <span class="ot">PUBLIC</span> <span class="bn">beman::transcode</span>)</span></code></pre></div>
+<h3 id="using-bemantranscode">Using beman.transcode</h3>
+<p>To use <code>beman.transcode</code> in your C++ project, include an
+appropriate <code>beman.transcode</code> header from your source
+code.</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode c++"><code class="sourceCode cpp"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;beman/transcode/transcode.hpp&gt;</span></span></code></pre></div>
+<div class="note">
+<div class="title">
+<p>Note</p>
+</div>
+<p><code>beman.transcode</code> headers are to be included with the
+<code>beman/transcode/</code> prefix. Altering include search paths to
+spell the include target another way (e.g.
+<code>#include &lt;transcode.hpp&gt;</code>) is unsupported.</p>
+</div>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/README.md">README.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

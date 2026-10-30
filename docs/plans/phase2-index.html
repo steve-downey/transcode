@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Phase 2: Full WHATWG Codec Implementation -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/phase2-index.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#phase-2-full-whatwg-codec-implementation"
+id="toc-phase-2-full-whatwg-codec-implementation">Phase 2: Full WHATWG
+Codec Implementation</a>
+<ul>
+<li><a href="#overview" id="toc-overview">Overview</a></li>
+<li><a href="#whatwg-encoding-inventory"
+id="toc-whatwg-encoding-inventory">WHATWG Encoding Inventory</a></li>
+<li><a href="#steps" id="toc-steps">Steps</a></li>
+<li><a href="#key-architecture-decisions"
+id="toc-key-architecture-decisions">Key Architecture Decisions</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="phase-2-full-whatwg-codec-implementation">Phase 2: Full WHATWG
+Codec Implementation</h1>
+<h2 id="overview">Overview</h2>
+<p>Implements the complete WHATWG Encoding Standard codec set: all
+single-byte decoders and encoders, the UTF-8 encoder, UTF-16 codecs, and
+all legacy multi-byte codecs (CJK + miscellaneous). The success
+condition is that every encoding listed in the WHATWG spec has both
+decode and encode support.</p>
+<p><strong>Preconditions:</strong> Steps 0–16 complete, 70 tests pass on
+<code>main</code>. The <code>codec</code> enum has <code>utf_8</code>,
+<code>replacement</code>, <code>x_user_defined</code>,
+<code>windows_1252</code>. The single-byte decode infrastructure
+(<code>detail::single_byte_decode_one</code> + 128-entry table pattern)
+is proven.</p>
+<p><strong>TDD workflow per step:</strong> Branch
+<code>step&lt;N&gt;-&lt;slug&gt;</code> from main → RED commit (failing
+tests) → GREEN commit (implementation passing) → <code>make lint</code>
+→ merge <code>--no-ff</code> → push both remotes.</p>
+<p><strong>Progress:</strong> See <a
+href="phase2-checklist.html">phase2-checklist.md</a> for current
+status.</p>
+<hr />
+<h2 id="whatwg-encoding-inventory">WHATWG Encoding Inventory</h2>
+<h3 id="already-implemented">Already implemented</h3>
+<table>
+<thead>
+<tr>
+<th>Codec</th>
+<th>Step</th>
+<th>Direction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UTF-8 (decode)</td>
+<td>5–6</td>
+<td>decode</td>
+</tr>
+<tr>
+<td>replacement</td>
+<td>14</td>
+<td>decode</td>
+</tr>
+<tr>
+<td>x-user-defined</td>
+<td>15</td>
+<td>decode</td>
+</tr>
+<tr>
+<td>windows-1252</td>
+<td>16</td>
+<td>decode</td>
+</tr>
+</tbody>
+</table>
+<h3 id="single-byte-22-total-1-done">Single-byte (22 total, 1 done)</h3>
+<p>All share one algorithm with a different 128-entry lookup table.
+Decode: <code>table[byte - 0x80]</code>. Encode: reverse lookup (find
+pointer for codepoint in table, return <code>pointer + 0x80</code>).</p>
+<p>IBM866, ISO-8859-2, ISO-8859-3, ISO-8859-4, ISO-8859-5, ISO-8859-6,
+ISO-8859-7, ISO-8859-8, ISO-8859-8-I, ISO-8859-10, ISO-8859-13,
+ISO-8859-14, ISO-8859-15, ISO-8859-16, KOI8-R, KOI8-U, macintosh,
+windows-874, windows-1250, windows-1251, windows-1252 ✓, windows-1253,
+windows-1254, windows-1255, windows-1256, windows-1257, windows-1258,
+x-mac-cyrillic.</p>
+<h3 id="multi-byte-7-codecs-each-with-unique-algorithm">Multi-byte (7
+codecs, each with unique algorithm)</h3>
+<table>
+<thead>
+<tr>
+<th>Codec</th>
+<th>Index size</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GBK</td>
+<td>~23,000</td>
+<td>Chinese simplified; superset of GB2312</td>
+</tr>
+<tr>
+<td>gb18030</td>
+<td>~23,000 + ranges</td>
+<td>Chinese; mandatory in PRC</td>
+</tr>
+<tr>
+<td>Big5</td>
+<td>~20,000</td>
+<td>Chinese traditional</td>
+</tr>
+<tr>
+<td>EUC-JP</td>
+<td>~7,000 + ~6,000</td>
+<td>Japanese; uses JIS X 0208 + 0212</td>
+</tr>
+<tr>
+<td>ISO-2022-JP</td>
+<td>~7,000</td>
+<td>Japanese; stateful (escape sequences)</td>
+</tr>
+<tr>
+<td>Shift_JIS</td>
+<td>~7,000</td>
+<td>Japanese; Microsoft variant</td>
+</tr>
+<tr>
+<td>EUC-KR</td>
+<td>~17,000</td>
+<td>Korean</td>
+</tr>
+</tbody>
+</table>
+<h3 id="other">Other</h3>
+<table>
+<thead>
+<tr>
+<th>Codec</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UTF-16BE</td>
+<td>Algorithmic, no index table</td>
+</tr>
+<tr>
+<td>UTF-16LE</td>
+<td>Algorithmic, no index table</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="steps">Steps</h2>
+<h3 id="completed">Completed</h3>
+<h4 id="step-14-codecreplacement"><a
+href="step14-replacement-codec.html">Step 14:
+<code>codec::replacement</code></a></h4>
+<p>Introduced <code>if constexpr</code> dispatch in <code>load()</code>.
+Trivial codec: any non-empty input → one U+FFFD.</p>
+<h4 id="step-15-codecx_user_defined"><a
+href="step15-x-user-defined.html">Step 15:
+<code>codec::x_user_defined</code></a></h4>
+<p>Per-byte algorithmic codec. 0x00–0x7F identity, 0x80–0xFF →
+U+F780–U+F7FF. Never errors.</p>
+<h4 id="step-16-single-byte-infrastructure--windows_1252"><a
+href="step16-single-byte-infra.html">Step 16: Single-byte infrastructure
++ <code>windows_1252</code></a></h4>
+<p>Generic table-driven <code>single_byte_decode_one()</code> +
+128-entry table pattern. First concrete table.</p>
+<h3 id="data-tooling">Data tooling</h3>
+<h4
+id="step-17-data-tooling--whatwg-index-acquisition--table-generation"><a
+href="step17-iso-8859-tables.html">Step 17: Data tooling — WHATWG index
+acquisition &amp; table generation</a></h4>
+<p>Acquire all WHATWG index-*.txt files, write Python parser, generate
+<code>#embed</code>-able binary data and constexpr header fallbacks for
+all single-byte tables. No runtime library code.</p>
+<h3 id="single-byte-codec-loop">Single-byte codec loop</h3>
+<h4
+id="step-18-all-single-byte-decoders-step18-all-single-byte-decode">Step
+18: All single-byte decoders
+(<code>step18-all-single-byte-decode</code>)</h4>
+<p>Using the generated tables from step 17, add all 21 remaining
+single-byte decoders. Each codec needs: a <code>codec</code> enum value,
+an <code>#include</code> for its table, and dispatch branches in both
+<code>load()</code> functions. The hand-written
+<code>windows_1252.hpp</code> is replaced by the generated version.
+<strong>This is a loop over 21 codecs</strong>, not 2.</p>
+<h4
+id="step-19-single-byte-encoder-infrastructure--all-encoders-step19-single-byte-encode">Step
+19: Single-byte encoder infrastructure + all encoders
+(<code>step19-single-byte-encode</code>)</h4>
+<p>The WHATWG single-byte encoder is a reverse lookup: for a codepoint,
+find the table pointer that maps to it, return
+<code>pointer + 0x80</code>. Needs a
+<code>single_byte_encode_one()</code> function (possibly with a
+compile-time-generated reverse map), <code>whatwg_encode_view</code>
+dispatch for all 22 single-byte codecs, and tests for representative
+codecs.</p>
+<h3 id="utf-8-encoder">UTF-8 encoder</h3>
+<h4 id="step-20-utf-8-encoder"><a href="step18-utf8-encoder.html">Step
+20: UTF-8 encoder</a></h4>
+<p><code>whatwg_encode_view&lt;codec::utf_8&gt;</code>: takes
+<code>char32_t</code> range, yields <code>char</code> bytes. Adds
+<code>unicode_scalar_range</code> concept, encoder view, or_error
+variant, pipe closures, negative compile test.</p>
+<h3 id="utf-16">UTF-16</h3>
+<h4 id="step-21-utf-16-decoder--encoder-step21-utf16">Step 21: UTF-16
+decoder + encoder (<code>step21-utf16</code>)</h4>
+<p>Algorithmic (no table). UTF-16BE and UTF-16LE decode and encode.
+Handles surrogate pairs, BOM, and byte order.</p>
+<h3 id="multi-byte-codecs-decode--encode-per-codec">Multi-byte codecs
+(decode + encode per codec)</h3>
+<p>Each multi-byte codec has a unique algorithm defined in the WHATWG
+spec. Both decode and encode directions use the same index data. Steps
+are one per codec.</p>
+<h4 id="step-22-gbk-decode--encode-step22-gbk">Step 22: GBK decode +
+encode (<code>step22-gbk</code>)</h4>
+<p>Chinese simplified. Superset of GB2312. Two-byte encoding with lead
+byte 0x81–0xFE.</p>
+<h4 id="step-23-gb18030-decode--encode-step23-gb18030">Step 23: gb18030
+decode + encode (<code>step23-gb18030</code>)</h4>
+<p>Chinese. Four-byte extension of GBK. Mandatory in PRC. Uses index +
+range mapping.</p>
+<h4 id="step-24-big5-decode--encode-step24-big5">Step 24: Big5 decode +
+encode (<code>step24-big5</code>)</h4>
+<p>Chinese traditional. Two-byte encoding.</p>
+<h4 id="step-25-shift_jis-decode--encode-step25-shift-jis">Step 25:
+Shift_JIS decode + encode (<code>step25-shift-jis</code>)</h4>
+<p>Japanese. Microsoft variant of JIS X 0208.</p>
+<h4 id="step-26-euc-jp-decode--encode-step26-euc-jp">Step 26: EUC-JP
+decode + encode (<code>step26-euc-jp</code>)</h4>
+<p>Japanese. Uses JIS X 0208 + JIS X 0212 indexes.</p>
+<h4 id="step-27-iso-2022-jp-decode--encode-step27-iso-2022-jp">Step 27:
+ISO-2022-JP decode + encode (<code>step27-iso-2022-jp</code>)</h4>
+<p>Japanese. Stateful encoding using escape sequences to switch
+character sets.</p>
+<h4 id="step-28-euc-kr-decode--encode-step28-euc-kr">Step 28: EUC-KR
+decode + encode (<code>step28-euc-kr</code>)</h4>
+<p>Korean. Two-byte encoding.</p>
+<h3 id="composition">Composition</h3>
+<h4 id="step-29-round-trip-composition-step29-roundtrip">Step 29:
+Round-trip composition (<code>step29-roundtrip</code>)</h4>
+<p>Comprehensive round-trip tests for all implemented codecs. Validates
+that decode→encode is identity for valid input. First test of view
+composition across the full codec set.</p>
+<hr />
+<h2 id="key-architecture-decisions">Key Architecture Decisions</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>if constexpr</code> dispatch on codec NTTP</td>
+<td>Zero-cost; unused branches discarded at compile time</td>
+</tr>
+<tr>
+<td>Table sentinel <code>char32_t(0)</code></td>
+<td>No WHATWG single-byte index maps high bytes to U+0000</td>
+</tr>
+<tr>
+<td>Generated tables from WHATWG indexes</td>
+<td>Normative data source; avoids hand-transcription errors</td>
+</tr>
+<tr>
+<td><code>#embed</code> binary + constexpr header fallback</td>
+<td>Forward-looking for C++26; works today with arrays</td>
+</tr>
+<tr>
+<td>Reuse <code>whatwg_error</code> for encoder</td>
+<td><code>surrogate_code_point</code> and <code>out_of_range</code>
+already exist</td>
+</tr>
+<tr>
+<td>Encoder internal buffer (char[4] for UTF-8)</td>
+<td>Bounded output per codepoint; no external span needed</td>
+</tr>
+<tr>
+<td>Single-byte encoder = reverse table lookup</td>
+<td>WHATWG spec: "find index pointer for codepoint"</td>
+</tr>
+<tr>
+<td>One step per multi-byte codec</td>
+<td>Each has a unique algorithm; can't be looped</td>
+</tr>
+</tbody>
+</table>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase2-index.md">docs/plans/phase2-index.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

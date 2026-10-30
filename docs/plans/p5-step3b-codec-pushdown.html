@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P5-Step 3b: Push the Codec State Machines Down -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p5-step3b-codec-pushdown.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p5-step-3b-push-the-codec-state-machines-down"
+id="toc-p5-step-3b-push-the-codec-state-machines-down">P5-Step 3b: Push
+the Codec State Machines Down</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#what-was-done" id="toc-what-was-done">What was
+done</a></li>
+<li><a href="#what-was-not-done-and-the-order-to-do-it-in"
+id="toc-what-was-not-done-and-the-order-to-do-it-in">What was not done,
+and the order to do it in</a></li>
+<li><a href="#what-this-means-for-step-3-task-4"
+id="toc-what-this-means-for-step-3-task-4">What this means for Step 3
+task 4</a></li>
+<li><a href="#acceptance" id="toc-acceptance">Acceptance</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p5-step-3b-push-the-codec-state-machines-down">P5-Step 3b: Push
+the Codec State Machines Down</h1>
+<p><strong>Branch:</strong> <code>p5-step3b-codec-pushdown</code>
+<strong>Depends on:</strong> Step 3 <strong>Read first:</strong>
+<code>docs/plans/phase5-index.md</code>,
+<code>docs/plans/p5-step3-spec-header-shape.md</code></p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Take the codec implementation out of the two WHATWG view headers, so
+that the specification headers are thin enough for D1's
+one-document-per-proposed-header shape (Step 3 task 4), and so that the
+headers read like specification rather than like a decoder.</p>
+<h2 id="what-was-done">What was done</h2>
+<p>The per-table branch collapse. Each of the four
+<code>iterator::load()</code> bodies dispatched on the codec with 27
+near-identical branches — one per single-byte table, differing only in
+which table they named. The selection function that turns them into one
+branch already existed and simply was not used here. With
+<code>detail::single_byte_table_codec</code> and a reference-returning
+<code>detail::single_byte_decode_table()</code>, all four collapse to a
+single branch:</p>
+<ul>
+<li><code>whatwg_decode_view.hpp</code> 1,645 → 1,416 lines</li>
+<li><code>whatwg_encode_view.hpp</code> 1,246 → 1,141 lines</li>
+</ul>
+<p>The collapse was verified by matching branch bodies modulo the table
+name rather than by eye, which is how the one non-uniform branch was
+found: in <code>whatwg_decode_or_error_view</code>'s
+<code>load()</code>, <code>windows_1252</code> calls
+<code>std::unreachable()</code> on a decode error, because the
+windows-1252 table has no holes and a byte can never fail to map. It is
+kept verbatim ahead of the general branch. Folding it in would replace
+undefined behaviour with an error return — defensible, but a semantic
+decision rather than a mechanical one, so it is left for whoever wants
+to make it deliberately.</p>
+<h2 id="what-was-not-done-and-the-order-to-do-it-in">What was not done,
+and the order to do it in</h2>
+<p>The stateful codecs — ISO-2022-JP (156 lines per
+<code>load()</code>), UTF-16 (57), and GB18030's replay buffer (51) —
+are still inline. Extracting them means giving each a decoder object
+that owns the state the iterator currently holds
+(<code>iso2022jp_state_</code>, <code>iso2022jp_output_state_</code>,
+<code>iso2022jp_output_flag_</code>, <code>iso2022jp_lead_</code>,
+<code>pending_</code>, <code>pending_count_</code>,
+<code>gb_replay_*</code>), and teaching the iterator's
+<code>operator==</code> to compare it. That is real work, and it is
+worth doing.</p>
+<p><strong>But not before the <code>_or_error</code>
+unification.</strong> <code>whatwg_decode_view</code>'s
+<code>load()</code> and <code>whatwg_decode_or_error_view</code>'s
+<code>load()</code> are 306 and 328 lines, and <strong>71% of their
+lines are identical</strong>; they differ only in whether a failure
+becomes <code>U+FFFD</code> or <code>unexpected(error)</code>.
+<code>docs/p2728-alignment.md</code> has an open action item to unify
+each view with its <code>_or_error</code> twin under one
+error-kind-parameterized template, which deletes one of the two copies
+outright. Extracting the state machines first means extracting them
+twice and then throwing half the work away.</p>
+<p>So the order is: unify the <code>_or_error</code> pairs, then extract
+the state machines from the one remaining <code>load()</code> per
+direction. The unification is also what Steps 6 and 7 need settled
+before they write those clauses (<code>docs/wording-outline.md</code>,
+"Open, and deliberately not settled here"), so it is on the critical
+path either way.</p>
+<h2 id="what-this-means-for-step-3-task-4">What this means for Step 3
+task 4</h2>
+<p>Nothing is blocked. The merge into one document per proposed header
+was already recorded as waiting on the pushdown, and the pushdown now
+waits on the unification. None of it gates the markup steps:
+<code>load()</code> is a private member, private members are filtered
+out of every synopsis, and no clause extracts a private body. Steps 4
+through 9 can proceed against the headers as they stand.</p>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li><code>make test</code> green (711 of 711 at the time of
+writing).</li>
+<li><code>make wording-check</code> clean.</li>
+<li>No behavioural change: the collapse is body-identical per branch,
+and the one branch that was not identical is preserved verbatim.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step3b-codec-pushdown.md">docs/plans/p5-step3b-codec-pushdown.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

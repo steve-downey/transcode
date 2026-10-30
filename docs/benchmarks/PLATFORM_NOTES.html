@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Benchmark Platform Notes - beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/benchmarks/PLATFORM_NOTES.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#benchmark-platform-notes"
+id="toc-benchmark-platform-notes">Benchmark Platform Notes</a>
+<ul>
+<li><a
+href="#simdutf-ceiling-baseline-optional--requires-explicit-cmake-opt-in"
+id="toc-simdutf-ceiling-baseline-optional--requires-explicit-cmake-opt-in"><code>simdutf</code>
+ceiling baseline (optional — requires explicit CMake opt-in)</a></li>
+<li><a href="#encoding_rs-baseline-optional--requires-rustcargo"
+id="toc-encoding_rs-baseline-optional--requires-rustcargo"><code>encoding_rs</code>
+baseline (optional — requires Rust/Cargo)</a></li>
+<li><a href="#stdcodecvt--stdwstring_convert-negative-baseline"
+id="toc-stdcodecvt--stdwstring_convert-negative-baseline"><code>std::codecvt</code>
+/ <code>std::wstring_convert</code> (negative baseline)</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="benchmark-platform-notes">Benchmark Platform Notes</h1>
+<h2
+id="simdutf-ceiling-baseline-optional--requires-explicit-cmake-opt-in"><code>simdutf</code>
+ceiling baseline (optional — requires explicit CMake opt-in)</h2>
+<p><code>simdutf</code> uses SIMD intrinsics (SSE4, AVX2, AVX-512, NEON,
+etc.) to achieve maximum throughput for UTF-8 decode, validate, and
+transcode operations. It represents the performance ceiling against
+which the composable <code>beman::transcode</code> range-based approach
+is compared.</p>
+<h3 id="enabling">Enabling</h3>
+<p><code>simdutf</code> is <strong>off by default</strong> because it
+requires network access on the first configure (FetchContent downloads
+the repo). To enable:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Re-configure with simdutf enabled (downloads on first run)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> .build/build-system</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run cmake <span class="at">-DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF</span><span class="op">=</span>ON .</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Then run</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-simdutf</span></code></pre></div>
+<h3 id="files">Files</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>benchmark/simdutf_benchmarks.bench.cpp</code></td>
+<td>Catch2 benchmark file</td>
+</tr>
+<tr>
+<td><code>benchmark/CMakeLists.txt</code></td>
+<td>FetchContent wiring under
+<code>BEMAN_TRANSCODE_BENCHMARK_SIMDUTF</code> option</td>
+</tr>
+</tbody>
+</table>
+<h3 id="platform-availability">Platform availability</h3>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Any platform with CMake + network access</td>
+<td>Downloads simdutf v5.6.4 on first configure</td>
+</tr>
+<tr>
+<td>CI (without
+<code>-DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON</code>)</td>
+<td>Silently skipped; <code>bench-simdutf</code> target absent</td>
+</tr>
+<tr>
+<td>WSL2/Linux</td>
+<td>AVX2 available; SIMD fast-paths active</td>
+</tr>
+<tr>
+<td>macOS / arm64</td>
+<td>NEON fast-paths active</td>
+</tr>
+</tbody>
+</table>
+<h3 id="benchmarks-provided">Benchmarks provided</h3>
+<ul>
+<li><code>simdutf UTF-8→UTF-32: English (ASCII-heavy)</code> — aligned
+with Step 4 <code>whatwg_decode&lt;utf_8&gt;</code> English case</li>
+<li><code>simdutf UTF-8→UTF-32: Arabic (multibyte-heavy)</code> —
+aligned with Step 4 <code>whatwg_decode&lt;utf_8&gt;</code> Arabic
+case</li>
+<li><code>simdutf UTF-8 validate: English</code> — pure validation pass
+(fastest simdutf path)</li>
+<li><code>simdutf UTF-8 validate: Arabic</code> — multibyte
+validation</li>
+<li><code>simdutf UTF-8→UTF-16: English</code> — common runtime output
+format</li>
+<li><code>simdutf UTF-8→UTF-16: Arabic</code> — common runtime output
+format</li>
+</ul>
+<h3 id="expected-comparison">Expected comparison</h3>
+<p>Measured against this library, <code>simdutf</code> runs about 3×
+faster on ASCII-heavy text and about 5× on multibyte-heavy text; see the
+Performance section of the top-level README for the numbers. That gap is
+what standard C++ range composition costs against hand-tuned SIMD
+intrinsics.</p>
+<hr />
+<h2
+id="encoding_rs-baseline-optional--requires-rustcargo"><code>encoding_rs</code>
+baseline (optional — requires Rust/Cargo)</h2>
+<p><code>encoding_rs</code> is a Rust library providing WHATWG Encoding
+Standard compliant decode/encode. The benchmark uses the non-streaming
+(contiguous buffer) API to avoid heap allocation in the measured
+region.</p>
+<h3 id="enabling-1">Enabling</h3>
+<p>The CMake configure step auto-detects <code>cargo</code> on
+<code>PATH</code>. If found, the
+<code>beman.transcode.benchmarks.encoding_rs</code> target is built
+automatically during <code>make compile</code>. If <code>cargo</code> is
+absent, the target is silently skipped.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run encoding_rs benchmarks (requires cargo to be on PATH)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-encoding-rs</span></code></pre></div>
+<h3 id="files-1">Files</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>benchmark/encoding_rs_bench/Cargo.toml</code></td>
+<td>Rust crate manifest; depends on <code>encoding_rs</code> crate</td>
+</tr>
+<tr>
+<td><code>benchmark/encoding_rs_bench/src/lib.rs</code></td>
+<td>Thin C-FFI shim (three <code>extern "C"</code> functions)</td>
+</tr>
+<tr>
+<td><code>benchmark/encoding_rs_bench/include/encoding_rs_bench/encoding_rs_bench.h</code></td>
+<td>C header for the shim</td>
+</tr>
+<tr>
+<td><code>benchmark/encoding_rs_benchmarks.bench.cpp</code></td>
+<td>Catch2 benchmark file</td>
+</tr>
+<tr>
+<td><code>benchmark/encoding_rs_bench/Cargo.lock</code></td>
+<td>Lock file for reproducible Rust builds</td>
+</tr>
+</tbody>
+</table>
+<h3 id="platform-availability-1">Platform availability</h3>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th><code>cargo</code> available?</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This machine (WSL2/Linux)</td>
+<td>Yes — cargo 1.94.0</td>
+<td>All four benchmarks run</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>Yes (via Homebrew/rustup)</td>
+<td>Expected to work</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>Yes (via rustup)</td>
+<td>Expected to work; <code>.lib</code> extension differs but CMake
+handles it</td>
+</tr>
+<tr>
+<td>CI (without Rust)</td>
+<td>No</td>
+<td>Silently skipped; <code>bench-encoding-rs</code> target absent</td>
+</tr>
+</tbody>
+</table>
+<h3 id="benchmarks-provided-1">Benchmarks provided</h3>
+<ul>
+<li><code>encoding_rs UTF-8→UTF-8: English (ASCII-heavy)</code> — WHATWG
+UTF-8 passthrough</li>
+<li><code>encoding_rs UTF-8→UTF-8: Japanese (CJK-heavy)</code> — WHATWG
+UTF-8 passthrough</li>
+<li><code>encoding_rs Windows-1251→UTF-8: Russian</code> — legacy
+encoding decode</li>
+<li><code>encoding_rs Shift-JIS→UTF-8: Japanese</code> — legacy encoding
+decode</li>
+</ul>
+<h3 id="results-on-this-machine-asan-build--indicative-only">Results on
+this machine (Asan build — indicative only)</h3>
+<ul>
+<li>English ASCII: ~75 ns (435-byte corpus) — essentially no work;
+all-ASCII passthrough</li>
+<li>Japanese CJK: ~350 ns (340-byte UTF-8 corpus) — multibyte scan
+overhead</li>
+<li>Russian Windows-1251→UTF-8: ~810 ns (340-byte corpus) — table
+lookup</li>
+<li>Japanese Shift-JIS→UTF-8: ~693 ns (340-byte corpus) — table
+lookup</li>
+</ul>
+<p>Contrast with <code>whatwg_decode&lt;utf_8&gt;</code> on the same
+corpora: ≪ 1 µs. <code>encoding_rs</code> is competitive on the
+ASCII-heavy path and slightly slower on CJK/legacy paths, consistent
+with the Rust→C FFI overhead on small corpora.</p>
+<hr />
+<h2
+id="stdcodecvt--stdwstring_convert-negative-baseline"><code>std::codecvt</code>
+/ <code>std::wstring_convert</code> (negative baseline)</h2>
+<p><code>std::codecvt_utf8</code> and <code>std::wstring_convert</code>
+were deprecated in C++17 and removed in C++26. The
+<code>codecvt_benchmarks.bench.cpp</code> file compiles on any platform
+but produces live benchmarks only where
+<code>__has_include(&lt;codecvt&gt;)</code> is true. Otherwise,
+<code>SKIP()</code> is invoked at runtime.</p>
+<table>
+<thead>
+<tr>
+<th>Platform / STL</th>
+<th><code>&lt;codecvt&gt;</code> present?</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>libstdc++ (GCC ≤ 14)</td>
+<td>Yes</td>
+<td>Deprecated; may emit <code>-Wdeprecated-declarations</code>
+(suppressed in benchmark).</td>
+</tr>
+<tr>
+<td>libc++ (Clang ≥ 16)</td>
+<td>No</td>
+<td>Removed; benchmark is SKIP()ed.</td>
+</tr>
+<tr>
+<td>MSVC STL (VS 2022)</td>
+<td>Yes</td>
+<td>Deprecated; present.</td>
+</tr>
+</tbody>
+</table>
+<p>This benchmark is a <strong>negative historical baseline</strong>.
+The result is expected to be slower than range-based alternatives
+(<code>whatwg_decode</code>, <code>decode()</code>).
+<code>wstring_convert::from_bytes</code> performs a heap allocation per
+call, unlike the zero-allocation range-based views.</p>
+<p>Do not treat <code>codecvt</code> benchmark regressions as project
+regressions.</p>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/PLATFORM_NOTES.md">docs/benchmarks/PLATFORM_NOTES.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

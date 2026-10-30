@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Phase 3 General Handoff — Read This First -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/phase3-handoff.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#phase-3-general-handoff--read-this-first"
+id="toc-phase-3-general-handoff--read-this-first">Phase 3 General
+Handoff — Read This First</a>
+<ul>
+<li><a href="#project-identity" id="toc-project-identity">Project
+Identity</a></li>
+<li><a href="#directory-layout" id="toc-directory-layout">Directory
+Layout</a></li>
+<li><a href="#key-make-targets" id="toc-key-make-targets">Key Make
+Targets</a></li>
+<li><a href="#coding-rules-enforced"
+id="toc-coding-rules-enforced">Coding Rules (Enforced)</a></li>
+<li><a href="#library-api-surface-current"
+id="toc-library-api-surface-current">Library API Surface
+(Current)</a></li>
+<li><a href="#catch2-benchmark-macros"
+id="toc-catch2-benchmark-macros">Catch2 Benchmark Macros</a></li>
+<li><a href="#iconv-mock-library" id="toc-iconv-mock-library">iconv Mock
+Library</a></li>
+<li><a href="#branch-and-commit-discipline"
+id="toc-branch-and-commit-discipline">Branch and Commit
+Discipline</a></li>
+<li><a href="#what-to-write-in-handoff-nextmd"
+id="toc-what-to-write-in-handoff-nextmd">What to Write in
+handoff-next.md</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="phase-3-general-handoff--read-this-first">Phase 3 General
+Handoff — Read This First</h1>
+<p>This document provides the standing context every Phase 3 agent
+needs. Read this, then read the specific <code>p3-step&lt;N&gt;</code>
+document, then read <code>handoff-next.md</code> for step-specific notes
+from the previous agent.</p>
+<hr />
+<h2 id="project-identity">Project Identity</h2>
+<ul>
+<li><strong>Library:</strong> <code>beman.transcode</code> — C++23
+header-only Unicode transcoding via ranges/views</li>
+<li><strong>Repo root:</strong> the current working directory (use
+<code>pwd</code> to confirm)</li>
+<li><strong>Language:</strong> C++23, minimum GCC 13, minimum Clang
+19</li>
+<li><strong>Build system:</strong> CMake + Ninja Multi-Config, managed
+via <code>uv</code> (Python venv)</li>
+<li><strong>Test framework:</strong> Catch2 3.x (includes benchmark
+macros)</li>
+<li><strong>Python tooling:</strong> <code>uv run</code> prefix for all
+Python commands</li>
+</ul>
+<h2 id="directory-layout">Directory Layout</h2>
+<pre><code>include/beman/transcode/       — public headers (the library)
+include/beman/transcode/detail/ — implementation detail headers
+tests/beman/transcode/          — Catch2 test sources
+examples/                       — example programs
+benchmark/                      — benchmark sources (created in P3-Step 1)
+tools/                          — Python code-gen and tooling scripts
+tools/tests/                    — pytest tests for Python tools
+data/                           — generated data (tables, corpora)
+docs/plans/                     — step plans (you are reading one)</code></pre>
+<h2 id="key-make-targets">Key Make Targets</h2>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make compile</code></td>
+<td>Build all (Asan config by default)</td>
+</tr>
+<tr>
+<td><code>make test</code></td>
+<td>Build + run CTest + pytest</td>
+</tr>
+<tr>
+<td><code>make ctest</code></td>
+<td>Run CTest only (no rebuild)</td>
+</tr>
+<tr>
+<td><code>make pytest</code></td>
+<td>Run Python tests only</td>
+</tr>
+<tr>
+<td><code>make lint</code></td>
+<td>Pre-commit hooks: clang-format, gersemi, ruff, codespell</td>
+</tr>
+<tr>
+<td><code>make coverage</code></td>
+<td>Build Gcov config, run tests, report coverage</td>
+</tr>
+<tr>
+<td><code>make bench</code></td>
+<td>Run benchmark smoke (added in P3-Step 1)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="coding-rules-enforced">Coding Rules (Enforced)</h2>
+<ul>
+<li>Include guards
+(<code>#ifndef</code>/<code>#define</code>/<code>#endif</code>), never
+<code>#pragma once</code></li>
+<li>Angle-bracket includes only
+(<code>&lt;beman/transcode/...&gt;</code>)</li>
+<li>Functions defined out-of-line in headers (body after class)</li>
+<li>No <code>using namespace</code> in headers</li>
+<li>No Co-Author trailer in commits</li>
+<li>Every constraint/static_assert needs a negative compile test</li>
+<li><code>constexpr</code> everything that can be; test with
+<code>constify()</code> from test_utilities.hpp</li>
+</ul>
+<h2 id="library-api-surface-current">Library API Surface (Current)</h2>
+<h3 id="whatwg-codec-views-enum-based-closed-set">WhatWG codec views
+(enum-based, closed set)</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Decode bytes to char32_t:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>bytes <span class="op">|</span> whatwg_decode<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;</span>           <span class="co">// -&gt; char32_t range</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>bytes <span class="op">|</span> whatwg_decode_or_error<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;</span>  <span class="co">// -&gt; expected&lt;char32_t, whatwg_error&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Encode char32_t to bytes:</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>codepoints <span class="op">|</span> whatwg_encode<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;</span>      <span class="co">// -&gt; char range</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">// All views support .base() on view and iterator</span></span></code></pre></div>
+<h3
+id="pluggable-codec-protocol-type-based-open-for-extension">Pluggable
+codec protocol (type-based, open for extension)</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Concepts: decode_codec, encode_codec, random_access_decode_codec_type, flushable_decode_codec</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Templates: table_codec&lt;std::array&lt;char32_t,128&gt;&gt;, full_table_codec&lt;std::array&lt;char32_t,256&gt;&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Views:</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>bytes <span class="op">|</span> decode<span class="op">(</span>my_codec<span class="op">{})</span>           <span class="co">// -&gt; char32_t range</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>bytes <span class="op">|</span> decode_or_error<span class="op">(</span>my_codec<span class="op">{})</span>  <span class="co">// -&gt; expected&lt;char32_t, decode_error&gt;</span></span></code></pre></div>
+<h3 id="iconv-views">iconv views</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>iconv_transcode_view<span class="op">&lt;</span>IconvFns<span class="op">,</span> R<span class="op">&gt;(</span>range<span class="op">,</span> fns<span class="op">,</span> from<span class="op">,</span> to<span class="op">,</span> buffer<span class="op">)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>iconv_transcode_or_error_view<span class="op">&lt;</span>IconvFns<span class="op">,</span> R<span class="op">&gt;(</span>range<span class="op">,</span> fns<span class="op">,</span> from<span class="op">,</span> to<span class="op">,</span> buffer<span class="op">)</span></span></code></pre></div>
+<h3 id="bulk-operations">Bulk operations</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>decode_to<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;(</span>range<span class="op">)</span>       <span class="co">// -&gt; vector&lt;char32_t&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>encode_to<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;(</span>range<span class="op">)</span>       <span class="co">// -&gt; string</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>decode_into<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;(</span>range<span class="op">,</span> output_iter<span class="op">)</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>encode_into<span class="op">&lt;</span>codec<span class="op">::</span>utf_8<span class="op">&gt;(</span>range<span class="op">,</span> output_iter<span class="op">)</span></span></code></pre></div>
+<h3 id="runtime-dispatch">Runtime dispatch</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>transcode_string<span class="op">(</span>src_span<span class="op">,</span> codec<span class="op">::</span>from<span class="op">,</span> codec<span class="op">::</span>to<span class="op">)</span>  <span class="co">// -&gt; string</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>get_encoding<span class="op">(</span><span class="st">&quot;utf-8&quot;</span><span class="op">)</span>                                <span class="co">// -&gt; optional&lt;codec&gt;</span></span></code></pre></div>
+<h2 id="catch2-benchmark-macros">Catch2 Benchmark Macros</h2>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;catch2/catch_all.hpp&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Simple:</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>BENCHMARK<span class="op">(</span><span class="st">&quot;name&quot;</span><span class="op">)</span> <span class="op">{</span> <span class="cf">return</span> do_work<span class="op">();</span> <span class="op">};</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Advanced (separate setup from measurement):</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>BENCHMARK_ADVANCED<span class="op">(</span><span class="st">&quot;name&quot;</span><span class="op">)(</span>Catch<span class="op">::</span>Benchmark<span class="op">::</span>Chronometer meter<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// setup here (not timed)</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    meter<span class="op">.</span>measure<span class="op">([&amp;]</span> <span class="op">{</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="co">// timed region</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> result<span class="op">;</span>  <span class="co">// prevents DCE</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">});</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
+<h2 id="iconv-mock-library">iconv Mock Library</h2>
+<p>Located at <code>tests/beman/transcode/iconv_mock.hpp</code>.
+Provides:</p>
+<ul>
+<li><code>mock_iconv</code> (identity), <code>mock_iconv_e2big</code>,
+<code>mock_iconv_eilseq</code>, <code>mock_iconv_partial_consume</code>,
+<code>mock_iconv_stateful</code>, etc.</li>
+<li>Injected via template parameter on iconv views.</li>
+</ul>
+<h2 id="branch-and-commit-discipline">Branch and Commit Discipline</h2>
+<ul>
+<li>Branch from <code>main</code> for each step:
+<code>p3-step&lt;N&gt;-&lt;slug&gt;</code></li>
+<li>Run <code>make test</code> + <code>make lint</code> before
+committing</li>
+<li>Merge to main with <code>--no-ff</code></li>
+<li>Push to both remotes:
+<code>git push origin main &amp;&amp; git push bbgithub main</code></li>
+<li>No Co-Author trailer</li>
+</ul>
+<h2 id="what-to-write-in-handoff-nextmd">What to Write in
+handoff-next.md</h2>
+<p>After completing your step, overwrite
+<code>docs/plans/handoff-next.md</code> with:</p>
+<ol type="1">
+<li>Which step you just completed</li>
+<li>The next step file to read</li>
+<li>Any files you created that the next step depends on</li>
+<li>Any surprises, deviations, or decisions not in the step doc</li>
+<li>The exact <code>make</code> targets that are now expected to
+work</li>
+</ol>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase3-handoff.md">docs/plans/phase3-handoff.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>

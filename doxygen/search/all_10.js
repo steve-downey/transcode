@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['sample_0',['sample',['../namespaceanonymous__namespace_02custom__single__byte__decoder_8cpp_03.html#a8dacd65c4aa1ad71cc712a21e205bca9',1,'anonymous_namespace{custom_single_byte_decoder.cpp}']]],
+  ['shift_5fjis_1',['shift_jis',['../namespacebeman_1_1transcoding.html#a20dfb324ebd26c6127d014520f93005aa4d845cd5636875635b0ffea37c56b4eb',1,'beman::transcoding']]],
+  ['shift_5fjis_2ehpp_2',['shift_jis.hpp',['../shift__jis_8hpp.html',1,'(Global Namespace)'],['../tables_2shift__jis_8hpp.html',1,'(Global Namespace)']]],
+  ['shift_5fjis_5fto_5futf8_3',['shift_jis_to_utf8',['../namespacebefore__example.html#ad6bbcff2b5f297e2320626e6b538c2f9',1,'before_example::shift_jis_to_utf8()'],['../namespaceafter__example.html#acaeec6306e48c36775fc8b455b91f714',1,'after_example::shift_jis_to_utf8()']]],
+  ['single_5fbyte_2ehpp_4',['single_byte.hpp',['../single__byte_8hpp.html',1,'']]],
+  ['single_5fbyte_5fdecode_5',['single_byte_decode',['../namespacebeman_1_1transcoding.html#aef322db207ff0a4583061027a96a7475',1,'beman::transcoding']]],
+  ['single_5fbyte_5fdecode_5fclosure_6',['single_byte_decode_closure',['../structbeman_1_1transcoding_1_1single__byte__decode__closure.html',1,'beman::transcoding']]],
+  ['single_5fbyte_5fdecode_5fview_7',['single_byte_decode_view',['../classbeman_1_1transcoding_1_1single__byte__decode__view.html',1,'beman::transcoding::single_byte_decode_view&lt; C, R &gt;'],['../classbeman_1_1transcoding_1_1single__byte__decode__view.html#a6b5df22bbea6a5c84955a5aeda5a79b0',1,'beman::transcoding::single_byte_decode_view::single_byte_decode_view()']]],
+  ['single_5fbyte_5fdecode_5fview_2ehpp_8',['single_byte_decode_view.hpp',['../single__byte__decode__view_8hpp.html',1,'']]],
+  ['single_5fbyte_5fencode_9',['single_byte_encode',['../namespacebeman_1_1transcoding.html#a82f706c2813d6a4b7ec40aeb51af5ae6',1,'beman::transcoding']]],
+  ['single_5fbyte_5fencode_5fclosure_10',['single_byte_encode_closure',['../structbeman_1_1transcoding_1_1single__byte__encode__closure.html',1,'beman::transcoding']]],
+  ['single_5fbyte_5fencode_5fview_11',['single_byte_encode_view',['../classbeman_1_1transcoding_1_1single__byte__encode__view.html',1,'beman::transcoding::single_byte_encode_view&lt; C, R &gt;'],['../classbeman_1_1transcoding_1_1single__byte__encode__view.html#a6f76fae2623ad0aee325c24b8c284806',1,'beman::transcoding::single_byte_encode_view::single_byte_encode_view()']]],
+  ['single_5fbyte_5fencode_5fview_2ehpp_12',['single_byte_encode_view.hpp',['../single__byte__encode__view_8hpp.html',1,'']]],
+  ['single_5fbyte_5ftables_2ehpp_13',['single_byte_tables.hpp',['../single__byte__tables_8hpp.html',1,'']]],
+  ['size_14',['size',['../classbeman_1_1transcoding_1_1random__access__decode__view.html#a76bd51fa4fd7e395091193b7a11ed0d5',1,'beman::transcoding::random_access_decode_view::size()'],['../classbeman_1_1transcoding_1_1single__byte__decode__view.html#a2c1da5a26b0d456a42187e67adb9cbc1',1,'beman::transcoding::single_byte_decode_view::size()'],['../classbeman_1_1transcoding_1_1single__byte__encode__view.html#a9c3c9ab85888a1a4a4be99372cfd268c',1,'beman::transcoding::single_byte_encode_view::size()'],['../classbeman_1_1transcoding_1_1random__access__whatwg__decode__view.html#a71d40522c06ac0b3afda5fa0999b050b',1,'beman::transcoding::random_access_whatwg_decode_view::size()'],['../classbeman_1_1transcoding_1_1random__access__whatwg__encode__view.html#a691b2756443ceba36117bd283cb569ef',1,'beman::transcoding::random_access_whatwg_encode_view::size()']]],
+  ['sniff_2ehpp_15',['sniff.hpp',['../sniff_8hpp.html',1,'']]],
+  ['sniff_5fencoding_16',['sniff_encoding',['../namespacebeman_1_1transcoding.html#a5e89b3b0584a5d1306413f8cfd4000f9',1,'beman::transcoding']]],
+  ['staging_5f_17',['staging_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a6c10f7ac6844d0d1788699f197688540',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::staging_'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a5f48cb96bf5bd6303c68d224f652a819',1,'beman::transcoding::iconv_transcode_view::iterator::staging_']]],
+  ['staging_5flen_5f_18',['staging_len_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#acfb77138a798c93764b144e58ab2d953',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::staging_len_'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a204103d9670cdd628fddad9e75008af8',1,'beman::transcoding::iconv_transcode_view::iterator::staging_len_']]],
+  ['state_5f_19',['state_',['../classbeman_1_1transcoding_1_1whatwg__decode__view_1_1iterator.html#a387f4197023df057119b644875e6829d',1,'beman::transcoding::whatwg_decode_view::iterator::state_'],['../classbeman_1_1transcoding_1_1whatwg__encode__view_1_1iterator.html#a14b0602e8b9622c870222503299fe2b4',1,'beman::transcoding::whatwg_encode_view::iterator::state_']]],
+  ['std_20',['std',['../namespacestd.html',1,'']]],
+  ['std_3a_3aranges_21',['ranges',['../namespacestd_1_1ranges.html',1,'std']]],
+  ['stop_5fafter_5foutput_5f_22',['stop_after_output_',['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#ab9808fe342175f00b6f5017ab6665498',1,'beman::transcoding::iconv_transcode_view::iterator']]],
+  ['surrogate_5fcode_5fpoint_23',['surrogate_code_point',['../namespacebeman_1_1transcoding.html#a3823b84e4fc7b689f0b2b38741b30baba0244a36bb240df43b19c2353edd9d83d',1,'beman::transcoding']]],
+  ['system_5ferror_24',['system_error',['../namespacebeman_1_1transcoding.html#aab196b86b3b7eea71d38ca7ca6e65730a62a7db03dd9bee47b7f045580e5bfc7c',1,'beman::transcoding']]]
+];

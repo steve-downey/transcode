@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>P6-Step 2: The iconv Error Model - beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/p6-step2-iconv-error-model.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#p6-step-2-the-iconv-error-model"
+id="toc-p6-step-2-the-iconv-error-model">P6-Step 2: The iconv Error
+Model</a>
+<ul>
+<li><a href="#goal" id="toc-goal">Goal</a></li>
+<li><a href="#why" id="toc-why">Why</a></li>
+<li><a href="#what-to-change" id="toc-what-to-change">What to
+change</a></li>
+<li><a href="#tests" id="toc-tests">Tests</a></li>
+<li><a href="#done-when" id="toc-done-when">Done when</a></li>
+<li><a href="#hand-off-to-step-8" id="toc-hand-off-to-step-8">Hand off
+to Step 8</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="p6-step-2-the-iconv-error-model">P6-Step 2: The iconv Error
+Model</h1>
+<p><strong>Branch:</strong> <code>p6-step2-iconv-error-model</code>
+<strong>Depends on:</strong> Step 0 <strong>Findings:</strong> C-02,
+C-03, C-05 <strong>Read first:</strong>
+<code>docs/plans/phase6-index.md</code></p>
+<hr />
+<h2 id="goal">Goal</h2>
+<p>Make every iconv failure either produce correct output or say what
+went wrong. Today three of them do neither.</p>
+<h2 id="why">Why</h2>
+<p>These are one finding wearing three hats: the adaptors treat "no
+bytes came out" as "there are no more bytes," and that conflation is
+wrong in three different places.</p>
+<p><strong>A buffer too small for one output unit yields an empty range
+(C-02).</strong> <code>load()</code> at
+<code>iconv_transcode_view.hpp:242-243</code> breaks out on
+<code>E2BIG</code>, reaches line 303 with
+<code>output_pos_ == output_end_</code>, flushes, produces nothing, and
+sets <code>done_</code>. Converting UTF-8 <code>"A"</code> to UTF-32LE
+through a one-byte buffer gives an empty range and no error. A
+zero-length buffer does the same. The caller cannot tell that from a
+successful conversion of empty input.</p>
+<p><strong>The flush happens once and its result is discarded
+(C-03).</strong> <code>iconv_transcode_view.hpp:304-311</code> sets
+<code>flushed_ = true</code> <em>before</em> calling
+<code>fns_.convert(handle_, nullptr, nullptr, ...)</code>, then ignores
+both the return value and <code>errno</code>. A stateful converter that
+returns <code>E2BIG</code> while still owing shift-state bytes has those
+bytes truncated, and the <code>_or_error</code> variant
+(<code>iconv_transcode_or_error_view.hpp:296-307</code>) does not report
+it either.</p>
+<p><strong>One <code>iconv_open</code> failure has three different
+meanings (C-05).</strong> The streaming view constructs
+<code>done_(handle == (iconv_t)-1)</code> and looks empty;
+<code>iconv_transcode_to</code> returns an empty container
+(<code>iconv_bulk.hpp:90-91</code>); <code>iconv_transcode_into</code>
+returns the iterator unchanged (<code>:183-184</code>); and
+<code>iconv_transcode_to_or_error</code> reports
+<code>invalid_sequence</code> (<code>:254-255</code>), which is a lie
+about what happened. <code>error.hpp:67-71</code> has no enumerator that
+means "the descriptor would not open," though
+<code>papers/transcode-view.md:530</code> claims
+<code>iconv_error</code> covers it.</p>
+<p><strong>And any unexpected <code>errno</code> is misfiled.</strong>
+The branches at <code>iconv_bulk.hpp:125</code>, <code>:207</code>,
+<code>:277</code> and <code>iconv_transcode_view.hpp:252</code> are
+commented <code>EILSEQ</code> or <code>EINVAL</code> but are reached for
+<em>anything</em> that is not the one errno the preceding branch tested.
+<code>EBADF</code> from a closed descriptor currently means "skip a byte
+and carry on."</p>
+<h2 id="what-to-change">What to change</h2>
+<h3 id="errorhpp"><code>error.hpp</code></h3>
+<p>Add two enumerators to <code>iconv_error</code>:</p>
+<ul>
+<li><code>open_failed</code> — the conversion descriptor could not be
+opened, which is <code>iconv_open</code> failing, and covers an encoding
+name the implementation does not support.</li>
+<li><code>system_error</code> — the conversion failed in a way POSIX
+does not enumerate for <code>iconv</code>. This is the honest home for
+an unexpected <code>errno</code>.</li>
+</ul>
+<p>Add matching <code>\row</code> / <code>\cell</code> pairs to the
+existing <code>\libtab2[transcode.errors.iconv]</code> table. Keep the
+table's voice: each cell says what the condition <em>is</em>, with the
+errno in parentheses.</p>
+<p><code>open_failed</code> has no errno of its own --
+<code>iconv_open</code> sets <code>EINVAL</code> for an unsupported
+pair, which would collide with <code>incomplete_sequence</code> if it
+were mapped by errno. Say so in the cell; it is the kind of detail that
+looks like an oversight if it is not stated.</p>
+<h3 id="the-two-streaming-views">The two streaming views</h3>
+<p><code>iconv_transcode_view.hpp</code> and
+<code>iconv_transcode_or_error_view.hpp</code> carry the same
+<code>load()</code> shape and both need the same three fixes. Do them
+together and keep the two functions structurally parallel -- they are
+read side by side.</p>
+<ul>
+<li><strong>Flush.</strong> Replace <code>bool flushed_</code> with a
+three-state member (<code>not_started</code>, <code>in_progress</code>,
+<code>done</code>). Enter it when input is exhausted, call the flush,
+and <em>check the result</em>: on <code>E2BIG</code>, yield what came
+out and stay <code>in_progress</code> so the next <code>load()</code>
+resumes; on success move to <code>done</code>; on anything else apply
+the view's error policy. The state must survive the move constructor and
+move assignment, which already copy <code>flushed_</code>.</li>
+<li><strong>Buffer too small.</strong> Distinguish <code>E2BIG</code>
+with bytes produced (normal batching, keep going) from
+<code>E2BIG</code> with <strong>zero</strong> bytes produced and input
+remaining (the buffer cannot hold one output unit). The second is not
+end-of-input. Define <code>iconv_min_buffer_size</code> as an exported
+constant and state it as an <code>\expects</code> on the view
+constructor and on the <code>iconv_transcode</code> /
+<code>iconv_transcode_or_error</code> closures. The
+<code>_or_error</code> view reports <code>output_full</code>. The plain
+view has no error channel, so the precondition is its answer -- but it
+must not silently truncate: assert in a checked build rather than ending
+the range.</li>
+<li><strong>Unexpected errno.</strong> Test <code>EILSEQ</code>
+explicitly instead of falling into it. Anything that is neither
+<code>E2BIG</code>, <code>EINVAL</code> nor <code>EILSEQ</code> is
+<code>system_error</code>: reported by the <code>_or_error</code> view,
+and terminating the range for the plain one rather than being skipped as
+if it were bad input.</li>
+</ul>
+<h3 id="the-bulk-helpers">The bulk helpers</h3>
+<p><code>iconv_bulk.hpp</code>. <code>iconv_transcode_to_or_error</code>
+returns <code>open_failed</code> rather than
+<code>invalid_sequence</code> at line 254, and <code>system_error</code>
+rather than <code>incomplete_sequence</code> for an unexpected errno at
+line 277. The two lossy helpers keep returning an empty container and an
+unchanged iterator, but their docblocks stop describing that as if it
+were a result and say plainly that a failed open is not distinguishable
+in these overloads -- and point at the <code>_or_error</code> form for a
+caller who needs to know.</p>
+<p>The <code>'?'</code> writes in this file belong to Step 3. Leave
+them; do not fix two things in one diff through the same lines.</p>
+<h2 id="tests">Tests</h2>
+<p><code>tests/beman/transcode/iconv_mock.hpp</code> is the injection
+point -- the views take <code>IconvFns</code> as a template parameter
+precisely so a test can supply its own.</p>
+<ul>
+<li>A mock whose flush returns <code>E2BIG</code> on the first call and
+succeeds on the second, asserting every owed byte arrives.</li>
+<li>A mock returning an errno that is none of the three, asserting
+<code>system_error</code> from the <code>_or_error</code> view and a
+terminated range from the plain one.</li>
+<li>A mock whose <code>open</code> fails, asserting
+<code>open_failed</code> from both <code>_or_error</code> forms.</li>
+<li>Real-iconv cases in <code>iconv_transcode.test.cpp</code> for buffer
+sizes zero, one, <code>iconv_min_buffer_size - 1</code> and
+<code>iconv_min_buffer_size</code>, converting UTF-8 to UTF-32LE so one
+input byte needs four output bytes.</li>
+</ul>
+<h2 id="done-when">Done when</h2>
+<ul>
+<li>A one-byte buffer no longer yields a silent empty range.</li>
+<li>A converter that needs two flush calls gets two.</li>
+<li><code>open_failed</code> and <code>system_error</code> exist, are
+reachable, and are covered.</li>
+<li><code>make test</code>, <code>make lint</code> and
+<code>make coverage</code> pass; new branches are covered.</li>
+</ul>
+<h2 id="hand-off-to-step-8">Hand off to Step 8</h2>
+<p><code>papers/transcode-view.md</code> prints the
+<code>iconv_error</code> enumeration as hand-written prose in its Error
+Handling section, and claims at line 530 that the enum already covers a
+descriptor that would not open. Regenerating the wording will not touch
+either. Note the two new enumerators in the pull request so Step 8 picks
+them up.</p>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step2-iconv-error-model.md">docs/plans/p6-step2-iconv-error-model.md</a> at 60dfdf38537c.</footer>
+</body>
+</html>
