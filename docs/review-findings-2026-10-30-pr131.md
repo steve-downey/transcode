@@ -174,25 +174,46 @@ the preset and commit it was taken at.
 
 ### BM-02: every path in the library beats naive iconv (Verify)
 
-The README tables show `iconv_transcode_to` at 83 µs against raw `iconv()`
-at 334 µs for UTF-8 to UTF-32, and the streaming `transcode` pipe at 80 µs
-against raw `iconv()` at 369 µs for Shift-JIS to UTF-8, with `iconv_transcode_view`
-level with raw `iconv()`. "Naive" there means a 4 KB staging buffer and a loop of
-`iconv()` calls, which is what most hand-written code does. If this holds
-after the benchmark fixes, it is the strongest practical argument in the
-paper and it is currently three rows in three README tables. Re-run the
-`iconv`, `whatwg` and `pluggable` suites on the PR head, confirm the
-ordering, and then:
+"Naive iconv" means the code a search for "run iconv into a `std::string`"
+produces with no other constraints: `iconv_open`, a `std::string` sized to
+a guess, a loop of `iconv()` calls that grows the string and fixes up the
+output pointer on `E2BIG`, a final `resize` to the bytes written, and
+`iconv_close`. The paper's "Before: `iconv`" example in the comparison
+table is exactly that code.
 
-- add one table to the paper's "Context and Motivation" or performance
-  section that puts raw `iconv()`, `iconv_transcode_to`, the streaming
-  WHATWG pipe and `std::codecvt` side by side for the same corpus, so a
-  reader who opens the paper for the motivation finds it without reading the
-  repository;
-- say in one sentence what "naive iconv" is, so the comparison cannot be
-  read as a straw man;
-- state the preset, compiler and commit, since the earlier numbers were
-  taken with `count_elements` discarding its values and the preset at `-O2`.
+The benchmark does not measure it. The `Raw iconv()` rows in the README
+come from `raw_iconv_process` in `benchmark/iconv_benchmarks.bench.cpp`,
+which converts through an already-open handle into a static 4 KB buffer
+that it overwrites on every call, never grows, never copies, and never
+produces a container; it counts bytes and discards them. That is a floor
+for `iconv()` itself, not the program a user would write, and it is the
+row the README's "~4x" claims are measured against. The comparison the
+paper makes in prose (the "Before" code against the WHATWG pipe) has no
+row.
+
+Add the naive loop as a benchmark, as the paper's example is written:
+`std::string` sized to four times the input, doubled on `E2BIG`, trimmed at
+the end, with `iconv_open` and `iconv_close` inside the timed region, since
+the "Before" code opens a handle per call. Then re-run the `iconv`,
+`whatwg` and `pluggable` suites on the PR head, confirm that
+`iconv_transcode_to`, the streaming WHATWG pipe and `view | ranges::to`
+each beat it, and publish it so that it is found:
+
+- one table in the paper, next to the "Before" and "After" examples it
+  contrasts, with naive `iconv()`, the `iconv()` floor,
+  `iconv_transcode_to`, the streaming WHATWG pipe and `std::codecvt` on the
+  same corpus, so a reader who opens the paper for the motivation sees the
+  numbers beside the code they describe;
+- one sentence in the table's caption saying what "naive" is, so the
+  comparison cannot be read as a straw man, and one saying that the
+  `iconv()` floor row discards its output;
+- the preset, compiler and commit for every row, since the published
+  numbers were taken with `count_elements` discarding its values and the
+  preset at `-O2`.
+
+If the naive loop turns out faster than `iconv_transcode_to` on some
+corpus, that is a finding about `iconv_transcode_to`'s staging, and it
+should be reported rather than left out of the table.
 
 The benchmark `README.md` under `docs/benchmarks/` should also say, once, that
 numbers from before this PR and after it are not comparable and why.
