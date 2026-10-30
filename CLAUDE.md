@@ -39,6 +39,17 @@ make pytest
 make mypy
 ```
 
+Documentation site (what GitHub Pages publishes, via `.github/workflows/docs-pages.yml`):
+```bash
+make docs        # Doxygen -> .build/docs/doxygen/html
+make mrdocs      # MrDocs  -> .build/docs/mrdocs (needs mrdocs on PATH)
+make paper       # the paper -> papers/generated/transcode-view.{html,pdf}
+make site        # all of the above, then the index and the rendered Markdown -> .build/docs/site
+make site-pages  # just the index and the rendered Markdown, with whatever is already built
+```
+`tools/build_site.py` assembles the site; `docs/site/index.md` is the authored part of its landing page.
+Every Markdown file under `docs/` and `papers/` (except the paper's own sources and the vendored frameworks) is rendered and listed on the index.
+
 The `make` commands invoke `uv run cmake`/`uv run ctest`, so `uv` must be installed. The build directory is `.build/build-system/` by default; build config defaults to `Asan`.
 
 To build/test a specific configuration directly:

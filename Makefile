@@ -640,27 +640,74 @@ bench-compare: ## Compare runs: make bench-compare BENCH_BASELINE=DIR BENCH_CAND
 		--html $(BENCH_RESULTS_DIR)/compare.html \
 		--vegalite $(BENCH_RESULTS_DIR)/compare.vl.json
 
+# The documentation site.  Each generator writes under $(DOCS_BUILD_DIR);
+# tools/build_site.py assembles them, the rendered Markdown of docs/ and
+# papers/, and an index into $(SITE_DIR), which is what the Pages workflow
+# publishes (.github/workflows/docs-pages.yml).  docs/Doxyfile and
+# docs/mrdocs.yml name the same directories; change them together.
+DOCS_BUILD_DIR ?= .build/docs
+DOXYGEN_HTML_DIR := $(DOCS_BUILD_DIR)/doxygen/html
+MRDOCS_HTML_DIR := $(DOCS_BUILD_DIR)/mrdocs
+PAPER_DIR := papers/generated
+SITE_DIR ?= $(DOCS_BUILD_DIR)/site
+SITE_REVISION ?= $(shell git rev-parse --short HEAD 2>/dev/null)
+
 .PHONY: docs
-docs: ## Build the docs with Doxygen
+docs: ## Build the API reference with Doxygen
+	mkdir -p $(DOCS_BUILD_DIR)/doxygen
 	doxygen docs/Doxyfile
 
 .PHONY: clean-docs
 clean-docs: ## Delete generated Doxygen output
-	-rm -rf docs/html docs/latex
+	-rm -rf $(DOCS_BUILD_DIR)/doxygen docs/html docs/latex
 
 clean: clean-docs
 
 .PHONY: mrdocs
-mrdocs: ## Build the docs with MrDocs
-	-rm -rf docs/adoc
-	cd docs && NO_COLOR=1 mrdocs mrdocs.yml 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
-	find docs/adoc -name '*.adoc' | xargs asciidoctor
+mrdocs: ## Build the API reference with MrDocs (needs mrdocs on PATH)
+	-rm -rf $(MRDOCS_HTML_DIR)
+	cd docs && $(UV) run mrdocs --config=mrdocs.yml
 
 .PHONY: clean-mrdocs
 clean-mrdocs: ## Delete generated MrDocs output
-	-rm -rf docs/adoc
+	-rm -rf $(MRDOCS_HTML_DIR) $(DOCS_BUILD_DIR)/mrdocs-cmake docs/adoc
 
 clean: clean-mrdocs
+
+.PHONY: paper
+paper: ## Build the paper, HTML and PDF, with the mpark/wg21 framework
+	$(MAKE) -C papers transcode-view.html transcode-view.pdf
+
+.PHONY: clean-paper
+clean-paper: ## Delete the generated paper
+	-rm -rf $(PAPER_DIR)
+
+clean: clean-paper
+
+.PHONY: site
+site: docs mrdocs paper ## Build the whole documentation site into $(SITE_DIR)
+	$(MAKE) site-pages
+
+# The pages alone, with whichever generated trees are already built.  What
+# `make site` assembles is what the workflow publishes; this is for working on
+# the Markdown or the landing page without Doxygen, MrDocs or TeX installed.
+.PHONY: site-pages
+site-pages: venv ## Render the Markdown pages and the index from what is built
+	$(UV) run python tools/build_site.py --out $(SITE_DIR) \
+		--revision "$(SITE_REVISION)" \
+		$(if $(wildcard $(DOXYGEN_HTML_DIR)/index.html),--doxygen $(DOXYGEN_HTML_DIR)) \
+		$(if $(wildcard $(MRDOCS_HTML_DIR)/index.html),--mrdocs $(MRDOCS_HTML_DIR)) \
+		$(if $(wildcard $(PAPER_DIR)/transcode-view.pdf),--paper $(PAPER_DIR))
+
+.PHONY: clean-site
+clean-site: ## Delete the assembled site
+	-rm -rf $(SITE_DIR)
+
+clean: clean-site
+
+.PHONY: view-site
+view-site: ## Open the assembled site in a browser
+	sensible-browser $(SITE_DIR)/index.html
 
 .PHONY: testinstall
 testinstall: install

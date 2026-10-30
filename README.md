@@ -23,6 +23,11 @@ install them separately from its required `iconv` dependency.
 Part of the [Beman Project](https://github.com/bemanproject), targeting C++29
 standardization.
 
+The documentation site, <https://steve-downey.github.io/transcode/>, has the
+API reference as rendered by Doxygen and by MrDocs, the paper in HTML and PDF,
+and the design notes and plans under `docs/` and `papers/`.  `make site` builds
+it; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 > "It seems like a really messy situation and you're proposing to inherit that
 > mess into the C++ standard."
 > — Jan Schultke, personal correspondence

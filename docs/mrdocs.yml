@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# MrDocs configuration for the beman.transcode API reference.
+#
+# Run from the repository root with `make mrdocs`.  Paths here are relative to
+# this file.  MrDocs configures the project itself, with CMake, to get the
+# compilation database; the `cmake` arguments turn off everything but the
+# library and its examples, which is all the reference needs and all a
+# machine without Catch2 can configure.  The output lands beside the Doxygen
+# output, under `.build/docs/`, and `tools/build_site.py` puts it on the site.
+
+source-root: ..
+compilation-database: ../CMakeLists.txt
+cmake: '-D BEMAN_TRANSCODE_BUILD_TESTS=OFF -D BEMAN_TRANSCODE_BUILD_BENCHMARKS=OFF -D BEMAN_TRANSCODE_BUILD_EXAMPLES=ON'
+cmake-build-dir: ../.build/docs/mrdocs-cmake
+
+# The specification surface is the headers directly under
+# include/beman/transcode/; detail/ is implementation (see CLAUDE.md), and is
+# left out of the reference the way the Doxygen configuration leaves it out.
+input:
+  - ../include/beman/transcode
+recursive: true
+include-symbols:
+  - 'beman::**'
+exclude-symbols:
+  - 'beman::transcoding::detail'
+  - 'beman::transcoding::detail::**'
+
+generator: html
+multipage: true
+output: ../.build/docs/mrdocs
+base-url: https://github.com/steve-downey/transcode/blob/main/
