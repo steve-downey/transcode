@@ -215,6 +215,88 @@ If the naive loop turns out faster than `iconv_transcode_to` on some
 corpus, that is a finding about `iconv_transcode_to`'s staging, and it
 should be reported rather than left out of the table.
 
+#### Measured (Confirmed)
+
+The naive loop is now a benchmark, `naive_iconv_to_string` in
+`benchmark/iconv_benchmarks.bench.cpp`, and the `iconv`, `pluggable` and
+`utf` suites were run twice each on this branch at `b8e3602`.
+
+Setup: GCC 13.3.0, the `Perf` configuration (`-O3 -DNDEBUG -march=native
+-flto=auto`), glibc 2.39 `iconv`, Intel Xeon 2.10 GHz, 4 cores, a cloud
+container. Corpora from `data/benchmarks/`: `en_mars_utf8.txt` 57,000
+bytes, `ja_mars_shiftjis.bin` 30,129, `ja_mars_eucjp.bin` 30,141,
+`genji_monogatari_shiftjis.bin` 2,343,969. Means in microseconds, one
+column per pass; Catch2's 95% bounds were within a few percent of the mean
+except where noted.
+
+| conversion, corpus | row | pass A | pass B |
+|---|---|---:|---:|
+| UTF-8 to UTF-32, English 57 KB | `Raw iconv()`, 4 KB chunks, output discarded | 391 | 398 |
+| | naive iconv into `std::string`, sized 4x | 94 | 95 |
+| | naive iconv into `std::string`, sized 1x | 106 | 114 |
+| | `iconv_transcode_to<string>` | 92 | 91 |
+| | `iconv_transcode_into` (`back_inserter`) | 553 | 633 |
+| | `iconv_transcode_view`, 4 KB staging | 920 | 980 |
+| | `whatwg::decode<utf_8>`, counted, no output | 35 | 38 |
+| Shift-JIS to UTF-8, Japanese 30 KB | `Raw iconv()`, 4 KB chunks | 489 | 685 |
+| | naive iconv, sized 4x | 122 | 134 |
+| | naive iconv, sized 1x | 163 | 163 |
+| | `iconv_transcode_to<string>` | 128 | 133 |
+| | `iconv_transcode_view` | 579 | 573 |
+| | `whatwg::transcode<shift_jis, utf_8>`, counted | 123 | 176 (wide bounds) |
+| EUC-JP to Shift-JIS, Japanese 30 KB | naive iconv, sized 4x | 278 | 231 |
+| | `iconv_transcode_to<string>` | 234 | 195 |
+| | `whatwg::transcode<euc_jp, shift_jis>`, counted | 94 | 86 |
+| Shift-JIS to UTF-8, Genji 2.3 MB | naive iconv, sized 4x | 11,953 | 12,639 |
+| | `iconv_transcode_to<string>` | 12,941 | 12,176 |
+| | `iconv_transcode_view` | 61,397 | 61,294 |
+| | `whatwg::transcode<shift_jis, utf_8>`, counted | 9,063 | 9,421 |
+| EUC-JP to Shift-JIS, Genji 2.3 MB | `iconv_transcode_to<string>` | 8,125 | 7,114 |
+| | `whatwg::transcode<euc_jp, shift_jis>`, counted | 7,223 | 7,057 |
+
+What this says:
+
+1. **The README's `Raw iconv()` row is not a floor.** glibc's `iconv()`
+   called in 4 KB output chunks is four times slower than one call with a
+   buffer that fits. The README's "iconv_transcode_to 83 µs against raw
+   iconv 334 µs" and the "~4x" that follows from it measure the chunking
+   in the baseline, not the library. The row should be renamed to say what
+   it is (`iconv()` in 4 KB chunks) or dropped from the comparison.
+2. **Naive iconv and `iconv_transcode_to` are the same speed.** Sized 4x
+   they are within noise on every corpus, in both directions, and the
+   naive loop wins on Genji in one pass. That is the expected result: both
+   are one `iconv_open`, one or two `iconv()` calls into a buffer that
+   fits, one trim. `iconv_transcode_to`'s value is that it closes the
+   handle and never writes the loop, not speed, and the paper should say
+   exactly that. Sized 1x, the naive loop pays 10% to 30% for its doublings
+   and is still well under the chunked baseline.
+3. **`iconv_transcode_view` and `iconv_transcode_into` lose to the naive
+   loop by 4x to 10x.** The view stages through a 4 KB buffer and so
+   repeats the chunking cost the raw row shows; `into` pays
+   `back_inserter` per byte. Neither is the row to put next to the WHATWG
+   pipe. The paper's "iconv adaptor" section should carry these numbers
+   and recommend `iconv_transcode_to` for a whole buffer.
+4. **The WHATWG pipe beats naive iconv where the table lookup wins and
+   ties it elsewhere.** EUC-JP to Shift-JIS, which goes through the
+   reverse index, is 2.5x to 3x faster than glibc on the 30 KB corpus and
+   level on Genji. Shift-JIS to UTF-8 is level on 30 KB and 1.3x faster on
+   Genji. UTF-8 to UTF-32 is 2.5x faster, but that row counts scalar
+   values and the iconv rows write 228 KB of UTF-32LE, so it is not a fair
+   pair; the `view | ranges::to` form from the README's own table is the
+   row to use there, and it is not in the `utf` suite.
+5. So the claim to make is narrower than "everything beats naive iconv":
+   the WHATWG pipe is never slower than the naive loop on these corpora
+   and is faster by up to 3x on the legacy-to-legacy conversions;
+   `iconv_transcode_to` matches it; the streaming iconv adaptor does not,
+   and its row needs to say so.
+
+Not done here: a `view | ranges::to` row for UTF-8 to UTF-32 beside the
+iconv rows (BM-01 asks for the same measurement for a different reason), a
+second machine, and the Wikipedia corpora the download tool could not fetch
+through this container's proxy (`ar`, `ru`, `zh`, `ko` answered 429; `en`,
+`ja`, Gutenberg, Aozora and Wikisource worked once a User-Agent was set,
+which `tools/download_benchmark_corpora.py` does not send and should).
+
 The benchmark `README.md` under `docs/benchmarks/` should also say, once, that
 numbers from before this PR and after it are not comparable and why.
 
