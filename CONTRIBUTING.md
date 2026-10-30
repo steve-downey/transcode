@@ -138,3 +138,27 @@ This is required so that users of `beman.transcode` can use
 `find_package(beman.transcode)` to locate the library.
 
 </details>
+
+## Building the Documentation
+
+The documentation site at <https://steve-downey.github.io/transcode/> is built
+by `.github/workflows/docs-pages.yml` on every push to `main` and assembled by
+`tools/build_site.py`.  It holds the API reference as rendered by Doxygen and
+by MrDocs, the paper, and every Markdown document under `docs/` and `papers/`,
+all reachable from the index page.  To build it locally:
+
+```shell
+make docs        # Doxygen, into .build/docs/doxygen/html
+make mrdocs      # MrDocs, into .build/docs/mrdocs
+make paper       # the paper, into papers/generated/
+make site        # all three, then the pages and the index, into .build/docs/site
+make view-site   # open it
+```
+
+`make docs` needs `doxygen`; `make mrdocs` needs
+[MrDocs](https://www.mrdocs.com/) on the `PATH` (the workflow pins the release
+it installs); `make paper` needs a TeX installation with `xelatex` and
+downloads its own pandoc.  `make site-pages` renders just the Markdown pages
+and the index, with whichever of the three is already built, and needs only
+the system `pandoc`.  The landing page's authored text is
+`docs/site/index.md`; the generated sections below it list what was built.

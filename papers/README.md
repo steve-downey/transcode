@@ -46,3 +46,6 @@ to make that stick. `wording/generate.sh` needs `beman.specgen` on the `PATH`
 fragments are committed.
 
 See `docs/plans/phase5-index.md` for the plan this belongs to.
+
+From the repository root, `make paper` builds both the HTML and the PDF, and
+`make site` puts them on the documentation site under `paper/`.

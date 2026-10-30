@@ -30,9 +30,8 @@ uv.lock
 # WG21 paper build output
 /papers/generated/
 
-# Doxygen
+# Doxygen output used to land in docs/html/; it now goes under .build/docs/.
 /docs/html/
-!docs/header.html
 
 # IDE settings
 .vscode

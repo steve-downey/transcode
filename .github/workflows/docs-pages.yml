@@ -1,0 +1,142 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Build the documentation site and publish it on GitHub Pages.
+#
+# The site is assembled by `make site` (see the Makefile): the Doxygen and
+# MrDocs renderings of the API, the paper built by the mpark/wg21 framework,
+# and every Markdown document under docs/ and papers/, behind one index page.
+# Every push and pull request builds it and keeps the result as an artifact;
+# a push to main also publishes it to the gh-pages branch, which is what
+# GitHub Pages serves.
+
+name: Documentation site
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - '.github/workflows/docs-pages.yml'
+      - 'CONTRIBUTING.md'
+      - 'Makefile'
+      - 'README.md'
+      - 'docs/**'
+      - 'examples/**'
+      - 'include/**'
+      - 'papers/**'
+      - 'tools/build_site.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # https://github.com/cppalliance/mrdocs/releases
+  MRDOCS_VERSION: "2026.9.29"
+  MRDOCS_SHA256: "9d96e42f303046fb0b221aa9071eabccc40b9683e0b7af2b02a929d15476ca6a"
+
+jobs:
+  build:
+    name: Build the site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.11.6"
+
+      - name: Install Doxygen, pandoc and TeX
+        run: |
+          sudo apt-get update
+          # Recommended packages stay on: the paper's LaTeX template needs
+          # lmodern, which texlive only recommends.
+          sudo apt-get install -y \
+            doxygen graphviz pandoc lmodern \
+            texlive-xetex texlive-fonts-recommended texlive-latex-recommended \
+            texlive-latex-extra
+          doxygen --version
+          pandoc --version | head -1
+
+      - name: Install MrDocs
+        run: |
+          archive="MrDocs-${MRDOCS_VERSION}-Linux.tar.xz"
+          curl -fsSL -o "$archive" \
+            "https://github.com/cppalliance/mrdocs/releases/download/${MRDOCS_VERSION}/${archive}"
+          echo "${MRDOCS_SHA256}  ${archive}" | sha256sum --check
+          sudo mkdir -p /opt/mrdocs
+          sudo tar -xJf "$archive" --strip-components=1 -C /opt/mrdocs
+          rm -f "$archive"
+          echo "/opt/mrdocs/bin" >> "$GITHUB_PATH"
+          /opt/mrdocs/bin/mrdocs --version
+
+      - name: Create the Python environment
+        run: make venv
+
+      - name: Build the Doxygen reference
+        run: make docs
+
+      - name: Build the MrDocs reference
+        run: make mrdocs
+
+      - name: Build the paper
+        run: make paper
+
+      - name: Assemble the site
+        run: make site-pages SITE_REVISION="${GITHUB_SHA::12}"
+
+      - name: Check that everything made it onto the site
+        run: |
+          for f in index.html doxygen/index.html mrdocs/index.html \
+                   paper/transcode-view.html paper/transcode-view.pdf \
+                   README.html docs/wording-outline.html papers/README.html; do
+            test -f ".build/docs/site/$f" || { echo "missing: $f" >&2; exit 1; }
+          done
+
+      - name: Keep the site as an artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: site
+          path: .build/docs/site
+          include-hidden-files: true
+          if-no-files-found: error
+
+  deploy:
+    name: Publish to GitHub Pages
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Fetch the built site
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: site
+          path: site
+
+      - name: Deploy to the gh-pages branch
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4.9.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: site
+          clean: true
