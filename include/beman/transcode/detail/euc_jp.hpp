@@ -4,11 +4,11 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_EUC_JP_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
+#include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/euc_jp_jis0212.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -17,14 +17,8 @@
 namespace beman::transcoding::detail {
 
 struct euc_jp_decode_result {
-    char32_t     code_point{0xFFFD};
-    whatwg_error error{};
-    bool         is_error{false};
-};
-
-struct euc_jp_encode_result {
-    unsigned char bytes[3]{};
-    int           count{0};
+    char32_t      code_point{0xFFFD};
+    whatwg::error error{};
     bool          is_error{false};
 };
 
@@ -43,7 +37,7 @@ constexpr euc_jp_decode_result euc_jp_decode_one(I& current, S end);
 // JIS X 0208 codepoints encode as 2 bytes (0xA1-0xFE range).
 // JIS X 0212 codepoints encode as 3 bytes (0x8F + 0xA1-0xFE + 0xA1-0xFE).
 // Returns is_error=true if the codepoint is not representable in EUC-JP.
-constexpr euc_jp_encode_result euc_jp_encode_one(char32_t cp);
+constexpr encode_result euc_jp_encode_one(char32_t cp);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -52,7 +46,7 @@ constexpr euc_jp_encode_result euc_jp_encode_one(char32_t cp);
 template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr euc_jp_decode_result euc_jp_decode_one(I& current, S end) {
     if (current == end)
-        return {{}, whatwg_error::truncated_sequence, true};
+        return {{}, whatwg::error::truncated_sequence, true};
 
     auto lead = static_cast<unsigned char>(*current);
     ++current;
@@ -64,58 +58,58 @@ constexpr euc_jp_decode_result euc_jp_decode_one(I& current, S end) {
     // SS2 prefix: half-width katakana
     if (lead == 0x8E) {
         if (current == end)
-            return {{}, whatwg_error::truncated_sequence, true};
+            return {{}, whatwg::error::truncated_sequence, true};
         auto byte2 = static_cast<unsigned char>(*current);
         ++current;
         if (byte2 < 0xA1 || byte2 > 0xDF)
-            return {{}, whatwg_error::invalid_byte, true};
+            return {{}, whatwg::error::invalid_byte, true};
         return {static_cast<char32_t>(0xFF61 + (byte2 - 0xA1)), {}, false};
     }
 
     // SS3 prefix: JIS X 0212 (3-byte sequence)
     if (lead == 0x8F) {
         if (current == end)
-            return {{}, whatwg_error::truncated_sequence, true};
+            return {{}, whatwg::error::truncated_sequence, true};
         auto b1 = static_cast<unsigned char>(*current);
         ++current;
         if (b1 < 0xA1 || b1 > 0xFE)
-            return {{}, whatwg_error::invalid_byte, true};
+            return {{}, whatwg::error::invalid_byte, true};
         if (current == end)
-            return {{}, whatwg_error::truncated_sequence, true};
+            return {{}, whatwg::error::truncated_sequence, true};
         auto b2 = static_cast<unsigned char>(*current);
         ++current;
         if (b2 < 0xA1 || b2 > 0xFE)
-            return {{}, whatwg_error::invalid_byte, true};
+            return {{}, whatwg::error::invalid_byte, true};
         int      pointer = ((b1 - 0xA1) * 94) + (b2 - 0xA1);
         char32_t cp      = tables::euc_jp_jis0212[pointer];
         if (cp == 0)
-            return {{}, whatwg_error::invalid_byte, true};
+            return {{}, whatwg::error::invalid_byte, true};
         return {cp, {}, false};
     }
 
     // JIS X 0208: lead 0xA1-0xFE followed by trail 0xA1-0xFE
     if (lead >= 0xA1 && lead <= 0xFE) {
         if (current == end)
-            return {{}, whatwg_error::truncated_sequence, true};
+            return {{}, whatwg::error::truncated_sequence, true};
         auto trail = static_cast<unsigned char>(*current);
         ++current;
         if (trail < 0xA1 || trail > 0xFE)
-            return {{}, whatwg_error::invalid_byte, true};
+            return {{}, whatwg::error::invalid_byte, true};
         int      pointer = ((lead - 0xA1) * 94) + (trail - 0xA1);
         char32_t cp      = tables::shift_jis[pointer];
         if (cp == 0)
-            return {{}, whatwg_error::invalid_byte, true};
+            return {{}, whatwg::error::invalid_byte, true};
         return {cp, {}, false};
     }
 
     // Any other byte is invalid
-    return {{}, whatwg_error::invalid_byte, true};
+    return {{}, whatwg::error::invalid_byte, true};
 }
 
-constexpr euc_jp_encode_result euc_jp_encode_one(char32_t cp) {
+constexpr encode_result euc_jp_encode_one(char32_t cp) {
     // ASCII passthrough
     if (cp < 0x80) {
-        euc_jp_encode_result r{};
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>(cp);
         r.count    = 1;
         return r;
@@ -123,13 +117,13 @@ constexpr euc_jp_encode_result euc_jp_encode_one(char32_t cp) {
 
     // WHATWG special cases
     if (cp == 0x00A5) {
-        euc_jp_encode_result r{};
+        encode_result r{};
         r.bytes[0] = 0x5C;
         r.count    = 1;
         return r;
     }
     if (cp == 0x203E) {
-        euc_jp_encode_result r{};
+        encode_result r{};
         r.bytes[0] = 0x7E;
         r.count    = 1;
         return r;
@@ -137,7 +131,7 @@ constexpr euc_jp_encode_result euc_jp_encode_one(char32_t cp) {
 
     // Half-width katakana (U+FF61-U+FF9F) -> SS2 prefix + byte
     if (cp >= 0xFF61 && cp <= 0xFF9F) {
-        euc_jp_encode_result r{};
+        encode_result r{};
         r.bytes[0] = 0x8E;
         r.bytes[1] = static_cast<unsigned char>(0xA1 + (cp - 0xFF61));
         r.count    = 2;
@@ -148,7 +142,7 @@ constexpr euc_jp_encode_result euc_jp_encode_one(char32_t cp) {
     // code point's first pointer there is below 8836, so the IBM extension
     // rows that only Shift_JIS can address never come up.
     if (int pointer = reverse_index_for<tables::shift_jis>.find(cp); pointer >= 0) {
-        euc_jp_encode_result r{};
+        encode_result r{};
         r.bytes[0] = static_cast<unsigned char>((pointer / 94) + 0xA1);
         r.bytes[1] = static_cast<unsigned char>((pointer % 94) + 0xA1);
         r.count    = 2;
@@ -157,7 +151,7 @@ constexpr euc_jp_encode_result euc_jp_encode_one(char32_t cp) {
 
     // Then index jis0212, as a three-byte sequence behind SS3.
     if (int pointer = reverse_index_for<tables::euc_jp_jis0212>.find(cp); pointer >= 0) {
-        euc_jp_encode_result r{};
+        encode_result r{};
         r.bytes[0] = 0x8F;
         r.bytes[1] = static_cast<unsigned char>((pointer / 94) + 0xA1);
         r.bytes[2] = static_cast<unsigned char>((pointer % 94) + 0xA1);

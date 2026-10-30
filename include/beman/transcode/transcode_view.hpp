@@ -5,18 +5,30 @@
 
 #include <beman/transcode/config.hpp>
 
+#include <beman/transcode/codec_concepts.hpp>
+#include <beman/transcode/concepts.hpp>
 #include <beman/transcode/decode_view.hpp>
 #include <beman/transcode/encode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_encode_view.hpp>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <type_traits>
+    #include <utility>
+
+#endif
 namespace beman::transcoding {
 
 // \ref{transcode.pipeline}, transcoding pipelines
 
+// ---------------------------------------------------------------------------
+// transcode_closure — pipe adaptor for pluggable codec pairs
+// ---------------------------------------------------------------------------
+
 //! \omit
-template <codec From, codec To>
+template <text_decoder From, text_encoder To>
 struct transcode_closure {
+    From from_;
+    To   to_;
+
     template <legacy_byte_range R>
     constexpr auto operator()(R&& r) const;
 
@@ -36,71 +48,24 @@ struct transcode_closure {
 };
 
 //! \seebelow
-//! \remarks The name `transcode<From, To>` denotes a range adaptor object.
-//! Given a subexpression `E` that models `legacy_byte_range`,
-//! `transcode<From, To>(E)` and `E | transcode<From, To>` are each
-//! expression-equivalent to `E | whatwg_decode<From> | whatwg_encode<To>`.
-//! An `E` of array type is ill-formed.
-//!
-//! The composition is the specification: the pipeline decodes and
-//! re-encodes one element at a time, and it is lazy because its parts are.
-//! A scalar value `To` cannot represent is an encoding error, reported as
-//! `whatwg_encode` reports one; a byte sequence `From` does not allow is a
-//! decoding error, and the U+FFFD it decodes to is what gets encoded.
-template <codec From, codec To>
-inline constexpr auto transcode = transcode_closure<From, To>{};
-
-// Out-of-line definition: transcode_closure::operator()
-template <codec From, codec To>
-template <legacy_byte_range R>
-constexpr auto transcode_closure<From, To>::operator()(R&& r) const {
-    return std::forward<R>(r) | whatwg_decode<From> | whatwg_encode<To>;
-}
-
-// ---------------------------------------------------------------------------
-// pluggable_transcode_closure — pipe adaptor for pluggable codec pairs
-// ---------------------------------------------------------------------------
-
-//! \omit
-template <decode_codec From, encode_codec To>
-struct pluggable_transcode_closure {
-    From from_;
-    To   to_;
-
-    template <legacy_byte_range R>
-    constexpr auto operator()(R&& r) const;
-
-    template <legacy_byte_range R>
-    constexpr friend auto operator|(R&& r, const pluggable_transcode_closure& self) {
-        return self(std::forward<R>(r));
-    }
-
-    template <typename R>
-        requires std::is_array_v<std::remove_cvref_t<R>>
-    friend auto operator|(R&&, const pluggable_transcode_closure&) {
-        static_assert(!std::is_array_v<std::remove_cvref_t<R>>,
-                      "transcode: raw arrays are not valid input to transcode; "
-                      "use beman::transcoding::views::null_term to get a range from a "
-                      "null-terminated string");
-    }
-};
-
-//! \seebelow
 //! \returns A range adaptor object over `from` and `to`.  Given a
 //! subexpression `E` that models `legacy_byte_range`,
-//! `pluggable_transcode(from, to)(E)` and `E | pluggable_transcode(from, to)`
+//! `transcode(from, to)(E)` and `E | transcode(from, to)`
 //! are each expression-equivalent to `E | decode(from) | encode(to)`.
-//! \remarks This is `transcode` \iref{transcode.pipeline} with codecs supplied
-//! as values rather than named by enumerators.
-template <decode_codec From, encode_codec To>
-constexpr pluggable_transcode_closure<From, To> pluggable_transcode(From from, To to) {
-    return {from, to};
+//! \remarks `from` and `to` may be the library's codec objects
+//! (`whatwg::decoder`, `whatwg::encoder`) or a program's own, in any
+//! combination.  `whatwg::transcode<From, To>` \iref{transcode.pipeline} is
+//! defined in terms of this function, with codecs named by enumerators rather
+//! than supplied as values.
+template <text_decoder From, text_encoder To>
+constexpr auto transcode(From from, To to) {
+    return transcode_closure<From, To>{from, to};
 }
 
-// Out-of-line definition: pluggable_transcode_closure::operator()
-template <decode_codec From, encode_codec To>
+// Out-of-line definition: transcode_closure::operator()
+template <text_decoder From, text_encoder To>
 template <legacy_byte_range R>
-constexpr auto pluggable_transcode_closure<From, To>::operator()(R&& r) const {
+constexpr auto transcode_closure<From, To>::operator()(R&& r) const {
     return std::forward<R>(r) | decode(from_) | encode(to_);
 }
 

@@ -2,17 +2,18 @@
 
 // The cost of naming an encoding at run time.  A program that takes its
 // encoding from a Content-Type header or a command-line option pays for
-// get_encoding(label) and then for a switch from the codec value to the
-// codec's template instantiation.  These benchmarks time both, alone and
-// inside transcode_string, against the same conversion with the codecs fixed
-// at compile time, so the difference is the overhead of choosing late.
+// whatwg::get_encoding(label) and then for a switch from the encoding value to
+// the codec's template instantiation.  These benchmarks time both, alone and
+// inside whatwg::transcode_string, against the same conversion with the
+// encodings fixed at compile time, so the difference is the overhead of
+// choosing late.
 
 #include <benchmark/benchmark_fixture.hpp>
 #include <benchmark/benchmark_measure.hpp>
-#include <beman/transcode/label.hpp>
-#include <beman/transcode/codec.hpp>
+#include <beman/transcode/whatwg/label.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 #include <beman/transcode/detail/labels.hpp>
-#include <beman/transcode/transcode_string.hpp>
+#include <beman/transcode/whatwg/transcode_string.hpp>
 
 #include <catch2/benchmark/catch_optimizer.hpp>
 #include <catch2/catch_all.hpp>
@@ -27,10 +28,11 @@
 
 namespace {
 
-using beman::transcoding::codec;
+namespace whatwg = beman::transcoding::whatwg;
+using whatwg::encoding;
 
 // Hide a value from the optimizer.  get_encoding is constexpr and
-// transcode_string's switch is inlinable, so a label or codec the compiler
+// transcode_string's switch is inlinable, so a label or encoding the compiler
 // can see is folded to its answer and the benchmark times nothing.
 template <typename T>
 const T& opaque(T& value) {
@@ -38,13 +40,12 @@ const T& opaque(T& value) {
     return value;
 }
 
-std::optional<codec> lookup(std::string& label) { return beman::transcoding::get_encoding(opaque(label)); }
+std::optional<encoding> lookup(std::string& label) { return whatwg::get_encoding(opaque(label)); }
 
-// What transcode_string does once it has both codecs, with no dispatch.
-template <codec From, codec To>
+// What transcode_string does once it has both encodings, with no dispatch.
+template <encoding From, encoding To>
 std::string transcode_fixed(std::span<const char> src) {
-    using namespace beman::transcoding;
-    return detail::transcode_encode_all<To>(detail::transcode_decode_all<From>(src));
+    return whatwg::detail::transcode_encode_all<To>(whatwg::detail::transcode_decode_all<From>(src));
 }
 
 } // namespace
@@ -117,16 +118,16 @@ TEST_CASE("Label lookup benchmarks", "[benchmark][whatwg][label]") {
         describe({.conversion = "windows-1251 → UTF-8", .library = "beman.transcode", .api = "fixed codecs"});
         BENCHMARK_ADVANCED("transcode_string fixed codecs:" + suffix)
         (Catch::Benchmark::Chronometer meter) {
-            measure(meter, [&] { return transcode_fixed<codec::windows_1251, codec::utf_8>(in.bytes); });
+            measure(meter, [&] { return transcode_fixed<encoding::windows_1251, encoding::utf_8>(in.bytes); });
         };
 
         describe(
             {.conversion = "windows-1251 → UTF-8", .library = "beman.transcode", .api = "transcode_string codec"});
         BENCHMARK_ADVANCED("transcode_string by codec:" + suffix)
         (Catch::Benchmark::Chronometer meter) {
-            codec from = codec::windows_1251;
-            codec to   = codec::utf_8;
-            measure(meter, [&] { return transcode_string(in.bytes, opaque(from), opaque(to)); });
+            encoding from = encoding::windows_1251;
+            encoding to   = encoding::utf_8;
+            measure(meter, [&] { return whatwg::transcode_string(in.bytes, opaque(from), opaque(to)); });
         };
 
         describe(
@@ -135,7 +136,7 @@ TEST_CASE("Label lookup benchmarks", "[benchmark][whatwg][label]") {
         (Catch::Benchmark::Chronometer meter) {
             std::string from = "windows-1251";
             std::string to   = "utf-8";
-            measure(meter, [&] { return transcode_string(in.bytes, opaque(from), opaque(to)); });
+            measure(meter, [&] { return whatwg::transcode_string(in.bytes, opaque(from), opaque(to)); });
         };
     }
 }

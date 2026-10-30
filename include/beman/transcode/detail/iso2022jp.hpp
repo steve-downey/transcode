@@ -11,10 +11,10 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_ISO2022JP_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
+#include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/shift_jis.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -50,9 +50,9 @@ struct iso2022jp_decode_state {
 };
 
 struct iso2022jp_decode_result {
-    char32_t     code_point{0xFFFD};
-    whatwg_error error{};
-    bool         is_error{false};
+    char32_t      code_point{0xFFFD};
+    whatwg::error error{};
+    bool          is_error{false};
     // The input is exhausted and the state machine has nothing left to emit.
     bool done{false};
 };
@@ -74,21 +74,15 @@ struct iso2022jp_encode_state {
     }
 };
 
-// Up to an escape sequence and the two bytes it introduces.  On an unmapped
-// code point `bytes` is what a lossy encoder writes instead, which is why the
-// error carries bytes at all: returning to ASCII is part of the replacement.
-struct iso2022jp_encode_result {
-    char bytes[5]{};
-    int  count{0};
-    bool is_error{false};
-};
-
-// Encode one code point, updating `st`.
-constexpr iso2022jp_encode_result iso2022jp_encode_one(iso2022jp_encode_state& st, char32_t cp);
+// Encode one code point, updating `st`: up to an escape sequence and the two
+// bytes it introduces.  On an unmapped code point `bytes` is what a lossy
+// encoder writes instead, which is why the error carries bytes at all:
+// returning to ASCII is part of the replacement.
+constexpr encode_result iso2022jp_encode_one(iso2022jp_encode_state& st, char32_t cp);
 
 // The escape back to ASCII that an exhausted input owes, and `count == 0` when
 // the stream is already there.  WHATWG's encoder ends in ASCII mode.
-constexpr iso2022jp_encode_result iso2022jp_encode_flush(iso2022jp_encode_state& st);
+constexpr encode_result iso2022jp_encode_flush(iso2022jp_encode_state& st);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -96,7 +90,7 @@ constexpr iso2022jp_encode_result iso2022jp_encode_flush(iso2022jp_encode_state&
 
 template <typename I, typename S>
 constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& st, I& current, S end) {
-    const auto error = [&st](whatwg_error e) {
+    const auto error = [&st](whatwg::error e) {
         st.state       = st.output_state;
         st.output_flag = false;
         return iso2022jp_decode_result{0xFFFD, e, true, false};
@@ -117,12 +111,12 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                 return {0xFFFD, {}, false, true};
             case 4:
             case 5:
-                return error(whatwg_error::truncated_sequence);
+                return error(whatwg::error::truncated_sequence);
             case 6:
                 st.pending[0]    = st.lead;
                 st.pending_count = 1;
                 st.lead          = 0;
-                return error(whatwg_error::truncated_sequence);
+                return error(whatwg::error::truncated_sequence);
             }
         }
 
@@ -135,7 +129,7 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
             }
             st.pending[0]    = byte;
             st.pending_count = 1;
-            return error(whatwg_error::invalid_byte);
+            return error(whatwg::error::invalid_byte);
 
         case 6: {
             auto lead     = st.lead;
@@ -156,13 +150,13 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                 st.pending[0]    = lead;
                 st.pending[1]    = byte;
                 st.pending_count = 2;
-                return error(whatwg_error::invalid_byte);
+                return error(whatwg::error::invalid_byte);
             }
             st.output_state = new_state;
             st.state        = new_state;
             if (st.output_flag) {
                 st.output_flag = false;
-                return {0xFFFD, whatwg_error::invalid_byte, true, false};
+                return {0xFFFD, whatwg::error::invalid_byte, true, false};
             }
             st.output_flag = true;
             continue;
@@ -178,7 +172,7 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                 st.state = 4;
                 continue;
             }
-            return error(whatwg_error::invalid_byte);
+            return error(whatwg::error::invalid_byte);
 
         case 4: {
             if (byte == 0x1B) {
@@ -193,7 +187,7 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                 if (cp != 0)
                     return {cp, {}, false, false};
             }
-            return {0xFFFD, whatwg_error::invalid_byte, true, false};
+            return {0xFFFD, whatwg::error::invalid_byte, true, false};
         }
 
         default: // 0=ASCII, 1=Roman, 2=Katakana
@@ -203,13 +197,13 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
             }
             if (byte == 0x0E || byte == 0x0F) {
                 st.output_flag = false;
-                return {0xFFFD, whatwg_error::invalid_byte, true, false};
+                return {0xFFFD, whatwg::error::invalid_byte, true, false};
             }
             st.output_flag = false;
             if (st.state == 0) {
                 if (byte <= 0x7F)
                     return {static_cast<char32_t>(byte), {}, false, false};
-                return {0xFFFD, whatwg_error::invalid_byte, true, false};
+                return {0xFFFD, whatwg::error::invalid_byte, true, false};
             }
             if (st.state == 1) {
                 if (byte == 0x5C)
@@ -218,21 +212,21 @@ constexpr iso2022jp_decode_result iso2022jp_decode_one(iso2022jp_decode_state& s
                     return {U'\x203E', {}, false, false};
                 if (byte <= 0x7F)
                     return {static_cast<char32_t>(byte), {}, false, false};
-                return {0xFFFD, whatwg_error::invalid_byte, true, false};
+                return {0xFFFD, whatwg::error::invalid_byte, true, false};
             }
             // Katakana: 0x21-0x5F → U+FF61-U+FF9F
             if (byte >= 0x21 && byte <= 0x5F)
                 return {static_cast<char32_t>(0xFF61 + byte - 0x21), {}, false, false};
-            return {0xFFFD, whatwg_error::invalid_byte, true, false};
+            return {0xFFFD, whatwg::error::invalid_byte, true, false};
         }
     }
 }
 
-constexpr iso2022jp_encode_result iso2022jp_encode_one(iso2022jp_encode_state& st, char32_t cp) {
+constexpr encode_result iso2022jp_encode_one(iso2022jp_encode_state& st, char32_t cp) {
     // Roman state: U+00A5 (YEN SIGN) and U+203E (OVERLINE) are the two code
     // points ASCII spells differently.
     if (cp == 0x00A5 || cp == 0x203E) {
-        const char ascii_byte = (cp == 0x00A5) ? '\x5C' : '\x7E';
+        const unsigned char ascii_byte = (cp == 0x00A5) ? 0x5C : 0x7E;
         if (st.state != 1) {
             st.state = 1;
             return {{'\x1B', '\x28', '\x4A', ascii_byte}, 4, false};
@@ -240,7 +234,7 @@ constexpr iso2022jp_encode_result iso2022jp_encode_one(iso2022jp_encode_state& s
         return {{ascii_byte}, 1, false};
     }
     if (cp < 0x80) {
-        const char ascii_byte = static_cast<char>(cp);
+        const auto ascii_byte = static_cast<unsigned char>(cp);
         if (st.state != 0) {
             st.state = 0;
             return {{'\x1B', '\x28', '\x42', ascii_byte}, 4, false};
@@ -250,8 +244,8 @@ constexpr iso2022jp_encode_result iso2022jp_encode_one(iso2022jp_encode_state& s
     // WHATWG: the index pointer for the code point in index jis0208; every
     // code point's first pointer there fits the 94x94 plane.
     if (int pointer = reverse_index_for<tables::shift_jis>.find(cp); pointer >= 0) {
-        const auto lead  = static_cast<char>((pointer / 94) + 0x21);
-        const auto trail = static_cast<char>((pointer % 94) + 0x21);
+        const auto lead  = static_cast<unsigned char>((pointer / 94) + 0x21);
+        const auto trail = static_cast<unsigned char>((pointer % 94) + 0x21);
         if (st.state != 2) {
             st.state = 2;
             return {{'\x1B', '\x24', '\x42', lead, trail}, 5, false};
@@ -267,7 +261,7 @@ constexpr iso2022jp_encode_result iso2022jp_encode_one(iso2022jp_encode_state& s
     return {{'?'}, 1, true};
 }
 
-constexpr iso2022jp_encode_result iso2022jp_encode_flush(iso2022jp_encode_state& st) {
+constexpr encode_result iso2022jp_encode_flush(iso2022jp_encode_state& st) {
     if (st.state == 0)
         return {};
     st.state = 0;

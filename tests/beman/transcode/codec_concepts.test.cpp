@@ -5,6 +5,7 @@
 
 #include <beman/transcode/detail/table_codec.hpp>
 #include <beman/transcode/detail/table_codec.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
 #include <catch2/catch_all.hpp>
@@ -42,7 +43,7 @@ struct stateful_test_codec {
     template <std::input_iterator I, std::sentinel_for<I> S>
     constexpr decode_result decode_one(I& current, S end) {
         if (current == end)
-            return {{}, whatwg_error::truncated_sequence, true};
+            return {{}, whatwg::error::truncated_sequence, true};
         auto byte = static_cast<unsigned char>(*current);
         ++current;
         ++state;
@@ -58,30 +59,59 @@ struct stateful_test_codec {
     }
 };
 
-// A type that does NOT satisfy decode_codec (missing decode_one)
+// A decoder that treats its first element specially, as bom_aware_text_decoder
+// requires: decode_first returns a decode_result
+struct first_aware_codec {
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, S end) {
+        if (current == end)
+            return {{}, whatwg::error::truncated_sequence, true};
+        auto byte = static_cast<unsigned char>(*current);
+        ++current;
+        return {static_cast<char32_t>(byte), {}, false};
+    }
+
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_first(I& current, S end) {
+        return decode_one(current, end);
+    }
+};
+
+// A type that does NOT satisfy text_decoder (missing decode_one)
 struct not_a_codec {};
 
 // ---------------------------------------------------------------------------
 // Concept satisfaction: static_assert checks
 // ---------------------------------------------------------------------------
 
-static_assert(decode_codec<latin1_codec>);
-static_assert(random_access_decode_codec_type<latin1_codec>);
-static_assert(encode_codec<latin1_codec>);
-static_assert(!flushable_decode_codec<latin1_codec>);
+static_assert(text_decoder<latin1_codec>);
+static_assert(single_byte_text_decoder<latin1_codec>);
+static_assert(text_encoder<latin1_codec>);
+static_assert(!flushable_text_decoder<latin1_codec>);
+static_assert(!bom_aware_text_decoder<latin1_codec>);
+static_assert(!flushable_text_encoder<latin1_codec>);
+static_assert(!single_byte_text_encoder<latin1_codec>);
+static_assert(!single_byte_text_encoder<not_a_codec>);
+static_assert(!single_byte_text_encoder<int>);
 
-static_assert(decode_codec<sparse_codec>);
-static_assert(random_access_decode_codec_type<sparse_codec>);
-static_assert(encode_codec<sparse_codec>);
+static_assert(text_decoder<sparse_codec>);
+static_assert(single_byte_text_decoder<sparse_codec>);
+static_assert(text_encoder<sparse_codec>);
 
-static_assert(decode_codec<stateful_test_codec>);
-static_assert(!random_access_decode_codec_type<stateful_test_codec>);
-static_assert(!encode_codec<stateful_test_codec>);
-static_assert(flushable_decode_codec<stateful_test_codec>);
+static_assert(text_decoder<stateful_test_codec>);
+static_assert(!single_byte_text_decoder<stateful_test_codec>);
+static_assert(!text_encoder<stateful_test_codec>);
+static_assert(flushable_text_decoder<stateful_test_codec>);
+static_assert(!bom_aware_text_decoder<stateful_test_codec>);
+static_assert(!flushable_text_encoder<stateful_test_codec>);
 
-static_assert(!decode_codec<not_a_codec>);
-static_assert(!encode_codec<not_a_codec>);
-static_assert(!decode_codec<int>);
+static_assert(text_decoder<first_aware_codec>);
+static_assert(bom_aware_text_decoder<first_aware_codec>);
+
+static_assert(!text_decoder<not_a_codec>);
+static_assert(!bom_aware_text_decoder<not_a_codec>);
+static_assert(!text_encoder<not_a_codec>);
+static_assert(!text_decoder<int>);
 
 // ---------------------------------------------------------------------------
 // table_codec: decode tests
@@ -129,7 +159,7 @@ TEST_CASE("table_codec: unmapped byte returns error", "[codec_concepts]") {
 
     auto r = codec.decode_one(it, end);
     CHECK(r.is_error);
-    CHECK(r.error == whatwg_error::invalid_byte);
+    CHECK(r.error == whatwg::error::invalid_byte);
 }
 
 TEST_CASE("table_codec: decode_byte random access", "[codec_concepts]") {

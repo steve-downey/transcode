@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_decode_view.hpp>
-#include <beman/transcode/whatwg_decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/error.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/wpt_fatal_vectors.hpp>
 
@@ -15,23 +17,23 @@ using namespace beman::transcoding;
 
 namespace {
 
-std::vector<std::expected<char32_t, whatwg_error>> decode_utf8_or_error(const std::vector<uint8_t>& input) {
-    std::vector<char>                                  bytes(input.begin(), input.end());
-    std::vector<std::expected<char32_t, whatwg_error>> result;
-    for (auto&& r : bytes | whatwg_decode_or_error<codec::utf_8>)
+std::vector<std::expected<char32_t, whatwg::error>> decode_utf8_or_error(const std::vector<uint8_t>& input) {
+    std::vector<char>                                   bytes(input.begin(), input.end());
+    std::vector<std::expected<char32_t, whatwg::error>> result;
+    for (auto&& r : bytes | whatwg::decode_or_error<whatwg::encoding::utf_8>)
         result.push_back(r);
     return result;
 }
 
-std::vector<std::expected<char32_t, whatwg_error>> decode_utf16le_or_error(const std::vector<uint8_t>& input) {
-    std::vector<char>                                  bytes(input.begin(), input.end());
-    std::vector<std::expected<char32_t, whatwg_error>> result;
-    for (auto&& r : bytes | whatwg_decode_or_error<codec::utf_16le>)
+std::vector<std::expected<char32_t, whatwg::error>> decode_utf16le_or_error(const std::vector<uint8_t>& input) {
+    std::vector<char>                                   bytes(input.begin(), input.end());
+    std::vector<std::expected<char32_t, whatwg::error>> result;
+    for (auto&& r : bytes | whatwg::decode_or_error<whatwg::encoding::utf_16le>)
         result.push_back(r);
     return result;
 }
 
-bool has_error(const std::vector<std::expected<char32_t, whatwg_error>>& result) {
+bool has_error(const std::vector<std::expected<char32_t, whatwg::error>>& result) {
     return std::ranges::any_of(result, [](const auto& r) { return !r.has_value(); });
 }
 

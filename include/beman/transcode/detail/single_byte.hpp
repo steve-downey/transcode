@@ -4,9 +4,8 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_SINGLE_BYTE_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
@@ -15,9 +14,9 @@
 namespace beman::transcoding::detail {
 
 struct single_byte_result {
-    char32_t     code_point{};
-    whatwg_error error{};
-    bool         is_error{false};
+    char32_t      code_point{};
+    whatwg::error error{};
+    bool          is_error{false};
 };
 
 // Decode one byte using a 128-entry lookup table for the upper half.
@@ -30,7 +29,7 @@ constexpr single_byte_result single_byte_decode_one(I& current, [[maybe_unused]]
         return {static_cast<char32_t>(byte), {}, false};
     char32_t cp = table[byte - 0x80];
     if (cp == 0)
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
     return {cp, {}, false};
 }
 

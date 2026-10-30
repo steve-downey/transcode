@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <beman/transcode/transcode.hpp>
+#include <beman/transcode/whatwg/error.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 #include <string_view>
 #include <vector>
@@ -11,7 +13,7 @@ bool     error_logged   = false;
 char32_t last_processed = U'\0';
 
 void log_warning(const char*) {}
-void log_warning(whatwg_error) { error_logged = true; }
+void log_warning(whatwg::error) { error_logged = true; }
 void process(char32_t value) { last_processed = value; }
 
 void before_example() {
@@ -38,7 +40,7 @@ void after_example(std::string_view input) {
     // clang-format off
 // d9624e97-0a08-46c1-99c3-04a729a7324b
 for (auto r : input
-    | whatwg_decode_or_error<codec::utf_8>) {
+    | whatwg::decode_or_error<whatwg::encoding::utf_8>) {
   if (r.has_value()) {
     process(*r);
   } else {

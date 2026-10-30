@@ -6,12 +6,16 @@
 #include <benchmark/benchmark_sink.hpp>
 #include <benchmark/benchmark_sink.hpp>
 
+#include <beman/transcode/whatwg/error.hpp>
+
 #include <tests/beman/transcode/test_utilities.hpp>
 
 #include <catch2/catch_all.hpp>
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
+#include <expected>
 #include <initializer_list>
 #include <string>
 #include <string_view>
@@ -112,6 +116,48 @@ TEST_CASE("count_elements is usable at compile time", "[bench][sink]") {
     CHECK(constify(count_elements(arr)) == 4u);
 }
 
+TEST_CASE("count_elements accepts every element type the benchmarks traverse", "[bench][sink]") {
+    namespace whatwg = beman::transcoding::whatwg;
+    using result_t   = std::expected<char32_t, whatwg::error>;
+
+    constexpr std::array<char32_t, 3>      cps     = {U'a', U'あ', U'\U0001F600'};
+    constexpr std::array<char, 3>          chars   = {'a', 'b', 'c'};
+    constexpr std::array<unsigned char, 2> uchs    = {0x80, 0xFF};
+    constexpr std::array<std::byte, 2>     bytes   = {std::byte{0x01}, std::byte{0xFE}};
+    const std::array<result_t, 3>          results = {
+        result_t{U'a'}, result_t{std::unexpected(whatwg::error::invalid_byte)}, result_t{U'b'}};
+
+    CHECK(count_elements(cps) == 3u);
+    CHECK(count_elements(chars) == 3u);
+    CHECK(count_elements(uchs) == 2u);
+    CHECK(count_elements(bytes) == 2u);
+    CHECK(count_elements(results) == 3u);
+
+    CHECK(constify(count_elements(cps)) == 3u);
+    CHECK(constify(count_elements(chars)) == 3u);
+    CHECK(constify(count_elements(uchs)) == 2u);
+    CHECK(constify(count_elements(bytes)) == 2u);
+    CHECK(constify(count_elements(
+              std::array<result_t, 2>{result_t{U'a'}, result_t{std::unexpected(whatwg::error::out_of_range)}})) == 2u);
+}
+
+TEST_CASE("element_value reduces elements to their value", "[bench][sink]") {
+    namespace whatwg = beman::transcoding::whatwg;
+    using beman::transcoding::bench::element_value;
+    using result_t = std::expected<char32_t, whatwg::error>;
+
+    CHECK(element_value(U'あ') == 0x3042u);
+    CHECK(element_value('a') == static_cast<std::uintmax_t>('a'));
+    CHECK(element_value(static_cast<unsigned char>(0xFF)) == 0xFFu);
+    CHECK(element_value(std::byte{0xFE}) == 0xFEu);
+    CHECK(element_value(result_t{U'b'}) == U'b');
+    CHECK(element_value(result_t{std::unexpected(whatwg::error::out_of_range)}) ==
+          static_cast<std::uintmax_t>(whatwg::error::out_of_range));
+
+    static_assert(element_value(U'あ') == 0x3042u);
+    static_assert(element_value(result_t{U'b'}) == U'b');
+}
+
 TEST_CASE("volatile_sink accepts values without crashing", "[bench][sink]") {
     int         x = 42;
     std::string s = "hello";
@@ -121,7 +167,7 @@ TEST_CASE("volatile_sink accepts values without crashing", "[bench][sink]") {
 
 TEST_CASE("describe applies to the next benchmark only", "[bench][metadata]") {
     clear_benchmark_records();
-    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg_decode view"});
+    describe({.conversion = "UTF-8 → UTF-32", .library = "beman.transcode", .api = "whatwg::decode view"});
     begin_benchmark("first");
     end_benchmark();
     begin_benchmark("second");
@@ -132,7 +178,7 @@ TEST_CASE("describe applies to the next benchmark only", "[bench][metadata]") {
     CHECK(records[0].name == "first");
     CHECK(records[0].conversion == "UTF-8 → UTF-32");
     CHECK(records[0].library == "beman.transcode");
-    CHECK(records[0].api == "whatwg_decode view");
+    CHECK(records[0].api == "whatwg::decode view");
     CHECK(records[1].name == "second");
     CHECK(records[1].conversion.empty());
     clear_benchmark_records();

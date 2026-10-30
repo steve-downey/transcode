@@ -4,11 +4,11 @@
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_GB18030_HPP
 
 #include <beman/transcode/config.hpp>
-
-#include <beman/transcode/error.hpp>
+#include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/detail/reverse_index.hpp>
 #include <beman/transcode/detail/tables/gb18030_ranges.hpp>
 #include <beman/transcode/detail/tables/gbk.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <cstdint>
@@ -38,16 +38,10 @@ struct gb18030_decode_state {
 
 struct gb18030_decode_result {
     char32_t      code_point{0xFFFD};
-    whatwg_error  error{};
+    whatwg::error error{};
     bool          is_error{false};
     unsigned char replay[3]{};
     int           replay_count{0};
-};
-
-struct gb18030_encode_result {
-    unsigned char bytes[4]{};
-    int           count{0};
-    bool          is_error{false};
 };
 
 // ---------------------------------------------------------------------------
@@ -72,7 +66,7 @@ constexpr gb18030_decode_result gb18030_decode_one(gb18030_decode_state& st, I& 
 
 // Encode one Unicode codepoint as GB18030.
 // WHATWG maps U+E5E5 to an encoder error for deployed-content compatibility.
-constexpr gb18030_encode_result gb18030_encode_one(char32_t cp);
+constexpr encode_result gb18030_encode_one(char32_t cp);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -134,7 +128,7 @@ constexpr std::uint32_t gb18030_ranges_encode(char32_t cp) {
 template <std::input_iterator I, std::sentinel_for<I> S>
 constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
     if (current == end)
-        return {{}, whatwg_error::truncated_sequence, true};
+        return {{}, whatwg::error::truncated_sequence, true};
 
     auto lead = static_cast<unsigned char>(*current);
     ++current;
@@ -146,10 +140,10 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
         return {U'\x20AC', {}, false};
 
     if (lead < 0x81 || lead > 0xFE)
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
 
     if (current == end)
-        return {{}, whatwg_error::truncated_sequence, true};
+        return {{}, whatwg::error::truncated_sequence, true};
 
     auto second = static_cast<unsigned char>(*current);
 
@@ -157,22 +151,22 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
     if (second >= 0x30 && second <= 0x39) {
         ++current; // consume second
         if (current == end)
-            return {{}, whatwg_error::truncated_sequence, true};
+            return {{}, whatwg::error::truncated_sequence, true};
         auto third = static_cast<unsigned char>(*current);
         if (third < 0x81 || third > 0xFE) {
             // WHATWG: prepend second to ioQueue.  Third is not consumed.
-            gb18030_decode_result err{{}, whatwg_error::invalid_byte, true, {}, 0};
+            gb18030_decode_result err{{}, whatwg::error::invalid_byte, true, {}, 0};
             err.replay[0]    = second;
             err.replay_count = 1;
             return err;
         }
         ++current; // consume third
         if (current == end)
-            return {{}, whatwg_error::truncated_sequence, true};
+            return {{}, whatwg::error::truncated_sequence, true};
         auto fourth = static_cast<unsigned char>(*current);
         if (fourth < 0x30 || fourth > 0x39) {
             // WHATWG: prepend second, third to ioQueue.  Fourth is not consumed.
-            gb18030_decode_result err{{}, whatwg_error::invalid_byte, true, {}, 0};
+            gb18030_decode_result err{{}, whatwg::error::invalid_byte, true, {}, 0};
             err.replay[0]    = second;
             err.replay[1]    = third;
             err.replay_count = 2;
@@ -184,7 +178,7 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
             ((((lead - 0x81u) * 10u) + (second - 0x30u)) * 126u * 10u) + ((third - 0x81u) * 10u) + (fourth - 0x30u);
         char32_t cp = gb18030_ranges_decode(pointer);
         if (cp == U'\xFFFD')
-            return {{}, whatwg_error::invalid_byte, true};
+            return {{}, whatwg::error::invalid_byte, true};
         return {cp, {}, false};
     }
 
@@ -193,7 +187,7 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
         // WHATWG: if byte < 0x80, prepend (don't consume); otherwise consume.
         if (second >= 0x80)
             ++current;
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
     }
 
     ++current; // consume second
@@ -208,8 +202,8 @@ constexpr gb18030_decode_result gb18030_decode_one(I& current, S end) {
     return {cp, {}, false};
 }
 
-constexpr gb18030_encode_result gb18030_encode_one(char32_t cp) {
-    gb18030_encode_result r{};
+constexpr encode_result gb18030_encode_one(char32_t cp) {
+    encode_result r{};
 
     // ASCII passthrough
     if (cp < 0x80) {

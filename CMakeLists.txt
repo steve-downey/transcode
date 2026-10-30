@@ -112,6 +112,27 @@ check_cxx_source_compiles(
 )
 unset(CMAKE_REQUIRED_FLAGS)
 
+# Probe for <text_encoding>, which only C++26 mode declares (libstdc++ defines
+# __cpp_lib_text_encoding under -std=c++26 and not under -std=c++23).  The
+# bridge in whatwg/text_encoding.hpp is conditional on the macro, and its test
+# and example are built as C++26 only when this probe passes.
+#
+# The probe sets CMAKE_CXX_STANDARD rather than passing a -std flag, because the
+# standard flag CMake appends for CMAKE_CXX_STANDARD comes last and would
+# override one given in CMAKE_REQUIRED_FLAGS.
+set(_beman_transcode_saved_cxx_standard "${CMAKE_CXX_STANDARD}")
+set(CMAKE_CXX_STANDARD 26)
+check_cxx_source_compiles(
+    "#include <version>
+     #if !defined(__cpp_lib_text_encoding)
+     #  error text_encoding not available
+     #endif
+     #include <text_encoding>
+     int main() { return std::text_encoding{std::text_encoding::id::UTF8}.mib() == std::text_encoding::id::UTF8 ? 0 : 1; }"
+    BEMAN_TRANSCODE_HAS_TEXT_ENCODING
+)
+set(CMAKE_CXX_STANDARD "${_beman_transcode_saved_cxx_standard}")
+
 configure_file(
     "${PROJECT_SOURCE_DIR}/include/beman/transcode/config_generated.hpp.in"
     "${PROJECT_BINARY_DIR}/include/beman/transcode/config_generated.hpp"

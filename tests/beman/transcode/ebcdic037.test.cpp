@@ -44,9 +44,9 @@ inline constexpr std::array<char32_t, 256> ebcdic_037_table = {{
 
 using ebcdic_037 = full_table_codec<ebcdic_037_table>;
 
-static_assert(decode_codec<ebcdic_037>);
-static_assert(random_access_decode_codec_type<ebcdic_037>);
-static_assert(encode_codec<ebcdic_037>);
+static_assert(text_decoder<ebcdic_037>);
+static_assert(single_byte_text_decoder<ebcdic_037>);
+static_assert(text_encoder<ebcdic_037>);
 
 // ---------------------------------------------------------------------------
 // Decode: EBCDIC letter positions

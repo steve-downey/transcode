@@ -2,16 +2,18 @@
 //
 // NEGATIVE COMPILE TEST: Raw arrays must not satisfy transcode closure input.
 // This file must NOT compile — it is registered as a WILL_FAIL ctest target.
-// The transcode_closure explicitly rejects raw array types via a constrained
+// The transcode adaptor explicitly rejects raw array types via a constrained
 // operator| overload with a static_assert, so that char[N] cannot silently
 // decay to a pointer and include the null terminator.
 
-#include <beman/transcode/transcode_view.hpp>
+#include <beman/transcode/whatwg/transcode_view.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 void test() {
     char arr[] = "hello";
     // char[N] is not a valid input — should fail to compile with the message:
     // "transcode: raw arrays are not valid input to transcode"
-    auto v = arr | beman::transcoding::transcode<beman::transcoding::codec::utf_8, beman::transcoding::codec::utf_8>;
+    auto v = arr | beman::transcoding::whatwg::transcode<beman::transcoding::whatwg::encoding::utf_8,
+                                                         beman::transcoding::whatwg::encoding::utf_8>;
     (void)v;
 }

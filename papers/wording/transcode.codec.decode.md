@@ -1,6 +1,6 @@
 ::: wording
 
-## Class template `decode_view` [transcode.custom.decode] {-}
+## Class template `decode_view` [transcode.codec.decode] {-}
 
 ```cpp
 constexpr const R& base() const& noexcept;
@@ -13,6 +13,10 @@ constexpr R base() &&;
 ```
 
 [#]{.pnum} *Returns*: `move($base$)`.
+
+[#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, and decodes lazily.  When `E` is `error_mode::replacement`, its value type is `char32_t` and a decoding error yields U+FFFD.  When `E` is `error_mode::report`, its value type is `expected<char32_t, whatwg::error>` and a decoding error yields an element holding the error.  The view does not validate a successful `code_point`; the program-supplied `Codec` is responsible for returning Unicode scalar values as required by `text_decoder`.
+
+[#]{.pnum} The view models `random_access_range` when `Codec` models `single_byte_text_decoder` and `R` models `random_access_range`. When it does, a byte whose value is `0x80` or above and for which `Codec::decode_byte` returns U+FFFD is reported as `whatwg::error::invalid_byte` in report mode and yields U+FFFD in replacement mode.  This follows from the U+FFFD reservation required by `single_byte_text_decoder` ([transcode.codec.reqs]).
 
 ```cpp
 constexpr explicit decode_view(R base, Codec codec = {});
@@ -62,24 +66,24 @@ constexpr default_sentinel_t end() const;
 [#]{.pnum} *Returns*: `default_sentinel`.
 
 ```cpp
-template<decode_codec Codec> constexpr $see below$ decode(Codec codec = {});
+template<text_decoder Codec> constexpr $see below$ decode(Codec codec = {});
 ```
 
 [#]{.pnum} *Returns*: A range adaptor object over `codec`.  Given a subexpression `E` that models `legacy_byte_range`, `decode(codec)(E)` and `E | decode(codec)` are each expression-equivalent to a `decode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of `codec`.  An `E` of array type is ill-formed.
 
 ```cpp
-template<decode_codec Codec> constexpr $see below$ decode_or_error(Codec codec = {});
+template<text_decoder Codec> constexpr $see below$ decode_or_error(Codec codec = {});
 ```
 
-[#]{.pnum} *Returns*: `decode(codec)` with `transcode_error_kind::expected`: the view it adapts to has value type `expected<char32_t, whatwg_error>`, and a decoding error is the error rather than U+FFFD.
+[#]{.pnum} *Returns*: `decode(codec)` with `error_mode::report`: the view it adapts to has value type `expected<char32_t, whatwg::error>`, and a decoding error is the error rather than U+FFFD.
 
-### Class `decode_view::iterator` [transcode.custom.decode.iterator] {-}
+### Class `decode_view::iterator` [transcode.codec.decode.iterator] {-}
 
 ```cpp
 constexpr iterator(base_iter current, base_sent end, Codec codec);
 ```
 
-[#]{.pnum} *Effects*: Initializes `$current$` with `std::move(current)`, `$end$` with `std::move(end)` and the iterator's own copy of the codec with `codec`, then decodes the first element.
+[#]{.pnum} *Effects*: Initializes `$current$` with `std::move(current)`, `$end$` with `std::move(end)` and the iterator's own copy of the codec with `codec`, then decodes the first element.  When `Codec` models `bom_aware_text_decoder` and `current != end`, that element is decoded by `decode_first`, and, if its result has `is_empty`, decoding goes on as `operator++` does.
 
 ```cpp
 constexpr result_t operator*() const;
@@ -91,7 +95,7 @@ constexpr result_t operator*() const;
 constexpr $iterator$& operator++();
 ```
 
-[#]{.pnum} *Effects*: Decodes the next element of the base range, or, if none remains, makes `*this` equal to `end()`.  When `Codec` models `flushable_decode_codec`, exhausting the base range calls `flush()` once and yields what it returns, if anything.
+[#]{.pnum} *Effects*: Decodes the next element of the base range, or, if none remains, makes `*this` equal to `end()`.  A `decode_one` result with `is_empty` yields no element and decoding goes on.  When `Codec` models `flushable_text_decoder`, exhausting the base range calls `flush()`, and calls it again after each engaged result, yielding what it returns until it returns `nullopt` or a result with `is_empty`.
 
 [#]{.pnum} *Returns*: `*this`.
 

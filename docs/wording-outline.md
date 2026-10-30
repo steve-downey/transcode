@@ -32,13 +32,9 @@ by the clause numbering the paper prints.  Two consequences:
 Heading level follows from mpark's fixed `base_heading_level = 2` (index U2):
 `\rSec2` prints as `##`, `\rSec3` as `###`.
 
-Declaration-level descriptions remain beside their declarations in a synopsis.
-This is deliberate specgen behaviour, not accidental leakage: the descriptions
-of the view class templates explain what each declared type is, while their
-dedicated semantic clauses specify constructors, accessors and iterator
-operations.  `specgen render --validate` accepts that placement.  Moving those
-descriptions into the semantic clauses would leave the synopsis declarations
-undescribed rather than remove duplicated wording.
+A class's own description is routed to its clause with `\at`, as a member's
+is with a `\ref` group header; the synopsis fragment holds the synopsis and
+nothing else.
 
 ## `<transcode>`
 
@@ -53,32 +49,35 @@ order the compiler needs and need not match.
 |---|---|---|---|---|
 | `transcode.general` | — | General | scope, terms, the byte/scalar model | authored in the paper |
 | `transcode.syn` | 2 | Header `<transcode>` synopsis | everything below, gathered | `transcode.hpp`'s region and the sixteen headers included in it, done 2026-09-07 |
-| `transcode.errors` | 2 | Error types | `whatwg_error`, `iconv_error`, `transcode_error_kind` | `error.hpp` routes to it, done 2026-09-06 |
+| `transcode.errors` | 2 | Error types | `whatwg::error`, `iconv_error`, `error_mode` | `error.hpp` routes to it, done 2026-09-06 |
 | `transcode.reqs` | 2 | Range requirements | `legacy_byte_range`, `unicode_scalar_range` | `concepts.hpp` routes to it, done 2026-09-06 |
-| `transcode.codec` | 2 | Encodings | `enum class codec` | `codec.hpp`, done 2026-09-07 |
-| `transcode.codec.label` | 3 | Label lookup | `get_encoding` | `label.hpp`, done 2026-09-07 |
-| `transcode.codec.sniff` | 3 | Byte order mark sniffing | `sniff_encoding` | `sniff.hpp`, done 2026-09-07 |
-| `transcode.whatwg.decode` | 2 | Decoding views | `whatwg_decode_view`, its closures `whatwg_decode<C>` / `whatwg_decode_or_error<C>`, and its `enable_borrowed_range` specialization | `whatwg_decode_view.hpp`, done 2026-09-08 |
-| `transcode.whatwg.decode.iterator` | 3 | Class `whatwg_decode_view::iterator` | the iterator operations | `whatwg_decode_view.hpp`, done 2026-09-08 |
-| `transcode.whatwg.encode` | 2 | Encoding views | `whatwg_encode_view`, likewise | `whatwg_encode_view.hpp`, done 2026-09-08 |
-| `transcode.whatwg.encode.iterator` | 3 | Class `whatwg_encode_view::iterator` | likewise | `whatwg_encode_view.hpp`, done 2026-09-08 |
-| `transcode.custom.reqs` | 2 | Codec requirements | `decode_codec`, `encode_codec`, `flushable_decode_codec`, `random_access_decode_codec_type`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp`, done 2026-09-08 |
-| `transcode.custom.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp`, done 2026-09-08 |
-| `transcode.custom.decode.iterator` | 3 | Class `decode_view::iterator` | the iterator operations | `decode_view.hpp`, done 2026-09-08 |
-| `transcode.custom.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp`, done 2026-09-08 |
-| `transcode.custom.encode.iterator` | 3 | Class `encode_view::iterator` | likewise | `encode_view.hpp`, done 2026-09-08 |
-| `transcode.pipeline` | 2 | Transcoding pipelines | `transcode`, `pluggable_transcode` | `transcode_view.hpp`, done 2026-09-08 |
-| `transcode.string` | 2 | Eager transcoding | `transcode_string`, both overloads | `transcode_string.hpp`, done 2026-09-08 |
-| `transcode.bulk` | 2 | Eager bulk conversion | `decode_to`, `encode_to`, `decode_into`, `encode_into`, each in a WHATWG and a pluggable form | `bulk_transcode.hpp`, done 2026-09-08 |
+| `transcode.codec.reqs` | 2 | Codec requirements | `text_decoder`, `text_encoder`, `flushable_text_decoder`, `flushable_text_encoder`, `bom_aware_text_decoder`, `single_byte_text_decoder`, `single_byte_text_encoder`, `decode_result`, `encode_result` | `codec_concepts.hpp`, `codec_result.hpp`, done 2026-09-08 |
+| `transcode.codec.decode` | 2 | Class template `decode_view` | `decode_view`, `decode`, `decode_or_error` | `decode_view.hpp`, done 2026-09-08 |
+| `transcode.codec.decode.iterator` | 3 | Class `decode_view::iterator` | the iterator operations | `decode_view.hpp`, done 2026-09-08 |
+| `transcode.codec.encode` | 2 | Class template `encode_view` | `encode_view`, `encode`, `encode_or_error` | `encode_view.hpp`, done 2026-09-08 |
+| `transcode.codec.encode.iterator` | 3 | Class `encode_view::iterator` | likewise | `encode_view.hpp`, done 2026-09-08 |
+| `transcode.pipeline` | 2 | Transcoding pipelines | `whatwg::transcode`, `transcode(from, to)` | `whatwg/transcode_view.hpp`, `transcode_view.hpp`, done 2026-09-08 |
+| `transcode.whatwg.encoding` | 2 | Encodings | `enum class whatwg::encoding` | `whatwg/encoding.hpp`, done 2026-09-07 |
+| `transcode.whatwg.label` | 3 | Label lookup | `whatwg::get_encoding` | `whatwg/label.hpp`, `whatwg/text_encoding.hpp`, done 2026-09-07 |
+| `transcode.whatwg.sniff` | 3 | Byte order mark sniffing | `whatwg::bom_sniff` | `whatwg/bom_sniff.hpp`, done 2026-09-07 |
+| `transcode.whatwg.decoders` | 2 | Decoders | `whatwg::decoder` | `whatwg/decoder.hpp`, added step 08 of the SG16 response |
+| `transcode.whatwg.encoders` | 2 | Encoders | `whatwg::encoder` | `whatwg/encoder.hpp`, added step 10 of the SG16 response |
+| `transcode.whatwg.decode` | 2 | Decoding adaptors | the two variable templates `whatwg::decode<C>` / `whatwg::decode_or_error<C>`, each the codec-object adaptor over `whatwg::decoder<C>` | `whatwg/decode_view.hpp`, reduced to the two variables in step 09 of the SG16 response |
+| `transcode.whatwg.encode` | 2 | Encoding adaptors | the two variable templates `whatwg::encode<C>` / `whatwg::encode_or_error<C>`, each the codec-object adaptor over `whatwg::encoder<C>` | `whatwg/encode_view.hpp`, reduced to the two variables in step 12 of the SG16 response |
+| `transcode.string` | 2 | Eager transcoding | `whatwg::transcode_string`, both overloads | `whatwg/transcode_string.hpp`, done 2026-09-08 |
+| `transcode.bulk` | 2 | Eager bulk conversion | `decode_to`, `encode_to`, `decode_into`, `encode_into`, each in a WHATWG and a pluggable form | `whatwg/bulk.hpp`, `bulk_transcode.hpp`, done 2026-09-08 |
 | `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers, done 2026-09-08 |
 | `transcode.iconv.iterator` | 3 | The two iconv iterators | `iconv_transcode_view::$iterator$`, `iconv_transcode_or_error_view::$iterator$` | the same headers, done 2026-09-08 |
 
-`transcode.custom.*` rather than `transcode.decode` / `transcode.encode` for the
-codec-parameterized family: the WHATWG views are what most readers reach for, so
-they get the short names, and grouping the extension point under one prefix says
-what it is for.  It also keeps `transcode.codec.*` (the enumeration and its
-lookups) from colliding with the codec *requirements*, which are a different
-subject entirely.
+`transcode.codec.*` rather than `transcode.decode` / `transcode.encode` for the
+codec-object layer: the library's own codecs (`whatwg::decoder<C>` and
+`whatwg::encoder<C>`) and a program's are the same kind of thing, and the
+WHATWG adaptors are defined in terms of that layer, so the layer's clauses
+(requirements, the decode and encode views, and the `transcode(from, to)`
+pipeline) come first and the `transcode.whatwg.*` clauses after them.  The
+WHATWG encoding enumeration and its lookups are `transcode.whatwg.encoding`,
+`.label` and `.sniff`, which keeps them from colliding with the codec
+*requirements*, a different subject entirely.
 
 ## `<null_term>`
 
@@ -108,7 +107,7 @@ so no step has to decide twice.
 | `detail::legacy_byte_type` | `$legacy-byte-type$` | a real conjunct of `legacy_byte_range`; the draft would spell it out.  Marked in Step 4 |
 | every view's `base_`, `codec_`, `buf_`, iterator state | exposition names | the wording describes what they hold |
 | a view's nested `iterator` | `class $iterator$;` | `\expos` with bare `\seebelow`, which renders the declaration and leaves the state out of the synopsis -- [range.transform.view]'s shape.  Needed specgen#80 |
-| the closure types (`whatwg_decode_closure` and the seven others) | ideally `unspecified` | unblocked 2026-09-05; specgen#24 fixed |
+| the closure types (`decode_closure`, `encode_closure`, `transcode_closure`, `iconv_transcode_closure`, `iconv_transcode_or_error_closure`) | `unspecified`; the `decode`, `encode` and `transcode(from, to)` functions declare a deduced `auto` return type, so the synopsis names none of them | unblocked 2026-09-05; specgen#24 fixed; the `whatwg::` closures went with the WHATWG view classes in steps 09 and 12 |
 | `detail::const_iterator_compatible_range`, `detail::const_sentinel_compatible_range` | `$const-iterator-compatible-range$`, `$const-sentinel-compatible-range$` | the const-compatibility chain the views constrain `begin`/`end` on |
 | `detail::random_access_decode_codec`, `detail::random_access_encode_codec` | `$random-access-decode-codec$`, `$random-access-encode-codec$` | which codecs are O(1) per element; a property of the specification, not of the tables |
 | `detail::whatwg_encode_codec`, `detail::whatwg_encode_input` | `$whatwg-encode-codec$`, `$whatwg-encode-input$` | WHATWG defines no encoder for some codecs; the constraint says which |
@@ -117,12 +116,12 @@ so no step has to decide twice.
 
 | Entity | Why |
 |---|---|
-| `random_access_whatwg_decode_view` and the encode and pluggable equivalents, and the `enable_borrowed_range` specializations written for them | decision W1 below |
-| the `_or_error_view` / `_or_error_closure` alias templates | transition spellings for the pre-unification names, not API |
+| `random_access_decode_view` and `random_access_encode_view`, and the `enable_borrowed_range` specializations written for them | decision W1 below |
+| `decode_closure`, `encode_closure`, `transcode_closure` | the adaptor objects' types are unspecified; the clauses say what `decode(codec)`, `encode(codec)` and `transcode(from, to)` return, not what type carries it |
 | `null_term_view`'s deduction guide | the implicit guide from the constructor is identical; index U4 no longer applies |
 | `detail::null_term_fn`, `detail::null_term_adaptor` | the adaptor object's type is unspecified |
-| `detail::label_entry`, `label_table` | generated data behind `get_encoding`, and all `tools/generate_labels.py` emits since Step 5 |
-| `detail::transcode_decode_all`, `detail::transcode_encode_all` | the loops `transcode_string` runs; they rendered in the synopsis as bare names until Step 11 `\omit`ted them, because the leakage check keys on a rendered qualifier and these had none |
+| `detail::label_entry`, `label_table` | generated data behind `whatwg::get_encoding`, and all `tools/generate_labels.py` emits since Step 5 |
+| `detail::transcode_decode_all`, `detail::transcode_encode_all` | the loops `whatwg::transcode_string` runs; they rendered in the synopsis as bare names until Step 11 `\omit`ted them, because the leakage check keys on a rendered qualifier and these had none |
 | `detail::iconv_guard`, `iconv_input_buf` | RAII plumbing |
 | `iconv_error_rc` | a POSIX return-value constant, not API |
 
@@ -193,13 +192,16 @@ decodes one byte to one scalar value and the base range does.  That also
 removed the last `detail::` qualifier from the document, which was reaching the
 wording through those views' requires-clauses.*  They exist so a single-byte codec gets O(1) indexing.  That is a
 property of the view, not a second view: the specification says
-`whatwg_decode_view<C, R>` models `random_access_range` when `C` is a
+`whatwg::decode_view<C, R>` models `random_access_range` when `C` is a
 single-byte codec and `R` models `random_access_range`, and an implementation
 gets there however it likes.  Omitting them also removes
 `detail::random_access_decode_codec` from every spec-visible signature, which
 D7 requires anyway.  The alternative — specifying eight view templates instead
 of four — doubles the clause for no reader benefit.  If SG16 wants the
-distinction visible, it comes back as a *Remarks* paragraph, not as a type.
+distinction visible, it comes back as a *Remarks* paragraph, not as a type.  Since the WHATWG view
+classes were deleted (steps 09 and 12), W1 applies to `decode_view` and
+`encode_view` over a `single_byte_text_decoder` or `single_byte_text_encoder`
+codec, which is where the random-access property now lives.
 
 **W2 — the WHATWG enumeration is specified by reference.**  `enum class codec`
 has 39 enumerators; the wording says each names the WHATWG encoding of the
@@ -230,11 +232,13 @@ adaptor over a C string that this proposal happens to need.
 
 - ~~**The `_or_error` split.**~~  Settled in P5-Step 3c, before the clauses were
   written.  Each family is one view template parameterized on
-  `transcode_error_kind`, so `transcode.whatwg.decode`,
-  `transcode.whatwg.encode`, `transcode.custom.decode` and
-  `transcode.custom.encode` each specify **one** class template and two closure
-  objects rather than two of each.  `transcode.errors` gains
-  `transcode_error_kind`, and its wording must not fix an underlying type for
+  `error_mode`, so `transcode.codec.decode` and `transcode.codec.encode` each
+  specify **one** class template and two adaptor functions rather than two of
+  each.  (Since steps 09 and 12, `transcode.whatwg.decode` and
+  `transcode.whatwg.encode` specify no class: they are variable templates
+  defined as the codec-object adaptors over `whatwg::decoder<C>` and
+  `whatwg::encoder<C>`.)  `transcode.errors` gains
+  `error_mode`, and its wording must not fix an underlying type for
   either enum (P2728 R13).
 - ~~**Whether iconv is proposed at all**~~  Settled in Step 9: **iconv is
   proposed**, with full wording, and no feature-test-macro condition.  The
@@ -252,10 +256,10 @@ adaptor over a C string that this proposal happens to need.
   without renumbering anything else, which is what makes it a clean question to
   put to SG16 rather than one to settle silently.
 - **Two error vocabularies.**  `transcode.iconv` reports `iconv_error` while
-  every other clause reports `whatwg_error`, and Step 3c's unification does not
-  merge them: it unified the *view* pairs on `transcode_error_kind`, which is
+  every other clause reports `whatwg::error`, and Step 3c's unification does not
+  merge them: it unified the *view* pairs on `error_mode`, which is
   orthogonal to what an error *is*.  They stay separate because the failures
-  are not the same failures.  `whatwg_error` names what the Encoding Standard
+  are not the same failures.  `whatwg::error` names what the Encoding Standard
   says went wrong in a byte sequence the library itself decoded;
   `iconv_error` names what POSIX reported -- `EILSEQ`, `EINVAL`, `E2BIG`, or a
   descriptor that would not open -- about a conversion the library did not

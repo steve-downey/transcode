@@ -46,9 +46,9 @@ inline constexpr std::array<char32_t, 256> blp_59001_table = {{
 
 using blp_59001 = full_table_codec<blp_59001_table>;
 
-static_assert(decode_codec<blp_59001>);
-static_assert(random_access_decode_codec_type<blp_59001>);
-static_assert(encode_codec<blp_59001>);
+static_assert(text_decoder<blp_59001>);
+static_assert(single_byte_text_decoder<blp_59001>);
+static_assert(text_encoder<blp_59001>);
 
 // ---------------------------------------------------------------------------
 // Decode tests

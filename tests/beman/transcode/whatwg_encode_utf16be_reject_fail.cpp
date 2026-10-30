@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <beman/transcode/whatwg_encode_view.hpp>
-#include <beman/transcode/whatwg_encode_view.hpp>
+#include <beman/transcode/whatwg/encode_view.hpp>
+#include <beman/transcode/whatwg/encode_view.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 #include <vector>
 
@@ -11,6 +12,6 @@ using namespace beman::transcoding;
 
 void use_removed_utf16be_encoder() {
     std::vector<char32_t> src{U'A'};
-    auto                  view = src | whatwg_encode<codec::utf_16be>;
+    auto                  view = src | whatwg::encode<whatwg::encoding::utf_16be>;
     (void)view;
 }

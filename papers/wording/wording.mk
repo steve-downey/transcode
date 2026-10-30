@@ -4,13 +4,15 @@ WORDING_MD := \
 	wording/transcode.syn.md \
 	wording/transcode.errors.md \
 	wording/transcode.reqs.md \
-	wording/transcode.codec.md \
+	wording/transcode.codec.reqs.md \
+	wording/transcode.codec.decode.md \
+	wording/transcode.codec.encode.md \
+	wording/transcode.pipeline.md \
+	wording/transcode.whatwg.encoding.md \
+	wording/transcode.whatwg.decoders.md \
+	wording/transcode.whatwg.encoders.md \
 	wording/transcode.whatwg.decode.md \
 	wording/transcode.whatwg.encode.md \
-	wording/transcode.custom.reqs.md \
-	wording/transcode.custom.decode.md \
-	wording/transcode.custom.encode.md \
-	wording/transcode.pipeline.md \
 	wording/transcode.string.md \
 	wording/transcode.bulk.md \
 	wording/transcode.iconv.md \

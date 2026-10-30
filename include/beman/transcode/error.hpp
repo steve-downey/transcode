@@ -9,45 +9,9 @@ namespace beman::transcoding {
 
 // \ref{transcode.errors}, error types
 
-// whatwg_error — error categories defined by the WHATWG Encoding Standard.
-// Used by whatwg_decode_or_error, whatwg_encode_or_error, and all pluggable
-// codec _or_error views (decode_or_error_view, encode_or_error_view).
-// Pluggable codecs adopt WHATWG error semantics as the common framework;
-// custom codec decode_one() and encode_one() return these values directly.
-//! \remarks An operation that fails to decode or to encode reports one of
-//! these values.  The enumerators have the meanings in the following table.
-//! \libtab2[transcode.errors.whatwg]{Enum class `whatwg_error`}
-//! \column Constant
-//! \column Meaning
-//! \row `invalid_byte`
-//! \cell the input holds a byte the encoding does not allow in that
-//! position.
-//! \row `truncated_sequence`
-//! \cell the input ends in the middle of a sequence.
-//! \row `overlong_encoding`
-//! \cell the sequence encodes a value that a shorter sequence also encodes.
-//! \row `surrogate_code_point`
-//! \cell a byte sequence decodes to, or a UTF-32 input code unit holds, a
-//! surrogate code point, which is not a Unicode scalar value.
-//! \row `out_of_range`
-//! \cell a byte sequence decodes to, or a UTF-32 input code unit holds, a value
-//! greater than the largest Unicode scalar value.
-//! \row `unmapped_codepoint`
-//! \cell the encoding has no representation for the Unicode scalar value
-//! being encoded.
-//! \endlibtab2
-enum class whatwg_error {
-    invalid_byte,
-    truncated_sequence,
-    overlong_encoding,
-    surrogate_code_point,
-    out_of_range,
-    unmapped_codepoint,
-};
-
 // iconv_error — error categories that map to POSIX iconv errno values.
 // Used only by iconv_transcode_or_error_view and iconv_transcode_to_or_error.
-// Kept separate from whatwg_error because iconv reports at the OS level:
+// Kept separate from whatwg::error because iconv reports at the OS level:
 // EILSEQ (invalid_sequence), EINVAL (incomplete_sequence), E2BIG (output_full),
 // descriptor-open failure, and errors outside the POSIX conversion model.
 // The OS cannot distinguish WHY a byte sequence is invalid, only that it is.
@@ -81,7 +45,7 @@ enum class iconv_error {
     system_error,
 };
 
-// transcode_error_kind — how a view reports a codec failure, as a template
+// error_mode — how a view reports a codec failure, as a template
 // parameter rather than as a separate class template.  Modelled on P2728's
 // `to_utf_view_error_kind` (see docs/p2728-alignment.md): an enum rather than a
 // bool so that kinds beyond these two can be added, such as one that also
@@ -89,10 +53,10 @@ enum class iconv_error {
 //
 //   replacement — substitute U+FFFD on decode and for ill-formed UTF-32;
 //                 substitute '?' when an encoder cannot represent a scalar
-//   expected    — the value type becomes expected<T, whatwg_error>
-//! \remarks A view's error kind says how it reports a failure of the codec it
+//   report      — the value type becomes expected<T, whatwg::error>
+//! \remarks A view's error mode says how it reports a failure of the codec it
 //! drives.  The enumerators have the meanings in the following table.
-//! \libtab2[transcode.errors.kind]{Enum class `transcode_error_kind`}
+//! \libtab2[transcode.errors.mode]{Enum class `error_mode`}
 //! \column Constant
 //! \column Meaning
 //! \row `replacement`
@@ -100,13 +64,13 @@ enum class iconv_error {
 //! UTF-32 input is first replaced with U+FFFD and then encoded normally; when
 //! an encoder cannot represent a scalar value, the encode view yields `'?'`.
 //! The view's value type is the codec's own.
-//! \row `expected`
-//! \cell the view's value type is `expected<T, whatwg_error>`, and a failure
+//! \row `report`
+//! \cell the view's value type is `expected<T, whatwg::error>`, and a failure
 //! yields an `unexpected` holding the error that occurred.
 //! \endlibtab2
-enum class transcode_error_kind {
+enum class error_mode {
     replacement,
-    expected,
+    report,
 };
 
 } // namespace beman::transcoding

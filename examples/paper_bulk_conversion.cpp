@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <beman/transcode/transcode.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 
 #include <string_view>
 #include <vector>
@@ -15,7 +16,7 @@ std::vector<char32_t> decode_utf8(
     std::string_view input) {
   std::vector<char32_t> result;
   for (char32_t cp : input
-      | whatwg_decode<codec::utf_8>) {
+      | whatwg::decode<whatwg::encoding::utf_8>) {
     result.push_back(cp);
   }
   return result;
@@ -31,7 +32,7 @@ namespace after_example {
 // 04be596b-c72b-4cc4-9ebd-5966c7e92502
 std::vector<char32_t> decode_utf8(
     std::string_view input) {
-  return decode_to<codec::utf_8>(input);
+  return whatwg::decode_to<whatwg::encoding::utf_8>(input);
 }
 // 04be596b-c72b-4cc4-9ebd-5966c7e92502 end
 // clang-format on

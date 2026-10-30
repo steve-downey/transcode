@@ -4,14 +4,20 @@
 #include <beman/transcode/decode_view.hpp>
 
 #include <beman/transcode/detail/table_codec.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
 #include <catch2/catch_all.hpp>
 
+#include <algorithm>
 #include <array>
+#include <concepts>
+#include <ranges>
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
+#include <type_traits>
 #include <vector>
 
 using namespace beman::transcoding;
@@ -47,6 +53,11 @@ inline constexpr std::array<char32_t, 128> replacement_sentinel_table = [] {
 
 using replacement_sentinel_codec = table_codec<replacement_sentinel_table>;
 
+// A stateless codec costs the view no storage: the view is its base, nothing more.
+static_assert(std::is_empty_v<latin1_codec>);
+static_assert(sizeof(decode_view<latin1_codec, std::string_view>) == sizeof(std::string_view));
+static_assert(sizeof(random_access_decode_view<latin1_codec, std::string_view>) == sizeof(std::string_view));
+
 // A stateful codec: XORs each byte with incrementing state
 struct xor_codec {
     int counter = 0;
@@ -60,8 +71,8 @@ struct xor_codec {
     }
 };
 
-static_assert(decode_codec<xor_codec>);
-static_assert(!random_access_decode_codec_type<xor_codec>);
+static_assert(text_decoder<xor_codec>);
+static_assert(!single_byte_text_decoder<xor_codec>);
 
 // ---------------------------------------------------------------------------
 // decode_view with table_codec via pipe
@@ -103,10 +114,10 @@ TEST_CASE("decode_view: empty input produces empty output", "[decode_view]") {
 }
 
 // ---------------------------------------------------------------------------
-// decode_or_error_view with table_codec
+// decode_view with error_mode::report with table_codec
 // ---------------------------------------------------------------------------
 
-TEST_CASE("decode_or_error_view: table_codec success", "[decode_view]") {
+TEST_CASE("decode_view with error_mode::report: table_codec success", "[decode_view]") {
     std::string src{'\x41', '\xC0'}; // A, then Latin-1 0xC0
     auto        view = std::span<const char>(src) | decode_or_error(latin1_codec{});
     auto        it   = view.begin();
@@ -125,14 +136,14 @@ TEST_CASE("decode_or_error_view: table_codec success", "[decode_view]") {
     CHECK(it == end);
 }
 
-TEST_CASE("decode_or_error_view: reports errors", "[decode_view]") {
+TEST_CASE("decode_view with error_mode::report: reports errors", "[decode_view]") {
     std::string src{'\x80'}; // unmapped in sparse
     auto        view = std::span<const char>(src) | decode_or_error(sparse_codec{});
     auto        it   = view.begin();
 
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == whatwg_error::invalid_byte);
+    CHECK(r.error() == whatwg::error::invalid_byte);
 }
 
 TEST_CASE("decode views reserve U+FFFD as the high-byte error signal", "[decode_view]") {
@@ -147,7 +158,7 @@ TEST_CASE("decode views reserve U+FFFD as the high-byte error signal", "[decode_
     // This intentionally pins the current mode asymmetry pending SG16's
     // decision about the random-access codec extension point.
     CHECK(!result.has_value());
-    CHECK(result.error() == whatwg_error::invalid_byte);
+    CHECK(result.error() == whatwg::error::invalid_byte);
 }
 
 // ---------------------------------------------------------------------------
@@ -163,6 +174,129 @@ TEST_CASE("decode_view: stateful codec via pipe", "[decode_view]") {
     CHECK(result[0] == char32_t(0x10 ^ 1));
     CHECK(result[1] == char32_t(0x10 ^ 2));
     CHECK(result[2] == char32_t(0x10 ^ 3));
+}
+
+namespace {
+// A decoder with state in itself: 'X' decodes to 'X' and leaves 'Y' owed, which
+// the next call returns without consuming, or flush() returns at the end of the
+// input; '-' is consumed and produces nothing.
+struct owing_codec {
+    bool owes = false;
+
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, [[maybe_unused]] S end) {
+        if (owes) {
+            owes = false;
+            return {U'Y', {}, false};
+        }
+        auto byte = static_cast<unsigned char>(*current);
+        ++current;
+        if (byte == '-')
+            return {.is_empty = true};
+        if (byte == 'X') {
+            owes = true;
+            return {U'X', {}, false};
+        }
+        return {static_cast<char32_t>(byte), {}, false};
+    }
+
+    constexpr std::optional<decode_result> flush() {
+        if (!owes)
+            return std::nullopt;
+        owes = false;
+        return decode_result{U'Y', {}, false};
+    }
+
+    friend constexpr bool operator==(const owing_codec&, const owing_codec&) = default;
+};
+
+static_assert(flushable_text_decoder<owing_codec>);
+
+std::u32string decode_owing(std::string_view src) {
+    std::u32string out;
+    for (char32_t cp : std::span<const char>(src.data(), src.size()) | decode(owing_codec{}))
+        out.push_back(cp);
+    return out;
+}
+} // namespace
+
+TEST_CASE("decode_view: a result with is_empty yields nothing and decoding goes on", "[decode_view]") {
+    CHECK(decode_owing("a-b") == U"ab");
+    CHECK(decode_owing("-a") == U"a");
+    CHECK(decode_owing("--").empty());
+    CHECK(decode_owing("a-").size() == 1);
+    CHECK(decode_owing("").empty());
+}
+
+TEST_CASE("decode_view: owed output is yielded after the input ends", "[decode_view]") {
+    CHECK(decode_owing("X") == U"XY");
+    CHECK(decode_owing("X-") == U"XY");
+    CHECK(decode_owing("XaX") == U"XYaXY");
+}
+
+namespace {
+// Decodes each byte as itself, except that decode_first, which the view calls
+// once for the first element, turns a leading '^' into nothing and any other
+// first byte into its upper case.
+struct start_codec {
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, [[maybe_unused]] S end) {
+        auto byte = static_cast<unsigned char>(*current);
+        ++current;
+        return {static_cast<char32_t>(byte), {}, false};
+    }
+
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr decode_result decode_first(I& current, [[maybe_unused]] S end) {
+        auto byte = static_cast<unsigned char>(*current);
+        ++current;
+        if (byte == '^')
+            return {.is_empty = true};
+        if (byte >= 'a' && byte <= 'z')
+            byte = static_cast<unsigned char>(byte - 'a' + 'A');
+        return {static_cast<char32_t>(byte), {}, false};
+    }
+
+    friend constexpr bool operator==(const start_codec&, const start_codec&) = default;
+};
+
+static_assert(bom_aware_text_decoder<start_codec>);
+static_assert(!bom_aware_text_decoder<owing_codec>);
+
+constexpr std::u32string decode_start(std::string_view src) {
+    std::u32string out;
+    for (char32_t cp : src | decode(start_codec{}))
+        out.push_back(cp);
+    return out;
+}
+} // namespace
+
+TEST_CASE("decode_view: decode_first decodes the first element, once", "[decode_view]") {
+    CHECK(decode_start("abc") == U"Abc");
+    CHECK(decode_start("^abc") == U"abc");
+    CHECK(decode_start("^^a") == U"^a");
+    CHECK(decode_start("^").empty());
+    CHECK(decode_start("").empty());
+    // each begin() starts again
+    std::string_view src = "ab";
+    auto             v   = src | decode(start_codec{});
+    CHECK(*v.begin() == U'A');
+    CHECK(*v.begin() == U'A');
+    CHECK(constify(decode_start("^xy").size()) == 2);
+    CHECK(constify(decode_start("xy")[0]) == U'X');
+}
+
+TEST_CASE("decode_view: iterator equality sees the codec's state", "[decode_view]") {
+    std::string src = "Xa";
+    auto        v   = std::span<const char>(src) | decode(owing_codec{});
+    auto        i1  = v.begin();
+    auto        i2  = v.begin();
+    CHECK(i1 == i2);
+    ++i2; // same offset in the base, different decoded element and decoder state
+    CHECK(i1.base() == i2.base());
+    CHECK(i1 != i2);
+    ++i1;
+    CHECK(i1 == i2);
 }
 
 // ---------------------------------------------------------------------------
@@ -246,7 +380,7 @@ TEST_CASE("decode_view: iterator base() returns underlying position", "[decode_v
     CHECK(*it.base() == 0x42);
 }
 
-TEST_CASE("decode_or_error_view: iterator base() tracks position", "[decode_view]") {
+TEST_CASE("decode_view with error_mode::report: iterator base() tracks position", "[decode_view]") {
     std::vector<unsigned char> src{0x41, 0x80}; // A, then unmapped in sparse
     auto                       view = src | decode_or_error(sparse_codec{});
     auto                       it   = view.begin();
@@ -255,7 +389,7 @@ TEST_CASE("decode_or_error_view: iterator base() tracks position", "[decode_view
     CHECK(*it.base() == 0x80);
     auto r = *it;
     CHECK(!r.has_value());
-    CHECK(r.error() == whatwg_error::invalid_byte);
+    CHECK(r.error() == whatwg::error::invalid_byte);
 }
 
 // ---------------------------------------------------------------------------
@@ -269,4 +403,45 @@ TEST_CASE("decode_view: std::byte input range", "[decode_view]") {
         result.push_back(cp);
     CHECK(result[0] == U'A');
     CHECK(result[1] == U'\x00C0');
+}
+
+// ---------------------------------------------------------------------------
+// borrowed_range propagation
+// ---------------------------------------------------------------------------
+
+namespace {
+using fwd_span_t = std::span<const char>;
+using ra_span_t  = std::span<const unsigned char>;
+
+using fwd_decode_t = decltype(std::declval<fwd_span_t>() | decode(xor_codec{}));
+using ra_decode_t  = decltype(std::declval<ra_span_t>() | decode(latin1_codec{}));
+using owning_t     = decltype(std::string{} | decode(xor_codec{}));
+
+static_assert(std::ranges::borrowed_range<fwd_decode_t>);
+static_assert(std::ranges::borrowed_range<ra_decode_t>);
+static_assert(!std::ranges::borrowed_range<owning_t>);
+static_assert(std::ranges::borrowed_range<decltype(std::declval<fwd_span_t>() | decode_or_error(xor_codec{}))>);
+
+constexpr char32_t find_through_span() {
+    constexpr std::array<unsigned char, 3> bytes{0x41, 0x42, 0xC0};
+    auto it = std::ranges::find(std::span<const unsigned char>{bytes} | decode(latin1_codec{}), U'\x00C0');
+    return *it;
+}
+} // namespace
+
+TEST_CASE("decode_view: borrowed_range over a span", "[decode_view]") {
+    std::array<char, 3> src{'a', 'b', 'c'};
+    // xor_codec XORs with an incrementing counter: 'a'^1 = '`', 'b'^2 = '`', 'c'^3 = '`'.
+    auto it = std::ranges::find(std::span<const char>{src} | decode(xor_codec{}), U'`');
+    static_assert(!std::same_as<decltype(it), std::ranges::dangling>);
+    CHECK(*it == U'`');
+
+    std::array<unsigned char, 3> bytes{0x41, 0x42, 0xC0};
+    auto it2 = std::ranges::find(std::span<const unsigned char>{bytes} | decode(latin1_codec{}), U'\x00C0');
+    static_assert(!std::same_as<decltype(it2), std::ranges::dangling>);
+    CHECK(*it2 == U'\x00C0');
+}
+
+TEST_CASE("decode_view: borrowed find in a constant expression", "[decode_view]") {
+    CHECK(constify(find_through_span()) == U'\x00C0');
 }

@@ -7,7 +7,7 @@
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_WHATWG_DECODE_SELECT_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_WHATWG_DECODE_SELECT_HPP
 
-#include <beman/transcode/codec.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
 #include <beman/transcode/config.hpp>
 
 #include <beman/transcode/detail/tables/ibm866.hpp>
@@ -42,6 +42,11 @@
 #include <beman/transcode/detail/iso2022jp.hpp>
 #include <beman/transcode/detail/utf16.hpp>
 
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <type_traits>
+
+#endif
+
 namespace beman::transcoding::detail {
 
 // What a decode of C has to remember between calls, which for most codecs is
@@ -55,129 +60,142 @@ struct no_decode_state {
     friend constexpr bool operator==(const no_decode_state&, const no_decode_state&) { return true; }
 };
 
-template <codec C>
+template <whatwg::encoding C>
 struct decode_state_of {
     using type = no_decode_state;
 };
 
 template <>
-struct decode_state_of<codec::iso_2022_jp> {
+struct decode_state_of<whatwg::encoding::iso_2022_jp> {
     using type = iso2022jp_decode_state;
 };
 
 template <>
-struct decode_state_of<codec::utf_16be> {
+struct decode_state_of<whatwg::encoding::utf_16be> {
     using type = utf16_decode_state;
 };
 
 template <>
-struct decode_state_of<codec::utf_16le> {
+struct decode_state_of<whatwg::encoding::utf_16le> {
     using type = utf16_decode_state;
 };
 
 template <>
-struct decode_state_of<codec::gbk> {
+struct decode_state_of<whatwg::encoding::gbk> {
     using type = gb18030_decode_state;
 };
 
 template <>
-struct decode_state_of<codec::gb18030> {
+struct decode_state_of<whatwg::encoding::gb18030> {
     using type = gb18030_decode_state;
 };
 
 template <>
-struct decode_state_of<codec::big5> {
+struct decode_state_of<whatwg::encoding::big5> {
     using type = big5_decode_state;
 };
 
-template <codec C>
+template <whatwg::encoding C>
 using decode_state_t = decode_state_of<C>::type;
 
+// Whether a decoder of C drops a leading U+FEFF: the UTF encodings strip a
+// byte order mark from the start of the text, in decode_first, which the view
+// calls once, so the per-element decode carries no flag for it.
 //! \expos
-template <codec C>
+template <whatwg::encoding C>
+concept strips_leading_bom =
+    C == whatwg::encoding::utf_8 || C == whatwg::encoding::utf_16be || C == whatwg::encoding::utf_16le;
+
+//! \expos
+template <whatwg::encoding C>
 concept random_access_decode_codec =
-    C == codec::ibm866 || C == codec::iso_8859_2 || C == codec::iso_8859_3 || C == codec::iso_8859_4 ||
-    C == codec::iso_8859_5 || C == codec::iso_8859_6 || C == codec::iso_8859_7 || C == codec::iso_8859_8 ||
-    C == codec::iso_8859_8_i || C == codec::iso_8859_10 || C == codec::iso_8859_13 || C == codec::iso_8859_14 ||
-    C == codec::iso_8859_15 || C == codec::iso_8859_16 || C == codec::koi8_r || C == codec::koi8_u ||
-    C == codec::macintosh || C == codec::windows_874 || C == codec::windows_1250 || C == codec::windows_1251 ||
-    C == codec::windows_1252 || C == codec::windows_1253 || C == codec::windows_1254 || C == codec::windows_1255 ||
-    C == codec::windows_1256 || C == codec::windows_1257 || C == codec::windows_1258 || C == codec::x_mac_cyrillic ||
-    C == codec::x_user_defined;
+    C == whatwg::encoding::ibm866 || C == whatwg::encoding::iso_8859_2 || C == whatwg::encoding::iso_8859_3 ||
+    C == whatwg::encoding::iso_8859_4 || C == whatwg::encoding::iso_8859_5 || C == whatwg::encoding::iso_8859_6 ||
+    C == whatwg::encoding::iso_8859_7 || C == whatwg::encoding::iso_8859_8 || C == whatwg::encoding::iso_8859_8_i ||
+    C == whatwg::encoding::iso_8859_10 || C == whatwg::encoding::iso_8859_13 || C == whatwg::encoding::iso_8859_14 ||
+    C == whatwg::encoding::iso_8859_15 || C == whatwg::encoding::iso_8859_16 || C == whatwg::encoding::koi8_r ||
+    C == whatwg::encoding::koi8_u || C == whatwg::encoding::macintosh || C == whatwg::encoding::windows_874 ||
+    C == whatwg::encoding::windows_1250 || C == whatwg::encoding::windows_1251 ||
+    C == whatwg::encoding::windows_1252 || C == whatwg::encoding::windows_1253 ||
+    C == whatwg::encoding::windows_1254 || C == whatwg::encoding::windows_1255 ||
+    C == whatwg::encoding::windows_1256 || C == whatwg::encoding::windows_1257 ||
+    C == whatwg::encoding::windows_1258 || C == whatwg::encoding::x_mac_cyrillic ||
+    C == whatwg::encoding::x_user_defined;
 
-template <codec C>
-concept single_byte_codec = random_access_decode_codec<C> || C == codec::replacement;
+template <whatwg::encoding C>
+concept single_byte_codec = random_access_decode_codec<C> || C == whatwg::encoding::replacement;
 
-template <codec C>
-concept single_byte_table_codec = random_access_decode_codec<C> && C != codec::x_user_defined;
+template <whatwg::encoding C>
+concept single_byte_table_codec = random_access_decode_codec<C> && C != whatwg::encoding::x_user_defined;
 
 // The 128-entry table codec C decodes its high half with. Returned by
 // reference so single_byte_decode_one, which takes the array, can be handed
 // the result directly.
-template <codec C>
+template <whatwg::encoding C>
     requires single_byte_table_codec<C>
 consteval const char32_t (&single_byte_decode_table())[128] {
-    if constexpr (C == codec::ibm866) {
+    if constexpr (C == whatwg::encoding::ibm866) {
         return tables::ibm866;
-    } else if constexpr (C == codec::iso_8859_2) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_2) {
         return tables::iso_8859_2;
-    } else if constexpr (C == codec::iso_8859_3) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_3) {
         return tables::iso_8859_3;
-    } else if constexpr (C == codec::iso_8859_4) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_4) {
         return tables::iso_8859_4;
-    } else if constexpr (C == codec::iso_8859_5) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_5) {
         return tables::iso_8859_5;
-    } else if constexpr (C == codec::iso_8859_6) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_6) {
         return tables::iso_8859_6;
-    } else if constexpr (C == codec::iso_8859_7) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_7) {
         return tables::iso_8859_7;
-    } else if constexpr (C == codec::iso_8859_8 || C == codec::iso_8859_8_i) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_8 || C == whatwg::encoding::iso_8859_8_i) {
         return tables::iso_8859_8;
-    } else if constexpr (C == codec::iso_8859_10) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_10) {
         return tables::iso_8859_10;
-    } else if constexpr (C == codec::iso_8859_13) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_13) {
         return tables::iso_8859_13;
-    } else if constexpr (C == codec::iso_8859_14) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_14) {
         return tables::iso_8859_14;
-    } else if constexpr (C == codec::iso_8859_15) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_15) {
         return tables::iso_8859_15;
-    } else if constexpr (C == codec::iso_8859_16) {
+    } else if constexpr (C == whatwg::encoding::iso_8859_16) {
         return tables::iso_8859_16;
-    } else if constexpr (C == codec::koi8_r) {
+    } else if constexpr (C == whatwg::encoding::koi8_r) {
         return tables::koi8_r;
-    } else if constexpr (C == codec::koi8_u) {
+    } else if constexpr (C == whatwg::encoding::koi8_u) {
         return tables::koi8_u;
-    } else if constexpr (C == codec::macintosh) {
+    } else if constexpr (C == whatwg::encoding::macintosh) {
         return tables::macintosh;
-    } else if constexpr (C == codec::windows_874) {
+    } else if constexpr (C == whatwg::encoding::windows_874) {
         return tables::windows_874;
-    } else if constexpr (C == codec::windows_1250) {
+    } else if constexpr (C == whatwg::encoding::windows_1250) {
         return tables::windows_1250;
-    } else if constexpr (C == codec::windows_1251) {
+    } else if constexpr (C == whatwg::encoding::windows_1251) {
         return tables::windows_1251;
-    } else if constexpr (C == codec::windows_1252) {
+    } else if constexpr (C == whatwg::encoding::windows_1252) {
         return tables::windows_1252;
-    } else if constexpr (C == codec::windows_1253) {
+    } else if constexpr (C == whatwg::encoding::windows_1253) {
         return tables::windows_1253;
-    } else if constexpr (C == codec::windows_1254) {
+    } else if constexpr (C == whatwg::encoding::windows_1254) {
         return tables::windows_1254;
-    } else if constexpr (C == codec::windows_1255) {
+    } else if constexpr (C == whatwg::encoding::windows_1255) {
         return tables::windows_1255;
-    } else if constexpr (C == codec::windows_1256) {
+    } else if constexpr (C == whatwg::encoding::windows_1256) {
         return tables::windows_1256;
-    } else if constexpr (C == codec::windows_1257) {
+    } else if constexpr (C == whatwg::encoding::windows_1257) {
         return tables::windows_1257;
-    } else if constexpr (C == codec::windows_1258) {
+    } else if constexpr (C == whatwg::encoding::windows_1258) {
         return tables::windows_1258;
     } else {
-        static_assert(C == codec::x_mac_cyrillic, "single_byte_decode_table: codec has no single-byte table");
+        static_assert(C == whatwg::encoding::x_mac_cyrillic,
+                      "single_byte_decode_table: codec has no single-byte table");
         return tables::x_mac_cyrillic;
     }
 }
 
 // The same table as a pointer, or null for a codec that decodes its high half
 // algorithmically rather than from a table (x_user_defined).
-template <codec C>
+template <whatwg::encoding C>
 consteval const char32_t* random_access_decode_table() {
     if constexpr (single_byte_table_codec<C>)
         return single_byte_decode_table<C>();

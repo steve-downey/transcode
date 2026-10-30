@@ -4,7 +4,7 @@
 // protocol.
 //
 // This is the extension point the library offers for an encoding it does not
-// ship: satisfy `decode_codec` (and, if you want to encode, `encode_codec`),
+// ship: satisfy `text_decoder` (and, if you want to encode, `text_encoder`),
 // and the same views, error handling and bulk helpers that serve the built-in
 // WHATWG codecs serve yours.  Nothing here is special-cased for this file.
 //
@@ -19,7 +19,7 @@
 #include <beman/transcode/codec_concepts.hpp>
 #include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/decode_view.hpp>
-#include <beman/transcode/error.hpp>
+#include <beman/transcode/whatwg/error.hpp>
 
 #include <array>
 #include <cstddef>
@@ -30,7 +30,7 @@
 namespace {
 
 using beman::transcoding::decode_result;
-using beman::transcoding::whatwg_error;
+namespace whatwg = beman::transcoding::whatwg;
 
 // The upper half of the encoding, for the bytes that are a straight mapping.
 // Zero means "this byte decodes to nothing", which is how the codec reports an
@@ -46,7 +46,7 @@ inline constexpr std::array<char32_t, 64> upper_table = {
     /* 0xF8 */ U'Ã', U'ß', U'×', 0,    0,    0,    0,    0,
 };
 
-// Models `decode_codec`.  One byte in, one scalar value out, and an error for a
+// Models `text_decoder`.  One byte in, one scalar value out, and an error for a
 // byte the encoding does not define -- which the view turns into U+FFFD, or
 // into an `unexpected`, depending on which adaptor the caller reached for.
 struct fractional_codec {
@@ -77,21 +77,21 @@ constexpr decode_result fractional_codec::decode_one(I& current, [[maybe_unused]
         case 48:
             return {U'¾', {}, false}; // 48/64 = 3/4
         default:
-            return {{}, whatwg_error::invalid_byte, true};
+            return {{}, whatwg::error::invalid_byte, true};
         }
     }
 
     if (byte == 0xBF)
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
 
     const char32_t cp = upper_table[byte - 0xC0U];
     if (cp == 0)
-        return {{}, whatwg_error::invalid_byte, true};
+        return {{}, whatwg::error::invalid_byte, true};
     return {cp, {}, false};
 }
 
-static_assert(beman::transcoding::decode_codec<fractional_codec>,
-              "fractional_codec must model decode_codec to be usable with decode()");
+static_assert(beman::transcoding::text_decoder<fractional_codec>,
+              "fractional_codec must model text_decoder to be usable with decode()");
 
 // Replacement mode: an undefined byte becomes U+FFFD and decoding continues.
 constexpr std::u32string decode_all(std::span<const std::byte> input) {

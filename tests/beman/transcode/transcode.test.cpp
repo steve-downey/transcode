@@ -2,6 +2,9 @@
 
 #include <beman/transcode/transcode.hpp>
 #include <beman/transcode/transcode.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
+#include <beman/transcode/whatwg/label.hpp>
+#include <beman/transcode/whatwg/bom_sniff.hpp>
 
 #include <tests/beman/transcode/test_utilities.hpp>
 
@@ -21,59 +24,59 @@ TEST_CASE("transcode.hpp: views::null_term accessible", "[transcoding::umbrella]
     CHECK(std::ranges::distance(r) == 5);
 }
 
-TEST_CASE("transcode.hpp: whatwg_decode accessible via pipe", "[transcoding::umbrella]") {
+TEST_CASE("transcode.hpp: whatwg::decode accessible via pipe", "[transcoding::umbrella]") {
     std::vector<char> utf8{'h', 'e', 'l', 'l', 'o'};
     std::u32string    result;
-    for (char32_t cp : utf8 | whatwg_decode<codec::utf_8>)
+    for (char32_t cp : utf8 | whatwg::decode<whatwg::encoding::utf_8>)
         result.push_back(cp);
     CHECK(result == U"hello");
 }
 
-TEST_CASE("transcode.hpp: whatwg_encode accessible via pipe", "[transcoding::umbrella]") {
+TEST_CASE("transcode.hpp: whatwg::encode accessible via pipe", "[transcoding::umbrella]") {
     std::u32string src = U"hello";
     std::string    result;
-    for (char b : src | whatwg_encode<codec::utf_8>)
+    for (char b : src | whatwg::encode<whatwg::encoding::utf_8>)
         result.push_back(b);
     CHECK(result == "hello");
 }
 
-TEST_CASE("transcode.hpp: get_encoding accessible", "[transcoding::umbrella]") {
-    CHECK(get_encoding("utf-8") == codec::utf_8);
-    CHECK(get_encoding("shift_jis") == codec::shift_jis);
-    CHECK(get_encoding("unknown-xyz") == std::nullopt);
+TEST_CASE("transcode.hpp: whatwg::get_encoding accessible", "[transcoding::umbrella]") {
+    CHECK(whatwg::get_encoding("utf-8") == whatwg::encoding::utf_8);
+    CHECK(whatwg::get_encoding("shift_jis") == whatwg::encoding::shift_jis);
+    CHECK(whatwg::get_encoding("unknown-xyz") == std::nullopt);
 }
 
-TEST_CASE("transcode.hpp: sniff_encoding accessible", "[transcoding::umbrella]") {
+TEST_CASE("transcode.hpp: whatwg::bom_sniff accessible", "[transcoding::umbrella]") {
     std::vector<unsigned char> utf8_bom = {0xEF, 0xBB, 0xBF, 'h', 'i'};
-    CHECK(sniff_encoding(utf8_bom) == codec::utf_8);
+    CHECK(whatwg::bom_sniff(utf8_bom) == whatwg::encoding::utf_8);
 
     std::vector<unsigned char> no_bom = {'h', 'i'};
-    CHECK(sniff_encoding(no_bom) == std::nullopt);
+    CHECK(whatwg::bom_sniff(no_bom) == std::nullopt);
 }
 
 TEST_CASE("transcode.hpp: decode+encode round-trip via umbrella header", "[transcoding::umbrella]") {
     std::vector<char> utf8{'\xE4', '\xB8', '\xAD'};
 
     std::u32string codepoints;
-    for (char32_t cp : utf8 | whatwg_decode<codec::utf_8>)
+    for (char32_t cp : utf8 | whatwg::decode<whatwg::encoding::utf_8>)
         codepoints.push_back(cp);
     CHECK(codepoints == U"中");
 
     std::vector<char> result;
-    for (char b : codepoints | whatwg_encode<codec::utf_8>)
+    for (char b : codepoints | whatwg::encode<whatwg::encoding::utf_8>)
         result.push_back(b);
     CHECK(result == utf8);
 }
 
-TEST_CASE("transcode.hpp: consteval sniff_encoding via umbrella", "[transcoding::umbrella]") {
+TEST_CASE("transcode.hpp: consteval whatwg::bom_sniff via umbrella", "[transcoding::umbrella]") {
     constexpr std::array<unsigned char, 3> utf8_bom = {0xEF, 0xBB, 0xBF};
-    CHECK(constify(sniff_encoding(utf8_bom)) == codec::utf_8);
+    CHECK(constify(whatwg::bom_sniff(utf8_bom)) == whatwg::encoding::utf_8);
 }
 
 TEST_CASE("transcode.hpp: null_term + decode round-trip", "[transcoding::umbrella]") {
     const char*    s = "hi";
     std::u32string result;
-    for (char32_t cp : views::null_term(s) | whatwg_decode<codec::utf_8>)
+    for (char32_t cp : views::null_term(s) | whatwg::decode<whatwg::encoding::utf_8>)
         result.push_back(cp);
     CHECK(result == U"hi");
 }
