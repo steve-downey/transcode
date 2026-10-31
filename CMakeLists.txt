@@ -120,8 +120,27 @@ unset(CMAKE_REQUIRED_FLAGS)
 # The probe sets CMAKE_CXX_STANDARD rather than passing a -std flag, because the
 # standard flag CMake appends for CMAKE_CXX_STANDARD comes last and would
 # override one given in CMAKE_REQUIRED_FLAGS.
-set(_beman_transcode_saved_cxx_standard "${CMAKE_CXX_STANDARD}")
+#
+# Restoring the variable has to tell "unset" from "set to a value".  A plain
+# `cmake -S . -B build` with no toolchain file leaves CMAKE_CXX_STANDARD unset,
+# and restoring it as an empty string then gives every target an empty
+# CXX_STANDARD, which CMake rejects at generate time (the MrDocs configure in
+# docs/mrdocs.yml is one such configure).
+#
+# CMAKE_CXX_STANDARD_REQUIRED is switched off for the probe.  The toolchain
+# files set it, and with it on, a compiler without C++26 (GCC 13, which the
+# project supports) fails the try_compile at generate time instead of letting
+# the probe report "not available".
+if(DEFINED CMAKE_CXX_STANDARD)
+    set(_beman_transcode_saved_cxx_standard "${CMAKE_CXX_STANDARD}")
+endif()
+if(DEFINED CMAKE_CXX_STANDARD_REQUIRED)
+    set(_beman_transcode_saved_cxx_standard_required
+        "${CMAKE_CXX_STANDARD_REQUIRED}"
+    )
+endif()
 set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 check_cxx_source_compiles(
     "#include <version>
      #if !defined(__cpp_lib_text_encoding)
@@ -131,7 +150,20 @@ check_cxx_source_compiles(
      int main() { return std::text_encoding{std::text_encoding::id::UTF8}.mib() == std::text_encoding::id::UTF8 ? 0 : 1; }"
     BEMAN_TRANSCODE_HAS_TEXT_ENCODING
 )
-set(CMAKE_CXX_STANDARD "${_beman_transcode_saved_cxx_standard}")
+if(DEFINED _beman_transcode_saved_cxx_standard)
+    set(CMAKE_CXX_STANDARD "${_beman_transcode_saved_cxx_standard}")
+    unset(_beman_transcode_saved_cxx_standard)
+else()
+    unset(CMAKE_CXX_STANDARD)
+endif()
+if(DEFINED _beman_transcode_saved_cxx_standard_required)
+    set(CMAKE_CXX_STANDARD_REQUIRED
+        "${_beman_transcode_saved_cxx_standard_required}"
+    )
+    unset(_beman_transcode_saved_cxx_standard_required)
+else()
+    unset(CMAKE_CXX_STANDARD_REQUIRED)
+endif()
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/include/beman/transcode/config_generated.hpp.in"
