@@ -143,7 +143,9 @@ This is required so that users of `beman.transcode` can use
 
 The documentation site at <https://steve-downey.github.io/transcode/> is built
 by `.github/workflows/docs-pages.yml` on every push to `main` and assembled by
-`tools/build_site.py`.  It holds the API reference as rendered by Doxygen and
+`tools/build_site.py`.  The workflow publishes it into the `docs/` folder of
+the `gh-pages` branch, which is the folder the repository's Pages setting
+serves.  It holds the API reference as rendered by Doxygen and
 by MrDocs, the paper, and every Markdown document under `docs/` and `papers/`,
 all reachable from the index page.  To build it locally:
 
