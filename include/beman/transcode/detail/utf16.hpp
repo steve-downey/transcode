@@ -73,6 +73,8 @@ constexpr utf16_decode_result utf16_decode_one(utf16_decode_state& st, I& curren
         b1               = st.pending[1];
         st.pending_count = 0;
     } else {
+        if (current == end)
+            return {0xFFFD, whatwg::error::truncated_sequence, true};
         b0 = static_cast<unsigned char>(*current);
         ++current;
         if (current == end)

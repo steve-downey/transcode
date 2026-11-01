@@ -258,9 +258,9 @@ constexpr gb18030_decode_result gb18030_decode_one(gb18030_decode_state& st, I& 
         if (byte < 0x80)
             return {static_cast<char32_t>(byte), {}, false, {}, 0};
 
-        unsigned char buf[4];
-        buf[0]    = byte;
-        int count = 1;
+        unsigned char buf[4] = {};
+        buf[0]               = byte;
+        int count            = 1;
         while (count < 4 && current != end) {
             buf[count++] = static_cast<unsigned char>(*current);
             ++current;
