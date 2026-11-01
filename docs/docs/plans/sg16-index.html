@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>SG16 review response: living design doc -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/sg16-index.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#sg16-review-response-living-design-doc"
+id="toc-sg16-review-response-living-design-doc">SG16 review response:
+living design doc</a>
+<ul>
+<li><a href="#decisions-the-user-made-user-decisions"
+id="toc-decisions-the-user-made-user-decisions">Decisions the user made
+{#user-decisions}</a></li>
+<li><a href="#namespace-and-directory-layout-namespace-layout"
+id="toc-namespace-and-directory-layout-namespace-layout">Namespace and
+directory layout {#namespace-layout}</a></li>
+<li><a href="#rename-table-rename-table"
+id="toc-rename-table-rename-table">Rename table {#rename-table}</a></li>
+<li><a
+href="#name-collision-between-the-two-layers-collision-resolution"
+id="toc-name-collision-between-the-two-layers-collision-resolution">Name
+collision between the two layers {#collision-resolution}</a></li>
+<li><a href="#error-mode-error-mode"
+id="toc-error-mode-error-mode">Error mode {#error-mode}</a></li>
+<li><a href="#codec-contract-decode_result-decode-result-contract"
+id="toc-codec-contract-decode_result-decode-result-contract">Codec
+contract: decode_result {#decode-result-contract}</a></li>
+<li><a href="#codec-contract-encode_result-encode-result-contract"
+id="toc-codec-contract-encode_result-encode-result-contract">Codec
+contract: encode_result {#encode-result-contract}</a></li>
+<li><a href="#flushable_text_encoder-flushable-encoder"
+id="toc-flushable_text_encoder-flushable-encoder">flushable_text_encoder
+{#flushable-encoder}</a></li>
+<li><a href="#bom_aware_text_decoder-bom-aware-decoder"
+id="toc-bom_aware_text_decoder-bom-aware-decoder">bom_aware_text_decoder
+{#bom-aware-decoder}</a></li>
+<li><a href="#pluggable-view-invariants-pluggable-view-invariants"
+id="toc-pluggable-view-invariants-pluggable-view-invariants">Pluggable
+view invariants {#pluggable-view-invariants}</a></li>
+<li><a href="#codec-objects-for-the-whatwg-encodings-codec-objects"
+id="toc-codec-objects-for-the-whatwg-encodings-codec-objects">Codec
+objects for the WHATWG encodings {#codec-objects}</a></li>
+<li><a href="#single_byte_text_encoder-single-byte-encoder"
+id="toc-single_byte_text_encoder-single-byte-encoder">single_byte_text_encoder
+{#single-byte-encoder}</a></li>
+<li><a href="#stdtext_encoding-bridge-text-encoding-bridge"
+id="toc-stdtext_encoding-bridge-text-encoding-bridge">std::text_encoding
+bridge {#text-encoding-bridge}</a></li>
+<li><a href="#wording-regeneration-wording"
+id="toc-wording-regeneration-wording">Wording regeneration
+{#wording}</a></li>
+<li><a href="#paper-scope-paper-scope"
+id="toc-paper-scope-paper-scope">Paper scope {#paper-scope}</a></li>
+<li><a href="#dispatch-numbers-dispatch-numbers"
+id="toc-dispatch-numbers-dispatch-numbers">Dispatch numbers
+{#dispatch-numbers}</a></li>
+<li><a
+href="#benchmark-comparison-for-the-codec-object-switch-perf-switch"
+id="toc-benchmark-comparison-for-the-codec-object-switch-perf-switch">Benchmark
+comparison for the codec-object switch {#perf-switch}</a></li>
+<li><a href="#follow-ups-not-steps-follow-ups"
+id="toc-follow-ups-not-steps-follow-ups">Follow-ups (not steps)
+{#follow-ups}</a></li>
+</ul></li>
+</ul>
+</nav>
+<!--
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+<h1 id="sg16-review-response-living-design-doc">SG16 review response:
+living design doc</h1>
+<p>This is the durable, cross-step record for the SG16 review response
+to P4246 ("Transcoding Text Views"), revision D4246R1. This committed
+file, on branch <code>sg16-review-response</code>, is the only copy.
+Steps update it in place, in their own worktrees, and the merge carries
+the change forward.</p>
+<p>Read it <strong>by anchor only</strong>: open the section your step
+file names. Do not read it front to back.</p>
+<p>Sections marked <strong>Provisional</strong> record what was actually
+needed when the decision was made, and what would justify revisiting it.
+If a later step finds one of them inadequate, that is an amendment (see
+<code>AGENT-PROMPT.md</code>). It is not a reason to build a parallel
+version.</p>
+<hr />
+<h2 id="decisions-the-user-made-user-decisions">Decisions the user made
+{#user-decisions}</h2>
+<p>Do not relitigate these. They come from the user's brief for this
+run.</p>
+<ol type="1">
+<li>The WHATWG surface moves into a nested <code>whatwg</code> namespace
+(table below). The paper flags this as a revisitable choice about how
+many names <code>std::</code> takes.</li>
+<li><code>transcode_error_kind::{replacement, expected}</code> becomes
+<code>error_mode::{replacement, report}</code>, outside
+<code>whatwg::</code>.</li>
+<li>The library keeps its own enum and does not adopt
+<code>std::text_encoding::id</code>. It bridges both ways instead (see
+#text-encoding-bridge).</li>
+<li>Close the gaps in the pluggable layer:
+<code>flushable_text_encoder</code>, codec objects for the WHATWG
+encodings with the enum adaptors specified in terms of them, and
+<code>enable_borrowed_range</code> for <code>decode_view</code> and
+<code>encode_view</code>.</li>
+<li>The paper revision covers the renames, a "Why not text_encoding::id"
+section, the three-layer framing, the dispatch numbers, and Jonathan
+Wakely's wording defects.</li>
+<li>The rendered paper is published on gh-pages. That work is a separate
+branch off <code>main</code> and is not merged into the integration
+branch.</li>
+<li><em>(Amendment before execution.)</em> The WHATWG spec says "Each
+encoding has an associated decoder and most of them have an associated
+encoder." So the 1:1 WHATWG mapping belongs on the <strong>codec
+objects</strong>: <code>whatwg::decoder&lt;C&gt;</code> and
+<code>whatwg::encoder&lt;C&gt;</code>. It does not belong on the
+concepts. The concepts describe the generic pluggable protocol and live
+at the top level: <code>text_decoder</code>, <code>text_encoder</code>,
+<code>flushable_text_decoder</code>,
+<code>flushable_text_encoder</code>,
+<code>single_byte_text_decoder</code>,
+<code>single_byte_text_encoder</code>. Verb and noun:
+<code>whatwg::decode&lt;C&gt;</code> is
+<code>decode(whatwg::decoder&lt;C&gt;{})</code>, and
+<code>whatwg::transcode&lt;F, T&gt;</code> is
+<code>transcode(whatwg::decoder&lt;F&gt;{}, whatwg::encoder&lt;T&gt;{})</code>.
+There is <strong>no</strong> <code>transcoder&lt;F, T&gt;</code>
+type.</li>
+</ol>
+<h2 id="namespace-and-directory-layout-namespace-layout">Namespace and
+directory layout {#namespace-layout}</h2>
+<p>The project rule is that namespace nesting mirrors directory depth.
+The nested namespace <code>beman::transcoding::whatwg</code> therefore
+lives in <code>include/beman/transcode/whatwg/</code>. The top level is
+already <code>transcode/</code> mapping to <code>transcoding::</code>,
+and that mismatch is tolerated.</p>
+<ul>
+<li>Spec-facing <code>whatwg::</code> headers go in
+<code>include/beman/transcode/whatwg/*.hpp</code>. Their include guards
+are <code>INCLUDE_BEMAN_TRANSCODE_WHATWG_&lt;NAME&gt;_HPP</code>.</li>
+<li>Implementation stays in
+<code>include/beman/transcode/detail/</code>, in namespace
+<code>beman::transcoding::detail</code>, even where it serves only
+<code>whatwg::</code>. That includes the codec engines, the select
+headers, and the generated <code>detail/labels.hpp</code>. Moving detail
+code would be churn with no reader benefit.</li>
+<li>Generic plumbing stays at the top level, in
+<code>beman::transcoding</code>: <code>null_term</code>,
+<code>legacy_byte_range</code>, <code>unicode_scalar_range</code>,
+<code>iconv_*</code>, <code>error_mode</code>, and the codec-object
+layer: the codec concepts (<code>text_decoder</code>,
+<code>text_encoder</code> and their refinements, in
+<code>codec_concepts.hpp</code>), the codec results
+(<code>decode_result</code>, <code>encode_result</code>, in
+<code>codec_result.hpp</code>), <code>decode_view</code>,
+<code>encode_view</code>, <code>decode(d)</code>,
+<code>encode(e)</code>, <code>transcode(from, to)</code>, and the
+codec-object bulk helpers. The concepts describe the generic pluggable
+protocol, not WHATWG, so they sit beside the adaptors they
+constrain.</li>
+<li>Old header paths are removed, not forwarded. This is a pre-standard
+incubator and the stacked PRs rebase anyway (see #follow-ups).</li>
+</ul>
+<p>Target header map, after steps 05 and 06:</p>
+<table>
+<thead>
+<tr>
+<th>Old header</th>
+<th>New header</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>codec.hpp</code></td>
+<td><code>whatwg/encoding.hpp</code></td>
+<td><code>whatwg::encoding</code></td>
+</tr>
+<tr>
+<td><code>error.hpp</code> (part)</td>
+<td><code>whatwg/error.hpp</code></td>
+<td><code>whatwg::error</code></td>
+</tr>
+<tr>
+<td><code>error.hpp</code></td>
+<td><code>error.hpp</code></td>
+<td><code>iconv_error</code>, <code>error_mode</code></td>
+</tr>
+<tr>
+<td><code>codec_result.hpp</code></td>
+<td><code>codec_result.hpp</code> (stays at top level)</td>
+<td><code>decode_result</code>, <code>encode_result</code> (names
+unchanged; they now carry <code>whatwg::error</code>)</td>
+</tr>
+<tr>
+<td><code>codec_concepts.hpp</code></td>
+<td><code>codec_concepts.hpp</code> (stays at top level)</td>
+<td><code>text_decoder</code>, <code>text_encoder</code>,
+<code>flushable_text_decoder</code>,
+<code>single_byte_text_decoder</code> (+
+<code>flushable_text_encoder</code> in 07,
+<code>single_byte_text_encoder</code> in 11)</td>
+</tr>
+<tr>
+<td><code>label.hpp</code></td>
+<td><code>whatwg/label.hpp</code></td>
+<td><code>whatwg::get_encoding</code></td>
+</tr>
+<tr>
+<td><code>sniff.hpp</code></td>
+<td><code>whatwg/bom_sniff.hpp</code></td>
+<td><code>whatwg::bom_sniff</code></td>
+</tr>
+<tr>
+<td><code>whatwg_decode_view.hpp</code></td>
+<td><code>whatwg/decode_view.hpp</code></td>
+<td><code>whatwg::decode</code>,
+<code>whatwg::decode_or_error</code></td>
+</tr>
+<tr>
+<td><code>whatwg_encode_view.hpp</code></td>
+<td><code>whatwg/encode_view.hpp</code></td>
+<td><code>whatwg::encode</code>,
+<code>whatwg::encode_or_error</code></td>
+</tr>
+<tr>
+<td><code>transcode_view.hpp</code> (part)</td>
+<td><code>whatwg/transcode_view.hpp</code></td>
+<td><code>whatwg::transcode&lt;From, To&gt;</code></td>
+</tr>
+<tr>
+<td><code>transcode_view.hpp</code></td>
+<td><code>transcode_view.hpp</code></td>
+<td><code>transcode(from, to)</code> (was
+<code>pluggable_transcode</code>)</td>
+</tr>
+<tr>
+<td><code>transcode_string.hpp</code></td>
+<td><code>whatwg/transcode_string.hpp</code></td>
+<td><code>whatwg::transcode_string</code>,
+<code>whatwg::has_encoder</code></td>
+</tr>
+<tr>
+<td><code>bulk_transcode.hpp</code> (part)</td>
+<td><code>whatwg/bulk.hpp</code></td>
+<td><code>whatwg::decode_to&lt;C&gt;</code> and friends</td>
+</tr>
+<tr>
+<td><code>bulk_transcode.hpp</code></td>
+<td><code>bulk_transcode.hpp</code></td>
+<td><code>decode_to(d, r)</code> and friends (codec objects)</td>
+</tr>
+<tr>
+<td>(new, 08)</td>
+<td><code>whatwg/decoder.hpp</code></td>
+<td><code>whatwg::decoder&lt;C&gt;</code></td>
+</tr>
+<tr>
+<td>(new, 10)</td>
+<td><code>whatwg/encoder.hpp</code></td>
+<td><code>whatwg::encoder&lt;C&gt;</code></td>
+</tr>
+<tr>
+<td>(new, 14)</td>
+<td><code>whatwg/text_encoding.hpp</code></td>
+<td><code>std::text_encoding::id</code> bridge</td>
+</tr>
+</tbody>
+</table>
+<p>Every header added or moved must also be updated in three places:
+<code>include/beman/transcode/CMakeLists.txt</code>
+(<code>BEMAN_TRANSCODE_HEADERS</code>, which
+<code>tools/tests/test_installed_headers.py</code> enforces), the
+synopsis region of <code>transcode.hpp</code> if the header is
+spec-facing, and <code>docs/wording-outline.md</code>.</p>
+<h2 id="rename-table-rename-table">Rename table {#rename-table}</h2>
+<p>This is the single table every step uses. Template parameter names
+(<code>C</code> for an encoding, <code>E</code> for the error mode,
+<code>Codec</code> for a codec object) do not change.</p>
+<table>
+<thead>
+<tr>
+<th>Old</th>
+<th>New</th>
+<th>Step</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>transcode_error_kind</code></td>
+<td><code>error_mode</code></td>
+<td>04</td>
+</tr>
+<tr>
+<td><code>transcode_error_kind::replacement</code></td>
+<td><code>error_mode::replacement</code></td>
+<td>04</td>
+</tr>
+<tr>
+<td><code>transcode_error_kind::expected</code></td>
+<td><code>error_mode::report</code></td>
+<td>04</td>
+</tr>
+<tr>
+<td><code>codec</code> (enum class)</td>
+<td><code>whatwg::encoding</code> (enumerators unchanged)</td>
+<td>05</td>
+</tr>
+<tr>
+<td><code>whatwg_error</code></td>
+<td><code>whatwg::error</code></td>
+<td>05</td>
+</tr>
+<tr>
+<td><code>decode_result</code> / <code>encode_result</code></td>
+<td>unchanged, top level (the codec protocol is generic); the
+<code>error</code> member is typed <code>whatwg::error</code></td>
+<td>05</td>
+</tr>
+<tr>
+<td><code>decode_codec</code></td>
+<td><code>text_decoder</code></td>
+<td>05</td>
+</tr>
+<tr>
+<td><code>encode_codec</code></td>
+<td><code>text_encoder</code></td>
+<td>05</td>
+</tr>
+<tr>
+<td><code>flushable_decode_codec</code></td>
+<td><code>flushable_text_decoder</code></td>
+<td>05</td>
+</tr>
+<tr>
+<td><code>random_access_decode_codec_type</code></td>
+<td><code>single_byte_text_decoder</code></td>
+<td>05</td>
+</tr>
+<tr>
+<td><code>get_encoding</code></td>
+<td><code>whatwg::get_encoding</code></td>
+<td>05</td>
+</tr>
+<tr>
+<td><code>sniff_encoding</code></td>
+<td><code>whatwg::bom_sniff</code></td>
+<td>05</td>
+</tr>
+<tr>
+<td><code>whatwg_decode&lt;C&gt;</code> /
+<code>whatwg_decode_or_error&lt;C&gt;</code></td>
+<td><code>whatwg::decode&lt;C&gt;</code> /
+<code>whatwg::decode_or_error&lt;C&gt;</code></td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>whatwg_encode&lt;C&gt;</code> /
+<code>whatwg_encode_or_error&lt;C&gt;</code></td>
+<td><code>whatwg::encode&lt;C&gt;</code> /
+<code>whatwg::encode_or_error&lt;C&gt;</code></td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>whatwg_decode_view</code> /
+<code>random_access_whatwg_decode_view</code> /
+<code>whatwg_decode_closure</code></td>
+<td><code>whatwg::decode_view</code> /
+<code>whatwg::random_access_decode_view</code> /
+<code>whatwg::decode_closure</code>. Interim only: deleted in 09</td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>whatwg_encode_view</code> /
+<code>random_access_whatwg_encode_view</code> /
+<code>whatwg_encode_closure</code></td>
+<td><code>whatwg::encode_view</code> / ... Interim only: deleted in
+12</td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>*_or_error_view</code>, <code>*_or_error_closure</code>
+compatibility aliases (WHATWG and pluggable)</td>
+<td>deleted. Spell the view with <code>error_mode::report</code>
+instead</td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>transcode&lt;From, To&gt;</code> /
+<code>transcode_closure</code></td>
+<td><code>whatwg::transcode&lt;From, To&gt;</code> /
+<code>whatwg::transcode_closure</code></td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>pluggable_transcode(from, to)</code></td>
+<td><code>transcode(from, to)</code>. The closure type is renamed
+<code>transcode_closure</code> (step 19; the name was free once
+<code>whatwg::transcode_closure</code> went in step 13). It is not named
+in the synopsis: <code>decode</code>, <code>decode_or_error</code>,
+<code>encode</code>, <code>encode_or_error</code> and
+<code>transcode(from, to)</code> are declared with a deduced
+<code>auto</code> return type, which renders as <code>auto</code>, and
+their clauses say <code>$see below$</code></td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>transcode_string(...)</code> (both overloads)</td>
+<td><code>whatwg::transcode_string(...)</code></td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>has_whatwg_encoder(codec)</code></td>
+<td><code>whatwg::has_encoder(whatwg::encoding)</code></td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>decode_to&lt;C&gt;</code>,
+<code>encode_to&lt;C, Container&gt;</code>,
+<code>decode_into&lt;C&gt;</code>,
+<code>encode_into&lt;C&gt;</code></td>
+<td><code>whatwg::decode_to&lt;C&gt;</code> and so on</td>
+<td>06</td>
+</tr>
+<tr>
+<td><code>decode_view</code>, <code>encode_view</code>,
+<code>random_access_decode_view</code>, <code>decode(codec)</code>,
+<code>decode_or_error(codec)</code>, <code>encode(codec)</code>,
+<code>encode_or_error(codec)</code>, <code>decode_to(codec, r)</code>
+and friends</td>
+<td>unchanged, in <code>beman::transcoding</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>(new)</td>
+<td><code>flushable_text_encoder</code></td>
+<td>07</td>
+</tr>
+<tr>
+<td>(new)</td>
+<td><code>whatwg::decoder&lt;C&gt;</code> (class template per encoding;
+models <code>text_decoder</code>)</td>
+<td>08</td>
+</tr>
+<tr>
+<td>(new)</td>
+<td><code>whatwg::encoder&lt;C&gt;</code> (constrained class template;
+exists only where <code>whatwg::has_encoder(C)</code>; models
+<code>text_encoder</code>)</td>
+<td>10</td>
+</tr>
+<tr>
+<td>(new)</td>
+<td><code>single_byte_text_encoder</code>,
+<code>random_access_encode_view</code></td>
+<td>11</td>
+</tr>
+<tr>
+<td>(new)</td>
+<td><code>whatwg::get_encoding(std::text_encoding::id)</code>,
+<code>whatwg::to_text_encoding_id(whatwg::encoding)</code></td>
+<td>14</td>
+</tr>
+</tbody>
+</table>
+<p>Docs prose follows the table. Write "report mode" for
+<code>error_mode::report</code>, and "the <code>whatwg::encoding</code>
+enumeration" where the old text said "the codec enumeration".</p>
+<h2 id="name-collision-between-the-two-layers-collision-resolution">Name
+collision between the two layers {#collision-resolution}</h2>
+<p><strong>Provisional.</strong> The user asked for this to be resolved
+explicitly.</p>
+<p>Enum-keyed adaptors are <strong>variable templates in
+<code>whatwg::</code></strong> (<code>whatwg::decode&lt;C&gt;</code>,
+<code>whatwg::encode&lt;C&gt;</code>,
+<code>whatwg::transcode&lt;From, To&gt;</code>). Codec-object adaptors
+are <strong>function templates in
+<code>beman::transcoding</code></strong> (<code>decode(d)</code>,
+<code>encode(e)</code>, <code>transcode(from, to)</code>).</p>
+<ul>
+<li>They cannot share a namespace. A variable template and a function
+template cannot have the same name in one scope, and that is why
+<code>pluggable_transcode</code> becomes
+<code>transcode(from, to)</code> one level up rather than an overload
+beside <code>whatwg::transcode&lt;From, To&gt;</code>.</li>
+<li>Inside <code>namespace whatwg</code>, an unqualified
+<code>decode</code>, <code>encode</code> or <code>transcode</code> finds
+the <code>whatwg::</code> variable template. Implementation code in
+<code>whatwg::</code> that means the codec-object adaptor writes
+<code>transcoding::decode(...)</code>.</li>
+<li>A program that applies <code>using namespace</code> to both
+namespaces gets an ambiguity on unqualified <code>decode</code>. Tests
+and examples use <code>using namespace beman::transcoding;</code> and
+spell <code>whatwg::decode&lt;...&gt;</code> qualified. Never
+use-directive <code>whatwg</code>.</li>
+<li>The paper reports this under the namespace/landgrab discussion (step
+18). Revisit if SG16 or LEWG prefers distinct names, such as
+<code>decode_with(d)</code>.</li>
+</ul>
+<h2 id="error-mode-error-mode">Error mode {#error-mode}</h2>
+<p><code>enum class error_mode { replacement, report };</code> lives in
+<code>error.hpp</code>, at the top level.</p>
+<ul>
+<li>In <code>replacement</code> mode, a decoding error yields U+FFFD,
+ill-formed UTF-32 is replaced with U+FFFD before encoding, and an
+unencodable scalar yields <code>'?'</code> or the encoder's replacement
+bytes (see #encode-result-contract).</li>
+<li>In <code>report</code> mode, the value type is
+<code>expected&lt;T, whatwg::error&gt;</code>.</li>
+</ul>
+<h2 id="codec-contract-decode_result-decode-result-contract">Codec
+contract: decode_result {#decode-result-contract}</h2>
+<p><strong>Done, step 08.</strong> <code>decode_result</code> gains a
+trailing, defaulted <code>bool is_empty{false}</code>. It says the
+decoder consumed input but produced no scalar value. The WHATWG cases
+are an ISO-2022-JP escape sequence at the end of the input, and a UTF
+byte order mark with nothing after it (returned by
+<code>decode_first</code>, see #bom-aware-decoder).
+<code>decode_view::iterator::load()</code> loops: at the end of the
+input it flushes (an engaged result with <code>is_empty</code> ends the
+range like <code>nullopt</code>), otherwise it calls
+<code>decode_one</code> and goes round again on an <code>is_empty</code>
+result. Existing three-member brace-initialisation keeps compiling.
+Revisit if a consumer needs to distinguish "nothing yet, need more
+input" from "nothing, by design".</p>
+<p><code>flush()</code> is called when the input is exhausted. It is
+called again after each engaged result, until it returns
+<code>nullopt</code>. That is what <code>decode_view</code> has always
+done, and step 07 corrects the docblock that said "called once".</p>
+<h2 id="codec-contract-encode_result-encode-result-contract">Codec
+contract: encode_result {#encode-result-contract}</h2>
+<p><strong>Done, step 10.</strong> When <code>is_error</code> is true
+and <code>count &gt; 0</code>, <code>bytes[0..count)</code> is the
+encoder's own replacement for the unencodable scalar, and replacement
+mode yields those bytes instead of <code>'?'</code>. ISO-2022-JP needs
+this, because its replacement carries the escape back to ASCII. A result
+with <code>is_error</code> true and <code>count == 0</code> still means
+<code>'?'</code>, so existing custom encoders are unaffected. Report
+mode yields one <code>unexpected</code> element either way.
+<code>encode_view::iterator::load()</code> implements it (the bytes are
+loaded as for a success when
+<code>E == replacement &amp;&amp; count &gt; 0</code>), and the
+<code>encode_result</code> and <code>encode_view</code> remarks say
+so.</p>
+<h2 id="flushable_text_encoder-flushable-encoder">flushable_text_encoder
+{#flushable-encoder}</h2>
+<p><strong>Done, step 07.</strong> This mirrors
+<code>flushable_text_decoder</code>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> C<span class="op">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">concept</span> flushable_text_encoder <span class="op">=</span> text_encoder<span class="op">&lt;</span>C<span class="op">&gt;</span> <span class="op">&amp;&amp;</span> <span class="kw">requires</span><span class="op">(</span>C<span class="op">&amp;</span> c<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span> c<span class="op">.</span>flush<span class="op">()</span> <span class="op">}</span> <span class="op">-&gt;</span> <span class="bu">std::</span>same_as<span class="op">&lt;</span><span class="bu">std::</span>optional<span class="op">&lt;</span>encode_result<span class="op">&gt;&gt;;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
+<p><code>encode_view</code> calls <code>flush()</code> at the end of
+input, emits its bytes, and calls it again until it returns
+<code>nullopt</code>. The first real consumer is
+<code>whatwg::encoder&lt;encoding::iso_2022_jp&gt;</code> in step 10.
+Until then, the only consumer is the toy
+<code>shift_state_encoder</code> in
+<code>tests/beman/transcode/encode_view.test.cpp</code>. An engaged
+result with <code>count == 0</code> and no error is treated as "owes
+nothing" (the view finishes), so a buggy codec cannot loop forever. An
+error result from <code>flush()</code> follows the
+<code>encode_one</code> rule (step 19): in replacement mode its
+<code>bytes[0, count)</code> are yielded, or <code>'?'</code> if
+<code>count == 0</code>; in report mode it is one
+<code>unexpected</code> element. Both <code>flush()</code> docblocks
+(decoder and encoder) now say "called until <code>nullopt</code>".</p>
+<h2 id="bom_aware_text_decoder-bom-aware-decoder">bom_aware_text_decoder
+{#bom-aware-decoder}</h2>
+<p><strong>Provisional, step 09 (amendment 09, name
+approved).</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> C<span class="op">&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">concept</span> bom_aware_text_decoder <span class="op">=</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    text_decoder<span class="op">&lt;</span>C<span class="op">&gt;</span> <span class="op">&amp;&amp;</span> <span class="kw">requires</span><span class="op">(</span>C<span class="op">&amp;</span> c<span class="op">,</span> <span class="at">const</span> <span class="dt">unsigned</span> <span class="dt">char</span><span class="op">*&amp;</span> iter<span class="op">,</span> <span class="at">const</span> <span class="dt">unsigned</span> <span class="dt">char</span><span class="op">*</span> sentinel<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span> c<span class="op">.</span>decode_first<span class="op">(</span>iter<span class="op">,</span> sentinel<span class="op">)</span> <span class="op">}</span> <span class="op">-&gt;</span> <span class="bu">std::</span>same_as<span class="op">&lt;</span>decode_result<span class="op">&gt;;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span></code></pre></div>
+<p><code>decode_view::iterator</code>'s constructor
+(<code>load_first()</code>, exposition-only) calls
+<code>decode_first</code> instead of <code>decode_one</code> for the
+first element of a non-empty input, once, then behaves as
+<code>operator++</code> does. It is the start-of-input twin of
+<code>flushable_text_decoder</code>'s <code>flush()</code> at the end.
+It exists so that once-only behaviour (the UTF byte order mark) stays
+out of the per-element path: the generic view then decodes as fast as
+the deleted hand-specialized WHATWG views did. Revisit if SG16 or LEWG
+would rather the BOM rule live in the adaptor
+(<code>whatwg::decode&lt;C&gt;</code> as BOM-strip plus
+<code>decode(decoder)</code>, which would break
+"<code>whatwg::decode&lt;C&gt;</code> is
+<code>decode(whatwg::decoder&lt;C&gt;{})</code>").</p>
+<h2 id="pluggable-view-invariants-pluggable-view-invariants">Pluggable
+view invariants {#pluggable-view-invariants}</h2>
+<ul>
+<li><p><strong>Hot-path rule (amendment 09).</strong> The per-element
+path of a codec-object view (<code>load()</code> and the codec's
+<code>decode_one</code>/<code>encode_one</code>) carries no once-only
+test: start-of-input behaviour goes in an optional hook called once
+(<code>decode_first</code>), end-of-input behaviour in
+<code>flush()</code>. No compiler-specific attribute
+(<code>[[gnu::always_inline]]</code>, <code>__attribute__</code>) or
+macro goes on a declaration in a specification header: specgen renders
+attributes verbatim into the wording. Measured with
+<code>tmp/plan/ir-bench/ir-compare.sh</code>.</p></li>
+<li><p><strong>Result-copy rule (amendment 12).</strong> A codec's
+per-element <code>encode_result</code> reaches the view's buffer in
+exactly one copy, byte by byte and bounded by <code>count</code>,
+written as a compile-time unrolled sequence (the
+<code>index_sequence</code> fold in
+<code>encode_view::iterator::load()</code>). GCC 16 spills the result to
+the stack on any of: a second copy (a <code>whatwg::encoder</code>
+converting a per-codec result struct into <code>encode_result</code>), a
+whole-array copy (it then materializes the zeroed bytes past
+<code>count</code>), a loop bounded by the runtime <code>count</code>
+(it becomes a call to <code>memcpy</code>), a <code>std::array</code>
+buffer, or storing the <code>encode_result</code> itself in the
+iterator. So the <code>detail::*_encode_one</code> functions return
+<code>encode_result</code> directly and
+<code>whatwg::encoder::encode_one</code> returns their prvalue. None of
+this changes a declaration in a specification header.</p></li>
+<li><p>The views and their iterators hold the codec as
+<code>[[no_unique_address]] Codec</code>, so a stateless codec costs no
+storage (steps 07 and 08; step 19 completed it:
+<code>encode_view::codec_</code> and both
+<code>random_access_decode_view</code> members).</p></li>
+<li><p>Iterator <code>operator==</code> also compares the codec (and,
+for decode, the loaded value) when
+<code>std::equality_comparable&lt;Codec&gt;</code>. Two iterators at the
+same byte position with different codec state are different positions
+(steps 07 and 08).</p></li>
+<li><p><code>enable_borrowed_range</code> is
+<code>borrowed_range&lt;R&gt;</code> for <code>decode_view</code>,
+<code>random_access_decode_view</code>, <code>encode_view</code>, and,
+from step 11, <code>random_access_encode_view</code> (step 03). This is
+sound because each iterator holds its own copy of the codec.</p></li>
+<li><p><code>decode(d)</code> selects
+<code>random_access_decode_view</code> when <code>d</code> models
+<code>single_byte_text_decoder</code> and the base is random-access.
+<code>encode(e)</code> selects <code>random_access_encode_view</code>
+when <code>e</code> models <code>single_byte_text_encoder</code> (step
+11).</p></li>
+</ul>
+<h2 id="codec-objects-for-the-whatwg-encodings-codec-objects">Codec
+objects for the WHATWG encodings {#codec-objects}</h2>
+<p><strong>Decoder done in step 08; encoder done in step 10 (no
+<code>encode_byte</code> yet, step 11).</strong></p>
+<ul>
+<li><code>whatwg::decoder&lt;C&gt;</code>
+(<code>whatwg/decoder.hpp</code>) is defined for every
+<code>whatwg::encoding</code>. It models <code>text_decoder</code>, and
+it models <code>single_byte_text_decoder</code> exactly when
+<code>detail::random_access_decode_codec&lt;C&gt;</code>. It models
+<code>flushable_text_decoder</code> exactly when the encoding keeps
+state between calls (UTF-16BE/LE, GBK/gb18030, Big5, ISO-2022-JP). It is
+<code>equality_comparable</code>. The UTF decoders (exposition-only
+concept <code>detail::strips_leading_bom&lt;C&gt;</code>, rendered
+<code>$strips-leading-bom$</code>) also model
+<code>bom_aware_text_decoder</code>: their <code>decode_first</code>
+drops one leading U+FEFF, and <code>decode_one</code> never does. There
+is no "at start" flag: step 08's <code>bom_</code> member and
+<code>detail::leading_bom_state_t</code> were removed in step 09
+(amendment 09), because testing the flag on every element cost UTF-16
+decode +21% (gcc-16) to +83% (clang-20) in instructions.
+<code>decode_one</code> is the per-encoding dispatch, and
+<code>flush()</code> runs it over an empty range.</li>
+<li><code>whatwg::encoder&lt;C&gt;</code>
+(<code>whatwg/encoder.hpp</code>) exists only where
+<code>whatwg::has_encoder(C)</code>: it is a <strong>constrained primary
+template</strong>
+(<code>requires detail::whatwg_encode_codec&lt;C&gt;</code>). It is not
+a <code>static_assert</code> in the body, and it is not an absent
+specialization, so
+<code>requires { typename whatwg::encoder&lt;C&gt;; }</code> detects it,
+and naming it for a decode-only encoding is ill-formed (negative test,
+step 10). The friendly "WHATWG does not define an encoder" diagnostic,
+which the existing negative tests match, stays on the adaptors
+<code>whatwg::encode&lt;C&gt;</code> and
+<code>whatwg::transcode&lt;F, T&gt;</code>, through a
+<code>detail::</code> helper that <code>static_assert</code>s before
+naming <code>whatwg::encoder&lt;C&gt;</code> (steps 12 and 13). It
+models <code>text_encoder</code>, models
+<code>single_byte_text_encoder</code> for the single-byte encodings
+(step 11), and models <code>flushable_text_encoder</code> for
+ISO-2022-JP. Structure as built: one class template;
+<code>encode_one</code> is <code>if constexpr</code> dispatch over
+<code>C</code> (copied from
+<code>whatwg::encode_view::iterator::load()</code>, which step 12
+deletes), with
+<code>[[no_unique_address]] detail::encode_state_t&lt;C&gt; state_</code>
+(empty except for ISO-2022-JP) and a <code>flush()</code> constrained to
+<code>C == encoding::iso_2022_jp</code>. There is no once-only flag.
+Since step 12 (amendment 12) the <code>detail::*_encode_one</code>
+functions return <code>encode_result</code> themselves (the per-codec
+<code>*_encode_result</code> structs are gone), <code>encode_one</code>
+returns them unchanged, and <code>encode_byte</code> reads the reverse
+index straight into its <code>std::optional&lt;unsigned char&gt;</code>
+rather than through <code>single_byte_encode_one</code>'s
+<code>{byte, is_error}</code> pair. The negative tests are
+<code>whatwg_encoder_reject_fail</code> (naming
+<code>encoder&lt;utf_16be&gt;</code>) and
+<code>whatwg_encoder_flush_reject_fail</code>.</li>
+<li>Done in step 09 for decode (step 12 for encode):
+<code>whatwg::decode&lt;C&gt;</code> is
+<code>transcoding::decode(whatwg::decoder&lt;C&gt;{})</code>,
+<code>whatwg::decode_or_error&lt;C&gt;</code> is
+<code>transcoding::decode_or_error(whatwg::decoder&lt;C&gt;{})</code>,
+and the encode side is the same. The WHATWG view classes are gone. Range
+properties come from the codec-object views.</li>
+<li>After step 13, <code>whatwg::transcode&lt;From, To&gt;</code> is
+<code>transcoding::transcode(whatwg::decoder&lt;From&gt;{}, whatwg::encoder&lt;To&gt;{})</code>,
+and <code>transcode(from, to)</code> mixes library codec objects with
+program-defined ones. There is no <code>transcoder&lt;F, T&gt;</code>
+type (user decision).</li>
+<li>The sentence to aim for in the paper and wording:
+"<code>whatwg::decoder&lt;C&gt;</code> models
+<code>text_decoder</code>."</li>
+</ul>
+<h2
+id="single_byte_text_encoder-single-byte-encoder">single_byte_text_encoder
+{#single-byte-encoder}</h2>
+<p><strong>Provisional; implemented in step 11</strong>
+(<code>codec_concepts.hpp</code>, <code>random_access_encode_view</code>
+in <code>encode_view.hpp</code>,
+<code>whatwg::encoder::encode_byte</code> for the single-byte encodings;
+<code>encode(e)</code> selects the view when the base is random access).
+The wording omits <code>random_access_encode_view</code> with
+<code>\omit</code>, and its const
+<code>begin</code>/<code>end</code>/<code>size</code> definitions carry
+their own <code>\omit</code> because specgen otherwise attributes them
+to <code>whatwg::random_access_encode_view</code>, which has the same
+unqualified name until step 12 deletes it. This is added only so that
+<code>whatwg::encode&lt;C&gt;</code> keeps
+<code>random_access_range</code> for the single-byte encodings once it
+is defined in terms of <code>encode(whatwg::encoder&lt;C&gt;{})</code>.
+It requires
+<code>c.encode_byte(char32_t scalar) -&gt; std::optional&lt;unsigned char&gt;</code>,
+where <code>nullopt</code> means unencodable. Revisit, and possibly drop
+it along with random-access encode, if SG16 or LEWG object to the extra
+public name.</p>
+<h2 id="stdtext_encoding-bridge-text-encoding-bridge">std::text_encoding
+bridge {#text-encoding-bridge}</h2>
+<p><strong>Final, step 14.</strong> Header
+<code>whatwg/text_encoding.hpp</code>, in the
+<code>[transcode.whatwg.label]</code> clause. The probe is
+<code>BEMAN_TRANSCODE_HAS_TEXT_ENCODING</code> in the top-level
+<code>CMakeLists.txt</code> (it sets <code>CMAKE_CXX_STANDARD 26</code>
+for the probe); the test target
+<code>beman.transcode.tests.text_encoding</code> and the example are
+built as C++26 only when it passes.</p>
+<p>Findings, asserted in <code>text_encoding.test.cpp</code> (nothing
+invented):</p>
+<ul>
+<li><p><strong>Encodings with no id: <code>replacement</code>,
+<code>x_user_defined</code>, <code>x_mac_cyrillic</code>.</strong> The
+third is the one the user did not expect; its labels are not IANA
+names.</p></li>
+<li><p>The round trip
+<code>get_encoding(*to_text_encoding_id(e)) == e</code> holds for every
+other encoding, with no exceptions.</p></li>
+<li><p><strong>Revised by step 14a (user decision, 2026-10-29).</strong>
+<code>to_text_encoding_id(e)</code> is
+<code>std::text_encoding(name(e)).mib()</code>, where
+<code>name(e)</code> is the Encoding Standard's canonical name, and
+<code>nullopt</code> when that is <code>id::other</code> or
+<code>id::unknown</code>. Step 14 had returned the first label, in
+alphabetical label-table order, that is a registered name, which gave
+aliases (the <code>windows_1252</code> entry came back as an ASCII
+alias, <code>utf_16le</code> as a UCS-2 alias). IANA registers the
+Encoding Standard's own names, so the by-name rule stays 1:1 with the
+spec. Checked on GCC 16 libstdc++:</p>
+<table>
+<thead>
+<tr>
+<th>WHATWG name</th>
+<th>mib</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UTF-8</code></td>
+<td>106</td>
+</tr>
+<tr>
+<td><code>windows-1252</code></td>
+<td>2252</td>
+</tr>
+<tr>
+<td><code>UTF-16LE</code> / <code>UTF-16BE</code></td>
+<td>1014 / 1013</td>
+</tr>
+<tr>
+<td><code>GBK</code> / <code>gb18030</code></td>
+<td>113 / 114</td>
+</tr>
+<tr>
+<td><code>ISO-8859-8</code> / <code>ISO-8859-8-I</code></td>
+<td>11 / 85</td>
+</tr>
+<tr>
+<td><code>Big5</code>, <code>EUC-JP</code>, <code>ISO-2022-JP</code>,
+<code>Shift_JIS</code>, <code>EUC-KR</code></td>
+<td>2026, 18, 39, 17, 38</td>
+</tr>
+<tr>
+<td><code>IBM866</code>, <code>KOI8-R</code>, <code>KOI8-U</code>,
+<code>macintosh</code>, <code>windows-874</code></td>
+<td>2086, 2084, 2088, 2027, 2109</td>
+</tr>
+<tr>
+<td><code>x-mac-cyrillic</code></td>
+<td>none (<code>other</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The names come from <code>detail::name_table</code>, emitted by
+<code>tools/generate_labels.py</code> next to <code>label_table</code>
+(the label table cannot say which label is the canonical name).
+<code>get_encoding(id)</code> is unchanged and maps
+<code>id::ISOLatin1</code>, <code>id::windows1252</code> and
+<code>id::ASCII</code> all to <code>windows_1252</code>.</p></li>
+<li><p>Example output on Linux (WSL2) x86-64, GCC 16.2, glibc 2.39:
+<code>WHATWG shift_jis: U+005C U+007E</code> and
+<code>iconv Shift_JIS  : U+00A5 U+203E</code>.</p></li>
+</ul>
+<p>Original plan, for reference:</p>
+<ul>
+<li><code>constexpr std::optional&lt;whatwg::encoding&gt; whatwg::get_encoding(std::text_encoding::id id) noexcept;</code>
+applies the WHATWG label lookup to
+<code>std::text_encoding{id}.name()</code> and then to each of its
+<code>aliases()</code>, and returns the first hit. So
+<code>id::ISOLatin1</code> maps to <code>windows_1252</code>, because
+its aliases include <code>latin1</code> and <code>ISO-8859-1</code>.
+<code>id::other</code> and <code>id::unknown</code> map to
+<code>nullopt</code>.</li>
+<li><code>constexpr std::optional&lt;std::text_encoding::id&gt; whatwg::to_text_encoding_id(whatwg::encoding e) noexcept;</code>
+tries each WHATWG label of <code>e</code> with
+<code>std::text_encoding</code>'s name lookup and returns the first
+registered id. <code>replacement</code> and <code>x_user_defined</code>
+map to <code>nullopt</code>. The user expects these to be the only two.
+Step 14 verifies that per encoding and records any other here, without
+inventing a mapping.</li>
+<li>Both are compiled only
+<code>#if defined(__cpp_lib_text_encoding)</code>. <strong>GCC 16
+libstdc++ defines that macro only under <code>-std=c++26</code>, not
+<code>-std=c++23</code></strong> (verified 2026-10-28). The project
+builds as C++23, so a dedicated test target sets
+<code>CXX_STANDARD 26</code>, or the bridge has no coverage. specgen
+parses with <code>-std=c++2c</code>, so the bridge does appear in the
+wording.</li>
+<li>The example <code>examples/text_encoding_two_answers.cpp</code>
+(also C++26) decodes Shift_JIS bytes <code>5C 7E</code> through WHATWG
+and through iconv. Verified on this machine on 2026-10-28: glibc
+<code>SHIFT_JIS</code> gives U+00A5 U+203E, glibc <code>CP932</code>
+gives U+005C U+007E, and WHATWG <code>shift_jis</code> gives U+005C
+U+007E. It is an example and not a test, because the answer depends on
+the platform's iconv tables.</li>
+</ul>
+<h2 id="wording-regeneration-wording">Wording regeneration
+{#wording}</h2>
+<ul>
+<li>The wording fragments in <code>papers/wording/*.md</code> are
+generated from the header markup. Never edit them by hand.</li>
+<li>Any step that changes a header in the document extent (the root
+<code>transcode.hpp</code> or <code>null_term.hpp</code>, or anything
+included inside the <code>[transcode.syn]</code> region) runs
+<code>make wording</code> and commits the result.
+<code>make wording-check</code> and
+<code>make wording-inputs-check</code> must pass.</li>
+<li>A specgen built from <code>papers/wording/specgen-ref</code> is on
+<code>PATH</code> (<code>~/.local/bin/specgen</code>).
+<code>make wording-check</code> passed at the base commit in about 6
+seconds.</li>
+<li>Do not use <code>papers/wording/PENDING</code> to defer regeneration
+in this run.</li>
+<li><strong>specgen renders nested namespaces flat.</strong> Verified
+2026-10-28: a declaration in <code>beman::transcoding::whatwg</code>
+appears in the synopsis directly inside <code>namespace std {</code>,
+and <code>views::null_term</code> already renders as plain
+<code>null_term</code>. Fixing that is a specgen change and is out of
+scope (see #follow-ups). Step 15 adds an editor's note to the paper's
+Wording section saying which declarations are in
+<code>std::whatwg</code> (and <code>std::views</code>).</li>
+<li>specgen emits a class's own doc comment in the synopsis fragment
+when the class has no item declaration in a subclause. That is what
+produces the orphaned <em>Remarks</em> paragraphs. <strong>Resolved,
+step 15</strong>: <code>\at stable.name</code> on the class docblock
+routes the description to its clause, a <code>// \ref{...}</code> group
+header inside the class routes its members, and the docblock of an
+out-of-line member template of a class template goes <em>above</em> the
+first <code>template</code> line (between the two <code>template</code>
+lines it does not render). The synopsis fragment holds only the
+synopsis.</li>
+<li>Stable names after step 15: <code>transcode.errors</code>,
+<code>transcode.reqs</code>,
+<code>transcode.codec.{reqs,decode,decode.iterator,encode,encode.iterator}</code>,
+<code>transcode.pipeline</code>,
+<code>transcode.whatwg.{encoding,label,sniff,decoders, encoders,decode,encode}</code>,
+<code>transcode.string</code>, <code>transcode.bulk</code>,
+<code>transcode.iconv</code>, <code>transcode.iconv.iterator</code>, in
+clause order (the codec-object layer first).
+<code>[transcode.errors.mode]</code> is the table anchor for
+<code>error_mode</code>. <code>docs/wording-outline.md</code> holds the
+map.</li>
+</ul>
+<h2 id="paper-scope-paper-scope">Paper scope {#paper-scope}</h2>
+<ul>
+<li>The source of record is <code>papers/transcode-view.md</code>
+(mpark/wg21), plus the generated <code>papers/wording/*.md</code> and
+<code>papers/parts/tail.md</code>.</li>
+<li>The wg21org copy of the paper <strong>no longer exists; there is
+nothing to keep in sync.</strong> The user removed it on branch
+<code>remove-wg21org-paper</code> (off <code>origin/main</code>, not yet
+merged). That branch deletes
+<code>papers/wg21org/transcode-view.org</code>,
+<code>transcode-view.bib</code>, <code>papers/wg21org/wording/</code>
+and the transcode rules in <code>papers/wg21org/Makefile</code>, and
+rewrites the top of <code>papers/README.md</code>.
+<code>papers/wording/generate.sh</code> keeps
+<code>--backend org</code>. No step edits <code>papers/README.md</code>
+or <code>papers/wg21org/</code>, so if the orchestrator merges
+<code>main</code> into the integration branch after that branch lands,
+no conflict is expected. A conflict there means some step strayed
+outside its scope.</li>
+<li>Build:
+<code>make -C papers transcode-view.html transcode-view.pdf</code>. To
+avoid a download, seed the framework deps first:
+<code>cp -a /home/sdowney/src/steve-downey/transcode/p4246-r0/papers/wg21/deps/pandoc papers/wg21/deps/</code>
+and copy <code>csl.json</code>, <code>srefs.json</code> and
+<code>srefs.defs</code> from that worktree's
+<code>papers/wg21/data/</code>. The Python venv builds itself over the
+network. HTML took 47 s and PDF 9 s (xelatex) on 2026-10-28.</li>
+<li>The prose is Steve Downey's. Paper steps invoke the
+<code>voice</code> skill on every new or rewritten prose passage, and
+never on code, normative wording, or quotations.</li>
+</ul>
+<h2 id="dispatch-numbers-dispatch-numbers">Dispatch numbers
+{#dispatch-numbers}</h2>
+<p>These were measured in PR #128 (branch
+<code>dispatch-overhead-benchmark</code>, not on <code>main</code>).
+Step 18 uses them in "Template Parameter vs Runtime Selection".</p>
+<ul>
+<li>By-codec runtime dispatch costs about 121 instructions per call,
+regardless of encoding or input size. That figure is an upper bound,
+because it includes <code>transcode_string</code>'s wrapper.</li>
+<li>Each <code>get_encoding</code> label lookup costs about 550
+instructions.</li>
+<li>Net effect: under 1% on whole corpora, and 3-5% on 32-byte
+inputs.</li>
+</ul>
+<h2
+id="benchmark-comparison-for-the-codec-object-switch-perf-switch">Benchmark
+comparison for the codec-object switch {#perf-switch}</h2>
+<p>Steps 09 and 12 compare release-build benchmarks before and after the
+switch.</p>
+<ul>
+<li>Commands: <code>uv run cmake --preset gcc-release</code> creates
+<code>build/gcc-release/</code>, which is gitignored. Then build the
+targets <code>beman.transcode.benchmarks.whatwg</code>,
+<code>.utf</code> and <code>.pluggable</code>, and run them with the
+Catch2 tags <code>[benchmark][whatwg]</code>,
+<code>[benchmark][utf]</code> and
+<code>[benchmark][pluggable]</code>.</li>
+<li>Threshold (revised by amendment 09): the gate is <strong>instruction
+counts</strong> from <code>tmp/plan/ir-bench/ir-compare.sh</code>
+(callgrind, a value-consuming loop, the benchmark corpora), under gcc-16
+<code>-O3 -march=native</code> (the Perf configuration the paper's
+numbers come from) and clang-20 <code>-O3</code>. A decode or encode row
+that regresses by more than 10% under either is a finding. The gcc-13
+<code>-O2</code> column (the <code>gcc-release</code> preset's effective
+level; see #follow-ups) and the Catch2 wall-time tables are reported,
+not gated: wall time on these 100-1000 ns benchmarks moved +-20% between
+identical binaries, and <code>count_elements</code> discards the values,
+so it rewards a view whose table lookups the optimizer can delete.</li>
+<li>Known residual at step 09: Big5 decode +9% to +16% under gcc-16
+(about five instructions per character, a fully register-allocated loop;
+clang-20 +2%). Accepted in amendment 09 as code-layout variance, not
+abstraction cost.</li>
+<li>The before/after table goes in the commit message body. Steps record
+the base commit SHA of each comparison here:
+<ul>
+<li>step 09 base: 505359dc1fd9d032358588baf42ca3f209fe1ddc</li>
+<li>step 12 base: 17f14a9c33a33256775e10be37344ae407f5df7c</li>
+</ul></li>
+<li>Step 12 (amendment 12): every encode row is at or below the base
+under gcc-16 (-4% to -44%) and clang-20 (0% to -54%). Under gcc-13
+<code>-O2</code> (not gated) EUC-KR is +45%, EUC-JP +16%, ISO-2022-JP
++12%: GCC 13 at <code>-O2</code> calls <code>load()</code> out of line,
+the same inlining-budget effect as decode; step 12a moves the preset to
+<code>-O3</code>.</li>
+<li>From step 12a, the Catch2 wall-time tables are value-consuming and
+at a real <code>-O3</code>. The step 09 and step 12 commit tables were
+not, and are not comparable with later ones.</li>
+</ul>
+<h2 id="follow-ups-not-steps-follow-ups">Follow-ups (not steps)
+{#follow-ups}</h2>
+<p>Steps append one line each here when they discover something out of
+scope. The integration review reads this section.</p>
+<ul>
+<li>Stacked PRs #126 &lt;- #127 &lt;- #128
+(<code>label-lookup-benchmarks</code>,
+<code>label-table-string-view</code>,
+<code>dispatch-overhead-benchmark</code>) are left untouched. After this
+run they need rebasing onto the renamed surface:
+<code>benchmark/*.cpp</code> uses <code>codec::</code>,
+<code>transcode_string</code> and <code>get_encoding</code>. #127
+rewrites <code>tools/generate_labels.py</code> and
+<code>detail/labels.hpp</code> to <code>string_view</code>, and that
+collides with step 05's generator change.</li>
+<li><code>benchmark/benchmark_sink.hpp</code>'s
+<code>count_elements</code> never reads the elements. For a
+hand-specialized view GCC then deletes the table lookups, so a decode
+benchmark measures parsing (amendment 09: Shift_JIS, EUC-KR and UTF-8
+looked +36% to +144% slower through the generic view in count mode and
+were 0% to +2% with the values used). <strong>Resolved, step
+12a</strong>: <code>count_elements</code> folds every element's value
+into an accumulator published through <code>volatile_sink</code>.</li>
+<li><strong>Resolved, step 12a</strong> (CMakePresets.json;
+<code>infra/</code> untouched): the <code>gcc-release</code> preset was
+effectively <code>-O2</code>:
+<code>infra/cmake/gnu-toolchain.cmake</code> sets <code>-O3</code> in
+the <code>_INIT</code> flags and CMake appends its own
+<code>-O2 -g</code>, so the compile line is <code>-O3 -O2 -g</code>. The
+Perf configuration (<code>etc/gcc-flags.cmake</code>) is a real
+<code>-O3</code>. Under <code>-O2</code>, GCC 13 does not inline the
+codec-object chain as far, and UTF-16, Big5 and gb18030 decode are +23%
+to +78% in instructions after step 09. <code>infra/</code> is the Beman
+infrastructure subtree. Step 12a added a hidden
+<code>_release-o3-base</code> preset (cache variables
+<code>CMAKE_{C,CXX}_FLAGS_RELWITHDEBINFO=-O3 -g -DNDEBUG</code>)
+inherited by <code>gcc-release</code>, <code>gcc-release-lto</code>,
+<code>llvm-release</code> and <code>llvm-release-lto</code>. It is not
+in <code>_release-base</code> itself because the MSVC and AppleClang
+presets share that base and <code>-O3</code> is wrong for MSVC
+(<code>/O2</code>).</li>
+<li>Upstream Beman infra bug: the toolchain files'
+<code>RELWITHDEBINFO_INIT</code> approach yields <code>-O3 -O2</code>
+for every Beman library. Reporting it upstream is the user's call.</li>
+<li>The project <code>CLAUDE.md</code> "Architecture" section names the
+old headers and identifiers. Agents may not edit <code>CLAUDE.md</code>,
+so the user updates it after merge.</li>
+<li>Branch <code>remove-wg21org-paper</code> (which deletes the wg21org
+copy of the paper) is unmerged. It is independent of this series and
+touches only <code>papers/wg21org/</code> and
+<code>papers/README.md</code>, which no step edits. Merging and pushing
+it is the user's call.</li>
+<li>The paper cites PR #128 (dispatch numbers) by URL in prose; there is
+no bibliography entry. If #128 is not merged when R1 goes out, the link
+points at an open PR.</li>
+<li>specgen does not render nested namespaces (<code>whatwg::</code>,
+<code>views::</code>) in a synopsis. That needs a specgen change.</li>
+<li>The uncommitted work in
+<code>/home/sdowney/src/steve-downey/transcode/paper-pluggable-runtime</code>
+was folded in by step 02. The user decides whether to discard that
+worktree.</li>
+<li><code>make wording-validate</code> still reports 47 findings (57
+before step 15), all of one kind: a namespace qualifier
+(<code>whatwg</code>, <code>detail</code>) or a <code>detail::</code>
+entity (<code>decode_state_t</code>, <code>no_decode_state</code>,
+<code>encode_state_t</code>) that appears in rendered output but is not
+a documented entity. The <code>detail::</code> ones come from the
+<code>\constraints</code> derived from the requires-clauses of
+<code>whatwg::decoder::flush</code> and the <code>whatwg::encoder</code>
+class. Fixing them needs either specgen's nested-namespace support or an
+exposition-only name for the state test; neither is a markup-only
+change.</li>
+<li>specgen should render a <code>\seebelow</code> return type as
+<code>$see below$</code> in the synopsis. Today the five adaptor
+functions (<code>decode</code>, <code>decode_or_error</code>,
+<code>encode</code>, <code>encode_or_error</code>,
+<code>transcode(from, to)</code>) are declared <code>auto</code> to keep
+the closure types out of <code>[transcode.syn]</code>, and render as
+<code>auto</code> there, whereas variable templates declared
+<code>auto</code> render <code>$unspecified$</code>.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/sg16-index.md">docs/plans/sg16-index.md</a> at 4ab8708d6092.</footer>
+</body>
+</html>

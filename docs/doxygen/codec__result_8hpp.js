@@ -1,0 +1,5 @@
+var codec__result_8hpp =
+[
+    [ "beman::transcoding::decode_result", "structbeman_1_1transcoding_1_1decode__result.html", "structbeman_1_1transcoding_1_1decode__result" ],
+    [ "beman::transcoding::encode_result", "structbeman_1_1transcoding_1_1encode__result.html", "structbeman_1_1transcoding_1_1encode__result" ]
+];
