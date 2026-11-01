@@ -63,6 +63,16 @@ jobs:
         run: |
           source .venv/bin/activate
           make compile
+      # Optimizer warnings (-Warray-bounds, -Wmaybe-uninitialized, ...) only
+      # fire with optimization and are suppressed by sanitizer instrumentation,
+      # so neither the -O0 configs nor the Asan build above can catch them. The
+      # check target builds and tests RelWithDebInfo (-O3, no sanitizers), the
+      # config that does, with warnings as errors on by default.
+      - name: Check (optimized, warnings as errors)
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          make check
       - name: Test
         shell: bash
         run: |

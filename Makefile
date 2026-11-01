@@ -32,6 +32,26 @@ EMACS := $(shell command -v emacs 2> /dev/null)
 
 CONFIG ?= Asan
 
+# Treat compiler warnings as errors so local editing cannot introduce a new
+# warning unnoticed.  run_cmake configures the tree with the
+# CMAKE_COMPILE_WARNING_AS_ERROR property on; set COMPILE_WARNING_AS_ERROR=OFF
+# in the environment to also pass cmake's `--compile-no-warning-as-error`,
+# which makes the configure ignore that property (dependencies included).  Use
+# it where warnings legitimately vary and should not fail the build -- a broad
+# compiler matrix, or a compiler version this code has not been cleaned
+# against.  Toggling it reconfigures the tree.
+#
+# The warnings worth gating on -- -Warray-bounds, -Wmaybe-uninitialized,
+# -Wstringop-* -- come from optimization passes and are suppressed by
+# sanitizer instrumentation, so only an optimized, un-sanitized build raises
+# them: CONFIG=RelWithDebInfo, not the default Asan or any -O0 config.
+COMPILE_WARNING_AS_ERROR ?= ON
+ifeq ($(COMPILE_WARNING_AS_ERROR),ON)
+	_compile_no_werror :=
+else
+	_compile_no_werror := --compile-no-warning-as-error
+endif
+
 export
 
 ifeq ($(strip $(TOOLCHAIN)),)
@@ -73,6 +93,8 @@ define run_cmake =
 	-DCMAKE_CONFIGURATION_TYPES=$(_configuration_types) \
 	-DCMAKE_INSTALL_PREFIX=$(abspath $(INSTALL_PREFIX)) \
 	-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
+	-DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
+	$(_compile_no_werror) \
 	-DCMAKE_PREFIX_PATH=$(CURDIR)/infra/cmake \
 	-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(_cmake_top_level) \
 	-DCMAKE_C_COMPILER_LAUNCHER=ccache \
@@ -147,6 +169,16 @@ mypy: venv ## Run mypy type checker on Python tools
 
 .PHONY: test
 test: ctest_ pytest ## Rebuild and run all tests (C++ and Python)
+
+# The default test target builds Asan; check is its optimized, un-sanitized
+# sibling.  RelWithDebInfo is -O3 with no sanitizer instrumentation, the only
+# build in which the optimizer warnings worth gating on -- -Warray-bounds,
+# -Wmaybe-uninitialized, -Wstringop-* -- actually fire against the
+# warnings-as-error property.  Runs the full test cycle so a -O3 miscompile
+# surfaces too.
+.PHONY: check
+check: CONFIG=RelWithDebInfo
+check: test ## Rebuild and test the optimized, un-sanitized config (catches optimizer warnings)
 
 .PHONY: cmake
 cmake: |  $(_build_path)
