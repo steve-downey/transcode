@@ -133,10 +133,16 @@ jobs:
           name: site
           path: site
 
+      # The repository's Pages source is the gh-pages branch, folder /docs,
+      # so the site goes into that folder: what Pages serves at the root of
+      # https://steve-downey.github.io/transcode/ is gh-pages:docs/.  A site
+      # deployed to the branch root is not served at all.  If the Pages
+      # setting is ever changed to "/ (root)", drop target-folder.
       - name: Deploy to the gh-pages branch
         uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4.9.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: site
+          target-folder: docs
           clean: true
