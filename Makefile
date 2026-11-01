@@ -364,35 +364,48 @@ clean: clean-coverage
 view-coverage: ## View the coverage report
 	sensible-browser $(_build_path)/coverage/coverage.html
 
+# Benchmarks report throughput, so they default to the optimized, un-sanitized
+# config rather than the Asan default -- running a timing under -O3 plus
+# sanitizer instrumentation measures the instrumentation.  RelWithDebInfo is
+# -O3 with debug info; override CONFIG on the command line for another (Perf
+# adds -march=native -flto for the fuzzed best-case numbers).
 .PHONY: bench
+bench: CONFIG=RelWithDebInfo
 bench: compile ## Run benchmark smoke
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]"
 
 .PHONY: bench-utf
+bench-utf: CONFIG=RelWithDebInfo
 bench-utf: compile ## Run UTF-family benchmarks
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.utf "[benchmark][utf]"
 
 .PHONY: bench-whatwg
+bench-whatwg: CONFIG=RelWithDebInfo
 bench-whatwg: compile ## Run WHATWG legacy codec benchmarks
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
 
 .PHONY: bench-pluggable
+bench-pluggable: CONFIG=RelWithDebInfo
 bench-pluggable: compile ## Run pluggable codec benchmarks
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
 
 .PHONY: bench-iconv
+bench-iconv: CONFIG=RelWithDebInfo
 bench-iconv: compile ## Run iconv baseline benchmarks
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
 
 .PHONY: bench-codecvt
+bench-codecvt: CONFIG=RelWithDebInfo
 bench-codecvt: compile ## Run std::codecvt negative baseline benchmarks (skips if <codecvt> absent)
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.codecvt "[benchmark][codecvt]"
 
 .PHONY: bench-encoding-rs
+bench-encoding-rs: CONFIG=RelWithDebInfo
 bench-encoding-rs: compile ## Run encoding_rs baseline benchmarks (requires cargo; skips build if absent)
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.encoding_rs "[benchmark][encoding_rs]"
 
 .PHONY: bench-simdutf
+bench-simdutf: CONFIG=RelWithDebInfo
 bench-simdutf: compile ## Run simdutf ceiling baseline benchmarks (requires cmake -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON)
 	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.simdutf "[benchmark][simdutf]"
 
