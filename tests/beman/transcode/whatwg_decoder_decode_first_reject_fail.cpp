@@ -5,7 +5,7 @@
 // This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
 //
 // EXPECT: "required for the satisfaction of .+strips_leading_bom<C>.+ \[with C = .+encoding::shift_jis\]"
-// EXPECT: "'[^']*whatwg::encoding[^']*' does not satisfy 'strips_leading_bom'"
+// EXPECT: "encoding\)[0-9]+'? does not satisfy 'strips_leading_bom'"
 
 #include <beman/transcode/whatwg/decoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

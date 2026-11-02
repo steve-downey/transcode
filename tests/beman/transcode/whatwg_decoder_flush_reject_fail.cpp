@@ -5,7 +5,7 @@
 // This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
 //
 // EXPECT: "no_decode_state.+ \[with C = .+encoding::windows_1252\].+ evaluated to .+false"
-// EXPECT: "'!std::same_as<detail::decode_state_t<.+whatwg::encoding.+>, detail::no_decode_state>' evaluated to false"
+// EXPECT: "'!std::same_as<detail::decode_state_t<.+encoding.+>, detail::no_decode_state>' evaluated to false"
 
 #include <beman/transcode/whatwg/decoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

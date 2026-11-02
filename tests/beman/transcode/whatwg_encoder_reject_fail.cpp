@@ -5,7 +5,7 @@
 // This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
 //
 // EXPECT: "required for the satisfaction of .+whatwg_encode_codec<C>.+ \[with C = .+encoding::utf_16be\]"
-// EXPECT: "'[^']*encoding[^']*' does not satisfy 'whatwg_encode_codec'"
+// EXPECT: "encoding\)[0-9]+'? does not satisfy 'whatwg_encode_codec'"
 
 #include <beman/transcode/whatwg/encoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

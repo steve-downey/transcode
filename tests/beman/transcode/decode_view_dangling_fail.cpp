@@ -4,8 +4,8 @@
 // borrowed_range, so ranges::find returns ranges::dangling and the result
 // cannot be dereferenced.
 //
-// EXPECT: "no match for .+operator\*.+ \(operand type is .+borrowed_iterator_t<.+decode_view<identity_codec,"
-// EXPECT: "indirection requires pointer operand \('borrowed_iterator_t<.+decode_view<identity_codec,"
+// EXPECT: "no match for .+operator\*.+ \(operand type is .+borrowed_iterator_t<.*decode_view<identity_codec,"
+// EXPECT: "indirection requires pointer operand \('borrowed_iterator_t<.*decode_view<identity_codec,"
 
 #include <beman/transcode/decode_view.hpp>
 

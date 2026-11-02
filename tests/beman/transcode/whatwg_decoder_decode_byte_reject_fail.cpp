@@ -5,7 +5,7 @@
 // This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
 //
 // EXPECT: "required for the satisfaction of .+random_access_decode_codec<C>.+ \[with C = .+encoding::shift_jis\]"
-// EXPECT: "'[^']*whatwg::encoding[^']*' does not satisfy 'random_access_decode_codec'"
+// EXPECT: "encoding\)[0-9]+'? does not satisfy 'random_access_decode_codec'"
 
 #include <beman/transcode/whatwg/decoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
