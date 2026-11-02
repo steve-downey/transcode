@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// EXPECT: "required for the satisfaction of [^a-z_]+legacy_byte_range<R>.+ \[with R = std::vector<char32_t,"
+// EXPECT: "'std::vector<char32_t>[^']*' does not satisfy 'legacy_byte_range'"
 
 #include <beman/transcode/decode_view.hpp>
 #include <beman/transcode/whatwg/decoder.hpp>

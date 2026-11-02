@@ -3,6 +3,9 @@
 // Negative compile test: a type that does NOT satisfy text_encoder should fail
 // to compile when passed to encode().  The compiler diagnostic must mention
 // text_encoder (via a concept constraint failure).
+//
+// EXPECT: "required for the satisfaction of [^a-z_]+text_encoder<Codec>.+ \[with Codec = not_an_encode_codec\]"
+// EXPECT: "'not_an_encode_codec' does not satisfy 'text_encoder'"
 
 #include <beman/transcode/encode_view.hpp>
 

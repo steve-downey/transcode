@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 // NEGATIVE COMPILE TEST: Raw arrays must not satisfy transcode closure input.
-// This file must NOT compile — it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
 // The transcode adaptor explicitly rejects raw array types via a constrained
 // operator| overload with a static_assert, so that char[N] cannot silently
 // decay to a pointer and include the null terminator.
+//
+// EXPECT: "transcode: raw arrays are not valid input to transcode"
 
 #include <beman/transcode/whatwg/transcode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

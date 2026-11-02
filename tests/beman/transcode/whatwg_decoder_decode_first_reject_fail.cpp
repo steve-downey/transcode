@@ -2,7 +2,10 @@
 //
 // NEGATIVE COMPILE TEST: whatwg::decoder<C>::decode_first exists only for an
 // encoding that strips a leading byte order mark; Shift_JIS does not.
-// This file must NOT compile -- it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
+//
+// EXPECT: "required for the satisfaction of .+strips_leading_bom<C>.+ \[with C = .+encoding::shift_jis\]"
+// EXPECT: "'[^']*whatwg::encoding[^']*' does not satisfy 'strips_leading_bom'"
 
 #include <beman/transcode/whatwg/decoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

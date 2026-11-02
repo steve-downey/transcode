@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// EXPECT: "WHATWG does not define an encoder"
 
 #include <beman/transcode/whatwg/encode_view.hpp>
 #include <beman/transcode/whatwg/encode_view.hpp>

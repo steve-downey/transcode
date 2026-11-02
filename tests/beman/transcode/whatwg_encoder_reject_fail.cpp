@@ -2,7 +2,10 @@
 //
 // NEGATIVE COMPILE TEST: whatwg::encoder<C> exists only for an encoding the
 // Encoding Standard defines an encoder for; UTF-16BE has none.
-// This file must NOT compile -- it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
+//
+// EXPECT: "required for the satisfaction of .+whatwg_encode_codec<C>.+ \[with C = .+encoding::utf_16be\]"
+// EXPECT: "'[^']*encoding[^']*' does not satisfy 'whatwg_encode_codec'"
 
 #include <beman/transcode/whatwg/encoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

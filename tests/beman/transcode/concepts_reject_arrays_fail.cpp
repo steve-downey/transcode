@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 // NEGATIVE COMPILE TEST: Arrays must not satisfy legacy_byte_range.
-// This file must NOT compile — it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
 // The legacy_byte_range concept explicitly rejects array types via
 // !std::is_array_v so that raw string literals and char arrays cannot
 // silently decay to pointers and include the null terminator.
+//
+// EXPECT: "transcode: raw arrays are not valid input to decode. use beman::transcoding::views::null_term"
 
 #include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
