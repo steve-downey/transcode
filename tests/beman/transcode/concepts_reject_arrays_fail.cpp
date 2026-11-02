@@ -6,7 +6,7 @@
 // !std::is_array_v so that raw string literals and char arrays cannot
 // silently decay to pointers and include the null terminator.
 //
-// EXPECT: "transcode: raw arrays are not valid input to decode. use beman::transcoding::views::null_term"
+// EXPECT: "transcode: raw arrays are not valid input to decode; use beman::transcoding::views::null_term"
 
 #include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

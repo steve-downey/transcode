@@ -6,8 +6,12 @@
 #   cmake -DBEMAN_XFAIL_BUILD_DIR=<build dir>
 #         -DBEMAN_XFAIL_TARGET=<object library>
 #         -DBEMAN_XFAIL_CONFIG=<config or empty>
-#         -DBEMAN_XFAIL_EXPECT=<regex>
+#         -DBEMAN_XFAIL_EXPECT=<regex> | -DBEMAN_XFAIL_EXPECT_FILE=<source>
 #         -P beman-xfail-compile-driver.cmake
+#
+# The expectation is either a regex given outright, or read from the
+# `// EXPECT: "<regex>"` lines of the source when the test runs, so an edit
+# to those lines takes effect on the next run with no reconfigure.
 #
 # It builds just the target and succeeds only when the build fails and its
 # output matches the regex. The three outcomes get three distinct reports:
@@ -16,11 +20,36 @@
 
 cmake_minimum_required(VERSION 3.30...4.3)
 
-foreach(_var BEMAN_XFAIL_BUILD_DIR BEMAN_XFAIL_TARGET BEMAN_XFAIL_EXPECT)
+foreach(_var BEMAN_XFAIL_BUILD_DIR BEMAN_XFAIL_TARGET)
     if(NOT DEFINED ${_var} OR "${${_var}}" STREQUAL "")
         message(FATAL_ERROR "beman-xfail-compile-driver: ${_var} is required")
     endif()
 endforeach()
+
+if(
+    DEFINED BEMAN_XFAIL_EXPECT_FILE
+    AND NOT "${BEMAN_XFAIL_EXPECT_FILE}" STREQUAL ""
+)
+    if(DEFINED BEMAN_XFAIL_EXPECT AND NOT "${BEMAN_XFAIL_EXPECT}" STREQUAL "")
+        message(
+            FATAL_ERROR
+            "beman-xfail-compile-driver: BEMAN_XFAIL_EXPECT and BEMAN_XFAIL_EXPECT_FILE are exclusive"
+        )
+    endif()
+    include(${CMAKE_CURRENT_LIST_DIR}/beman-xfail-compile-expect.cmake)
+    beman_xfail_compile_read_expect("${BEMAN_XFAIL_EXPECT_FILE}" BEMAN_XFAIL_EXPECT)
+    if("${BEMAN_XFAIL_EXPECT}" STREQUAL "")
+        message(
+            FATAL_ERROR
+            "beman-xfail-compile-driver: no '// EXPECT: \"<regex>\"' line in ${BEMAN_XFAIL_EXPECT_FILE}"
+        )
+    endif()
+elseif(NOT DEFINED BEMAN_XFAIL_EXPECT OR "${BEMAN_XFAIL_EXPECT}" STREQUAL "")
+    message(
+        FATAL_ERROR
+        "beman-xfail-compile-driver: BEMAN_XFAIL_EXPECT or BEMAN_XFAIL_EXPECT_FILE is required"
+    )
+endif()
 
 set(_build_args
     --build
