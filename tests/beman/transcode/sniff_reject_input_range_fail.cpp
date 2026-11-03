@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 // NEGATIVE COMPILE TEST: whatwg::bom_sniff requires a forward_range.
-// This file must NOT compile — it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
 //
 // whatwg::bom_sniff reads up to three bytes and advances the iterator to do it.
 // On a single-pass range those bytes are gone, and the caller gets a range
@@ -16,6 +16,15 @@
 // iconv_transcode_view::iterator.  Declaring the category rather than
 // arranging for some requirement to fail incidentally keeps the diagnostic
 // about the thing under test.
+//
+// Both GCC and Clang tie the failure to the constraint by name -- GCC with
+// "required for the satisfaction of 'forward_range<R>'", Clang with "does not
+// satisfy 'forward_range'".  Matching the bare concept name would also match
+// its appearance in the printed candidate signature, which proves nothing about
+// which constraint failed.
+//
+// EXPECT: "required for the satisfaction of [^a-z_]+forward_range<R>.+ \[with R = .+single_pass_bytes"
+// EXPECT: "'[^']*single_pass_bytes[^']*' does not satisfy 'forward_range'"
 
 #include <beman/transcode/whatwg/bom_sniff.hpp>
 

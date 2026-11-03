@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// EXPECT: "required for the satisfaction of [^a-z_]+text_encoder<To>.+ \[with To = .+whatwg::decoder<"
+// EXPECT: "'[^']*whatwg::decoder<[^']*' does not satisfy 'text_encoder'"
 
 #include <beman/transcode/transcode_view.hpp>
 #include <beman/transcode/transcode_view.hpp>

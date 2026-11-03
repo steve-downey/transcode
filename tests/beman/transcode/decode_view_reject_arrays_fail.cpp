@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// EXPECT: "transcode: raw arrays are not valid input to decode; use beman::transcoding::views::null_term"
 
 #include <beman/transcode/decode_view.hpp>
 #include <beman/transcode/detail/table_codec.hpp>

@@ -2,7 +2,10 @@
 //
 // NEGATIVE COMPILE TEST: an encoder whose flush() returns the wrong type must
 // not satisfy flushable_text_encoder.
-// This file must NOT compile -- it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
+//
+// EXPECT: "required for the satisfaction of .+flushable_text_encoder<C>.+ \[with C = wrong_flush_encoder\]"
+// EXPECT: "'wrong_flush_encoder' does not satisfy 'flushable_text_encoder'"
 
 #include <beman/transcode/codec_concepts.hpp>
 #include <beman/transcode/codec_result.hpp>

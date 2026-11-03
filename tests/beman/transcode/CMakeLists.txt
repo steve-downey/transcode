@@ -2,6 +2,8 @@
 
 find_package(Catch2 3 REQUIRED)
 
+include(${PROJECT_SOURCE_DIR}/cmake/beman-xfail-compile.cmake)
+
 # Common include path for test_utilities.hpp (tests/beman/transcode/test_utilities.hpp)
 set(TEST_INCLUDE_DIR "${PROJECT_SOURCE_DIR}")
 
@@ -727,665 +729,178 @@ catch_discover_tests(beman.transcode.tests.iconv_bulk)
 catch_discover_tests(beman.transcode.tests.iconv_null_term)
 
 # iconv_transcode_or_error iterator is move-only (iconv_t is an uncopyable OS handle).
-add_library(
-    beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
-    OBJECT
-)
-target_sources(
-    beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
-    PRIVATE iconv_transcode_or_error_iterator_copy_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME iconv_transcode_or_error_iterator_copy_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.iconv_transcode_or_error_iterator_copy_fail
-        --config $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     iconv_transcode_or_error_iterator_copy_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "transcode: iconv_transcode_or_error iterator is move-only"
+    SOURCE iconv_transcode_or_error_iterator_copy_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # iconv_transcode iterator is move-only (iconv_t is an uncopyable OS handle).
-add_library(beman.transcode.tests.iconv_transcode_iterator_copy_fail OBJECT)
-target_sources(
-    beman.transcode.tests.iconv_transcode_iterator_copy_fail
-    PRIVATE iconv_transcode_iterator_copy_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.iconv_transcode_iterator_copy_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.iconv_transcode_iterator_copy_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME iconv_transcode_iterator_copy_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.iconv_transcode_iterator_copy_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     iconv_transcode_iterator_copy_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "transcode: iconv_transcode iterator is move-only"
+    SOURCE iconv_transcode_iterator_copy_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # ---------------------------------------------------------------------------
 # Negative compile tests: verify that constraints cause compile errors for the
 # correct reason, not just any compile error.
-# Each target is excluded from the default build and registered as a ctest test
-# that is expected to fail (WILL_FAIL), with a PASS_REGULAR_EXPRESSION that
-# confirms the failure is due to the intended constraint, not an unrelated error.
+# Each one is registered with beman_add_xfail_compile_test() from
+# cmake/beman-xfail-compile.cmake: the source becomes an OBJECT library that is
+# excluded from the default build, and the test builds just that target and
+# passes only when the build fails with output matching the source's
+# `// EXPECT: "<regex>"` lines.  Where GCC and Clang word the diagnostic
+# differently the source carries one EXPECT line per compiler.  All of them
+# carry the CTest label "xfail-compile".
 # ---------------------------------------------------------------------------
 
 # flushable_text_encoder rejects an encoder whose flush() has the wrong type
-add_library(beman.transcode.tests.flushable_encoder_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.flushable_encoder_reject_fail
-    PRIVATE flushable_encoder_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.flushable_encoder_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.flushable_encoder_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME flushable_encoder_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.flushable_encoder_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     flushable_encoder_reject_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of .+flushable_text_encoder<C>.+ \\[with C = wrong_flush_encoder\\]"
+    SOURCE flushable_encoder_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # whatwg::decoder::decode_byte is not callable for an encoding that is not single-byte
-add_library(beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail
-    PRIVATE whatwg_decoder_decode_byte_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_decoder_decode_byte_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_decoder_decode_byte_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_decoder_decode_byte_reject_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of .+random_access_decode_codec<C>.+ \\[with C = .+encoding::shift_jis\\]"
+    SOURCE whatwg_decoder_decode_byte_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # a decoder whose decode_first returns the wrong type does not model bom_aware_text_decoder
-add_library(beman.transcode.tests.bom_aware_decoder_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.bom_aware_decoder_reject_fail
-    PRIVATE bom_aware_decoder_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.bom_aware_decoder_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.bom_aware_decoder_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME bom_aware_decoder_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.bom_aware_decoder_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     bom_aware_decoder_reject_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of .+bom_aware_text_decoder<C>.+ \\[with C = wrong_first_decoder\\]"
+    SOURCE bom_aware_decoder_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # whatwg::decoder::decode_first is not callable for an encoding that does not strip a BOM
-add_library(
-    beman.transcode.tests.whatwg_decoder_decode_first_reject_fail
-    OBJECT
-)
-target_sources(
-    beman.transcode.tests.whatwg_decoder_decode_first_reject_fail
-    PRIVATE whatwg_decoder_decode_first_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_decoder_decode_first_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_decoder_decode_first_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_decoder_decode_first_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_decoder_decode_first_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_decoder_decode_first_reject_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of .+strips_leading_bom<C>.+ \\[with C = .+encoding::shift_jis\\]"
+    SOURCE whatwg_decoder_decode_first_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # whatwg::decoder::flush is not callable for an encoding that carries no decode state
-add_library(beman.transcode.tests.whatwg_decoder_flush_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.whatwg_decoder_flush_reject_fail
-    PRIVATE whatwg_decoder_flush_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_decoder_flush_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_decoder_flush_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_decoder_flush_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_decoder_flush_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_decoder_flush_reject_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "no_decode_state.+ \\[with C = .+encoding::windows_1252\\].+ evaluated to .+false"
+    SOURCE whatwg_decoder_flush_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # whatwg::encoder::encode_byte is not callable for an encoding that is not single-byte
-add_library(beman.transcode.tests.whatwg_encoder_encode_byte_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.whatwg_encoder_encode_byte_reject_fail
-    PRIVATE whatwg_encoder_encode_byte_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_encoder_encode_byte_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_encoder_encode_byte_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_encoder_encode_byte_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_encoder_encode_byte_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_encoder_encode_byte_reject_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of .+random_access_encode_codec<C>.+ \\[with C = .+encoding::shift_jis\\]"
+    SOURCE whatwg_encoder_encode_byte_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # an encode view over an encoder that is not single-byte is not random access
-add_library(beman.transcode.tests.random_access_encode_view_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.random_access_encode_view_reject_fail
-    PRIVATE random_access_encode_view_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.random_access_encode_view_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.random_access_encode_view_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME random_access_encode_view_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.random_access_encode_view_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     random_access_encode_view_reject_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of .+random_access_range<R>.+ \\[with R = .+encode_view<multibyte_encoder"
+    SOURCE random_access_encode_view_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # whatwg::encoder<C> is not defined for an encoding WHATWG gives no encoder
-add_library(beman.transcode.tests.whatwg_encoder_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.whatwg_encoder_reject_fail
-    PRIVATE whatwg_encoder_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_encoder_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_encoder_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_encoder_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_encoder_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_encoder_reject_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of .+whatwg_encode_codec<C>.+ \\[with C = .+encoding::utf_16be\\]"
+    SOURCE whatwg_encoder_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # whatwg::encoder<C>::flush is not callable for an encoding that owes nothing
-add_library(beman.transcode.tests.whatwg_encoder_flush_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.whatwg_encoder_flush_reject_fail
-    PRIVATE whatwg_encoder_flush_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_encoder_flush_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_encoder_flush_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_encoder_flush_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_encoder_flush_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_encoder_flush_reject_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "the expression .+C == .+encoding::iso_2022_jp \\[with C = .+encoding::shift_jis\\].+ evaluated to .+false"
+    SOURCE whatwg_encoder_flush_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # legacy_byte_range rejects raw arrays (char[N]) via !is_array_v
-add_library(beman.transcode.tests.concepts_reject_arrays_fail OBJECT)
-target_sources(
-    beman.transcode.tests.concepts_reject_arrays_fail
-    PRIVATE concepts_reject_arrays_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.concepts_reject_arrays_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.concepts_reject_arrays_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME concepts_reject_arrays_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.concepts_reject_arrays_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     concepts_reject_arrays_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "transcode: raw arrays are not valid input to decode; use beman::transcoding::views::null_term"
+    SOURCE concepts_reject_arrays_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # legacy_byte_range rejects unicode char types (char8_t etc.) via legacy_byte_type disjunction
-add_library(beman.transcode.tests.concepts_reject_unicode_chars_fail OBJECT)
-target_sources(
-    beman.transcode.tests.concepts_reject_unicode_chars_fail
-    PRIVATE concepts_reject_unicode_chars_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.concepts_reject_unicode_chars_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.concepts_reject_unicode_chars_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME concepts_reject_unicode_chars_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.concepts_reject_unicode_chars_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     concepts_reject_unicode_chars_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of [^a-z_]+legacy_byte_range<R>.+ \\[with R = std::vector<char8_t,"
+    SOURCE concepts_reject_unicode_chars_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # unicode_scalar_range rejects non-char32_t ranges (e.g. vector<char>)
-add_library(beman.transcode.tests.whatwg_encode_reject_char_range_fail OBJECT)
-target_sources(
-    beman.transcode.tests.whatwg_encode_reject_char_range_fail
-    PRIVATE whatwg_encode_reject_char_range_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_encode_reject_char_range_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_encode_reject_char_range_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_encode_reject_char_range_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_encode_reject_char_range_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_encode_reject_char_range_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of [^a-z_]+unicode_scalar_range<R>.+ \\[with R = std::vector<char,"
+    SOURCE whatwg_encode_reject_char_range_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # WHATWG has no UTF-16BE encoder.
-add_library(beman.transcode.tests.whatwg_encode_utf16be_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.whatwg_encode_utf16be_reject_fail
-    PRIVATE whatwg_encode_utf16be_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_encode_utf16be_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_encode_utf16be_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_encode_utf16be_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_encode_utf16be_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_encode_utf16be_reject_fail
-    PROPERTIES PASS_REGULAR_EXPRESSION "WHATWG does not define an encoder"
+    SOURCE whatwg_encode_utf16be_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # WHATWG has no UTF-16LE encoder.
-add_library(
-    beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
-    OBJECT
-)
-target_sources(
-    beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
-    PRIVATE whatwg_encode_utf16le_or_error_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_encode_utf16le_or_error_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_encode_utf16le_or_error_reject_fail
-        --config $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_encode_utf16le_or_error_reject_fail
-    PROPERTIES PASS_REGULAR_EXPRESSION "WHATWG does not define an encoder"
+    SOURCE whatwg_encode_utf16le_or_error_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # views::null_term rejects non-pointer ranges via is_pointer_v constraint
-add_library(beman.transcode.tests.null_term_reject_range_fail OBJECT)
-target_sources(
-    beman.transcode.tests.null_term_reject_range_fail
-    PRIVATE null_term_reject_range_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.null_term_reject_range_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.null_term_reject_range_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME null_term_reject_range_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.null_term_reject_range_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     null_term_reject_range_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "transcode: views::null_term requires a pointer or array type"
+    SOURCE null_term_reject_range_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # legacy_byte_range rejects char32_t ranges (e.g. vector<char32_t>) for UTF-16 decode
-add_library(beman.transcode.tests.utf16_decode_reject_char32_range_fail OBJECT)
-target_sources(
-    beman.transcode.tests.utf16_decode_reject_char32_range_fail
-    PRIVATE utf16_decode_reject_char32_range_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.utf16_decode_reject_char32_range_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.utf16_decode_reject_char32_range_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME utf16_decode_reject_char32_range_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.utf16_decode_reject_char32_range_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     utf16_decode_reject_char32_range_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of [^a-z_]+legacy_byte_range<R>.+ \\[with R = std::vector<char32_t,"
+    SOURCE utf16_decode_reject_char32_range_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # The transcode adaptor rejects raw arrays (char[N]) via a constrained operator|
 # with a static_assert that fires when the input is an array type.
-add_library(beman.transcode.tests.transcode_view_reject_array_fail OBJECT)
-target_sources(
-    beman.transcode.tests.transcode_view_reject_array_fail
-    PRIVATE transcode_view_reject_array_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.transcode_view_reject_array_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.transcode_view_reject_array_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME transcode_view_reject_array_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.transcode_view_reject_array_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     transcode_view_reject_array_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "transcode: raw arrays are not valid input to transcode"
+    SOURCE transcode_view_reject_array_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # transcode(from, to) requires a text_encoder second; a decoder must be rejected.
-add_library(beman.transcode.tests.transcode_decoder_as_encoder_fail OBJECT)
-target_sources(
-    beman.transcode.tests.transcode_decoder_as_encoder_fail
-    PRIVATE transcode_decoder_as_encoder_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.transcode_decoder_as_encoder_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.transcode_decoder_as_encoder_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME transcode_decoder_as_encoder_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.transcode_decoder_as_encoder_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     transcode_decoder_as_encoder_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of [^a-z_]+text_encoder<To>.+ \\[with To = .+whatwg::decoder<"
+    SOURCE transcode_decoder_as_encoder_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # whatwg::transcode<From, To> needs an encoder for To; WHATWG has no UTF-16BE encoder.
-add_library(beman.transcode.tests.whatwg_transcode_utf16be_reject_fail OBJECT)
-target_sources(
-    beman.transcode.tests.whatwg_transcode_utf16be_reject_fail
-    PRIVATE whatwg_transcode_utf16be_reject_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.whatwg_transcode_utf16be_reject_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.whatwg_transcode_utf16be_reject_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME whatwg_transcode_utf16be_reject_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.whatwg_transcode_utf16be_reject_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     whatwg_transcode_utf16be_reject_fail
-    PROPERTIES PASS_REGULAR_EXPRESSION "WHATWG does not define an encoder"
+    SOURCE whatwg_transcode_utf16be_reject_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # whatwg::bom_sniff requires legacy_byte_range; char32_t ranges must be rejected.
-add_library(beman.transcode.tests.sniff_reject_char32_range_fail OBJECT)
-target_sources(
-    beman.transcode.tests.sniff_reject_char32_range_fail
-    PRIVATE sniff_reject_char32_range_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.sniff_reject_char32_range_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.sniff_reject_char32_range_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME sniff_reject_char32_range_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.sniff_reject_char32_range_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     sniff_reject_char32_range_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of [^a-z_]+legacy_byte_range<R>.+ \\[with R = std::vector<char32_t,"
+    SOURCE sniff_reject_char32_range_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # whatwg::bom_sniff requires forward_range; single-pass ranges must be rejected,
 # because examining the mark advances the iterator over it.
-add_library(beman.transcode.tests.sniff_reject_input_range_fail OBJECT)
-target_sources(
-    beman.transcode.tests.sniff_reject_input_range_fail
-    PRIVATE sniff_reject_input_range_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.sniff_reject_input_range_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.sniff_reject_input_range_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME sniff_reject_input_range_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.sniff_reject_input_range_fail --config
-        $<CONFIGURATION>
-)
-# Both GCC and Clang tie the failure to the constraint by name -- GCC with
-# "required for the satisfaction of 'forward_range<R>'", Clang with "does not
-# satisfy 'forward_range'".  Matching the bare concept name would also match
-# its appearance in the printed candidate signature, which proves nothing about
-# which constraint failed.
-set_tests_properties(
+beman_add_xfail_compile_test(
     sniff_reject_input_range_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of [^a-z_]+forward_range<R>.+ \\[with R = .+single_pass_bytes"
+    SOURCE sniff_reject_input_range_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # ---------------------------------------------------------------------------
@@ -1426,59 +941,17 @@ add_test(
 )
 
 # Negative compile test: decode rejects raw arrays
-add_library(beman.transcode.tests.decode_view_reject_arrays_fail OBJECT)
-target_sources(
-    beman.transcode.tests.decode_view_reject_arrays_fail
-    PRIVATE decode_view_reject_arrays_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.decode_view_reject_arrays_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.decode_view_reject_arrays_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME decode_view_reject_arrays_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.decode_view_reject_arrays_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     decode_view_reject_arrays_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "transcode: raw arrays are not valid input to decode; use beman::transcoding::views::null_term"
+    SOURCE decode_view_reject_arrays_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # Negative compile test: a decode view over an owning base is not borrowed
-add_library(beman.transcode.tests.decode_view_dangling_fail OBJECT)
-target_sources(
-    beman.transcode.tests.decode_view_dangling_fail
-    PRIVATE decode_view_dangling_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.decode_view_dangling_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.decode_view_dangling_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME decode_view_dangling_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.decode_view_dangling_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     decode_view_dangling_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "no match for .+operator\\*.+ \\(operand type is .+std::ranges::borrowed_iterator_t<beman::transcoding::decode_view<identity_codec, std::ranges::owning_view"
+    SOURCE decode_view_dangling_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 add_executable(beman.transcode.tests.blp59001)
@@ -1565,30 +1038,10 @@ add_test(
 )
 
 # Negative compile test: encode rejects types that don't satisfy text_encoder
-add_library(beman.transcode.tests.encode_view_reject OBJECT)
-target_sources(
-    beman.transcode.tests.encode_view_reject
-    PRIVATE encode_view_reject.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.encode_view_reject
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.encode_view_reject
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME encode_view_reject
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.encode_view_reject --config $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     encode_view_reject
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "required for the satisfaction of [^a-z_]+text_encoder<Codec>.+ \\[with Codec = not_an_encode_codec\\]"
+    SOURCE encode_view_reject.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # ---------------------------------------------------------------------------
@@ -1615,31 +1068,10 @@ catch_discover_tests(beman.transcode.tests.benchmark_fixture)
 
 # reverse_index stores pointer + 1 in 16 bits, so tables of 0xFFFF or more
 # entries are rejected by a static_assert.
-add_library(beman.transcode.tests.reverse_index_reject_wide_table_fail OBJECT)
-target_sources(
-    beman.transcode.tests.reverse_index_reject_wide_table_fail
-    PRIVATE reverse_index_reject_wide_table_fail.cpp
-)
-target_link_libraries(
-    beman.transcode.tests.reverse_index_reject_wide_table_fail
-    PRIVATE beman::transcode
-)
-set_target_properties(
-    beman.transcode.tests.reverse_index_reject_wide_table_fail
-    PROPERTIES EXCLUDE_FROM_ALL true EXCLUDE_FROM_DEFAULT_BUILD true
-)
-add_test(
-    NAME reverse_index_reject_wide_table_fail
-    COMMAND
-        ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target
-        beman.transcode.tests.reverse_index_reject_wide_table_fail --config
-        $<CONFIGURATION>
-)
-set_tests_properties(
+beman_add_xfail_compile_test(
     reverse_index_reject_wide_table_fail
-    PROPERTIES
-        PASS_REGULAR_EXPRESSION
-            "transcode: reverse_index stores pointer \\+ 1 in 16 bits"
+    SOURCE reverse_index_reject_wide_table_fail.cpp
+    LINK_LIBRARIES beman::transcode
 )
 
 # <text_encoding> is declared only in C++26 mode (libstdc++), so this target is

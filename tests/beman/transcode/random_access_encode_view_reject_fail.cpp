@@ -3,7 +3,10 @@
 // NEGATIVE COMPILE TEST: an encoder that does not model single_byte_text_encoder
 // (it can emit more than one byte per scalar value) gives an encode view that is
 // not a random_access_range, so it cannot be passed where one is required.
-// This file must NOT compile -- it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
+//
+// EXPECT: "required for the satisfaction of .+random_access_range<R>.+ \[with R = .+encode_view<multibyte_encoder"
+// EXPECT: "'[^']*encode_view<multibyte_encoder[^']*' does not satisfy 'random_access_range'"
 
 #include <beman/transcode/codec_result.hpp>
 #include <beman/transcode/encode_view.hpp>

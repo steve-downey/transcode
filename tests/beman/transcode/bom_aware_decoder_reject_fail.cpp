@@ -2,7 +2,10 @@
 //
 // NEGATIVE COMPILE TEST: a decoder whose decode_first returns the wrong type
 // is a text_decoder but does not model bom_aware_text_decoder.
-// This file must NOT compile -- it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
+//
+// EXPECT: "required for the satisfaction of .+bom_aware_text_decoder<C>.+ \[with C = wrong_first_decoder\]"
+// EXPECT: "'wrong_first_decoder' does not satisfy 'bom_aware_text_decoder'"
 
 #include <beman/transcode/codec_concepts.hpp>
 #include <beman/transcode/codec_result.hpp>

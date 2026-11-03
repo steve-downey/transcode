@@ -123,7 +123,7 @@ Tests use **Catch2 3.x** and live in `tests/beman/transcode/`.
 
 Every concept constraint or `static_assert` must have:
 
-1. A **negative compile test** — a `.cpp` file that should fail to compile, registered as a ctest with `WILL_FAIL` implicit (via `PASS_REGULAR_EXPRESSION` on the build command). The `PASS_REGULAR_EXPRESSION` must match the *specific* compiler diagnostic proving the right constraint fired, not just any error.
+1. A **negative compile test** — a `.cpp` file that should fail to compile, registered with `beman_add_xfail_compile_test()` from `cmake/beman-xfail-compile.cmake`. The source carries one or more `// EXPECT: "<regex>"` lines, and the test passes only when the build fails *and* its output matches one of them. Each regex must match the *specific* compiler diagnostic proving the right constraint fired, not just any error. GCC and Clang word constraint failures differently (`required for the satisfaction of 'C<T>' [with T = X]` versus `'X' does not satisfy 'C'`), so a constraint test usually carries one EXPECT line per compiler. The wording also drifts between Clang versions, and CI runs several (19 through 22 at the time of writing): Clang 19 and 20 print a non-type template argument unquoted (`(encoding)36 does not satisfy 'C'`) where 21 quotes it, and how far a type is namespace-qualified varies, so write `'?` for a quote that moves and prefer `.*` to `.+` between tokens that may be adjacent. When a test fails only in CI, read the quoted compiler line from the log, not its line breaks: CMake reflows the driver's error report at 80 columns, but the match was made against the raw output. Keep each line within the clang-format column limit; `ReflowComments` would otherwise split it.
 
 2. A **consteval test** — use `constify()` from `test_utilities.hpp` to verify the expression is valid in a constant evaluation context:
    ```cpp
@@ -135,7 +135,7 @@ Every concept constraint or `static_assert` must have:
 
 **TDD order**: write the runtime test first, then the negative compile test, then the consteval test.
 
-Negative compile tests are registered in `tests/beman/transcode/CMakeLists.txt` as `OBJECT` libraries with `EXCLUDE_FROM_ALL` plus an `add_test` that invokes `cmake --build --target <name>` and checks `PASS_REGULAR_EXPRESSION` against the compiler output.
+Negative compile tests are registered in `tests/beman/transcode/CMakeLists.txt` as `beman_add_xfail_compile_test(<name> SOURCE <file> LINK_LIBRARIES beman::transcode)`. The function makes the source an `OBJECT` library excluded from the default build and adds a ctest that runs a nested `cmake --build --target` on it and matches the output against the source's `EXPECT` lines, reporting "compiled", "failed for another reason", and "failed as expected" separately. Every such test carries the CTest label `xfail-compile`, so `ctest -L xfail-compile` runs just that suite and `-LE xfail-compile` skips it. Run a new one under both GCC and Clang (`make TOOLCHAIN=gcc-16 ...` and `make TOOLCHAIN=clang-23 ...`) before pushing it. The driver reads the `EXPECT` lines when the test runs, so editing one takes effect on the next `ctest` with no reconfigure or rebuild.
 
 ### Coverage
 

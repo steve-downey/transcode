@@ -2,7 +2,10 @@
 //
 // NEGATIVE COMPILE TEST: whatwg::encoder<C>::encode_byte exists only for an
 // encoding that encodes one scalar value to one byte; Shift_JIS does not.
-// This file must NOT compile -- it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
+//
+// EXPECT: "required for the satisfaction of .+random_access_encode_codec<C>.+ \[with C = .+encoding::shift_jis\]"
+// EXPECT: "encoding\)[0-9]+'? does not satisfy 'random_access_encode_codec'"
 
 #include <beman/transcode/whatwg/encoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

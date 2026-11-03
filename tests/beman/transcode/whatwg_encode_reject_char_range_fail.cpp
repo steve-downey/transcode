@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// EXPECT: "required for the satisfaction of [^a-z_]+unicode_scalar_range<R>.+ \[with R = std::vector<char,"
+// EXPECT: "'std::vector<char>[^']*' does not satisfy 'unicode_scalar_range'"
 
 #include <beman/transcode/encode_view.hpp>
 #include <beman/transcode/whatwg/encoder.hpp>

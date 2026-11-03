@@ -2,7 +2,10 @@
 //
 // NEGATIVE COMPILE TEST: whatwg::encoder<C>::flush exists only for an encoding
 // that owes output at the end of the input; Shift_JIS does not.
-// This file must NOT compile -- it is registered as a WILL_FAIL ctest target.
+// This file must NOT compile. The EXPECT lines below name the diagnostic it must fail with.
+//
+// EXPECT: "the expression .+C == .+encoding::iso_2022_jp \[with C = .+encoding::shift_jis\].+ evaluated to .+false"
+// EXPECT: "'[^']*whatwg::encoding[^']* == encoding::iso_2022_jp' evaluated to false"
 
 #include <beman/transcode/whatwg/encoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>

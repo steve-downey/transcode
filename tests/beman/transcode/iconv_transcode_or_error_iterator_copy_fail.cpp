@@ -2,6 +2,8 @@
 
 // Negative compile test: iconv_transcode_or_error iterator must be move-only.
 // iconv_t is an OS-managed opaque handle that cannot be copied.
+//
+// EXPECT: "transcode: iconv_transcode_or_error iterator is move-only"
 
 #include <beman/transcode/iconv_transcode_or_error_view.hpp>
 
