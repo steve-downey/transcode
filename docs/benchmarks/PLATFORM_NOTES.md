@@ -13,12 +13,8 @@ represents the performance ceiling against which the composable
 first configure (FetchContent downloads the repo).  To enable:
 
 ```bash
-# Re-configure with simdutf enabled (downloads on first run)
-cd .build/build-system
-uv run cmake -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON .
-
-# Then run
-make bench-simdutf
+# The Perf tree make bench configures has simdutf enabled (downloads on first run)
+make bench
 ```
 
 ### Files
@@ -33,7 +29,7 @@ make bench-simdutf
 | Platform | Notes |
 |----------|-------|
 | Any platform with CMake + network access | Downloads simdutf v5.6.4 on first configure |
-| CI (without `-DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON`) | Silently skipped; `bench-simdutf` target absent |
+| CI (without `-DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON`) | Silently skipped; `make bench` reports it as skipped |
 | WSL2/Linux | AVX2 available; SIMD fast-paths active |
 | macOS / arm64 | NEON fast-paths active |
 
@@ -68,8 +64,8 @@ The CMake configure step auto-detects `cargo` on `PATH`.  If found, the
 `make compile`.  If `cargo` is absent, the target is silently skipped.
 
 ```bash
-# Run encoding_rs benchmarks (requires cargo to be on PATH)
-make bench-encoding-rs
+# make bench includes the encoding_rs benchmarks when cargo is on PATH
+make bench
 ```
 
 ### Files
@@ -89,7 +85,7 @@ make bench-encoding-rs
 | This machine (WSL2/Linux) | Yes — cargo 1.94.0 | All four benchmarks run |
 | macOS | Yes (via Homebrew/rustup) | Expected to work |
 | Windows | Yes (via rustup) | Expected to work; `.lib` extension differs but CMake handles it |
-| CI (without Rust) | No | Silently skipped; `bench-encoding-rs` target absent |
+| CI (without Rust) | No | Silently skipped; `make bench` reports it as skipped |
 
 ### Benchmarks provided
 

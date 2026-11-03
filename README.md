@@ -558,15 +558,9 @@ stay in L1.  Real-world mixed-content throughput will be lower.
 ### Reproducing
 
 ```bash
-# Download full corpus (Wikipedia articles + 3 MB War and Peace)
-uv run python tools/download_benchmark_corpora.py
-
-# Build GCC-16 optimized config and run all core benchmarks
-make bench-perf-all
-
-# Competitive baselines (encoding_rs requires cargo; simdutf requires cmake flag)
-.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.encoding_rs "[benchmark]"
-.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.simdutf "[benchmark]"
+# Download the full corpora, build the GCC-16 Perf config, run every suite
+# and every baseline library (encoding_rs needs cargo), and write the report
+make bench
 ```
 
 Throughput formula: `input_bytes / mean_time_s / 2^20` MiB/s.

@@ -1,59 +1,57 @@
 # Running Benchmarks
 
-This document describes how to run benchmarks for `beman.transcode`, both quick
-smoke checks and the full compiler/optimization matrix.
+This document describes how to run the benchmarks for `beman.transcode`.
 
-## Quick Smoke Run (Default Build)
-
-The default build (Asan config via `make compile`) is not suitable for
-performance measurement but is useful as a smoke check that benchmarks work.
+## The Benchmark Run
 
 ```bash
-make bench           # smoke: ASCII corpus
-make bench-utf       # UTF-family benchmarks
-make bench-whatwg    # WHATWG legacy codec benchmarks
-make bench-pluggable # pluggable codec benchmarks
-make bench-iconv     # iconv baseline benchmarks
-make bench-boundary  # boundary stress benchmarks
+make bench
 ```
 
-## Optimized Builds via CMake Presets
+One target runs everything: every suite of this library, and the same
+conversions in every baseline library, at the configuration that gives this
+library its best numbers.  It writes a report at the end.
 
-For meaningful performance numbers, use release presets that compile with `-O3`.
-These produce separate build directories under `build/`.
+- **Configuration.**  GCC-16 `Perf`: `-O3 -march=native -mtune=native -flto`,
+  no sanitizers, `NDEBUG`.  It is built in its own tree, `.build/build-perf/`,
+  so the `CONFIG` the tests use is left alone.
+- **Baselines.**  iconv, `std::codecvt`/`mbstowcs`, Rust's `encoding_rs`
+  (built when `cargo` is on `PATH`), and simdutf (fetched on the first
+  configure).  A baseline that was not built is reported as skipped.
+- **Corpora.**  The full corpora are downloaded into `data/benchmarks/` on the
+  first run.  The checked-in samples in `benchmark/corpus/` are a few hundred
+  bytes, too small to time well.
+- **Warm-up and repeats.**  Catch2 warms each benchmark up for one second
+  before sampling it.  The suites then run five times over.  Each repeat runs
+  every suite before the next repeat starts, and the report combines the
+  repeats (see [README.md](README.md#repeated-runs)).
+- **Output.**  Each run writes a new directory,
+  `data/benchmarks/results/<UTC timestamp>/`, holding the XML, `report.md`,
+  `report.html`, the SVG charts and a Vega-Lite spec.
+  `data/benchmarks/results/latest` points at the newest run.
 
-### GCC -O3 (smoke)
+These variables override the defaults, though the defaults are meant to be
+left alone:
+
+| Variable | Default |
+|----------|---------|
+| `BENCH_REPEATS` | `5` |
+| `BENCH_WARMUP_MS` | `1000` |
+| `BENCH_SETTLE_LOAD` | `2.0`, the 1-minute load the report calls busy; timing waits up to five minutes for it |
+| `BENCH_SUITES` | `utf whatwg pluggable boundary iconv codecvt encoding_rs simdutf` |
+| `BENCH_DIR` | `$(BENCH_RESULTS_DIR)/<UTC timestamp>` |
+
+## Comparing Compilers and Flags
+
+Holding the library constant and varying the toolchain is a separate axis.
+`make bench-compare` reports any two result directories against each other:
 
 ```bash
-make bench-matrix-gcc
+make bench-compare BENCH_BASELINE=data/benchmarks/results/A \
+                   BENCH_CANDIDATE=data/benchmarks/results/B
 ```
 
-Configures `gcc-release` preset (`build/gcc-release/`) if not already done, then
-runs the smoke benchmark.
-
-### GCC -O3 -flto (smoke)
-
-```bash
-make bench-lto
-# or equivalently:
-make bench-matrix-gcc-lto
-```
-
-Configures `gcc-release-lto` preset (`build/gcc-release-lto/`) if not already
-done, then runs the smoke benchmark.
-
-### Clang -O3 -flto (smoke)
-
-```bash
-make bench-matrix-llvm-lto
-```
-
-Configures `llvm-release-lto` preset (`build/llvm-release-lto/`) if not already
-done.  **Skips cleanly** if `clang` is not found in `PATH`.
-
-## Full Compiler Matrix
-
-Run all supported matrix slices in sequence:
+The matrix runner builds each compiler slice from a CMake preset and runs it:
 
 ```bash
 make bench-matrix       # smoke filter per slice (fast)
@@ -73,58 +71,7 @@ You can also invoke the script directly with a custom tag filter:
 infra/scripts/bench-matrix.sh "[benchmark][utf]"
 ```
 
-## Capturing Results
-
-Redirect output to capture both metadata and results together:
-
-```bash
-make bench-matrix 2>&1 | tee results-$(date +%Y%m%d).txt
-```
-
-Metadata lines are prefixed with `# ` for easy grepping:
-
-```bash
-grep "^#" results-20260101.txt   # environment metadata only
-grep -v "^#" results-20260101.txt  # benchmark data only
-```
-
-## Environment Metadata
-
-Print just the environment metadata without running benchmarks:
-
-```bash
-make bench-env
-```
-
-Example output:
-
-```
-# TIMESTAMP: 2026-05-27T12:00:00Z
-# HOSTNAME: buildhost
-# OS: Linux 6.6.87 x86_64
-# DISTRO: Ubuntu 24.04.1 LTS
-# CPU: Intel(R) Core(TM) i9-13900K
-# CPU_CORES: 32
-# GCC: gcc (Ubuntu 13.3.0) 13.3.0
-# CLANG: not found
-```
-
-## Manually Configuring a Preset
-
-To configure a preset once and then build/run manually:
-
-```bash
-# Configure
-uv run cmake --preset gcc-release-lto
-
-# Build all benchmarks
-cmake --build build/gcc-release-lto
-
-# Run a specific benchmark binary
-build/gcc-release-lto/benchmark/beman.transcode.benchmarks.utf "[benchmark][utf]"
-```
-
-## Matrix Slices
+### Matrix Slices
 
 | Slice | Preset | Compiler | Flags |
 |-------|--------|----------|-------|
@@ -133,14 +80,31 @@ build/gcc-release-lto/benchmark/beman.transcode.benchmarks.utf "[benchmark][utf]
 | Clang -O3 -flto | `llvm-release-lto` | `clang` | `-O3 -flto` |
 
 LTO presets set `CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON`, which CMake translates
-to `-flto` flags at compile and link time for all targets.
+to `-flto` flags at compile and link time for all targets.  The `gcc-release`
+and `gcc-release-lto` presets use single-config Ninja, so binaries land in
+`build/<preset>/benchmark/`, not under a config subdirectory.
+
+## Environment Metadata
+
+Every XML result has a `.meta.json` sidecar that records the machine, compiler
+and commit.  To print the environment without running anything:
+
+```bash
+make bench-env
+```
+
+## Running One Suite by Hand
+
+After `make bench` has built the Perf tree, any suite can be run directly with
+a Catch2 filter:
+
+```bash
+.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.whatwg "[benchmark][label]"
+```
 
 ## Notes
 
 - Sanitizer builds (the default `Asan` config) inhibit optimization and are
-  **not** suitable for benchmarking.  Always use a release preset for numbers.
+  **not** suitable for benchmarking.
 - On WSL2/Linux, CPU frequency scaling may affect results; consider pinning
   frequency with `cpupower` if precise comparisons matter.
-- The `gcc-release` and `gcc-release-lto` presets use single-config Ninja, so
-  binaries land in `build/<preset>/benchmark/` (not under a config subdirectory
-  like the Multi-Config builds).
