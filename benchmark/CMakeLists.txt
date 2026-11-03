@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+# Keep warnings as errors off the fetched dependencies; see
+# tests/beman/transcode/CMakeLists.txt.
+set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 find_package(Catch2 3 REQUIRED)
+unset(CMAKE_COMPILE_WARNING_AS_ERROR)
 
 # Benchmark fixture: corpus loading, chunking helpers, and sink utilities.
 # Built as a static library so both benchmark executables and unit tests can
@@ -245,7 +249,9 @@ if(BEMAN_TRANSCODE_BENCHMARK_SIMDUTF)
         GIT_TAG v5.6.4
         EXCLUDE_FROM_ALL
     )
+    set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
     FetchContent_MakeAvailable(simdutf)
+    unset(CMAKE_COMPILE_WARNING_AS_ERROR)
 
     add_executable(beman.transcode.benchmarks.simdutf)
     target_sources(

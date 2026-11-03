@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+# Warnings as errors gate this project's code, not its dependencies.  When the
+# dependency provider fetches Catch2, its targets would otherwise inherit
+# CMAKE_COMPILE_WARNING_AS_ERROR from the cache and fail on warnings raised in
+# Catch2 or the standard library headers it uses.  Shadow the cache entry for
+# the fetch, then unset the normal variable to expose it again.
+set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 find_package(Catch2 3 REQUIRED)
+unset(CMAKE_COMPILE_WARNING_AS_ERROR)
 
 include(${PROJECT_SOURCE_DIR}/cmake/beman-xfail-compile.cmake)
 
