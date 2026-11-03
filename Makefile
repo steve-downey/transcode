@@ -364,140 +364,43 @@ clean: clean-coverage
 view-coverage: ## View the coverage report
 	sensible-browser $(_build_path)/coverage/coverage.html
 
-# Benchmarks report throughput, so they default to the optimized, un-sanitized
-# config rather than the Asan default -- running a timing under -O3 plus
-# sanitizer instrumentation measures the instrumentation.  RelWithDebInfo is
-# -O3 with debug info; override CONFIG on the command line for another (Perf
-# adds -march=native -flto for the fuzzed best-case numbers).
-.PHONY: bench
-bench: CONFIG=RelWithDebInfo
-bench: compile ## Run benchmark smoke
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]"
-
-.PHONY: bench-utf
-bench-utf: CONFIG=RelWithDebInfo
-bench-utf: compile ## Run UTF-family benchmarks
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.utf "[benchmark][utf]"
-
-.PHONY: bench-whatwg
-bench-whatwg: CONFIG=RelWithDebInfo
-bench-whatwg: compile ## Run WHATWG legacy codec benchmarks
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
-
-.PHONY: bench-pluggable
-bench-pluggable: CONFIG=RelWithDebInfo
-bench-pluggable: compile ## Run pluggable codec benchmarks
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
-
-.PHONY: bench-iconv
-bench-iconv: CONFIG=RelWithDebInfo
-bench-iconv: compile ## Run iconv baseline benchmarks
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
-
-.PHONY: bench-codecvt
-bench-codecvt: CONFIG=RelWithDebInfo
-bench-codecvt: compile ## Run std::codecvt negative baseline benchmarks (skips if <codecvt> absent)
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.codecvt "[benchmark][codecvt]"
-
-.PHONY: bench-encoding-rs
-bench-encoding-rs: CONFIG=RelWithDebInfo
-bench-encoding-rs: compile ## Run encoding_rs baseline benchmarks (requires cargo; skips build if absent)
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.encoding_rs "[benchmark][encoding_rs]"
-
-.PHONY: bench-simdutf
-bench-simdutf: CONFIG=RelWithDebInfo
-bench-simdutf: compile ## Run simdutf ceiling baseline benchmarks (requires cmake -DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON)
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.simdutf "[benchmark][simdutf]"
-
-.PHONY: bench-boundary
-bench-boundary: compile ## Run boundary stress benchmarks (chunked + mock-iconv EINVAL/E2BIG)
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
-
-.PHONY: bench-env
-bench-env: ## Print environment metadata (compiler versions, CPU, OS)
-	@echo "# TIMESTAMP: $$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-	@echo "# HOSTNAME: $$(hostname)"
-	@echo "# OS: $$(uname -srm)"
-	@if [ -r /etc/os-release ]; then . /etc/os-release; echo "# DISTRO: $${PRETTY_NAME:-unknown}"; fi
-	@if [ -r /proc/cpuinfo ]; then echo "# CPU: $$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | xargs)"; echo "# CPU_CORES: $$(nproc)"; fi
-	@if command -v gcc >/dev/null 2>&1; then echo "# GCC: $$(gcc --version | head -1)"; else echo "# GCC: not found"; fi
-	@if command -v clang >/dev/null 2>&1; then echo "# CLANG: $$(clang --version | head -1)"; else echo "# CLANG: not found"; fi
-
-.PHONY: bench-lto
-bench-lto: ## Configure (if needed), build, and run GCC LTO benchmark smoke
-	@if ! [ -f build/gcc-release-lto/CMakeCache.txt ]; then \
-		echo "Configuring gcc-release-lto preset..."; \
-		$(CMAKE) --preset gcc-release-lto; \
-	fi
-	$(CMAKE) --build build/gcc-release-lto --target beman.transcode.benchmarks.smoke
-	build/gcc-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
-
-.PHONY: bench-matrix-gcc
-bench-matrix-gcc: ## Configure (if needed), build, and run GCC -O3 benchmark smoke
-	@if ! [ -f build/gcc-release/CMakeCache.txt ]; then \
-		echo "Configuring gcc-release preset..."; \
-		$(CMAKE) --preset gcc-release; \
-	fi
-	$(CMAKE) --build build/gcc-release --target beman.transcode.benchmarks.smoke
-	build/gcc-release/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
-
-.PHONY: bench-matrix-gcc-lto
-bench-matrix-gcc-lto: bench-lto ## Alias for bench-lto (GCC -O3 -flto smoke)
-
-.PHONY: bench-matrix-llvm-lto
-bench-matrix-llvm-lto: ## Configure (if needed), build, and run Clang LTO benchmark smoke (skips if clang absent)
-	@if ! command -v clang >/dev/null 2>&1; then \
-		echo "SKIP: clang not found"; \
-		exit 0; \
-	fi
-	@if ! [ -f build/llvm-release-lto/CMakeCache.txt ]; then \
-		echo "Configuring llvm-release-lto preset..."; \
-		$(CMAKE) --preset llvm-release-lto; \
-	fi
-	$(CMAKE) --build build/llvm-release-lto --target beman.transcode.benchmarks.smoke
-	build/llvm-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]"
-
-.PHONY: bench-matrix
-bench-matrix: ## Run the full compiler/optimization matrix (skips unavailable slices)
-	infra/scripts/bench-matrix.sh "[smoke]"
-
-.PHONY: bench-matrix-full
-bench-matrix-full: ## Run the full compiler/optimization matrix with all benchmarks
-	infra/scripts/bench-matrix.sh "[benchmark]"
-
+# `make bench` is the whole benchmark run: every suite of this library and
+# every baseline library doing the same conversions, at the configuration that
+# gives this library its best numbers, repeated, with the report at the end.
+#
+# The configuration is GCC-16 Perf: -O3 -march=native -flto, no sanitizers,
+# no debug assertions (etc/perf-toolchain.cmake, etc/gcc-flags.cmake), built
+# in its own tree so it never disturbs the CONFIG the tests use.  The baselines
+# are iconv, std::codecvt, encoding_rs (when cargo is installed) and simdutf
+# (fetched on the first configure).  A baseline that was not built is skipped.
+#
+# Before timing starts it waits, up to five minutes, for the 1-minute load to
+# fall below BENCH_SETTLE_LOAD, the load the report calls busy
+# (tools/process_benchmark_results.py), so the build just finished does not
+# share the machine with the first repeat.
+#
+# The full corpora are downloaded on the first run; the checked-in fallback
+# samples are a few hundred bytes, too small to time meaningfully.
+#
+# Each benchmark warms up for BENCH_WARMUP_MS before Catch2 samples it, which
+# lets the CPU clock ramp and the caches and lazily loaded iconv modules
+# settle.  The suites then run BENCH_REPEATS times, each repeat running every
+# suite before the next starts, so the libraries in one repeat see much the
+# same machine state; the report takes the median across repeats and compares
+# libraries within a repeat (docs/benchmarks/README.md).  Each run writes a new
+# timestamped directory under BENCH_RESULTS_DIR, and `latest` points at it.
+#
+# Holding the library constant and varying the compiler or flags is the other
+# axis: bench-matrix runs the compiler matrix, and bench-compare reports any
+# two result directories against each other.
 BENCH_RESULTS_DIR ?= data/benchmarks/results
-
-.PHONY: bench-report
-bench-report: CONFIG=RelWithDebInfo
-bench-report: compile ## Run smoke benchmark (RelWithDebInfo) and generate Markdown + HTML throughput report
-	@mkdir -p $(BENCH_RESULTS_DIR)
-	$(_build_path)/benchmark/$(CONFIG)/beman.transcode.benchmarks.smoke "[smoke]" \
-		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
-	$(UV) run python tools/process_benchmark_results.py \
-		--label "$(CONFIG)" \
-		--markdown $(BENCH_RESULTS_DIR)/smoke-$(CONFIG).md \
-		--html $(BENCH_RESULTS_DIR)/smoke-$(CONFIG).html \
-		$(BENCH_RESULTS_DIR)/smoke-$(CONFIG).xml
-
-.PHONY: bench-report-lto
-bench-report-lto: bench-lto-xml ## Run GCC LTO smoke benchmark and generate Markdown + HTML throughput report
-	$(UV) run python tools/process_benchmark_results.py \
-		--label "GCC -O3 -flto" \
-		--markdown $(BENCH_RESULTS_DIR)/smoke-lto.md \
-		--html $(BENCH_RESULTS_DIR)/smoke-lto.html \
-		--vegalite $(BENCH_RESULTS_DIR)/smoke-lto.vl.json \
-		$(BENCH_RESULTS_DIR)/smoke-lto.xml
-
-.PHONY: bench-lto-xml
-bench-lto-xml: ## Configure (if needed), build GCC LTO benchmarks, save XML results
-	@if ! [ -f build/gcc-release-lto/CMakeCache.txt ]; then \
-		echo "Configuring gcc-release-lto preset..."; \
-		$(CMAKE) --preset gcc-release-lto; \
-	fi
-	$(CMAKE) --build build/gcc-release-lto --target beman.transcode.benchmarks.smoke
-	@mkdir -p $(BENCH_RESULTS_DIR)
-	build/gcc-release-lto/benchmark/beman.transcode.benchmarks.smoke "[smoke]" \
-		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-lto.xml
+BENCH_SUITES ?= utf whatwg pluggable boundary iconv codecvt encoding_rs simdutf
+BENCH_REPEATS ?= 5
+BENCH_WARMUP_MS ?= 1000
+BENCH_SETTLE_LOAD ?= 2.0
+BENCH_RUN := $(shell date -u '+%Y%m%dT%H%M%SZ')
+BENCH_DIR ?= $(BENCH_RESULTS_DIR)/$(BENCH_RUN)
+BENCH_CORPUS := data/benchmarks/corpus_manifest.json
 
 _PERF_BUILD = .build/build-perf
 _PERF_BENCH = $(_PERF_BUILD)/benchmark/Perf
@@ -513,84 +416,66 @@ $(_PERF_BUILD)/CMakeCache.txt: | .gitmodules $(VENV)
 		-DCMAKE_C_COMPILER_LAUNCHER=ccache \
 		-DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
 		-DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/etc/perf-toolchain.cmake \
+		-DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON \
 		$(CURDIR)
 
-.PHONY: bench-perf
-bench-perf: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf config and run smoke benchmark
-	$(CMAKE) --build $(_PERF_BUILD) --config Perf --target beman.transcode.benchmarks.smoke -- -k 0
-	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]"
+$(BENCH_CORPUS): | $(VENV)/$(MARKER)
+	$(UV) run python tools/download_benchmark_corpora.py --out-dir $(dir $@)
 
-.PHONY: bench-perf-all
-bench-perf-all: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf config and run all core benchmarks
-	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
-	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]"
-	$(_PERF_BENCH)/beman.transcode.benchmarks.utf "[benchmark][utf]"
-	$(_PERF_BENCH)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
-	$(_PERF_BENCH)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
-	$(_PERF_BENCH)/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
-	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
-
-.PHONY: bench-perf-report
-bench-perf-report: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run core benchmarks, generate Markdown, HTML and SVG report
-	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
-	@mkdir -p $(BENCH_RESULTS_DIR)
-	$(_PERF_BENCH)/beman.transcode.benchmarks.smoke "[smoke]" \
-		--reporter xml --out $(BENCH_RESULTS_DIR)/smoke-Perf.xml
-	$(_PERF_BENCH)/beman.transcode.benchmarks.utf "[benchmark][utf]" \
-		--reporter xml --out $(BENCH_RESULTS_DIR)/utf-Perf.xml
-	$(_PERF_BENCH)/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]" \
-		--reporter xml --out $(BENCH_RESULTS_DIR)/whatwg-Perf.xml
-	$(_PERF_BENCH)/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]" \
-		--reporter xml --out $(BENCH_RESULTS_DIR)/pluggable-Perf.xml
-	$(_PERF_BENCH)/beman.transcode.benchmarks.iconv "[benchmark][iconv]" \
-		--reporter xml --out $(BENCH_RESULTS_DIR)/iconv-Perf.xml
-	$(_PERF_BENCH)/beman.transcode.benchmarks.boundary "[benchmark][boundary]" \
-		--reporter xml --out $(BENCH_RESULTS_DIR)/boundary-Perf.xml
-	$(UV) run python tools/process_benchmark_results.py \
-		--label "GCC-16 Perf (native)" \
-		--markdown $(BENCH_RESULTS_DIR)/perf.md \
-		--html $(BENCH_RESULTS_DIR)/perf.html \
-		--svg-dir $(BENCH_RESULTS_DIR)/perf-svg \
-		--vegalite $(BENCH_RESULTS_DIR)/perf.vl.json \
-		$(BENCH_RESULTS_DIR)/smoke-Perf.xml \
-		$(BENCH_RESULTS_DIR)/utf-Perf.xml \
-		$(BENCH_RESULTS_DIR)/whatwg-Perf.xml \
-		$(BENCH_RESULTS_DIR)/pluggable-Perf.xml \
-		$(BENCH_RESULTS_DIR)/iconv-Perf.xml \
-		$(BENCH_RESULTS_DIR)/boundary-Perf.xml
-
-# Run the core suites BENCH_REPEATS times into one directory, as SUITE.N.xml
-# with SUITE.N.meta.json.  Each repeat runs every suite before the next repeat
-# starts, so the libraries in one repeat see much the same machine state.  The
-# report combines the repeats of each benchmark; see docs/benchmarks/README.md.
-BENCH_REPEATS ?= 5
-BENCH_REPEAT_SUITES ?= smoke utf whatwg pluggable iconv boundary
-BENCH_REPEAT_DIR ?= $(BENCH_RESULTS_DIR)/repeats
-
-.PHONY: bench-repeat
-bench-repeat: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run the core suites BENCH_REPEATS times, report on the repeats
-	@if ls $(BENCH_REPEAT_DIR)/*.xml >/dev/null 2>&1; then \
-		echo "$(BENCH_REPEAT_DIR) already holds results; move them or set BENCH_REPEAT_DIR"; \
-		exit 2; \
+.PHONY: bench
+bench: $(_PERF_BUILD)/CMakeCache.txt $(BENCH_CORPUS) ## Build GCC-16 Perf, run every suite and baseline BENCH_REPEATS times, report
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf
+	@mkdir -p $(BENCH_DIR)
+	@if [ -r /proc/loadavg ]; then \
+		for t in $$(seq 1 60); do \
+			awk '{ exit !($$1 < $(BENCH_SETTLE_LOAD)) }' /proc/loadavg && break; \
+			[ $$t -eq 1 ] && echo "waiting for the load to fall below $(BENCH_SETTLE_LOAD)"; \
+			sleep 5; \
+		done; \
 	fi
-	$(CMAKE) --build $(_PERF_BUILD) --config Perf -- -k 0
-	@mkdir -p $(BENCH_REPEAT_DIR)
 	@for i in $$(seq 1 $(BENCH_REPEATS)); do \
-		for s in $(BENCH_REPEAT_SUITES); do \
-			if [ "$$s" = smoke ]; then tag="[smoke]"; else tag="[benchmark][$$s]"; fi; \
+		for s in $(BENCH_SUITES); do \
+			bin=$(_PERF_BENCH)/beman.transcode.benchmarks.$$s; \
+			if [ ! -x $$bin ]; then \
+				[ $$i -eq 1 ] && echo "skip: $$s was not built"; \
+				continue; \
+			fi; \
 			echo "repeat $$i of $(BENCH_REPEATS): $$s"; \
-			$(_PERF_BENCH)/beman.transcode.benchmarks.$$s "$$tag" \
-				--reporter xml --out $(BENCH_REPEAT_DIR)/$$s.$$i.xml >/dev/null \
+			$$bin "[benchmark][$$s]" --benchmark-warmup-time $(BENCH_WARMUP_MS) \
+				--reporter xml --out $(BENCH_DIR)/$$s.$$i.xml >/dev/null \
 				|| echo "warning: $$s exited with status $$?"; \
 		done; \
 	done
 	$(UV) run python tools/process_benchmark_results.py \
 		--label "GCC-16 Perf, $(BENCH_REPEATS) repeats" \
-		--markdown $(BENCH_REPEAT_DIR)/report.md \
-		--html $(BENCH_REPEAT_DIR)/report.html \
-		--svg-dir $(BENCH_REPEAT_DIR)/svg \
-		--vegalite $(BENCH_REPEAT_DIR)/report.vl.json \
-		$(BENCH_REPEAT_DIR)
+		--markdown $(BENCH_DIR)/report.md \
+		--html $(BENCH_DIR)/report.html \
+		--svg-dir $(BENCH_DIR)/svg \
+		--vegalite $(BENCH_DIR)/report.vl.json \
+		$(BENCH_DIR)
+	ln -sfn $(abspath $(BENCH_DIR)) $(BENCH_RESULTS_DIR)/latest
+	@echo "report: $(BENCH_RESULTS_DIR)/latest/report.html"
+
+.PHONY: bench-env
+bench-env: ## Print environment metadata (compiler versions, CPU, OS)
+	@echo "# TIMESTAMP: $$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+	@echo "# HOSTNAME: $$(hostname)"
+	@echo "# OS: $$(uname -srm)"
+	@if [ -r /etc/os-release ]; then . /etc/os-release; echo "# DISTRO: $${PRETTY_NAME:-unknown}"; fi
+	@if [ -r /proc/cpuinfo ]; then echo "# CPU: $$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | xargs)"; echo "# CPU_CORES: $$(nproc)"; fi
+	@if command -v gcc >/dev/null 2>&1; then echo "# GCC: $$(gcc --version | head -1)"; else echo "# GCC: not found"; fi
+	@if command -v clang >/dev/null 2>&1; then echo "# CLANG: $$(clang --version | head -1)"; else echo "# CLANG: not found"; fi
+
+.PHONY: bench-matrix
+bench-matrix: ## Run the full compiler/optimization matrix (skips unavailable slices)
+	infra/scripts/bench-matrix.sh "[smoke]"
+
+.PHONY: bench-matrix-full
+bench-matrix-full: ## Run the full compiler/optimization matrix with all benchmarks
+	infra/scripts/bench-matrix.sh "[benchmark]"
+
+# The suites the instruction counts and the runner-stability job measure.
+BENCH_CORE_SUITES ?= smoke utf whatwg pluggable iconv boundary
 
 # Count instructions instead of timing: run each core suite once under
 # callgrind with the fixture in count mode, which runs every benchmark body
@@ -600,7 +485,7 @@ bench-repeat: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, run the core s
 # runs and the input size.  Pass this directory beside a timing run's to see
 # instructions per byte next to the times.
 BENCH_COUNT_RUNS ?= 3
-BENCH_INSTRUCTION_SUITES ?= $(BENCH_REPEAT_SUITES)
+BENCH_INSTRUCTION_SUITES ?= $(BENCH_CORE_SUITES)
 BENCH_INSTRUCTION_DIR ?= $(BENCH_RESULTS_DIR)/instructions
 
 # $(call bench_count_suites,BIN_DIR,OUT_DIR): count each of
@@ -657,7 +542,7 @@ bench-stability-job: ## Run the core suites timed, then counted, from prebuilt B
 		exit 2; \
 	fi
 	@mkdir -p $(BENCH_JOB_DIR)/timing $(BENCH_JOB_DIR)/instructions
-	@for s in $(BENCH_REPEAT_SUITES); do \
+	@for s in $(BENCH_CORE_SUITES); do \
 		if [ "$$s" = smoke ]; then tag="[smoke]"; else tag="[benchmark][$$s]"; fi; \
 		echo "timing: $$s"; \
 		$(BENCH_BIN_DIR)/beman.transcode.benchmarks.$$s "$$tag" \

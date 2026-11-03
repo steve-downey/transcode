@@ -28,21 +28,14 @@ The benchmark infrastructure comprises:
 ## Quick Start
 
 ```bash
-# 1. Build and run smoke benchmark, then generate Markdown and HTML reports
-make bench-report
-
-# 2. Build GCC LTO benchmarks, save XML, then report with chart spec
-make bench-report-lto
-
-# 3. Build GCC-16 Perf, run the core suites, report with charts and SVGs
-make bench-perf-report
+make bench
 ```
 
-`bench-report` uses the `RelWithDebInfo` config (optimized, no sanitizers) and
-writes `data/benchmarks/results/smoke-RelWithDebInfo.{xml,meta.json,md,html}`.
-Open the `.html` file in a browser.
-
-`bench-report-lto` uses the `gcc-release-lto` CMake preset (GCC -O3 -flto).
+This builds the GCC-16 Perf configuration, downloads the full corpora if they
+are missing, and runs every suite and every baseline library five times. Then
+it writes the report into a new `data/benchmarks/results/<UTC timestamp>/`.
+`data/benchmarks/results/latest` points at the newest run.  Open its
+`report.html` in a browser.  [RUNNING.md](RUNNING.md) has the details.
 
 ---
 
@@ -118,7 +111,7 @@ uv run python tools/process_benchmark_results.py \
 | `--run LABEL PATH...` | A labelled run, for comparing runs; see [Comparing runs](#comparing-runs). With more than one run, `--svg-dir` writes one subdirectory per run, and one ratio chart subdirectory, `LATER-vs-FIRST`, per later run |
 | `--reference-library NAME` | The library the others are compared with in a single-run report; see [Ratios](#ratios). Default `beman.transcode` |
 
-`make bench-perf-report` writes all four into `data/benchmarks/results/`.
+`make bench` writes all four into its run directory.
 
 ### Reading the charts
 
@@ -159,19 +152,13 @@ same suite are [repeats](#repeated-runs) of it.
 
 ### Repeated runs
 
-One run on a busy machine can be unlucky.  `make bench-repeat` builds the
-GCC-16 Perf configuration and runs the core suites `BENCH_REPEATS` times
-(default 5).  It writes `SUITE.N.xml` and `SUITE.N.meta.json` into
-`BENCH_REPEAT_DIR` (default `data/benchmarks/results/repeats/`), then reports
-on that directory.  Each repeat runs every suite before the next repeat
-starts, so the libraries in one repeat see much the same machine state.  The
-target refuses to write into a directory that already holds results.
-
-| Variable | Default |
-|----------|---------|
-| `BENCH_REPEATS` | `5` |
-| `BENCH_REPEAT_SUITES` | `smoke utf whatwg pluggable iconv boundary` |
-| `BENCH_REPEAT_DIR` | `$(BENCH_RESULTS_DIR)/repeats` |
+One run on a busy machine can be unlucky.  `make bench` builds the GCC-16
+Perf configuration and runs every suite `BENCH_REPEATS` times (default 5).  It
+writes `SUITE.N.xml` and `SUITE.N.meta.json` into `BENCH_DIR` (default a new
+`data/benchmarks/results/<UTC timestamp>/`), then reports on that directory.
+Each repeat runs every suite before the next repeat starts, so the libraries
+in one repeat see much the same machine state.  See [RUNNING.md](RUNNING.md)
+for its variables.
 
 The report treats several files of one suite in one run as repeats, ordered by
 when they ran.  Each benchmark becomes one result:
@@ -250,12 +237,12 @@ core suite once under Valgrind's callgrind, with the fixture in *count mode*.
 It writes `SUITE.xml`, its sidecar, and callgrind dumps
 `SUITE.callgrind.PID.N` into `BENCH_INSTRUCTION_DIR` (default
 `data/benchmarks/results/instructions/`), then reports on that directory.
-Like `bench-repeat`, it refuses a directory that already holds results.
+It refuses a directory that already holds results.
 
 | Variable | Default |
 |----------|---------|
 | `BENCH_COUNT_RUNS` | `3` |
-| `BENCH_INSTRUCTION_SUITES` | `$(BENCH_REPEAT_SUITES)` |
+| `BENCH_INSTRUCTION_SUITES` | `$(BENCH_CORE_SUITES)`: `smoke utf whatwg pluggable iconv boundary` |
 | `BENCH_INSTRUCTION_DIR` | `$(BENCH_RESULTS_DIR)/instructions` |
 
 Count mode is on when `BEMAN_TRANSCODE_BENCH_COUNT=N` is set.  The first time
@@ -407,21 +394,14 @@ bootstrap interval on the mean.
 ## Reproducing Published Results
 
 ```bash
-# Step 1: Download full corpus (one-time, requires network)
-uv run python tools/download_benchmark_corpora.py
-
-# Step 2: Run the full matrix
-make bench-matrix
-
-# Step 3: Generate reports for each toolchain slice
-make bench-report-lto   # GCC -O3 -flto (primary results)
-make bench-report        # GCC RelWithDebInfo (baseline)
-
-# Step 4: Save environment metadata
-make bench-env > data/benchmarks/results/env.txt
+make bench
 ```
 
-To capture all output together:
+The run directory's `.meta.json` sidecars record the machine, compiler and
+commit beside the results.
+
+The compiler matrix is the other axis.  To capture its output together with
+the environment:
 
 ```bash
 {
@@ -440,26 +420,30 @@ grep "^#" data/benchmarks/results/matrix-20260527.txt
 
 ## Benchmark Suites
 
-| Make Target | Benchmark Binary | Tag Filter |
-|------------|-----------------|------------|
-| `make bench` | `benchmarks.smoke` | `[smoke]` |
-| `make bench-utf` | `benchmarks.utf` | `[benchmark][utf]` |
-| `make bench-whatwg` | `benchmarks.whatwg` | `[benchmark][whatwg]` |
-| `make bench-pluggable` | `benchmarks.pluggable` | `[benchmark][pluggable]` |
-| `make bench-iconv` | `benchmarks.iconv` | `[benchmark][iconv]` |
-| `make bench-codecvt` | `benchmarks.codecvt` | `[benchmark][codecvt]` |
-| `make bench-encoding-rs` | `benchmarks.encoding_rs` | `[benchmark][encoding_rs]` |
-| `make bench-simdutf` | `benchmarks.simdutf` | `[benchmark][simdutf]` |
-| `make bench-boundary` | `benchmarks.boundary` | `[benchmark][boundary]` |
-| `make bench-lto` | LTO smoke | `[smoke]` |
-| `make bench-matrix` | all slices | `[smoke]` |
-| `make bench-report` | smoke → Markdown + HTML | — |
-| `make bench-report-lto` | LTO smoke → Markdown + HTML + Vega-Lite | — |
-| `make bench-perf-report` | core suites, GCC-16 Perf → Markdown + HTML + SVG + Vega-Lite | — |
-| `make bench-compare` | two result directories → comparison Markdown + HTML + Vega-Lite | — |
-| `make bench-repeat` | core suites, GCC-16 Perf, `BENCH_REPEATS` times → Markdown + HTML + SVG + Vega-Lite | — |
-| `make bench-instructions` | core suites, GCC-16 Perf, under callgrind → instruction counts, Markdown + HTML + SVG + Vega-Lite | — |
-| `make bench-stability-job` | core suites from prebuilt `BENCH_BIN_DIR`, timed then counted → one runner-stability job's results | — |
+| Suite | Benchmark Binary | Tag Filter |
+|-------|-----------------|------------|
+| UTF family | `benchmarks.utf` | `[benchmark][utf]` |
+| WHATWG legacy codecs and labels | `benchmarks.whatwg` | `[benchmark][whatwg]` |
+| Pluggable codecs | `benchmarks.pluggable` | `[benchmark][pluggable]` |
+| Boundary stress | `benchmarks.boundary` | `[benchmark][boundary]` |
+| iconv baseline | `benchmarks.iconv` | `[benchmark][iconv]` |
+| `std::codecvt` baseline | `benchmarks.codecvt` | `[benchmark][codecvt]` |
+| encoding_rs baseline | `benchmarks.encoding_rs` | `[benchmark][encoding_rs]` |
+| simdutf baseline | `benchmarks.simdutf` | `[benchmark][simdutf]` |
+| Smoke | `benchmarks.smoke` | `[smoke]` |
+
+`make bench` runs all but the smoke suite, which duplicates one of the UTF
+benchmarks.  The other targets:
+
+| Make Target | What it runs |
+|------------|--------------|
+| `make bench` | every suite and baseline, GCC-16 Perf, `BENCH_REPEATS` times → Markdown + HTML + SVG + Vega-Lite |
+| `make bench-compare` | two result directories → comparison Markdown + HTML + Vega-Lite |
+| `make bench-matrix` | the compiler slices, `[smoke]` |
+| `make bench-matrix-full` | the compiler slices, `[benchmark]` |
+| `make bench-instructions` | core suites, GCC-16 Perf, under callgrind → instruction counts, Markdown + HTML + SVG + Vega-Lite |
+| `make bench-coverage` | core suites under Gcov → coverage report |
+| `make bench-stability-job` | core suites from prebuilt `BENCH_BIN_DIR`, timed then counted → one runner-stability job's results |
 
 The `benchmarks.whatwg` binary also holds the label benchmarks
 (`benchmark/label_benchmarks.bench.cpp`, tag `[label]`), so the core-suite
