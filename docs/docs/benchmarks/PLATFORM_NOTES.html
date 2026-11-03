@@ -123,12 +123,8 @@ is compared.</p>
 requires network access on the first configure (FetchContent downloads
 the repo). To enable:</p>
 <div class="sourceCode" id="cb1"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Re-configure with simdutf enabled (downloads on first run)</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> .build/build-system</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run cmake <span class="at">-DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF</span><span class="op">=</span>ON .</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Then run</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-simdutf</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The Perf tree make bench configures has simdutf enabled (downloads on first run)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench</span></code></pre></div>
 <h3 id="files">Files</h3>
 <table>
 <thead>
@@ -165,7 +161,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="
 <tr>
 <td>CI (without
 <code>-DBEMAN_TRANSCODE_BENCHMARK_SIMDUTF=ON</code>)</td>
-<td>Silently skipped; <code>bench-simdutf</code> target absent</td>
+<td>Silently skipped; <code>make bench</code> reports it as skipped</td>
 </tr>
 <tr>
 <td>WSL2/Linux</td>
@@ -214,8 +210,8 @@ region.</p>
 automatically during <code>make compile</code>. If <code>cargo</code> is
 absent, the target is silently skipped.</p>
 <div class="sourceCode" id="cb2"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run encoding_rs benchmarks (requires cargo to be on PATH)</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-encoding-rs</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make bench includes the encoding_rs benchmarks when cargo is on PATH</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench</span></code></pre></div>
 <h3 id="files-1">Files</h3>
 <table>
 <thead>
@@ -276,7 +272,7 @@ handles it</td>
 <tr>
 <td>CI (without Rust)</td>
 <td>No</td>
-<td>Silently skipped; <code>bench-encoding-rs</code> target absent</td>
+<td>Silently skipped; <code>make bench</code> reports it as skipped</td>
 </tr>
 </tbody>
 </table>
@@ -351,6 +347,6 @@ The result is expected to be slower than range-based alternatives
 call, unlike the zero-allocation range-based views.</p>
 <p>Do not treat <code>codecvt</code> benchmark regressions as project
 regressions.</p>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/PLATFORM_NOTES.md">docs/benchmarks/PLATFORM_NOTES.md</a> at 99a0baf7943b.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/PLATFORM_NOTES.md">docs/benchmarks/PLATFORM_NOTES.md</a> at ad01b8da3270.</footer>
 </body>
 </html>

@@ -1087,15 +1087,9 @@ will be lower.</p>
 </table>
 <h3 id="reproducing">Reproducing</h3>
 <div class="sourceCode" id="cb12"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Download full corpus (Wikipedia articles + 3 MB War and Peace)</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run python tools/download_benchmark_corpora.py</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Build GCC-16 optimized config and run all core benchmarks</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-perf-all</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Competitive baselines (encoding_rs requires cargo; simdutf requires cmake flag)</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="ex">.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.encoding_rs</span> <span class="st">&quot;[benchmark]&quot;</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="ex">.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.simdutf</span> <span class="st">&quot;[benchmark]&quot;</span></span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the full corpora, build the GCC-16 Perf config, run every suite</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and every baseline library (encoding_rs needs cargo), and write the report</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench</span></code></pre></div>
 <p>Throughput formula: <code>input_bytes / mean_time_s / 2^20</code>
 MiB/s.</p>
 <hr />
@@ -1242,6 +1236,6 @@ class="sourceCode c++"><code class="sourceCode cpp"><span id="cb20-1"><a href="#
 spell the include target another way (e.g.
 <code>#include &lt;transcode.hpp&gt;</code>) is unsupported.</p>
 </div>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/README.md">README.md</a> at 99a0baf7943b.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/README.md">README.md</a> at ad01b8da3270.</footer>
 </body>
 </html>

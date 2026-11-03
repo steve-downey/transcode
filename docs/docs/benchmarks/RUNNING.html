@@ -96,74 +96,100 @@
 <li><a href="#running-benchmarks" id="toc-running-benchmarks">Running
 Benchmarks</a>
 <ul>
-<li><a href="#quick-smoke-run-default-build"
-id="toc-quick-smoke-run-default-build">Quick Smoke Run (Default
-Build)</a></li>
-<li><a href="#optimized-builds-via-cmake-presets"
-id="toc-optimized-builds-via-cmake-presets">Optimized Builds via CMake
-Presets</a></li>
-<li><a href="#full-compiler-matrix" id="toc-full-compiler-matrix">Full
-Compiler Matrix</a></li>
-<li><a href="#capturing-results" id="toc-capturing-results">Capturing
-Results</a></li>
+<li><a href="#the-benchmark-run" id="toc-the-benchmark-run">The
+Benchmark Run</a></li>
+<li><a href="#comparing-compilers-and-flags"
+id="toc-comparing-compilers-and-flags">Comparing Compilers and
+Flags</a></li>
 <li><a href="#environment-metadata"
 id="toc-environment-metadata">Environment Metadata</a></li>
-<li><a href="#manually-configuring-a-preset"
-id="toc-manually-configuring-a-preset">Manually Configuring a
-Preset</a></li>
-<li><a href="#matrix-slices" id="toc-matrix-slices">Matrix
-Slices</a></li>
+<li><a href="#running-one-suite-by-hand"
+id="toc-running-one-suite-by-hand">Running One Suite by Hand</a></li>
 <li><a href="#notes" id="toc-notes">Notes</a></li>
 </ul></li>
 </ul>
 </nav>
 <h1 id="running-benchmarks">Running Benchmarks</h1>
-<p>This document describes how to run benchmarks for
-<code>beman.transcode</code>, both quick smoke checks and the full
-compiler/optimization matrix.</p>
-<h2 id="quick-smoke-run-default-build">Quick Smoke Run (Default
-Build)</h2>
-<p>The default build (Asan config via <code>make compile</code>) is not
-suitable for performance measurement but is useful as a smoke check that
-benchmarks work.</p>
+<p>This document describes how to run the benchmarks for
+<code>beman.transcode</code>.</p>
+<h2 id="the-benchmark-run">The Benchmark Run</h2>
 <div class="sourceCode" id="cb1"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench           <span class="co"># smoke: ASCII corpus</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-utf       <span class="co"># UTF-family benchmarks</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-whatwg    <span class="co"># WHATWG legacy codec benchmarks</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-pluggable <span class="co"># pluggable codec benchmarks</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-iconv     <span class="co"># iconv baseline benchmarks</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-boundary  <span class="co"># boundary stress benchmarks</span></span></code></pre></div>
-<h2 id="optimized-builds-via-cmake-presets">Optimized Builds via CMake
-Presets</h2>
-<p>For meaningful performance numbers, use release presets that compile
-with <code>-O3</code>. These produce separate build directories under
-<code>build/</code>.</p>
-<h3 id="gcc--o3-smoke">GCC -O3 (smoke)</h3>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench</span></code></pre></div>
+<p>One target runs everything: every suite of this library, and the same
+conversions in every baseline library, at the configuration that gives
+this library its best numbers. It writes a report at the end.</p>
+<ul>
+<li><strong>Configuration.</strong> GCC-16 <code>Perf</code>:
+<code>-O3 -march=native -mtune=native -flto</code>, no sanitizers,
+<code>NDEBUG</code>. It is built in its own tree,
+<code>.build/build-perf/</code>, so the <code>CONFIG</code> the tests
+use is left alone.</li>
+<li><strong>Baselines.</strong> iconv,
+<code>std::codecvt</code>/<code>mbstowcs</code>, Rust's
+<code>encoding_rs</code> (built when <code>cargo</code> is on
+<code>PATH</code>), and simdutf (fetched on the first configure). A
+baseline that was not built is reported as skipped.</li>
+<li><strong>Corpora.</strong> The full corpora are downloaded into
+<code>data/benchmarks/</code> on the first run. The checked-in samples
+in <code>benchmark/corpus/</code> are a few hundred bytes, too small to
+time well.</li>
+<li><strong>Warm-up and repeats.</strong> Catch2 warms each benchmark up
+for one second before sampling it. The suites then run five times over.
+Each repeat runs every suite before the next repeat starts, and the
+report combines the repeats (see <a
+href="README.html#repeated-runs">README.md</a>).</li>
+<li><strong>Output.</strong> Each run writes a new directory,
+<code>data/benchmarks/results/&lt;UTC timestamp&gt;/</code>, holding the
+XML, <code>report.md</code>, <code>report.html</code>, the SVG charts
+and a Vega-Lite spec. <code>data/benchmarks/results/latest</code> points
+at the newest run.</li>
+</ul>
+<p>These variables override the defaults, though the defaults are meant
+to be left alone:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BENCH_REPEATS</code></td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td><code>BENCH_WARMUP_MS</code></td>
+<td><code>1000</code></td>
+</tr>
+<tr>
+<td><code>BENCH_SETTLE_LOAD</code></td>
+<td><code>2.0</code>, the 1-minute load the report calls busy; timing
+waits up to five minutes for it</td>
+</tr>
+<tr>
+<td><code>BENCH_SUITES</code></td>
+<td><code>utf whatwg pluggable boundary iconv codecvt encoding_rs simdutf</code></td>
+</tr>
+<tr>
+<td><code>BENCH_DIR</code></td>
+<td><code>$(BENCH_RESULTS_DIR)/&lt;UTC timestamp&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="comparing-compilers-and-flags">Comparing Compilers and
+Flags</h2>
+<p>Holding the library constant and varying the toolchain is a separate
+axis. <code>make bench-compare</code> reports any two result directories
+against each other:</p>
 <div class="sourceCode" id="cb2"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-matrix-gcc</span></code></pre></div>
-<p>Configures <code>gcc-release</code> preset
-(<code>build/gcc-release/</code>) if not already done, then runs the
-smoke benchmark.</p>
-<h3 id="gcc--o3--flto-smoke">GCC -O3 -flto (smoke)</h3>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-compare BENCH_BASELINE=data/benchmarks/results/A <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                   BENCH_CANDIDATE=data/benchmarks/results/B</span></code></pre></div>
+<p>The matrix runner builds each compiler slice from a CMake preset and
+runs it:</p>
 <div class="sourceCode" id="cb3"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-lto</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># or equivalently:</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-matrix-gcc-lto</span></code></pre></div>
-<p>Configures <code>gcc-release-lto</code> preset
-(<code>build/gcc-release-lto/</code>) if not already done, then runs the
-smoke benchmark.</p>
-<h3 id="clang--o3--flto-smoke">Clang -O3 -flto (smoke)</h3>
-<div class="sourceCode" id="cb4"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-matrix-llvm-lto</span></code></pre></div>
-<p>Configures <code>llvm-release-lto</code> preset
-(<code>build/llvm-release-lto/</code>) if not already done.
-<strong>Skips cleanly</strong> if <code>clang</code> is not found in
-<code>PATH</code>.</p>
-<h2 id="full-compiler-matrix">Full Compiler Matrix</h2>
-<p>Run all supported matrix slices in sequence:</p>
-<div class="sourceCode" id="cb5"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-matrix       <span class="co"># smoke filter per slice (fast)</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-matrix-full  <span class="co"># full [benchmark] filter per slice (slow)</span></span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-matrix       <span class="co"># smoke filter per slice (fast)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-matrix-full  <span class="co"># full [benchmark] filter per slice (slow)</span></span></code></pre></div>
 <p>The matrix runner (<code>infra/scripts/bench-matrix.sh</code>)
 will:</p>
 <ol type="1">
@@ -176,43 +202,9 @@ versions).</li>
 <li>Print results for available slices.</li>
 </ol>
 <p>You can also invoke the script directly with a custom tag filter:</p>
-<div class="sourceCode" id="cb6"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">infra/scripts/bench-matrix.sh</span> <span class="st">&quot;[benchmark][utf]&quot;</span></span></code></pre></div>
-<h2 id="capturing-results">Capturing Results</h2>
-<p>Redirect output to capture both metadata and results together:</p>
-<div class="sourceCode" id="cb7"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-matrix <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">|</span> <span class="fu">tee</span> results-<span class="va">$(</span><span class="fu">date</span> +%Y%m%d<span class="va">)</span>.txt</span></code></pre></div>
-<p>Metadata lines are prefixed with <code># </code> for easy
-grepping:</p>
-<div class="sourceCode" id="cb8"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="st">&quot;^#&quot;</span> results-20260101.txt   <span class="co"># environment metadata only</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-v</span> <span class="st">&quot;^#&quot;</span> results-20260101.txt  <span class="co"># benchmark data only</span></span></code></pre></div>
-<h2 id="environment-metadata">Environment Metadata</h2>
-<p>Print just the environment metadata without running benchmarks:</p>
-<div class="sourceCode" id="cb9"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-env</span></code></pre></div>
-<p>Example output:</p>
-<pre><code># TIMESTAMP: 2026-05-27T12:00:00Z
-# HOSTNAME: buildhost
-# OS: Linux 6.6.87 x86_64
-# DISTRO: Ubuntu 24.04.1 LTS
-# CPU: Intel(R) Core(TM) i9-13900K
-# CPU_CORES: 32
-# GCC: gcc (Ubuntu 13.3.0) 13.3.0
-# CLANG: not found</code></pre>
-<h2 id="manually-configuring-a-preset">Manually Configuring a
-Preset</h2>
-<p>To configure a preset once and then build/run manually:</p>
-<div class="sourceCode" id="cb11"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run cmake <span class="at">--preset</span> gcc-release-lto</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Build all benchmarks</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--build</span> build/gcc-release-lto</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Run a specific benchmark binary</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="ex">build/gcc-release-lto/benchmark/beman.transcode.benchmarks.utf</span> <span class="st">&quot;[benchmark][utf]&quot;</span></span></code></pre></div>
-<h2 id="matrix-slices">Matrix Slices</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">infra/scripts/bench-matrix.sh</span> <span class="st">&quot;[benchmark][utf]&quot;</span></span></code></pre></div>
+<h3 id="matrix-slices">Matrix Slices</h3>
 <table>
 <thead>
 <tr>
@@ -245,20 +237,30 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href=
 </table>
 <p>LTO presets set <code>CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON</code>,
 which CMake translates to <code>-flto</code> flags at compile and link
-time for all targets.</p>
+time for all targets. The <code>gcc-release</code> and
+<code>gcc-release-lto</code> presets use single-config Ninja, so
+binaries land in <code>build/&lt;preset&gt;/benchmark/</code>, not under
+a config subdirectory.</p>
+<h2 id="environment-metadata">Environment Metadata</h2>
+<p>Every XML result has a <code>.meta.json</code> sidecar that records
+the machine, compiler and commit. To print the environment without
+running anything:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench-env</span></code></pre></div>
+<h2 id="running-one-suite-by-hand">Running One Suite by Hand</h2>
+<p>After <code>make bench</code> has built the Perf tree, any suite can
+be run directly with a Catch2 filter:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">.build/build-perf/benchmark/Perf/beman.transcode.benchmarks.whatwg</span> <span class="st">&quot;[benchmark][label]&quot;</span></span></code></pre></div>
 <h2 id="notes">Notes</h2>
 <ul>
 <li>Sanitizer builds (the default <code>Asan</code> config) inhibit
-optimization and are <strong>not</strong> suitable for benchmarking.
-Always use a release preset for numbers.</li>
+optimization and are <strong>not</strong> suitable for
+benchmarking.</li>
 <li>On WSL2/Linux, CPU frequency scaling may affect results; consider
 pinning frequency with <code>cpupower</code> if precise comparisons
 matter.</li>
-<li>The <code>gcc-release</code> and <code>gcc-release-lto</code>
-presets use single-config Ninja, so binaries land in
-<code>build/&lt;preset&gt;/benchmark/</code> (not under a config
-subdirectory like the Multi-Config builds).</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/RUNNING.md">docs/benchmarks/RUNNING.md</a> at 99a0baf7943b.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/RUNNING.md">docs/benchmarks/RUNNING.md</a> at ad01b8da3270.</footer>
 </body>
 </html>
