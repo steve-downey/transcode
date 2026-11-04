@@ -70,12 +70,20 @@ def render_labels_hpp(
 #ifndef INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
 #define INCLUDE_BEMAN_TRANSCODE_DETAIL_LABELS_HPP
 
+#include <beman/transcode/config.hpp>
+
 #include <beman/transcode/whatwg/encoding.hpp>
+
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <string_view>
+#endif
 
 namespace beman::transcoding::detail {{
 
+// The label is a string_view so that its length is known at compile time and
+// a lookup's binary search compares without measuring each probe.
 struct label_entry {{
-    const char* label;
+    std::string_view label;
     whatwg::encoding value;
 }};
 
