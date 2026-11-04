@@ -349,6 +349,7 @@ bench-coverage: venv $(_build_path)/CMakeCache.txt ## Run benchmarks under Gcov 
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.utf "[benchmark][utf]"
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.whatwg "[benchmark][whatwg]"
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.pluggable "[benchmark][pluggable]"
+	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.dispatch "[benchmark][dispatch]"
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.iconv "[benchmark][iconv]"
 	-$(_build_path)/benchmark/Gcov/beman.transcode.benchmarks.boundary "[benchmark][boundary]"
 	$(CMAKE) --build $(_build_path) --config Gcov --target process_coverage
@@ -394,7 +395,7 @@ view-coverage: ## View the coverage report
 # axis: bench-matrix runs the compiler matrix, and bench-compare reports any
 # two result directories against each other.
 BENCH_RESULTS_DIR ?= data/benchmarks/results
-BENCH_SUITES ?= utf whatwg pluggable boundary iconv codecvt encoding_rs simdutf
+BENCH_SUITES ?= utf whatwg pluggable dispatch boundary iconv codecvt encoding_rs simdutf
 BENCH_REPEATS ?= 5
 BENCH_WARMUP_MS ?= 1000
 BENCH_SETTLE_LOAD ?= 2.0
@@ -521,6 +522,26 @@ bench-instructions: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, count in
 		--svg-dir $(BENCH_INSTRUCTION_DIR)/svg \
 		--vegalite $(BENCH_INSTRUCTION_DIR)/report.vl.json \
 		$(BENCH_INSTRUCTION_DIR)
+
+# Count only the dispatch suite, and tabulate each runtime path's instructions
+# per call against the same conversion with the codecs fixed at compile time.
+# Dispatch costs the same per call whatever the input, so the table keeps
+# counts per call rather than per byte; see tools/dispatch_overhead.py.
+BENCH_DISPATCH_DIR ?= $(BENCH_RESULTS_DIR)/dispatch-instructions
+
+.PHONY: bench-dispatch-instructions
+bench-dispatch-instructions: BENCH_INSTRUCTION_SUITES = dispatch
+bench-dispatch-instructions: $(_PERF_BUILD)/CMakeCache.txt ## Build GCC-16 Perf, count runtime codec dispatch under callgrind, tabulate overhead per call
+	@command -v valgrind >/dev/null || { echo "bench-dispatch-instructions needs valgrind"; exit 2; }
+	@if ls $(BENCH_DISPATCH_DIR)/*.xml >/dev/null 2>&1; then \
+		echo "$(BENCH_DISPATCH_DIR) already holds results; move them or set BENCH_DISPATCH_DIR"; \
+		exit 2; \
+	fi
+	$(CMAKE) --build $(_PERF_BUILD) --config Perf --target beman.transcode.benchmarks.dispatch
+	@mkdir -p $(BENCH_DISPATCH_DIR)
+	@$(call bench_count_suites,$(_PERF_BENCH),$(BENCH_DISPATCH_DIR))
+	$(UV) run python tools/dispatch_overhead.py $(BENCH_DISPATCH_DIR) \
+		--markdown $(BENCH_DISPATCH_DIR)/dispatch-overhead.md
 
 # One job of the runner-stability workflow
 # (.github/workflows/bench-runner-stability.yml): run the core suites once
