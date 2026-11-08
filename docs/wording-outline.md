@@ -62,6 +62,7 @@ order the compiler needs and need not match.
 | `transcode.whatwg.sniff` | 3 | Byte order mark sniffing | `whatwg::bom_sniff` | `whatwg/bom_sniff.hpp`, done 2026-09-07 |
 | `transcode.whatwg.decoders` | 2 | Decoders | `whatwg::decoder` | `whatwg/decoder.hpp`, added step 08 of the SG16 response |
 | `transcode.whatwg.encoders` | 2 | Encoders | `whatwg::encoder` | `whatwg/encoder.hpp`, added step 10 of the SG16 response |
+| `transcode.whatwg.dynamic` | 2 | Codecs for an encoding chosen at run time | `whatwg::dynamic_decoder`, `whatwg::dynamic_encoder` | `whatwg/dynamic_codec.hpp`, added in Stage 6 of the PR #131 review adoption; the runtime overloads of the bulk helpers are in `transcode.bulk` |
 | `transcode.whatwg.decode` | 2 | Decoding adaptors | the two variable templates `whatwg::decode<C>` / `whatwg::decode_or_error<C>`, each the codec-object adaptor over `whatwg::decoder<C>` | `whatwg/decode_view.hpp`, reduced to the two variables in step 09 of the SG16 response |
 | `transcode.whatwg.encode` | 2 | Encoding adaptors | the two variable templates `whatwg::encode<C>` / `whatwg::encode_or_error<C>`, each the codec-object adaptor over `whatwg::encoder<C>` | `whatwg/encode_view.hpp`, reduced to the two variables in step 12 of the SG16 response |
 | `transcode.string` | 2 | Eager transcoding | `whatwg::transcode_string`, both overloads | `whatwg/transcode_string.hpp`, done 2026-09-08 |

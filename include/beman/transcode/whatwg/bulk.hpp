@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 // The eager bulk helpers in their WHATWG form: decode_to, encode_to,
-// decode_into and encode_into, each taking the encoding as a template
-// parameter.  The codec-object forms are in <beman/transcode/bulk_transcode.hpp>.
+// decode_into and encode_into, each taking the encoding either as a template
+// parameter or as a value chosen at run time.  The codec-object forms are in
+// <beman/transcode/bulk_transcode.hpp>.
 //
 // Every one is a one-line forward to the pipeline it names.  That is the whole
 // of the implementation and it is also the whole of the specification: the
@@ -25,12 +26,18 @@
     #include <beman/transcode/whatwg/decode_view.hpp>
     #include <beman/transcode/whatwg/encode_view.hpp>
     #include <beman/transcode/whatwg/encoding.hpp>
+    #include <beman/transcode/whatwg/label.hpp>
+    #include <beman/transcode/detail/whatwg_dispatch.hpp>
+    #include <beman/transcode/detail/whatwg_encode_select.hpp>
 
     #if !BEMAN_TRANSCODE_USE_MODULES()
         #include <algorithm>
         #include <iterator>
+        #include <optional>
         #include <ranges>
         #include <string>
+        #include <string_view>
+        #include <type_traits>
         #include <utility>
         #include <vector>
 
@@ -50,6 +57,26 @@ constexpr void decode_into(R&& source, Output output);
 
 template <encoding C, unicode_scalar_range R, std::output_iterator<char> Output>
 constexpr void encode_into(R&& source, Output output);
+
+// \ref{transcode.bulk}, with the encoding chosen at run time
+
+template <legacy_byte_range R>
+constexpr std::vector<char32_t> decode_to(R&& source, encoding e);
+
+template <legacy_byte_range R>
+constexpr std::optional<std::vector<char32_t>> decode_to(R&& source, std::string_view label);
+
+template <typename Container = std::string, unicode_scalar_range R>
+constexpr std::optional<Container> encode_to(R&& source, encoding e);
+
+template <typename Container = std::string, unicode_scalar_range R>
+constexpr std::optional<Container> encode_to(R&& source, std::string_view label);
+
+template <legacy_byte_range R, std::output_iterator<char32_t> Output>
+constexpr void decode_into(R&& source, encoding e, Output output);
+
+template <unicode_scalar_range R, std::output_iterator<char> Output>
+constexpr bool encode_into(R&& source, encoding e, Output output);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -83,6 +110,78 @@ constexpr void decode_into(R&& source, Output output) {
 template <encoding C, unicode_scalar_range R, std::output_iterator<char> Output>
 constexpr void encode_into(R&& source, Output output) {
     std::ranges::copy(std::forward<R>(source) | encode<C>, output);
+}
+
+//! \returns `whatwg::decode_to<E>(std::forward<R>(source))`, where `E` is the
+//! enumerator equal to `e`.
+//! \remarks The encoding is examined once, not once per element.
+template <legacy_byte_range R>
+constexpr std::vector<char32_t> decode_to(R&& source, encoding e) {
+    return beman::transcoding::detail::with_encoding(e, [&]<encoding E>(std::integral_constant<encoding, E>) {
+        return whatwg::decode_to<E>(std::forward<R>(source));
+    });
+}
+
+//! \returns `nullopt` if `whatwg::get_encoding(label)` \iref{transcode.whatwg.label}
+//! is `nullopt`, and otherwise `whatwg::decode_to(std::forward<R>(source),
+//! *whatwg::get_encoding(label))`.
+template <legacy_byte_range R>
+constexpr std::optional<std::vector<char32_t>> decode_to(R&& source, std::string_view label) {
+    const auto e = whatwg::get_encoding(label);
+    if (!e)
+        return std::nullopt;
+    return whatwg::decode_to(std::forward<R>(source), *e);
+}
+
+//! \returns `nullopt` if the Encoding Standard defines no encoder for `e`,
+//! and otherwise `whatwg::encode_to<E, Container>(std::forward<R>(source))`,
+//! where `E` is the enumerator equal to `e`.
+//! \remarks The encoding is examined once, not once per element.
+template <typename Container, unicode_scalar_range R>
+constexpr std::optional<Container> encode_to(R&& source, encoding e) {
+    return beman::transcoding::detail::with_encoding(
+        e, [&]<encoding E>(std::integral_constant<encoding, E>) -> std::optional<Container> {
+            if constexpr (beman::transcoding::detail::whatwg_encode_codec<E>)
+                return whatwg::encode_to<E, Container>(std::forward<R>(source));
+            else
+                return std::nullopt;
+        });
+}
+
+//! \returns `nullopt` if `whatwg::get_encoding(label)` \iref{transcode.whatwg.label}
+//! is `nullopt`, and otherwise `whatwg::encode_to<Container>(std::forward<R>(source),
+//! *whatwg::get_encoding(label))`.
+template <typename Container, unicode_scalar_range R>
+constexpr std::optional<Container> encode_to(R&& source, std::string_view label) {
+    const auto e = whatwg::get_encoding(label);
+    if (!e)
+        return std::nullopt;
+    return whatwg::encode_to<Container>(std::forward<R>(source), *e);
+}
+
+//! \effects Equivalent to `whatwg::decode_into<E>(std::forward<R>(source),
+//! output)`, where `E` is the enumerator equal to `e`.
+template <legacy_byte_range R, std::output_iterator<char32_t> Output>
+constexpr void decode_into(R&& source, encoding e, Output output) {
+    beman::transcoding::detail::with_encoding(e, [&]<encoding E>(std::integral_constant<encoding, E>) {
+        whatwg::decode_into<E>(std::forward<R>(source), output);
+    });
+}
+
+//! \effects If the Encoding Standard defines an encoder for `e`, equivalent to
+//! `whatwg::encode_into<E>(std::forward<R>(source), output)`, where `E` is the
+//! enumerator equal to `e`; otherwise none.
+//! \returns Whether the Encoding Standard defines an encoder for `e`.
+template <unicode_scalar_range R, std::output_iterator<char> Output>
+constexpr bool encode_into(R&& source, encoding e, Output output) {
+    return beman::transcoding::detail::with_encoding(e, [&]<encoding E>(std::integral_constant<encoding, E>) {
+        if constexpr (beman::transcoding::detail::whatwg_encode_codec<E>) {
+            whatwg::encode_into<E>(std::forward<R>(source), output);
+            return true;
+        } else {
+            return false;
+        }
+    });
 }
 
 } // namespace beman::transcoding::whatwg

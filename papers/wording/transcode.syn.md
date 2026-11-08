@@ -202,6 +202,50 @@ namespace std {
     friend constexpr bool operator==(const encoder&, const encoder&) = default;
   };
 
+  // @[transcode.whatwg.dynamic]@, codecs for an encoding chosen at run time
+
+  class dynamic_decoder {
+    detail::decoder_variant $decoder$; // exposition only
+
+  public:
+    // @[transcode.whatwg.dynamic]@, construction
+    constexpr dynamic_decoder() noexcept;
+    constexpr explicit dynamic_decoder(whatwg::encoding e) noexcept;
+
+    constexpr whatwg::encoding encoding() const noexcept;
+
+    // @[transcode.whatwg.dynamic]@, decoding
+    template<input_iterator I, sentinel_for<I> S>
+    constexpr decode_result decode_one(I& current, S end);
+
+    template<input_iterator I, sentinel_for<I> S>
+    constexpr decode_result decode_first(I& current, S end);
+
+    constexpr optional<decode_result> flush();
+
+    friend constexpr bool operator==(const dynamic_decoder&,
+                                     const dynamic_decoder&) = default;
+  };
+
+  class dynamic_encoder {
+    detail::encoder_variant $encoder$; // exposition only
+
+  public:
+    // @[transcode.whatwg.dynamic]@, construction
+    constexpr dynamic_encoder() noexcept;
+    constexpr explicit dynamic_encoder(whatwg::encoding e) noexcept;
+
+    constexpr whatwg::encoding encoding() const noexcept;
+
+    // @[transcode.whatwg.dynamic]@, encoding
+    constexpr encode_result encode_one(char32_t scalar);
+
+    constexpr optional<encode_result> flush();
+
+    friend constexpr bool operator==(const dynamic_encoder&,
+                                     const dynamic_encoder&) = default;
+  };
+
   // @[transcode.codec.decode]@, class template decode_view
 
   template<text_decoder Codec, ranges::input_range R,
@@ -326,6 +370,26 @@ namespace std {
 
   template<encoding C, unicode_scalar_range R, output_iterator<char> Output>
   constexpr void encode_into(R&& source, Output output);
+
+  // @[transcode.bulk]@, with the encoding chosen at run time
+
+  template<legacy_byte_range R>
+  constexpr vector<char32_t> decode_to(R&& source, encoding e);
+
+  template<legacy_byte_range R>
+  constexpr optional<vector<char32_t>> decode_to(R&& source, string_view label);
+
+  template<typename Container = string, unicode_scalar_range R>
+  constexpr optional<Container> encode_to(R&& source, encoding e);
+
+  template<typename Container = string, unicode_scalar_range R>
+  constexpr optional<Container> encode_to(R&& source, string_view label);
+
+  template<legacy_byte_range R, output_iterator<char32_t> Output>
+  constexpr void decode_into(R&& source, encoding e, Output output);
+
+  template<unicode_scalar_range R, output_iterator<char> Output>
+  constexpr bool encode_into(R&& source, encoding e, Output output);
 
   // @[transcode.bulk]@, eager bulk conversion
 

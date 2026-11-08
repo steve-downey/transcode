@@ -31,6 +31,7 @@ set(BEMAN_TRANSCODE_HEADERS
     whatwg/bulk.hpp
     whatwg/decode_view.hpp
     whatwg/decoder.hpp
+    whatwg/dynamic_codec.hpp
     whatwg/encoder.hpp
     whatwg/encode_view.hpp
     whatwg/encoding.hpp
@@ -47,6 +48,7 @@ set(BEMAN_TRANSCODE_HEADERS
     detail/range_traits.hpp
     detail/reverse_index.hpp
     detail/whatwg_decode_select.hpp
+    detail/whatwg_dispatch.hpp
     detail/whatwg_encode_select.hpp
     detail/gbk.hpp
     detail/iso2022jp.hpp

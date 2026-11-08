@@ -11,6 +11,7 @@ WORDING_MD := \
 	wording/transcode.whatwg.encoding.md \
 	wording/transcode.whatwg.decoders.md \
 	wording/transcode.whatwg.encoders.md \
+	wording/transcode.whatwg.dynamic.md \
 	wording/transcode.whatwg.decode.md \
 	wording/transcode.whatwg.encode.md \
 	wording/transcode.string.md \

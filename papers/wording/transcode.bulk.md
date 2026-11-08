@@ -43,6 +43,54 @@ ranges::copy(forward<R>(source) | encode<C>, output);
 ```
 
 ```cpp
+template<legacy_byte_range R>
+constexpr vector<char32_t> decode_to(R&& source, encoding e);
+```
+
+[#]{.pnum} *Returns*: `whatwg::decode_to<E>(std::forward<R>(source))`, where `E` is the enumerator equal to `e`.
+
+[#]{.pnum} *Remarks*: The encoding is examined once, not once per element.
+
+```cpp
+template<legacy_byte_range R>
+constexpr optional<vector<char32_t>> decode_to(R&& source, string_view label);
+```
+
+[#]{.pnum} *Returns*: `nullopt` if `whatwg::get_encoding(label)` ([transcode.whatwg.label]) is `nullopt`, and otherwise `whatwg::decode_to(std::forward<R>(source), *whatwg::get_encoding(label))`.
+
+```cpp
+template<typename Container = string, unicode_scalar_range R>
+constexpr optional<Container> encode_to(R&& source, encoding e);
+```
+
+[#]{.pnum} *Returns*: `nullopt` if the Encoding Standard defines no encoder for `e`, and otherwise `whatwg::encode_to<E, Container>(std::forward<R>(source))`, where `E` is the enumerator equal to `e`.
+
+[#]{.pnum} *Remarks*: The encoding is examined once, not once per element.
+
+```cpp
+template<typename Container = string, unicode_scalar_range R>
+constexpr optional<Container> encode_to(R&& source, string_view label);
+```
+
+[#]{.pnum} *Returns*: `nullopt` if `whatwg::get_encoding(label)` ([transcode.whatwg.label]) is `nullopt`, and otherwise `whatwg::encode_to<Container>(std::forward<R>(source), *whatwg::get_encoding(label))`.
+
+```cpp
+template<legacy_byte_range R, output_iterator<char32_t> Output>
+constexpr void decode_into(R&& source, encoding e, Output output);
+```
+
+[#]{.pnum} *Effects*: Equivalent to `whatwg::decode_into<E>(std::forward<R>(source), output)`, where `E` is the enumerator equal to `e`.
+
+```cpp
+template<unicode_scalar_range R, output_iterator<char> Output>
+constexpr bool encode_into(R&& source, encoding e, Output output);
+```
+
+[#]{.pnum} *Effects*: If the Encoding Standard defines an encoder for `e`, equivalent to `whatwg::encode_into<E>(std::forward<R>(source), output)`, where `E` is the enumerator equal to `e`; otherwise none.
+
+[#]{.pnum} *Returns*: Whether the Encoding Standard defines an encoder for `e`.
+
+```cpp
 template<text_decoder Codec, legacy_byte_range R>
 constexpr vector<char32_t> decode_to(Codec codec, R&& source);
 ```
