@@ -63,3 +63,31 @@ if(BEMAN_TRANSCODE_HAS_TEXT_ENCODING)
         PROPERTIES CXX_STANDARD 26 CXX_STANDARD_REQUIRED ON
     )
 endif()
+
+# The MIME reader has several sources and its own include root (the repository,
+# so that its headers are <examples/mime_reader/...>), so it is not one of
+# ALL_EXAMPLES.
+add_executable(beman.transcode.examples.mime_reader)
+target_sources(
+    beman.transcode.examples.mime_reader
+    PRIVATE
+        mime_reader/charset.cpp
+        mime_reader/grammar.cpp
+        mime_reader/main.cpp
+        mime_reader/mime.cpp
+        mime_reader/transfer.cpp
+)
+target_include_directories(
+    beman.transcode.examples.mime_reader
+    PRIVATE "${PROJECT_SOURCE_DIR}"
+)
+target_link_libraries(
+    beman.transcode.examples.mime_reader
+    PRIVATE beman::transcode
+)
+if(BEMAN_TRANSCODE_USE_MODULES)
+    set_target_properties(
+        beman.transcode.examples.mime_reader
+        PROPERTIES CXX_MODULE_STD ON
+    )
+endif()
