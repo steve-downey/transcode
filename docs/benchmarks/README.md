@@ -7,6 +7,17 @@ published results.
 See [RUNNING.md](RUNNING.md) for quick-reference make targets and
 [PLATFORM_NOTES.md](PLATFORM_NOTES.md) for hardware-specific observations.
 
+**Numbers from before and after #131 are not comparable.**  Commit `c447694a`
+(2026-10-29) changed what the benchmarks measure in two ways.
+`count_elements` used to count elements without reading them, so for a view
+the optimizer could see through, GCC deleted the table lookups and the
+benchmark timed parsing rather than decoding; it now folds every value into an
+accumulator that escapes.  And the `gcc-release`, `gcc-release-lto`,
+`llvm-release` and `llvm-release-lto` presets had been compiling at `-O2`
+despite asking for `-O3`; they now build at `-O3`.  Results taken before that
+commit, including any published from them, should be re-run rather than set
+beside newer ones.
+
 ---
 
 ## Overview

@@ -89,12 +89,11 @@ the review are a guide, not publishable.
   Measure `decode_to` / `encode_to` against `view | ranges::to`, and
   `decode_into` / `encode_into` against `ranges::copy` into a pre-sized buffer.
   Add a `view | ranges::to` row for UTF-8 to UTF-32 beside the iconv rows.
-- `benchmark-baseline-break`.  `docs/benchmarks/README.md` should say once
-  that numbers from before #131 and after it are not comparable:
-  `count_elements` now consumes its values, and the `gcc-release` preset now
-  really builds at `-O3`.
-- `corpus-download-user-agent`.  `tools/download_benchmark_corpora.py` sends no
-  User-Agent, and Wikipedia refuses it.
+- `benchmark-baseline-break`.  Done: `docs/benchmarks/README.md` says once,
+  near the top, that numbers from before and after commit `c447694a` are not
+  comparable, and why.
+- `corpus-download-user-agent`.  Done: `tools/download_benchmark_corpora.py`
+  sends a User-Agent naming the project, with a test.
 
 ### Stage 6 — runtime codec objects
 
