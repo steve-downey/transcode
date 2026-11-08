@@ -98,6 +98,12 @@ struct decode_state_of<whatwg::encoding::big5> {
 template <whatwg::encoding C>
 using decode_state_t = decode_state_of<C>::type;
 
+// Whether a decode of C carries state between calls, and so can have a result
+// owed when the input ends.  It is the constraint on whatwg::decoder<C>::flush.
+//! \expos
+template <whatwg::encoding C>
+concept has_decode_state = !std::is_same_v<decode_state_t<C>, no_decode_state>;
+
 // Whether a decoder of C drops a leading U+FEFF: the UTF encodings strip a
 // byte order mark from the start of the text, in decode_first, which the view
 // calls once, so the per-element decode carries no flag for it.

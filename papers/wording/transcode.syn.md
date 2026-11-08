@@ -177,7 +177,7 @@ namespace std {
       requires $random-access-decode-codec$<C>;
 
     constexpr optional<decode_result> flush()
-      requires(!same_as<detail::decode_state_t<C>, detail::no_decode_state>);
+      requires $has-decode-state$<C>;
 
     friend constexpr bool operator==(const decoder&, const decoder&) = default;
   };
