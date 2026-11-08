@@ -119,10 +119,18 @@ What was built, and how the questions were settled:
   `whatwg/dynamic_codec.hpp`, clause `[transcode.whatwg.dynamic]`.  Each holds
   a `std::variant` over the per-encoding codecs, indexed by the enumerator's
   value.
-- An encoding with no encoder: constructing a `dynamic_encoder` for it is a
-  precondition violation (*Preconditions:* `has_encoder(e)`).  The eager
-  `encode_to` returns `nullopt` and `encode_into` returns `false` for it, so a
-  program holding a charset from the data checks once, in the call it makes.
+- An encoding with no encoder, decided 2026-11-08: there is no constructor
+  from `whatwg::encoding`.  `whatwg::make_dynamic_encoder(e)` returns
+  `optional<dynamic_encoder>`, empty for `utf_16be`, `utf_16le` and
+  `replacement`.  A precondition was the first design, and was dropped: a
+  program holding an encoding from its input would have had to call
+  `has_encoder` first, a second check that is easy to forget and repeats work
+  the construction does anyway.  The eager `encode_to` returns `nullopt` and
+  `encode_into` returns `false` in the same case, so every runtime entry point
+  reports it in the call that would have used the encoder.  The Standard's
+  "get an output encoding", which maps those three to UTF-8 as a browser does
+  for form submission, is not applied implicitly; it could be offered as an
+  explicit function.
 - Refinements: both objects model the flushable refinement, and the decoder
   models `bom_aware_text_decoder`, forwarding `decode_first` to `decode_one`
   where the encoding strips no BOM.  Neither models the single-byte

@@ -44,21 +44,13 @@ constexpr optional<decode_result> flush();
 
 [#]{.pnum} *Returns*: The result of `d.flush()` if there is one, and `nullopt` otherwise.
 
-[#]{.pnum} *Remarks*: `whatwg::dynamic_encoder` is an encoder, as a codec object, for an encoding chosen at run time.  Each operation behaves as the same operation of `whatwg::encoder<E>` does, where `E` is the encoding it was constructed with.  It models `text_encoder` and `flushable_text_encoder` ([transcode.codec.reqs]) whatever the encoding, so the encode adaptor over it ([transcode.codec.encode]) yields what `whatwg::encode<E>` does.  It does not model `single_byte_text_encoder`.  It is equality comparable.
+[#]{.pnum} *Remarks*: `whatwg::dynamic_encoder` is an encoder, as a codec object, for an encoding chosen at run time.  Each operation behaves as the same operation of `whatwg::encoder<E>` does, where `E` is the encoding it was constructed with.  It models `text_encoder` and `flushable_text_encoder` ([transcode.codec.reqs]) whatever the encoding, so the encode adaptor over it ([transcode.codec.encode]) yields what `whatwg::encode<E>` does.  It does not model `single_byte_text_encoder`.  It is equality comparable.  An encoding with no encoder has no `dynamic_encoder`; `whatwg::make_dynamic_encoder` says which.
 
 ```cpp
 constexpr dynamic_encoder() noexcept;
 ```
 
 [#]{.pnum} *Effects*: Constructs an encoder for `encoding::utf_8`.
-
-```cpp
-constexpr explicit dynamic_encoder(whatwg::encoding e) noexcept;
-```
-
-[#]{.pnum} *Preconditions*: `whatwg::has_encoder(e)` is `true` ([transcode.string]).
-
-[#]{.pnum} *Effects*: Constructs an encoder for `e`, in its initial state.
 
 ```cpp
 constexpr whatwg::encoding encoding() const noexcept;
@@ -79,5 +71,13 @@ constexpr optional<encode_result> flush();
 [#]{.pnum} *Effects*: Equivalent to `e.flush()` if the `whatwg::encoder<E>` this object behaves as has `flush`.
 
 [#]{.pnum} *Returns*: The result of `e.flush()` if there is one, and `nullopt` otherwise.
+
+```cpp
+friend constexpr optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e) noexcept;
+```
+
+[#]{.pnum} *Returns*: `nullopt` if `whatwg::has_encoder(e)` is `false` ([transcode.string]), and otherwise an encoder for `e`, in its initial state.
+
+[#]{.pnum} *Remarks*: This is the one check a program holding an encoding from its input makes, and it is made where the encoder is created.
 
 :::

@@ -233,7 +233,8 @@ namespace std {
   public:
     // @[transcode.whatwg.dynamic]@, construction
     constexpr dynamic_encoder() noexcept;
-    constexpr explicit dynamic_encoder(whatwg::encoding e) noexcept;
+    friend constexpr optional<dynamic_encoder> make_dynamic_encoder(
+        whatwg::encoding e) noexcept;
 
     constexpr whatwg::encoding encoding() const noexcept;
 
@@ -245,6 +246,8 @@ namespace std {
     friend constexpr bool operator==(const dynamic_encoder&,
                                      const dynamic_encoder&) = default;
   };
+
+  // @[transcode.whatwg.dynamic]@, creating an encoder for an encoding chosen at run time
 
   // @[transcode.codec.decode]@, class template decode_view
 

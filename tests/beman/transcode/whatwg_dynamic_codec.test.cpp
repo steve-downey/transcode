@@ -79,13 +79,16 @@ void check_encoder_matches() {
     const std::u32string            scalars = scalar_sample();
     const std::span<const char32_t> in{scalars};
     if constexpr (requires { typename whatwg::encoder<E>; }) {
-        const whatwg::dynamic_encoder e{E};
+        const auto made = whatwg::make_dynamic_encoder(E);
+        REQUIRE(made.has_value());
+        const whatwg::dynamic_encoder e = *made;
         CHECK(e.encoding() == E);
         CHECK(collect(in | encode(e)) == collect(in | whatwg::encode<E>));
         CHECK(collect(in | encode_or_error(e)) == collect(in | whatwg::encode_or_error<E>));
         CHECK(whatwg::encode_to(in, E) == whatwg::encode_to<E>(in));
     } else {
         CHECK_FALSE(whatwg::has_encoder(E));
+        CHECK(whatwg::make_dynamic_encoder(E) == std::nullopt);
         CHECK(whatwg::encode_to(in, E) == std::nullopt);
     }
 }
@@ -119,7 +122,8 @@ TEST_CASE("whatwg::dynamic_decoder: default, encoding and equality", "[whatwg::d
     CHECK(whatwg::dynamic_decoder{encoding::shift_jis} == whatwg::dynamic_decoder{encoding::shift_jis});
     CHECK(whatwg::dynamic_decoder{encoding::shift_jis} != whatwg::dynamic_decoder{encoding::euc_jp});
     CHECK(whatwg::dynamic_encoder{}.encoding() == encoding::utf_8);
-    CHECK(whatwg::dynamic_encoder{encoding::gbk} != whatwg::dynamic_encoder{encoding::gb18030});
+    CHECK(whatwg::make_dynamic_encoder(encoding::gbk) != whatwg::make_dynamic_encoder(encoding::gb18030));
+    CHECK(whatwg::make_dynamic_encoder(encoding::gbk) == whatwg::make_dynamic_encoder(encoding::gbk));
 }
 
 TEST_CASE("whatwg::dynamic_decoder: a leading BOM is stripped only where the Standard says",
@@ -152,7 +156,8 @@ TEST_CASE("whatwg::dynamic_decoder: flush reports a truncated sequence", "[whatw
 
 TEST_CASE("whatwg::dynamic_encoder: ISO-2022-JP returns to ASCII at the end", "[whatwg::dynamic_codec]") {
     const std::u32string s{U"あ"};
-    const auto out = collect(std::span<const char32_t>{s} | encode(whatwg::dynamic_encoder{encoding::iso_2022_jp}));
+    const auto           out =
+        collect(std::span<const char32_t>{s} | encode(*whatwg::make_dynamic_encoder(encoding::iso_2022_jp)));
     CHECK(std::string(out.begin(), out.end()) == "\x1B$B\x24\x22\x1B(B");
 }
 
@@ -187,8 +192,19 @@ TEST_CASE("whatwg::dynamic_decoder and dynamic_encoder in a constant expression"
               return *(in | decode(whatwg::dynamic_decoder{encoding::windows_1252})).begin();
           }()) == U'€');
     CHECK(constify([] {
-              whatwg::dynamic_encoder e{encoding::windows_1252};
+              auto e = *whatwg::make_dynamic_encoder(encoding::windows_1252);
               return e.encode_one(U'€').bytes[0];
           }()) == 0x80);
     CHECK(constify(whatwg::dynamic_decoder{encoding::big5}.encoding()) == encoding::big5);
+}
+
+TEST_CASE("whatwg::make_dynamic_encoder: no encoder, no object", "[whatwg::dynamic_codec]") {
+    // The check a program holding an encoding from its input needs is the call
+    // that creates the encoder.
+    CHECK(whatwg::make_dynamic_encoder(encoding::utf_16be) == std::nullopt);
+    CHECK(whatwg::make_dynamic_encoder(encoding::utf_16le) == std::nullopt);
+    CHECK(whatwg::make_dynamic_encoder(encoding::replacement) == std::nullopt);
+    CHECK(whatwg::make_dynamic_encoder(encoding::x_user_defined).has_value());
+    CHECK(constify(whatwg::make_dynamic_encoder(encoding::replacement).has_value()) == false);
+    CHECK(constify(whatwg::make_dynamic_encoder(encoding::shift_jis)->encoding()) == encoding::shift_jis);
 }

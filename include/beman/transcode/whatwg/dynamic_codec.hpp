@@ -14,6 +14,7 @@
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
     #include <optional>
+    #include <utility>
     #include <variant>
 
 #endif
@@ -33,7 +34,7 @@ namespace beman::transcoding::whatwg {
 //! equal if they decode the same encoding and are in the same state.
 class dynamic_decoder {
     //! \expos
-    detail::decoder_variant decoder_;
+    beman::transcoding::detail::decoder_variant decoder_;
 
   public:
     // \ref{transcode.whatwg.dynamic}, construction
@@ -62,15 +63,19 @@ class dynamic_decoder {
 //! \iref{transcode.codec.reqs} whatever the encoding, so the encode adaptor
 //! over it \iref{transcode.codec.encode} yields what `whatwg::encode<E>`
 //! does.  It does not model `single_byte_text_encoder`.  It is equality
-//! comparable.
+//! comparable.  An encoding with no encoder has no `dynamic_encoder`;
+//! `whatwg::make_dynamic_encoder` says which.
 class dynamic_encoder {
     //! \expos
-    detail::encoder_variant encoder_;
+    beman::transcoding::detail::encoder_variant encoder_;
+
+    //! \omit
+    constexpr explicit dynamic_encoder(beman::transcoding::detail::encoder_variant v) noexcept;
 
   public:
     // \ref{transcode.whatwg.dynamic}, construction
     constexpr dynamic_encoder() noexcept;
-    constexpr explicit dynamic_encoder(whatwg::encoding e) noexcept;
+    friend constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e) noexcept;
 
     constexpr whatwg::encoding encoding() const noexcept;
 
@@ -82,6 +87,9 @@ class dynamic_encoder {
     friend constexpr bool operator==(const dynamic_encoder&, const dynamic_encoder&) = default;
 };
 
+// \ref{transcode.whatwg.dynamic}, creating an encoder for an encoding chosen at run time
+constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e) noexcept;
+
 // ---------------------------------------------------------------------------
 // Out-of-line definitions: whatwg::dynamic_decoder
 // ---------------------------------------------------------------------------
@@ -90,7 +98,8 @@ class dynamic_encoder {
 constexpr dynamic_decoder::dynamic_decoder() noexcept : decoder_() {}
 
 //! \effects Constructs a decoder for `e`, in its initial state.
-constexpr dynamic_decoder::dynamic_decoder(whatwg::encoding e) noexcept : decoder_(detail::make_decoder_variant(e)) {}
+constexpr dynamic_decoder::dynamic_decoder(whatwg::encoding e) noexcept
+    : decoder_(beman::transcoding::detail::make_decoder_variant(e)) {}
 
 //! \returns The encoding this decoder decodes.
 constexpr whatwg::encoding dynamic_decoder::encoding() const noexcept {
@@ -140,9 +149,20 @@ constexpr std::optional<decode_result> dynamic_decoder::flush() {
 //! \effects Constructs an encoder for `encoding::utf_8`.
 constexpr dynamic_encoder::dynamic_encoder() noexcept : encoder_() {}
 
-//! \expects `whatwg::has_encoder(e)` is `true` \iref{transcode.string}.
-//! \effects Constructs an encoder for `e`, in its initial state.
-constexpr dynamic_encoder::dynamic_encoder(whatwg::encoding e) noexcept : encoder_(detail::make_encoder_variant(e)) {}
+//! \omit
+constexpr dynamic_encoder::dynamic_encoder(beman::transcoding::detail::encoder_variant v) noexcept
+    : encoder_(std::move(v)) {}
+
+//! \returns `nullopt` if `whatwg::has_encoder(e)` is `false`
+//! \iref{transcode.string}, and otherwise an encoder for `e`, in its initial
+//! state.
+//! \remarks This is the one check a program holding an encoding from its
+//! input makes, and it is made where the encoder is created.
+constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e) noexcept {
+    if (!beman::transcoding::detail::has_whatwg_encoder(e))
+        return std::nullopt;
+    return dynamic_encoder{beman::transcoding::detail::make_encoder_variant(e)};
+}
 
 //! \returns The encoding this encoder encodes.
 constexpr whatwg::encoding dynamic_encoder::encoding() const noexcept {

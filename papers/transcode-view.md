@@ -520,7 +520,8 @@ These look at the encoding once and then run the same loop the compile-time form
 
 Two codec objects for an encoding chosen at run time:
 
-- **`whatwg::dynamic_decoder{e}` / `whatwg::dynamic_encoder{e}`**: Behave as `whatwg::decoder<E>` and `whatwg::encoder<E>` for the `E` equal to `e`.
+- **`whatwg::dynamic_decoder{e}` / `whatwg::make_dynamic_encoder(e)`**: Behave as `whatwg::decoder<E>` and `whatwg::encoder<E>` for the `E` equal to `e`.
+  `make_dynamic_encoder` returns `optional<dynamic_encoder>`, empty when the encoding has no encoder, so the check a program needs is the call that creates the encoder.
   `bytes | decode(whatwg::dynamic_decoder{e})` is a lazy `char32_t` range over an encoding named in the data.
 
 And three utility entry points:

@@ -328,7 +328,8 @@ TEST_CASE("codec objects: decode_to and encode_to take the source first", "[bulk
 
     const std::u32string text = U"€!";
     CHECK(bt::encode_to(text, bt::whatwg::encoder<bt::whatwg::encoding::windows_1252>{}) == std::string{"\x80!"});
-    CHECK(bt::encode_to<std::vector<char>>(text, bt::whatwg::dynamic_encoder{bt::whatwg::encoding::windows_1252}) ==
+    CHECK(bt::encode_to<std::vector<char>>(text,
+                                           *bt::whatwg::make_dynamic_encoder(bt::whatwg::encoding::windows_1252)) ==
           std::vector<char>{'\x80', '!'});
 }
 

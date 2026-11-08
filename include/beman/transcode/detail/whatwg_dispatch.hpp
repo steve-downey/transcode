@@ -30,9 +30,9 @@ namespace beman::transcoding::detail {
 inline constexpr std::size_t whatwg_encoding_count = static_cast<std::size_t>(whatwg::encoding::euc_kr) + 1;
 
 // Stands in for whatwg::encoder<C> where the Encoding Standard defines no
-// encoder, so that the encoder variant keeps one alternative per encoding.  A
-// dynamic_encoder is never constructed holding one (it is a precondition), but
-// if one is, every scalar value is an error rather than undefined behavior.
+// encoder, so that the encoder variant keeps one alternative per encoding.
+// make_dynamic_encoder never creates a dynamic_encoder holding one; if one
+// existed, every scalar value would be an error.
 template <whatwg::encoding C>
 struct no_encoder {
     constexpr encode_result encode_one(char32_t) const {
@@ -112,6 +112,13 @@ constexpr auto with_encoding_impl(whatwg::encoding e, F& f, std::index_sequence<
 template <typename F>
 constexpr auto with_encoding(whatwg::encoding e, F&& f) {
     return with_encoding_impl(e, f, std::make_index_sequence<whatwg_encoding_count>{});
+}
+
+// Whether whatwg::encoder<e> exists: the same question whatwg::has_encoder
+// answers, decided by the concept that constrains whatwg::encoder.
+constexpr bool has_whatwg_encoder(whatwg::encoding e) {
+    return with_encoding(
+        e, []<whatwg::encoding E>(std::integral_constant<whatwg::encoding, E>) { return whatwg_encode_codec<E>; });
 }
 
 } // namespace beman::transcoding::detail
