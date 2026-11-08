@@ -4,9 +4,12 @@
 // on the command line, as UTF-8.
 //
 // A message is bytes until a part says how it is encoded.  The bytes are
-// parsed with the grammar in grammar.cpp, a body's transfer encoding is undone
-// by the views in transfer.hpp, and `decode_text` in charset.cpp turns the
-// result into code points using the charset the part declares.
+// parsed with the grammar in grammar.cpp.  A text part's body then goes through
+// one lazy pipeline: the transfer-decoding view from transfer.hpp, then
+// `decode(whatwg::dynamic_decoder{e})`, where `e` is the encoding the part's
+// charset names, chosen at run time (`decode_body_text` in mime.cpp).  Encoded
+// words in headers are short, and use the eager `whatwg::decode_to(bytes,
+// label)` (`decode_text` in charset.cpp).
 
 #include <examples/mime_reader/charset.hpp>
 #include <examples/mime_reader/mime.hpp>
@@ -65,12 +68,11 @@ void print_leaf(const entity& leaf, const std::string& path) {
     std::cout << "  charset: " << (leaf.is_text() ? leaf.charset() : std::string{"-"}) << '\n';
     std::cout << "  transfer-encoding: " << mime_reader::to_string(leaf.encoding) << '\n';
 
-    std::string bytes = mime_reader::decode_body(leaf);
     if (!leaf.is_text()) {
-        std::cout << "  bytes: " << bytes.size() << '\n';
+        std::cout << "  bytes: " << mime_reader::decode_body(leaf).size() << '\n';
         return;
     }
-    auto text = mime_reader::decode_text(bytes, leaf.charset());
+    auto text = mime_reader::decode_body_text(leaf);
     if (!text) {
         std::cout << "  error: " << text.error() << '\n';
         return;

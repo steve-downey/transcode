@@ -8,9 +8,14 @@
 #include <examples/mime_reader/parser.hpp>
 #include <examples/mime_reader/transfer.hpp>
 
+#include <beman/transcode/decode_view.hpp>
+#include <beman/transcode/whatwg/dynamic_codec.hpp>
+#include <beman/transcode/whatwg/label.hpp>
+
 #include <cstddef>
 #include <expected>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -133,6 +138,30 @@ std::string decode_body(const entity& leaf) {
         break;
     }
     return std::string{leaf.body};
+}
+
+std::expected<std::u32string, std::string> decode_body_text(const entity& leaf) {
+    namespace bt = beman::transcoding;
+    // The part's charset is in the message, so the decoder is chosen at run
+    // time.  Nothing is collected until the end: the transfer decoding and the
+    // charset decoding are both views, and one pass produces the text.
+    const auto charset = leaf.charset();
+    const auto e       = bt::whatwg::get_encoding(charset);
+    if (!e) {
+        return std::unexpected("unknown charset '" + charset + "'");
+    }
+    const auto text = bt::decode(bt::whatwg::dynamic_decoder{*e});
+    switch (leaf.encoding) {
+    case transfer_encoding::base64:
+        return leaf.body | base64_decode | text | std::ranges::to<std::u32string>();
+    case transfer_encoding::quoted_printable:
+        return leaf.body | quoted_printable_decode | text | std::ranges::to<std::u32string>();
+    case transfer_encoding::seven_bit:
+    case transfer_encoding::eight_bit:
+    case transfer_encoding::binary:
+        break;
+    }
+    return leaf.body | text | std::ranges::to<std::u32string>();
 }
 
 header_text decode_header_text(std::string_view value) {

@@ -48,6 +48,10 @@ std::expected<entity, std::string> parse_entity(std::string_view bytes);
 // The bytes of a leaf's body with its transfer encoding undone.
 std::string decode_body(const entity& leaf);
 
+// The text of a text leaf's body: its transfer encoding undone and its
+// charset decoded, in one lazy pipeline, or what was wrong with the charset.
+std::expected<std::u32string, std::string> decode_body_text(const entity& leaf);
+
 // An unstructured header's text, with its encoded-words decoded.  A charset
 // that is not known leaves its encoded-word as written, and says so in
 // `problems`.
