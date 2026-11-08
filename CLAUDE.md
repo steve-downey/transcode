@@ -67,7 +67,7 @@ To run a single test binary:
 
 The library is header-only under `include/beman/transcode/`. `transcode.hpp` is the umbrella header; `transcode.cppm` is the optional C++23 module interface (built when `BEMAN_TRANSCODE_USE_MODULES=ON`). It provides **two transcoding backends behind a shared pipeline-oriented interface** (see `README.md` for the full motivation).
 
-Headers directly under `include/beman/transcode/` are the specification surface:
+Headers directly under `include/beman/transcode/` and `include/beman/transcode/whatwg/` are the specification surface:
 what the paper proposes, and what `beman.specgen` generates wording from.
 `detail/` is implementation, and is invisible to the wording because specgen
 only reads declarations in the file it is given. Adding a name to a
@@ -75,17 +75,19 @@ specification header therefore proposes it; see `docs/wording-outline.md`.
 
 ### WHATWG backend (portable, constexpr, header-only)
 
-A compile-time implementation of the [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/) covering ~39 codecs. The codec is a compile-time template parameter, selected from the `enum class codec` in `codec.hpp`.
+A compile-time implementation of the [WHATWG Encoding Standard](https://encoding.spec.whatwg.org/), in namespace `beman::transcoding::whatwg` under `include/beman/transcode/whatwg/`. The encoding is a compile-time template parameter, selected from `enum class whatwg::encoding` in `whatwg/encoding.hpp`.
 
-- **`whatwg_decode_view.hpp` / `whatwg_encode_view.hpp`** — the public range adaptors. Each view is parameterized on a `transcode_error_kind` (from `error.hpp`): the lossy `whatwg_decode<codec>` / `whatwg_encode<codec>` closures (errors → `U+FFFD` on decode, `'?'` on encode) and the `..._or_error<codec>` closures yielding `std::expected<…, whatwg_error>` are the same view with a different error kind. Each header also has a `random_access_*` view used for O(1)-per-element single-byte codecs; `detail/whatwg_decode_select.hpp` / `detail/whatwg_encode_select.hpp` decide which codecs get it.
-- **`decode_view.hpp` / `encode_view.hpp`** — the generic *pluggable* views parameterized on a codec object (not the `codec` enum). These drive any type satisfying the codec concepts.
-- **`codec_concepts.hpp`** — `decode_codec` / `encode_codec` / `flushable_decode_codec` / `random_access_decode_codec_type`. The contract every codec implements: `decode_one(iter, sentinel) → decode_result`, `encode_one(cp) → encode_result`, optionally `flush()` and `decode_byte(byte)`. `codec_result.hpp` defines the result structs.
-- **`detail/table_codec.hpp`** + **`detail/single_byte_*.hpp`** — table-driven single-byte codec engine.
-- **Per-codec implementations** in `detail/`: `utf8.hpp`, `utf8_encode.hpp`, `utf16.hpp`, `utf32.hpp`, `big5.hpp`, `gb18030.hpp`, `gbk.hpp`, `shift_jis.hpp`, `euc_jp.hpp`, `euc_kr.hpp`, `iso2022jp.hpp`, `x_user_defined.hpp`, plus the single-byte tables.
-- **`label.hpp`** — `get_encoding(label)`: WHATWG label → `codec` lookup (e.g. `"latin1"` → `windows_1252`). The table behind it, `detail/labels.hpp`, is **generated** by `tools/generate_labels.py`; do not hand-edit.
-- **`sniff.hpp`** — BOM sniffing (`sniff_encoding`) per WHATWG §8.2.
-- **`transcode_string.hpp`** — eager `transcode_string(src, from, to)` convenience over the views, with a label-string overload.
-- **`transcode_view.hpp`** / **`bulk_transcode.hpp`** — the composed decode→encode pipeline (`transcode<From, To>`, `pluggable_transcode(from, to)`) and the bulk helpers (`decode_to`, `encode_to`, `decode_into`, `encode_into`).
+- **`whatwg/decoder.hpp` / `whatwg/encoder.hpp`** — `whatwg::decoder<E>` and `whatwg::encoder<E>`, the WHATWG decoders and encoders as codec objects. They model the generic codec concepts below, so the library's own codecs and a program's are the same kind of thing.
+- **`whatwg/decode_view.hpp` / `whatwg/encode_view.hpp`** — the variable templates `whatwg::decode<E>` / `whatwg::decode_or_error<E>` and `whatwg::encode<E>` / `whatwg::encode_or_error<E>`. Each is the generic codec-object adaptor over `whatwg::decoder<E>` or `whatwg::encoder<E>`; there are no WHATWG-specific view classes. The lossy forms substitute (U+FFFD on decode, `'?'` on encode); the `_or_error` forms yield `std::expected<…, whatwg::error>`. `detail/whatwg_decode_select.hpp` / `detail/whatwg_encode_select.hpp` decide which encodings are single-byte and so get the random-access path.
+- **`decode_view.hpp` / `encode_view.hpp`** — the generic views and adaptors parameterized on a codec object: `decode(codec)`, `encode(codec)`, and their `_or_error` forms. A codec modeling `single_byte_text_decoder` or `single_byte_text_encoder` gets `random_access_decode_view` / `random_access_encode_view`, which are implementation and `\omit`ted from the wording.
+- **`codec_concepts.hpp`** — `text_decoder`, `text_encoder`, `flushable_text_decoder`, `flushable_text_encoder`, `bom_aware_text_decoder`, `single_byte_text_decoder`, `single_byte_text_encoder`. The contract: `decode_one(iter, sentinel) → decode_result`, `encode_one(cp) → encode_result`, and optionally `flush()`, `decode_first(iter, sentinel)`, `decode_byte(byte)` and `encode_byte(scalar)`. `codec_result.hpp` defines the result structs.
+- **`detail/table_codec.hpp`** + **`detail/single_byte*.hpp`** — table-driven single-byte codec engine.
+- **Per-codec implementations** in `detail/`: `utf8.hpp`, `utf8_encode.hpp`, `utf16.hpp`, `utf32.hpp`, `big5.hpp`, `gb18030.hpp`, `gbk.hpp`, `shift_jis.hpp`, `euc_jp.hpp`, `euc_kr.hpp`, `iso2022jp.hpp`, `x_user_defined.hpp`, plus the single-byte tables and `reverse_index.hpp`.
+- **`whatwg/label.hpp`** — `whatwg::get_encoding(label)`: WHATWG label → `whatwg::encoding` lookup (e.g. `"latin1"` → `windows_1252`). The table behind it, `detail/labels.hpp`, is **generated** by `tools/generate_labels.py`; do not hand-edit. **`whatwg/text_encoding.hpp`** bridges to `std::text_encoding::id` both ways (`get_encoding(id)`, `to_text_encoding_id(e)`).
+- **`whatwg/bom_sniff.hpp`** — `whatwg::bom_sniff`, the Standard's "BOM sniff". Requires a `forward_range`, since it peeks without consuming.
+- **`whatwg/transcode_string.hpp`** — eager `whatwg::transcode_string(src, from, to)` over the views, with a label-string overload; returns `optional<string>`, empty when `to` has no encoder.
+- **`whatwg/transcode_view.hpp`** / **`transcode_view.hpp`** — the composed decode→encode pipeline: `whatwg::transcode<From, To>`, and the generic `transcode(from, to)` over codec objects.
+- **`whatwg/bulk.hpp`** / **`bulk_transcode.hpp`** — the bulk helpers `decode_to`, `encode_to`, `decode_into`, `encode_into`, in WHATWG and generic forms.
 
 ### iconv backend (system encodings)
 
@@ -95,10 +97,10 @@ A C++ ranges wrapper around the POSIX `iconv` API: `iconv_transcode_view.hpp`, `
 
 - **`concepts.hpp`** — the `legacy_byte_range` concept: accepts ranges of `char`/`signed char`/`unsigned char`/`std::byte`; explicitly rejects raw arrays (avoids silent null-terminator inclusion) and `char8_t`/wide char types.
 - **`null_term.hpp`** — `views::null_term`: adapts a pointer to a null-terminated C string into a range. Requires a pointer; rejects non-pointer ranges.
-- **`error.hpp`** — the `whatwg_error` and `iconv_error` enums, and `transcode_error_kind` (replacement vs. `std::expected`), which selects between the lossy and `_or_error` behavior of every view.
+- **`error.hpp`** / **`whatwg/error.hpp`** — the `iconv_error` and `whatwg::error` enums, and `error_mode` (replacement vs. `std::expected`), which selects between the lossy and `_or_error` behavior of every view.
 - **`config.hpp`** — build configuration; `BEMAN_TRANSCODE_USE_MODULES()` switches the headers between including and importing.
 
-Typical usage: `bytes | beman::transcoding::whatwg_decode<codec::utf_8>` → a `char32_t` range; `views::null_term(ptr) | whatwg_decode<codec::utf_8>` for a C string.
+Typical usage: `bytes | beman::transcoding::whatwg::decode<whatwg::encoding::utf_8>` → a `char32_t` range; `views::null_term(ptr) | whatwg::decode<whatwg::encoding::utf_8>` for a C string.
 
 ### Generated data and tooling (`tools/`, `data/`, `docs/whatwg/`)
 
@@ -163,7 +165,7 @@ Never rely on transitive includes — include every header you directly use.
 **Include order in test files** — the component header under test goes first (verifies it is self-contained).
 Include it twice consecutively to verify idempotent inclusion (the include guard must prevent duplicate definitions).
 
-**Functions out-of-line** — define function bodies outside the class body, inside the header, with full `ClassName::method_name` qualification (see `iconv_transcode_view.hpp` and `whatwg_decode_view.hpp` for the pattern).
+**Functions out-of-line** — define function bodies outside the class body, inside the header, with full `ClassName::method_name` qualification (see `iconv_transcode_view.hpp` and `decode_view.hpp` for the pattern).
 Exception: hidden `friend` functions used as customization points (e.g., `operator==` against `default_sentinel_t`, `operator|` for pipe adapters) may be defined inline inside the class body.
 
 **No `using namespace` in headers.**

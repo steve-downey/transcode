@@ -349,7 +349,7 @@ describe({.conversion = "Shift_JIS → UTF-8", .library = "beman.transcode", .ap
 BENCHMARK_ADVANCED("Shift-JIS -> UTF-8 streaming (transcode pipe)")
 (Catch::Benchmark::Chronometer meter) {
     measure(meter, [&] {
-        return count_elements(corpus_span("ja_mars_shiftjis.bin") | transcode<codec::shift_jis, codec::utf_8>);
+        return count_elements(corpus_span("ja_mars_shiftjis.bin") | whatwg::transcode<whatwg::encoding::shift_jis, whatwg::encoding::utf_8>);
     });
 };
 ```
