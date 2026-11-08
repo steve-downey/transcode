@@ -393,17 +393,17 @@ namespace std {
 
   // @[transcode.bulk]@, eager bulk conversion
 
-  template<text_decoder Codec, legacy_byte_range R>
-  constexpr vector<char32_t> decode_to(Codec codec, R&& source);
+  template<legacy_byte_range R, text_decoder Codec>
+  constexpr vector<char32_t> decode_to(R&& source, Codec codec);
 
-  template<text_encoder Codec, typename Container = string, unicode_scalar_range R>
-  constexpr Container encode_to(Codec codec, R&& source);
+  template<typename Container = string, unicode_scalar_range R, text_encoder Codec>
+  constexpr Container encode_to(R&& source, Codec codec);
 
-  template<text_decoder Codec, legacy_byte_range R, output_iterator<char32_t> Output>
-  constexpr void decode_into(Codec codec, R&& source, Output output);
+  template<legacy_byte_range R, text_decoder Codec, output_iterator<char32_t> Output>
+  constexpr void decode_into(R&& source, Codec codec, Output output);
 
-  template<text_encoder Codec, unicode_scalar_range R, output_iterator<char> Output>
-  constexpr void encode_into(Codec codec, R&& source, Output output);
+  template<unicode_scalar_range R, text_encoder Codec, output_iterator<char> Output>
+  constexpr void encode_into(R&& source, Codec codec, Output output);
 
   // @[transcode.whatwg.sniff]@, byte order mark sniffing
 

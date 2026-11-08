@@ -91,24 +91,24 @@ constexpr bool encode_into(R&& source, encoding e, Output output);
 [#]{.pnum} *Returns*: Whether the Encoding Standard defines an encoder for `e`.
 
 ```cpp
-template<text_decoder Codec, legacy_byte_range R>
-constexpr vector<char32_t> decode_to(Codec codec, R&& source);
+template<legacy_byte_range R, text_decoder Codec>
+constexpr vector<char32_t> decode_to(R&& source, Codec codec);
 ```
 
 [#]{.pnum} *Returns*: `forward<R>(source) | decode(codec) | ranges::to<vector<char32_t>>()`.
 
-[#]{.pnum} *Remarks*: The same four operations as the `whatwg::` forms over a codec supplied as a value ([transcode.codec.reqs]), for a codec chosen at run time or one the `whatwg::encoding` enumeration does not name.
+[#]{.pnum} *Remarks*: The same four operations as the `whatwg::` forms over a codec supplied as a value ([transcode.codec.reqs]), for a codec chosen at run time or one the `whatwg::encoding` enumeration does not name.  As in every eager helper, the source comes first, then what to read or write it as, then any output.
 
 ```cpp
-template<text_encoder Codec, typename Container = string, unicode_scalar_range R>
-constexpr Container encode_to(Codec codec, R&& source);
+template<typename Container = string, unicode_scalar_range R, text_encoder Codec>
+constexpr Container encode_to(R&& source, Codec codec);
 ```
 
 [#]{.pnum} *Returns*: `forward<R>(source) | encode(codec) | ranges::to<Container>()`.
 
 ```cpp
-template<text_decoder Codec, legacy_byte_range R, output_iterator<char32_t> Output>
-constexpr void decode_into(Codec codec, R&& source, Output output);
+template<legacy_byte_range R, text_decoder Codec, output_iterator<char32_t> Output>
+constexpr void decode_into(R&& source, Codec codec, Output output);
 ```
 
 [#]{.pnum} *Effects*: Equivalent to:
@@ -118,8 +118,8 @@ ranges::copy(forward<R>(source) | decode(codec), output);
 ```
 
 ```cpp
-template<text_encoder Codec, unicode_scalar_range R, output_iterator<char> Output>
-constexpr void encode_into(Codec codec, R&& source, Output output);
+template<unicode_scalar_range R, text_encoder Codec, output_iterator<char> Output>
+constexpr void encode_into(R&& source, Codec codec, Output output);
 ```
 
 [#]{.pnum} *Effects*: Equivalent to:

@@ -128,6 +128,12 @@ What was built, and how the questions were settled:
   where the encoding strips no BOM.  Neither models the single-byte
   refinements.
 - `constexpr`: both are usable in constant evaluation, with `constify` tests.
+- Argument order, decided 2026-11-08: every eager helper takes the source
+  first, then the encodings or codecs in "from, to" order, then any output:
+  `transcode_string(src, from, to)`, `decode_to(source, e)`,
+  `decode_into(source, codec, out)`.  The codec-object bulk helpers took the
+  codec first and were changed to match; nothing outside their own header
+  called them, and they had no tests, which they now have.
 - The eager runtime overloads dispatch once, through
   `detail::with_encoding`, and then run the compile-time loop.
   `transcode_string` uses the same dispatch, so its two 40-case `switch`es are
@@ -144,10 +150,6 @@ Still open:
   measured against `transcode_string`'s old `switch`.  The fold-based dispatch
   may compile differently, so re-run the dispatch benchmark with Stage 5's
   measurements before the figure is published again.
-- Argument order: the runtime overloads take the source first,
-  `decode_to(source, e)`, like `transcode_string`, while the codec-object
-  bulk helpers take the codec first, `decode_to(codec, source)`.  Worth a
-  decision before R1.
 - The exposition-only members of `dynamic_decoder` and `dynamic_encoder` show
   a `detail::` type in the synopsis, as `whatwg::decoder`'s `$state$` does.
 

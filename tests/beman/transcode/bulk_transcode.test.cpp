@@ -6,6 +6,9 @@
 
 #include <beman/transcode/bulk_transcode.hpp>
 #include <beman/transcode/whatwg/bulk.hpp>
+#include <beman/transcode/whatwg/decoder.hpp>
+#include <beman/transcode/whatwg/dynamic_codec.hpp>
+#include <beman/transcode/whatwg/encoder.hpp>
 #include <beman/transcode/whatwg/decode_view.hpp>
 #include <beman/transcode/whatwg/encode_view.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
@@ -307,4 +310,48 @@ TEST_CASE("constexpr: encode_into is usable in a constant expression", "[bulk][n
     constexpr auto encoded = encode_into_consteval();
     STATIC_REQUIRE(encoded[0] == 'A');
     STATIC_REQUIRE(encoded[1] == 'B');
+}
+
+// ---------------------------------------------------------------------------
+// The codec-object forms: the source first, then the codec, then any output,
+// the same order as the runtime whatwg:: forms and transcode_string.
+// ---------------------------------------------------------------------------
+
+TEST_CASE("codec objects: decode_to and encode_to take the source first", "[bulk][codec]") {
+    namespace bt           = beman::transcoding;
+    const std::string sjis = "\x82\xA0"
+                             "A";
+    CHECK(bt::decode_to(sjis, bt::whatwg::decoder<bt::whatwg::encoding::shift_jis>{}) ==
+          std::vector<char32_t>{U'あ', U'A'});
+    CHECK(bt::decode_to(sjis, bt::whatwg::dynamic_decoder{bt::whatwg::encoding::shift_jis}) ==
+          bt::whatwg::decode_to<bt::whatwg::encoding::shift_jis>(sjis));
+
+    const std::u32string text = U"€!";
+    CHECK(bt::encode_to(text, bt::whatwg::encoder<bt::whatwg::encoding::windows_1252>{}) == std::string{"\x80!"});
+    CHECK(bt::encode_to<std::vector<char>>(text, bt::whatwg::dynamic_encoder{bt::whatwg::encoding::windows_1252}) ==
+          std::vector<char>{'\x80', '!'});
+}
+
+TEST_CASE("codec objects: decode_into and encode_into put the output last", "[bulk][codec]") {
+    namespace bt               = beman::transcoding;
+    const std::string     koi8 = "\xF0\xD2\xC9";
+    std::vector<char32_t> scalars;
+    bt::decode_into(koi8, bt::whatwg::decoder<bt::whatwg::encoding::koi8_r>{}, std::back_inserter(scalars));
+    CHECK(scalars == std::vector<char32_t>{U'П', U'р', U'и'});
+    std::string back;
+    bt::encode_into(scalars, bt::whatwg::encoder<bt::whatwg::encoding::koi8_r>{}, std::back_inserter(back));
+    CHECK(back == koi8);
+}
+
+namespace {
+constexpr char32_t codec_decode_to_consteval() {
+    const char bytes[] = {'\x80'};
+    return beman::transcoding::decode_to(
+        std::span<const char>{bytes},
+        beman::transcoding::whatwg::decoder<beman::transcoding::whatwg::encoding::windows_1252>{})[0];
+}
+} // namespace
+
+TEST_CASE("codec objects: decode_to in a constant expression", "[bulk][codec][constexpr]") {
+    CHECK(constify(codec_decode_to_consteval()) == U'€');
 }
