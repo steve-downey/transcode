@@ -1,0 +1,11 @@
+Subject: Menu
+From: cafe@example.org
+part 1
+  content-type: text/plain
+  charset: windows-1252
+  transfer-encoding: quoted-printable
+  characters: 203
+  text:
+  > Café crème costs €4,50 – “quoted” and ‘single’.
+  > The next line is long enough that quoted-printable must break it with a soft line break, and it has an = sign and an é in it.
+  > 100% sure, half-width: ½ ¾ ©

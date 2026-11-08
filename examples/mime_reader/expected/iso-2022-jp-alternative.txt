@@ -1,0 +1,18 @@
+Subject: Greetings from Tokyo
+From: Taro Yamada <taro@example.jp>
+part 1
+  content-type: text/plain
+  charset: iso-2022-jp
+  transfer-encoding: 7bit
+  characters: 24
+  text:
+  > こんにちは、世界。
+  > これは日本語のテストです。
+part 2
+  content-type: text/html
+  charset: utf-8
+  transfer-encoding: quoted-printable
+  characters: 40
+  text:
+  > <p>こんにちは、世界。</p>
+  > <p>これは HTML の部分です。</p>

@@ -5,8 +5,11 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+    # The MIME reader's test messages are exact bytes, line ends and all.
     -   id: trailing-whitespace
+        exclude: ^examples/mime_reader/messages/
     -   id: end-of-file-fixer
+        exclude: ^examples/mime_reader/messages/
     -   id: check-yaml
     -   id: check-added-large-files
 

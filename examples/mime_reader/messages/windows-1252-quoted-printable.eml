@@ -1,0 +1,10 @@
+From: cafe@example.org
+Subject: Menu
+MIME-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+
+Caf=E9 cr=E8me costs =804,50 =96 =93quoted=94 and =91single=92.
+The next line is long enough that quoted-printable must break it with a sof=
+t line break, and it has an =3D sign and an =E9 in it.
+100% sure, half-width: =BD =BE =A9

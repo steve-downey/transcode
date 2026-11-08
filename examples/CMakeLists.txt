@@ -91,3 +91,29 @@ if(BEMAN_TRANSCODE_USE_MODULES)
         PROPERTIES CXX_MODULE_STD ON
     )
 endif()
+
+# Each message is read, and what the reader prints is compared with the file
+# that make_expected.py wrote from Python's email package.
+if(BEMAN_TRANSCODE_BUILD_TESTS)
+    set(MIME_READER_MESSAGES
+        iso-2022-jp-alternative
+        shift-jis-base64
+        windows-1252-quoted-printable
+        utf-8-base64
+        koi8-r-subject
+        nested-multipart
+        unknown-charset
+    )
+    foreach(message ${MIME_READER_MESSAGES})
+        add_test(
+            NAME beman.transcode.examples.mime_reader.${message}
+            COMMAND
+                "${CMAKE_COMMAND}"
+                "-DREADER=$<TARGET_FILE:beman.transcode.examples.mime_reader>"
+                "-DMESSAGE=${CMAKE_CURRENT_SOURCE_DIR}/mime_reader/messages/${message}.eml"
+                "-DEXPECTED=${CMAKE_CURRENT_SOURCE_DIR}/mime_reader/expected/${message}.txt"
+                "-DACTUAL=${CMAKE_CURRENT_BINARY_DIR}/mime_reader_${message}.txt"
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/mime_reader/check_output.cmake"
+        )
+    endforeach()
+endif()

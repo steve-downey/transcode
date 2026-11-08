@@ -1,0 +1,10 @@
+Subject: Re: Тестовое сообщение для проверки кодировки
+From: André Dupont <andre@example.org>
+part 1
+  content-type: text/plain
+  charset: koi8-r
+  transfer-encoding: 8bit
+  characters: 47
+  text:
+  > Привет, мир!
+  > Это сообщение в кодировке KOI8-R.
