@@ -8,7 +8,8 @@ This document records a review of pull request #131 (`sg16-review-response`,
 head `f225333`) against three things: the pull request on its own, the SG16
 mailing-list thread on P4246R0 it answers, and the WHATWG Encoding Standard
 as checked out at `whatwg/encoding` commit `be17ac5`. It is a triage
-document, not a set of fixes.
+document, not a set of fixes.  What became of each point is tracked in
+[`docs/plans/pr131-review-adoption.md`](plans/pr131-review-adoption.md).
 
 Status terms:
 
