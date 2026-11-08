@@ -62,9 +62,9 @@ struct encode_state_of<whatwg::encoding::iso_2022_jp> {
 template <whatwg::encoding C>
 using encode_state_t = encode_state_of<C>::type;
 
-//! \expos
+// The single-byte encodings whose high half is a table.
 template <whatwg::encoding C>
-concept random_access_encode_codec =
+concept single_byte_table_encode_codec =
     C == whatwg::encoding::ibm866 || C == whatwg::encoding::iso_8859_2 || C == whatwg::encoding::iso_8859_3 ||
     C == whatwg::encoding::iso_8859_4 || C == whatwg::encoding::iso_8859_5 || C == whatwg::encoding::iso_8859_6 ||
     C == whatwg::encoding::iso_8859_7 || C == whatwg::encoding::iso_8859_8 || C == whatwg::encoding::iso_8859_8_i ||
@@ -77,8 +77,14 @@ concept random_access_encode_codec =
     C == whatwg::encoding::windows_1256 || C == whatwg::encoding::windows_1257 ||
     C == whatwg::encoding::windows_1258 || C == whatwg::encoding::x_mac_cyrillic;
 
+// Every encoding that encodes a scalar value to at most one byte: the table
+// encodings, and x-user-defined, whose high half is arithmetic.
+//! \expos
+template <whatwg::encoding C>
+concept random_access_encode_codec = single_byte_table_encode_codec<C> || C == whatwg::encoding::x_user_defined;
+
 // WHATWG defines a decoder for every codec but an encoder for only some of
-// them: replacement, x-user-defined and the UTF-16 pair decode only. Naming one
+// them: replacement and the UTF-16 pair decode only. Naming one
 // of those in an encode pipeline is a compile-time error, not a runtime one.
 //! \expos
 template <whatwg::encoding C>
@@ -92,6 +98,7 @@ template <whatwg::encoding C, typename R>
 concept whatwg_encode_input = unicode_scalar_range<R> && whatwg_encode_codec<C>;
 
 template <whatwg::encoding C>
+    requires single_byte_table_encode_codec<C>
 consteval const char32_t (&random_access_encode_table())[128] {
     if constexpr (C == whatwg::encoding::ibm866)
         return tables::ibm866;

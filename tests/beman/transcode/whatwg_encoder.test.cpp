@@ -67,6 +67,7 @@ using encodable = encoding_list<encoding::utf_8,
                                 encoding::windows_1257,
                                 encoding::windows_1258,
                                 encoding::x_mac_cyrillic,
+                                encoding::x_user_defined,
                                 encoding::gbk,
                                 encoding::gb18030,
                                 encoding::big5,
@@ -75,9 +76,8 @@ using encodable = encoding_list<encoding::utf_8,
                                 encoding::iso_2022_jp,
                                 encoding::euc_kr>;
 
-// The four encodings the Encoding Standard defines no encoder for.
-constexpr std::array decode_only{
-    encoding::utf_16be, encoding::utf_16le, encoding::replacement, encoding::x_user_defined};
+// The three encodings the Encoding Standard defines no encoder for.
+constexpr std::array decode_only{encoding::utf_16be, encoding::utf_16le, encoding::replacement};
 
 template <typename F, encoding... Cs>
 void for_each_encoding(encoding_list<Cs...>, F&& f) {
@@ -88,7 +88,7 @@ template <encoding... Cs>
 constexpr std::size_t count_of(encoding_list<Cs...>) {
     return sizeof...(Cs);
 }
-static_assert(count_of(encodable{}) == 36);
+static_assert(count_of(encodable{}) == 37);
 
 template <encoding C>
 concept has_encoder_type = requires { typename whatwg::encoder<C>; };
@@ -252,7 +252,7 @@ static_assert(has_encoder_type<encoding::shift_jis>);
 static_assert(!has_encoder_type<encoding::utf_16be>);
 static_assert(!has_encoder_type<encoding::utf_16le>);
 static_assert(!has_encoder_type<encoding::replacement>);
-static_assert(!has_encoder_type<encoding::x_user_defined>);
+static_assert(has_encoder_type<encoding::x_user_defined>);
 
 // The range properties the codec-object encode_view already has.
 template <encoding C>
@@ -280,7 +280,7 @@ static_assert(all_adaptors_are_codec_object_adaptors(encodable{}));
 
 } // namespace
 
-TEST_CASE("whatwg::encoder: the four decode-only encodings have no encoder", "[whatwg_encoder]") {
+TEST_CASE("whatwg::encoder: the three decode-only encodings have no encoder", "[whatwg_encoder]") {
     for (auto c : decode_only)
         CHECK_FALSE(whatwg::has_encoder(c));
 }
@@ -497,4 +497,74 @@ TEST_CASE("whatwg::encoder: the codec-object view over windows-1252 is random ac
 
     const auto r = std::span<const char32_t>{src} | encode_or_error(whatwg::encoder<encoding::windows_1252>{});
     CHECK(r[4] == std::unexpected{whatwg::error::unmapped_codepoint});
+}
+
+// ---------------------------------------------------------------------------
+// x-user-defined: the Encoding Standard's "x-user-defined encoder"
+// ---------------------------------------------------------------------------
+
+namespace {
+
+// The Standard's algorithm, spelled out independently of the library: an ASCII
+// code point is its own byte, U+F780 to U+F7FF are 0x80 to 0xFF, and anything
+// else is an error.
+constexpr std::optional<unsigned char> x_user_defined_reference(char32_t cp) {
+    if (cp < 0x80)
+        return static_cast<unsigned char>(cp);
+    if (cp >= 0xF780 && cp <= 0xF7FF)
+        return static_cast<unsigned char>(0x80 + (cp - 0xF780));
+    return std::nullopt;
+}
+
+} // namespace
+
+TEST_CASE("whatwg::encoder<x_user_defined>: every BMP scalar value, against the Standard",
+          "[whatwg_encoder][x_user_defined]") {
+    whatwg::encoder<encoding::x_user_defined> e;
+    for (char32_t cp = 0; cp <= 0xFFFF; ++cp) {
+        if (cp >= 0xD800 && cp <= 0xDFFF)
+            continue;
+        INFO("U+" << std::hex << static_cast<unsigned>(cp));
+        const auto expected = x_user_defined_reference(cp);
+        const auto r        = e.encode_one(cp);
+        CHECK(r.is_error == !expected);
+        if (expected) {
+            CHECK(r.count == 1);
+            CHECK(r.bytes[0] == *expected);
+        }
+        CHECK(e.encode_byte(cp) == expected);
+    }
+    CHECK(e.encode_one(U'\x10000').is_error);
+    CHECK(!e.encode_byte(U'\x10FFFF'));
+}
+
+TEST_CASE("whatwg::encoder<x_user_defined>: every byte round-trips through the decoder",
+          "[whatwg_encoder][x_user_defined]") {
+    std::string bytes;
+    for (int b = 0; b < 256; ++b)
+        bytes.push_back(static_cast<char>(b));
+    const auto decoded = collect(std::span<const char>{bytes} | whatwg::decode<encoding::x_user_defined>);
+    REQUIRE(decoded.size() == 256);
+    const auto encoded = collect(std::span<const char32_t>{decoded} | whatwg::encode<encoding::x_user_defined>);
+    CHECK(std::string(encoded.begin(), encoded.end()) == bytes);
+}
+
+TEST_CASE("whatwg::encoder<x_user_defined>: errors in both modes", "[whatwg_encoder][x_user_defined]") {
+    const std::u32string src{U'a', U'\xF780', U'\xE9', U'\xF7FF', U'z'};
+    const auto           lossy = collect(std::span<const char32_t>{src} | whatwg::encode<encoding::x_user_defined>);
+    CHECK(std::string(lossy.begin(), lossy.end()) == std::string{'a', '\x80', '?', '\xFF', 'z'});
+
+    const auto v = std::span<const char32_t>{src} | whatwg::encode_or_error<encoding::x_user_defined>;
+    static_assert(std::ranges::random_access_range<decltype(v)>);
+    REQUIRE(v.size() == src.size());
+    CHECK(v[2] == std::unexpected{whatwg::error::unmapped_codepoint});
+    CHECK(v[1] == '\x80');
+}
+
+TEST_CASE("whatwg::encoder<x_user_defined>: in a constant expression", "[whatwg_encoder][x_user_defined]") {
+    constexpr whatwg::encoder<encoding::x_user_defined> e;
+    CHECK(constify(e.encode_byte(U'\xF7AB')) == std::optional<unsigned char>{0xAB});
+    CHECK(constify(e.encode_byte(U'A')) == std::optional<unsigned char>{'A'});
+    CHECK(!constify(e.encode_byte(U'\xE9')));
+    CHECK(constify(whatwg::encoder<encoding::x_user_defined>{}.encode_one(U'\xF780').bytes[0]) == 0x80);
 }

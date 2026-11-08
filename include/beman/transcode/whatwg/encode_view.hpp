@@ -45,7 +45,7 @@ namespace beman::transcoding::whatwg {
 //! An argument of array type is ill-formed.
 //!
 //! *Mandates:* The Encoding Standard defines an encoder for `C`.  It defines
-//! none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`.
+//! none for `utf_16be`, `utf_16le` or `replacement`.
 template <whatwg::encoding C>
 inline constexpr auto encode = detail::make_whatwg_encode_adaptor<C, error_mode::replacement>();
 

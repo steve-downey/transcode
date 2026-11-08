@@ -76,7 +76,7 @@ std::string transcode_encode_all(std::u32string_view src) {
 //! `encoding`, and `false` otherwise.
 constexpr bool has_encoder(whatwg::encoding encoding) noexcept {
     return encoding != whatwg::encoding::utf_16be && encoding != whatwg::encoding::utf_16le &&
-           encoding != whatwg::encoding::replacement && encoding != whatwg::encoding::x_user_defined;
+           encoding != whatwg::encoding::replacement;
 }
 
 //! \returns `nullopt` if the WHATWG Encoding Standard defines no encoder for
@@ -329,11 +329,13 @@ transcode_string(std::span<const char> src, whatwg::encoding from, whatwg::encod
     case whatwg::encoding::euc_kr:
         result = detail::transcode_encode_all<whatwg::encoding::euc_kr>(u32v);
         break;
+    case whatwg::encoding::x_user_defined:
+        result = detail::transcode_encode_all<whatwg::encoding::x_user_defined>(u32v);
+        break;
     // Unreachable after whatwg::has_encoder(to); retained to keep the switch exhaustive.
     case whatwg::encoding::utf_16be:
     case whatwg::encoding::utf_16le:
     case whatwg::encoding::replacement:
-    case whatwg::encoding::x_user_defined:
         return std::nullopt;
     }
 

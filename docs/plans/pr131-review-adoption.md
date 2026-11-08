@@ -19,30 +19,13 @@ headings to keep the review's own anchors; the rest are named here.
 | [clang-regex-ci-failure](../review-findings-2026-10-30-pr131.md#clang-regex-ci-failure) | #138 gave every negative compile test one `EXPECT` line per compiler.  CI on `main` is green across the clang matrix. |
 | `ruff-pin-mismatch` | `pyproject.toml` and `.pre-commit-config.yaml` both pin ruff 0.17.2. |
 | `stale-names` | This branch.  `README.md` footnote 5 says "codec" again; `docs/benchmarks/README.md` and `PLATFORM_NOTES.md` use `whatwg::transcode` and `whatwg::decode`; `docs/p2728-alignment.md` describes the current code in current names and P5-Step 3c's in its own; `CLAUDE.md`'s architecture section describes the `whatwg/` layout. |
+| [x-user-defined-encoder](../review-findings-2026-10-30-pr131.md#x-user-defined-encoder) | `whatwg::encoder<x_user_defined>` implements the Standard's encoder: an ASCII code point is its own byte, U+F780 to U+F7FF are 0x80 to 0xFF, anything else is an error.  It models `single_byte_text_encoder`, so its views are random access.  `has_encoder` and `transcode_string` accept it, and the wording no longer says the Standard defines no such encoder. |
 | `runtime-encoding-visitor` | Decided 2026-11-08: no visitor over `whatwg::encoding`.  The paper's runtime example ended in "Use std::visit or switch", which invited the question; it now hands the labels to `whatwg::transcode_string`.  Looking at the use cases behind the question found a real gap, which is [runtime-codec-objects](#stage-6--runtime-codec-objects) below. |
 
 ## Open
 
 Ordered so that each stage can land as its own pull request, smallest and
-least contested first.  Stage 1, the stale names, is done on this branch and
-listed above.
-
-### Stage 2 — the x-user-defined encoder
-
-[x-user-defined-encoder](../review-findings-2026-10-30-pr131.md#x-user-defined-encoder).
-The one place the proposal contradicts the Encoding Standard.  Still open:
-`whatwg/encode_view.hpp`, `whatwg/encoder.hpp`, the generated
-`[transcode.whatwg.encoders]` and `[transcode.string]`, and the README all say
-the Standard defines no x-user-defined encoder.  It defines one.
-
-Default: implement it.  ASCII code points are their own byte, U+F780 to U+F7FF
-map to 0x80 to 0xFF, anything else is an error.  It is stateless and every
-scalar value encodes to one byte or none, so `whatwg::encoder<x_user_defined>`
-models `single_byte_text_encoder` and takes the random-access path.  Runtime
-test, WPT vectors if the suite has them, the constraint tests that currently
-expect rejection flipped, `constify` test, `make wording`, and the README and
-paper text corrected.  `transcode_string` and `text_encoding.hpp` special-case
-`x_user_defined` and need revisiting.
+least contested first.  Stages 1 and 2 are done and listed above.
 
 ### Stage 3 — wording
 
@@ -155,8 +138,8 @@ written before them, so the API is shaped by the program that needs it:
 
 Questions to settle while building it:
 
-- `dynamic_encoder` for an encoding with no encoder (`utf_16be`, `utf_16le`,
-  `replacement`, and `x_user_defined` until Stage 2 lands): a precondition on
+- `dynamic_encoder` for an encoding with no encoder (`utf_16be`, `utf_16le`
+  and `replacement`): a precondition on
   construction, a factory returning `optional`, or an `encode_one` that always
   fails.  `encode_to` returns `optional` in any case.
 - Which refinements the objects model.  Every `whatwg::decoder<C>` has

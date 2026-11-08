@@ -31,7 +31,7 @@ TEST_CASE("whatwg::has_encoder identifies the decode-only codecs", "[whatwg::tra
     CHECK_FALSE(constify(whatwg::has_encoder(whatwg::encoding::utf_16be)));
     CHECK_FALSE(constify(whatwg::has_encoder(whatwg::encoding::utf_16le)));
     CHECK_FALSE(constify(whatwg::has_encoder(whatwg::encoding::replacement)));
-    CHECK_FALSE(constify(whatwg::has_encoder(whatwg::encoding::x_user_defined)));
+    CHECK(constify(whatwg::has_encoder(whatwg::encoding::x_user_defined)));
 }
 
 TEST_CASE("whatwg::transcode_string: UTF-8 identity round-trip", "[whatwg::transcode_string]") {
@@ -217,9 +217,15 @@ TEST_CASE("whatwg::transcode_string: decode-only targets return nullopt", "[what
     CHECK_FALSE(
         whatwg::transcode_string(std::span<const char>(src), whatwg::encoding::utf_8, whatwg::encoding::replacement)
             .has_value());
-    CHECK_FALSE(
-        whatwg::transcode_string(std::span<const char>(src), whatwg::encoding::utf_8, whatwg::encoding::x_user_defined)
-            .has_value());
+}
+
+TEST_CASE("whatwg::transcode_string: x-user-defined round-trips every byte", "[whatwg::transcode_string]") {
+    std::string bytes;
+    for (int b = 0; b < 256; ++b)
+        bytes.push_back(static_cast<char>(b));
+    const auto utf8 = whatwg::transcode_string(bytes, whatwg::encoding::x_user_defined, whatwg::encoding::utf_8);
+    REQUIRE(utf8.has_value());
+    CHECK(whatwg::transcode_string(*utf8, whatwg::encoding::utf_8, whatwg::encoding::x_user_defined) == bytes);
 }
 
 // ---------------------------------------------------------------------------

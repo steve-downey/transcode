@@ -102,5 +102,9 @@ TEST_CASE("whatwg::transcode_string label: decode-only targets return nullopt", 
     CHECK_FALSE(whatwg::transcode_string(std::span<const char>(src), "utf-8", "utf-16be").has_value());
     CHECK_FALSE(whatwg::transcode_string(std::span<const char>(src), "utf-8", "utf-16le").has_value());
     CHECK_FALSE(whatwg::transcode_string(std::span<const char>(src), "utf-8", "replacement").has_value());
-    CHECK_FALSE(whatwg::transcode_string(std::span<const char>(src), "utf-8", "x-user-defined").has_value());
+}
+
+TEST_CASE("whatwg::transcode_string label: x-user-defined is a target", "[whatwg::transcode_string][label]") {
+    std::string src = "hello";
+    CHECK(whatwg::transcode_string(std::span<const char>(src), "utf-8", "x-user-defined") == "hello");
 }
