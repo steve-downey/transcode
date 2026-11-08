@@ -235,10 +235,12 @@ namespace std {
 
   template<text_decoder Codec> constexpr auto decode_or_error(Codec codec = {});
 
-  template<text_decoder Codec, input_range R, error_mode E>
-    requires legacy_byte_range<R>
-  inline constexpr bool enable_borrowed_range<decode_view<Codec, R, E>> =
-      borrowed_range<R>;
+  namespace ranges {
+    template<text_decoder Codec, input_range R, error_mode E>
+      requires legacy_byte_range<R>
+    inline constexpr bool enable_borrowed_range<decode_view<Codec, R, E>> =
+        borrowed_range<R>;
+  }
 
   // @[transcode.codec.encode]@, class template encode_view
 
@@ -273,10 +275,12 @@ namespace std {
 
   template<text_encoder Codec> constexpr auto encode_or_error(Codec codec = {});
 
-  template<text_encoder Codec, input_range R, error_mode E>
-    requires unicode_scalar_range<R>
-  inline constexpr bool enable_borrowed_range<encode_view<Codec, R, E>> =
-      borrowed_range<R>;
+  namespace ranges {
+    template<text_encoder Codec, input_range R, error_mode E>
+      requires unicode_scalar_range<R>
+    inline constexpr bool enable_borrowed_range<encode_view<Codec, R, E>> =
+        borrowed_range<R>;
+  }
 
   // @[transcode.whatwg.decode]@, decoding adaptors
 
