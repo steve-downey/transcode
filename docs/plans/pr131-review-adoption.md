@@ -127,6 +127,33 @@ The fix, in two layers:
   label.  `transcode_string` becomes a thin layer over the same objects, and
   its 40-case `switch` goes away.
 
+A MIME reader, as a real example, is the first caller of both layers and is
+written before them, so the API is shaped by the program that needs it:
+
+- `examples/mime_reader/`, its own example target.  Not a library facility,
+  and nothing in it goes near a specification header.
+- A small parser-combinator kit, copied from specgen's `parse/cursor.hpp` and
+  `parse/parser.hpp` (themselves adapted from compile-time-scheme to run at
+  run time; same author, same license) and adjusted to read bytes, since a
+  MIME message is bytes until a part's charset says otherwise.
+- A grammar written close to the RFCs' ABNF, covering what a reader needs and
+  no more: RFC 5322 header fields with folding; RFC 2045 `Content-Type` with
+  token and quoted-string parameters, and `Content-Transfer-Encoding`; RFC
+  2046 multipart bodies with nested boundaries, preamble and epilogue
+  skipped; RFC 2047 encoded-words in unstructured headers such as `Subject`.
+  RFC 2231 parameter continuations are out of scope.
+- Base64 and quoted-printable as lazy byte views, so a part's text is
+  `body | base64 | decode(whatwg::dynamic_decoder{*cs})`.  Encoded-words are
+  short, so they use the eager `decode_to(bytes, label)`.
+- The charset goes through `whatwg::get_encoding`, so `us-ascii` and
+  `iso-8859-1` mean windows-1252 as they do in a browser.  An unknown charset
+  is reported, not guessed.
+- A few messages under `examples/mime_reader/messages/`, chosen to exercise
+  the runtime path: an ISO-2022-JP text part, a Shift_JIS attachment, a
+  windows-1252 quoted-printable part, a UTF-8 base64 part, and a KOI8-R
+  encoded-word subject.  A ctest runs the reader over each and compares its
+  UTF-8 output with an expected file.
+
 Questions to settle while building it:
 
 - `dynamic_encoder` for an encoding with no encoder (`utf_16be`, `utf_16le`,
