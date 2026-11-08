@@ -62,6 +62,11 @@ The design changed, and the wording is regenerated from the reference implementa
 - The bridge to `std::text_encoding::id` goes in both directions, `whatwg::get_encoding(text_encoding::id)` and `whatwg::to_text_encoding_id`, and [Why Not `text_encoding::id`?](#why-not-text_encodingid) says why it is a bridge and not the interface.
 - The Design section opens with the three layers, WHATWG, codec objects and system `iconv`, and a worked example of a codec the library does not ship.
 - The cost of runtime selection is measured, and [Template Parameter vs Runtime Selection](#template-parameter-vs-runtime-selection) reports it.
+- `whatwg::encoder<x_user_defined>` exists: the Encoding Standard defines an x-user-defined encoder, and R0 said it did not.
+  Only `utf_16be`, `utf_16le` and `replacement` have no encoder.
+- Runtime selection is shown through `whatwg::transcode_string`, which takes labels and does the dispatch, rather than through a hand-written `switch`.
+- [Why Not `text_encoding::id`?](#why-not-text_encodingid) quotes the Encoding Standard on why its label matching is stricter than UTS #22, and says why no cast between the enumerations can be correct.
+- The bulk-conversion section shows writing into a caller-owned buffer, since the views allocate nothing.
 - The namespace and `single_byte_text_encoder` are open questions for SG16.
 
 ### Wording
@@ -70,6 +75,8 @@ The design changed, and the wording is regenerated from the reference implementa
 - Remarks that had lost their clauses are routed to the clauses they belong to.
 - *Mandates* and *Constraints* replace "is required to be".
 - The clause headings carry stable names, and an editor's note covers the nested namespaces.
+- `whatwg::decoder<C>::flush` is constrained on the exposition-only `$has-decode-state$<C>`, where the wording had shown a comparison of `detail::` types.
+- The normative reference in [intro.refs] names the Encoding Standard's June 2025 Review Draft, a dated document, where R0 named the living standard.
 - The synopsis no longer names the adaptor closure types.
   `decode`, `decode_or_error`, `encode`, `encode_or_error` and `transcode(from, to)` are declared `constexpr auto`, the way `std::ranges::to` is in [range.utility.conv], and their clauses say what they return.
 
@@ -412,12 +419,17 @@ The example is not a test, because the iconv answer depends on the platform's ta
 The label mapping differs too.
 WHATWG maps `latin1`, `iso-8859-1` and `ascii` to windows-1252, so `id::ISOLatin1` and `id::ASCII` resolve to `whatwg::encoding::windows_1252`.
 A program that passes `id::ISOLatin1` to WHATWG gets windows-1252, which is what a browser does with that label.
+The difference is deliberate.
+`text_encoding` matches aliases as Unicode Technical Standard #22 describes, and the Encoding Standard [@whatwg-encoding] says of its own lookup:
+
+> This is a more basic and restrictive algorithm of mapping labels to encodings than section 1.4 of Unicode Technical Standard #22 prescribes, as that is necessary to be compatible with deployed content.
 
 So the library keeps its own enumeration.
 It is a closed set of specifications, and an `id` is only a name.
 The library bridges to `id` in both directions.
 `whatwg::get_encoding(text_encoding::id)` applies the WHATWG label lookup to the id's registered names, and `whatwg::to_text_encoding_id(e)` goes back through the encoding's WHATWG name.
 Three encodings have no id: `replacement`, `x_user_defined` and `x_mac_cyrillic`.
+So no cast between the two enumerations can be correct: several ids land on one encoding, and three encodings have no id to land on.
 For every other encoding the round trip returns the encoding it started with.
 Both functions are available only when `<text_encoding>` is, which is C++26.
 
@@ -948,6 +960,23 @@ std::ranges::copy(scalars | whatwg::encode<whatwg::encoding::utf_8>,
 
 whatwg::decode_into<whatwg::encoding::utf_8>(bytes, std::back_inserter(scalars));
 whatwg::encode_into<whatwg::encoding::utf_8>(scalars, std::back_inserter(encoded));
+```
+
+None of this needs the library to allocate.
+The WHATWG views allocate nothing; the containers in these examples are the caller's choice, not the library's.
+A program that owns a fixed buffer writes into it, and bounds the write with `views::take`:
+
+```cpp
+std::size_t decode_into_buffer(
+    std::string_view bytes,
+    std::array<char32_t, 256>& buf) {
+  auto [in, out] = std::ranges::copy(
+      bytes
+        | whatwg::decode<whatwg::encoding::utf_8>
+        | std::views::take(buf.size()),
+      buf.begin());
+  return static_cast<std::size_t>(out - buf.begin());
+}
 ```
 
 The convenience `whatwg::transcode<From, To>` adaptor is useful when the intermediate Unicode range is not otherwise needed:

@@ -3,6 +3,10 @@
 #include <beman/transcode/transcode.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <ranges>
 #include <string_view>
 #include <vector>
 
@@ -39,7 +43,31 @@ std::vector<char32_t> decode_utf8(
 
 } // namespace after_example
 
+namespace caller_buffer_example {
+
+// clang-format off
+// e32e3260-7a8e-4cc8-8a4f-9adb6d9797ec
+std::size_t decode_into_buffer(
+    std::string_view bytes,
+    std::array<char32_t, 256>& buf) {
+  auto [in, out] = std::ranges::copy(
+      bytes
+        | whatwg::decode<whatwg::encoding::utf_8>
+        | std::views::take(buf.size()),
+      buf.begin());
+  return static_cast<std::size_t>(out - buf.begin());
+}
+// e32e3260-7a8e-4cc8-8a4f-9adb6d9797ec end
+// clang-format on
+
+} // namespace caller_buffer_example
+
 int main() {
     constexpr std::string_view input = "Hello";
-    return before_example::decode_utf8(input) == after_example::decode_utf8(input) ? 0 : 1;
+    std::array<char32_t, 256>  buf{};
+    const std::size_t          n = caller_buffer_example::decode_into_buffer(input, buf);
+    const bool                 buffer_ok =
+        n == input.size() &&
+        std::ranges::equal(std::views::take(buf, n), input, {}, {}, [](char c) { return static_cast<char32_t>(c); });
+    return before_example::decode_utf8(input) == after_example::decode_utf8(input) && buffer_ok ? 0 : 1;
 }

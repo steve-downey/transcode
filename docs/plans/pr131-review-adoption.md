@@ -20,40 +20,17 @@ headings to keep the review's own anchors; the rest are named here.
 | `ruff-pin-mismatch` | `pyproject.toml` and `.pre-commit-config.yaml` both pin ruff 0.17.2. |
 | `stale-names` | This branch.  `README.md` footnote 5 says "codec" again; `docs/benchmarks/README.md` and `PLATFORM_NOTES.md` use `whatwg::transcode` and `whatwg::decode`; `docs/p2728-alignment.md` describes the current code in current names and P5-Step 3c's in its own; `CLAUDE.md`'s architecture section describes the `whatwg/` layout. |
 | [x-user-defined-encoder](../review-findings-2026-10-30-pr131.md#x-user-defined-encoder) | `whatwg::encoder<x_user_defined>` implements the Standard's encoder: an ASCII code point is its own byte, U+F780 to U+F7FF are 0x80 to 0xFF, anything else is an error.  It models `single_byte_text_encoder`, so its views are random access.  `has_encoder` and `transcode_string` accept it, and the wording no longer says the Standard defines no such encoder. |
+| `decode-state-constraint-leak` | `flush` is constrained on the exposition-only `$has-decode-state$<C>`, and the decoder's Remarks say which encodings it holds for.  Still showing `detail::` in the synopsis, and not raised by the review: the types of the exposition-only `$state$` members of `whatwg::decoder` and `whatwg::encoder`. |
+| `encoding-standard-review-draft` | [intro.refs] names the June 2025 Review Draft.  The five commits between it and the commit the tables come from are meta and editorial.  Recorded in [encoding-standard-reference](../decisions.md#encoding-standard-reference). |
+| `text-encoding-cast` | "Why Not `text_encoding::id`?" now says no cast between the enumerations can be correct: several ids land on one encoding, and three encodings have none. |
+| `label-matching-quote` | The same section quotes the Encoding Standard's note that its label matching is stricter than UTS #22, for compatibility with deployed content. |
+| `caller-buffer-answer` | The bulk-conversion section says the WHATWG views allocate nothing and shows a bounded write into a caller-owned buffer, compiled in `examples/paper_bulk_conversion.cpp`. |
 | `runtime-encoding-visitor` | Decided 2026-11-08: no visitor over `whatwg::encoding`.  The paper's runtime example ended in "Use std::visit or switch", which invited the question; it now hands the labels to `whatwg::transcode_string`.  Looking at the use cases behind the question found a real gap, which is [runtime-codec-objects](#stage-6--runtime-codec-objects) below. |
 
 ## Open
 
 Ordered so that each stage can land as its own pull request, smallest and
-least contested first.  Stages 1 and 2 are done and listed above.
-
-### Stage 3 — wording
-
-- `decode-state-constraint-leak`.  `flush`'s *Constraints* in
-  `[transcode.whatwg.decoders]` and the synopsis render as
-  `same_as<detail::decode_state_t<C>, detail::no_decode_state>`.  It needs an
-  exposition-only name, such as `$has-decode-state$<C>`.
-- `encoding-standard-review-draft`.  The bibliography pins a commit of the
-  living standard.  ISO allows a normative reference only to a dated document,
-  and `whatwg/encoding` publishes dated Review Drafts for exactly this.  Cite
-  the Review Draft as well, and say the enumerators are that draft's table.
-  Also add a dated entry to
-  [encoding-standard-reference](../decisions.md#encoding-standard-reference).
-
-### Stage 4 — answers owed to the SG16 thread
-
-Paper prose, each a sentence or a paragraph where the point was raised.
-
-- `text-encoding-cast` (Wakely).  Mostly answered: the paper shows `ISOLatin1`
-  and `ASCII` both landing on windows-1252 and lists the three encodings with
-  no id.  It never draws the conclusion he asked for: a many-to-one map with
-  holes means no cast between the two enumerations can be correct.
-- `label-matching-quote` (Wakely).  Quote the Standard's note under "get an
-  encoding": its matching is more restrictive than UTS #22, which
-  `text_encoding` follows, for compatibility with deployed content.
-- `caller-buffer-answer` (Freire).  Not addressed.  The views allocate
-  nothing; `decode_into`, `encode_into` and `ranges::copy` into a `span` are
-  the caller-buffer path.
+least contested first.  Stages 1 to 4 are done and listed above.
 
 ### Stage 5 — benchmarks
 
@@ -142,9 +119,11 @@ Questions to settle while building it:
   and `replacement`): a precondition on
   construction, a factory returning `optional`, or an `encode_one` that always
   fails.  `encode_to` returns `optional` in any case.
-- Which refinements the objects model.  Every `whatwg::decoder<C>` has
-  `decode_first`, so `bom_aware_text_decoder` is straightforward, and `flush`
-  can return "nothing pending" for a stateless encoding.  The `single_byte_*`
+- Which refinements the objects model.  `flush` can return "nothing pending"
+  for a stateless encoding, so `flushable_text_decoder` is straightforward.
+  `decode_first` exists only where `$strips-leading-bom$<C>` holds, so a
+  `bom_aware_text_decoder` dynamic decoder has to forward to `decode_one` for
+  every other encoding.  The `single_byte_*`
   concepts cannot be promised at run time, so the views take the forward path.
 - `constexpr`: `std::variant` is usable in constant evaluation, so the objects
   should be too, with `constify` tests.
