@@ -2,7 +2,7 @@
 
 **Branch:** `p6-step8-paper-and-wording`
 **Depends on:** Steps 1 through 7
-**Findings:** P-01, P-02, S-04, S-05, D-01, D-02, D-03, D-04
+**Findings:** [optional-iconv-story](../review-findings-2026-09-11.md#optional-iconv-story), [posix-type-in-wording](../review-findings-2026-09-11.md#posix-type-in-wording), [synopsis-free-standing-prose](../review-findings-2026-09-11.md#synopsis-free-standing-prose), [unsubstantiated-claims](../review-findings-2026-09-11.md#unsubstantiated-claims), [duplicate-author-email](../review-findings-2026-09-11.md#duplicate-author-email), [feature-test-macro-placeholders](../review-findings-2026-09-11.md#feature-test-macro-placeholders), [utf32-bom-sniffing-claim](../review-findings-2026-09-11.md#utf32-bom-sniffing-claim), [revision-drift](../review-findings-2026-09-11.md#revision-drift)
 **Read first:** `docs/plans/phase6-index.md`, `papers/wording/README.md`,
 `docs/wording-outline.md`
 
@@ -30,7 +30,9 @@ step produces would mix wording change with tool drift.  Resolve that first;
 Steps 1-7 will have left entries in `papers/wording/PENDING` (see Step 0).
 `make wording` clears it.  The file must be empty when this step ends.
 
-## P-02: an ISO synopsis that names a POSIX type
+## An ISO synopsis that names a POSIX type
+
+**Finding:** [posix-type-in-wording](../review-findings-2026-09-11.md#posix-type-in-wording)
 
 `iconv_transcode_view.hpp:38-41` declares:
 
@@ -68,7 +70,9 @@ question, and give the group the fact that motivates it -- that the adaptor's
 handle type cannot be specified in ISO terms without either an opaque handle or
 a separate POSIX-conditional document.
 
-## P-01: the optional-iconv story
+## The optional-iconv story
+
+**Finding:** [optional-iconv-story](../review-findings-2026-09-11.md#optional-iconv-story)
 
 Three places say iconv is optional or absent, and the build says otherwise:
 
@@ -86,7 +90,9 @@ not separately buildable today.  Say that, rather than saying either less or
 more.  Whether to make it separable is the SG16 question above, and the honest
 version of this paragraph is what makes that question legible.
 
-## S-04: prose in the synopsis
+## Prose in the synopsis
+
+**Finding:** [synopsis-free-standing-prose](../review-findings-2026-09-11.md#synopsis-free-standing-prose)
 
 `papers/wording/transcode.syn.md:462-490` carries substantial semantic prose
 after the declarations, much of it duplicated in the dedicated semantic
@@ -98,7 +104,9 @@ each normative rule has one home -- not in the fragments, which are generated.
 If it is, say so in `docs/wording-outline.md` so the next reader does not
 re-open it.
 
-## S-05: claims narrower than their evidence
+## Claims narrower than their evidence
+
+**Finding:** [unsubstantiated-claims](../review-findings-2026-09-11.md#unsubstantiated-claims)
 
 Each of these is stronger than what is nearby to support it.
 
@@ -119,18 +127,18 @@ number, and the benchmark harness is already built.
 
 ## The drift items
 
-- **D-01** — `papers/transcode-view.md:13-14` has two `email:` keys under one
+- **[duplicate-author-email](../review-findings-2026-09-11.md#duplicate-author-email)** — `papers/transcode-view.md:13-14` has two `email:` keys under one
   author.  The renderer warns `Duplicate key: .author[0].email` and discards
   one.  Keep one address, or use the renderer's supported form for several.
-- **D-02** — the feature-test macro placeholder is spelled `202XXXL` in one
+- **[feature-test-macro-placeholders](../review-findings-2026-09-11.md#feature-test-macro-placeholders)** — the feature-test macro placeholder is spelled `202XXXL` in one
   place and `20XXXXL` in another.  Pick `202XXXL` and use it everywhere; grep,
   do not fix the two the review names and stop.
-- **D-03** — `README.md:291-294` and `papers/parts/tail.md:125-128` say
+- **[utf32-bom-sniffing-claim](../review-findings-2026-09-11.md#utf32-bom-sniffing-claim)** — `README.md:291-294` and `papers/parts/tail.md:125-128` say
   `sniff_encoding` detects UTF-8/16/32 BOMs.  It detects UTF-8, UTF-16BE and
   UTF-16LE, and the `codec` enum has no UTF-32 entry to return.  Remove UTF-32
   from the claim.  Adding UTF-32 codecs is a feature, not a documentation fix,
   and is out of scope here.
-- **D-04** — `papers/README.md:7` says D4246R0; the paper is D4246R1.
+- **[revision-drift](../review-findings-2026-09-11.md#revision-drift)** — `papers/README.md:7` says D4246R0; the paper is D4246R1.
   `README.md:235-242` says P2728R12; the tail and
   `docs/p2728-alignment.md` say P2728R13.  Fix both, and define each cited
   revision in one place so the next bump is one edit.
@@ -153,11 +161,11 @@ and 7 changed:
 ## Order of work
 
 1. Build specgen; `make wording-check` on an unmodified tree.
-2. Header wording changes (P-02, S-04 if it lands in headers).
+2. Header wording changes ([posix-type-in-wording](../review-findings-2026-09-11.md#posix-type-in-wording), [synopsis-free-standing-prose](../review-findings-2026-09-11.md#synopsis-free-standing-prose) if it lands in headers).
 3. `make wording`; `PENDING` empties.
-4. Paper and README prose (P-01, S-05, D-01 – D-04, the carried items).
+4. Paper and README prose ([optional-iconv-story](../review-findings-2026-09-11.md#optional-iconv-story), [unsubstantiated-claims](../review-findings-2026-09-11.md#unsubstantiated-claims), [duplicate-author-email](../review-findings-2026-09-11.md#duplicate-author-email), [feature-test-macro-placeholders](../review-findings-2026-09-11.md#feature-test-macro-placeholders), [utf32-bom-sniffing-claim](../review-findings-2026-09-11.md#utf32-bom-sniffing-claim) and [revision-drift](../review-findings-2026-09-11.md#revision-drift), the carried items).
 5. `make wording-check`, `make wording-inputs-check`, `make wording-validate`.
-6. Render the paper; the only known warning was D-01, and it should be gone.
+6. Render the paper; the only known warning was [duplicate-author-email](../review-findings-2026-09-11.md#duplicate-author-email), and it should be gone.
 
 ## Done when
 

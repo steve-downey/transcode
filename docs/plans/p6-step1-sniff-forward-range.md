@@ -2,7 +2,7 @@
 
 **Branch:** `p6-step1-sniff-forward-range`
 **Depends on:** Step 0
-**Finding:** C-01
+**Finding:** [sniff-consumes-single-pass](../review-findings-2026-09-11.md#sniff-consumes-single-pass)
 **Read first:** `docs/plans/phase6-index.md`
 
 ---

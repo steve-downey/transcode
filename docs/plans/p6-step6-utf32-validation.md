@@ -2,12 +2,12 @@
 
 **Branch:** `p6-step6-utf32-validation`
 **Depends on:** Step 0
-**Findings:** S-01, and C-08 and D-15 below, both new
+**Findings:** [invalid-char32-contract](../review-findings-2026-09-11.md#invalid-char32-contract), and [utf32-validation-not-uniform](#utf32-validation-not-uniform) and [encode-error-question-mark-claim](#encode-error-question-mark-claim) below, both new
 **Read first:** `docs/plans/phase6-index.md`
 
 > This step replaces `p6-step6-scalar-precondition.md`, which proposed the
 > opposite.  The reasoning that changed is in the phase index under
-> "S-01, resolved."
+> "[invalid-char32-contract](../review-findings-2026-09-11.md#invalid-char32-contract), resolved."
 
 ---
 
@@ -85,7 +85,9 @@ So the code has been right and the wording wrong, and the fix is to say what
 the code does rather than to make the code match a precondition that the
 library's own conformance suite deliberately violates.
 
-### C-08: the diagnosis is not uniform (new)
+### utf32-validation-not-uniform
+
+**Finding:** The diagnosis is not uniform (new)
 
 The surrogate and out-of-range checks live **inside** the
 `if constexpr (C == codec::utf_8)` branch.  Every other codec goes straight to
@@ -104,12 +106,14 @@ Every clause of that is wrong: it is not about representation, and U+D800 is
 not a Unicode scalar value.  The same input is diagnosed correctly by one codec
 and misdiagnosed by the other thirty-nine.
 
-This is a defect under *any* answer to S-01.  Under a precondition it is
+This is a defect under *any* answer to [invalid-char32-contract](../review-findings-2026-09-11.md#invalid-char32-contract).  Under a precondition it is
 undiagnosed-but-inconsistent; under defined behaviour it is simply the wrong
 error.  It is fixed here because the fix -- validate once, above dispatch -- is
 the same layering the standards use.
 
-### D-15: the documentation says `'?'` and UTF-8 says otherwise (new)
+### encode-error-question-mark-claim
+
+**Finding:** The documentation says `'?'` and UTF-8 says otherwise (new)
 
 Three places claim an encode failure yields `'?'`:
 
@@ -163,7 +167,7 @@ it down; the two views should not differ by accident.
   implementation upholds it -- `detail/utf8.hpp` enforces the 0xED/0x9F and
   0xF4/0x8F boundaries and `detail/utf16.hpp` errors on an unpaired surrogate.
   This is a guarantee worth stating outright rather than leaving to inference.
-- **D-15.**  Correct the three `'?'` claims to distinguish an unmappable scalar
+- **[encode-error-question-mark-claim](#encode-error-question-mark-claim).**  Correct the three `'?'` claims to distinguish an unmappable scalar
   value (`'?'`) from ill-formed UTF-32 input (U+FFFD, then encoded).
 
 ### The WPT test stays, re-attributed
@@ -192,7 +196,7 @@ all, and no C++ vector can exercise a pair split across chunks, because a
 ## Tests
 
 - U+D800 through `whatwg_encode_or_error<codec::windows_1252>` reports
-  `surrogate_code_point`, not `unmapped_codepoint`.  This is C-08 and it fails
+  `surrogate_code_point`, not `unmapped_codepoint`.  This is [utf32-validation-not-uniform](#utf32-validation-not-uniform) and it fails
   on `main`.
 - The same through `whatwg_encode<codec::windows_1252>` yields `'?'` -- via
   U+FFFD being unmappable, which is the correct route to the same byte.

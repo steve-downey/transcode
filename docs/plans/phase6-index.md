@@ -30,25 +30,25 @@ the review was checked rather than taken.
   - The `else` branches at `iconv_bulk.hpp:125`, `:207`, `:277` and
     `iconv_transcode_view.hpp:252` are commented `EILSEQ` and `EINVAL` but are
     reached for **any** unexpected `errno`.  The misclassification the review
-    mentions under C-05 is in the streaming view as well as the bulk helpers.
+    mentions under [iconv-error-conflation](../review-findings-2026-09-11.md#iconv-error-conflation) is in the streaming view as well as the bulk helpers.
 - **The iconv adaptors are inside the proposed synopsis.**
   `transcode.hpp:49-52` includes all four iconv headers between the
   `\rSec2[transcode.syn]` marker and the `/// END` fence, so `iconv_t`
   (`iconv_transcode_view.hpp:39`) is a declaration of the proposed
-  `<transcode>`.  P-01 and P-02 are therefore one finding with two faces, and
+  `<transcode>`.  [optional-iconv-story](../review-findings-2026-09-11.md#optional-iconv-story) and [posix-type-in-wording](../review-findings-2026-09-11.md#posix-type-in-wording) are therefore one finding with two faces, and
   neither can be answered without deciding the other.
-- **`make lint-manual` already exists** (`Makefile:281`).  D-11 is a one-word
+- **`make lint-manual` already exists** (`Makefile:281`).  [manual-lint-duplicate](../review-findings-2026-09-11.md#manual-lint-duplicate) is a one-word
   fix in the workflow, not a new target.
 - **`specgen` is not installed on this machine.**  `~/.local/bin/specgen` is
   absent and `~/src/specgen/` is empty.  Building it links LLVM's Clang front
   end.  See "The wording gate" below: this phase revises the check that would
   otherwise make that build a prerequisite for eight steps.
 - **711 C++ tests register** under `ctest -N`.  `docs/plans/handoff-next.md`
-  says 707, which is the drift D-10 is about.
+  says 707, which is the drift [stale-handoff-guide](../review-findings-2026-09-11.md#stale-handoff-guide) is about.
 - **One finding the review did not have.**  `pre-commit run gitleaks` fails on
   every file, modified or not: the pinned hook calls a `gitleaks git`
   subcommand the resolved binary does not have.  `make lint` therefore has a
-  permanently red hook.  It is D-14, and it belongs to Step 9.
+  permanently red hook.  It is [gitleaks-hook](p6-step9-docs-build-ci.md#gitleaks-hook), and it belongs to Step 9.
 - **The four sibling worktrees are stale.**  `add-clang-tidy`,
   `codex/gb18030-e5e5-conformance`, `codex/remove-utf16-encode-paths` and
   `codex/scalar-value-precondition` are all ancestors of `main`; none carries
@@ -62,21 +62,21 @@ them at the keyboard.
 
 | Findings | Decision |
 | --- | --- |
-| P-01, P-02 | **Document as implementation-defined.**  `iconv_functions` and its handle type get wording saying they are implementation-defined and that `[transcode.iconv]` is POSIX-conditional.  No header split, no CMake option, no new wording root.  The README's portability claims are narrowed to match a build that requires iconv, and the paper's existing question to SG16 about splitting the adaptor is sharpened into an explicit ask. |
-| C-02, C-03, C-05 | **Extend `iconv_error` and fix the loops.**  New enumerators for open and system failures, a flush that resumes instead of being abandoned, unexpected `errno` classified rather than folded into the skip path, and a documented minimum buffer size.  The API shapes do not change. |
-| C-04, S-02 | **Skip, do not replace.**  The bulk helpers stop writing a raw `0x3F` and skip, which is what the streaming view does and what the committed wording already says.  One recovery policy across the iconv family. |
-| C-01 | **Require `forward_range`.**  The docblock's promise that the mark is not consumed becomes true, rather than being rewritten to admit that it is. |
-| C-06 | **Specify the precondition and value-initialize.**  A reachable terminator and a lifetime requirement become `\expects`; `ptr_` stops being indeterminate. |
-| C-07 | **Return `optional`.**  The `codec` overload of `transcode_string` returns `optional<string>` and rejects an encoder-less target before decoding, so it agrees with the label overload and empty output means empty output. |
-| S-01 | **Drop the precondition; specify UTF-32 input validation.**  A `char32_t` that is not a Unicode scalar value yields U+FFFD in replacement mode and the corresponding error in `expected` mode, and the validation happens once, above codec dispatch.  See "S-01, resolved" below; this reverses the provisional decision. |
-| C-08 (new) | **Validate above dispatch.**  The surrogate and out-of-range checks exist only for UTF-8; the other thirty-nine codecs misreport the same input as `unmapped_codepoint`.  Fixed by the same change as S-01. |
-| S-03 | **Document the reservation.**  U+FFFD is reserved as the unmapped-byte signal, the extensibility cost is stated, and the question of a better signal goes to SG16 rather than being answered here. |
+| [optional-iconv-story](../review-findings-2026-09-11.md#optional-iconv-story), [posix-type-in-wording](../review-findings-2026-09-11.md#posix-type-in-wording) | **Document as implementation-defined.**  `iconv_functions` and its handle type get wording saying they are implementation-defined and that `[transcode.iconv]` is POSIX-conditional.  No header split, no CMake option, no new wording root.  The README's portability claims are narrowed to match a build that requires iconv, and the paper's existing question to SG16 about splitting the adaptor is sharpened into an explicit ask. |
+| [iconv-small-buffer-loses-input](../review-findings-2026-09-11.md#iconv-small-buffer-loses-input), [iconv-flush-once](../review-findings-2026-09-11.md#iconv-flush-once), [iconv-error-conflation](../review-findings-2026-09-11.md#iconv-error-conflation) | **Extend `iconv_error` and fix the loops.**  New enumerators for open and system failures, a flush that resumes instead of being abandoned, unexpected `errno` classified rather than folded into the skip path, and a documented minimum buffer size.  The API shapes do not change. |
+| [iconv-lossy-replacement-corrupts](../review-findings-2026-09-11.md#iconv-lossy-replacement-corrupts), [iconv-lossy-recovery-policy](../review-findings-2026-09-11.md#iconv-lossy-recovery-policy) | **Skip, do not replace.**  The bulk helpers stop writing a raw `0x3F` and skip, which is what the streaming view does and what the committed wording already says.  One recovery policy across the iconv family. |
+| [sniff-consumes-single-pass](../review-findings-2026-09-11.md#sniff-consumes-single-pass) | **Require `forward_range`.**  The docblock's promise that the mark is not consumed becomes true, rather than being rewritten to admit that it is. |
+| [null-term-reachable-terminator](../review-findings-2026-09-11.md#null-term-reachable-terminator) | **Specify the precondition and value-initialize.**  A reachable terminator and a lifetime requirement become `\expects`; `ptr_` stops being indeterminate. |
+| [empty-output-as-unsupported-target](../review-findings-2026-09-11.md#empty-output-as-unsupported-target) | **Return `optional`.**  The `codec` overload of `transcode_string` returns `optional<string>` and rejects an encoder-less target before decoding, so it agrees with the label overload and empty output means empty output. |
+| [invalid-char32-contract](../review-findings-2026-09-11.md#invalid-char32-contract) | **Drop the precondition; specify UTF-32 input validation.**  A `char32_t` that is not a Unicode scalar value yields U+FFFD in replacement mode and the corresponding error in `expected` mode, and the validation happens once, above codec dispatch.  See "[invalid-char32-contract](../review-findings-2026-09-11.md#invalid-char32-contract), resolved" below; this reverses the provisional decision. |
+| [utf32-validation-not-uniform](p6-step6-utf32-validation.md#utf32-validation-not-uniform) (new) | **Validate above dispatch.**  The surrogate and out-of-range checks exist only for UTF-8; the other thirty-nine codecs misreport the same input as `unmapped_codepoint`.  Fixed by the same change as [invalid-char32-contract](../review-findings-2026-09-11.md#invalid-char32-contract). |
+| [fffd-error-sentinel](../review-findings-2026-09-11.md#fffd-error-sentinel) | **Document the reservation.**  U+FFFD is reserved as the unmapped-byte signal, the extensibility cost is stated, and the question of a better signal goes to SG16 rather than being answered here. |
 
-C-07 is source-breaking: it changes a return type.  That is cheap now and
+[empty-output-as-unsupported-target](../review-findings-2026-09-11.md#empty-output-as-unsupported-target) is source-breaking: it changes a return type.  That is cheap now and
 expensive after LEWG review, which is the argument for doing it in this phase
 rather than the next.
 
-### S-01, resolved
+### [invalid-char32-contract](../review-findings-2026-09-11.md#invalid-char32-contract), resolved
 
 The first decision here was "keep the precondition, drop the promises."  It was
 wrong, and the way it was wrong is worth recording, because the same mistake is
@@ -113,14 +113,14 @@ and WHATWG specifies only the second.
 
 Two things fell out of settling it:
 
-- **C-08.**  The surrogate and out-of-range checks live inside the
+- **[utf32-validation-not-uniform](p6-step6-utf32-validation.md#utf32-validation-not-uniform).**  The surrogate and out-of-range checks live inside the
   `if constexpr (C == codec::utf_8)` branch of `whatwg_encode_view::load()`.
   Every other codec reaches `emit_error(whatwg_error::unmapped_codepoint,
   {'?'})` instead (`whatwg_encode_view.hpp:499`, `:524`, `:535`, `:546`,
   `:557`, `:568`), so U+D800 through `windows_1252` is reported as "the
   encoding has no representation for the Unicode scalar value being encoded" --
-  which is wrong twice over.  A defect under either answer to S-01.
-- **D-15.**  `error.hpp:79` and `:86-89`, `encode_view.hpp:229` and
+  which is wrong twice over.  A defect under either answer to [invalid-char32-contract](../review-findings-2026-09-11.md#invalid-char32-contract).
+- **[encode-error-question-mark-claim](p6-step6-utf32-validation.md#encode-error-question-mark-claim).**  `error.hpp:79` and `:86-89`, `encode_view.hpp:229` and
   `papers/transcode-view.md:371` all say an encode failure yields `'?'`.
   `whatwg_encode<codec::utf_8>` emits `EF BF BD`.
 
@@ -174,15 +174,15 @@ being a merge blocker for a tree that is knowingly mid-phase.
 | Step | Branch | Findings | Depends on |
 | --- | --- | --- | --- |
 | 0 | `p6-step0-wording-gate` | the gate above | — |
-| 9 | `p6-step9-docs-build-ci` | D-05 – D-14 | — |
-| 1 | `p6-step1-sniff-forward-range` | C-01 | Step 0 |
-| 2 | `p6-step2-iconv-error-model` | C-02, C-03, C-05 | Step 0 |
-| 3 | `p6-step3-iconv-lossy-skip` | C-04, S-02 | Steps 0, 2 |
-| 4 | `p6-step4-null-term-precondition` | C-06 | Step 0 |
-| 5 | `p6-step5-transcode-string-result` | C-07 | Step 0 |
-| 6 | `p6-step6-utf32-validation` | S-01, C-08, D-15 | Step 0 |
-| 7 | `p6-step7-fffd-reservation` | S-03 | Step 0 |
-| 8 | `p6-step8-paper-and-wording` | P-01, P-02, S-04, S-05, D-01 – D-04 | Steps 1–7 |
+| 9 | `p6-step9-docs-build-ci` | [build-instructions-framework-and-standard](../review-findings-2026-09-11.md#build-instructions-framework-and-standard), [compiler-support-vs-cmake](../review-findings-2026-09-11.md#compiler-support-vs-cmake), [table-codec-documented-as-public](../review-findings-2026-09-11.md#table-codec-documented-as-public), [icu-iconv-claim](../review-findings-2026-09-11.md#icu-iconv-claim), [root-file-named-dash](../review-findings-2026-09-11.md#root-file-named-dash), [stale-handoff-guide](../review-findings-2026-09-11.md#stale-handoff-guide), [manual-lint-duplicate](../review-findings-2026-09-11.md#manual-lint-duplicate), [module-install-consumer-test](../review-findings-2026-09-11.md#module-install-consumer-test), [telemetry-shebang](../review-findings-2026-09-11.md#telemetry-shebang) and [gitleaks-hook](p6-step9-docs-build-ci.md#gitleaks-hook) | — |
+| 1 | `p6-step1-sniff-forward-range` | [sniff-consumes-single-pass](../review-findings-2026-09-11.md#sniff-consumes-single-pass) | Step 0 |
+| 2 | `p6-step2-iconv-error-model` | [iconv-small-buffer-loses-input](../review-findings-2026-09-11.md#iconv-small-buffer-loses-input), [iconv-flush-once](../review-findings-2026-09-11.md#iconv-flush-once), [iconv-error-conflation](../review-findings-2026-09-11.md#iconv-error-conflation) | Step 0 |
+| 3 | `p6-step3-iconv-lossy-skip` | [iconv-lossy-replacement-corrupts](../review-findings-2026-09-11.md#iconv-lossy-replacement-corrupts), [iconv-lossy-recovery-policy](../review-findings-2026-09-11.md#iconv-lossy-recovery-policy) | Steps 0, 2 |
+| 4 | `p6-step4-null-term-precondition` | [null-term-reachable-terminator](../review-findings-2026-09-11.md#null-term-reachable-terminator) | Step 0 |
+| 5 | `p6-step5-transcode-string-result` | [empty-output-as-unsupported-target](../review-findings-2026-09-11.md#empty-output-as-unsupported-target) | Step 0 |
+| 6 | `p6-step6-utf32-validation` | [invalid-char32-contract](../review-findings-2026-09-11.md#invalid-char32-contract), [utf32-validation-not-uniform](p6-step6-utf32-validation.md#utf32-validation-not-uniform), [encode-error-question-mark-claim](p6-step6-utf32-validation.md#encode-error-question-mark-claim) | Step 0 |
+| 7 | `p6-step7-fffd-reservation` | [fffd-error-sentinel](../review-findings-2026-09-11.md#fffd-error-sentinel) | Step 0 |
+| 8 | `p6-step8-paper-and-wording` | [optional-iconv-story](../review-findings-2026-09-11.md#optional-iconv-story), [posix-type-in-wording](../review-findings-2026-09-11.md#posix-type-in-wording), [synopsis-free-standing-prose](../review-findings-2026-09-11.md#synopsis-free-standing-prose), [unsubstantiated-claims](../review-findings-2026-09-11.md#unsubstantiated-claims), [duplicate-author-email](../review-findings-2026-09-11.md#duplicate-author-email), [feature-test-macro-placeholders](../review-findings-2026-09-11.md#feature-test-macro-placeholders), [utf32-bom-sniffing-claim](../review-findings-2026-09-11.md#utf32-bom-sniffing-claim) and [revision-drift](../review-findings-2026-09-11.md#revision-drift) | Steps 1–7 |
 | 10 | `p6-step10-verification` | open verification work | all |
 
 Steps 0 and 9 touch no spec header and can start at once.  Steps 1, 4, 5, 6 and
@@ -227,7 +227,7 @@ Step 8 and Step 10, not to every step.
 Step 10 closes what the review left open: a fresh build across configurations
 and both module settings, install-and-consume from a clean prefix, the examples
 run against the changed headers, `make wording-validate` findings read rather
-than counted, `codespell`, and the C-01 through C-05 regressions run against
+than counted, `codespell`, and the [sniff-consumes-single-pass](../review-findings-2026-09-11.md#sniff-consumes-single-pass), [iconv-small-buffer-loses-input](../review-findings-2026-09-11.md#iconv-small-buffer-loses-input), [iconv-flush-once](../review-findings-2026-09-11.md#iconv-flush-once), [iconv-lossy-replacement-corrupts](../review-findings-2026-09-11.md#iconv-lossy-replacement-corrupts) and [iconv-error-conflation](../review-findings-2026-09-11.md#iconv-error-conflation) regressions run against
 glibc iconv **and at least one other implementation**.
 
 ## Risks

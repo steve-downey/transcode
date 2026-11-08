@@ -21,7 +21,9 @@ Status terms used below:
 
 ## Must address before proposal or public release
 
-### C-01: `sniff_encoding` consumes single-pass input
+### sniff-consumes-single-pass
+
+**Finding:** `sniff_encoding` consumes single-pass input.
 
 **Status:** Confirmed correctness and contract defect.
 
@@ -40,7 +42,9 @@ serve.
 range together with the result, or explicitly make consumption part of the API.
 Add tests using a genuinely single-pass range for both BOM and non-BOM input.
 
-### C-02: A too-small iconv view buffer silently loses valid input
+### iconv-small-buffer-loses-input
+
+**Finding:** A too-small iconv view buffer silently loses valid input.
 
 **Status:** Confirmed correctness defect.
 
@@ -56,7 +60,9 @@ stage one complete output unit, or report `output_full` without consuming or
 completing the range. Add real-iconv tests for zero-, one-, and boundary-sized
 buffers.
 
-### C-03: Streaming iconv flush is attempted only once
+### iconv-flush-once
+
+**Finding:** Streaming iconv flush is attempted only once.
 
 **Status:** Confirmed correctness defect.
 
@@ -76,7 +82,9 @@ surface the error either.
 state between increments. Treat non-`E2BIG` flush failures according to the
 view's error policy. Add a mock that requires two or more flush calls.
 
-### C-04: Lossy iconv bulk replacement can corrupt the destination encoding
+### iconv-lossy-replacement-corrupts
+
+**Finding:** Lossy iconv bulk replacement can corrupt the destination encoding.
 
 **Status:** Confirmed correctness defect and contract mismatch.
 
@@ -92,7 +100,9 @@ desired, encode the chosen replacement through the destination converter; do
 not append an encoding-independent byte. Apply the same policy to the container
 and output-iterator helpers and test multibyte destinations.
 
-### C-05: iconv open and unexpected system errors are conflated
+### iconv-error-conflation
+
+**Finding:** Iconv open and unexpected system errors are conflated.
 
 **Status:** Confirmed API and error-model defect.
 
@@ -116,7 +126,9 @@ or make construction/opening a separate fallible operation. Specify how
 unexpected platform errors propagate. Do not use valid empty output as a
 failure signal.
 
-### C-06: `null_term_view` has no reachable-terminator precondition
+### null-term-reachable-terminator
+
+**Finding:** `null_term_view` has no reachable-terminator precondition.
 
 **Status:** Confirmed specification and object-state defect.
 
@@ -135,7 +147,9 @@ indeterminate pointer.
 precondition. Value-initialize `ptr_` and define the singular state, or remove
 default construction if the view cannot have a useful safe default.
 
-### C-07: Runtime transcoding uses empty output as an unsupported-target error
+### empty-output-as-unsupported-target
+
+**Finding:** Runtime transcoding uses empty output as an unsupported-target error.
 
 **Status:** Confirmed API defect.
 
@@ -150,7 +164,9 @@ while the compile-time equivalent rejects an unsupported target.
 fallible result such as `expected`/`optional`, or narrow the accepted target
 type. Make the codec and label overloads agree.
 
-### P-01: The optional/portable iconv story does not match the build
+### optional-iconv-story
+
+**Finding:** The optional/portable iconv story does not match the build.
 
 **Status:** Decision required; build behavior is confirmed.
 
@@ -168,7 +184,9 @@ compatible iconv is separately supplied.
 that allows the portable API to install without iconv, or state iconv as a
 mandatory platform dependency and narrow the portability claims.
 
-### P-02: Proposed ISO C++ wording exposes an undefined POSIX type
+### posix-type-in-wording
+
+**Finding:** Proposed ISO C++ wording exposes an undefined POSIX type.
 
 **Status:** Confirmed proposal-surface issue.
 
@@ -186,7 +204,9 @@ review the synopsis.
 
 ## Specification and API decisions
 
-### S-01: Invalid `char32_t` is both a precondition violation and a reported error
+### invalid-char32-contract
+
+**Finding:** Invalid `char32_t` is both a precondition violation and a reported error.
 
 **Status:** Decision required.
 
@@ -203,7 +223,9 @@ contract or supported erroneous input. Remove the precondition if reporting is
 part of the API; otherwise remove normative promises and tests that imply
 defined recovery.
 
-### S-02: Lossy iconv APIs do not share one recovery policy
+### iconv-lossy-recovery-policy
+
+**Finding:** Lossy iconv APIs do not share one recovery policy.
 
 **Status:** Decision required.
 
@@ -217,7 +239,9 @@ lazy one without changing output.
 apply them consistently across streaming and eager forms. If multiple policies
 are intentional, put the distinction in API names/types rather than prose.
 
-### S-03: `random_access_decode_codec_type` reserves U+FFFD as an error sentinel
+### fffd-error-sentinel
+
+**Finding:** `random_access_decode_codec_type` reserves U+FFFD as an error sentinel.
 
 **Status:** Confirmed extensibility limitation; decision required.
 
@@ -232,7 +256,9 @@ byte to the actual U+FFFD scalar in `_or_error` mode.
 separate validity query, or document U+FFFD as reserved and accept the loss of
 that mapping.
 
-### S-04: Review generated free-standing synopsis prose
+### synopsis-free-standing-prose
+
+**Finding:** Review generated free-standing synopsis prose.
 
 **Status:** Verify generator intent.
 
@@ -245,7 +271,9 @@ function declarations, including encode/decode view and iconv remarks
 these remarks to synopsis declarations. If not, relocate the source annotations
 so the synopsis remains a synopsis and each normative rule has one home.
 
-### S-05: Narrow or substantiate factual and performance claims
+### unsubstantiated-claims
+
+**Finding:** Narrow or substantiate factual and performance claims.
 
 **Status:** Editorial verification required.
 
@@ -263,7 +291,9 @@ or use “major browser engines.”
 
 ## Documentation, paper, build, and CI drift
 
-### D-01: Duplicate author email key
+### duplicate-author-email
+
+**Finding:** Duplicate author email key.
 
 **Status:** Confirmed.
 
@@ -274,7 +304,9 @@ renderer warns `Duplicate key: .author[0].email` and discards one value.
 **Action:** Keep one address or use the renderer's supported representation for
 multiple addresses.
 
-### D-02: Feature-test macro placeholders disagree
+### feature-test-macro-placeholders
+
+**Finding:** Feature-test macro placeholders disagree.
 
 **Status:** Confirmed.
 
@@ -284,7 +316,9 @@ The paper uses both `202XXXL` and `20XXXXL`
 
 **Action:** Choose one placeholder until a real value is assigned.
 
-### D-03: Documentation claims unsupported UTF-32 BOM sniffing
+### utf32-bom-sniffing-claim
+
+**Finding:** Documentation claims unsupported UTF-32 BOM sniffing.
 
 **Status:** Confirmed.
 
@@ -296,7 +330,9 @@ and `codec` enum support only UTF-8, UTF-16BE, and UTF-16LE BOM results.
 **Action:** Remove UTF-32 from the claim, or add UTF-32 codecs and detection as
 a separately designed feature.
 
-### D-04: Paper and related proposal revisions have drifted
+### revision-drift
+
+**Finding:** Paper and related proposal revisions have drifted.
 
 **Status:** Confirmed.
 
@@ -308,7 +344,9 @@ a separately designed feature.
 **Action:** Update the stale revisions and consider defining each cited revision
 once to reduce repeated manual updates.
 
-### D-05: Build instructions name the wrong test framework and language level
+### build-instructions-framework-and-standard
+
+**Finding:** Build instructions name the wrong test framework and language level.
 
 **Status:** Confirmed.
 
@@ -321,7 +359,9 @@ the target requires C++23.
 **Action:** Replace GoogleTest with Catch2 and make every configuration example
 request C++23.
 
-### D-06: Advertised compiler support disagrees with CMake
+### compiler-support-vs-cmake
+
+**Finding:** Advertised compiler support disagrees with CMake.
 
 **Status:** Confirmed.
 
@@ -334,7 +374,9 @@ version below 19 before considering the selected standard library
 Clang plus libstdc++, make the check test that combination rather than the
 compiler version alone.
 
-### D-07: The documented `table_codec` API and example are not public examples
+### table-codec-documented-as-public
+
+**Finding:** The documented `table_codec` API and example are not public examples.
 
 **Status:** Confirmed.
 
@@ -350,7 +392,9 @@ lines 56-61). The linked example manually decodes bytes and does not use
 the public claim and replace the example with a custom codec implementing the
 documented concepts.
 
-### D-08: ICU does not expose the POSIX iconv API as stated
+### icu-iconv-claim
+
+**Finding:** ICU does not expose the POSIX iconv API as stated.
 
 **Status:** Confirmed factual error.
 
@@ -361,7 +405,9 @@ ICU's native converter API is the `ucnv_*` family.
 **Action:** Remove ICU from that list or describe it as a separate transcoding
 backend that would need an adapter.
 
-### D-09: A root file literally named `-` contains stale generated wording
+### root-file-named-dash
+
+**Finding:** A root file literally named `-` contains stale generated wording.
 
 **Status:** Confirmed repository hygiene issue.
 
@@ -372,7 +418,9 @@ tables, now that specgen can”).
 **Action:** Remove the file and fix the generation/redirection invocation that
 created it. Add a CI hygiene check if the failure mode can recur.
 
-### D-10: `docs/plans/handoff-next.md` is stale operational guidance
+### stale-handoff-guide
+
+**Finding:** `docs/plans/handoff-next.md` is stale operational guidance.
 
 **Status:** Confirmed.
 
@@ -384,7 +432,9 @@ reads as current guidance despite describing an earlier project state.
 **Action:** Archive/remove it, or add a prominent historical date and completed
 status.
 
-### D-11: “Manual Lint” CI repeats the normal lint target
+### manual-lint-duplicate
+
+**Finding:** “Manual Lint” CI repeats the normal lint target.
 
 **Status:** Confirmed.
 
@@ -395,7 +445,9 @@ lines 86-95).
 **Action:** Run `make lint-manual` if that is the intended additional gate, or
 remove/rename the duplicate step.
 
-### D-12: Module packaging needs a clean install-consumer test
+### module-install-consumer-test
+
+**Finding:** Module packaging needs a clean install-consumer test.
 
 **Status:** Verify; SPDX omission is confirmed.
 
@@ -411,7 +463,9 @@ many more headers.
 a clean prefix; if consumers rebuild the interface unit, install every header
 needed by its include graph.
 
-### D-13: Telemetry script shebang is on line 2
+### telemetry-shebang
+
+**Finding:** Telemetry script shebang is on line 2.
 
 **Status:** Confirmed, low priority.
 
@@ -431,7 +485,7 @@ The following checks passed against the reviewed tree:
 - C++ formatting checks and Ruff passed.
 - Every example compiled and ran directly against the current headers with
   `g++-16`.
-- Paper rendering completed, apart from the duplicate-email warning in D-01.
+- Paper rendering completed, apart from the duplicate-email warning in [duplicate-author-email](#duplicate-author-email).
 - `make wording-inputs-check` passed.
 
 The following remain open verification work:
@@ -441,16 +495,17 @@ The following remain open verification work:
   results must not be treated as verification of the current tree.
 - Full `make wording-check` could not run because `specgen` is not installed.
 - `codespell` was not available.
-- Run the new focused regressions described in C-01 through C-05 on at least
+- Run the new focused regressions described in [sniff-consumes-single-pass](#sniff-consumes-single-pass), [iconv-small-buffer-loses-input](#iconv-small-buffer-loses-input), [iconv-flush-once](#iconv-flush-once), [iconv-lossy-replacement-corrupts](#iconv-lossy-replacement-corrupts) and [iconv-error-conflation](#iconv-error-conflation) on at least
   glibc iconv and one other iconv implementation.
-- Run an install-consumer test with `BEMAN_TRANSCODE_USE_MODULES=ON` for D-12.
+- Run an install-consumer test with `BEMAN_TRANSCODE_USE_MODULES=ON` for [module-install-consumer-test](#module-install-consumer-test).
 
 ## Suggested triage order
 
-1. Resolve the ISO/POSIX scope and optional-dependency questions (P-01, P-02).
-2. Fix silent data loss and malformed output (C-01 through C-04).
-3. Settle the public error contracts (C-05, C-07, S-01 through S-03).
-4. Regenerate and review wording after the API decisions (S-04, D-01 through
-   D-04).
-5. Clean up user-facing build/platform docs and CI (D-05 through D-13).
+1. Resolve the ISO/POSIX scope and optional-dependency questions ([optional-iconv-story](#optional-iconv-story), [posix-type-in-wording](#posix-type-in-wording)).
+2. Fix silent data loss and malformed output ([sniff-consumes-single-pass](#sniff-consumes-single-pass), [iconv-small-buffer-loses-input](#iconv-small-buffer-loses-input), [iconv-flush-once](#iconv-flush-once) and [iconv-lossy-replacement-corrupts](#iconv-lossy-replacement-corrupts)).
+3. Settle the public error contracts ([iconv-error-conflation](#iconv-error-conflation), [empty-output-as-unsupported-target](#empty-output-as-unsupported-target), [invalid-char32-contract](#invalid-char32-contract), [iconv-lossy-recovery-policy](#iconv-lossy-recovery-policy) and [fffd-error-sentinel](#fffd-error-sentinel)).
+4. Regenerate and review wording after the API decisions ([synopsis-free-standing-prose](#synopsis-free-standing-prose), [duplicate-author-email](#duplicate-author-email),
+   [feature-test-macro-placeholders](#feature-test-macro-placeholders), [utf32-bom-sniffing-claim](#utf32-bom-sniffing-claim) and
+   [revision-drift](#revision-drift)).
+5. Clean up user-facing build/platform docs and CI ([build-instructions-framework-and-standard](#build-instructions-framework-and-standard), [compiler-support-vs-cmake](#compiler-support-vs-cmake), [table-codec-documented-as-public](#table-codec-documented-as-public), [icu-iconv-claim](#icu-iconv-claim), [root-file-named-dash](#root-file-named-dash), [stale-handoff-guide](#stale-handoff-guide), [manual-lint-duplicate](#manual-lint-duplicate), [module-install-consumer-test](#module-install-consumer-test) and [telemetry-shebang](#telemetry-shebang)).
 6. Complete fresh C++, wording, install, and cross-iconv verification.

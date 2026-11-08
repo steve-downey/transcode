@@ -2,7 +2,7 @@
 
 **Branch:** `p6-step2-iconv-error-model`
 **Depends on:** Step 0
-**Findings:** C-02, C-03, C-05
+**Findings:** [iconv-small-buffer-loses-input](../review-findings-2026-09-11.md#iconv-small-buffer-loses-input), [iconv-flush-once](../review-findings-2026-09-11.md#iconv-flush-once), [iconv-error-conflation](../review-findings-2026-09-11.md#iconv-error-conflation)
 **Read first:** `docs/plans/phase6-index.md`
 
 ---
@@ -18,21 +18,21 @@ These are one finding wearing three hats: the adaptors treat "no bytes came
 out" as "there are no more bytes," and that conflation is wrong in three
 different places.
 
-**A buffer too small for one output unit yields an empty range (C-02).**
+**A buffer too small for one output unit yields an empty range ([iconv-small-buffer-loses-input](../review-findings-2026-09-11.md#iconv-small-buffer-loses-input)).**
 `load()` at `iconv_transcode_view.hpp:242-243` breaks out on `E2BIG`, reaches
 line 303 with `output_pos_ == output_end_`, flushes, produces nothing, and sets
 `done_`.  Converting UTF-8 `"A"` to UTF-32LE through a one-byte buffer gives an
 empty range and no error.  A zero-length buffer does the same.  The caller
 cannot tell that from a successful conversion of empty input.
 
-**The flush happens once and its result is discarded (C-03).**
+**The flush happens once and its result is discarded ([iconv-flush-once](../review-findings-2026-09-11.md#iconv-flush-once)).**
 `iconv_transcode_view.hpp:304-311` sets `flushed_ = true` *before* calling
 `fns_.convert(handle_, nullptr, nullptr, ...)`, then ignores both the return
 value and `errno`.  A stateful converter that returns `E2BIG` while still owing
 shift-state bytes has those bytes truncated, and the `_or_error` variant
 (`iconv_transcode_or_error_view.hpp:296-307`) does not report it either.
 
-**One `iconv_open` failure has three different meanings (C-05).**  The
+**One `iconv_open` failure has three different meanings ([iconv-error-conflation](../review-findings-2026-09-11.md#iconv-error-conflation)).**  The
 streaming view constructs `done_(handle == (iconv_t)-1)` and looks empty;
 `iconv_transcode_to` returns an empty container (`iconv_bulk.hpp:90-91`);
 `iconv_transcode_into` returns the iterator unchanged (`:183-184`); and
