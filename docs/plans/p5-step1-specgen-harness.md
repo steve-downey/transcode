@@ -23,10 +23,10 @@ Two facts about that framework drive the design:
 - `base.mk` builds its pandoc command as
   `pandoc $(DATADIR)/srefs.defs $(filter %.md, $^) -o $@ ...`.  **Every markdown
   prerequisite is an input, concatenated in prerequisite order.**  That is the
-  transclusion mechanism (index D3); nothing else is needed.
+  transclusion mechanism ([transclusion-mechanism](../decisions.md#transclusion-mechanism)); nothing else is needed.
 - `flat.mk` sets `src := $(wildcard *.md)` (less CHANGELOG/LICENSE/README) and
   makes a paper target of each.
-  Generated fragments must therefore live in a subdirectory (index D4).
+  Generated fragments must therefore live in a subdirectory ([fragment-location](../decisions.md#fragment-location)).
 
 ## Tasks
 
@@ -75,7 +75,7 @@ Two facts about that framework drive the design:
    document.  Confirm where it lands and, if it lands after the wording, add an
    explicit `::: {#refs}` div at the intended place in `transcode-view.md`.
    Record the answer in the step's commit message; Step 10 depends on it.
-6. **`.gitignore` / lint.**  `papers/wording/*.md` is committed (index D2) but
+6. **`.gitignore` / lint.**  `papers/wording/*.md` is committed ([fragment-checkin](../decisions.md#fragment-checkin)) but
    is generated: exclude it from markdown lint rules that would fight specgen's
    output, and say so in `papers/wording/README.md` (one paragraph: generated,
    do not edit, regenerate with `make wording`).
