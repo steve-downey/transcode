@@ -30,7 +30,7 @@ headings to keep the review's own anchors; the rest are named here.
 ## Open
 
 Ordered so that each stage can land as its own pull request, smallest and
-least contested first.  Stages 1 to 4 are done and listed above.
+least contested first.  Stages 1 to 4 are done and listed above; Stage 6 is built, below; Stage 5's measurements are what remain.
 
 ### Stage 5 — benchmarks
 
@@ -113,23 +113,43 @@ written before them, so the API is shaped by the program that needs it:
   encoded-word subject.  A ctest runs the reader over each and compares its
   UTF-8 output with an expected file.
 
-Questions to settle while building it:
+What was built, and how the questions were settled:
 
-- `dynamic_encoder` for an encoding with no encoder (`utf_16be`, `utf_16le`
-  and `replacement`): a precondition on
-  construction, a factory returning `optional`, or an `encode_one` that always
-  fails.  `encode_to` returns `optional` in any case.
-- Which refinements the objects model.  `flush` can return "nothing pending"
-  for a stateless encoding, so `flushable_text_decoder` is straightforward.
-  `decode_first` exists only where `$strips-leading-bom$<C>` holds, so a
-  `bom_aware_text_decoder` dynamic decoder has to forward to `decode_one` for
-  every other encoding.  The `single_byte_*`
-  concepts cannot be promised at run time, so the views take the forward path.
-- `constexpr`: `std::variant` is usable in constant evaluation, so the objects
-  should be too, with `constify` tests.
-- When this lands, "Template Parameter vs Runtime Selection" in the paper,
-  which now says a program writes its own `switch` for a lazy view or
-  `char32_t` values over a runtime encoding, changes to show the codec objects.
+- `whatwg::dynamic_decoder` and `whatwg::dynamic_encoder` in
+  `whatwg/dynamic_codec.hpp`, clause `[transcode.whatwg.dynamic]`.  Each holds
+  a `std::variant` over the per-encoding codecs, indexed by the enumerator's
+  value.
+- An encoding with no encoder: constructing a `dynamic_encoder` for it is a
+  precondition violation (*Preconditions:* `has_encoder(e)`).  The eager
+  `encode_to` returns `nullopt` and `encode_into` returns `false` for it, so a
+  program holding a charset from the data checks once, in the call it makes.
+- Refinements: both objects model the flushable refinement, and the decoder
+  models `bom_aware_text_decoder`, forwarding `decode_first` to `decode_one`
+  where the encoding strips no BOM.  Neither models the single-byte
+  refinements.
+- `constexpr`: both are usable in constant evaluation, with `constify` tests.
+- The eager runtime overloads dispatch once, through
+  `detail::with_encoding`, and then run the compile-time loop.
+  `transcode_string` uses the same dispatch, so its two 40-case `switch`es are
+  gone.
+- The MIME reader in `examples/mime_reader/` decodes part bodies lazily through
+  `dynamic_decoder` and encoded-words through `decode_to(bytes, label)`.  Its
+  seven messages match Python's `email` package.
+- The paper's runtime example and "Template Parameter vs Runtime Selection"
+  now show both forms and what each costs.
+
+Still open:
+
+- The paper's dispatch-cost figure (about 121 instructions per call) was
+  measured against `transcode_string`'s old `switch`.  The fold-based dispatch
+  may compile differently, so re-run the dispatch benchmark with Stage 5's
+  measurements before the figure is published again.
+- Argument order: the runtime overloads take the source first,
+  `decode_to(source, e)`, like `transcode_string`, while the codec-object
+  bulk helpers take the codec first, `decode_to(codec, source)`.  Worth a
+  decision before R1.
+- The exposition-only members of `dynamic_decoder` and `dynamic_encoder` show
+  a `detail::` type in the synopsis, as `whatwg::decoder`'s `$state$` does.
 
 ## Not actionable
 

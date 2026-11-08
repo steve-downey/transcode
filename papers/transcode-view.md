@@ -64,9 +64,12 @@ The design changed, and the wording is regenerated from the reference implementa
 - The cost of runtime selection is measured, and [Template Parameter vs Runtime Selection](#template-parameter-vs-runtime-selection) reports it.
 - `whatwg::encoder<x_user_defined>` exists: the Encoding Standard defines an x-user-defined encoder, and R0 said it did not.
   Only `utf_16be`, `utf_16le` and `replacement` have no encoder.
-- Runtime selection is shown through `whatwg::transcode_string`, which takes labels and does the dispatch, rather than through a hand-written `switch`.
+- Runtime selection is shown through the library's own entry points, which take labels and do the dispatch, rather than through a hand-written `switch`.
 - [Why Not `text_encoding::id`?](#why-not-text_encodingid) quotes the Encoding Standard on why its label matching is stricter than UTS #22, and says why no cast between the enumerations can be correct.
 - The bulk-conversion section shows writing into a caller-owned buffer, since the views allocate nothing.
+- An encoding chosen at run time no longer needs a hand-written `switch` to reach code points.
+  `whatwg::dynamic_decoder` and `whatwg::dynamic_encoder` are codec objects for it, and the bulk helpers take the encoding as a value or a label.
+  [Template Parameter vs Runtime Selection](#template-parameter-vs-runtime-selection) says what each costs.
 - The namespace and `single_byte_text_encoder` are open questions for SG16.
 
 ### Wording
@@ -511,6 +514,15 @@ Four eager bulk helpers, each specified as the pipeline it names:
 
 - **`whatwg::decode_into<C>(r, out)` / `whatwg::encode_into<C>(r, out)`**: Write the result through an output iterator.
 
+Each has a form that takes the encoding as a value chosen at run time, `whatwg::decode_to(r, e)` and the rest, and `decode_to` and `encode_to` also take a label.
+These look at the encoding once and then run the same loop the compile-time form does.
+`encode_to` returns `optional`, empty when the encoding has no encoder.
+
+Two codec objects for an encoding chosen at run time:
+
+- **`whatwg::dynamic_decoder{e}` / `whatwg::dynamic_encoder{e}`**: Behave as `whatwg::decoder<E>` and `whatwg::encoder<E>` for the `E` equal to `e`.
+  `bytes | decode(whatwg::dynamic_decoder{e})` is a lazy `char32_t` range over an encoding named in the data.
+
 And three utility entry points:
 
 - **`whatwg::transcode<From, To>`**: Convenience composition of `whatwg::decode<From>` followed by `whatwg::encode<To>`, for `To` codecs that have a WHATWG encoder.
@@ -601,16 +613,27 @@ static_assert(whatwg::get_encoding("unknown") == std::nullopt);
 ```
 
 When the encoding arrives as metadata, the program does not dispatch on it.
-`whatwg::transcode_string` takes the labels and does the dispatch itself:
+A MIME part names its charset in its headers, and its reader wants the text as code points:
 
 ```cpp
-std::string_view charset = parse_content_type(headers);
-if (auto utf8 = whatwg::transcode_string(body, charset, "utf-8")) {
-    consume(*utf8);
+std::string_view charset = part.charset();
+if (auto text = whatwg::decode_to(part.body(), charset)) {
+    consume(*text);  // vector<char32_t>
 }
 ```
 
-It returns `nullopt` when either label names no encoding, or when the target has no encoder.
+`decode_to` returns `nullopt` when the label names no encoding.
+A body that arrives as a range, out of a base64 decoder say, need not be collected first:
+
+```cpp
+if (auto e = whatwg::get_encoding(charset)) {
+    for (char32_t c : body | base64_decode | decode(whatwg::dynamic_decoder{*e}))
+        consume(c);
+}
+```
+
+And `whatwg::transcode_string(body, charset, "utf-8")` goes straight to bytes in another encoding.
+The reference implementation has a small MIME reader among its examples that does all of this, with test messages in ISO-2022-JP, Shift_JIS, windows-1252, UTF-8 and KOI8-R.
 
 ### Error Handling
 
@@ -1061,9 +1084,10 @@ Making the codec a template parameter gives inlined codec logic, no dispatch per
 
 What it gives up is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter cannot be spelled from a runtime string.
 However, the dispatch has to happen exactly once, at the point where the label is resolved, and it is a `switch` over an enumeration.
-The library writes that `switch`, once, in `whatwg::transcode_string`, which takes its source and target encodings at run time, as `whatwg::encoding` values or as labels.
-A program that has bytes and a label, and wants bytes in another encoding, never writes it.
-Only a program that wants a lazy view, or `char32_t` values, over an encoding chosen at run time writes its own `switch`, and it writes it once, where the label is resolved.
+The library writes that `switch` so that programs do not have to, in two forms.
+The eager forms, `whatwg::transcode_string` and the runtime overloads of `decode_to`, `encode_to`, `decode_into` and `encode_into`, take the encoding as a value or a label, look at it once, and then run the loop the compile-time form would.
+The codec objects `whatwg::dynamic_decoder` and `whatwg::dynamic_encoder` give a lazy view over an encoding chosen at run time; they look at the encoding on every call, which is the cost of not knowing it, and a caller pays it only by choosing them.
+Neither form gives up anything for the caller who knows the encoding at compile time.
 
 We measured what that costs.
 The reference implementation has a dispatch-overhead benchmark (pull request 128 on [the implementation repository](https://github.com/steve-downey/transcode/pull/128)) that counts instructions instead of timing them.
