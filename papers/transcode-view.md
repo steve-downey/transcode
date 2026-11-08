@@ -1323,18 +1323,19 @@ headers in [headers].
 
 Add the following to the normative references in [intro.refs]:
 
-> --- WHATWG, *Encoding Standard*, available at
-> <https://encoding.spec.whatwg.org/>.
+> --- WHATWG, *Encoding Standard*, Review Draft, June 2025, available at
+> <https://encoding.spec.whatwg.org/review-drafts/2025-06/>.
 
-[*Note*: the Encoding Standard is a Living Standard, so a normative reference
-to it has to name what it is a reference *to*.
-The wording below is written against commit
-`a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a` (21 May 2026), the commit cited in
-[@whatwg-encoding], and the reference implementation's codec tables and
-conformance vectors are generated from that same snapshot.
-Whether the standard cites a dated snapshot, a commit, or the living document
-is an editorial question this paper puts to the project editor rather than
-answers.
+[*Note*: the Encoding Standard is a Living Standard, and a normative reference
+has to name a dated document.
+WHATWG publishes Review Drafts, dated snapshots of a standard, for that
+purpose, and the reference above is the most recent [@whatwg-encoding-rd].
+The reference implementation's codec tables and conformance vectors are
+generated from a later commit, `a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a`
+(21 May 2026) [@whatwg-encoding].
+The five commits between the two change links, repository files and the
+wording of one `TextDecoderStream` algorithm; the encodings, their labels and
+their index data are the same in both.
 --- *end note*]
 
 Add the following macro to [version.syn], in the place the table's alphabetical

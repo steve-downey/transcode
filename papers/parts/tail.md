@@ -159,6 +159,15 @@ references:
     issued: { year: 2026, month: 5, day: 21 }
     URL: "https://encoding.spec.whatwg.org/commit-snapshots/a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a/"
     note: "Living Standard. The living document is at https://encoding.spec.whatwg.org/; this entry pins the commit the wording and the generated index data are written against. Index data retrieved 2026-05-23."
+  - id: whatwg-encoding-rd
+    citation-label: WHATWG-Encoding-RD
+    type: webpage
+    title: "Encoding Standard (Review Draft, June 2025)"
+    author:
+      - literal: "WHATWG"
+    issued: { year: 2025, month: 6 }
+    URL: "https://encoding.spec.whatwg.org/review-drafts/2025-06/"
+    note: "The dated snapshot the normative reference in [intro.refs] names."
   - id: wpt-encoding
     citation-label: WPT-Encoding
     type: webpage

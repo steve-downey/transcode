@@ -250,6 +250,12 @@ a table that is normative elsewhere and changes there.
   specification; the rationale moved to the paper's prose and the *Remarks* now
   says only what each enumerator denotes. Still specification by reference to a
   living document, so the 2026-09-08 question to SG16 stands.
+- 2026-11-08 — The normative reference names a dated document. ISO allows a
+  normative reference only to a dated document, and the paper had left the
+  choice to the project editor. The [intro.refs] entry is now the June 2025
+  Review Draft, the most recent. The implementation's tables come from commit
+  `a985b62` (May 2026); the five commits between the two are meta and
+  editorial, and leave the encodings, labels and index data unchanged.
 
 ---
 
