@@ -19,6 +19,7 @@ headings to keep the review's own anchors; the rest are named here.
 | [clang-regex-ci-failure](../review-findings-2026-10-30-pr131.md#clang-regex-ci-failure) | #138 gave every negative compile test one `EXPECT` line per compiler.  CI on `main` is green across the clang matrix. |
 | `ruff-pin-mismatch` | `pyproject.toml` and `.pre-commit-config.yaml` both pin ruff 0.17.2. |
 | `stale-names` | This branch.  `README.md` footnote 5 says "codec" again; `docs/benchmarks/README.md` and `PLATFORM_NOTES.md` use `whatwg::transcode` and `whatwg::decode`; `docs/p2728-alignment.md` describes the current code in current names and P5-Step 3c's in its own; `CLAUDE.md`'s architecture section describes the `whatwg/` layout. |
+| `runtime-encoding-visitor` | Decided 2026-11-08: no visitor.  Most users never write the `switch`: `whatwg::transcode_string` takes both encodings at run time, as values or as labels, and that covers the "range in, code units out" case Schultke raised.  That the question came up at all was a documentation defect: the paper's runtime example ended in "Use std::visit or switch".  The example now calls `transcode_string` with the labels, and "Template Parameter vs Runtime Selection" says which programs write a `switch`: only one that wants a lazy view, or `char32_t` values, over a runtime encoding. |
 
 ## Open
 
@@ -94,15 +95,6 @@ the review are a guide, not publishable.
   really builds at `-O3`.
 - `corpus-download-user-agent`.  `tools/download_benchmark_corpora.py` sends no
   User-Agent, and Wikipedia refuses it.
-
-### Needs a decision first
-
-- `runtime-encoding-visitor` (Schultke).  The paper still answers "use
-  `std::visit` or `switch`" to a runtime `whatwg::encoding`, and
-  `whatwg/transcode_string.hpp` already contains that 39-case `switch`.  The
-  review suggests exposing it once, as a visitor that calls
-  `f(integral_constant<encoding, E>{})`.  That is new API in a specification
-  header, so it is a proposal, not a fix.
 
 ## Not actionable
 

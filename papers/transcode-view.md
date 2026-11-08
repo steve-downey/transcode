@@ -588,14 +588,17 @@ static_assert(whatwg::get_encoding("x-sjis") == whatwg::encoding::shift_jis);
 static_assert(whatwg::get_encoding("unknown") == std::nullopt);
 ```
 
-Runtime dispatch on external metadata follows:
+When the encoding arrives as metadata, the program does not dispatch on it.
+`whatwg::transcode_string` takes the labels and does the dispatch itself:
 
 ```cpp
 std::string_view charset = parse_content_type(headers);
-if (auto c = whatwg::get_encoding(charset)) {
-    // Use std::visit or switch to dispatch to appropriate view
+if (auto utf8 = whatwg::transcode_string(body, charset, "utf-8")) {
+    consume(*utf8);
 }
 ```
+
+It returns `nullopt` when either label names no encoding, or when the target has no encoder.
 
 ### Error Handling
 
@@ -1029,7 +1032,9 @@ Making the codec a template parameter gives inlined codec logic, no dispatch per
 
 What it gives up is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter cannot be spelled from a runtime string.
 However, the dispatch has to happen exactly once, at the point where the label is resolved, and it is a `switch` over an enumeration.
-`whatwg::get_encoding` and `whatwg::transcode_string` provide that dispatch, and runtime selection can be layered further via `variant` or `any`.
+The library writes that `switch`, once, in `whatwg::transcode_string`, which takes its source and target encodings at run time, as `whatwg::encoding` values or as labels.
+A program that has bytes and a label, and wants bytes in another encoding, never writes it.
+Only a program that wants a lazy view, or `char32_t` values, over an encoding chosen at run time writes its own `switch`, and it writes it once, where the label is resolved.
 
 We measured what that costs.
 The reference implementation has a dispatch-overhead benchmark (pull request 128 on [the implementation repository](https://github.com/steve-downey/transcode/pull/128)) that counts instructions instead of timing them.
