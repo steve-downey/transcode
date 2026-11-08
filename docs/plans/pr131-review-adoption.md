@@ -19,7 +19,7 @@ headings to keep the review's own anchors; the rest are named here.
 | [clang-regex-ci-failure](../review-findings-2026-10-30-pr131.md#clang-regex-ci-failure) | #138 gave every negative compile test one `EXPECT` line per compiler.  CI on `main` is green across the clang matrix. |
 | `ruff-pin-mismatch` | `pyproject.toml` and `.pre-commit-config.yaml` both pin ruff 0.17.2. |
 | `stale-names` | This branch.  `README.md` footnote 5 says "codec" again; `docs/benchmarks/README.md` and `PLATFORM_NOTES.md` use `whatwg::transcode` and `whatwg::decode`; `docs/p2728-alignment.md` describes the current code in current names and P5-Step 3c's in its own; `CLAUDE.md`'s architecture section describes the `whatwg/` layout. |
-| `runtime-encoding-visitor` | Decided 2026-11-08: no visitor.  Most users never write the `switch`: `whatwg::transcode_string` takes both encodings at run time, as values or as labels, and that covers the "range in, code units out" case Schultke raised.  That the question came up at all was a documentation defect: the paper's runtime example ended in "Use std::visit or switch".  The example now calls `transcode_string` with the labels, and "Template Parameter vs Runtime Selection" says which programs write a `switch`: only one that wants a lazy view, or `char32_t` values, over a runtime encoding. |
+| `runtime-encoding-visitor` | Decided 2026-11-08: no visitor over `whatwg::encoding`.  The paper's runtime example ended in "Use std::visit or switch", which invited the question; it now hands the labels to `whatwg::transcode_string`.  Looking at the use cases behind the question found a real gap, which is [runtime-codec-objects](#stage-6--runtime-codec-objects) below. |
 
 ## Open
 
@@ -95,6 +95,53 @@ the review are a guide, not publishable.
   really builds at `-O3`.
 - `corpus-download-user-agent`.  `tools/download_benchmark_corpora.py` sends no
   User-Agent, and Wikipedia refuses it.
+
+### Stage 6 — runtime codec objects
+
+`runtime-codec-objects`.  Decided 2026-11-08.
+
+Processing an SMTP or MIME message is a prime use case: each part declares its
+`charset` in the data, and the reader wants the part's text as `char32_t`.
+Today it cannot get that without writing a `switch` over every encoding.
+`whatwg::transcode_string` takes runtime encodings but always re-encodes to
+bytes, and the code-point helpers `decode_to<C>` and `decode_into<C>` take the
+encoding only as a template parameter.  It is also a gap against P2728, where
+getting `char32_t` from UTF is the straightforward case: code points are the
+common currency of text conversion, and getting them should be as easy for an
+encoding named at run time as for one named at compile time.
+
+The fix, in two layers:
+
+- `whatwg::dynamic_decoder` and `whatwg::dynamic_encoder`, codec objects that
+  hold a `whatwg::encoding` chosen at run time and model `text_decoder` and
+  `text_encoder`.  They plug into what exists: `bytes |
+  decode(whatwg::dynamic_decoder{e})` is a lazy `char32_t` range, and
+  `decode_or_error`, `encode`, `transcode(from, to)` and `ranges::to` work
+  unchanged.  A MIME body arrives as a range out of a base64 or
+  quoted-printable decoder, and can be large, so the lazy form matters.  Each
+  call to `decode_one` dispatches on the encoding; callers opt into that cost,
+  so the paper's argument against dispatching on every code point by default
+  still stands.
+- Runtime overloads of the bulk helpers on top of them: `decode_to(src, e)`,
+  `encode_to(src, e)` and the `_into` forms, by `whatwg::encoding` and by
+  label.  `transcode_string` becomes a thin layer over the same objects, and
+  its 40-case `switch` goes away.
+
+Questions to settle while building it:
+
+- `dynamic_encoder` for an encoding with no encoder (`utf_16be`, `utf_16le`,
+  `replacement`, and `x_user_defined` until Stage 2 lands): a precondition on
+  construction, a factory returning `optional`, or an `encode_one` that always
+  fails.  `encode_to` returns `optional` in any case.
+- Which refinements the objects model.  Every `whatwg::decoder<C>` has
+  `decode_first`, so `bom_aware_text_decoder` is straightforward, and `flush`
+  can return "nothing pending" for a stateless encoding.  The `single_byte_*`
+  concepts cannot be promised at run time, so the views take the forward path.
+- `constexpr`: `std::variant` is usable in constant evaluation, so the objects
+  should be too, with `constify` tests.
+- When this lands, "Template Parameter vs Runtime Selection" in the paper,
+  which now says a program writes its own `switch` for a lazy view or
+  `char32_t` values over a runtime encoding, changes to show the codec objects.
 
 ## Not actionable
 
