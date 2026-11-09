@@ -13,7 +13,7 @@ dev = [
   "clang-tidy==23.1.4",
   "cmake==4.4.4",
   "gcovr>=8.6",
-  "mbake==1.4.6",
+  "mbake==1.5.0",
   "mypy>=2.3.0",
   "ninja>=1.13",
   "pre-commit>=4.6.2",
