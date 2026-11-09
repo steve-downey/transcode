@@ -2,7 +2,7 @@
 
 **Branch:** `p6-step7-fffd-reservation`
 **Depends on:** Step 0
-**Finding:** S-03
+**Finding:** [fffd-error-sentinel](../review-findings-2026-09-11.md#fffd-error-sentinel)
 **Read first:** `docs/plans/phase6-index.md`
 
 ---

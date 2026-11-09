@@ -1,0 +1,11 @@
+Subject: Base64 UTF-8
+From: unicode@example.org
+part 1
+  content-type: text/plain
+  charset: utf-8
+  transfer-encoding: base64
+  characters: 68
+  text:
+  > Ünïcödé: ñ, ß, œ.
+  > 日本語, 한국어, Русский, ελληνικά
+  > Beyond the BMP: 😀 𝄞 𠮷

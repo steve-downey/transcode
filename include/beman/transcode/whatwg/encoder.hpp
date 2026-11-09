@@ -18,6 +18,7 @@
 #include <beman/transcode/detail/iso2022jp.hpp>
 #include <beman/transcode/detail/shift_jis.hpp>
 #include <beman/transcode/detail/utf8_encode.hpp>
+#include <beman/transcode/detail/x_user_defined.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <optional>
@@ -30,15 +31,15 @@ namespace beman::transcoding::whatwg {
 //! \at transcode.whatwg.encoders
 //! \remarks `whatwg::encoder<C>` is the encoder, as a codec object, for the
 //! encoding `C`.  `$whatwg-encode-codec$<C>` is `true` for every encoding but
-//! `utf_16be`, `utf_16le`, `replacement` and `x_user_defined`, for which the
-//! Encoding Standard defines no encoder, and `$random-access-encode-codec$<C>`
-//! is `true` when `C` is one of the Encoding Standard's single-byte encodings
-//! other than `x_user_defined`.  It models `text_encoder` \iref{transcode.codec.reqs} and the encode
+//! `utf_16be`, `utf_16le` and `replacement`, for which the Encoding Standard
+//! defines no encoder, and `$random-access-encode-codec$<C>` is `true` when
+//! `C` is `x_user_defined` or one of the Encoding Standard's single-byte
+//! encodings.  It models `text_encoder` \iref{transcode.codec.reqs} and the encode
 //! adaptor over it \iref{transcode.codec.encode} yields what
 //! `whatwg::encode<C>` does.  It models `flushable_text_encoder` when `C` is
 //! `encoding::iso_2022_jp`, which owes an escape sequence returning to ASCII
 //! after the last scalar value.  It models `single_byte_text_encoder` when
-//! `C` names a single-byte encoding.  It is equality comparable.
+//! `$random-access-encode-codec$<C>` is `true`.  It is equality comparable.
 template <encoding C>
     requires detail::whatwg_encode_codec<C>
 class encoder {
@@ -76,7 +77,14 @@ constexpr encode_result encoder<C>::encode_one(char32_t scalar) {
     // the view's buffer, makes GCC spill the result to the stack per element.
     if constexpr (C == encoding::utf_8) {
         return detail::utf8_encode_one(scalar);
-    } else if constexpr (detail::random_access_encode_codec<C>) {
+    } else if constexpr (C == encoding::x_user_defined) {
+        const auto    byte = detail::x_user_defined_encode_byte(scalar);
+        encode_result out;
+        out.bytes[0] = byte.value_or(0);
+        out.count    = byte ? 1 : 0;
+        out.is_error = !byte;
+        return out;
+    } else if constexpr (detail::single_byte_table_encode_codec<C>) {
         const auto    r = detail::single_byte_encode_one<detail::random_access_encode_table<C>()>(scalar);
         encode_result out;
         out.bytes[0] = r.byte;
@@ -104,19 +112,24 @@ constexpr encode_result encoder<C>::encode_one(char32_t scalar) {
 template <encoding C>
     requires detail::whatwg_encode_codec<C>
 //! \returns The byte `scalar` encodes to in the encoding `C`, or `nullopt` if
-//! `C` has no representation for it.  Present for the single-byte encodings.
+//! `C` has no representation for it.  Present for the single-byte encodings
+//! and `x_user_defined`.
 constexpr std::optional<unsigned char> encoder<C>::encode_byte(char32_t scalar) const
     requires detail::random_access_encode_codec<C>
 {
-    // Straight from the table into the optional: going through
-    // single_byte_encode_one's {byte, is_error} pair costs GCC a second test
-    // per element.
-    if (scalar < 0x80)
-        return static_cast<unsigned char>(scalar);
-    const int pointer = detail::reverse_index_for<detail::random_access_encode_table<C>()>.find(scalar);
-    if (pointer < 0)
-        return std::nullopt;
-    return static_cast<unsigned char>(0x80 + pointer);
+    if constexpr (C == encoding::x_user_defined) {
+        return detail::x_user_defined_encode_byte(scalar);
+    } else {
+        // Straight from the table into the optional: going through
+        // single_byte_encode_one's {byte, is_error} pair costs GCC a second
+        // test per element.
+        if (scalar < 0x80)
+            return static_cast<unsigned char>(scalar);
+        const int pointer = detail::reverse_index_for<detail::random_access_encode_table<C>()>.find(scalar);
+        if (pointer < 0)
+            return std::nullopt;
+        return static_cast<unsigned char>(0x80 + pointer);
+    }
 }
 
 template <encoding C>

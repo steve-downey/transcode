@@ -2,7 +2,7 @@
 
 **Branch:** `p6-step3-iconv-lossy-skip`
 **Depends on:** Steps 0 and 2
-**Findings:** C-04, S-02
+**Findings:** [iconv-lossy-replacement-corrupts](../review-findings-2026-09-11.md#iconv-lossy-replacement-corrupts), [iconv-lossy-recovery-policy](../review-findings-2026-09-11.md#iconv-lossy-recovery-policy)
 **Read first:** `docs/plans/phase6-index.md`, `docs/plans/p6-step2-iconv-error-model.md`
 
 ---
@@ -39,7 +39,7 @@ continues) and the bulk helper not at all.  So this is not a case where the
 implementation and the specification disagree about a decision -- it is a case
 where the specification is right and the code drifted.
 
-That also answers S-02.  The reason a user cannot swap the eager helper for the
+That also answers [iconv-lossy-recovery-policy](../review-findings-2026-09-11.md#iconv-lossy-recovery-policy).  The reason a user cannot swap the eager helper for the
 lazy view without changing their output is this one difference; removing it
 removes the inconsistency rather than documenting it.
 
@@ -80,7 +80,7 @@ The docblock at lines 79-84 needs no change.  That is the point.
   not put there.  This test fails on `main` with a one-byte result.
 - **Eager and lazy agree.**  The same invalid input through
   `iconv_transcode_to` and through `iconv_transcode(...)` collected with
-  `ranges::to`, asserting byte-for-byte equality.  This is the S-02 claim as a
+  `ranges::to`, asserting byte-for-byte equality.  This is the [iconv-lossy-recovery-policy](../review-findings-2026-09-11.md#iconv-lossy-recovery-policy) claim as a
   test rather than a paragraph, and it is the one that will catch the next
   drift.
 - **`iconv_transcode_into` matches `iconv_transcode_to`** for the same inputs.

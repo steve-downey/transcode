@@ -50,9 +50,9 @@ As Step 4, for `papers/wording/transcode.whatwg.decode.md` and
 Both clauses are written, and `--validate` reports nothing about either view,
 its iterator, or its adaptor objects.  The document's findings go from 133 to
 79: what remains is Steps 7-9's, and one of the two entities the count blames
-on this clause was the `detail::` qualifier W1 took away.
+on this clause was the `detail::` qualifier [random-access-specialization](../decisions.md#random-access-specialization) took away.
 
-**W1 is carried out.**  `random_access_whatwg_decode_view` and its encode twin
+**[random-access-specialization](../decisions.md#random-access-specialization) is carried out.**  `random_access_whatwg_decode_view` and its encode twin
 are `\omit`ted, and each clause says instead that the view models
 `random_access_range` when the codec decodes one byte to one scalar value and
 the base range does.  That is a design claim, so it belongs in the paper's

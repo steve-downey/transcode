@@ -609,6 +609,23 @@ target_link_libraries(
     PRIVATE beman::transcode Catch2::Catch2WithMain
 )
 
+# The runtime bulk helpers this test also covers need std::ranges::to.
+if(BEMAN_TRANSCODE_HAS_RANGES_TO)
+    add_executable(beman.transcode.tests.whatwg_dynamic_codec)
+    target_sources(
+        beman.transcode.tests.whatwg_dynamic_codec
+        PRIVATE whatwg_dynamic_codec.test.cpp
+    )
+    target_include_directories(
+        beman.transcode.tests.whatwg_dynamic_codec
+        PRIVATE ${TEST_INCLUDE_DIR}
+    )
+    target_link_libraries(
+        beman.transcode.tests.whatwg_dynamic_codec
+        PRIVATE beman::transcode Catch2::Catch2WithMain
+    )
+endif()
+
 add_executable(beman.transcode.tests.whatwg_encoder)
 target_sources(
     beman.transcode.tests.whatwg_encoder
@@ -727,6 +744,9 @@ catch_discover_tests(beman.transcode.tests.transcode)
 catch_discover_tests(beman.transcode.tests.transcode_string)
 catch_discover_tests(beman.transcode.tests.transcode_string_label)
 catch_discover_tests(beman.transcode.tests.whatwg_decoder)
+if(BEMAN_TRANSCODE_HAS_RANGES_TO)
+    catch_discover_tests(beman.transcode.tests.whatwg_dynamic_codec)
+endif()
 catch_discover_tests(beman.transcode.tests.whatwg_encoder)
 catch_discover_tests(beman.transcode.tests.transcode_view)
 if(BEMAN_TRANSCODE_HAS_RANGES_TO)
@@ -867,6 +887,19 @@ beman_add_xfail_compile_test(
 )
 
 # legacy_byte_range rejects char32_t ranges (e.g. vector<char32_t>) for UTF-16 decode
+if(BEMAN_TRANSCODE_HAS_RANGES_TO)
+    beman_add_xfail_compile_test(
+        whatwg_decode_to_runtime_reject_fail
+        SOURCE whatwg_decode_to_runtime_reject_fail.cpp
+        LINK_LIBRARIES beman::transcode
+    )
+    beman_add_xfail_compile_test(
+        whatwg_encode_to_runtime_reject_fail
+        SOURCE whatwg_encode_to_runtime_reject_fail.cpp
+        LINK_LIBRARIES beman::transcode
+    )
+endif()
+
 beman_add_xfail_compile_test(
     utf16_decode_reject_char32_range_fail
     SOURCE utf16_decode_reject_char32_range_fail.cpp

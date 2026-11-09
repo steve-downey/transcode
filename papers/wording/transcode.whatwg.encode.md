@@ -8,7 +8,7 @@ template<whatwg::encoding C> inline constexpr $unspecified$ encode;
 
 [#]{.pnum} *Remarks*: `whatwg::encode<C>` is `encode(whatwg::encoder<C>{})` ([transcode.codec.encode]).  It is the codec-object adaptor over the library's encoder for the encoding `C`, the encoder as the Encoding Standard defines it.  The value type, the reporting of encoding errors, the laziness and the range properties of the view it adapts to are those of that adaptor; the view is random access for the single-byte encodings, which `single_byte_text_encoder` ([transcode.codec.reqs]) provides. An argument of array type is ill-formed.
 
-[#]{.pnum} *Mandates:* The Encoding Standard defines an encoder for `C`.  It defines none for `utf_16be`, `utf_16le`, `replacement` or `x_user_defined`.
+[#]{.pnum} *Mandates:* The Encoding Standard defines an encoder for `C`.  It defines none for `utf_16be`, `utf_16le` or `replacement`.
 
 ```cpp
 template<whatwg::encoding C> inline constexpr $unspecified$ encode_or_error;

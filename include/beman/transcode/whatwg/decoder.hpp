@@ -21,7 +21,6 @@
 #include <beman/transcode/detail/x_user_defined.hpp>
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
-    #include <concepts>
     #include <iterator>
     #include <optional>
     #include <utility>
@@ -42,9 +41,11 @@ namespace beman::transcoding::whatwg {
 //! byte, and `bom_aware_text_decoder` when `C` names a UTF encoding: its
 //! `decode_first` discards one leading U+FEFF BYTE ORDER MARK from the text it
 //! decodes.  `$strips-leading-bom$<C>` is `true` when `C` is `utf_8`,
-//! `utf_16be` or `utf_16le`, and `$random-access-decode-codec$<C>` is `true`
-//! when `C` is `x_user_defined` or one of the Encoding Standard's single-byte
-//! encodings.  It is equality comparable.
+//! `utf_16be` or `utf_16le`, `$has-decode-state$<C>` is `true` when `C` is
+//! `utf_16be`, `utf_16le`, `gbk`, `gb18030`, `big5` or `iso_2022_jp`, and
+//! `$random-access-decode-codec$<C>` is `true` when `C` is `x_user_defined`
+//! or one of the Encoding Standard's single-byte encodings.  It is equality
+//! comparable.
 template <encoding C>
 class decoder {
     //! \expos
@@ -63,7 +64,7 @@ class decoder {
         requires detail::random_access_decode_codec<C>;
 
     constexpr std::optional<decode_result> flush()
-        requires(!std::same_as<detail::decode_state_t<C>, detail::no_decode_state>);
+        requires detail::has_decode_state<C>;
 
     friend constexpr bool operator==(const decoder&, const decoder&) = default;
 };
@@ -172,7 +173,7 @@ template <encoding C>
 //! \returns `nullopt` if nothing is owed.  Otherwise a scalar value still
 //! pending, or the error for a sequence the input ended in the middle of.
 constexpr std::optional<decode_result> decoder<C>::flush()
-    requires(!std::same_as<detail::decode_state_t<C>, detail::no_decode_state>)
+    requires detail::has_decode_state<C>
 {
     if (state_.at_end())
         return std::nullopt;

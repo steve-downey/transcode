@@ -13,12 +13,71 @@
 
 #include <iconv.h>
 
+#include <cerrno>
 #include <cstddef>
 #include <span>
+#include <stdexcept>
 #include <string>
 
+// Naive iconv: the loop a search for "iconv into a std::string" produces when
+// nothing else is known, and the paper's "Before: iconv" example.  Open a
+// handle, size the string to a guess, call iconv() in a loop, grow the string
+// and fix up the output pointer on E2BIG, trim to what was written, close the
+// handle.  `initial_factor` is the guess, as a multiple of the input size: 4
+// is the paper's example and is enough for every corpus here, so the E2BIG
+// path never runs; 1 is the other common guess, and the E2BIG path runs
+// several times.
+static std::string
+naive_iconv_to_string(std::span<const char> data, const char* from, const char* to, std::size_t initial_factor) {
+    iconv_t cd = ::iconv_open(to, from);
+    if (cd == reinterpret_cast<iconv_t>(-1))
+        throw std::runtime_error("iconv_open");
+
+    std::string result;
+    result.resize(data.size() * initial_factor);
+
+    char*       inbuf   = const_cast<char*>(data.data());
+    std::size_t inleft  = data.size();
+    char*       outbuf  = result.data();
+    std::size_t outleft = result.size();
+
+    while (inleft > 0) {
+        std::size_t r = ::iconv(cd, &inbuf, &inleft, &outbuf, &outleft);
+        if (r == static_cast<std::size_t>(-1)) {
+            if (errno == E2BIG) {
+                std::size_t used = static_cast<std::size_t>(outbuf - result.data());
+                result.resize(result.size() * 2);
+                outbuf  = result.data() + used;
+                outleft = result.size() - used;
+            } else if (errno == EILSEQ) {
+                // Skip the invalid byte and write '?'.  The corpora are valid,
+                // so this never runs; it is here so the loop is the one a
+                // program would ship.
+                ++inbuf;
+                --inleft;
+                if (outleft == 0) {
+                    std::size_t used = static_cast<std::size_t>(outbuf - result.data());
+                    result.resize(result.size() * 2);
+                    outbuf  = result.data() + used;
+                    outleft = result.size() - used;
+                }
+                *outbuf++ = '?';
+                --outleft;
+            } else {
+                ::iconv_close(cd);
+                throw std::runtime_error("iconv");
+            }
+        }
+    }
+    result.resize(static_cast<std::size_t>(outbuf - result.data()));
+    ::iconv_close(cd);
+    return result;
+}
+
 // Raw iconv loop: process the entire corpus through an already-open iconv
-// handle.  Returns the total number of output bytes produced (prevents DCE).
+// handle into a fixed buffer that is overwritten on every call.  Nothing is
+// kept: this is the floor for iconv(3) itself, not a program's use of it.
+// Returns the total number of output bytes produced (prevents DCE).
 static std::size_t raw_iconv_process(iconv_t cd, std::span<const char> data, char* out_buf, std::size_t out_buf_size) {
     // Reset converter state between benchmark iterations.
     ::iconv(cd, nullptr, nullptr, nullptr, nullptr);
@@ -62,6 +121,20 @@ TEST_CASE("iconv baselines", "[benchmark][iconv]") {
         ::iconv_close(cd);
     };
 
+    describe({.conversion = "UTF-8 → UTF-32", .library = "iconv", .api = "naive iconv(3) into std::string, sized 4x"});
+    BENCHMARK_ADVANCED("Naive iconv into std::string (4x): UTF-8 to UTF-32LE English")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("en_mars_utf8.txt");
+        measure(meter, [&] { return naive_iconv_to_string(data, "UTF-8", "UTF-32LE", 4).size(); });
+    };
+
+    describe({.conversion = "UTF-8 → UTF-32", .library = "iconv", .api = "naive iconv(3) into std::string, sized 1x"});
+    BENCHMARK_ADVANCED("Naive iconv into std::string (1x): UTF-8 to UTF-32LE English")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("en_mars_utf8.txt");
+        measure(meter, [&] { return naive_iconv_to_string(data, "UTF-8", "UTF-32LE", 1).size(); });
+    };
+
     describe({.conversion = "UTF-8 → UTF-32", .library = "iconv", .api = "iconv_transcode_view"});
     BENCHMARK_ADVANCED("iconv_transcode_view: UTF-8 to UTF-32LE English")
     (Catch::Benchmark::Chronometer meter) {
@@ -77,6 +150,22 @@ TEST_CASE("iconv baselines", "[benchmark][iconv]") {
         iconv_t cd   = ::iconv_open("UTF-8", "SHIFT_JIS");
         measure(meter, [&] { return raw_iconv_process(cd, data, out_buf, sizeof(out_buf)); });
         ::iconv_close(cd);
+    };
+
+    describe(
+        {.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "naive iconv(3) into std::string, sized 4x"});
+    BENCHMARK_ADVANCED("Naive iconv into std::string (4x): Shift-JIS to UTF-8 Japanese")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("ja_mars_shiftjis.bin");
+        measure(meter, [&] { return naive_iconv_to_string(data, "SHIFT_JIS", "UTF-8", 4).size(); });
+    };
+
+    describe(
+        {.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "naive iconv(3) into std::string, sized 1x"});
+    BENCHMARK_ADVANCED("Naive iconv into std::string (1x): Shift-JIS to UTF-8 Japanese")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("ja_mars_shiftjis.bin");
+        measure(meter, [&] { return naive_iconv_to_string(data, "SHIFT_JIS", "UTF-8", 1).size(); });
     };
 
     describe({.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "iconv_transcode_view"});
@@ -125,6 +214,14 @@ TEST_CASE("iconv bulk operations", "[benchmark][iconv]") {
         auto data = corpus_span("ja_mars_eucjp.bin");
         measure(meter, [&] { return iconv_transcode_to<std::string>(data, "EUC-JP", "SHIFT_JIS").size(); });
     };
+
+    describe(
+        {.conversion = "EUC-JP → Shift_JIS", .library = "iconv", .api = "naive iconv(3) into std::string, sized 4x"});
+    BENCHMARK_ADVANCED("Naive iconv into std::string (4x): EUC-JP to Shift-JIS Japanese")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("ja_mars_eucjp.bin");
+        measure(meter, [&] { return naive_iconv_to_string(data, "EUC-JP", "SHIFT_JIS", 4).size(); });
+    };
 }
 
 TEST_CASE("iconv large corpus", "[benchmark][iconv]") {
@@ -142,6 +239,14 @@ TEST_CASE("iconv large corpus", "[benchmark][iconv]") {
     (Catch::Benchmark::Chronometer meter) {
         auto data = corpus_span("genji_monogatari_shiftjis.bin");
         measure(meter, [&] { return iconv_transcode_to<std::string>(data, "SHIFT_JIS", "UTF-8").size(); });
+    };
+
+    describe(
+        {.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "naive iconv(3) into std::string, sized 4x"});
+    BENCHMARK_ADVANCED("Naive iconv into std::string (4x): Shift-JIS → UTF-8, Genji (2.3 MB)")
+    (Catch::Benchmark::Chronometer meter) {
+        auto data = corpus_span("genji_monogatari_shiftjis.bin");
+        measure(meter, [&] { return naive_iconv_to_string(data, "SHIFT_JIS", "UTF-8", 4).size(); });
     };
 
     describe({.conversion = "Shift_JIS → UTF-8", .library = "iconv", .api = "iconv_transcode_view"});

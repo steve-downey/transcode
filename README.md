@@ -303,7 +303,7 @@ runtime name-to-codec registry by design — codec selection happens at
 compile time through the type system.  Runtime transcode is similarly outside
 the model: you compose `decode(codec_a{}) | encode(codec_b{})` at compile time.
 
-⁵ **P2728 selects its whatwg::encoding from the character type.**  Selection is
+⁵ **P2728 selects its codec from the character type.**  Selection is
 determined by the character types (`char8_t`, `char16_t`, `char32_t`), so
 runtime label lookup and runtime transcode are outside its model.
 

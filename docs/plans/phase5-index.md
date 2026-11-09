@@ -61,87 +61,46 @@ worktree, not estimates.  They are what the steps below are sized against.
 
 ## Decisions
 
-**D1 — One specgen document per proposed standard header.**  The paper proposes
-`<transcode>` and `<null_term>`.  Each maps to exactly one spec-facing header in
-this repo, and that header is what specgen is run over.
+The decisions this phase makes live in
+[`docs/decisions.md`](../decisions.md), one section per question, each named
+for the question it answers rather than for the answer -- so the slug survives
+its answer reversing, which one of them did.  Every reference to a decision,
+here or anywhere else in the repo, is a link to its anchor.
 
-**How a document reaches more than one file, settled 2026-09-07.**  specgen used
-to process only declarations located in the main file, which would have made
-this decision "put the whole of `<transcode>` in one 3,500-line file".  It does
-not: a gathered `.syn` region now gathers the declarations of the headers
-`#include`d inside it (specgen#77, PR #78), so `transcode.hpp` stays the
-umbrella it already was and the sixteen component headers stay where they are.
-The region is the statement of which includes are the specification surface;
-`detail/` includes sit outside it.  This is D7 again -- the tool renders what
-the library writes -- and it is why Step 3's task 4 cost a rewrite of one
-umbrella rather than a rewrite of the library.  Confirmed working
-on 2026-09-05: `<null_term>` renders a real gathered `[null.term.syn]` beside
-its per-class clauses, validating clean.  The fallback this decision carried --
-one document per header family with a hand-authored `[transcode.syn]` -- is
-retired; it existed because a deduction guide corrupted the gathered region
-(specgen#22), and that is fixed.
-
-**D2 — Generated fragments are committed and checked.**  `make wording`
-regenerates `papers/wording/*.md`; `make wording-check` regenerates into a
-temporary directory and diffs.  CI runs the check.  Committing the fragments
-keeps the paper buildable on a machine with no specgen and no Clang 22, which
-is the normal case for a co-author.
-
-**D3 — Transclusion is native pandoc multi-file input.**  `base.mk` builds its
-pandoc command from `$(filter %.md, $^)`, so a target with several markdown
-prerequisites is concatenated in prerequisite order.  The paper targets get the
-fragment list as ordered prerequisites; the order comes from the manifest
-`specgen render --split` prints.  No new markdown preprocessor, no include
-syntax to invent.
-
-**D4 — Fragments live in `papers/wording/`.**  `flat.mk` turns every
-`papers/*.md` into its own paper; a subdirectory is invisible to that wildcard.
-
-**D5 — Stable names root at `transcode.`**, with `null.term` for the second
-header.  `--split` derives the root fragment name from the common prefix, so
-the header synopsis fragment is `transcode.syn.md` — spelled explicitly with
-`--root` rather than left to derivation.
-
-**D6 — No `--paper` mode.**  `--paper` wraps everything in `::: add` and
-underlines it.  This paper adds whole new clauses; an authored editing
-instruction ("Add a new clause [transcode] as follows:") reads better than
-several hundred underlined lines.  The switch is one flag if that judgement
-changes.
-
-**D7 — `detail::` never appears in a spec-visible signature, and the headers
-do not move to achieve that.**  A `detail::` name reaching the wording is a
-real finding: the published text must not name something the reader cannot see.
-What was wrong in the original decision is the remedy it accepted.  It said such
-a name "either moves out of `detail` ... or is marked `\expos`", and relocating
-a helper out of `detail` changes name lookup, ADL and the library's effective
-public surface — a real change to the library, taken on for a documentation
-tool.  It was recorded as the single largest source of the refactoring in
-Step 3, which is the clearest sign it was pointed the wrong way.
-
-The rule now: a `detail::` name in a spec-visible signature renders
-exposition-only or `unspecified`, and the header keeps the spelling it wants.
-`\expos` covers it, and since specgen#36 it reaches entities declared in an
-included `detail/` header too.  Measured on 2026-09-05: marking the six concepts
-`\expos` in the headers that declare them takes the qualifier findings from
-nine to three, with nothing moved and nothing renamed.  The three survivors are
-class-head constraints (N6) and wait for specgen#48.  The pattern of a synopsis
-plus out-of-line definitions is all a spec-facing header should have to be.
+| Question | Answer, in one line |
+|---|---|
+| [document-unit](../decisions.md#document-unit) | One specgen document per proposed standard header, and a gathered region reaches the headers it includes |
+| [fragment-checkin](../decisions.md#fragment-checkin) | The generated fragments are committed, and a check regenerates and diffs them |
+| [transclusion-mechanism](../decisions.md#transclusion-mechanism) | Native pandoc multi-file input; prerequisite order is document order |
+| [fragment-location](../decisions.md#fragment-location) | `papers/wording/`, which `flat.mk`'s wildcard cannot see |
+| [stable-name-roots](../decisions.md#stable-name-roots) | `transcode.` and `null.term`, spelled explicitly |
+| [editing-instruction-form](../decisions.md#editing-instruction-form) | Authored, not `--paper` mode |
+| [detail-in-wording](../decisions.md#detail-in-wording) | It renders exposition-only, and the header keeps the spelling it wants |
+| [random-access-specialization](../decisions.md#random-access-specialization) | Not separately specified; a *Remarks* about the range concept instead |
+| [encoding-standard-reference](../decisions.md#encoding-standard-reference) | By reference to the WHATWG Encoding Standard, named in prose |
+| [null-term-header](../decisions.md#null-term-header) | `<null_term>` stays a separate header |
+| [drift-gate](../decisions.md#drift-gate) | A specgen-free hash check per pull request; the real check runs locally |
+| [clause-heading-level](../decisions.md#clause-heading-level) | Flat, accepted; the upstream flag is specgen#97 |
 
 ## Step index
 
-| Step | Branch | Deliverable | Depends on |
+The ordinal is reading order; the slug is the identity, and it is what the step
+plans and the decision log cross-reference.  A step that splits or gets one
+inserted before it keeps its slug and every link to it.
+
+| # | Step | Deliverable | Depends on |
 |------|--------|-------------|-----------|
-| 1 | `p5-step1-specgen-harness` | `papers/wording/`, pinned generate script, `make wording` / `wording-check`, paper transclusion rule, proved end to end on one header | — |
-| 2 | `p5-step2-wording-outline` | [`docs/wording-outline.md`](../wording-outline.md): clause tree, stable names, header→clause map, fragment order | — |
-| 3 | `p5-step3-spec-header-shape` | Headers refactored so each spec-facing header's main-file decls are exactly the spec surface | 2 |
-| 3b | `p5-step3b-codec-pushdown` | Codec implementation out of the WHATWG view headers; partly done, remainder ordered behind the `_or_error` unification | 3 |
-| 4 | `p5-step4-errors-concepts-null-term` | Markup for the error enums, the range concepts, and `null_term` | 1, 3 |
-| 5 | `p5-step5-codec-labels-sniff` | Markup for `codec`, `get_encoding`, `sniff_encoding` | 4 |
-| 6 | `p5-step6-whatwg-views` | Markup for the four WHATWG decode views and four encode views | 5 |
-| 7 | `p5-step7-pluggable-codecs` | Markup for the codec concepts and the pluggable decode/encode views | 6 |
-| 8 | `p5-step8-transcode-pipeline` | Markup for `transcode`, `pluggable_transcode`, `transcode_string` | 7 |
-| 9 | `p5-step9-iconv` | Markup for the iconv views and bulk helpers, or a recorded decision to omit them from the wording | 8 |
-| 10 | `p5-step10-paper-assembly` | Wording section of the paper: editing instructions, fragment order, clean `--validate`, CI drift gate | 4-9 |
+| 1 | [specgen-harness](p5-step1-specgen-harness.md) | `papers/wording/`, pinned generate script, `make wording` / `wording-check`, paper transclusion rule, proved end to end on one header | — |
+| 2 | [wording-outline](p5-step2-wording-outline.md) | [`docs/wording-outline.md`](../wording-outline.md): clause tree, stable names, header→clause map, fragment order | — |
+| 3 | [spec-header-shape](p5-step3-spec-header-shape.md) | Headers refactored so each spec-facing header's main-file decls are exactly the spec surface | 2 |
+| 3b | [codec-pushdown](p5-step3b-codec-pushdown.md) | Codec implementation out of the WHATWG view headers; partly done, remainder ordered behind the `_or_error` unification | 3 |
+| 4 | [errors-concepts-null-term](p5-step4-errors-concepts-null-term.md) | Markup for the error enums, the range concepts, and `null_term` | 1, 3 |
+| 5 | [codec-labels-sniff](p5-step5-codec-labels-sniff.md) | Markup for `codec`, `get_encoding`, `sniff_encoding` | 4 |
+| 6 | [whatwg-views](p5-step6-whatwg-views.md) | Markup for the four WHATWG decode views and four encode views | 5 |
+| 7 | [pluggable-codecs](p5-step7-pluggable-codecs.md) | Markup for the codec concepts and the pluggable decode/encode views | 6 |
+| 8 | [transcode-pipeline](p5-step8-transcode-pipeline.md) | Markup for `transcode`, `pluggable_transcode`, `transcode_string` | 7 |
+| 9 | [iconv](p5-step9-iconv.md) | Markup for the iconv views and bulk helpers, or a recorded decision to omit them from the wording | 8 |
+| 10 | [paper-assembly](p5-step10-paper-assembly.md) | Wording section of the paper: editing instructions, fragment order, clean `--validate`, CI drift gate | 4-9 |
 
 Steps 4-9 are the same loop nine times: mark up a clause, regenerate, drive
 `--validate` findings for that clause to zero, commit headers and fragments
@@ -221,11 +180,11 @@ two-dimensional table exists).  The first two are defects in what this project
 asked for last round, which is what a recheck is for; the third is why
 `[transcode.errors]` states its enumerator meanings as an `\item` list.
 
-- **N6 closed** (#48, `fa9af1c`).  The exposition-only rename now reaches a
+- **specgen#48 closed** (#48, `fa9af1c`).  The exposition-only rename now reaches a
   class template's own requires-clause, which was the last three qualifier
-  findings.  D7 is satisfied in full, by six `\expos` comments and nothing
+  findings.  [detail-in-wording](../decisions.md#detail-in-wording) is satisfied in full, by six `\expos` comments and nothing
   else -- no declaration moved, no name changed.
-- **N8 closed** (#55, `5b04bf2`, apply the declaration masks inside a gathered
+- **specgen#55 closed** (#55, `5b04bf2`, apply the declaration masks inside a gathered
   region).  `views::null_term` drops its `\omit` and renders
   `inline constexpr $unspecified$ null_term;` in the header synopsis, which is
   what the draft writes.  `[null.term.adaptor]` is unblocked; only its prose is
@@ -234,15 +193,15 @@ asked for last round, which is what a recheck is for; the third is why
 The same round also tightened the template head's namespace drop (`fa9af1c`),
 so `template<std::contiguous_iterator I>` renders as
 `template<contiguous_iterator I>`.  That is the draft's spelling, and it moved
-the committed fragments -- regenerated and committed here, which is D2 working
+the committed fragments -- regenerated and committed here, which is [fragment-checkin](../decisions.md#fragment-checkin) working
 as intended.
 
 ### The gathered-region pattern
 
 **Five** defects turned out to be one shape: a marker or a check that works at
 namespace scope and is skipped for a declaration folded into a gathered region.
-N3 (#34, a routed member's description), N7 (#45, coverage checking), N8 (#55,
-declaration masks), the class-head half of N6 (#48), and #69 (a namespace
+specgen#34 (#34, a routed member's description), specgen#45 (#45, coverage checking), specgen#55 (#55,
+declaration masks), the class-head half of specgen#48 (#48), and #69 (a namespace
 entity's whole description).  All five are fixed.  Each of the first four was
 recorded here as the last of them, which is the reason to keep the shape
 written down rather than the count: Steps 5-9 gather `<transcode>`, a far
@@ -253,25 +212,23 @@ fragment.
 
 ### Closed
 
-- **U1 / U9 — leakage checker discriminator.**  #3-era fix, `b1054dd`.
-- **U4 / N2 — a deduction guide corrupted a gathered `.syn` synopsis.**  #22.
-- **U5 — a docblock on an in-class hidden friend is not attached.**  #20.  Never
+- **specgen#3 — leakage checker discriminator.**  `b1054dd`.
+- **specgen#22 — a deduction guide corrupted a gathered `.syn` synopsis.**
+- **specgen#20 — a docblock on an in-class hidden friend is not attached.**  Never
   about hidden friends: the trigger was a requires-clause holding a
   requires-expression.
-- **U7 — no way to mask a variable's type.**  #24, completed by #55.
-- **U8 — `\expos` on class and alias templates.**  #23.
-- **N1 — a constructor's member-initializer list rendered into the synopsis.**
-  #21.
-- **N3 — a routed member description dropped inside a gathered region.**  #34.
-- **N4 — the private-member check keyed by bare name.**  #35.
-- **N5 — `detail::` could not render exposition-only from an included header.**
-  #36.  The one that made D7 cheap.
-- **N6 — the exposition-only rename skipped a class template's own
-  requires-clause.**  #48.
-- **N7 — a class folded into a gathered synopsis was not coverage-checked.**
-  #45.
-- **N8 — bare `\seebelow` on a variable was not applied inside a gathered
-  region.**  #55.
+- **specgen#24 — no way to mask a variable's type.**  Completed by specgen#55.
+- **specgen#23 — `\expos` on class and alias templates.**
+- **specgen#21 — a constructor's member-initializer list rendered into the synopsis.**
+- **specgen#34 — a routed member description dropped inside a gathered region.**
+- **specgen#35 — the private-member check keyed by bare name.**
+- **specgen#36 — `detail::` could not render exposition-only from an included header.**
+  The one that made [detail-in-wording](../decisions.md#detail-in-wording) cheap.
+- **specgen#48 — the exposition-only rename skipped a class template's own
+  requires-clause.**
+- **specgen#45 — a class folded into a gathered synopsis was not coverage-checked.**
+- **specgen#55 — bare `\seebelow` on a variable was not applied inside a gathered
+  region.**
 - **specgen#68 — a documented enumeration produced no wording.**  #70,
   `f64f043`.  A docblock on an `enum class` was rejected as an unsupported
   entity kind, and there was no other spelling: a gathered region rendered the
@@ -291,9 +248,15 @@ fragment.
 
 ### Open
 
-- **U2 — `--base-heading-level` on the command line.**  Still absent.
-  `render --help` lists `--backend`, `--validate`, `--paper`, `--split`,
-  `--root` and `-o`, and nothing else.  **Step 10 accepted flat headings**: the
+- **[clause-heading-level](../decisions.md#clause-heading-level) — `--base-heading-level` on the command line.**  Still absent, and
+  **filed at last as
+  [specgen#97](https://github.com/steve-downey/specgen/issues/97)** on
+  2026-09-10.  This entry tracked it from the first measuring round without
+  ever reaching specgen's tracker, which is why it is the one U-item here that
+  cited no issue number.  The option exists in all three backends'
+  `Options` -- `mpark`'s and `org`'s `base_heading_level`, LaTeX's
+  `base_section_depth` -- and the CLI passes `paper_mode` and `new_roots`
+  through to the backend while leaving these at their defaults.  **Step 10 accepted flat headings**: the
   clauses are `##`, which is the level the paper's own sections use, so they
   are siblings of "Design" rather than children of "Wording".  The table of
   contents reads as a clause list under the Wording heading, which is close
@@ -311,15 +274,16 @@ fragment.
   --new-root null.term` and the `sed` that stripped the `.sref` class is gone.
   The fragments came out byte-identical to what the `sed` produced, which is
   the check that the two mechanisms agreed before one replaced the other.
-- **U3 — namespace mapping is automatic.**  Nothing to do; recorded so no step
-  goes looking for a mapping option that does not exist.
+- **Namespace mapping is automatic.**  Nothing to do, and no issue to file --
+  recorded so that no step goes looking for a mapping option that does not
+  exist.
 - ~~**specgen#74 — an enumerator table is two columns flat.**~~  **Closed and
   adopted.**  `\libtab2` landed upstream (specgen `93c248c`), and all three
   enumerations in `[transcode.errors]` now print a Constant/Meaning table --
   [fs.enum.file.type]'s shape, which is what an enumeration's meanings look
   like in the draft.  The `\item` list they used while the two-dimensional
   table was the only one is gone.
-- **U6 — every generated clause heading warns at paper-build time.**  An mpark
+- **specgen#89 — every generated clause heading warns at paper-build time.**  An mpark
   warning, not a specgen finding: `stable name <x> not found`, once per clause.
   It is what a stable name that is not in the draft yet looks like, so it is
   one per clause the phase adds -- seventeen by Step 10.
@@ -345,9 +309,9 @@ fragment.
 
 - **The refactor in Step 3 is the real cost of the phase.**  Everything else is
   comment authoring.  If Step 3 stalls, Steps 4-10 still work per header family
-  under D1's fallback, at the price of a hand-written synopsis.
+  under [document-unit](../decisions.md#document-unit)'s fallback, at the price of a hand-written synopsis.
 - **Clang 22 and GCC 16 are required to regenerate**, but not to build the
-  paper (D2).  A contributor without them can still edit prose and build a PDF;
+  paper ([fragment-checkin](../decisions.md#fragment-checkin)).  A contributor without them can still edit prose and build a PDF;
   they cannot change the wording.
 - **specgen is under development.**  Its IR and output can change under us.
   The committed fragments plus `make wording-check` make that visible as a diff

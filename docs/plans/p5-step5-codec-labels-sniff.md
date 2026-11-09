@@ -44,8 +44,8 @@ their entities.
 - **`[transcode.codec]`** — a `\ref` group header and one *Remarks* on the
   enumeration, saying that each enumerator names the encoding of the same name
   in the WHATWG Encoding Standard and that the table is not restated here.
-  W2's question -- how the normative reference is spelled -- is answered in
-  `docs/wording-outline.md` where W2 is: named in prose in the wording, a
+  [encoding-standard-reference](../decisions.md#encoding-standard-reference)'s question -- how the normative reference is spelled -- is answered in
+  `docs/wording-outline.md` where [encoding-standard-reference](../decisions.md#encoding-standard-reference) is: named in prose in the wording, a
   dated [intro.refs] entry in the paper, and whether SG16 accepts a normative
   reference to a living standard at all is a question for the paper's prose.
 

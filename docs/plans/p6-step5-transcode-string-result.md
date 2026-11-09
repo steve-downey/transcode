@@ -2,7 +2,7 @@
 
 **Branch:** `p6-step5-transcode-string-result`
 **Depends on:** Step 0
-**Finding:** C-07
+**Finding:** [empty-output-as-unsupported-target](../review-findings-2026-09-11.md#empty-output-as-unsupported-target)
 **Read first:** `docs/plans/phase6-index.md`
 
 ---

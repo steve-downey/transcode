@@ -1,0 +1,23 @@
+Subject: Nested multipart
+From: nested@example.org
+part 1.1
+  content-type: text/plain
+  charset: utf-8
+  transfer-encoding: 7bit
+  characters: 55
+  text:
+  > Plain text, the first alternative.
+  >
+  > With a blank line.
+part 1.2
+  content-type: text/html
+  charset: utf-8
+  transfer-encoding: base64
+  characters: 45
+  text:
+  > <p>HTML, with é, the second alternative.</p>
+part 2
+  content-type: application/pdf
+  charset: -
+  transfer-encoding: base64
+  bytes: 35

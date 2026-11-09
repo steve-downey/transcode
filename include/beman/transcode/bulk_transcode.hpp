@@ -44,17 +44,17 @@ namespace beman::transcoding {
 
 // \ref{transcode.bulk}, eager bulk conversion
 
-template <text_decoder Codec, legacy_byte_range R>
-constexpr std::vector<char32_t> decode_to(Codec codec, R&& source);
+template <legacy_byte_range R, text_decoder Codec>
+constexpr std::vector<char32_t> decode_to(R&& source, Codec codec);
 
-template <text_encoder Codec, typename Container = std::string, unicode_scalar_range R>
-constexpr Container encode_to(Codec codec, R&& source);
+template <typename Container = std::string, unicode_scalar_range R, text_encoder Codec>
+constexpr Container encode_to(R&& source, Codec codec);
 
-template <text_decoder Codec, legacy_byte_range R, std::output_iterator<char32_t> Output>
-constexpr void decode_into(Codec codec, R&& source, Output output);
+template <legacy_byte_range R, text_decoder Codec, std::output_iterator<char32_t> Output>
+constexpr void decode_into(R&& source, Codec codec, Output output);
 
-template <text_encoder Codec, unicode_scalar_range R, std::output_iterator<char> Output>
-constexpr void encode_into(Codec codec, R&& source, Output output);
+template <unicode_scalar_range R, text_encoder Codec, std::output_iterator<char> Output>
+constexpr void encode_into(R&& source, Codec codec, Output output);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
@@ -63,27 +63,29 @@ constexpr void encode_into(Codec codec, R&& source, Output output);
 //! \returns-expr
 //! \remarks The same four operations as the `whatwg::` forms over a codec
 //! supplied as a value \iref{transcode.codec.reqs}, for a codec chosen at run
-//! time or one the `whatwg::encoding` enumeration does not name.
-template <text_decoder Codec, legacy_byte_range R>
-constexpr std::vector<char32_t> decode_to(Codec codec, R&& source) {
+//! time or one the `whatwg::encoding` enumeration does not name.  As in
+//! every eager helper, the source comes first, then what to read or write it
+//! as, then any output.
+template <legacy_byte_range R, text_decoder Codec>
+constexpr std::vector<char32_t> decode_to(R&& source, Codec codec) {
     return std::forward<R>(source) | decode(codec) | std::ranges::to<std::vector<char32_t>>();
 }
 
 //! \returns-expr
-template <text_encoder Codec, typename Container, unicode_scalar_range R>
-constexpr Container encode_to(Codec codec, R&& source) {
+template <typename Container, unicode_scalar_range R, text_encoder Codec>
+constexpr Container encode_to(R&& source, Codec codec) {
     return std::forward<R>(source) | encode(codec) | std::ranges::to<Container>();
 }
 
 //! \effects-equiv
-template <text_decoder Codec, legacy_byte_range R, std::output_iterator<char32_t> Output>
-constexpr void decode_into(Codec codec, R&& source, Output output) {
+template <legacy_byte_range R, text_decoder Codec, std::output_iterator<char32_t> Output>
+constexpr void decode_into(R&& source, Codec codec, Output output) {
     std::ranges::copy(std::forward<R>(source) | decode(codec), output);
 }
 
 //! \effects-equiv
-template <text_encoder Codec, unicode_scalar_range R, std::output_iterator<char> Output>
-constexpr void encode_into(Codec codec, R&& source, Output output) {
+template <unicode_scalar_range R, text_encoder Codec, std::output_iterator<char> Output>
+constexpr void encode_into(R&& source, Codec codec, Output output) {
     std::ranges::copy(std::forward<R>(source) | encode(codec), output);
 }
 

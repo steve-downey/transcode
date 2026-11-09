@@ -1,0 +1,23 @@
+From: mystery@example.org
+Subject: An unknown charset
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="unknown-1"
+
+--unknown-1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+This part is fine.
+
+--unknown-1
+Content-Type: text/plain; charset=x-made-up
+Content-Transfer-Encoding: 7bit
+
+This part declares a charset that nobody has heard of.
+
+--unknown-1
+Content-Transfer-Encoding: 7bit
+
+This part declares nothing at all.
+
+--unknown-1--

@@ -14,12 +14,14 @@ from download_benchmark_corpora import (
     CONVERSIONS,
     GUTENBERG_WAR_AND_PEACE_FILE,
     GUTENBERG_WAR_AND_PEACE_URL,
+    USER_AGENT,
     WIKI_CORPORA,
     CorpusEntry,
     build_manifest_entry,
     convert_encoding,
     derive_utf16,
     extract_article_text,
+    fetch_url,
     sha256_of,
     write_manifest_json,
     write_source_md,
@@ -410,3 +412,32 @@ def test_write_source_md_contains_all_files(tmp_path: Path) -> None:
 def test_conversions_entry_exists(filename: str, encoding: str) -> None:
     found = any(dest == filename and enc == encoding for _, dest, enc, _ in CONVERSIONS)
     assert found, f"No CONVERSIONS entry for {filename} ({encoding})"
+
+
+# ---------------------------------------------------------------------------
+# fetch_url
+# ---------------------------------------------------------------------------
+
+
+def test_user_agent_names_the_project() -> None:
+    # Wikimedia refuses requests without a descriptive User-Agent, and its
+    # policy asks for a way to contact whoever runs the client.
+    assert "beman.transcode" in USER_AGENT
+    assert "https://" in USER_AGENT
+
+
+def test_fetch_url_sends_the_user_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list[list[str]] = []
+
+    class Done:
+        stdout = b"body"
+
+    def fake_run(cmd: list[str], **kwargs: object) -> Done:
+        seen.append(cmd)
+        return Done()
+
+    monkeypatch.setattr("download_benchmark_corpora.subprocess.run", fake_run)
+    assert fetch_url("https://example.org/x") == b"body"
+    cmd = seen[0]
+    assert cmd[cmd.index("-A") + 1] == USER_AGENT
+    assert cmd[-1] == "https://example.org/x"

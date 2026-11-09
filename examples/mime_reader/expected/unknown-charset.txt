@@ -1,0 +1,21 @@
+Subject: An unknown charset
+From: mystery@example.org
+part 1
+  content-type: text/plain
+  charset: utf-8
+  transfer-encoding: 7bit
+  characters: 19
+  text:
+  > This part is fine.
+part 2
+  content-type: text/plain
+  charset: x-made-up
+  transfer-encoding: 7bit
+  error: unknown charset 'x-made-up'
+part 3
+  content-type: text/plain
+  charset: us-ascii
+  transfer-encoding: 7bit
+  characters: 35
+  text:
+  > This part declares nothing at all.

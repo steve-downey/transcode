@@ -76,9 +76,17 @@ def sha256_of(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+# Wikimedia refuses requests that carry no descriptive User-Agent, and its
+# policy asks for one that says what the client is and how to reach whoever
+# runs it.
+USER_AGENT = (
+    "beman.transcode-benchmark-corpora/1.0 (https://github.com/steve-downey/transcode)"
+)
+
+
 def fetch_url(url: str) -> bytes:
     result = subprocess.run(
-        ["/usr/bin/curl", "-sL", "--fail", "--max-time", "60", url],
+        ["/usr/bin/curl", "-sL", "--fail", "--max-time", "60", "-A", USER_AGENT, url],
         capture_output=True,
         check=True,
     )

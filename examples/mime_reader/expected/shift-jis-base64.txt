@@ -1,0 +1,22 @@
+Subject: Attachments
+From: archive@example.org
+part 1
+  content-type: text/plain
+  charset: us-ascii
+  transfer-encoding: 7bit
+  characters: 41
+  text:
+  > The attachment is a Shift_JIS text file.
+part 2
+  content-type: text/plain
+  charset: shift_jis
+  transfer-encoding: base64
+  characters: 35
+  text:
+  > 吾輩は猫である。名前はまだ無い。
+  > どこで生れたかとんと見当がつかぬ。
+part 3
+  content-type: application/octet-stream
+  charset: -
+  transfer-encoding: base64
+  bytes: 256

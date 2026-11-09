@@ -2,7 +2,7 @@
 
 ## Decoders [transcode.whatwg.decoders] {-}
 
-[#]{.pnum} *Remarks*: `whatwg::decoder<C>` is the decoder, as a codec object, for the encoding `C` the Encoding Standard defines.  It models `text_decoder` ([transcode.codec.reqs]) for every encoding, and the decode adaptor over it ([transcode.codec.decode]) yields what `whatwg::decode<C>` does.  It models `single_byte_text_decoder` when `C` names an encoding that decodes one byte to one scalar value, `flushable_text_decoder` when `C` names an encoding whose decoding can leave a result owed after the last byte, and `bom_aware_text_decoder` when `C` names a UTF encoding: its `decode_first` discards one leading U+FEFF BYTE ORDER MARK from the text it decodes.  `$strips-leading-bom$<C>` is `true` when `C` is `utf_8`, `utf_16be` or `utf_16le`, and `$random-access-decode-codec$<C>` is `true` when `C` is `x_user_defined` or one of the Encoding Standard's single-byte encodings.  It is equality comparable.
+[#]{.pnum} *Remarks*: `whatwg::decoder<C>` is the decoder, as a codec object, for the encoding `C` the Encoding Standard defines.  It models `text_decoder` ([transcode.codec.reqs]) for every encoding, and the decode adaptor over it ([transcode.codec.decode]) yields what `whatwg::decode<C>` does.  It models `single_byte_text_decoder` when `C` names an encoding that decodes one byte to one scalar value, `flushable_text_decoder` when `C` names an encoding whose decoding can leave a result owed after the last byte, and `bom_aware_text_decoder` when `C` names a UTF encoding: its `decode_first` discards one leading U+FEFF BYTE ORDER MARK from the text it decodes.  `$strips-leading-bom$<C>` is `true` when `C` is `utf_8`, `utf_16be` or `utf_16le`, `$has-decode-state$<C>` is `true` when `C` is `utf_16be`, `utf_16le`, `gbk`, `gb18030`, `big5` or `iso_2022_jp`, and `$random-access-decode-codec$<C>` is `true` when `C` is `x_user_defined` or one of the Encoding Standard's single-byte encodings.  It is equality comparable.
 
 ```cpp
 template<input_iterator I, sentinel_for<I> S>
@@ -36,7 +36,7 @@ constexpr char32_t decode_byte(unsigned char byte) const;
 constexpr optional<decode_result> flush();
 ```
 
-[#]{.pnum} *Constraints*: `same_as<detail::decode_state_t<C>, detail::no_decode_state>` is `false`.
+[#]{.pnum} *Constraints*: `C` models `$has-decode-state$`.
 
 [#]{.pnum} *Effects*: Decodes what the end of the input leaves owed, from an empty range.
 

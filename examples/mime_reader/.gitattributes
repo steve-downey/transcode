@@ -1,0 +1,2 @@
+# The messages are exact bytes: no line-ending conversion, no text diff.
+messages/* -text -diff

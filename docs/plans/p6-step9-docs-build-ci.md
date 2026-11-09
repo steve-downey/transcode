@@ -2,7 +2,7 @@
 
 **Branch:** `p6-step9-docs-build-ci`
 **Depends on:** nothing — start alongside Step 0
-**Findings:** D-05 through D-13, plus D-14 (found while planning)
+**Findings:** [build-instructions-framework-and-standard](../review-findings-2026-09-11.md#build-instructions-framework-and-standard), [compiler-support-vs-cmake](../review-findings-2026-09-11.md#compiler-support-vs-cmake), [table-codec-documented-as-public](../review-findings-2026-09-11.md#table-codec-documented-as-public), [icu-iconv-claim](../review-findings-2026-09-11.md#icu-iconv-claim), [root-file-named-dash](../review-findings-2026-09-11.md#root-file-named-dash), [stale-handoff-guide](../review-findings-2026-09-11.md#stale-handoff-guide), [manual-lint-duplicate](../review-findings-2026-09-11.md#manual-lint-duplicate), [module-install-consumer-test](../review-findings-2026-09-11.md#module-install-consumer-test) and [telemetry-shebang](../review-findings-2026-09-11.md#telemetry-shebang), plus [gitleaks-hook](#gitleaks-hook) (found while planning)
 **Read first:** `docs/plans/phase6-index.md`
 
 ---
@@ -19,11 +19,13 @@ none needs a design decision, and none can conflict with the header work.
 Splitting them into nine pull requests would cost more review than it saves.
 
 Keep them as separate *commits*, though.  A single squashed "docs fixes"
-commit is unbisectable, and D-12 in particular could break an install.
+commit is unbisectable, and [module-install-consumer-test](../review-findings-2026-09-11.md#module-install-consumer-test) in particular could break an install.
 
 ## The items
 
-### D-05 — the build instructions name the wrong framework and the wrong standard
+### The build instructions name the wrong framework and the wrong standard
+
+**Finding:** [build-instructions-framework-and-standard](../review-findings-2026-09-11.md#build-instructions-framework-and-standard)
 
 `README.md` and `CONTRIBUTING.md` say GoogleTest.  The tests are Catch2 3.x
 (`tests/beman/transcode/CMakeLists.txt`), and every test file includes
@@ -34,7 +36,9 @@ requires C++23 (`CMakeLists.txt:111`, `:121`).
 Replace GoogleTest with Catch2 and make every example request C++23.  Grep for
 both; the review names three line ranges, and there may be more.
 
-### D-06 — the compiler matrix disagrees with the configure check
+### The compiler matrix disagrees with the configure check
+
+**Finding:** [compiler-support-vs-cmake](../review-findings-2026-09-11.md#compiler-support-vs-cmake)
 
 `README.md:570-580` advertises Clang 17 and 18.  `CMakeLists.txt:22-29` refuses
 anything below Clang 19, with this reason:
@@ -53,7 +57,9 @@ If the probe turns out to be awkward, keep the version check and fix only the
 README -- but say in the message that the bound is about libstdc++, because the
 current wording reads as though Clang 18 is broken.
 
-### D-07 — `table_codec` is documented as public API and is not
+### `table_codec` is documented as public API and is not
+
+**Finding:** [table-codec-documented-as-public](../review-findings-2026-09-11.md#table-codec-documented-as-public)
 
 `README.md:165-186` presents `beman::transcoding::table_codec` as provided
 public API and links `examples/custom_single_byte_decoder.cpp`.  The type lives
@@ -74,14 +80,18 @@ the extension point the proposal *does* offer.  An example titled "custom
 single byte decoder" that uses no library API is the part of this worth fixing
 properly rather than deleting.
 
-### D-08 — ICU does not expose the iconv API
+### ICU does not expose the iconv API
+
+**Finding:** [icu-iconv-claim](../review-findings-2026-09-11.md#icu-iconv-claim)
 
 `README.md:188-195` groups ICU with implementations exposing
 `iconv_open`/`iconv`/`iconv_close`.  ICU's converter API is the `ucnv_*` family.
 Remove it from the list, or describe it as a separate backend that would need
 an adapter.
 
-### D-09 — a tracked file named `-`
+### A tracked file named `-`
+
+**Finding:** [root-file-named-dash](../review-findings-2026-09-11.md#root-file-named-dash)
 
 `./-` is tracked and holds an old `::: wording` synopsis snapshot.  It came in
 with `94a32d2c` ("Print the enumerator meanings as tables, now that specgen
@@ -97,7 +107,9 @@ Add a hygiene check.  `.pre-commit-config.yaml` is the cheap place: a small
 style, that rejects a repository-root file whose name is not a plausible
 filename.
 
-### D-10 — `docs/plans/handoff-next.md` reads as current
+### `docs/plans/handoff-next.md` reads as current
+
+**Finding:** [stale-handoff-guide](../review-findings-2026-09-11.md#stale-handoff-guide)
 
 It reports 707 C++ tests (711 register now), a paper update that has since
 happened, and merge instructions for a branch that is gone.  It describes an
@@ -107,13 +119,17 @@ Give it a dated header saying what it was and when it was true, or delete it.
 Prefer the header: the phase documents around it are all historical too, and
 consistency is worth more than one fewer file.
 
-### D-11 — "Manual Lint" runs the ordinary lint
+### "Manual Lint" runs the ordinary lint
+
+**Finding:** [manual-lint-duplicate](../review-findings-2026-09-11.md#manual-lint-duplicate)
 
 `.github/workflows/test_makefile.yaml:86-95` runs `make lint`, which the
 preceding `Lint` step already ran.  `make lint-manual` exists — `Makefile:281`,
 "Run all manual tools in pre-commit".  Call it.
 
-### D-12 — module packaging is untested and the interface unit has no licence
+### Module packaging is untested and the interface unit has no licence
+
+**Finding:** [module-install-consumer-test](../review-findings-2026-09-11.md#module-install-consumer-test)
 
 Two things:
 
@@ -144,7 +160,9 @@ consumer against it.  If the interface unit is rebuilt, install every header
 its include graph needs — which is the non-module list already in the `else`
 branch, so the two branches converge.
 
-### D-14 — the gitleaks hook is broken (not in the review)
+### gitleaks-hook
+
+**Finding:** The gitleaks hook is broken (not in the review)
 
 Found while linting this phase's own documents.  `pre-commit run gitleaks`
 fails on any file, including unmodified ones:
@@ -163,7 +181,9 @@ Pin the `rev` to a version whose CLI matches the invocation, or update the
 invocation.  Check whether CI hits this too; if CI passes, the two are running
 different versions and that is the thing to fix.
 
-### D-13 — shebang on line 2
+### Shebang on line 2
+
+**Finding:** [telemetry-shebang](../review-findings-2026-09-11.md#telemetry-shebang)
 
 `infra/cmake/telemetry.sh` has the SPDX comment first and `#!/usr/bin/env bash`
 second, which shellcheck flags and which would matter if anything ever executed
@@ -185,5 +205,5 @@ Also on this branch:
 
 - Every item above is a separate commit with its finding ID in the subject.
 - `make test`, `make lint` and `make lint-manual` pass.
-- The module install-and-consume test exists and passes, or D-12 is documented
+- The module install-and-consume test exists and passes, or [module-install-consumer-test](../review-findings-2026-09-11.md#module-install-consumer-test) is documented
   as still open with the test that demonstrates it.

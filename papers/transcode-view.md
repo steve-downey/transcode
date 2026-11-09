@@ -62,6 +62,14 @@ The design changed, and the wording is regenerated from the reference implementa
 - The bridge to `std::text_encoding::id` goes in both directions, `whatwg::get_encoding(text_encoding::id)` and `whatwg::to_text_encoding_id`, and [Why Not `text_encoding::id`?](#why-not-text_encodingid) says why it is a bridge and not the interface.
 - The Design section opens with the three layers, WHATWG, codec objects and system `iconv`, and a worked example of a codec the library does not ship.
 - The cost of runtime selection is measured, and [Template Parameter vs Runtime Selection](#template-parameter-vs-runtime-selection) reports it.
+- `whatwg::encoder<x_user_defined>` exists: the Encoding Standard defines an x-user-defined encoder, and R0 said it did not.
+  Only `utf_16be`, `utf_16le` and `replacement` have no encoder.
+- Runtime selection is shown through the library's own entry points, which take labels and do the dispatch, rather than through a hand-written `switch`.
+- [Why Not `text_encoding::id`?](#why-not-text_encodingid) quotes the Encoding Standard on why its label matching is stricter than UTS #22, and says why no cast between the enumerations can be correct.
+- The bulk-conversion section shows writing into a caller-owned buffer, since the views allocate nothing.
+- An encoding chosen at run time no longer needs a hand-written `switch` to reach code points.
+  `whatwg::dynamic_decoder` and `whatwg::dynamic_encoder` are codec objects for it, and the bulk helpers take the encoding as a value or a label.
+  [Template Parameter vs Runtime Selection](#template-parameter-vs-runtime-selection) says what each costs.
 - The namespace and `single_byte_text_encoder` are open questions for SG16.
 
 ### Wording
@@ -70,6 +78,8 @@ The design changed, and the wording is regenerated from the reference implementa
 - Remarks that had lost their clauses are routed to the clauses they belong to.
 - *Mandates* and *Constraints* replace "is required to be".
 - The clause headings carry stable names, and an editor's note covers the nested namespaces.
+- `whatwg::decoder<C>::flush` is constrained on the exposition-only `$has-decode-state$<C>`, where the wording had shown a comparison of `detail::` types.
+- The normative reference in [intro.refs] names the Encoding Standard's June 2025 Review Draft, a dated document, where R0 named the living standard.
 - The synopsis no longer names the adaptor closure types.
   `decode`, `decode_or_error`, `encode`, `encode_or_error` and `transcode(from, to)` are declared `constexpr auto`, the way `std::ranges::to` is in [range.utility.conv], and their clauses say what they return.
 
@@ -412,12 +422,17 @@ The example is not a test, because the iconv answer depends on the platform's ta
 The label mapping differs too.
 WHATWG maps `latin1`, `iso-8859-1` and `ascii` to windows-1252, so `id::ISOLatin1` and `id::ASCII` resolve to `whatwg::encoding::windows_1252`.
 A program that passes `id::ISOLatin1` to WHATWG gets windows-1252, which is what a browser does with that label.
+The difference is deliberate.
+`text_encoding` matches aliases as Unicode Technical Standard #22 describes, and the Encoding Standard [@whatwg-encoding] says of its own lookup:
+
+> This is a more basic and restrictive algorithm of mapping labels to encodings than section 1.4 of Unicode Technical Standard #22 prescribes, as that is necessary to be compatible with deployed content.
 
 So the library keeps its own enumeration.
 It is a closed set of specifications, and an `id` is only a name.
 The library bridges to `id` in both directions.
 `whatwg::get_encoding(text_encoding::id)` applies the WHATWG label lookup to the id's registered names, and `whatwg::to_text_encoding_id(e)` goes back through the encoding's WHATWG name.
 Three encodings have no id: `replacement`, `x_user_defined` and `x_mac_cyrillic`.
+So no cast between the two enumerations can be correct: several ids land on one encoding, and three encodings have no id to land on.
 For every other encoding the round trip returns the encoding it started with.
 Both functions are available only when `<text_encoding>` is, which is C++26.
 
@@ -498,6 +513,16 @@ Four eager bulk helpers, each specified as the pipeline it names:
 - **`whatwg::decode_to<C>(r)` / `whatwg::encode_to<C, Container>(r)`**: Collect the decoded or encoded result into a container.
 
 - **`whatwg::decode_into<C>(r, out)` / `whatwg::encode_into<C>(r, out)`**: Write the result through an output iterator.
+
+Each has a form that takes the encoding as a value chosen at run time, `whatwg::decode_to(r, e)` and the rest, and `decode_to` and `encode_to` also take a label.
+These look at the encoding once and then run the same loop the compile-time form does.
+`encode_to` returns `optional`, empty when the encoding has no encoder.
+
+Two codec objects for an encoding chosen at run time:
+
+- **`whatwg::dynamic_decoder{e}` / `whatwg::make_dynamic_encoder(e)`**: Behave as `whatwg::decoder<E>` and `whatwg::encoder<E>` for the `E` equal to `e`.
+  `make_dynamic_encoder` returns `optional<dynamic_encoder>`, empty when the encoding has no encoder, so the check a program needs is the call that creates the encoder.
+  `bytes | decode(whatwg::dynamic_decoder{e})` is a lazy `char32_t` range over an encoding named in the data.
 
 And three utility entry points:
 
@@ -588,14 +613,28 @@ static_assert(whatwg::get_encoding("x-sjis") == whatwg::encoding::shift_jis);
 static_assert(whatwg::get_encoding("unknown") == std::nullopt);
 ```
 
-Runtime dispatch on external metadata follows:
+When the encoding arrives as metadata, the program does not dispatch on it.
+A MIME part names its charset in its headers, and its reader wants the text as code points:
 
 ```cpp
-std::string_view charset = parse_content_type(headers);
-if (auto c = whatwg::get_encoding(charset)) {
-    // Use std::visit or switch to dispatch to appropriate view
+std::string_view charset = part.charset();
+if (auto text = whatwg::decode_to(part.body(), charset)) {
+    consume(*text);  // vector<char32_t>
 }
 ```
+
+`decode_to` returns `nullopt` when the label names no encoding.
+A body that arrives as a range, out of a base64 decoder say, need not be collected first:
+
+```cpp
+if (auto e = whatwg::get_encoding(charset)) {
+    for (char32_t c : body | base64_decode | decode(whatwg::dynamic_decoder{*e}))
+        consume(c);
+}
+```
+
+And `whatwg::transcode_string(body, charset, "utf-8")` goes straight to bytes in another encoding.
+The reference implementation has a small MIME reader among its examples that does all of this, with test messages in ISO-2022-JP, Shift_JIS, windows-1252, UTF-8 and KOI8-R.
 
 ### Error Handling
 
@@ -947,6 +986,23 @@ whatwg::decode_into<whatwg::encoding::utf_8>(bytes, std::back_inserter(scalars))
 whatwg::encode_into<whatwg::encoding::utf_8>(scalars, std::back_inserter(encoded));
 ```
 
+None of this needs the library to allocate.
+The WHATWG views allocate nothing; the containers in these examples are the caller's choice, not the library's.
+A program that owns a fixed buffer writes into it, and bounds the write with `views::take`:
+
+```cpp
+std::size_t decode_into_buffer(
+    std::string_view bytes,
+    std::array<char32_t, 256>& buf) {
+  auto [in, out] = std::ranges::copy(
+      bytes
+        | whatwg::decode<whatwg::encoding::utf_8>
+        | std::views::take(buf.size()),
+      buf.begin());
+  return static_cast<std::size_t>(out - buf.begin());
+}
+```
+
 The convenience `whatwg::transcode<From, To>` adaptor is useful when the intermediate Unicode range is not otherwise needed:
 
 ```cpp
@@ -1029,7 +1085,10 @@ Making the codec a template parameter gives inlined codec logic, no dispatch per
 
 What it gives up is the common case: the encoding usually arrives as a string from an HTTP header or a `<meta>` tag, and a template parameter cannot be spelled from a runtime string.
 However, the dispatch has to happen exactly once, at the point where the label is resolved, and it is a `switch` over an enumeration.
-`whatwg::get_encoding` and `whatwg::transcode_string` provide that dispatch, and runtime selection can be layered further via `variant` or `any`.
+The library writes that `switch` so that programs do not have to, in two forms.
+The eager forms, `whatwg::transcode_string` and the runtime overloads of `decode_to`, `encode_to`, `decode_into` and `encode_into`, take the encoding as a value or a label, look at it once, and then run the loop the compile-time form would.
+The codec objects `whatwg::dynamic_decoder` and `whatwg::dynamic_encoder` give a lazy view over an encoding chosen at run time; they look at the encoding on every call, which is the cost of not knowing it, and a caller pays it only by choosing them.
+Neither form gives up anything for the caller who knows the encoding at compile time.
 
 We measured what that costs.
 The reference implementation has a dispatch-overhead benchmark (pull request 128 on [the implementation repository](https://github.com/steve-downey/transcode/pull/128)) that counts instructions instead of timing them.
@@ -1318,18 +1377,19 @@ headers in [headers].
 
 Add the following to the normative references in [intro.refs]:
 
-> --- WHATWG, *Encoding Standard*, available at
-> <https://encoding.spec.whatwg.org/>.
+> --- WHATWG, *Encoding Standard*, Review Draft, June 2025, available at
+> <https://encoding.spec.whatwg.org/review-drafts/2025-06/>.
 
-[*Note*: the Encoding Standard is a Living Standard, so a normative reference
-to it has to name what it is a reference *to*.
-The wording below is written against commit
-`a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a` (21 May 2026), the commit cited in
-[@whatwg-encoding], and the reference implementation's codec tables and
-conformance vectors are generated from that same snapshot.
-Whether the standard cites a dated snapshot, a commit, or the living document
-is an editorial question this paper puts to the project editor rather than
-answers.
+[*Note*: the Encoding Standard is a Living Standard, and a normative reference
+has to name a dated document.
+WHATWG publishes Review Drafts, dated snapshots of a standard, for that
+purpose, and the reference above is the most recent [@whatwg-encoding-rd].
+The reference implementation's codec tables and conformance vectors are
+generated from a later commit, `a985b62a9b45c17da3e17a9f0a0b4e30c34c4a8a`
+(21 May 2026) [@whatwg-encoding].
+The five commits between the two change links, repository files and the
+wording of one `TextDecoderStream` algorithm; the encodings, their labels and
+their index data are the same in both.
 --- *end note*]
 
 Add the following macro to [version.syn], in the place the table's alphabetical

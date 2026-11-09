@@ -42,6 +42,7 @@ import beman.transcode;
     #include <beman/transcode/codec_concepts.hpp>
     #include <beman/transcode/whatwg/decoder.hpp>
     #include <beman/transcode/whatwg/encoder.hpp>
+    #include <beman/transcode/whatwg/dynamic_codec.hpp>
     #include <beman/transcode/decode_view.hpp>
     #include <beman/transcode/encode_view.hpp>
     #include <beman/transcode/whatwg/decode_view.hpp>
@@ -95,6 +96,8 @@ import beman.transcode;
     // \rSec2[transcode.whatwg.decoders]{Decoders}
 
     // \rSec2[transcode.whatwg.encoders]{Encoders}
+
+    // \rSec2[transcode.whatwg.dynamic]{Codecs for an encoding chosen at run time}
 
     // \rSec2[transcode.whatwg.decode]{Decoding views}
 

@@ -1,0 +1,34 @@
+From: nested@example.org
+Subject: Nested multipart
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer boundary:1"
+
+Preamble: not part of any part.
+--outer boundary:1
+Content-Type: multipart/alternative; boundary="outer boundary:1x"
+
+--outer boundary:1x
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Plain text, the first alternative.
+
+With a blank line.
+
+--outer boundary:1x
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PHA+SFRNTCwgd2l0aCDDqSwgdGhlIHNlY29uZCBhbHRlcm5hdGl2ZS48L3A+Cg==
+
+--outer boundary:1x--
+
+--outer boundary:1
+Content-Type: application/pdf; name=report.pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=report.pdf
+
+JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PD4+CmVuZG9iago=
+
+--outer boundary:1--
+Epilogue: nor is this.

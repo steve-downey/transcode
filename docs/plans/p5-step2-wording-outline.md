@@ -53,7 +53,7 @@ inventing anything.
    statement about where markers go in the source.
 3. Decide the **depths**.  `\rSec2` for the clause, `\rSec3` for its subclauses
    is the natural fit for a paper whose own sections are `##`; note the
-   interaction with `base_heading_level = 2` (index U2).
+   interaction with `base_heading_level = 2` ([clause-heading-level](../decisions.md#clause-heading-level)).
 4. Record which entities are **exposition-only** (`\expos`) and which are
    `\omit`ted outright, per family.  This is the input Step 3 refactors toward
    and Steps 4-9 mark up; disagreeing about it later means editing headers

@@ -18,10 +18,10 @@ make drift between the headers and the paper a CI failure.
    around them — "Add a new header `<transcode>` to [headers], Table 1", "Add a
    new clause [transcode] as follows", the feature-test macro row for
    `__cpp_lib_transcode_view` in [version.syn].  Those are the parts specgen
-   cannot know.  Per index D6 this is authored prose, not `--paper` mode.
+   cannot know.  Per [editing-instruction-form](../decisions.md#editing-instruction-form) this is authored prose, not `--paper` mode.
 2. **Fix the section's position.**  Wording goes after "Impact on the Standard"
    and before the bibliography.  Because transclusion is prerequisite order
-   (index D3), everything that must follow the wording — Acknowledgements, Prior
+   ([transclusion-mechanism](../decisions.md#transclusion-mechanism)), everything that must follow the wording — Acknowledgements, Prior
    Art, Relationship to Other Proposals, References — moves out of
    `transcode-view.md` into a second authored file, listed after `$(WORDING_MD)`
    in the paper's prerequisites.  `flat.mk` globs `papers/*.md` and would build
@@ -29,7 +29,7 @@ make drift between the headers and the paper a CI failure.
    `papers/parts/tail.md`.  The YAML metadata block stays at the top of
    `transcode-view.md`, which remains the first input.
 3. **Resolve heading levels.**  Generated clause headings are `##`
-   (index U2).  Either accept them as siblings of the paper's own sections, or
+   ([clause-heading-level](../decisions.md#clause-heading-level)).  Either accept them as siblings of the paper's own sections, or
    take the upstream `--base-heading-level` flag if it has landed by now.  State
    which in the commit message.
 4. **Resolve the bibliography placement** decided in Step 1 task 5: with an
@@ -43,7 +43,7 @@ make drift between the headers and the paper a CI failure.
    and skip it with an explicit, loud message elsewhere, rather than silently
    passing.
 6. **Full-document validation.**  `specgen render --validate` over every
-   spec-facing header must be clean, with no allowlist: U1 landed upstream on
+   spec-facing header must be clean, with no allowlist: specgen#3 landed upstream on
    2026-09-04 and the `ranges` noise it excused is gone.
 7. **Reconcile the design sections against the generated clauses.**  The
    authored prose was written before the wording existed and has drifted from
@@ -86,7 +86,7 @@ with its own cleanup.
 And `wording-check` is not a CI job.  It was, briefly; see the drift gate
 below.
 
-**Heading levels: flat, deliberately** (task 3).  U2's
+**Heading levels: flat, deliberately** (task 3).  [clause-heading-level](../decisions.md#clause-heading-level)'s
 `--base-heading-level` is still absent upstream, and the clauses come out at
 `##`, which is the level the paper's own sections use, so they are siblings of
 "Design" rather than children of "Wording".  With `toc-depth: 2` the contents
@@ -94,7 +94,7 @@ read as a clause list under the Wording heading, which is close enough to right
 that spending an upstream flag and another cross-repository dependency on it
 was not worth it.  A nested rendering needs the flag *and* `toc-depth: 3`.
 
-**U6 is worked around here and still open upstream.**  The warning was the
+**specgen#89 is worked around here and still open upstream.**  The warning was the
 visible half.  The other half is that mpark emits the link anyway, so every
 clause heading and every cross-reference in the published paper pointed at a
 `c++draft` page that does not exist -- 23 distinct names, all of them clauses

@@ -2,7 +2,7 @@
 
 **Branch:** `p6-step4-null-term-precondition`
 **Depends on:** Step 0
-**Finding:** C-06
+**Finding:** [null-term-reachable-terminator](../review-findings-2026-09-11.md#null-term-reachable-terminator)
 **Read first:** `docs/plans/phase6-index.md`
 
 ---

@@ -35,8 +35,8 @@ make bench
 
 ### Benchmarks provided
 
-- `simdutf UTF-8→UTF-32: English (ASCII-heavy)` — aligned with Step 4 `whatwg_decode<utf_8>` English case
-- `simdutf UTF-8→UTF-32: Arabic (multibyte-heavy)` — aligned with Step 4 `whatwg_decode<utf_8>` Arabic case
+- `simdutf UTF-8→UTF-32: English (ASCII-heavy)` — aligned with Step 4 `whatwg::decode<utf_8>` English case
+- `simdutf UTF-8→UTF-32: Arabic (multibyte-heavy)` — aligned with Step 4 `whatwg::decode<utf_8>` Arabic case
 - `simdutf UTF-8 validate: English` — pure validation pass (fastest simdutf path)
 - `simdutf UTF-8 validate: Arabic` — multibyte validation
 - `simdutf UTF-8→UTF-16: English` — common runtime output format
@@ -101,7 +101,7 @@ make bench
 - Russian Windows-1251→UTF-8: ~810 ns (340-byte corpus) — table lookup
 - Japanese Shift-JIS→UTF-8: ~693 ns (340-byte corpus) — table lookup
 
-Contrast with `whatwg_decode<utf_8>` on the same corpora: ≪ 1 µs.
+Contrast with `whatwg::decode<utf_8>` on the same corpora: ≪ 1 µs.
 `encoding_rs` is competitive on the ASCII-heavy path and slightly slower on
 CJK/legacy paths, consistent with the Rust→C FFI overhead on small corpora.
 
@@ -121,7 +121,7 @@ is true.  Otherwise, `SKIP()` is invoked at runtime.
 | MSVC STL (VS 2022)    | Yes                  | Deprecated; present.                    |
 
 This benchmark is a **negative historical baseline**.  The result is expected
-to be slower than range-based alternatives (`whatwg_decode`, `decode()`).
+to be slower than range-based alternatives (`whatwg::decode`, `decode()`).
 `wstring_convert::from_bytes` performs a heap allocation per call, unlike the
 zero-allocation range-based views.
 

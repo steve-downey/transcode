@@ -54,7 +54,7 @@ uv run ctest --test-dir .build/build-gcc-16/ -C Debug --output-on-failure
 
 From a clean prefix, both modes.  Build a small consumer that includes
 `<beman/transcode/transcode.hpp>` and one that imports the module, against the
-*installed* package rather than the build tree.  This is what D-12 was about
+*installed* package rather than the build tree.  This is what [module-install-consumer-test](../review-findings-2026-09-11.md#module-install-consumer-test) was about
 and it has never been run.
 
 ### Examples
@@ -102,8 +102,8 @@ Write `docs/review-findings-2026-09-11-closeout.md` beside the original: each
 of the 30 findings, what was done, and the commit that did it.  For anything
 deferred, say what and why, so the next review does not rediscover it as new.
 
-Findings expected to close as "documented, not fixed": S-03 (the U+FFFD
-reservation, referred to SG16), P-01 and P-02 (scoped as
+Findings expected to close as "documented, not fixed": [fffd-error-sentinel](../review-findings-2026-09-11.md#fffd-error-sentinel) (the U+FFFD
+reservation, referred to SG16), [optional-iconv-story](../review-findings-2026-09-11.md#optional-iconv-story) and [posix-type-in-wording](../review-findings-2026-09-11.md#posix-type-in-wording) (scoped as
 implementation-defined, with the split referred to SG16).  Those are decisions,
 not omissions, and the closeout should read that way.
 

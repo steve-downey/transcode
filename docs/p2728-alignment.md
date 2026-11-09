@@ -101,7 +101,7 @@ above changes — useful because it tells us which patterns are load-bearing:
 ## Where `beman.transcode` already follows the model
 
 - **`_or_error` paired views** with errors carried in the `value_type`
-  (`expected<char32_t, whatwg_error>`) — and **no** error-query member on the
+  (`expected<char32_t, whatwg::error>`) — and **no** error-query member on the
   iterator. This matches both the `_or_error` pattern and the explicit SG9
   preference that produced it.
 - **U+FFFD** substitution on lossy decode.
@@ -113,10 +113,11 @@ above changes — useful because it tells us which patterns are load-bearing:
   direction.
 - **`begin()` is not cached** (P2728 §10.3).
 - **Lazy views are kept separate from bulk paths**
-  (`detail/bulk_transcode.hpp`, `iconv_bulk.hpp`) — the structure SG9 is drifting
+  (`bulk_transcode.hpp`, `whatwg/bulk.hpp`, `iconv_bulk.hpp`) — the structure SG9 is drifting
   toward for SIMD/throughput.
-- **Strongest iterator category per codec** — single-byte codecs get a dedicated
-  `random_access_whatwg_decode_view` rather than a uniform floor.
+- **Strongest iterator category per codec** — `decode_view` and `encode_view`
+  over a single-byte codec model `random_access_range` rather than a uniform
+  floor.
 - **Same-codec transcode is not a no-op** (it sanitizes) — README §6.2 mirrors
   P2728 §6.2.
 
@@ -124,15 +125,20 @@ above changes — useful because it tells us which patterns are load-bearing:
 
 ### 1. Collapse the `_view` / `_or_error_view` pairs into one template — **done**
 
-Closed in P5-Step 3c. All four families are now one template each,
+Closed in P5-Step 3c, which made each of the four families one template,
 parameterized on `transcode_error_kind { replacement, expected }` (in
 `error.hpp`), with the `_or_error` spellings kept as alias templates and the
-closure objects selecting the kind:
+closure objects selecting the kind.  At that point the templates were:
 
     whatwg_decode_view<C, R, E>       whatwg_encode_view<C, R, E>
     decode_view<Codec, R, E>          encode_view<Codec, R, E>
 
-The enum is named `_kind` and left open for the reason SG9 gave: a future kind
+Since the SG16 review response the enum is `error_mode`, and the WHATWG view
+templates are gone: `whatwg::decode<C>` and `whatwg::encode<C>` are the
+codec-object adaptors over `whatwg::decoder<C>` and `whatwg::encoder<C>`, so
+the two generic templates are all that remain.
+
+The enum was named `_kind` and left open for the reason SG9 gave: a future kind
 that also surfaces the offending input bytes should be addable without a third
 class template. Errors stay in the `value_type`; no error-query member was added
 to any iterator.
@@ -153,7 +159,7 @@ on an **extensible error-kind enum** — the analog of `to_utf_view_error_kind`:
 
 ### 2. Unspecified underlying type for the error enums (R13)
 
-`whatwg_error` currently has the implicit `int`. Match R13 by not depending on a
+`whatwg::error` currently has the implicit `int`. Match R13 by not depending on a
 fixed underlying type for the error / error-kind enums.
 
 ### 3. Verify `base()` semantics
@@ -173,7 +179,7 @@ test.
   unless added deliberately as the interop seam to feed `char`-stored UTF into a
   P2728-typed pipeline.
 - **No unified error codes across backends.** P2728 has a single error enum,
-  `utf_transcoding_error`, because it covers UTF only. Here `whatwg_error` and
+  `utf_transcoding_error`, because it covers UTF only. Here `whatwg::error` and
   `iconv_error` stay separate, and there is no shared error code or coarse
   category spanning them. Two cases settled this:
   - `output_full` (`E2BIG`) is an artifact of iconv's fixed output buffer. It
