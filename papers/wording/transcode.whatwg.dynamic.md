@@ -11,7 +11,7 @@ constexpr dynamic_decoder() noexcept;
 [#]{.pnum} *Effects*: Constructs a decoder for `encoding::utf_8`.
 
 ```cpp
-constexpr explicit dynamic_decoder(whatwg::encoding e) noexcept;
+constexpr explicit dynamic_decoder(whatwg::encoding e);
 ```
 
 [#]{.pnum} *Effects*: Constructs a decoder for `e`, in its initial state.
@@ -73,7 +73,7 @@ constexpr optional<encode_result> flush();
 [#]{.pnum} *Returns*: The result of `e.flush()` if there is one, and `nullopt` otherwise.
 
 ```cpp
-friend constexpr optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e) noexcept;
+friend constexpr optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e);
 ```
 
 [#]{.pnum} *Returns*: `nullopt` if `whatwg::has_encoder(e)` is `false` ([transcode.string]), and otherwise an encoder for `e`, in its initial state.

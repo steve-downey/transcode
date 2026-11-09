@@ -210,7 +210,7 @@ namespace std {
   public:
     // @[transcode.whatwg.dynamic]@, construction
     constexpr dynamic_decoder() noexcept;
-    constexpr explicit dynamic_decoder(whatwg::encoding e) noexcept;
+    constexpr explicit dynamic_decoder(whatwg::encoding e);
 
     constexpr whatwg::encoding encoding() const noexcept;
 
@@ -233,8 +233,7 @@ namespace std {
   public:
     // @[transcode.whatwg.dynamic]@, construction
     constexpr dynamic_encoder() noexcept;
-    friend constexpr optional<dynamic_encoder> make_dynamic_encoder(
-        whatwg::encoding e) noexcept;
+    friend constexpr optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e);
 
     constexpr whatwg::encoding encoding() const noexcept;
 

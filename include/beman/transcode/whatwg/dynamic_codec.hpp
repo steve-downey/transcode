@@ -14,7 +14,6 @@
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <iterator>
     #include <optional>
-    #include <utility>
     #include <variant>
 
 #endif
@@ -39,7 +38,7 @@ class dynamic_decoder {
   public:
     // \ref{transcode.whatwg.dynamic}, construction
     constexpr dynamic_decoder() noexcept;
-    constexpr explicit dynamic_decoder(whatwg::encoding e) noexcept;
+    constexpr explicit dynamic_decoder(whatwg::encoding e);
 
     constexpr whatwg::encoding encoding() const noexcept;
 
@@ -75,7 +74,7 @@ class dynamic_encoder {
   public:
     // \ref{transcode.whatwg.dynamic}, construction
     constexpr dynamic_encoder() noexcept;
-    friend constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e) noexcept;
+    friend constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e);
 
     constexpr whatwg::encoding encoding() const noexcept;
 
@@ -88,17 +87,17 @@ class dynamic_encoder {
 };
 
 // \ref{transcode.whatwg.dynamic}, creating an encoder for an encoding chosen at run time
-constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e) noexcept;
+constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e);
 
 // ---------------------------------------------------------------------------
 // Out-of-line definitions: whatwg::dynamic_decoder
 // ---------------------------------------------------------------------------
 
 //! \effects Constructs a decoder for `encoding::utf_8`.
-constexpr dynamic_decoder::dynamic_decoder() noexcept : decoder_() {}
+constexpr dynamic_decoder::dynamic_decoder() noexcept = default;
 
 //! \effects Constructs a decoder for `e`, in its initial state.
-constexpr dynamic_decoder::dynamic_decoder(whatwg::encoding e) noexcept
+constexpr dynamic_decoder::dynamic_decoder(whatwg::encoding e)
     : decoder_(beman::transcoding::detail::make_decoder_variant(e)) {}
 
 //! \returns The encoding this decoder decodes.
@@ -147,18 +146,17 @@ constexpr std::optional<decode_result> dynamic_decoder::flush() {
 // ---------------------------------------------------------------------------
 
 //! \effects Constructs an encoder for `encoding::utf_8`.
-constexpr dynamic_encoder::dynamic_encoder() noexcept : encoder_() {}
+constexpr dynamic_encoder::dynamic_encoder() noexcept = default;
 
 //! \omit
-constexpr dynamic_encoder::dynamic_encoder(beman::transcoding::detail::encoder_variant v) noexcept
-    : encoder_(std::move(v)) {}
+constexpr dynamic_encoder::dynamic_encoder(beman::transcoding::detail::encoder_variant v) noexcept : encoder_(v) {}
 
 //! \returns `nullopt` if `whatwg::has_encoder(e)` is `false`
 //! \iref{transcode.string}, and otherwise an encoder for `e`, in its initial
 //! state.
 //! \remarks This is the one check a program holding an encoding from its
 //! input makes, and it is made where the encoder is created.
-constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e) noexcept {
+constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e) {
     if (!beman::transcoding::detail::has_whatwg_encoder(e))
         return std::nullopt;
     return dynamic_encoder{beman::transcoding::detail::make_encoder_variant(e)};
