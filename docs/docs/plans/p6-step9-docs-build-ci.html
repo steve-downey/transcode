@@ -111,9 +111,26 @@ hygiene</a></li>
 Documentation, Build and CI Drift</h1>
 <p><strong>Branch:</strong> <code>p6-step9-docs-build-ci</code>
 <strong>Depends on:</strong> nothing — start alongside Step 0
-<strong>Findings:</strong> D-05 through D-13, plus D-14 (found while
-planning) <strong>Read first:</strong>
-<code>docs/plans/phase6-index.md</code></p>
+<strong>Findings:</strong> <a
+href="../review-findings-2026-09-11.html#build-instructions-framework-and-standard">build-instructions-framework-and-standard</a>,
+<a
+href="../review-findings-2026-09-11.html#compiler-support-vs-cmake">compiler-support-vs-cmake</a>,
+<a
+href="../review-findings-2026-09-11.html#table-codec-documented-as-public">table-codec-documented-as-public</a>,
+<a
+href="../review-findings-2026-09-11.html#icu-iconv-claim">icu-iconv-claim</a>,
+<a
+href="../review-findings-2026-09-11.html#root-file-named-dash">root-file-named-dash</a>,
+<a
+href="../review-findings-2026-09-11.html#stale-handoff-guide">stale-handoff-guide</a>,
+<a
+href="../review-findings-2026-09-11.html#manual-lint-duplicate">manual-lint-duplicate</a>,
+<a
+href="../review-findings-2026-09-11.html#module-install-consumer-test">module-install-consumer-test</a>
+and <a
+href="../review-findings-2026-09-11.html#telemetry-shebang">telemetry-shebang</a>,
+plus <a href="#gitleaks-hook">gitleaks-hook</a> (found while planning)
+<strong>Read first:</strong> <code>docs/plans/phase6-index.md</code></p>
 <hr />
 <h2 id="goal">Goal</h2>
 <p>Fix the things a new contributor trips over in the first hour, none
@@ -124,13 +141,15 @@ small, none needs a design decision, and none can conflict with the
 header work. Splitting them into nine pull requests would cost more
 review than it saves.</p>
 <p>Keep them as separate <em>commits</em>, though. A single squashed
-"docs fixes" commit is unbisectable, and D-12 in particular could break
-an install.</p>
+"docs fixes" commit is unbisectable, and <a
+href="../review-findings-2026-09-11.html#module-install-consumer-test">module-install-consumer-test</a>
+in particular could break an install.</p>
 <h2 id="the-items">The items</h2>
 <h3
-id="d-05--the-build-instructions-name-the-wrong-framework-and-the-wrong-standard">D-05
-— the build instructions name the wrong framework and the wrong
-standard</h3>
+id="the-build-instructions-name-the-wrong-framework-and-the-wrong-standard">The
+build instructions name the wrong framework and the wrong standard</h3>
+<p><strong>Finding:</strong> <a
+href="../review-findings-2026-09-11.html#build-instructions-framework-and-standard">build-instructions-framework-and-standard</a></p>
 <p><code>README.md</code> and <code>CONTRIBUTING.md</code> say
 GoogleTest. The tests are Catch2 3.x
 (<code>tests/beman/transcode/CMakeLists.txt</code>), and every test file
@@ -141,9 +160,10 @@ requires C++23 (<code>CMakeLists.txt:111</code>, <code>:121</code>).</p>
 <p>Replace GoogleTest with Catch2 and make every example request C++23.
 Grep for both; the review names three line ranges, and there may be
 more.</p>
-<h3
-id="d-06--the-compiler-matrix-disagrees-with-the-configure-check">D-06 —
-the compiler matrix disagrees with the configure check</h3>
+<h3 id="the-compiler-matrix-disagrees-with-the-configure-check">The
+compiler matrix disagrees with the configure check</h3>
+<p><strong>Finding:</strong> <a
+href="../review-findings-2026-09-11.html#compiler-support-vs-cmake">compiler-support-vs-cmake</a></p>
 <p><code>README.md:570-580</code> advertises Clang 17 and 18.
 <code>CMakeLists.txt:22-29</code> refuses anything below Clang 19, with
 this reason:</p>
@@ -163,8 +183,11 @@ hand.</p>
 only the README -- but say in the message that the bound is about
 libstdc++, because the current wording reads as though Clang 18 is
 broken.</p>
-<h3 id="d-07--table_codec-is-documented-as-public-api-and-is-not">D-07 —
-<code>table_codec</code> is documented as public API and is not</h3>
+<h3
+id="table_codec-is-documented-as-public-api-and-is-not"><code>table_codec</code>
+is documented as public API and is not</h3>
+<p><strong>Finding:</strong> <a
+href="../review-findings-2026-09-11.html#table-codec-documented-as-public">table-codec-documented-as-public</a></p>
 <p><code>README.md:165-186</code> presents
 <code>beman::transcoding::table_codec</code> as provided public API and
 links <code>examples/custom_single_byte_decoder.cpp</code>. The type
@@ -186,16 +209,19 @@ excludes, and points at an example that demonstrates neither.</p>
 <em>does</em> offer. An example titled "custom single byte decoder" that
 uses no library API is the part of this worth fixing properly rather
 than deleting.</p>
-<h3 id="d-08--icu-does-not-expose-the-iconv-api">D-08 — ICU does not
-expose the iconv API</h3>
+<h3 id="icu-does-not-expose-the-iconv-api">ICU does not expose the iconv
+API</h3>
+<p><strong>Finding:</strong> <a
+href="../review-findings-2026-09-11.html#icu-iconv-claim">icu-iconv-claim</a></p>
 <p><code>README.md:188-195</code> groups ICU with implementations
 exposing
 <code>iconv_open</code>/<code>iconv</code>/<code>iconv_close</code>.
 ICU's converter API is the <code>ucnv_*</code> family. Remove it from
 the list, or describe it as a separate backend that would need an
 adapter.</p>
-<h3 id="d-09--a-tracked-file-named--">D-09 — a tracked file named
-<code>-</code></h3>
+<h3 id="a-tracked-file-named--">A tracked file named <code>-</code></h3>
+<p><strong>Finding:</strong> <a
+href="../review-findings-2026-09-11.html#root-file-named-dash">root-file-named-dash</a></p>
 <p><code>./-</code> is tracked and holds an old <code>::: wording</code>
 synopsis snapshot. It came in with <code>94a32d2c</code> ("Print the
 enumerator meanings as tables, now that specgen can") -- a redirection
@@ -210,25 +236,31 @@ will appear again.</p>
 cheap place: a small <code>check-added-large-files</code>-style local
 hook, or <code>check-illegal-windows-names</code> style, that rejects a
 repository-root file whose name is not a plausible filename.</p>
-<h3 id="d-10--docsplanshandoff-nextmd-reads-as-current">D-10 —
-<code>docs/plans/handoff-next.md</code> reads as current</h3>
+<h3
+id="docsplanshandoff-nextmd-reads-as-current"><code>docs/plans/handoff-next.md</code>
+reads as current</h3>
+<p><strong>Finding:</strong> <a
+href="../review-findings-2026-09-11.html#stale-handoff-guide">stale-handoff-guide</a></p>
 <p>It reports 707 C++ tests (711 register now), a paper update that has
 since happened, and merge instructions for a branch that is gone. It
 describes an earlier state and does not say so.</p>
 <p>Give it a dated header saying what it was and when it was true, or
 delete it. Prefer the header: the phase documents around it are all
 historical too, and consistency is worth more than one fewer file.</p>
-<h3 id="d-11--manual-lint-runs-the-ordinary-lint">D-11 — "Manual Lint"
-runs the ordinary lint</h3>
+<h3 id="manual-lint-runs-the-ordinary-lint">"Manual Lint" runs the
+ordinary lint</h3>
+<p><strong>Finding:</strong> <a
+href="../review-findings-2026-09-11.html#manual-lint-duplicate">manual-lint-duplicate</a></p>
 <p><code>.github/workflows/test_makefile.yaml:86-95</code> runs
 <code>make lint</code>, which the preceding <code>Lint</code> step
 already ran. <code>make lint-manual</code> exists —
 <code>Makefile:281</code>, "Run all manual tools in pre-commit". Call
 it.</p>
 <h3
-id="d-12--module-packaging-is-untested-and-the-interface-unit-has-no-licence">D-12
-— module packaging is untested and the interface unit has no
-licence</h3>
+id="module-packaging-is-untested-and-the-interface-unit-has-no-licence">Module
+packaging is untested and the interface unit has no licence</h3>
+<p><strong>Finding:</strong> <a
+href="../review-findings-2026-09-11.html#module-install-consumer-test">module-install-consumer-test</a></p>
 <p>Two things:</p>
 <p><code>include/beman/transcode/transcode.cppm</code> has no
 <code>// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception</code>.
@@ -256,8 +288,9 @@ and build a small consumer against it. If the interface unit is rebuilt,
 install every header its include graph needs — which is the non-module
 list already in the <code>else</code> branch, so the two branches
 converge.</p>
-<h3 id="d-14--the-gitleaks-hook-is-broken-not-in-the-review">D-14 — the
-gitleaks hook is broken (not in the review)</h3>
+<h3 id="gitleaks-hook">gitleaks-hook</h3>
+<p><strong>Finding:</strong> The gitleaks hook is broken (not in the
+review)</p>
 <p>Found while linting this phase's own documents.
 <code>pre-commit run gitleaks</code> fails on any file, including
 unmodified ones:</p>
@@ -272,7 +305,9 @@ hook.</p>
 invocation, or update the invocation. Check whether CI hits this too; if
 CI passes, the two are running different versions and that is the thing
 to fix.</p>
-<h3 id="d-13--shebang-on-line-2">D-13 — shebang on line 2</h3>
+<h3 id="shebang-on-line-2">Shebang on line 2</h3>
+<p><strong>Finding:</strong> <a
+href="../review-findings-2026-09-11.html#telemetry-shebang">telemetry-shebang</a></p>
 <p><code>infra/cmake/telemetry.sh</code> has the SPDX comment first and
 <code>#!/usr/bin/env bash</code> second, which shellcheck flags and
 which would matter if anything ever executed it directly. Shebang first,
@@ -296,9 +331,10 @@ untracked near-copy of the paper is a trap for anyone grepping.</li>
 subject.</li>
 <li><code>make test</code>, <code>make lint</code> and
 <code>make lint-manual</code> pass.</li>
-<li>The module install-and-consume test exists and passes, or D-12 is
-documented as still open with the test that demonstrates it.</li>
+<li>The module install-and-consume test exists and passes, or <a
+href="../review-findings-2026-09-11.html#module-install-consumer-test">module-install-consumer-test</a>
+is documented as still open with the test that demonstrates it.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step9-docs-build-ci.md">docs/plans/p6-step9-docs-build-ci.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step9-docs-build-ci.md">docs/plans/p6-step9-docs-build-ci.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

@@ -66,11 +66,13 @@ lines of TLS environment plus <code>include wg21/flat.mk</code>.</p>
 <li><code>base.mk</code> builds its pandoc command as
 <code>pandoc $(DATADIR)/srefs.defs $(filter %.md, $^) -o $@ ...</code>.
 <strong>Every markdown prerequisite is an input, concatenated in
-prerequisite order.</strong> That is the transclusion mechanism (index
-D3); nothing else is needed.</li>
+prerequisite order.</strong> That is the transclusion mechanism (<a
+href="../decisions.html#transclusion-mechanism">transclusion-mechanism</a>);
+nothing else is needed.</li>
 <li><code>flat.mk</code> sets <code>src := $(wildcard *.md)</code> (less
 CHANGELOG/LICENSE/README) and makes a paper target of each. Generated
-fragments must therefore live in a subdirectory (index D4).</li>
+fragments must therefore live in a subdirectory (<a
+href="../decisions.html#fragment-location">fragment-location</a>).</li>
 </ul>
 <h2 id="tasks">Tasks</h2>
 <ol type="1">
@@ -129,7 +131,8 @@ if it lands after the wording, add an explicit <code>::: {#refs}</code>
 div at the intended place in <code>transcode-view.md</code>. Record the
 answer in the step's commit message; Step 10 depends on it.</p></li>
 <li><p><strong><code>.gitignore</code> / lint.</strong>
-<code>papers/wording/*.md</code> is committed (index D2) but is
+<code>papers/wording/*.md</code> is committed (<a
+href="../decisions.html#fragment-checkin">fragment-checkin</a>) but is
 generated: exclude it from markdown lint rules that would fight
 specgen's output, and say so in <code>papers/wording/README.md</code>
 (one paragraph: generated, do not edit, regenerate with
@@ -157,6 +160,6 @@ the target rather than a surprise.</li>
 from stable names, so <code>transcode.whatwg.decode.md</code> is a
 filename, not a path.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step1-specgen-harness.md">docs/plans/p5-step1-specgen-harness.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step1-specgen-harness.md">docs/plans/p5-step1-specgen-harness.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

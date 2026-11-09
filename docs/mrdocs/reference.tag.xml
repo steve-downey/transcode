@@ -65,7 +65,7 @@
     <name>decode_into</name>
     <anchorfile>beman/transcoding/decode_into.html</anchorfile>
     <anchor/>
-    <arglist>(Codec codec, R&amp;&amp; source, Output output)</arglist>
+    <arglist>(R&amp;&amp; source, Codec codec, Output output)</arglist>
   </member>
   <member kind="function">
     <type>auto</type>
@@ -79,7 +79,7 @@
     <name>decode_to</name>
     <anchorfile>beman/transcoding/decode_to.html</anchorfile>
     <anchor/>
-    <arglist>(Codec codec, R&amp;&amp; source)</arglist>
+    <arglist>(R&amp;&amp; source, Codec codec)</arglist>
   </member>
   <member kind="function">
     <type>auto</type>
@@ -93,7 +93,7 @@
     <name>encode_into</name>
     <anchorfile>beman/transcoding/encode_into.html</anchorfile>
     <anchor/>
-    <arglist>(Codec codec, R&amp;&amp; source, Output output)</arglist>
+    <arglist>(R&amp;&amp; source, Codec codec, Output output)</arglist>
   </member>
   <member kind="function">
     <type>auto</type>
@@ -107,7 +107,7 @@
     <name>encode_to</name>
     <anchorfile>beman/transcoding/encode_to.html</anchorfile>
     <anchor/>
-    <arglist>(Codec codec, R&amp;&amp; source)</arglist>
+    <arglist>(R&amp;&amp; source, Codec codec)</arglist>
   </member>
   <member kind="function">
     <type>auto</type>
@@ -165,9 +165,15 @@
   <name>beman::transcoding::whatwg</name>
   <filename>beman/transcoding/whatwg.html</filename>
   <class kind="class">beman::transcoding::whatwg::decoder</class>
+  <class kind="class">beman::transcoding::whatwg::dynamic_decoder</class>
+  <class kind="class">beman::transcoding::whatwg::dynamic_encoder</class>
   <class kind="class">beman::transcoding::whatwg::encoder</class>
   <class kind="class">beman::transcoding::whatwg::encoding</class>
   <class kind="class">beman::transcoding::whatwg::error</class>
+  <class kind="class">beman::transcoding::whatwg::decode_into</class>
+  <class kind="class">beman::transcoding::whatwg::decode_to</class>
+  <class kind="class">beman::transcoding::whatwg::encode_into</class>
+  <class kind="class">beman::transcoding::whatwg::encode_to</class>
   <class kind="class">beman::transcoding::whatwg::get_encoding</class>
   <class kind="class">beman::transcoding::whatwg::transcode_string</class>
   <class kind="class">beman::transcoding::whatwg::operator==</class>
@@ -184,39 +190,18 @@
     <arglist>(R&amp;&amp; r)</arglist>
   </member>
   <member kind="function">
-    <type>void</type>
-    <name>decode_into</name>
-    <anchorfile>beman/transcoding/whatwg/decode_into.html</anchorfile>
-    <anchor/>
-    <arglist>(R&amp;&amp; source, Output output)</arglist>
-  </member>
-  <member kind="function">
-    <type>std::vector&lt;char32_t&gt;</type>
-    <name>decode_to</name>
-    <anchorfile>beman/transcoding/whatwg/decode_to.html</anchorfile>
-    <anchor/>
-    <arglist>(R&amp;&amp; source)</arglist>
-  </member>
-  <member kind="function">
-    <type>void</type>
-    <name>encode_into</name>
-    <anchorfile>beman/transcoding/whatwg/encode_into.html</anchorfile>
-    <anchor/>
-    <arglist>(R&amp;&amp; source, Output output)</arglist>
-  </member>
-  <member kind="function">
-    <type>Container</type>
-    <name>encode_to</name>
-    <anchorfile>beman/transcoding/whatwg/encode_to.html</anchorfile>
-    <anchor/>
-    <arglist>(R&amp;&amp; source)</arglist>
-  </member>
-  <member kind="function">
     <type>bool</type>
     <name>has_encoder</name>
     <anchorfile>beman/transcoding/whatwg/has_encoder.html</anchorfile>
     <anchor/>
     <arglist>(whatwg::encoding encoding)</arglist>
+  </member>
+  <member kind="function">
+    <type>std::optional&lt;dynamic_encoder&gt;</type>
+    <name>make_dynamic_encoder</name>
+    <anchorfile>beman/transcoding/whatwg/make_dynamic_encoder.html</anchorfile>
+    <anchor/>
+    <arglist>(whatwg::encoding e)</arglist>
   </member>
   <member kind="function">
     <type>std::optional&lt;std::text_encoding::id&gt;</type>
@@ -277,6 +262,75 @@
   </member>
 </compound>
 <compound kind="class">
+  <name>beman::transcoding::whatwg::dynamic_decoder</name>
+  <filename>beman/transcoding/whatwg/dynamic_decoder.html</filename>
+  <class kind="class">beman::transcoding::whatwg::dynamic_decoder::dynamic_decoder</class>
+  <member kind="function">
+    <type>decode_result</type>
+    <name>decode_first</name>
+    <anchorfile>beman/transcoding/whatwg/dynamic_decoder/decode_first.html</anchorfile>
+    <anchor/>
+    <arglist>(I&amp; current, S end)</arglist>
+  </member>
+  <member kind="function">
+    <type>decode_result</type>
+    <name>decode_one</name>
+    <anchorfile>beman/transcoding/whatwg/dynamic_decoder/decode_one.html</anchorfile>
+    <anchor/>
+    <arglist>(I&amp; current, S end)</arglist>
+  </member>
+  <member kind="function">
+    <type>whatwg::encoding</type>
+    <name>encoding</name>
+    <anchorfile>beman/transcoding/whatwg/dynamic_decoder/encoding.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>std::optional&lt;decode_result&gt;</type>
+    <name>flush</name>
+    <anchorfile>beman/transcoding/whatwg/dynamic_decoder/flush.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg::dynamic_decoder::dynamic_decoder</name>
+  <filename>beman/transcoding/whatwg/dynamic_decoder/2constructor-0e.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg::dynamic_encoder</name>
+  <filename>beman/transcoding/whatwg/dynamic_encoder.html</filename>
+  <member kind="function">
+    <type>void</type>
+    <name>dynamic_encoder</name>
+    <anchorfile>beman/transcoding/whatwg/dynamic_encoder/2constructor.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>encode_result</type>
+    <name>encode_one</name>
+    <anchorfile>beman/transcoding/whatwg/dynamic_encoder/encode_one.html</anchorfile>
+    <anchor/>
+    <arglist>(char32_t scalar)</arglist>
+  </member>
+  <member kind="function">
+    <type>whatwg::encoding</type>
+    <name>encoding</name>
+    <anchorfile>beman/transcoding/whatwg/dynamic_encoder/encoding.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+  <member kind="function">
+    <type>std::optional&lt;encode_result&gt;</type>
+    <name>flush</name>
+    <anchorfile>beman/transcoding/whatwg/dynamic_encoder/flush.html</anchorfile>
+    <anchor/>
+    <arglist>()</arglist>
+  </member>
+</compound>
+<compound kind="class">
   <name>beman::transcoding::whatwg::encoder</name>
   <filename>beman/transcoding/whatwg/encoder.html</filename>
   <member kind="function">
@@ -310,6 +364,22 @@
   <filename>beman/transcoding/whatwg/error.html</filename>
 </compound>
 <compound kind="class">
+  <name>beman::transcoding::whatwg::decode_into</name>
+  <filename>beman/transcoding/whatwg/decode_into-05.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg::decode_to</name>
+  <filename>beman/transcoding/whatwg/decode_to-0e.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg::encode_into</name>
+  <filename>beman/transcoding/whatwg/encode_into-01.html</filename>
+</compound>
+<compound kind="class">
+  <name>beman::transcoding::whatwg::encode_to</name>
+  <filename>beman/transcoding/whatwg/encode_to-0c0.html</filename>
+</compound>
+<compound kind="class">
   <name>beman::transcoding::whatwg::get_encoding</name>
   <filename>beman/transcoding/whatwg/get_encoding-02.html</filename>
 </compound>
@@ -319,7 +389,7 @@
 </compound>
 <compound kind="class">
   <name>beman::transcoding::whatwg::operator==</name>
-  <filename>beman/transcoding/whatwg/operator_eq-0b.html</filename>
+  <filename>beman/transcoding/whatwg/operator_eq-0b8.html</filename>
 </compound>
 <compound kind="class">
   <name>beman::transcoding::whatwg::decode</name>

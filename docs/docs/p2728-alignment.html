@@ -222,7 +222,7 @@ views.</strong> The room leaned toward keeping bulk/SIMD a
 <ul>
 <li><strong><code>_or_error</code> paired views</strong> with errors
 carried in the <code>value_type</code>
-(<code>expected&lt;char32_t, whatwg_error&gt;</code>) — and
+(<code>expected&lt;char32_t, whatwg::error&gt;</code>) — and
 <strong>no</strong> error-query member on the iterator. This matches
 both the <code>_or_error</code> pattern and the explicit SG9 preference
 that produced it.</li>
@@ -238,11 +238,13 @@ back-pointer</strong> — the R12 direction.</li>
 <li><strong><code>begin()</code> is not cached</strong> (P2728
 §10.3).</li>
 <li><strong>Lazy views are kept separate from bulk paths</strong>
-(<code>detail/bulk_transcode.hpp</code>, <code>iconv_bulk.hpp</code>) —
-the structure SG9 is drifting toward for SIMD/throughput.</li>
-<li><strong>Strongest iterator category per codec</strong> — single-byte
-codecs get a dedicated <code>random_access_whatwg_decode_view</code>
-rather than a uniform floor.</li>
+(<code>bulk_transcode.hpp</code>, <code>whatwg/bulk.hpp</code>,
+<code>iconv_bulk.hpp</code>) — the structure SG9 is drifting toward for
+SIMD/throughput.</li>
+<li><strong>Strongest iterator category per codec</strong> —
+<code>decode_view</code> and <code>encode_view</code> over a single-byte
+codec model <code>random_access_range</code> rather than a uniform
+floor.</li>
 <li><strong>Same-codec transcode is not a no-op</strong> (it sanitizes)
 — README §6.2 mirrors P2728 §6.2.</li>
 </ul>
@@ -252,16 +254,24 @@ to track</h2>
 id="1-collapse-the-_view--_or_error_view-pairs-into-one-template--done">1.
 Collapse the <code>_view</code> / <code>_or_error_view</code> pairs into
 one template — <strong>done</strong></h3>
-<p>Closed in P5-Step 3c. All four families are now one template each,
-parameterized on
+<p>Closed in P5-Step 3c, which made each of the four families one
+template, parameterized on
 <code>transcode_error_kind { replacement, expected }</code> (in
 <code>error.hpp</code>), with the <code>_or_error</code> spellings kept
-as alias templates and the closure objects selecting the kind:</p>
+as alias templates and the closure objects selecting the kind. At that
+point the templates were:</p>
 <pre><code>whatwg_decode_view&lt;C, R, E&gt;       whatwg_encode_view&lt;C, R, E&gt;
 decode_view&lt;Codec, R, E&gt;          encode_view&lt;Codec, R, E&gt;</code></pre>
-<p>The enum is named <code>_kind</code> and left open for the reason SG9
-gave: a future kind that also surfaces the offending input bytes should
-be addable without a third class template. Errors stay in the
+<p>Since the SG16 review response the enum is <code>error_mode</code>,
+and the WHATWG view templates are gone:
+<code>whatwg::decode&lt;C&gt;</code> and
+<code>whatwg::encode&lt;C&gt;</code> are the codec-object adaptors over
+<code>whatwg::decoder&lt;C&gt;</code> and
+<code>whatwg::encoder&lt;C&gt;</code>, so the two generic templates are
+all that remain.</p>
+<p>The enum was named <code>_kind</code> and left open for the reason
+SG9 gave: a future kind that also surfaces the offending input bytes
+should be addable without a third class template. Errors stay in the
 <code>value_type</code>; no error-query member was added to any
 iterator.</p>
 <p>What the pairs had been, for the record:</p>
@@ -286,7 +296,7 @@ error-query iterator member.</li>
 </ul>
 <h3 id="2-unspecified-underlying-type-for-the-error-enums-r13">2.
 Unspecified underlying type for the error enums (R13)</h3>
-<p><code>whatwg_error</code> currently has the implicit
+<p><code>whatwg::error</code> currently has the implicit
 <code>int</code>. Match R13 by not depending on a fixed underlying type
 for the error / error-kind enums.</p>
 <h3 id="3-verify-base-semantics">3. Verify <code>base()</code>
@@ -311,7 +321,7 @@ as the interop seam to feed <code>char</code>-stored UTF into a
 P2728-typed pipeline.</p></li>
 <li><p><strong>No unified error codes across backends.</strong> P2728
 has a single error enum, <code>utf_transcoding_error</code>, because it
-covers UTF only. Here <code>whatwg_error</code> and
+covers UTF only. Here <code>whatwg::error</code> and
 <code>iconv_error</code> stay separate, and there is no shared error
 code or coarse category spanning them. Two cases settled this:</p>
 <ul>
@@ -357,6 +367,6 @@ the model leaves open</h2>
 <li>A SIMD/bulk "kind" or separate view, kept out of the lazy
 <code>operator++</code>.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/p2728-alignment.md">docs/p2728-alignment.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/p2728-alignment.md">docs/p2728-alignment.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

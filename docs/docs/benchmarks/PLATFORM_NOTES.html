@@ -176,9 +176,9 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="
 <h3 id="benchmarks-provided">Benchmarks provided</h3>
 <ul>
 <li><code>simdutf UTF-8→UTF-32: English (ASCII-heavy)</code> — aligned
-with Step 4 <code>whatwg_decode&lt;utf_8&gt;</code> English case</li>
+with Step 4 <code>whatwg::decode&lt;utf_8&gt;</code> English case</li>
 <li><code>simdutf UTF-8→UTF-32: Arabic (multibyte-heavy)</code> —
-aligned with Step 4 <code>whatwg_decode&lt;utf_8&gt;</code> Arabic
+aligned with Step 4 <code>whatwg::decode&lt;utf_8&gt;</code> Arabic
 case</li>
 <li><code>simdutf UTF-8 validate: English</code> — pure validation pass
 (fastest simdutf path)</li>
@@ -299,7 +299,7 @@ lookup</li>
 <li>Japanese Shift-JIS→UTF-8: ~693 ns (340-byte corpus) — table
 lookup</li>
 </ul>
-<p>Contrast with <code>whatwg_decode&lt;utf_8&gt;</code> on the same
+<p>Contrast with <code>whatwg::decode&lt;utf_8&gt;</code> on the same
 corpora: ≪ 1 µs. <code>encoding_rs</code> is competitive on the
 ASCII-heavy path and slightly slower on CJK/legacy paths, consistent
 with the Rust→C FFI overhead on small corpora.</p>
@@ -342,11 +342,11 @@ but produces live benchmarks only where
 </table>
 <p>This benchmark is a <strong>negative historical baseline</strong>.
 The result is expected to be slower than range-based alternatives
-(<code>whatwg_decode</code>, <code>decode()</code>).
+(<code>whatwg::decode</code>, <code>decode()</code>).
 <code>wstring_convert::from_bytes</code> performs a heap allocation per
 call, unlike the zero-allocation range-based views.</p>
 <p>Do not treat <code>codecvt</code> benchmark regressions as project
 regressions.</p>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/PLATFORM_NOTES.md">docs/benchmarks/PLATFORM_NOTES.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/PLATFORM_NOTES.md">docs/benchmarks/PLATFORM_NOTES.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

@@ -64,9 +64,10 @@ settled here once, because each of them is simultaneously a clause
 identifier, a fragment filename, an <code>{- .sref}</code> span and an
 ordering key. Changing one later renames a file, a heading and a
 cross-reference at once.</p>
-<p>See <code>docs/plans/phase5-index.md</code> for the plan, its
-decisions D1-D7, and the upstream specgen items U1-U9 referenced below,
-whose state was re-measured on 2026-09-04 (see the index).</p>
+<p>See <a href="decisions.html"><code>docs/decisions.md</code></a> for
+the questions this phase has settled and
+<code>docs/plans/phase5-index.md</code> for the plan and the state of
+the <code>beman.specgen</code> defects the steps below depend on.</p>
 <h2 id="how-the-tree-maps-onto-fragments">How the tree maps onto
 fragments</h2>
 <p><code>--split</code> writes one fragment per
@@ -86,20 +87,22 @@ Step 1). The umbrella, and <code>[transcode.general]</code>, are
 authored in the paper around the generated clauses.</li>
 </ul>
 <p>Heading level follows from mpark's fixed
-<code>base_heading_level = 2</code> (index U2): <code>\rSec2</code>
-prints as <code>##</code>, <code>\rSec3</code> as <code>###</code>.</p>
+<code>base_heading_level = 2</code> (<a
+href="decisions.html#clause-heading-level">clause-heading-level</a>):
+<code>\rSec2</code> prints as <code>##</code>, <code>\rSec3</code> as
+<code>###</code>.</p>
 <p>A class's own description is routed to its clause with
 <code>\at</code>, as a member's is with a <code>\ref</code> group
 header; the synopsis fragment holds the synopsis and nothing else.</p>
 <h2 id="transcode"><code>&lt;transcode&gt;</code></h2>
 <p>Generated from <code>transcode.hpp</code>, which is the umbrella of
 <code>#include</code>s it always was: specgen follows the headers
-included inside its <code>\rSec2[transcode.syn]</code> region (index
-D1), so the component headers are the document without being one file.
-Fragment order is the order of the <code>\rSec</code> markers in
-<code>transcode.hpp</code>, which is the order below; the
-<em>synopsis</em> reads in include order, which is the order the
-compiler needs and need not match.</p>
+included inside its <code>\rSec2[transcode.syn]</code> region (<a
+href="decisions.html#document-unit">document-unit</a>), so the component
+headers are the document without being one file. Fragment order is the
+order of the <code>\rSec</code> markers in <code>transcode.hpp</code>,
+which is the order below; the <em>synopsis</em> reads in include order,
+which is the order the compiler needs and need not match.</p>
 <table>
 <thead>
 <tr>
@@ -232,6 +235,16 @@ response</td>
 <td><code>whatwg::encoder</code></td>
 <td><code>whatwg/encoder.hpp</code>, added step 10 of the SG16
 response</td>
+</tr>
+<tr>
+<td><code>transcode.whatwg.dynamic</code></td>
+<td>2</td>
+<td>Codecs for an encoding chosen at run time</td>
+<td><code>whatwg::dynamic_decoder</code>,
+<code>whatwg::dynamic_encoder</code></td>
+<td><code>whatwg/dynamic_codec.hpp</code>, added in Stage 6 of the PR
+#131 review adoption; the runtime overloads of the bulk helpers are in
+<code>transcode.bulk</code></td>
 </tr>
 <tr>
 <td><code>transcode.whatwg.decode</code></td>
@@ -443,7 +456,9 @@ which</td>
 <td><code>random_access_decode_view</code> and
 <code>random_access_encode_view</code>, and the
 <code>enable_borrowed_range</code> specializations written for them</td>
-<td>decision W1 below</td>
+<td>decision <a
+href="decisions.html#random-access-specialization">random-access-specialization</a>
+below</td>
 </tr>
 <tr>
 <td><code>decode_closure</code>, <code>encode_closure</code>,
@@ -454,7 +469,7 @@ which</td>
 </tr>
 <tr>
 <td><code>null_term_view</code>'s deduction guide</td>
-<td>the implicit guide from the constructor is identical; index U4 no
+<td>the implicit guide from the constructor is identical; specgen#22 no
 longer applies</td>
 </tr>
 <tr>
@@ -535,8 +550,9 @@ recording because Steps 6 and 7 inherit it.</p>
 <ul>
 <li><code>detail::random_access_decode_codec</code> and
 <code>detail::random_access_encode_codec</code> appeared in the
-<code>random_access_*</code> views' requires-clauses. W1 omits those
-views, and Step 3 moved the concepts themselves into
+<code>random_access_*</code> views' requires-clauses. <a
+href="decisions.html#random-access-specialization">random-access-specialization</a>
+omits those views, and Step 3 moved the concepts themselves into
 <code>detail/whatwg_decode_select.hpp</code> and
 <code>detail/whatwg_encode_select.hpp</code>, out of the specification
 headers entirely. Nothing left to decide.</li>
@@ -547,66 +563,31 @@ genuinely part of what the specification says. They are
 <strong>exposition-only in the wording</strong>, but they cannot be
 rendered that way yet: <code>\expos</code> works on a concept (verified)
 and not on the alias template and class template the concept is defined
-in terms of (index U8). They therefore stay in
+in terms of (specgen#23). They therefore stay in
 <code>detail/range_traits.hpp</code> for now, and <strong>Step 6
 chooses</strong> between restating the concept in the specification
 header without helper aliases so a single <code>\expos</code> covers it,
-and waiting for U8. Whichever it picks, the constraint is authored
-<code>\constraints</code> prose on the affected members rather than
-derived from the requires-clause.</li>
+and waiting for specgen#23. Whichever it picks, the constraint is
+authored <code>\constraints</code> prose on the affected members rather
+than derived from the requires-clause.</li>
 </ul>
 <h2 id="decisions-this-outline-settles">Decisions this outline
 settles</h2>
-<p><strong>W1 — the <code>random_access_</code> view specializations are
-not separate specified entities.</strong> <em>Carried out in Step 6
-(2026-09-08): both are <code>\omit</code>ted, and each view's clause
-says instead that it models <code>random_access_range</code> when the
-codec decodes one byte to one scalar value and the base range does. That
-also removed the last <code>detail::</code> qualifier from the document,
-which was reaching the wording through those views'
-requires-clauses.</em> They exist so a single-byte codec gets O(1)
-indexing. That is a property of the view, not a second view: the
-specification says <code>whatwg::decode_view&lt;C, R&gt;</code> models
-<code>random_access_range</code> when <code>C</code> is a single-byte
-codec and <code>R</code> models <code>random_access_range</code>, and an
-implementation gets there however it likes. Omitting them also removes
-<code>detail::random_access_decode_codec</code> from every spec-visible
-signature, which D7 requires anyway. The alternative — specifying eight
-view templates instead of four — doubles the clause for no reader
-benefit. If SG16 wants the distinction visible, it comes back as a
-<em>Remarks</em> paragraph, not as a type. Since the WHATWG view classes
-were deleted (steps 09 and 12), W1 applies to <code>decode_view</code>
-and <code>encode_view</code> over a
-<code>single_byte_text_decoder</code> or
-<code>single_byte_text_encoder</code> codec, which is where the
-random-access property now lives.</p>
-<p><strong>W2 — the WHATWG enumeration is specified by
-reference.</strong> <code>enum class codec</code> has 39 enumerators;
-the wording says each names the WHATWG encoding of the corresponding
-name and cites the Encoding Standard, rather than restating a table that
-is normative somewhere else and changes there.</p>
-<p><em>Step 5's answer to how the reference is spelled</em>
-(2026-09-07), in two parts, because the question has two halves:</p>
+<p>Three, and they live in the decision log with the rest:</p>
 <ul>
-<li><strong>In the generated wording</strong>, the standard is named in
-prose -- "the WHATWG Encoding Standard" -- and nothing else. specgen's
-<code>\iref</code> points at a stable name in this draft and there is
-none to point at; a bibliography key is the paper's and would not
-survive into the working draft.</li>
-<li><strong>In the paper, and in the eventual working draft</strong>, it
-is a normative reference in the [intro.refs] sense: an entry naming the
-Encoding Standard, its URL, and the version it was read at. A living
-standard has no edition to cite, so the entry carries a date, and the
-paper says which snapshot <code>docs/whatwg/</code> was downloaded from.
-Step 10 writes that entry. Whether a normative reference to a living
-standard is acceptable at all is SG16's to answer, and it is a question
-about the paper's prose rather than something the wording can
-settle.</li>
+<li><strong><a
+href="decisions.html#random-access-specialization">random-access-specialization</a></strong>
+-- the <code>random_access_</code> view specializations are not separate
+specified entities. Carried out in Step 6, and reached further than it
+had been applied in Step 9.</li>
+<li><strong><a
+href="decisions.html#encoding-standard-reference">encoding-standard-reference</a></strong>
+-- the WHATWG enumeration is specified by reference, named in prose in
+the wording and carried as an [intro.refs] entry in the paper.</li>
+<li><strong><a
+href="decisions.html#null-term-header">null-term-header</a></strong> --
+<code>&lt;null_term&gt;</code> stays a separate header.</li>
 </ul>
-<p><strong>W3 — <code>&lt;null_term&gt;</code> stays a separate
-header.</strong> It is the paper's position already, and
-<code>views::null_term</code> has nothing to do with encodings; it is a
-range adaptor over a C string that this proposal happens to need.</p>
 <h2 id="open-and-deliberately-not-settled-here">Open, and deliberately
 not settled here</h2>
 <ul>
@@ -655,6 +636,6 @@ perform. A single enumeration would have to either drop the distinction
 or carry both sets, and the second is two vocabularies with one name.
 See <code>docs/p2728-alignment.md</code>.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/wording-outline.md">docs/wording-outline.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/wording-outline.md">docs/wording-outline.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

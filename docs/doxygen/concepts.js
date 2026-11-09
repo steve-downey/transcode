@@ -12,5 +12,10 @@ var concepts =
         [ "legacy_byte_range", "conceptbeman_1_1transcoding_1_1legacy__byte__range.html", null ],
         [ "unicode_scalar_range", "conceptbeman_1_1transcoding_1_1unicode__scalar__range.html", null ]
       ] ]
+    ] ],
+    [ "mime_reader", "namespacemime__reader.html", [
+      [ "parse", "namespacemime__reader_1_1parse.html", [
+        [ "parser_like", "conceptmime__reader_1_1parse_1_1parser__like.html", null ]
+      ] ]
     ] ]
 ];

@@ -441,7 +441,8 @@ window.MathJax = {
     <a href="./error_mode.html">error_mode</a> E = error_mode::replacement&gt;
 requires legacy_byte_range&lt;R&gt;
 class random_access_decode_view
-    : public std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;</code></pre>
+    : public std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;
+    , public std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;</code></pre>
 </div><!-- /synopsis -->
 <div class="base-classes">
 <h2>Base Classes</h2>
@@ -450,6 +451,7 @@ class random_access_decode_view
 <tr><th>Name</th><th>Description</th></tr>
 </thead>
 <tbody>
+<tr><td><code>std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;</code></td><td></td></tr>
 <tr><td><code>std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;</code></td><td></td></tr>
 </tbody>
 </table>

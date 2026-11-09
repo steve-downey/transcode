@@ -95,6 +95,10 @@ $(function(){initNavTree('paper__bulk__conversion_8cpp.html','',''); });
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="transcode_8hpp_source.html">beman/transcode/transcode.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="encoding_8hpp_source.html">beman/transcode/whatwg/encoding.hpp</a>&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;array&gt;</code><br />
+<code>#include &lt;cstddef&gt;</code><br />
+<code>#include &lt;ranges&gt;</code><br />
 <code>#include &lt;string_view&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><table class="memberdecls">
@@ -102,11 +106,13 @@ $(function(){initNavTree('paper__bulk__conversion_8cpp.html','',''); });
 Namespaces</h2></td></tr>
 <tr class="memitem:before_5Fexample" id="r_before_5Fexample"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebefore__example.html">before_example</a></td></tr>
 <tr class="memitem:after_5Fexample" id="r_after_5Fexample"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceafter__example.html">after_example</a></td></tr>
+<tr class="memitem:caller_5Fbuffer_5Fexample" id="r_caller_5Fbuffer_5Fexample"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecaller__buffer__example.html">caller_buffer_example</a></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a486b4bec357fd4fe162f492a765cd6ff" id="r_a486b4bec357fd4fe162f492a765cd6ff"><td class="memItemLeft" align="right" valign="top">std::vector&lt; char32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebefore__example.html#a486b4bec357fd4fe162f492a765cd6ff">before_example::decode_utf8</a> (std::string_view input)</td></tr>
 <tr class="memitem:a6293584e08f2b4c2e7197ad191261ec6" id="r_a6293584e08f2b4c2e7197ad191261ec6"><td class="memItemLeft" align="right" valign="top">std::vector&lt; char32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceafter__example.html#a6293584e08f2b4c2e7197ad191261ec6">after_example::decode_utf8</a> (std::string_view input)</td></tr>
+<tr class="memitem:ac1bc22ed7b7b07d8d2dd2ec99b962601" id="r_ac1bc22ed7b7b07d8d2dd2ec99b962601"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecaller__buffer__example.html#ac1bc22ed7b7b07d8d2dd2ec99b962601">caller_buffer_example::decode_into_buffer</a> (std::string_view bytes, std::array&lt; char32_t, 256 &gt; &amp;buf)</td></tr>
 <tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4" id="r_ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
 </table>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>

@@ -434,14 +434,14 @@ window.MathJax = {
 <h2>Synopsis</h2>
 <p>Declared in <code>&lt;<a href="https://github.com/steve-downey/transcode/blob/main/include/beman/transcode/bulk_transcode.hpp#L50">beman/transcode/bulk_transcode.hpp</a>&gt;</code></p>
 <pre><code class="source-code cpp">template&lt;
-    <a href="./text_encoder.html">text_encoder</a> Codec,
     typename Container = std::string,
-    <a href="./unicode_scalar_range.html">unicode_scalar_range</a> R&gt;
+    <a href="./unicode_scalar_range.html">unicode_scalar_range</a> R,
+    <a href="./text_encoder.html">text_encoder</a> Codec&gt;
 constexpr
 Container
 encode_to(
-    Codec codec,
-    R&& source);</code></pre>
+    R&& source,
+    Codec codec);</code></pre>
 </div><!-- /synopsis -->
 <div class="return-value">
 <h2>Return Value</h2>

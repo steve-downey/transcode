@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['decode_5fclosure_0',['decode_closure',['../structbeman_1_1transcoding_1_1decode__closure.html',1,'beman::transcoding']]],
-  ['decode_5fresult_1',['decode_result',['../structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1decode__result.html',1,'anonymous_namespace{custom_single_byte_decoder.cpp}::decode_result'],['../structbeman_1_1transcoding_1_1decode__result.html',1,'beman::transcoding::decode_result']]],
-  ['decode_5fview_2',['decode_view',['../classbeman_1_1transcoding_1_1decode__view.html',1,'beman::transcoding']]],
-  ['decoder_3',['decoder',['../classbeman_1_1transcoding_1_1whatwg_1_1decoder.html',1,'beman::transcoding::whatwg']]]
+  ['base64_5fdecode_5ffn_0',['base64_decode_fn',['../structmime__reader_1_1base64__decode__fn.html',1,'mime_reader']]],
+  ['base64_5fdecode_5fview_1',['base64_decode_view',['../classmime__reader_1_1base64__decode__view.html',1,'mime_reader']]]
 ];

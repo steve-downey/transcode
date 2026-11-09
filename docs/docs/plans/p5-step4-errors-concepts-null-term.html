@@ -91,7 +91,7 @@ declaration another entity already specifies, <code>\seebelow</code> /
 <code>specgen render --from-ir &lt;ir&gt; --backend mpark --validate</code>.
 Coverage errors mean a declaration has no home; leakage errors mean the
 wording names something the reader cannot see. Both are real; fix the
-header, not the report. There is no allowed exception: U1 landed
+header, not the report. There is no allowed exception: specgen#3 landed
 upstream on 2026-09-04, so the <code>ranges</code> findings that used to
 be excused no longer occur.</li>
 <li><strong>Commit headers and <code>papers/wording/*.md</code>
@@ -158,7 +158,7 @@ back.</p></li>
 are non-empty.</li>
 <li><code>--validate</code> on the affected headers: no coverage
 findings, no <code>detail</code> leakage findings, and no
-<code>ranges</code> noise -- U1 is fixed, so the clean bar is
+<code>ranges</code> noise -- specgen#3 is fixed, so the clean bar is
 absolute.</li>
 <li><code>make wording-check</code>, <code>make lint</code>,
 <code>make test</code> green.</li>
@@ -170,7 +170,8 @@ absolute.</li>
 representable form in specgen when the step started; both gaps were
 filed and fixed upstream rather than worked around here, so nothing in
 this step is a header problem and no header was changed to suit the tool
-(D7).</p>
+(<a
+href="../decisions.html#detail-in-wording">detail-in-wording</a>).</p>
 <ul>
 <li><p><strong><code>[transcode.reqs]</code> — done.</strong>
 <code>concepts.hpp</code> carries the <code>\rSec2</code> marker,
@@ -243,6 +244,6 @@ section had recorded as closed out, which is worth knowing for Steps
 a clean <code>--validate</code> does not prove an authored paragraph
 arrived. Read the fragment.</p>
 <p><strong>Step 5 can start.</strong></p>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step4-errors-concepts-null-term.md">docs/plans/p5-step4-errors-concepts-null-term.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step4-errors-concepts-null-term.md">docs/plans/p5-step4-errors-concepts-null-term.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

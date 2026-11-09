@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Decision Log — generated wording in beman.transcode -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../index.html">beman.transcode</a> <a href="../doxygen/index.html">Doxygen</a> <a href="../mrdocs/index.html">MrDocs</a> <a href="../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/decisions.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#decision-log--generated-wording-in-bemantranscode"
+id="toc-decision-log--generated-wording-in-bemantranscode">Decision Log
+— generated wording in beman.transcode</a>
+<ul>
+<li><a href="#document-unit"
+id="toc-document-unit">document-unit</a></li>
+<li><a href="#fragment-checkin"
+id="toc-fragment-checkin">fragment-checkin</a></li>
+<li><a href="#transclusion-mechanism"
+id="toc-transclusion-mechanism">transclusion-mechanism</a></li>
+<li><a href="#fragment-location"
+id="toc-fragment-location">fragment-location</a></li>
+<li><a href="#stable-name-roots"
+id="toc-stable-name-roots">stable-name-roots</a></li>
+<li><a href="#editing-instruction-form"
+id="toc-editing-instruction-form">editing-instruction-form</a></li>
+<li><a href="#detail-in-wording"
+id="toc-detail-in-wording">detail-in-wording</a></li>
+<li><a href="#random-access-specialization"
+id="toc-random-access-specialization">random-access-specialization</a></li>
+<li><a href="#encoding-standard-reference"
+id="toc-encoding-standard-reference">encoding-standard-reference</a></li>
+<li><a href="#null-term-header"
+id="toc-null-term-header">null-term-header</a></li>
+<li><a href="#drift-gate" id="toc-drift-gate">drift-gate</a></li>
+<li><a href="#clause-heading-level"
+id="toc-clause-heading-level">clause-heading-level</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="decision-log--generated-wording-in-bemantranscode">Decision Log
+— generated wording in beman.transcode</h1>
+<p>Convention: each section answers one <strong>question</strong>,
+identified by a slug named for the question, never for the chosen answer
+(so the slug survives its answer reversing:
+<code>#detail-in-wording</code>, not <code>#expos-everything</code>).
+All references anywhere in the repo render as links to these anchors.
+Open questions live in the same namespace with
+<code>Status: OPEN</code>; answering one graduates it in place — the
+slug and every existing link stay valid. Divergences append dated
+entries to the implicated question's Log; they do not get their own
+files, and they do not get their own numbers.</p>
+<p>Entry shape: Question / Status / Decided by / Decision / Why /
+Log.</p>
+<p>Defects in <code>beman.specgen</code>, which this phase depends on,
+are <strong>not</strong> tracked here. They have real identifiers
+already — <code>steve-downey/specgen</code> issue numbers — and those
+are what <code>docs/plans/phase5-index.md</code> cites. An external
+number is a name a reader can follow; an internal serial is not.</p>
+<hr />
+<h2 id="document-unit">document-unit</h2>
+<p><strong>Question:</strong> What is one specgen document — a proposed
+standard header, or a file? <strong>Status:</strong> DECIDED 2026-09-03,
+amended 2026-09-07 <strong>Decided by:</strong> Phase 5 planning;
+amendment forced by specgen#77. <strong>Decision:</strong> One document
+per <strong>proposed standard header</strong>. The paper proposes
+<code>&lt;transcode&gt;</code> and <code>&lt;null_term&gt;</code>; each
+maps to one spec-facing header, and that header is what specgen runs
+over. <strong>Why:</strong> The draft's unit is the header —
+<code>[transcode.syn]</code> lists everything
+<code>&lt;transcode&gt;</code> declares — so the tool's unit has to be
+the same or the synopsis cannot be generated at all.
+<strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Adopted, carrying a fallback: one document per header
+<em>family</em> with a hand-authored <code>[transcode.syn]</code>,
+because a deduction guide corrupted a gathered region (specgen#22).</li>
+<li>2026-09-05 — Fallback retired; specgen#22 fixed.
+<code>&lt;null_term&gt;</code> renders a real gathered
+<code>[null.term.syn]</code> beside its per-class clauses, validating
+clean.</li>
+<li>2026-09-07 — <strong>How a document reaches more than one
+file.</strong> specgen used to process only declarations located in the
+main file, which would have made this decision "put the whole of
+<code>&lt;transcode&gt;</code> in one 3,500-line file". specgen#77 makes
+a gathered <code>.syn</code> region gather the declarations of the
+headers <code>#include</code>d inside it, so <code>transcode.hpp</code>
+stays the umbrella it already was and the sixteen component headers stay
+where they are. The region is the statement of which includes are the
+specification surface; <code>detail/</code> includes sit outside it.
+That is <a href="#detail-in-wording">detail-in-wording</a> again — the
+tool renders what the library writes — and it is why Step 3's task 4
+cost a rewrite of one umbrella rather than a rewrite of the
+library.</li>
+</ul>
+<hr />
+<h2 id="fragment-checkin">fragment-checkin</h2>
+<p><strong>Question:</strong> Are the generated fragments committed, or
+built on demand? <strong>Status:</strong> DECIDED 2026-09-03
+<strong>Decided by:</strong> Phase 5 planning.
+<strong>Decision:</strong> Committed, and checked.
+<code>make wording</code> regenerates <code>papers/wording/*.md</code>;
+<code>make wording-check</code> regenerates into a temporary directory
+and diffs. <strong>Why:</strong> Committing keeps the paper buildable on
+a machine with no specgen and no Clang — the normal case for a co-author
+— and makes a change to the wording show up as a diff in a pull request
+rather than only as a different PDF. <strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Adopted.</li>
+<li>2026-09-07 — Working as intended: an upstream change to the template
+head's namespace drop moved the committed fragments, and the move was
+visible in the diff.</li>
+<li>2026-09-09 — The CI half of the check is not
+<code>wording-check</code>; see <a
+href="#drift-gate">drift-gate</a>.</li>
+</ul>
+<hr />
+<h2 id="transclusion-mechanism">transclusion-mechanism</h2>
+<p><strong>Question:</strong> How does generated wording get into the
+paper? <strong>Status:</strong> DECIDED 2026-09-03 <strong>Decided
+by:</strong> Phase 5 planning. <strong>Decision:</strong> Native pandoc
+multi-file input. <code>base.mk</code> builds its pandoc command from
+<code>$(filter %.md, $^)</code>, so a target with several markdown
+prerequisites is concatenated in prerequisite order. The paper targets
+take the fragment list as ordered prerequisites; the order comes from
+the manifest <code>specgen render --split</code> prints.
+<strong>Why:</strong> No new markdown preprocessor, and no include
+syntax to invent. <strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Adopted.</li>
+<li>2026-09-08 — Consequence realised in Step 10: prerequisite order
+<em>is</em> document order, so a section cannot be both authored in
+<code>transcode-view.md</code> and printed after the generated clauses.
+Everything that must follow the wording moved to
+<code>papers/parts/tail.md</code>.</li>
+</ul>
+<hr />
+<h2 id="fragment-location">fragment-location</h2>
+<p><strong>Question:</strong> Where do the generated fragments live?
+<strong>Status:</strong> DECIDED 2026-09-03 <strong>Decided by:</strong>
+Phase 5 planning. <strong>Decision:</strong>
+<code>papers/wording/</code>. <strong>Why:</strong> <code>flat.mk</code>
+turns every <code>papers/*.md</code> into its own paper; a subdirectory
+is invisible to that wildcard. <strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Adopted.</li>
+<li>2026-09-08 — The same wildcard reasoning applies to
+<code>papers/parts/</code>, which holds the authored tail for the same
+reason.</li>
+<li>2026-09-09 — The directory also holds authored files
+(<code>README.md</code>, <code>specgen-ref</code>).
+<code>generate.sh --authored</code> is the one list saying which files
+are not output; both its own cleanup and <code>wording-check</code>'s
+diff read it, after a wildcard cleanup deleted the README and the diff
+then called the fragments stale.</li>
+</ul>
+<hr />
+<h2 id="stable-name-roots">stable-name-roots</h2>
+<p><strong>Question:</strong> What do the proposed clauses' stable names
+root at? <strong>Status:</strong> DECIDED 2026-09-03 <strong>Decided
+by:</strong> Phase 5 planning. <strong>Decision:</strong>
+<code>transcode.</code> for <code>&lt;transcode&gt;</code> and
+<code>null.term</code> for <code>&lt;null_term&gt;</code>, spelled
+explicitly with <code>--root</code> rather than left to specgen's
+derivation from the common prefix. <strong>Why:</strong> Derivation is
+implicit and would move the root fragment's filename when the clause
+tree changes. <strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Adopted.</li>
+<li>2026-09-10 — The roots gained a second consumer:
+<code>generate.sh</code> passes each to
+<code>specgen render --new-root</code>, which is what keeps a clause
+this paper <em>adds</em> from rendering as an mpark <code>.sref</code>
+and linking to a c++draft page that does not exist. Adding a third
+proposed header means adding its root to <code>paper_roots</code> beside
+its entry in <code>spec_headers</code>.</li>
+</ul>
+<hr />
+<h2 id="editing-instruction-form">editing-instruction-form</h2>
+<p><strong>Question:</strong> Are the editing instructions generated
+(<code>--paper</code> mode) or authored? <strong>Status:</strong>
+DECIDED 2026-09-03 <strong>Decided by:</strong> Phase 5 planning.
+<strong>Decision:</strong> Authored. No <code>--paper</code> mode.
+<strong>Why:</strong> <code>--paper</code> wraps everything in
+<code>::: add</code> and underlines it. This paper adds whole new
+clauses; an authored instruction ("Add a new clause [transcode] as
+follows:") reads better than several hundred underlined lines. The
+switch is one flag if that judgement changes. <strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Adopted.</li>
+<li>2026-09-08 — Carried out in Step 10: the paper carries the header
+additions for [headers], the WHATWG entry for [intro.refs], the
+[version.syn] macro, and the instruction to add clause [transcode].
+Those are the parts specgen cannot know.</li>
+</ul>
+<hr />
+<h2 id="detail-in-wording">detail-in-wording</h2>
+<p><strong>Question:</strong> What happens when a <code>detail::</code>
+name reaches a spec-visible signature? <strong>Status:</strong> DECIDED
+2026-09-03, <strong>reversed 2026-09-05</strong> <strong>Decided
+by:</strong> Phase 5 planning; reversal by Steve Downey during Step 3.
+<strong>Decision:</strong> The name renders exposition-only or
+<code>unspecified</code>, and <strong>the header keeps the spelling it
+wants</strong>. The tool renders what the library writes; the library
+does not move for the tool. <strong>Why:</strong> A
+<code>detail::</code> name reaching the wording is a real finding — the
+published text must not name something the reader cannot see. What was
+wrong in the original decision was the <em>remedy</em> it accepted: it
+said such a name "either moves out of <code>detail</code> … or is marked
+<code>\expos</code>", and relocating a helper out of <code>detail</code>
+changes name lookup, ADL and the library's effective public surface — a
+real change to a library, taken on for a documentation tool. It was
+recorded as the single largest source of the refactoring in Step 3,
+which is the clearest sign it was pointed the wrong way.
+<strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Adopted in the form that permitted relocation.</li>
+<li>2026-09-05 — Reversed. Marking the six concepts <code>\expos</code>
+in the headers that declare them took the qualifier findings from nine
+to three, with nothing moved and nothing renamed. specgen#36 is what
+made it cheap: <code>\expos</code> reaches entities declared in an
+included <code>detail/</code> header.</li>
+<li>2026-09-05 — The three survivors were class-head constraints, closed
+by specgen#48. Satisfied in full by six <code>\expos</code> comments and
+nothing else.</li>
+<li>2026-09-07 — Applied a second time, to a different question: see <a
+href="#document-unit">document-unit</a>'s 2026-09-07 entry. The umbrella
+moved, the library did not.</li>
+<li>2026-09-09 — Applied a third time, and declined a fixit that would
+have broken it: specgen#93 offered <code>\expos</code> on a generated
+codec table as the way to silence a false positive, which would have
+asserted that a file the document deliberately does not reach is an
+exposition-only part of the specification. Filed instead; fixed
+upstream.</li>
+</ul>
+<hr />
+<h2 id="random-access-specialization">random-access-specialization</h2>
+<p><strong>Question:</strong> Are the <code>random_access_</code> view
+specializations separately specified entities? <strong>Status:</strong>
+DECIDED 2026-09-03, carried out 2026-09-08 <strong>Decided by:</strong>
+Wording outline; carried out in Step 6. <strong>Decision:</strong> No.
+Each view's clause says instead that it models
+<code>random_access_range</code> when the codec decodes one byte to one
+scalar value and the base range does. <strong>Why:</strong> They exist
+so a single-byte codec gets O(1) indexing. That is a property of the
+view, not a second view, and an implementation gets there however it
+likes. Specifying eight view templates instead of four doubles the
+clause for no reader benefit. Omitting them also removes
+<code>detail::random_access_decode_codec</code> from every spec-visible
+signature, which <a href="#detail-in-wording">detail-in-wording</a>
+requires anyway. If SG16 wants the distinction visible it comes back as
+a <em>Remarks</em> paragraph, not as a type. <strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Adopted.</li>
+<li>2026-09-08 — Carried out in Step 6: both views
+<code>\omit</code>ted. That removed the last <code>detail::</code>
+qualifier from the document, which had been reaching the wording through
+those views' requires-clauses.</li>
+<li>2026-09-08 — Reached further than it had been applied, found in Step
+9: the <code>enable_borrowed_range</code> partial specializations
+<em>written for</em> those views were still in the synopsis, declaring
+borrowed-range support for views that are not there. Omitted too.</li>
+<li>2026-10-29 — Re-homed by the SG16 review response. Steps 09 and 12
+deleted the WHATWG view classes, so the decision now applies to
+<code>decode_view</code> and <code>encode_view</code> over a
+<code>single_byte_text_decoder</code> or
+<code>single_byte_text_encoder</code> codec, which is where the
+random-access property lives.</li>
+</ul>
+<hr />
+<h2 id="encoding-standard-reference">encoding-standard-reference</h2>
+<p><strong>Question:</strong> How does the wording say what each
+<code>whatwg::encoding</code> enumerator means? <strong>Status:</strong>
+DECIDED 2026-09-03, spelling settled 2026-09-07 <strong>Decided
+by:</strong> Wording outline; spelling settled in Step 5.
+<strong>Decision:</strong> By reference to the WHATWG Encoding Standard.
+<code>whatwg::encoding</code> has one enumerator per encoding the
+Standard defines; the wording says each denotes the encoding the
+Standard names correspondingly, rather than restating a table that is
+normative elsewhere and changes there. <strong>Why:</strong> Restating a
+living table in the working draft guarantees the two drift.
+<strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Adopted.</li>
+<li>2026-09-07 — Spelling settled, in two parts because the question has
+two halves. <em>In the generated wording</em>, the standard is named in
+prose — "the WHATWG Encoding Standard" — and nothing else: specgen's
+<code>\iref</code> points at a stable name in this draft and there is
+none to point at, and a bibliography key is the paper's and would not
+survive into the working draft. <em>In the paper, and in the eventual
+working draft</em>, it is a normative reference in the [intro.refs]
+sense, carrying a date because a living standard has no edition to
+cite.</li>
+<li>2026-09-08 — Step 10 wrote that entry, and put the question of
+whether a normative reference to a living standard is acceptable at all
+to SG16, where it belongs.</li>
+<li>2026-10-28 — The enumeration was <code>enum class codec</code> when
+this was decided. The SG16 review response renamed it
+<code>whatwg::encoding</code>, and the word "codec" now only ever means
+the object that does the work.</li>
+<li>2026-10-29 — The <em>Remarks</em> lost its rationale. Wakely's SG16
+review read "Each enumerator names the encoding of the same name..." as
+rationale, not specification; the rationale moved to the paper's prose
+and the <em>Remarks</em> now says only what each enumerator denotes.
+Still specification by reference to a living document, so the 2026-09-08
+question to SG16 stands.</li>
+<li>2026-11-08 — The normative reference names a dated document. ISO
+allows a normative reference only to a dated document, and the paper had
+left the choice to the project editor. The [intro.refs] entry is now the
+June 2025 Review Draft, the most recent. The implementation's tables
+come from commit <code>a985b62</code> (May 2026); the five commits
+between the two are meta and editorial, and leave the encodings, labels
+and index data unchanged.</li>
+</ul>
+<hr />
+<h2 id="null-term-header">null-term-header</h2>
+<p><strong>Question:</strong> Does <code>views::null_term</code> get its
+own header? <strong>Status:</strong> DECIDED 2026-09-03 <strong>Decided
+by:</strong> Wording outline; it was already the paper's position.
+<strong>Decision:</strong> <code>&lt;null_term&gt;</code> stays a
+separate header. <strong>Why:</strong> <code>views::null_term</code> has
+nothing to do with encodings. It is a range adaptor over a C string that
+this proposal happens to need. <strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Recorded.</li>
+<li>2026-09-06 — Consequence: it is a second specgen document, with its
+own root (<a href="#stable-name-roots">stable-name-roots</a>), and the
+two documents cross-reference each other — which is why
+<code>--new-root</code> has to be given twice.</li>
+</ul>
+<hr />
+<h2 id="drift-gate">drift-gate</h2>
+<p><strong>Question:</strong> What stops the committed wording drifting
+from the headers, and where does that check run?
+<strong>Status:</strong> DECIDED 2026-09-09 <strong>Decided by:</strong>
+Steve Downey — "specgen is not available in CI, at least not at
+reasonable cost." <strong>Decision:</strong> Two checks.
+<code>make wording-inputs-check</code> runs on every pull request and
+needs no specgen: it hashes the document extent — each root plus the
+headers <code>#include</code>d inside its gathered region — against a
+committed <code>papers/wording/inputs.sha256</code>.
+<code>make wording-check</code> is the real check, regenerating every
+fragment and diffing, and it runs <strong>locally</strong>, before a
+paper revision goes out. <strong>Why:</strong> specgen links LLVM's
+Clang front end, so a job that runs <code>wording-check</code> downloads
+LLVM and builds a tool this repository does not otherwise depend on, on
+every push. The cheap check answers the staleness question — the
+fragments were generated from these headers and not from others — and
+over-reports by construction, because an edit that changes no wording
+still needs a regeneration to say so. That is the trade for a check that
+costs nothing. <strong>Log:</strong></p>
+<ul>
+<li>2026-09-08 — First attempt: a workflow that installed LLVM and built
+specgen per pull request. It failed three ways. It <strong>did not
+work</strong> — specgen built and ran, then died on
+<code>wchar.h: fatal error: 'stddef.h' file not found</code>, because a
+specgen built against an unpacked LLVM tarball derives its resource
+directory from the running binary's path rather than from the LLVM it
+links. It <strong>should not work</strong> — CodeQL raised three
+high-severity <code>actions/cache-poisoning/poisonable-step</code>
+alerts, correctly: checking out a second repository at a ref read from a
+file, building it, and running it, in a job that can write the
+default-branch cache, is executing someone else's code with this
+repository's privileges. And it <strong>cost too much</strong>
+regardless.</li>
+<li>2026-09-09 — Replaced by the hash check. Two bugs of its own, both
+invisible locally: <code>--inputs</code> sat below
+<code>generate.sh</code>'s specgen <code>PATH</code> lookup, so the
+check that exists to need no specgen needed one; and the input list was
+sorted in the developer's locale, so the file was reproducible only on a
+machine whose collating order matched the one that wrote it. Both found
+in CI, neither reproducible on a machine with a specgen on
+<code>PATH</code> and a punctuation-ignoring locale. Check it with
+<code>env PATH=/usr/bin:/bin</code>.</li>
+<li>2026-09-09 — A released specgen binary, or a container image with
+one in it, is what would make the strong check affordable and safe at
+the same time.</li>
+</ul>
+<hr />
+<h2 id="clause-heading-level">clause-heading-level</h2>
+<p><strong>Question:</strong> At what heading level do the generated
+clauses render, relative to the paper's own sections?
+<strong>Status:</strong> DECIDED 2026-09-08 — accepted as-is, upstream
+fix wanted <strong>Decided by:</strong> Step 10.
+<strong>Decision:</strong> Flat. The clauses come out at
+<code>##</code>, which is the level the paper's own sections use, so
+they are siblings of "Design" rather than children of the "Wording"
+heading that introduces them. <strong>Why:</strong> specgen's
+<code>base_heading_level</code> is fixed at 2 and not reachable from the
+command line (specgen#97). With <code>toc-depth: 2</code> the contents
+read as a clause list under the Wording heading, which is close enough
+to right that spending a cross-repository dependency on it was not worth
+it. A nested rendering needs the flag <em>and</em>
+<code>toc-depth: 3</code>. <strong>Why it is not just a defect
+entry:</strong> the accept is the decision; the flag is the thing that
+would let it be revisited. <strong>Log:</strong></p>
+<ul>
+<li>2026-09-03 — Measured: the option exists in all three backends'
+<code>Options</code> structs and the CLI passes <code>paper_mode</code>
+through while leaving this at its default.</li>
+<li>2026-09-08 — Accepted flat, and recorded as accepted rather than
+pending.</li>
+<li>2026-09-10 — Filed upstream at last as specgen#97. It had been
+tracked here from the first measuring round without ever reaching
+specgen's tracker, which is why it was the one dependency in the index
+citing no issue number.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/decisions.md">docs/decisions.md</a> at a094bc8038bc.</footer>
+</body>
+</html>

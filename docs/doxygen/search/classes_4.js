@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['null_5fsentinel_5ft_0',['null_sentinel_t',['../structbeman_1_1transcoding_1_1null__sentinel__t.html',1,'beman::transcoding']]],
-  ['null_5fterm_5fview_1',['null_term_view',['../classbeman_1_1transcoding_1_1null__term__view.html',1,'beman::transcoding']]]
+  ['fractional_5fcodec_0',['fractional_codec',['../structanonymous__namespace_02custom__single__byte__decoder_8cpp_03_1_1fractional__codec.html',1,'anonymous_namespace{custom_single_byte_decoder.cpp}']]],
+  ['full_5ftable_5fcodec_1',['full_table_codec',['../structbeman_1_1transcoding_1_1full__table__codec.html',1,'beman::transcoding']]]
 ];

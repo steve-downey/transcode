@@ -112,13 +112,20 @@ to Step 8</a></li>
 <h1 id="p6-step-6-utf-32-input-validation-specified-and-uniform">P6-Step
 6: UTF-32 Input Validation, Specified and Uniform</h1>
 <p><strong>Branch:</strong> <code>p6-step6-utf32-validation</code>
-<strong>Depends on:</strong> Step 0 <strong>Findings:</strong> S-01, and
-C-08 and D-15 below, both new <strong>Read first:</strong>
+<strong>Depends on:</strong> Step 0 <strong>Findings:</strong> <a
+href="../review-findings-2026-09-11.html#invalid-char32-contract">invalid-char32-contract</a>,
+and <a
+href="#utf32-validation-not-uniform">utf32-validation-not-uniform</a>
+and <a
+href="#encode-error-question-mark-claim">encode-error-question-mark-claim</a>
+below, both new <strong>Read first:</strong>
 <code>docs/plans/phase6-index.md</code></p>
 <blockquote>
 <p>This step replaces <code>p6-step6-scalar-precondition.md</code>,
 which proposed the opposite. The reasoning that changed is in the phase
-index under "S-01, resolved."</p>
+index under "<a
+href="../review-findings-2026-09-11.html#invalid-char32-contract">invalid-char32-contract</a>,
+resolved."</p>
 </blockquote>
 <hr />
 <h2 id="goal">Goal</h2>
@@ -198,8 +205,8 @@ and WHATWG only specifies the second.
 <p>So the code has been right and the wording wrong, and the fix is to
 say what the code does rather than to make the code match a precondition
 that the library's own conformance suite deliberately violates.</p>
-<h3 id="c-08-the-diagnosis-is-not-uniform-new">C-08: the diagnosis is
-not uniform (new)</h3>
+<h3 id="utf32-validation-not-uniform">utf32-validation-not-uniform</h3>
+<p><strong>Finding:</strong> The diagnosis is not uniform (new)</p>
 <p>The surrogate and out-of-range checks live <strong>inside</strong>
 the <code>if constexpr (C == codec::utf_8)</code> branch. Every other
 codec goes straight to its table, and its miss path is:</p>
@@ -215,14 +222,16 @@ representation for the Unicode scalar value being encoded." Every clause
 of that is wrong: it is not about representation, and U+D800 is not a
 Unicode scalar value. The same input is diagnosed correctly by one codec
 and misdiagnosed by the other thirty-nine.</p>
-<p>This is a defect under <em>any</em> answer to S-01. Under a
-precondition it is undiagnosed-but-inconsistent; under defined behaviour
-it is simply the wrong error. It is fixed here because the fix --
-validate once, above dispatch -- is the same layering the standards
+<p>This is a defect under <em>any</em> answer to <a
+href="../review-findings-2026-09-11.html#invalid-char32-contract">invalid-char32-contract</a>.
+Under a precondition it is undiagnosed-but-inconsistent; under defined
+behaviour it is simply the wrong error. It is fixed here because the fix
+-- validate once, above dispatch -- is the same layering the standards
 use.</p>
-<h3 id="d-15-the-documentation-says--and-utf-8-says-otherwise-new">D-15:
-the documentation says <code>'?'</code> and UTF-8 says otherwise
-(new)</h3>
+<h3
+id="encode-error-question-mark-claim">encode-error-question-mark-claim</h3>
+<p><strong>Finding:</strong> The documentation says <code>'?'</code> and
+UTF-8 says otherwise (new)</p>
 <p>Three places claim an encode failure yields <code>'?'</code>:</p>
 <ul>
 <li><code>error.hpp:79</code> and the <code>transcode_error_kind</code>
@@ -281,9 +290,11 @@ value</em>. Encoding §4.1 asserts it, and the implementation upholds it
 boundaries and <code>detail/utf16.hpp</code> errors on an unpaired
 surrogate. This is a guarantee worth stating outright rather than
 leaving to inference.</li>
-<li><strong>D-15.</strong> Correct the three <code>'?'</code> claims to
-distinguish an unmappable scalar value (<code>'?'</code>) from
-ill-formed UTF-32 input (U+FFFD, then encoded).</li>
+<li><strong><a
+href="#encode-error-question-mark-claim">encode-error-question-mark-claim</a>.</strong>
+Correct the three <code>'?'</code> claims to distinguish an unmappable
+scalar value (<code>'?'</code>) from ill-formed UTF-32 input (U+FFFD,
+then encoded).</li>
 </ul>
 <h3 id="the-wpt-test-stays-re-attributed">The WPT test stays,
 re-attributed</h3>
@@ -315,7 +326,9 @@ a <code>char32_t</code> range has no code units to split.</p>
 <li>U+D800 through
 <code>whatwg_encode_or_error&lt;codec::windows_1252&gt;</code> reports
 <code>surrogate_code_point</code>, not <code>unmapped_codepoint</code>.
-This is C-08 and it fails on <code>main</code>.</li>
+This is <a
+href="#utf32-validation-not-uniform">utf32-validation-not-uniform</a>
+and it fails on <code>main</code>.</li>
 <li>The same through
 <code>whatwg_encode&lt;codec::windows_1252&gt;</code> yields
 <code>'?'</code> -- via U+FFFD being unmappable, which is the correct
@@ -366,6 +379,6 @@ implicit.</li>
 href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p2728r14.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p2728r14.html</a>
 directly. The alignment claim here rests on it.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step6-utf32-validation.md">docs/plans/p6-step6-utf32-validation.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step6-utf32-validation.md">docs/plans/p6-step6-utf32-validation.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

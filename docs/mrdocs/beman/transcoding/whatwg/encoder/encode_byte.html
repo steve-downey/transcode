@@ -432,7 +432,7 @@ window.MathJax = {
 </div><!-- /header -->
 <div class="synopsis">
 <h2>Synopsis</h2>
-<p>Declared in <code>&lt;<a href="https://github.com/steve-downey/transcode/blob/main/include/beman/transcode/whatwg/encoder.hpp#L52">beman/transcode/whatwg/encoder.hpp</a>&gt;</code></p>
+<p>Declared in <code>&lt;<a href="https://github.com/steve-downey/transcode/blob/main/include/beman/transcode/whatwg/encoder.hpp#L53">beman/transcode/whatwg/encoder.hpp</a>&gt;</code></p>
 <pre><code class="source-code cpp">constexpr
 std::optional&lt;unsigned char&gt;
 encode_byte(char32_t scalar) const
@@ -440,7 +440,7 @@ requires detail::random_access_encode_codec&lt;C&gt;;</code></pre>
 </div><!-- /synopsis -->
 <div class="return-value">
 <h2>Return Value</h2>
-<p>The byte <code>scalar</code> encodes to in the encoding <code>C</code>, or <code>nullopt</code> if <code>C</code> has no representation for it. Present for the single-byte encodings.</p>
+<p>The byte <code>scalar</code> encodes to in the encoding <code>C</code>, or <code>nullopt</code> if <code>C</code> has no representation for it. Present for the single-byte encodings and <code>x_user_defined</code>.</p>
 </div><!-- /return-value -->
 </div><!-- /symbol -->
 

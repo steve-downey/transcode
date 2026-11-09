@@ -1,7 +1,8 @@
 var searchData=
 [
-  ['terminal_0',['terminal',['../classbeman_1_1transcoding_1_1decode__view_1_1iterator.html#a1ecd1cd960145c540cd3d2ae65bfb1ec',1,'beman::transcoding::decode_view::iterator::terminal()'],['../classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#ab2ba07056abca43108c3315c4d04c8de',1,'beman::transcoding::encode_view::iterator::terminal()']]],
-  ['to_5futf8_1',['to_utf8',['../namespaceanonymous__namespace_02paper__custom__codec_8cpp_03.html#af0ab81f769d4029de9e99cec4cf1378f',1,'anonymous_namespace{paper_custom_codec.cpp}']]],
-  ['transcode_2',['transcode',['../namespacebeman_1_1transcoding.html#a72f9ec93c31020e116f51f063b3653ba',1,'beman::transcoding']]],
-  ['transcode_5fstring_3',['transcode_string',['../namespacebeman_1_1transcoding_1_1whatwg.html#a8a1c08e92a835abd464904b2ab558ebe',1,'beman::transcoding::whatwg::transcode_string(std::span&lt; const char &gt; src, whatwg::encoding from, whatwg::encoding to)'],['../namespacebeman_1_1transcoding_1_1whatwg.html#a2b55614e9b6abb2dd80239a862bcfac1',1,'beman::transcoding::whatwg::transcode_string(std::span&lt; const char &gt; src, std::string_view from_label, std::string_view to_label)']]]
+  ['random_5faccess_5fdecode_5fview_0',['random_access_decode_view',['../classbeman_1_1transcoding_1_1random__access__decode__view.html#ae4e5a12a9b81f1dd8fc7283c4ffcb32b',1,'beman::transcoding::random_access_decode_view']]],
+  ['random_5faccess_5fencode_5fview_1',['random_access_encode_view',['../classbeman_1_1transcoding_1_1random__access__encode__view.html#a2e9d555d0af69f1de3fc6ff7e3eb90a8',1,'beman::transcoding::random_access_encode_view']]],
+  ['remaining_2',['remaining',['../classmime__reader_1_1parse_1_1cursor.html#a7de4a1d7def2285434b5622d992cddb8',1,'mime_reader::parse::cursor']]],
+  ['rule_3',['rule',['../classmime__reader_1_1parse_1_1rule.html#a5e18690e3f765a7e831a36710edadc6b',1,'mime_reader::parse::rule::rule()=default'],['../classmime__reader_1_1parse_1_1rule.html#a42d378dffb1737d1924e8b0e12ee1cd7',1,'mime_reader::parse::rule::rule(P p)']]],
+  ['run_4',['run',['../namespacemime__reader_1_1anonymous__namespace_02grammar_8cpp_03.html#a98572b2771d357a3f5e401d11b524c83',1,'mime_reader::anonymous_namespace{grammar.cpp}']]]
 ];

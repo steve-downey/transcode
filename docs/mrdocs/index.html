@@ -610,6 +610,8 @@ window.MathJax = {
 </thead>
 <tbody>
 <tr><td><a href="./beman/transcoding/whatwg/decoder.html"><code>decoder</code></a> </td><td><em>transcode.whatwg.decoders</em></td></tr>
+<tr><td><a href="./beman/transcoding/whatwg/dynamic_decoder.html"><code>dynamic_decoder</code></a> </td><td><em>transcode.whatwg.dynamic</em></td></tr>
+<tr><td><a href="./beman/transcoding/whatwg/dynamic_encoder.html"><code>dynamic_encoder</code></a> </td><td><em>transcode.whatwg.dynamic</em></td></tr>
 <tr><td><a href="./beman/transcoding/whatwg/encoder.html"><code>encoder</code></a> </td><td><em>transcode.whatwg.encoders</em></td></tr>
 </tbody>
 </table>
@@ -632,15 +634,16 @@ window.MathJax = {
 </thead>
 <tbody>
 <tr><td><a href="./beman/transcoding/whatwg/bom_sniff.html"><code>bom_sniff</code></a> </td><td></td></tr>
-<tr><td><a href="./beman/transcoding/whatwg/decode_into.html"><code>decode_into</code></a> </td><td>effects-equiv</td></tr>
-<tr><td><a href="./beman/transcoding/whatwg/decode_to.html"><code>decode_to</code></a> </td><td></td></tr>
-<tr><td><a href="./beman/transcoding/whatwg/encode_into.html"><code>encode_into</code></a> </td><td>effects-equiv</td></tr>
-<tr><td><a href="./beman/transcoding/whatwg/encode_to.html"><code>encode_to</code></a> </td><td></td></tr>
+<tr><td><a href="./beman/transcoding/whatwg/decode_into-05.html"><code>decode_into</code></a> </td><td><code>decode_into</code> overloads</td></tr>
+<tr><td><a href="./beman/transcoding/whatwg/decode_to-0e.html"><code>decode_to</code></a> </td><td></td></tr>
+<tr><td><a href="./beman/transcoding/whatwg/encode_into-01.html"><code>encode_into</code></a> </td><td><code>encode_into</code> overloads</td></tr>
+<tr><td><a href="./beman/transcoding/whatwg/encode_to-0c0.html"><code>encode_to</code></a> </td><td></td></tr>
 <tr><td><a href="./beman/transcoding/whatwg/get_encoding-02.html"><code>get_encoding</code></a> </td><td></td></tr>
 <tr><td><a href="./beman/transcoding/whatwg/has_encoder.html"><code>has_encoder</code></a> </td><td></td></tr>
+<tr><td><a href="./beman/transcoding/whatwg/make_dynamic_encoder.html"><code>make_dynamic_encoder</code></a> </td><td></td></tr>
 <tr><td><a href="./beman/transcoding/whatwg/to_text_encoding_id.html"><code>to_text_encoding_id</code></a> </td><td></td></tr>
 <tr><td><a href="./beman/transcoding/whatwg/transcode_string-09.html"><code>transcode_string</code></a> </td><td></td></tr>
-<tr><td><a href="./beman/transcoding/whatwg/operator_eq-0b.html"><code>operator&#x3D;&#x3D;</code></a> </td><td>Equality operators</td></tr>
+<tr><td><a href="./beman/transcoding/whatwg/operator_eq-0b8.html"><code>operator&#x3D;&#x3D;</code></a> </td><td>Equality operators</td></tr>
 </tbody>
 </table>
 
@@ -652,7 +655,7 @@ window.MathJax = {
 <tbody>
 <tr><td><a href="./beman/transcoding/whatwg/decode.html"><code>decode</code></a> </td><td></td></tr>
 <tr><td><a href="./beman/transcoding/whatwg/decode_or_error.html"><code>decode_or_error</code></a> </td><td></td></tr>
-<tr><td><a href="./beman/transcoding/whatwg/encode.html"><code>encode</code></a> </td><td><em>Mandates:</em> The Encoding Standard defines an encoder for <code>C</code>. It defines none for <code>utf_16be</code>, <code>utf_16le</code>, <code>replacement</code> or <code>x_user_defined</code>.</td></tr>
+<tr><td><a href="./beman/transcoding/whatwg/encode.html"><code>encode</code></a> </td><td><em>Mandates:</em> The Encoding Standard defines an encoder for <code>C</code>. It defines none for <code>utf_16be</code>, <code>utf_16le</code> or <code>replacement</code>.</td></tr>
 <tr><td><a href="./beman/transcoding/whatwg/encode_or_error.html"><code>encode_or_error</code></a> </td><td><em>Mandates:</em> The Encoding Standard defines an encoder for <code>C</code>.</td></tr>
 <tr><td><a href="./beman/transcoding/whatwg/transcode.html"><code>transcode</code></a> </td><td>The composition is the specification: the pipeline decodes and re-encodes one element at a time, and it is lazy because its parts are. A scalar value <code>To</code> cannot represent is an encoding error, reported as <code>whatwg::encode</code> reports one; a byte sequence <code>From</code> does not allow is a decoding error, and the U+FFFD it decodes to is what gets encoded.</td></tr>
 </tbody>

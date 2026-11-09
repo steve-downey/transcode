@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['random_5faccess_5fdecode_5fview_0',['random_access_decode_view',['../classbeman_1_1transcoding_1_1random__access__decode__view.html',1,'beman::transcoding']]],
-  ['random_5faccess_5fencode_5fview_1',['random_access_encode_view',['../classbeman_1_1transcoding_1_1random__access__encode__view.html',1,'beman::transcoding']]]
+  ['header_5fchunk_0',['header_chunk',['../structmime__reader_1_1header__chunk.html',1,'mime_reader']]],
+  ['header_5ffield_1',['header_field',['../structmime__reader_1_1header__field.html',1,'mime_reader']]],
+  ['header_5ftext_2',['header_text',['../structmime__reader_1_1header__text.html',1,'mime_reader']]]
 ];

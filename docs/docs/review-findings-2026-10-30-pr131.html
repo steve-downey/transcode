@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Review of PR #131, the SG16 review response — 2026-10-30 -
+beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../index.html">beman.transcode</a> <a href="../doxygen/index.html">Doxygen</a> <a href="../mrdocs/index.html">MrDocs</a> <a href="../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/review-findings-2026-10-30-pr131.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#review-of-pr-131-the-sg16-review-response--2026-10-30"
+id="toc-review-of-pr-131-the-sg16-review-response--2026-10-30">Review of
+PR #131, the SG16 review response — 2026-10-30</a>
+<ul>
+<li><a href="#verdict" id="toc-verdict">Verdict</a></li>
+<li><a href="#blocking" id="toc-blocking">Blocking</a></li>
+<li><a href="#spec-conformance" id="toc-spec-conformance">Spec
+conformance</a></li>
+<li><a href="#does-the-pr-answer-the-thread"
+id="toc-does-the-pr-answer-the-thread">Does the PR answer the
+thread?</a></li>
+<li><a href="#benchmarks-claims-to-confirm-and-where-readers-find-them"
+id="toc-benchmarks-claims-to-confirm-and-where-readers-find-them">Benchmarks:
+claims to confirm, and where readers find them</a></li>
+<li><a href="#code-and-documentation"
+id="toc-code-and-documentation">Code and documentation</a></li>
+<li><a href="#what-was-run" id="toc-what-was-run">What was run</a></li>
+</ul></li>
+</ul>
+</nav>
+<!--
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+<h1 id="review-of-pr-131-the-sg16-review-response--2026-10-30">Review of
+PR #131, the SG16 review response — 2026-10-30</h1>
+<p>This document records a review of pull request #131
+(<code>sg16-review-response</code>, head <code>f225333</code>) against
+three things: the pull request on its own, the SG16 mailing-list thread
+on P4246R0 it answers, and the WHATWG Encoding Standard as checked out
+at <code>whatwg/encoding</code> commit <code>be17ac5</code>. It is a
+triage document, not a set of fixes. What became of each point is
+tracked in <a
+href="plans/pr131-review-adoption.html"><code>docs/plans/pr131-review-adoption.md</code></a>.</p>
+<p>Status terms:</p>
+<ul>
+<li><strong>Confirmed</strong> means the behavior was reproduced, or
+follows directly from the code, the spec text, or a CI log.</li>
+<li><strong>Decision</strong> means a contract must be chosen before
+there is one correct fix.</li>
+<li><strong>Verify</strong> means the evidence indicates a likely
+problem, or a claim, that still needs a focused experiment.</li>
+</ul>
+<h2 id="verdict">Verdict</h2>
+<p>The PR answers the thread well in substance. The names follow the
+Encoding Standard, the WHATWG views are now the generic views over
+<code>whatwg::decoder</code> and <code>whatwg::encoder</code>, the
+<code>std::text_encoding::id</code> bridge goes both ways, and the four
+wording defects Jonathan Wakely listed are fixed in the generated
+clauses. Two findings block a merge, one of them a CI failure. Two
+thread points are under-answered, and two benchmark claims the paper and
+README rest on need confirming and surfacing.</p>
+<h2 id="blocking">Blocking</h2>
+<h3 id="clang-regex-ci-failure">clang-regex-ci-failure</h3>
+<p><strong>Finding:</strong> Every clang CI job is red.
+<strong>Status:</strong> Confirmed.</p>
+<p>Commit <code>5965c43</code> ("tighten loose regexes") rewrote the
+<code>PASS_REGULAR_EXPRESSION</code> of 17 negative compile tests to
+GCC's phrasing,
+<code>required for the satisfaction of 'X&lt;T&gt;' ... [with T = ...]</code>.
+Clang reports the same failure as <code>'T' does not satisfy 'X'</code>
+and
+<code>candidate template ignored: constraints not satisfied [with T = ...]</code>.
+All twelve clang jobs (19 through 22, C++23 and C++26, Debug, Release
+and MaxSan) fail those 17 tests, and "Required CI" fails with them. GCC
+jobs pass. The regexes on <code>main</code> were compiler-neutral
+(<code>satisf.*forward_range</code>, <code>legacy_byte_range</code>),
+which is why the failure is new.</p>
+<p><code>PASS_REGULAR_EXPRESSION</code> takes a list and passes on any
+match, so the GCC regex can stay and a clang regex be appended. The
+patterns below were checked against the diagnostics in the clang 19
+C++23 Debug job log (job 123669031415); each matches its own test's
+output and nothing else in it.</p>
+<table>
+<thead>
+<tr>
+<th>test</th>
+<th>clang regex to append</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>flushable_encoder_reject_fail</code></td>
+<td><code>'wrong_flush_encoder' does not satisfy 'flushable_text_encoder'</code></td>
+</tr>
+<tr>
+<td><code>whatwg_decoder_decode_byte_reject_fail</code></td>
+<td><code>does not satisfy 'random_access_decode_codec'</code></td>
+</tr>
+<tr>
+<td><code>bom_aware_decoder_reject_fail</code></td>
+<td><code>'wrong_first_decoder' does not satisfy 'bom_aware_text_decoder'</code></td>
+</tr>
+<tr>
+<td><code>whatwg_decoder_decode_first_reject_fail</code></td>
+<td><code>does not satisfy 'strips_leading_bom'</code></td>
+</tr>
+<tr>
+<td><code>whatwg_decoder_flush_reject_fail</code></td>
+<td><code>no_decode_state&gt;' evaluated to false</code></td>
+</tr>
+<tr>
+<td><code>whatwg_encoder_encode_byte_reject_fail</code></td>
+<td><code>does not satisfy 'random_access_encode_codec'</code></td>
+</tr>
+<tr>
+<td><code>random_access_encode_view_reject_fail</code></td>
+<td><code>encode_view&lt;multibyte_encoder, .*does not satisfy 'random_access_range'</code></td>
+</tr>
+<tr>
+<td><code>whatwg_encoder_reject_fail</code></td>
+<td><code>class template 'encoder' \[with C = .*encoding::utf_16be\]</code></td>
+</tr>
+<tr>
+<td><code>whatwg_encoder_flush_reject_fail</code></td>
+<td><code>== encoding::iso_2022_jp' evaluated to false</code></td>
+</tr>
+<tr>
+<td><code>concepts_reject_unicode_chars_fail</code></td>
+<td><code>'std::vector&lt;char8_t&gt; &amp;' does not satisfy 'legacy_byte_range'</code></td>
+</tr>
+<tr>
+<td><code>whatwg_encode_reject_char_range_fail</code></td>
+<td><code>'std::vector&lt;char&gt;' does not satisfy 'unicode_scalar_range'</code></td>
+</tr>
+<tr>
+<td><code>utf16_decode_reject_char32_range_fail</code></td>
+<td><code>'std::vector&lt;char32_t&gt;' does not satisfy 'legacy_byte_range'</code></td>
+</tr>
+<tr>
+<td><code>transcode_decoder_as_encoder_fail</code></td>
+<td><code>whatwg::decoder&lt;.*encoding::gbk&gt;' does not satisfy 'text_encoder'</code></td>
+</tr>
+<tr>
+<td><code>sniff_reject_char32_range_fail</code></td>
+<td><code>'std::vector&lt;char32_t&gt; &amp;' does not satisfy 'legacy_byte_range'</code></td>
+</tr>
+<tr>
+<td><code>sniff_reject_input_range_fail</code></td>
+<td><code>single_pass_bytes &amp;' does not satisfy 'forward_range'</code></td>
+</tr>
+<tr>
+<td><code>decode_view_dangling_fail</code></td>
+<td><code>indirection requires pointer operand \('borrowed_iterator_t&lt;decode_view&lt;identity_codec, owning_view</code></td>
+</tr>
+<tr>
+<td><code>encode_view_reject</code></td>
+<td><code>'not_an_encode_codec' does not satisfy 'text_encoder'</code></td>
+</tr>
+</tbody>
+</table>
+<p>Clang prints an enumerator argument as <code>(encoding)36</code> in
+these notes, so the tests that take an enumerator cannot pin the
+argument on clang the way they do on GCC; on clang the concept name is
+what they check.</p>
+<h3 id="x-user-defined-encoder">x-user-defined-encoder</h3>
+<p><strong>Finding:</strong> The wording says the Encoding Standard
+defines no x-user-defined encoder; it does. <strong>Status:</strong>
+Confirmed.</p>
+<p><code>encoding.bs</code> has an "x-user-defined encoder" section: an
+ASCII code point is its own byte, U+F780 to U+F7FF map back to 0x80 to
+0xFF, and anything else is an error. The Standard's own note under
+"Encoders and decoders" says that only the replacement and UTF-16BE/LE
+encodings have no encoder. The library has never implemented this
+encoder, and on <code>main</code> that was a comment. This PR writes the
+claim into the proposed wording and the README:</p>
+<ul>
+<li><code>[transcode.whatwg.encode]</code> <em>Mandates</em>: "It
+defines none for <code>utf_16be</code>, <code>utf_16le</code>,
+<code>replacement</code> or <code>x_user_defined</code>."</li>
+<li><code>[transcode.whatwg.encoders]</code> <em>Remarks</em>: "for
+which the Encoding Standard defines no encoder".</li>
+<li><code>README.md</code>, the paragraph after the encode example.</li>
+</ul>
+<p>The encoder is about ten lines, is stateless, and every scalar value
+encodes to one byte or none, so
+<code>whatwg::encoder&lt;x_user_defined&gt;</code> can model
+<code>single_byte_text_encoder</code> and keep the random-access path.
+If it is left out on purpose, the wording has to say the library does
+not provide it, not that the Standard does not define it. This is the
+one place the PR contradicts the spec checkout.</p>
+<h2 id="spec-conformance">Spec conformance</h2>
+<p>Everything else was checked against the <code>encoding</code>
+checkout and matches.</p>
+<ul>
+<li><code>docs/whatwg/encodings.json</code> and all index files are
+byte-identical to the spec repository. The two spec commits after the
+one the paper's bibliography pins (<code>a985b62</code>) are editorial:
+"run these steps" is dropped from algorithm openings, and the
+<code>peek</code> loop is reindexed. The pin is still accurate.</li>
+<li><code>whatwg::get_encoding</code> is "get an encoding": strip
+leading and trailing ASCII whitespace, ASCII case-insensitive match
+against the label table. The generated <code>name_table</code> holds the
+Standard's names, which is what makes <code>to_text_encoding_id</code>
+land on <code>windows1252</code> rather than on an alias.</li>
+<li><code>whatwg::bom_sniff</code> is "BOM sniff": a non-consuming peek
+of up to three bytes, same table, same order. Requiring
+<code>forward_range</code> is how a range says "peek".</li>
+<li><code>whatwg::decoder&lt;replacement&gt;</code> matches the
+replacement decoder: one error for any non-empty input.</li>
+<li>The ISO-2022-JP encoder's "escape back to ASCII, then the
+replacement" matches the Standard's handler, which restores the code
+point, emits <code>1B 28 42</code>, and only then returns the error.
+Encoder-supplied replacement bytes are the right model for that.</li>
+<li>No encoder for replacement and UTF-16BE/LE: per spec.</li>
+<li><strong>Decision</strong>, one sentence owed in
+<code>[transcode.whatwg.decoders]</code>. The Standard says byte order
+mark handling is "not part of the encodings themselves" but of the
+wrapper algorithms (<code>decode</code>, <code>UTF-8 decode</code>, and
+<code>TextDecoder</code> with <code>ignoreBOM</code> false). The clause
+calls <code>whatwg::decoder&lt;C&gt;</code> "the decoder ... the
+Encoding Standard defines" and then gives it <code>decode_first</code>,
+which strips the mark. The behavior is unchanged and is what the Web
+Platform Tests expect; the remark should say the object is the decoder
+plus the BOM step of the Standard's decode wrapper, or SG16 will quote
+the note back.</li>
+<li>The error modes are replacement and report. The Standard's "html"
+encoder mode (<code>&amp;#NNNN;</code>) is not offered. Pre-existing and
+reasonable, but the paper now carries Jan Schultke's "inherit that mess"
+quote, so the question will come.</li>
+</ul>
+<h2 id="does-the-pr-answer-the-thread">Does the PR answer the
+thread?</h2>
+<table>
+<thead>
+<tr>
+<th>reviewer</th>
+<th>point</th>
+<th>state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wakely</td>
+<td>why a new enum and not <code>text_encoding::id</code></td>
+<td>Answered: "Why Not <code>text_encoding::id</code>?" and the two-way
+bridge, with the Shift_JIS <code>5C 7E</code> example.</td>
+</tr>
+<tr>
+<td>Wakely</td>
+<td>if an enum is a must, make a cast between the two sufficient</td>
+<td>Not addressed as asked. The bridge is functions, not aligned values.
+One sentence that the map is many-to-one (<code>ISOLatin1</code>,
+<code>ASCII</code> and <code>windows1252</code> all land on
+<code>windows_1252</code>) and that three encodings have no id closes
+it.</td>
+</tr>
+<tr>
+<td>Wakely</td>
+<td>why a novel label mechanism</td>
+<td>Answered implicitly by the <code>latin1</code> to windows-1252
+example. The Standard's note under "get an encoding" says outright that
+its matching is more restrictive than UTS #22, which is what
+<code>text_encoding</code>'s alias matching follows, and that this is
+for compatibility with deployed content. Quote it.</td>
+</tr>
+<tr>
+<td>Wakely</td>
+<td>is "codec" the right word; is it an enum or a class?</td>
+<td>Answered: <code>whatwg::encoding</code>,
+<code>whatwg::decoder</code> and <code>whatwg::encoder</code>,
+<code>text_decoder</code> and <code>text_encoder</code>. "codec" now
+only ever means the object that does the work. The stable names
+<code>[transcode.codec.*]</code> and the header
+<code>codec_concepts.hpp</code> keep the word; fine.</td>
+</tr>
+<tr>
+<td>Wakely</td>
+<td>"values unspecified" contradicts the wording</td>
+<td>Fixed in the paper prose.</td>
+</tr>
+<tr>
+<td>Wakely</td>
+<td>"Each enumerator names the encoding of the same name..." is
+rationale</td>
+<td>Rationale moved to prose. The remark is now "denotes the encoding
+that the WHATWG Encoding Standard names correspondingly", which is still
+specification by reference to a living document. ISO rules allow a
+normative reference only to a dated document, and
+<code>whatwg/encoding</code> publishes dated Review Drafts
+(<code>review-drafts/2025-06.bs</code>) for exactly this. The
+bibliography already pins a commit; cite the Review Draft too and say
+the enumerators are that draft's table.</td>
+</tr>
+<tr>
+<td>Wakely</td>
+<td>orphaned <em>Remarks</em> and <em>Constraints</em> after the
+synopsis</td>
+<td>Fixed: <code>transcode.syn.md</code> has no paragraphs. The
+follow-ups list notes 47 <code>wording-validate</code> findings where
+<code>whatwg::</code> and <code>detail::</code> leak into rendered
+wording. One of them is not a specgen problem: <code>flush</code>'s
+<em>Constraints</em> reads
+<code>same_as&lt;detail::decode_state_t&lt;C&gt;, detail::no_decode_state&gt;</code>
+and needs an exposition-only name such as
+<code>$has-decode-state$&lt;C&gt;</code> now.</td>
+</tr>
+<tr>
+<td>Freire</td>
+<td>closed enumeration, no user extension</td>
+<td>Answered: three layers, <code>text_decoder</code> and
+<code>text_encoder</code>, the ISO-8859-1 example compiled as a
+test.</td>
+</tr>
+<tr>
+<td>Freire</td>
+<td>heap-allocated results, no caller buffer</td>
+<td>Not called out. The views allocate nothing;
+<code>decode_into</code>, <code>encode_into</code> and
+<code>ranges::copy</code> into a <code>span</code> are the caller-buffer
+path. Say so where the point was raised. See also <a
+href="#bulk-helper-vs-ranges-to">bulk-helper-vs-ranges-to</a>
+below.</td>
+</tr>
+<tr>
+<td>Schultke</td>
+<td>algorithm, not view; "range in, code units out"</td>
+<td>Partly. <code>decode_to</code> and <code>encode_to</code> are that,
+and the dispatch cost is now measured. The complaint underneath is that
+a runtime <code>encoding</code> makes the user write a 39-case
+<code>switch</code>, and the paper still answers "use
+<code>std::visit</code> or <code>switch</code>".
+<code>whatwg/transcode_string.hpp</code> already has that switch. Expose
+it once, as a visitor over <code>whatwg::encoding</code> that calls
+<code>f(integral_constant&lt;encoding, E&gt;{})</code>, and the
+objection goes away in twenty lines.</td>
+</tr>
+<tr>
+<td>Schultke, Freire</td>
+<td>views versus a bulk API, performance</td>
+<td>The callgrind gate and the <code>-O3</code> preset fix are the right
+evidence. The wall-time tables in the commit messages flag Shift-JIS
+decode at +167% and +413% in intermediate commits; the PR body explains
+those as noise at <code>-O2</code> with the values discarded. Keep that
+explanation next to the numbers wherever they are published. See <a
+href="#naive-iconv-comparison">naive-iconv-comparison</a>.</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="benchmarks-claims-to-confirm-and-where-readers-find-them">Benchmarks:
+claims to confirm, and where readers find them</h2>
+<p>Two claims carry weight in the thread and are stated in the paper and
+README on numbers that predate this PR's benchmark changes. Both need
+re-running on the PR head, because <code>count_elements</code> now
+consumes its values and the <code>gcc-release</code> preset now really
+builds at <code>-O3</code>, so the published numbers and the new ones
+are not comparable.</p>
+<h3 id="bulk-helper-vs-ranges-to">bulk-helper-vs-ranges-to</h3>
+<p><strong>Finding:</strong> A bulk WHATWG helper adds nothing over
+<code>view | ranges::to</code>. <strong>Status:</strong> Verify.</p>
+<p>The paper says there is "no measurable difference in speed between a
+named <code>decode_to</code> and the equivalent
+<code>view | ranges::to</code> composition", and early benchmarks said
+the same. That is the answer to Freire's buffer point and half the
+answer to Schultke's "range in, code units out": the eager helper is a
+name, not a faster path, and an eager API with a caller-supplied buffer
+would be the same loop again. The claim is load-bearing and is asserted
+without a table. Measure <code>whatwg::decode_to&lt;C&gt;(r)</code> and
+<code>whatwg::encode_to&lt;C, string&gt;(r)</code> against
+<code>r | whatwg::decode&lt;C&gt; | ranges::to&lt;vector&lt;char32_t&gt;&gt;()</code>
+and
+<code>r | whatwg::encode&lt;C&gt; | ranges::to&lt;string&gt;()</code>,
+and <code>decode_into</code> and <code>encode_into</code> against
+<code>ranges::copy</code> into a pre-sized buffer, at <code>-O3</code>
+with values consumed, on the existing corpora. Put the table in the
+README's performance section under its own heading and cite it from the
+paper's "Bulk Operations" paragraph, with the preset and commit it was
+taken at.</p>
+<h3 id="naive-iconv-comparison">naive-iconv-comparison</h3>
+<p><strong>Finding:</strong> Every path in the library beats naive
+iconv. <strong>Status:</strong> Verify.</p>
+<p>"Naive iconv" means the code a search for "run iconv into a
+<code>std::string</code>" produces with no other constraints:
+<code>iconv_open</code>, a <code>std::string</code> sized to a guess, a
+loop of <code>iconv()</code> calls that grows the string and fixes up
+the output pointer on <code>E2BIG</code>, a final <code>resize</code> to
+the bytes written, and <code>iconv_close</code>. The paper's "Before:
+<code>iconv</code>" example in the comparison table is exactly that
+code.</p>
+<p>The benchmark does not measure it. The <code>Raw iconv()</code> rows
+in the README come from <code>raw_iconv_process</code> in
+<code>benchmark/iconv_benchmarks.bench.cpp</code>, which converts
+through an already-open handle into a static 4 KB buffer that it
+overwrites on every call, never grows, never copies, and never produces
+a container; it counts bytes and discards them. That is a floor for
+<code>iconv()</code> itself, not the program a user would write, and it
+is the row the README's "~4x" claims are measured against. The
+comparison the paper makes in prose (the "Before" code against the
+WHATWG pipe) has no row.</p>
+<p>Add the naive loop as a benchmark, as the paper's example is written:
+<code>std::string</code> sized to four times the input, doubled on
+<code>E2BIG</code>, trimmed at the end, with <code>iconv_open</code> and
+<code>iconv_close</code> inside the timed region, since the "Before"
+code opens a handle per call. Then re-run the <code>iconv</code>,
+<code>whatwg</code> and <code>pluggable</code> suites on the PR head,
+confirm that <code>iconv_transcode_to</code>, the streaming WHATWG pipe
+and <code>view | ranges::to</code> each beat it, and publish it so that
+it is found:</p>
+<ul>
+<li>one table in the paper, next to the "Before" and "After" examples it
+contrasts, with naive <code>iconv()</code>, the <code>iconv()</code>
+floor, <code>iconv_transcode_to</code>, the streaming WHATWG pipe and
+<code>std::codecvt</code> on the same corpus, so a reader who opens the
+paper for the motivation sees the numbers beside the code they
+describe;</li>
+<li>one sentence in the table's caption saying what "naive" is, so the
+comparison cannot be read as a straw man, and one saying that the
+<code>iconv()</code> floor row discards its output;</li>
+<li>the preset, compiler and commit for every row, since the published
+numbers were taken with <code>count_elements</code> discarding its
+values and the preset at <code>-O2</code>.</li>
+</ul>
+<p>If the naive loop turns out faster than
+<code>iconv_transcode_to</code> on some corpus, that is a finding about
+<code>iconv_transcode_to</code>'s staging, and it should be reported
+rather than left out of the table.</p>
+<h4 id="measured-confirmed">Measured (Confirmed)</h4>
+<p>The naive loop is now a benchmark, <code>naive_iconv_to_string</code>
+in <code>benchmark/iconv_benchmarks.bench.cpp</code>, and the
+<code>iconv</code>, <code>pluggable</code> and <code>utf</code> suites
+were run twice each on this branch at <code>b8e3602</code>.</p>
+<p>Setup: GCC 13.3.0, the <code>Perf</code> configuration
+(<code>-O3 -DNDEBUG -march=native -flto=auto</code>), glibc 2.39
+<code>iconv</code>, Intel Xeon 2.10 GHz, 4 cores, a cloud container.
+Corpora from <code>data/benchmarks/</code>:
+<code>en_mars_utf8.txt</code> 57,000 bytes,
+<code>ja_mars_shiftjis.bin</code> 30,129, <code>ja_mars_eucjp.bin</code>
+30,141, <code>genji_monogatari_shiftjis.bin</code> 2,343,969. Means in
+microseconds, one column per pass; Catch2's 95% bounds were within a few
+percent of the mean except where noted.</p>
+<table>
+<thead>
+<tr>
+<th>conversion, corpus</th>
+<th>row</th>
+<th style="text-align: right;">pass A</th>
+<th style="text-align: right;">pass B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UTF-8 to UTF-32, English 57 KB</td>
+<td><code>Raw iconv()</code>, 4 KB chunks, output discarded</td>
+<td style="text-align: right;">391</td>
+<td style="text-align: right;">398</td>
+</tr>
+<tr>
+<td></td>
+<td>naive iconv into <code>std::string</code>, sized 4x</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">95</td>
+</tr>
+<tr>
+<td></td>
+<td>naive iconv into <code>std::string</code>, sized 1x</td>
+<td style="text-align: right;">106</td>
+<td style="text-align: right;">114</td>
+</tr>
+<tr>
+<td></td>
+<td><code>iconv_transcode_to&lt;string&gt;</code></td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">91</td>
+</tr>
+<tr>
+<td></td>
+<td><code>iconv_transcode_into</code> (<code>back_inserter</code>)</td>
+<td style="text-align: right;">553</td>
+<td style="text-align: right;">633</td>
+</tr>
+<tr>
+<td></td>
+<td><code>iconv_transcode_view</code>, 4 KB staging</td>
+<td style="text-align: right;">920</td>
+<td style="text-align: right;">980</td>
+</tr>
+<tr>
+<td></td>
+<td><code>whatwg::decode&lt;utf_8&gt;</code>, counted, no output</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">38</td>
+</tr>
+<tr>
+<td>Shift-JIS to UTF-8, Japanese 30 KB</td>
+<td><code>Raw iconv()</code>, 4 KB chunks</td>
+<td style="text-align: right;">489</td>
+<td style="text-align: right;">685</td>
+</tr>
+<tr>
+<td></td>
+<td>naive iconv, sized 4x</td>
+<td style="text-align: right;">122</td>
+<td style="text-align: right;">134</td>
+</tr>
+<tr>
+<td></td>
+<td>naive iconv, sized 1x</td>
+<td style="text-align: right;">163</td>
+<td style="text-align: right;">163</td>
+</tr>
+<tr>
+<td></td>
+<td><code>iconv_transcode_to&lt;string&gt;</code></td>
+<td style="text-align: right;">128</td>
+<td style="text-align: right;">133</td>
+</tr>
+<tr>
+<td></td>
+<td><code>iconv_transcode_view</code></td>
+<td style="text-align: right;">579</td>
+<td style="text-align: right;">573</td>
+</tr>
+<tr>
+<td></td>
+<td><code>whatwg::transcode&lt;shift_jis, utf_8&gt;</code>, counted</td>
+<td style="text-align: right;">123</td>
+<td style="text-align: right;">176 (wide bounds)</td>
+</tr>
+<tr>
+<td>EUC-JP to Shift-JIS, Japanese 30 KB</td>
+<td>naive iconv, sized 4x</td>
+<td style="text-align: right;">278</td>
+<td style="text-align: right;">231</td>
+</tr>
+<tr>
+<td></td>
+<td><code>iconv_transcode_to&lt;string&gt;</code></td>
+<td style="text-align: right;">234</td>
+<td style="text-align: right;">195</td>
+</tr>
+<tr>
+<td></td>
+<td><code>whatwg::transcode&lt;euc_jp, shift_jis&gt;</code>,
+counted</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">86</td>
+</tr>
+<tr>
+<td>Shift-JIS to UTF-8, Genji 2.3 MB</td>
+<td>naive iconv, sized 4x</td>
+<td style="text-align: right;">11,953</td>
+<td style="text-align: right;">12,639</td>
+</tr>
+<tr>
+<td></td>
+<td><code>iconv_transcode_to&lt;string&gt;</code></td>
+<td style="text-align: right;">12,941</td>
+<td style="text-align: right;">12,176</td>
+</tr>
+<tr>
+<td></td>
+<td><code>iconv_transcode_view</code></td>
+<td style="text-align: right;">61,397</td>
+<td style="text-align: right;">61,294</td>
+</tr>
+<tr>
+<td></td>
+<td><code>whatwg::transcode&lt;shift_jis, utf_8&gt;</code>, counted</td>
+<td style="text-align: right;">9,063</td>
+<td style="text-align: right;">9,421</td>
+</tr>
+<tr>
+<td>EUC-JP to Shift-JIS, Genji 2.3 MB</td>
+<td><code>iconv_transcode_to&lt;string&gt;</code></td>
+<td style="text-align: right;">8,125</td>
+<td style="text-align: right;">7,114</td>
+</tr>
+<tr>
+<td></td>
+<td><code>whatwg::transcode&lt;euc_jp, shift_jis&gt;</code>,
+counted</td>
+<td style="text-align: right;">7,223</td>
+<td style="text-align: right;">7,057</td>
+</tr>
+</tbody>
+</table>
+<p>What this says:</p>
+<ol type="1">
+<li><strong>The README's <code>Raw iconv()</code> row is not a
+floor.</strong> glibc's <code>iconv()</code> called in 4 KB output
+chunks is four times slower than one call with a buffer that fits. The
+README's "iconv_transcode_to 83 µs against raw iconv 334 µs" and the
+"~4x" that follows from it measure the chunking in the baseline, not the
+library. The row should be renamed to say what it is
+(<code>iconv()</code> in 4 KB chunks) or dropped from the
+comparison.</li>
+<li><strong>Naive iconv and <code>iconv_transcode_to</code> are the same
+speed.</strong> Sized 4x they are within noise on every corpus, in both
+directions, and the naive loop wins on Genji in one pass. That is the
+expected result: both are one <code>iconv_open</code>, one or two
+<code>iconv()</code> calls into a buffer that fits, one trim.
+<code>iconv_transcode_to</code>'s value is that it closes the handle and
+never writes the loop, not speed, and the paper should say exactly that.
+Sized 1x, the naive loop pays 10% to 30% for its doublings and is still
+well under the chunked baseline.</li>
+<li><strong><code>iconv_transcode_view</code> and
+<code>iconv_transcode_into</code> lose to the naive loop by 4x to
+10x.</strong> The view stages through a 4 KB buffer and so repeats the
+chunking cost the raw row shows; <code>into</code> pays
+<code>back_inserter</code> per byte. Neither is the row to put next to
+the WHATWG pipe. The paper's "iconv adaptor" section should carry these
+numbers and recommend <code>iconv_transcode_to</code> for a whole
+buffer.</li>
+<li><strong>The WHATWG pipe beats naive iconv where the table lookup
+wins and ties it elsewhere.</strong> EUC-JP to Shift-JIS, which goes
+through the reverse index, is 2.5x to 3x faster than glibc on the 30 KB
+corpus and level on Genji. Shift-JIS to UTF-8 is level on 30 KB and 1.3x
+faster on Genji. UTF-8 to UTF-32 is 2.5x faster, but that row counts
+scalar values and the iconv rows write 228 KB of UTF-32LE, so it is not
+a fair pair; the <code>view | ranges::to</code> form from the README's
+own table is the row to use there, and it is not in the <code>utf</code>
+suite.</li>
+<li>So the claim to make is narrower than "everything beats naive
+iconv": the WHATWG pipe is never slower than the naive loop on these
+corpora and is faster by up to 3x on the legacy-to-legacy conversions;
+<code>iconv_transcode_to</code> matches it; the streaming iconv adaptor
+does not, and its row needs to say so.</li>
+</ol>
+<p>Not done here: a <code>view | ranges::to</code> row for UTF-8 to
+UTF-32 beside the iconv rows (<a
+href="#bulk-helper-vs-ranges-to">bulk-helper-vs-ranges-to</a> asks for
+the same measurement for a different reason), a second machine, and the
+Wikipedia corpora the download tool could not fetch through this
+container's proxy (<code>ar</code>, <code>ru</code>, <code>zh</code>,
+<code>ko</code> answered 429; <code>en</code>, <code>ja</code>,
+Gutenberg, Aozora and Wikisource worked once a User-Agent was set, which
+<code>tools/download_benchmark_corpora.py</code> does not send and
+should).</p>
+<p>The benchmark <code>README.md</code> under
+<code>docs/benchmarks/</code> should also say, once, that numbers from
+before this PR and after it are not comparable and why.</p>
+<h2 id="code-and-documentation">Code and documentation</h2>
+<ul>
+<li><strong>Confirmed</strong>: <code>README.md</code> footnote 5 now
+reads "P2728 selects its <code>whatwg::encoding</code> from the
+character type", a search-and-replace over-reach; it should still say
+"codec".</li>
+<li><strong>Confirmed</strong>: old names remain in
+<code>docs/benchmarks/README.md</code> (the
+<code>transcode&lt;codec::shift_jis, codec::utf_8&gt;</code> example
+near line 365), <code>docs/benchmarks/PLATFORM_NOTES.md</code>
+(<code>whatwg_decode&lt;utf_8&gt;</code>) and
+<code>docs/p2728-alignment.md</code> (<code>whatwg_error</code>,
+<code>transcode_error_kind</code>). <code>CLAUDE.md</code> is known and
+listed in the follow-ups.</li>
+<li><code>decode_result</code> carries a <code>whatwg::error</code>
+while the concepts are presented as generic and not WHATWG's. The paper
+owns this ("the protocol adopts WHATWG's error model"); it is the next
+question after the namespace one.</li>
+<li>The random-access decode and encode iterators compare by position
+only, while the forward iterators also compare codec state. Consistent
+with the single-byte codecs being stateless, which the
+<code>single_byte_text_encoder</code> remark requires.</li>
+<li>The PR carries the design response together with
+<code>metrics/fanout-runs.jsonl</code>, the <code>-O3</code> preset fix
+and the <code>count_elements</code> change. The last two change the
+benchmark baselines for everyone; the PR body says so, and the benchmark
+README should too.</li>
+</ul>
+<h2 id="what-was-run">What was run</h2>
+<ul>
+<li>GCC 13, Debug, <code>make test TOOLCHAIN=gcc-13</code> on
+<code>f225333</code>: 813 of 813 ctest pass (the C++26
+<code>text_encoding</code> targets and the module build are not built
+with GCC 13 at C++23). pytest: 370 pass, 1 skip, 1 fail. The failure is
+<code>test_tool_versions.py::test_pre_commit_matches_pyproject[ruff]</code>:
+the dependabot bump of ruff to 0.17.2 in <code>pyproject.toml</code>
+(<code>27c31b5</code>) left the pre-commit hook at v0.17.1. It is on
+<code>main</code> too, not this PR's change.</li>
+<li>Clang could not be run in the review container, which has clang 18
+with libstdc++ only; the project's <code>std::expected</code> probe
+rejects that pair. The clang findings come from the CI job logs.</li>
+<li>The <code>voice</code> lexical checker on
+<code>papers/transcode-view.md</code>, paper register: clean.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/review-findings-2026-10-30-pr131.md">docs/review-findings-2026-10-30-pr131.md</a> at a094bc8038bc.</footer>
+</body>
+</html>

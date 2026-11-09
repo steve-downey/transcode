@@ -1,5 +1,6 @@
 var dir_d28a4824dc47e487b107a5db32ef43c4 =
 [
+    [ "mime_reader", "dir_6016374f996e35baa87a63166e67ddce.html", "dir_6016374f996e35baa87a63166e67ddce" ],
     [ "custom_single_byte_decoder.cpp", "custom__single__byte__decoder_8cpp.html", "custom__single__byte__decoder_8cpp" ],
     [ "paper_bulk_conversion.cpp", "paper__bulk__conversion_8cpp.html", "paper__bulk__conversion_8cpp" ],
     [ "paper_custom_codec.cpp", "paper__custom__codec_8cpp.html", "paper__custom__codec_8cpp" ],

@@ -146,7 +146,9 @@ configure, build and test.</p>
 <p>From a clean prefix, both modes. Build a small consumer that includes
 <code>&lt;beman/transcode/transcode.hpp&gt;</code> and one that imports
 the module, against the <em>installed</em> package rather than the build
-tree. This is what D-12 was about and it has never been run.</p>
+tree. This is what <a
+href="../review-findings-2026-09-11.html#module-install-consumer-test">module-install-consumer-test</a>
+was about and it has never been run.</p>
 <h3 id="examples">Examples</h3>
 <p>Every file under <code>examples/</code> compiles and runs against the
 changed headers. The review did this with <code>g++-16</code> and it
@@ -186,16 +188,21 @@ test, not an artefact.</p>
 the original: each of the 30 findings, what was done, and the commit
 that did it. For anything deferred, say what and why, so the next review
 does not rediscover it as new.</p>
-<p>Findings expected to close as "documented, not fixed": S-03 (the
-U+FFFD reservation, referred to SG16), P-01 and P-02 (scoped as
-implementation-defined, with the split referred to SG16). Those are
-decisions, not omissions, and the closeout should read that way.</p>
+<p>Findings expected to close as "documented, not fixed": <a
+href="../review-findings-2026-09-11.html#fffd-error-sentinel">fffd-error-sentinel</a>
+(the U+FFFD reservation, referred to SG16), <a
+href="../review-findings-2026-09-11.html#optional-iconv-story">optional-iconv-story</a>
+and <a
+href="../review-findings-2026-09-11.html#posix-type-in-wording">posix-type-in-wording</a>
+(scoped as implementation-defined, with the split referred to SG16).
+Those are decisions, not omissions, and the closeout should read that
+way.</p>
 <h2 id="done-when">Done when</h2>
 <ul>
 <li>Every check above has been run and its result recorded.</li>
 <li>The closeout document exists and accounts for all 30 findings.</li>
 <li>Anything still open is named, with a reason.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step10-verification.md">docs/plans/p6-step10-verification.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step10-verification.md">docs/plans/p6-step10-verification.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

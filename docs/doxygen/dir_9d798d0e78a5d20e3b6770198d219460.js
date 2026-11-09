@@ -21,6 +21,7 @@ var dir_9d798d0e78a5d20e3b6770198d219460 =
     [ "utf8.hpp", "utf8_8hpp.html", null ],
     [ "utf8_encode.hpp", "utf8__encode_8hpp.html", null ],
     [ "whatwg_decode_select.hpp", "whatwg__decode__select_8hpp.html", null ],
+    [ "whatwg_dispatch.hpp", "whatwg__dispatch_8hpp.html", null ],
     [ "whatwg_encode_select.hpp", "whatwg__encode__select_8hpp.html", null ],
     [ "x_user_defined.hpp", "x__user__defined_8hpp.html", null ]
 ];

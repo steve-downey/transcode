@@ -1,6 +1,8 @@
 var namespacebeman_1_1transcoding_1_1whatwg =
 [
     [ "decoder", "classbeman_1_1transcoding_1_1whatwg_1_1decoder.html", "classbeman_1_1transcoding_1_1whatwg_1_1decoder" ],
+    [ "dynamic_decoder", "classbeman_1_1transcoding_1_1whatwg_1_1dynamic__decoder.html", "classbeman_1_1transcoding_1_1whatwg_1_1dynamic__decoder" ],
+    [ "dynamic_encoder", "classbeman_1_1transcoding_1_1whatwg_1_1dynamic__encoder.html", "classbeman_1_1transcoding_1_1whatwg_1_1dynamic__encoder" ],
     [ "encoder", "classbeman_1_1transcoding_1_1whatwg_1_1encoder.html", "classbeman_1_1transcoding_1_1whatwg_1_1encoder" ],
     [ "encoding", "namespacebeman_1_1transcoding_1_1whatwg.html#a49e2251f301ef9ecd2a4229279507ba5", [
       [ "utf_8", "namespacebeman_1_1transcoding_1_1whatwg.html#a49e2251f301ef9ecd2a4229279507ba5a2d58586ca53bf1248a6349d97f865bf3", null ],
@@ -55,6 +57,7 @@ var namespacebeman_1_1transcoding_1_1whatwg =
     [ "bom_sniff", "namespacebeman_1_1transcoding_1_1whatwg.html#a304fac24436817f056512460400c310e", null ],
     [ "get_encoding", "namespacebeman_1_1transcoding_1_1whatwg.html#adfcc16ee23070a85f60adef94d30bcf1", null ],
     [ "has_encoder", "namespacebeman_1_1transcoding_1_1whatwg.html#a026954b3ae033f10fa366ffe1f9e6b44", null ],
+    [ "make_dynamic_encoder", "namespacebeman_1_1transcoding_1_1whatwg.html#ae1ae051ea51791b10889c2b60c080af5", null ],
     [ "transcode_string", "namespacebeman_1_1transcoding_1_1whatwg.html#a2b55614e9b6abb2dd80239a862bcfac1", null ],
     [ "transcode_string", "namespacebeman_1_1transcoding_1_1whatwg.html#a8a1c08e92a835abd464904b2ab558ebe", null ],
     [ "decode", "namespacebeman_1_1transcoding_1_1whatwg.html#aa270afacd6186d8d65cbbb315710f84e", null ],

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['null_5fsentinel_0',['null_sentinel',['../namespacebeman_1_1transcoding.html#afd0d40bb9a9bf664c3f2573d5f941311',1,'beman::transcoding']]],
-  ['null_5fterm_1',['null_term',['../namespacebeman_1_1transcoding_1_1views.html#aaa8c7a22aa85348f2156d62b50097952',1,'beman::transcoding::views']]]
+  ['max_5fdepth_0',['max_depth',['../namespacemime__reader_1_1anonymous__namespace_02mime_8cpp_03.html#a534f9ec9206585e6c27c13afe6edc422',1,'mime_reader::anonymous_namespace{mime.cpp}']]],
+  ['message_1',['message',['../structmime__reader_1_1parse_1_1parse__error.html#ad8e11422ad2550c778e6c85d9bbddbb5',1,'mime_reader::parse::parse_error']]]
 ];

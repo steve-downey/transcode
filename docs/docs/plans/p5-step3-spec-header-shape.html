@@ -95,11 +95,12 @@ machinery) and the ~800-line <code>iterator::load()</code> codec state
 machines are implementation. <code>whatwg_encode_view.hpp</code> (1,323
 lines) has the same shape. Every one of those is a declaration specgen
 must be told to ignore, and every <code>detail::</code> qualifier they
-leave in a spec-visible signature is a leakage error (index D7).</li>
+leave in a spec-visible signature is a leakage error (<a
+href="../decisions.html#detail-in-wording">detail-in-wording</a>).</li>
 <li><strong>The umbrella declares nothing.</strong>
 <code>transcode.hpp</code> is includes only, so there is no document
-whose root fragment is the <code>&lt;transcode&gt;</code> synopsis
-(index D1).</li>
+whose root fragment is the <code>&lt;transcode&gt;</code> synopsis (<a
+href="../decisions.html#document-unit">document-unit</a>).</li>
 </ol>
 <h2 id="tasks">Tasks</h2>
 <p>Work header family by header family; each is its own commit and can
@@ -145,13 +146,15 @@ which, in the outline from Step 2; do not add the markup yet.</li>
 (architecture §3.4 — the region runs to a matching
 <code>/// END [transcode.syn]</code> fence) and the clause markers, with
 the family headers included beneath it. Decide here, and record, whether
-the entities themselves move into <code>transcode.hpp</code> (D1's
-preferred shape: one document, one synopsis) or stay in family headers
-with a gathered synopsis assembled per family (D1's fallback). Prefer
-the former; the measurement to make the call is how many lines the
-spec-facing surface is once (1) and (2) are done. Index U4 (a deduction
-guide corrupts a gathered <code>.syn</code> region) does not apply:
-<code>null_term_view</code>'s is the only deduction guide in the
+the entities themselves move into <code>transcode.hpp</code> (<a
+href="../decisions.html#document-unit">document-unit</a>'s preferred
+shape: one document, one synopsis) or stay in family headers with a
+gathered synopsis assembled per family (<a
+href="../decisions.html#document-unit">document-unit</a>'s fallback).
+Prefer the former; the measurement to make the call is how many lines
+the spec-facing surface is once (1) and (2) are done. specgen#22 (a
+deduction guide corrupts a gathered <code>.syn</code> region) does not
+apply: <code>null_term_view</code>'s is the only deduction guide in the
 library, and it is in the other header.</li>
 <li><strong>Keep the parse working.</strong> <code>transcode.hpp</code>
 must still parse standalone for specgen, which needs
@@ -183,18 +186,21 @@ sake, as its own step, and it is what makes task 4 viable.</p></li>
 <li><p><strong>Task 4, done 2026-09-07 — and not by merging.</strong>
 The measurement the deferral was waiting for came out at ~3,460 lines of
 declarations across sixteen headers once the pushdown landed, which
-specgen can handle. But the merge was never the point: what D1 needs is
-one <em>document</em> per proposed header, and "document" meant "file"
-only because the tool said so. specgen now follows the headers
+specgen can handle. But the merge was never the point: what <a
+href="../decisions.html#document-unit">document-unit</a> needs is one
+<em>document</em> per proposed header, and "document" meant "file" only
+because the tool said so. specgen now follows the headers
 <code>#include</code>d inside a gathered <code>.syn</code> region
 (specgen#77, PR #78), so <code>transcode.hpp</code> carries the region
 and the component headers stay exactly where they are. Nothing moved, no
 include site changed, and <code>[transcode.syn]</code> is a generated
 1,160-line synopsis of all sixteen.</p>
-<p>That is D7 for the second time: the answer to "the tool cannot see
-what the library writes" is to fix the tool, not the library. The first
-time cost six <code>\expos</code> comments instead of a refactor; this
-time it cost one upstream feature instead of a 3,500-line header.</p>
+<p>That is <a
+href="../decisions.html#detail-in-wording">detail-in-wording</a> for the
+second time: the answer to "the tool cannot see what the library writes"
+is to fix the tool, not the library. The first time cost six
+<code>\expos</code> comments instead of a refactor; this time it cost
+one upstream feature instead of a 3,500-line header.</p>
 <p>Running it on the real library is what found three defects the tool's
 own corpus could not: a late-instantiated member arriving as a top-level
 declaration (a private member's body in the synopsis), a function
@@ -215,7 +221,7 @@ exits 0.</li>
 <li><code>render --validate</code> on each spec-facing header reports
 <strong>no <code>detail</code> leakage findings</strong>. Coverage
 findings are expected and are Steps 4-9's work; <code>ranges</code>
-findings are index U1's known noise.</li>
+findings are specgen#3's known noise.</li>
 <li><code>docs/wording-outline.md</code> updated with the
 promoted/exposed/omitted decision for every entity.</li>
 </ul>
@@ -231,6 +237,6 @@ per codec: a codec whose <code>load()</code> is still inline costs one
 for its own sake, but it is not on the critical path for any single
 clause.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step3-spec-header-shape.md">docs/plans/p5-step3-spec-header-shape.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step3-spec-header-shape.md">docs/plans/p5-step3-spec-header-shape.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

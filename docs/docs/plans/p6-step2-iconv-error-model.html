@@ -46,9 +46,13 @@ to Step 8</a></li>
 <h1 id="p6-step-2-the-iconv-error-model">P6-Step 2: The iconv Error
 Model</h1>
 <p><strong>Branch:</strong> <code>p6-step2-iconv-error-model</code>
-<strong>Depends on:</strong> Step 0 <strong>Findings:</strong> C-02,
-C-03, C-05 <strong>Read first:</strong>
-<code>docs/plans/phase6-index.md</code></p>
+<strong>Depends on:</strong> Step 0 <strong>Findings:</strong> <a
+href="../review-findings-2026-09-11.html#iconv-small-buffer-loses-input">iconv-small-buffer-loses-input</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-flush-once">iconv-flush-once</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-error-conflation">iconv-error-conflation</a>
+<strong>Read first:</strong> <code>docs/plans/phase6-index.md</code></p>
 <hr />
 <h2 id="goal">Goal</h2>
 <p>Make every iconv failure either produce correct output or say what
@@ -58,16 +62,18 @@ went wrong. Today three of them do neither.</p>
 bytes came out" as "there are no more bytes," and that conflation is
 wrong in three different places.</p>
 <p><strong>A buffer too small for one output unit yields an empty range
-(C-02).</strong> <code>load()</code> at
-<code>iconv_transcode_view.hpp:242-243</code> breaks out on
-<code>E2BIG</code>, reaches line 303 with
+(<a
+href="../review-findings-2026-09-11.html#iconv-small-buffer-loses-input">iconv-small-buffer-loses-input</a>).</strong>
+<code>load()</code> at <code>iconv_transcode_view.hpp:242-243</code>
+breaks out on <code>E2BIG</code>, reaches line 303 with
 <code>output_pos_ == output_end_</code>, flushes, produces nothing, and
 sets <code>done_</code>. Converting UTF-8 <code>"A"</code> to UTF-32LE
 through a one-byte buffer gives an empty range and no error. A
 zero-length buffer does the same. The caller cannot tell that from a
 successful conversion of empty input.</p>
-<p><strong>The flush happens once and its result is discarded
-(C-03).</strong> <code>iconv_transcode_view.hpp:304-311</code> sets
+<p><strong>The flush happens once and its result is discarded (<a
+href="../review-findings-2026-09-11.html#iconv-flush-once">iconv-flush-once</a>).</strong>
+<code>iconv_transcode_view.hpp:304-311</code> sets
 <code>flushed_ = true</code> <em>before</em> calling
 <code>fns_.convert(handle_, nullptr, nullptr, ...)</code>, then ignores
 both the return value and <code>errno</code>. A stateful converter that
@@ -76,15 +82,16 @@ bytes truncated, and the <code>_or_error</code> variant
 (<code>iconv_transcode_or_error_view.hpp:296-307</code>) does not report
 it either.</p>
 <p><strong>One <code>iconv_open</code> failure has three different
-meanings (C-05).</strong> The streaming view constructs
-<code>done_(handle == (iconv_t)-1)</code> and looks empty;
-<code>iconv_transcode_to</code> returns an empty container
-(<code>iconv_bulk.hpp:90-91</code>); <code>iconv_transcode_into</code>
-returns the iterator unchanged (<code>:183-184</code>); and
-<code>iconv_transcode_to_or_error</code> reports
-<code>invalid_sequence</code> (<code>:254-255</code>), which is a lie
-about what happened. <code>error.hpp:67-71</code> has no enumerator that
-means "the descriptor would not open," though
+meanings (<a
+href="../review-findings-2026-09-11.html#iconv-error-conflation">iconv-error-conflation</a>).</strong>
+The streaming view constructs <code>done_(handle == (iconv_t)-1)</code>
+and looks empty; <code>iconv_transcode_to</code> returns an empty
+container (<code>iconv_bulk.hpp:90-91</code>);
+<code>iconv_transcode_into</code> returns the iterator unchanged
+(<code>:183-184</code>); and <code>iconv_transcode_to_or_error</code>
+reports <code>invalid_sequence</code> (<code>:254-255</code>), which is
+a lie about what happened. <code>error.hpp:67-71</code> has no
+enumerator that means "the descriptor would not open," though
 <code>papers/transcode-view.md:530</code> claims
 <code>iconv_error</code> covers it.</p>
 <p><strong>And any unexpected <code>errno</code> is misfiled.</strong>
@@ -193,6 +200,6 @@ Handling section, and claims at line 530 that the enum already covers a
 descriptor that would not open. Regenerating the wording will not touch
 either. Note the two new enumerators in the pull request so Step 8 picks
 them up.</p>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step2-iconv-error-model.md">docs/plans/p6-step2-iconv-error-model.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step2-iconv-error-model.md">docs/plans/p6-step2-iconv-error-model.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

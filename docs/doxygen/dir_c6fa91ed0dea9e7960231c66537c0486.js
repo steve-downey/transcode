@@ -4,6 +4,7 @@ var dir_c6fa91ed0dea9e7960231c66537c0486 =
     [ "bulk.hpp", "bulk_8hpp.html", null ],
     [ "decode_view.hpp", "whatwg_2decode__view_8hpp.html", "whatwg_2decode__view_8hpp" ],
     [ "decoder.hpp", "decoder_8hpp.html", "decoder_8hpp" ],
+    [ "dynamic_codec.hpp", "dynamic__codec_8hpp.html", "dynamic__codec_8hpp" ],
     [ "encode_view.hpp", "whatwg_2encode__view_8hpp.html", "whatwg_2encode__view_8hpp" ],
     [ "encoder.hpp", "encoder_8hpp.html", "encoder_8hpp" ],
     [ "encoding.hpp", "encoding_8hpp.html", "encoding_8hpp" ],

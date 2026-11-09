@@ -110,9 +110,11 @@ change</a></li>
 <h1 id="p6-step-3-one-lossy-policy--skip-do-not-replace">P6-Step 3: One
 Lossy Policy — Skip, Do Not Replace</h1>
 <p><strong>Branch:</strong> <code>p6-step3-iconv-lossy-skip</code>
-<strong>Depends on:</strong> Steps 0 and 2 <strong>Findings:</strong>
-C-04, S-02 <strong>Read first:</strong>
-<code>docs/plans/phase6-index.md</code>,
+<strong>Depends on:</strong> Steps 0 and 2 <strong>Findings:</strong> <a
+href="../review-findings-2026-09-11.html#iconv-lossy-replacement-corrupts">iconv-lossy-replacement-corrupts</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-lossy-recovery-policy">iconv-lossy-recovery-policy</a>
+<strong>Read first:</strong> <code>docs/plans/phase6-index.md</code>,
 <code>docs/plans/p6-step2-iconv-error-model.md</code></p>
 <hr />
 <h2 id="goal">Goal</h2>
@@ -145,10 +147,11 @@ skips one byte and continues) and the bulk helper not at all. So this is
 not a case where the implementation and the specification disagree about
 a decision -- it is a case where the specification is right and the code
 drifted.</p>
-<p>That also answers S-02. The reason a user cannot swap the eager
-helper for the lazy view without changing their output is this one
-difference; removing it removes the inconsistency rather than
-documenting it.</p>
+<p>That also answers <a
+href="../review-findings-2026-09-11.html#iconv-lossy-recovery-policy">iconv-lossy-recovery-policy</a>.
+The reason a user cannot swap the eager helper for the lazy view without
+changing their output is this one difference; removing it removes the
+inconsistency rather than documenting it.</p>
 <p>Encoding a replacement <em>through</em> the destination converter
 would also produce well-formed output, and it is what the review offers
 as the alternative. It loses on two counts: it makes every skip a second
@@ -185,8 +188,10 @@ even and that decoding it with
 through <code>iconv_transcode_to</code> and through
 <code>iconv_transcode(...)</code> collected with
 <code>ranges::to</code>, asserting byte-for-byte equality. This is the
-S-02 claim as a test rather than a paragraph, and it is the one that
-will catch the next drift.</li>
+<a
+href="../review-findings-2026-09-11.html#iconv-lossy-recovery-policy">iconv-lossy-recovery-policy</a>
+claim as a test rather than a paragraph, and it is the one that will
+catch the next drift.</li>
 <li><strong><code>iconv_transcode_into</code> matches
 <code>iconv_transcode_to</code></strong> for the same inputs.</li>
 <li>An incomplete multibyte tail (<code>EINVAL</code>) produces no
@@ -202,6 +207,6 @@ rather than quietly editing expectations.</p>
 input.</li>
 <li><code>make test</code> and <code>make lint</code> pass.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step3-iconv-lossy-skip.md">docs/plans/p6-step3-iconv-lossy-skip.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p6-step3-iconv-lossy-skip.md">docs/plans/p6-step3-iconv-lossy-skip.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

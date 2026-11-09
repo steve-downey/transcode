@@ -531,10 +531,10 @@ is no runtime name-to-codec registry by design — codec selection happens
 at compile time through the type system. Runtime transcode is similarly
 outside the model: you compose
 <code>decode(codec_a{}) | encode(codec_b{})</code> at compile time.</p>
-<p>⁵ <strong>P2728 selects its whatwg::encoding from the character
-type.</strong> Selection is determined by the character types
-(<code>char8_t</code>, <code>char16_t</code>, <code>char32_t</code>), so
-runtime label lookup and runtime transcode are outside its model.</p>
+<p>⁵ <strong>P2728 selects its codec from the character type.</strong>
+Selection is determined by the character types (<code>char8_t</code>,
+<code>char16_t</code>, <code>char32_t</code>), so runtime label lookup
+and runtime transcode are outside its model.</p>
 <p>⁶ <strong>BOM sniffing is a property of the byte stream.</strong>
 <code>whatwg::bom_sniff()</code> examines the first bytes of a stream to
 detect UTF-8, UTF-16BE or UTF-16LE BOMs and returns the appropriate
@@ -1236,6 +1236,6 @@ class="sourceCode c++"><code class="sourceCode cpp"><span id="cb20-1"><a href="#
 spell the include target another way (e.g.
 <code>#include &lt;transcode.hpp&gt;</code>) is unsupported.</p>
 </div>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/README.md">README.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/README.md">README.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

@@ -149,20 +149,25 @@ single-pass caller loses two bytes, not three.</li>
 <code>iconv_transcode_view.hpp:252</code> are commented
 <code>EILSEQ</code> and <code>EINVAL</code> but are reached for
 <strong>any</strong> unexpected <code>errno</code>. The
-misclassification the review mentions under C-05 is in the streaming
-view as well as the bulk helpers.</li>
+misclassification the review mentions under <a
+href="../review-findings-2026-09-11.html#iconv-error-conflation">iconv-error-conflation</a>
+is in the streaming view as well as the bulk helpers.</li>
 </ul></li>
 <li><strong>The iconv adaptors are inside the proposed
 synopsis.</strong> <code>transcode.hpp:49-52</code> includes all four
 iconv headers between the <code>\rSec2[transcode.syn]</code> marker and
 the <code>/// END</code> fence, so <code>iconv_t</code>
 (<code>iconv_transcode_view.hpp:39</code>) is a declaration of the
-proposed <code>&lt;transcode&gt;</code>. P-01 and P-02 are therefore one
-finding with two faces, and neither can be answered without deciding the
-other.</li>
+proposed <code>&lt;transcode&gt;</code>. <a
+href="../review-findings-2026-09-11.html#optional-iconv-story">optional-iconv-story</a>
+and <a
+href="../review-findings-2026-09-11.html#posix-type-in-wording">posix-type-in-wording</a>
+are therefore one finding with two faces, and neither can be answered
+without deciding the other.</li>
 <li><strong><code>make lint-manual</code> already exists</strong>
-(<code>Makefile:281</code>). D-11 is a one-word fix in the workflow, not
-a new target.</li>
+(<code>Makefile:281</code>). <a
+href="../review-findings-2026-09-11.html#manual-lint-duplicate">manual-lint-duplicate</a>
+is a one-word fix in the workflow, not a new target.</li>
 <li><strong><code>specgen</code> is not installed on this
 machine.</strong> <code>~/.local/bin/specgen</code> is absent and
 <code>~/src/specgen/</code> is empty. Building it links LLVM's Clang
@@ -170,13 +175,16 @@ front end. See "The wording gate" below: this phase revises the check
 that would otherwise make that build a prerequisite for eight
 steps.</li>
 <li><strong>711 C++ tests register</strong> under <code>ctest -N</code>.
-<code>docs/plans/handoff-next.md</code> says 707, which is the drift
-D-10 is about.</li>
+<code>docs/plans/handoff-next.md</code> says 707, which is the drift <a
+href="../review-findings-2026-09-11.html#stale-handoff-guide">stale-handoff-guide</a>
+is about.</li>
 <li><strong>One finding the review did not have.</strong>
 <code>pre-commit run gitleaks</code> fails on every file, modified or
 not: the pinned hook calls a <code>gitleaks git</code> subcommand the
 resolved binary does not have. <code>make lint</code> therefore has a
-permanently red hook. It is D-14, and it belongs to Step 9.</li>
+permanently red hook. It is <a
+href="p6-step9-docs-build-ci.html#gitleaks-hook">gitleaks-hook</a>, and
+it belongs to Step 9.</li>
 <li><strong>The four sibling worktrees are stale.</strong>
 <code>add-clang-tidy</code>,
 <code>codex/gb18030-e5e5-conformance</code>,
@@ -198,7 +206,10 @@ has to re-open them at the keyboard.</p>
 </thead>
 <tbody>
 <tr>
-<td>P-01, P-02</td>
+<td><a
+href="../review-findings-2026-09-11.html#optional-iconv-story">optional-iconv-story</a>,
+<a
+href="../review-findings-2026-09-11.html#posix-type-in-wording">posix-type-in-wording</a></td>
 <td><strong>Document as implementation-defined.</strong>
 <code>iconv_functions</code> and its handle type get wording saying they
 are implementation-defined and that <code>[transcode.iconv]</code> is
@@ -208,7 +219,12 @@ requires iconv, and the paper's existing question to SG16 about
 splitting the adaptor is sharpened into an explicit ask.</td>
 </tr>
 <tr>
-<td>C-02, C-03, C-05</td>
+<td><a
+href="../review-findings-2026-09-11.html#iconv-small-buffer-loses-input">iconv-small-buffer-loses-input</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-flush-once">iconv-flush-once</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-error-conflation">iconv-error-conflation</a></td>
 <td><strong>Extend <code>iconv_error</code> and fix the loops.</strong>
 New enumerators for open and system failures, a flush that resumes
 instead of being abandoned, unexpected <code>errno</code> classified
@@ -216,26 +232,32 @@ rather than folded into the skip path, and a documented minimum buffer
 size. The API shapes do not change.</td>
 </tr>
 <tr>
-<td>C-04, S-02</td>
+<td><a
+href="../review-findings-2026-09-11.html#iconv-lossy-replacement-corrupts">iconv-lossy-replacement-corrupts</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-lossy-recovery-policy">iconv-lossy-recovery-policy</a></td>
 <td><strong>Skip, do not replace.</strong> The bulk helpers stop writing
 a raw <code>0x3F</code> and skip, which is what the streaming view does
 and what the committed wording already says. One recovery policy across
 the iconv family.</td>
 </tr>
 <tr>
-<td>C-01</td>
+<td><a
+href="../review-findings-2026-09-11.html#sniff-consumes-single-pass">sniff-consumes-single-pass</a></td>
 <td><strong>Require <code>forward_range</code>.</strong> The docblock's
 promise that the mark is not consumed becomes true, rather than being
 rewritten to admit that it is.</td>
 </tr>
 <tr>
-<td>C-06</td>
+<td><a
+href="../review-findings-2026-09-11.html#null-term-reachable-terminator">null-term-reachable-terminator</a></td>
 <td><strong>Specify the precondition and value-initialize.</strong> A
 reachable terminator and a lifetime requirement become
 <code>\expects</code>; <code>ptr_</code> stops being indeterminate.</td>
 </tr>
 <tr>
-<td>C-07</td>
+<td><a
+href="../review-findings-2026-09-11.html#empty-output-as-unsupported-target">empty-output-as-unsupported-target</a></td>
 <td><strong>Return <code>optional</code>.</strong> The
 <code>codec</code> overload of <code>transcode_string</code> returns
 <code>optional&lt;string&gt;</code> and rejects an encoder-less target
@@ -243,33 +265,43 @@ before decoding, so it agrees with the label overload and empty output
 means empty output.</td>
 </tr>
 <tr>
-<td>S-01</td>
+<td><a
+href="../review-findings-2026-09-11.html#invalid-char32-contract">invalid-char32-contract</a></td>
 <td><strong>Drop the precondition; specify UTF-32 input
 validation.</strong> A <code>char32_t</code> that is not a Unicode
 scalar value yields U+FFFD in replacement mode and the corresponding
 error in <code>expected</code> mode, and the validation happens once,
-above codec dispatch. See "S-01, resolved" below; this reverses the
-provisional decision.</td>
+above codec dispatch. See "<a
+href="../review-findings-2026-09-11.html#invalid-char32-contract">invalid-char32-contract</a>,
+resolved" below; this reverses the provisional decision.</td>
 </tr>
 <tr>
-<td>C-08 (new)</td>
+<td><a
+href="p6-step6-utf32-validation.html#utf32-validation-not-uniform">utf32-validation-not-uniform</a>
+(new)</td>
 <td><strong>Validate above dispatch.</strong> The surrogate and
 out-of-range checks exist only for UTF-8; the other thirty-nine codecs
 misreport the same input as <code>unmapped_codepoint</code>. Fixed by
-the same change as S-01.</td>
+the same change as <a
+href="../review-findings-2026-09-11.html#invalid-char32-contract">invalid-char32-contract</a>.</td>
 </tr>
 <tr>
-<td>S-03</td>
+<td><a
+href="../review-findings-2026-09-11.html#fffd-error-sentinel">fffd-error-sentinel</a></td>
 <td><strong>Document the reservation.</strong> U+FFFD is reserved as the
 unmapped-byte signal, the extensibility cost is stated, and the question
 of a better signal goes to SG16 rather than being answered here.</td>
 </tr>
 </tbody>
 </table>
-<p>C-07 is source-breaking: it changes a return type. That is cheap now
-and expensive after LEWG review, which is the argument for doing it in
-this phase rather than the next.</p>
-<h3 id="s-01-resolved">S-01, resolved</h3>
+<p><a
+href="../review-findings-2026-09-11.html#empty-output-as-unsupported-target">empty-output-as-unsupported-target</a>
+is source-breaking: it changes a return type. That is cheap now and
+expensive after LEWG review, which is the argument for doing it in this
+phase rather than the next.</p>
+<h3 id="invalid-char32-contract-resolved"><a
+href="../review-findings-2026-09-11.html#invalid-char32-contract">invalid-char32-contract</a>,
+resolved</h3>
 <p>The first decision here was "keep the precondition, drop the
 promises." It was wrong, and the way it was wrong is worth recording,
 because the same mistake is easy to make again.</p>
@@ -306,8 +338,10 @@ P2728's model too, attributed there to the UTF-32 decode step, since
 specifies only the second.</p>
 <p>Two things fell out of settling it:</p>
 <ul>
-<li><strong>C-08.</strong> The surrogate and out-of-range checks live
-inside the <code>if constexpr (C == codec::utf_8)</code> branch of
+<li><strong><a
+href="p6-step6-utf32-validation.html#utf32-validation-not-uniform">utf32-validation-not-uniform</a>.</strong>
+The surrogate and out-of-range checks live inside the
+<code>if constexpr (C == codec::utf_8)</code> branch of
 <code>whatwg_encode_view::load()</code>. Every other codec reaches
 <code>emit_error(whatwg_error::unmapped_codepoint, {'?'})</code> instead
 (<code>whatwg_encode_view.hpp:499</code>, <code>:524</code>,
@@ -315,9 +349,12 @@ inside the <code>if constexpr (C == codec::utf_8)</code> branch of
 <code>:568</code>), so U+D800 through <code>windows_1252</code> is
 reported as "the encoding has no representation for the Unicode scalar
 value being encoded" -- which is wrong twice over. A defect under either
-answer to S-01.</li>
-<li><strong>D-15.</strong> <code>error.hpp:79</code> and
-<code>:86-89</code>, <code>encode_view.hpp:229</code> and
+answer to <a
+href="../review-findings-2026-09-11.html#invalid-char32-contract">invalid-char32-contract</a>.</li>
+<li><strong><a
+href="p6-step6-utf32-validation.html#encode-error-question-mark-claim">encode-error-question-mark-claim</a>.</strong>
+<code>error.hpp:79</code> and <code>:86-89</code>,
+<code>encode_view.hpp:229</code> and
 <code>papers/transcode-view.md:371</code> all say an encode failure
 yields <code>'?'</code>. <code>whatwg_encode&lt;codec::utf_8&gt;</code>
 emits <code>EF BF BD</code>.</li>
@@ -389,55 +426,106 @@ merge blocker for a tree that is knowingly mid-phase.</p>
 <tr>
 <td>9</td>
 <td><code>p6-step9-docs-build-ci</code></td>
-<td>D-05 – D-14</td>
+<td><a
+href="../review-findings-2026-09-11.html#build-instructions-framework-and-standard">build-instructions-framework-and-standard</a>,
+<a
+href="../review-findings-2026-09-11.html#compiler-support-vs-cmake">compiler-support-vs-cmake</a>,
+<a
+href="../review-findings-2026-09-11.html#table-codec-documented-as-public">table-codec-documented-as-public</a>,
+<a
+href="../review-findings-2026-09-11.html#icu-iconv-claim">icu-iconv-claim</a>,
+<a
+href="../review-findings-2026-09-11.html#root-file-named-dash">root-file-named-dash</a>,
+<a
+href="../review-findings-2026-09-11.html#stale-handoff-guide">stale-handoff-guide</a>,
+<a
+href="../review-findings-2026-09-11.html#manual-lint-duplicate">manual-lint-duplicate</a>,
+<a
+href="../review-findings-2026-09-11.html#module-install-consumer-test">module-install-consumer-test</a>,
+<a
+href="../review-findings-2026-09-11.html#telemetry-shebang">telemetry-shebang</a>
+and <a
+href="p6-step9-docs-build-ci.html#gitleaks-hook">gitleaks-hook</a></td>
 <td>—</td>
 </tr>
 <tr>
 <td>1</td>
 <td><code>p6-step1-sniff-forward-range</code></td>
-<td>C-01</td>
+<td><a
+href="../review-findings-2026-09-11.html#sniff-consumes-single-pass">sniff-consumes-single-pass</a></td>
 <td>Step 0</td>
 </tr>
 <tr>
 <td>2</td>
 <td><code>p6-step2-iconv-error-model</code></td>
-<td>C-02, C-03, C-05</td>
+<td><a
+href="../review-findings-2026-09-11.html#iconv-small-buffer-loses-input">iconv-small-buffer-loses-input</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-flush-once">iconv-flush-once</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-error-conflation">iconv-error-conflation</a></td>
 <td>Step 0</td>
 </tr>
 <tr>
 <td>3</td>
 <td><code>p6-step3-iconv-lossy-skip</code></td>
-<td>C-04, S-02</td>
+<td><a
+href="../review-findings-2026-09-11.html#iconv-lossy-replacement-corrupts">iconv-lossy-replacement-corrupts</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-lossy-recovery-policy">iconv-lossy-recovery-policy</a></td>
 <td>Steps 0, 2</td>
 </tr>
 <tr>
 <td>4</td>
 <td><code>p6-step4-null-term-precondition</code></td>
-<td>C-06</td>
+<td><a
+href="../review-findings-2026-09-11.html#null-term-reachable-terminator">null-term-reachable-terminator</a></td>
 <td>Step 0</td>
 </tr>
 <tr>
 <td>5</td>
 <td><code>p6-step5-transcode-string-result</code></td>
-<td>C-07</td>
+<td><a
+href="../review-findings-2026-09-11.html#empty-output-as-unsupported-target">empty-output-as-unsupported-target</a></td>
 <td>Step 0</td>
 </tr>
 <tr>
 <td>6</td>
 <td><code>p6-step6-utf32-validation</code></td>
-<td>S-01, C-08, D-15</td>
+<td><a
+href="../review-findings-2026-09-11.html#invalid-char32-contract">invalid-char32-contract</a>,
+<a
+href="p6-step6-utf32-validation.html#utf32-validation-not-uniform">utf32-validation-not-uniform</a>,
+<a
+href="p6-step6-utf32-validation.html#encode-error-question-mark-claim">encode-error-question-mark-claim</a></td>
 <td>Step 0</td>
 </tr>
 <tr>
 <td>7</td>
 <td><code>p6-step7-fffd-reservation</code></td>
-<td>S-03</td>
+<td><a
+href="../review-findings-2026-09-11.html#fffd-error-sentinel">fffd-error-sentinel</a></td>
 <td>Step 0</td>
 </tr>
 <tr>
 <td>8</td>
 <td><code>p6-step8-paper-and-wording</code></td>
-<td>P-01, P-02, S-04, S-05, D-01 – D-04</td>
+<td><a
+href="../review-findings-2026-09-11.html#optional-iconv-story">optional-iconv-story</a>,
+<a
+href="../review-findings-2026-09-11.html#posix-type-in-wording">posix-type-in-wording</a>,
+<a
+href="../review-findings-2026-09-11.html#synopsis-free-standing-prose">synopsis-free-standing-prose</a>,
+<a
+href="../review-findings-2026-09-11.html#unsubstantiated-claims">unsubstantiated-claims</a>,
+<a
+href="../review-findings-2026-09-11.html#duplicate-author-email">duplicate-author-email</a>,
+<a
+href="../review-findings-2026-09-11.html#feature-test-macro-placeholders">feature-test-macro-placeholders</a>,
+<a
+href="../review-findings-2026-09-11.html#utf32-bom-sniffing-claim">utf32-bom-sniffing-claim</a>
+and <a
+href="../review-findings-2026-09-11.html#revision-drift">revision-drift</a></td>
 <td>Steps 1–7</td>
 </tr>
 <tr>
@@ -487,8 +575,17 @@ every step.</p>
 configurations and both module settings, install-and-consume from a
 clean prefix, the examples run against the changed headers,
 <code>make wording-validate</code> findings read rather than counted,
-<code>codespell</code>, and the C-01 through C-05 regressions run
-against glibc iconv <strong>and at least one other
+<code>codespell</code>, and the <a
+href="../review-findings-2026-09-11.html#sniff-consumes-single-pass">sniff-consumes-single-pass</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-small-buffer-loses-input">iconv-small-buffer-loses-input</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-flush-once">iconv-flush-once</a>,
+<a
+href="../review-findings-2026-09-11.html#iconv-lossy-replacement-corrupts">iconv-lossy-replacement-corrupts</a>
+and <a
+href="../review-findings-2026-09-11.html#iconv-error-conflation">iconv-error-conflation</a>
+regressions run against glibc iconv <strong>and at least one other
 implementation</strong>.</p>
 <h2 id="risks">Risks</h2>
 <ul>
@@ -509,6 +606,6 @@ above codec dispatch changes which error
 codec but UTF-8. That is the fix, but it is a behavioural diff and wants
 the coverage to match.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase6-index.md">docs/plans/phase6-index.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase6-index.md">docs/plans/phase6-index.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

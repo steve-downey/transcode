@@ -7,5 +7,7 @@ var searchData=
   ['todo_2ehpp_4',['todo.hpp',['../todo_8hpp.html',1,'']]],
   ['transcode_2ehpp_5',['transcode.hpp',['../transcode_8hpp.html',1,'']]],
   ['transcode_5fstring_2ehpp_6',['transcode_string.hpp',['../transcode__string_8hpp.html',1,'']]],
-  ['transcode_5fview_2ehpp_7',['transcode_view.hpp',['../transcode__view_8hpp.html',1,'(Global Namespace)'],['../whatwg_2transcode__view_8hpp.html',1,'(Global Namespace)']]]
+  ['transcode_5fview_2ehpp_7',['transcode_view.hpp',['../transcode__view_8hpp.html',1,'(Global Namespace)'],['../whatwg_2transcode__view_8hpp.html',1,'(Global Namespace)']]],
+  ['transfer_2ecpp_8',['transfer.cpp',['../transfer_8cpp.html',1,'']]],
+  ['transfer_2ehpp_9',['transfer.hpp',['../transfer_8hpp.html',1,'']]]
 ];

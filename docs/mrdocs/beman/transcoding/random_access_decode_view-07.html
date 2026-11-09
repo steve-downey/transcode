@@ -436,7 +436,8 @@ window.MathJax = {
 <h2>Synopsis</h2>
 <p>Declared in <code>&lt;<a href="https://github.com/steve-downey/transcode/blob/main/include/beman/transcode/decode_view.hpp#L31">beman/transcode/decode_view.hpp</a>&gt;</code></p>
 <pre><code class="source-code cpp">class random_access_decode_view
-    : public std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;</code></pre>
+    : public std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;
+    , public std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;</code></pre>
 </div><!-- /synopsis -->
 <div class="base-classes">
 <h2>Base Classes</h2>
@@ -445,6 +446,7 @@ window.MathJax = {
 <tr><th>Name</th><th>Description</th></tr>
 </thead>
 <tbody>
+<tr><td><code>std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;</code></td><td></td></tr>
 <tr><td><code>std::ranges::view_interface&lt;random_access_decode_view&lt;Codec, R, E&gt;&gt;</code></td><td></td></tr>
 </tbody>
 </table>

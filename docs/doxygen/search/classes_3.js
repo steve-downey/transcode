@@ -1,10 +1,9 @@
 var searchData=
 [
-  ['iconv_5ffunctions_0',['iconv_functions',['../structbeman_1_1transcoding_1_1iconv__functions.html',1,'beman::transcoding']]],
-  ['iconv_5ftranscode_5fclosure_1',['iconv_transcode_closure',['../structbeman_1_1transcoding_1_1iconv__transcode__closure.html',1,'beman::transcoding']]],
-  ['iconv_5ftranscode_5for_5ferror_5fclosure_2',['iconv_transcode_or_error_closure',['../structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html',1,'beman::transcoding']]],
-  ['iconv_5ftranscode_5for_5ferror_5fview_3',['iconv_transcode_or_error_view',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view.html',1,'beman::transcoding']]],
-  ['iconv_5ftranscode_5fview_4',['iconv_transcode_view',['../classbeman_1_1transcoding_1_1iconv__transcode__view.html',1,'beman::transcoding']]],
-  ['iso_5f8859_5f1_5',['iso_8859_1',['../structanonymous__namespace_02paper__custom__codec_8cpp_03_1_1iso__8859__1.html',1,'anonymous_namespace{paper_custom_codec.cpp}']]],
-  ['iterator_6',['iterator',['../classbeman_1_1transcoding_1_1decode__view_1_1iterator.html',1,'beman::transcoding::decode_view&lt; Codec, R, E &gt;::iterator'],['../classbeman_1_1transcoding_1_1encode__view_1_1iterator.html',1,'beman::transcoding::encode_view&lt; Codec, R, E &gt;::iterator'],['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html',1,'beman::transcoding::iconv_transcode_or_error_view&lt; IconvFns, R &gt;::iterator'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html',1,'beman::transcoding::iconv_transcode_view&lt; IconvFns, R &gt;::iterator'],['../classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html',1,'beman::transcoding::random_access_decode_view&lt; Codec, R, E &gt;::iterator'],['../classbeman_1_1transcoding_1_1random__access__encode__view_1_1iterator.html',1,'beman::transcoding::random_access_encode_view&lt; Codec, R, E &gt;::iterator'],['../classbeman_1_1transcoding_1_1single__byte__decode__view_1_1iterator.html',1,'beman::transcoding::single_byte_decode_view&lt; C, R &gt;::iterator'],['../classbeman_1_1transcoding_1_1single__byte__encode__view_1_1iterator.html',1,'beman::transcoding::single_byte_encode_view&lt; C, R &gt;::iterator']]]
+  ['encode_5fclosure_0',['encode_closure',['../structbeman_1_1transcoding_1_1encode__closure.html',1,'beman::transcoding']]],
+  ['encode_5fresult_1',['encode_result',['../structbeman_1_1transcoding_1_1encode__result.html',1,'beman::transcoding']]],
+  ['encode_5fview_2',['encode_view',['../classbeman_1_1transcoding_1_1encode__view.html',1,'beman::transcoding']]],
+  ['encoder_3',['encoder',['../classbeman_1_1transcoding_1_1whatwg_1_1encoder.html',1,'beman::transcoding::whatwg']]],
+  ['entity_4',['entity',['../structanonymous__namespace_02main_8cpp_03_1_1entity.html',1,'anonymous_namespace{main.cpp}::entity'],['../structmime__reader_1_1entity.html',1,'mime_reader::entity']]],
+  ['entity_5fsyntax_5',['entity_syntax',['../structmime__reader_1_1entity__syntax.html',1,'mime_reader']]]
 ];

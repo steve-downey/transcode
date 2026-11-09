@@ -32,6 +32,7 @@ var NAVTREE =
         [ "All", "namespacemembers.html", null ],
         [ "Functions", "namespacemembers_func.html", null ],
         [ "Variables", "namespacemembers_vars.html", null ],
+        [ "Typedefs", "namespacemembers_type.html", null ],
         [ "Enumerations", "namespacemembers_enum.html", null ]
       ] ]
     ] ],
@@ -42,9 +43,10 @@ var NAVTREE =
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
       [ "Class Members", "functions.html", [
         [ "All", "functions.html", "functions_dup" ],
-        [ "Functions", "functions_func.html", null ],
+        [ "Functions", "functions_func.html", "functions_func" ],
         [ "Variables", "functions_vars.html", null ],
         [ "Typedefs", "functions_type.html", null ],
+        [ "Enumerations", "functions_enum.html", null ],
         [ "Related Symbols", "functions_rela.html", null ]
       ] ]
     ] ],
@@ -62,10 +64,12 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#aea0774973f55c193319c9f1814e1cf84",
-"classbeman_1_1transcoding_1_1random__access__encode__view_1_1iterator.html#ade85f2f1a3e22364c26d0b35c03b5481",
-"index.html#mainpage",
-"structbeman_1_1transcoding_1_1encode__result.html"
+"classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#ae8ddcc530097423b3a275e1c714ee598",
+"classbeman_1_1transcoding_1_1random__access__encode__view_1_1iterator.html#ace78bc38aedbbf127dcc5ccaaef8fe49",
+"classmime__reader_1_1parse_1_1cursor.html#a7de4a1d7def2285434b5622d992cddb8",
+"macintosh_8hpp.html",
+"paper__error__visibility_8cpp.html#a5f7312a76e8cb677242446ebfba92c46",
+"structmime__reader_1_1header__field.html#ab0f65bf42d8ff696a0dba65d571014cd"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

@@ -97,6 +97,8 @@ $(function(){initNavTree('namespacebeman_1_1transcoding_1_1whatwg.html','',''); 
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:decoder" id="r_decoder"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1decoder.html">decoder</a></td></tr>
+<tr class="memitem:dynamic_5Fdecoder" id="r_dynamic_5Fdecoder"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1dynamic__decoder.html">dynamic_decoder</a></td></tr>
+<tr class="memitem:dynamic_5Fencoder" id="r_dynamic_5Fencoder"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1dynamic__encoder.html">dynamic_encoder</a></td></tr>
 <tr class="memitem:encoder" id="r_encoder"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1encoder.html">encoder</a></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
@@ -169,6 +171,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a304fac24436817f056512460400c310e" id="r_a304fac24436817f056512460400c310e"><td class="memTemplParams" colspan="2">template&lt;legacy_byte_range R&gt; <br />
 requires std::ranges::forward_range&lt;R&gt;</td></tr>
 <tr class="memitem:a304fac24436817f056512460400c310e template"><td class="memItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a304fac24436817f056512460400c310e">bom_sniff</a> (R &amp;&amp;r) noexcept</td></tr>
+<tr class="memitem:ae1ae051ea51791b10889c2b60c080af5" id="r_ae1ae051ea51791b10889c2b60c080af5"><td class="memItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1dynamic__encoder.html">dynamic_encoder</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae1ae051ea51791b10889c2b60c080af5">make_dynamic_encoder</a> (<a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">whatwg::encoding</a> e)</td></tr>
 <tr class="memitem:adfcc16ee23070a85f60adef94d30bcf1" id="r_adfcc16ee23070a85f60adef94d30bcf1"><td class="memItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adfcc16ee23070a85f60adef94d30bcf1">get_encoding</a> (std::string_view label) noexcept</td></tr>
 <tr class="memitem:a026954b3ae033f10fa366ffe1f9e6b44" id="r_a026954b3ae033f10fa366ffe1f9e6b44"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a026954b3ae033f10fa366ffe1f9e6b44">has_encoder</a> (<a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">whatwg::encoding</a> <a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a>) noexcept</td></tr>
 <tr class="memitem:a8a1c08e92a835abd464904b2ab558ebe" id="r_a8a1c08e92a835abd464904b2ab558ebe"><td class="memItemLeft" align="right" valign="top">std::optional&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8a1c08e92a835abd464904b2ab558ebe">transcode_string</a> (std::span&lt; const char &gt; src, <a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">whatwg::encoding</a> from, <a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">whatwg::encoding</a> to)</td></tr>
@@ -368,6 +371,33 @@ requires std::ranges::forward_range&lt;R&gt;</div>
 
 </div>
 </div>
+<a id="ae1ae051ea51791b10889c2b60c080af5" name="ae1ae051ea51791b10889c2b60c080af5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1ae051ea51791b10889c2b60c080af5">&#9670;&#160;</a></span>make_dynamic_encoder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1dynamic__encoder.html">dynamic_encoder</a> &gt; beman::transcoding::whatwg::make_dynamic_encoder </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">whatwg::encoding</a></td>          <td class="paramname"><span class="paramname"><em>e</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd><span class="tt">nullopt</span> if <span class="tt">whatwg::has_encoder(e)</span> is <span class="tt">false</span> \iref{transcode.string}, and otherwise an encoder for <span class="tt">e</span>, in its initial state. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This is the one check a program holding an encoding from its input makes, and it is made where the encoder is created. </dd></dl>
+
+</div>
+</div>
 <a id="a2b55614e9b6abb2dd80239a862bcfac1" name="a2b55614e9b6abb2dd80239a862bcfac1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2b55614e9b6abb2dd80239a862bcfac1">&#9670;&#160;</a></span>transcode_string() <span class="overload">[1/2]</span></h2>
 
@@ -514,7 +544,7 @@ template&lt;<a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">whatwg::enco
 </table>
 </div><div class="memdoc">
 <p>\seebelow </p><dl class="section remark"><dt>Remarks</dt><dd><span class="tt"><a class="el" href="#aa3ab1e3eb44135886caa76a24c1353c8">whatwg::encode</a>&lt;C&gt;</span> is <span class="tt"><a class="el" href="#aa3ab1e3eb44135886caa76a24c1353c8">encode</a>(<a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1encoder.html">whatwg::encoder</a>&lt;C&gt;{})</span> \iref{transcode.codec.encode}. It is the codec-object adaptor over the library's encoder for the encoding <span class="tt">C</span>, the encoder as the Encoding Standard defines it. The value type, the reporting of encoding errors, the laziness and the range properties of the view it adapts to are those of that adaptor; the view is random access for the single-byte encodings, which <span class="tt"><a class="el" href="conceptbeman_1_1transcoding_1_1single__byte__text__encoder.html">single_byte_text_encoder</a></span> \iref{transcode.codec.reqs} provides. An argument of array type is ill-formed.</dd></dl>
-<p><em>Mandates:</em> The Encoding Standard defines an encoder for <span class="tt">C</span>. It defines none for <span class="tt">utf_16be</span>, <span class="tt">utf_16le</span>, <span class="tt">replacement</span> or <span class="tt">x_user_defined</span>. </p>
+<p><em>Mandates:</em> The Encoding Standard defines an encoder for <span class="tt">C</span>. It defines none for <span class="tt">utf_16be</span>, <span class="tt">utf_16le</span> or <span class="tt">replacement</span>. </p>
 
 </div>
 </div>

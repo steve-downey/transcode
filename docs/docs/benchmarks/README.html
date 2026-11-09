@@ -118,6 +118,19 @@ reports, and reproducing the published results.</p>
 <p>See <a href="RUNNING.html">RUNNING.md</a> for quick-reference make
 targets and <a href="PLATFORM_NOTES.html">PLATFORM_NOTES.md</a> for
 hardware-specific observations.</p>
+<p><strong>Numbers from before and after #131 are not
+comparable.</strong> Commit <code>c447694a</code> (2026-10-29) changed
+what the benchmarks measure in two ways. <code>count_elements</code>
+used to count elements without reading them, so for a view the optimizer
+could see through, GCC deleted the table lookups and the benchmark timed
+parsing rather than decoding; it now folds every value into an
+accumulator that escapes. And the <code>gcc-release</code>,
+<code>gcc-release-lto</code>, <code>llvm-release</code> and
+<code>llvm-release-lto</code> presets had been compiling at
+<code>-O2</code> despite asking for <code>-O3</code>; they now build at
+<code>-O3</code>. Results taken before that commit, including any
+published from them, should be re-run rather than set beside newer
+ones.</p>
 <hr />
 <h2 id="overview">Overview</h2>
 <p>The benchmark infrastructure comprises:</p>
@@ -601,7 +614,7 @@ class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#c
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>BENCHMARK_ADVANCED<span class="op">(</span><span class="st">&quot;Shift-JIS -&gt; UTF-8 streaming (transcode pipe)&quot;</span><span class="op">)</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">(</span>Catch<span class="op">::</span>Benchmark<span class="op">::</span>Chronometer meter<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    measure<span class="op">(</span>meter<span class="op">,</span> <span class="op">[&amp;]</span> <span class="op">{</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> count_elements<span class="op">(</span>corpus_span<span class="op">(</span><span class="st">&quot;ja_mars_shiftjis.bin&quot;</span><span class="op">)</span> <span class="op">|</span> transcode<span class="op">&lt;</span>codec<span class="op">::</span>shift_jis<span class="op">,</span> codec<span class="op">::</span>utf_8<span class="op">&gt;);</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> count_elements<span class="op">(</span>corpus_span<span class="op">(</span><span class="st">&quot;ja_mars_shiftjis.bin&quot;</span><span class="op">)</span> <span class="op">|</span> whatwg<span class="op">::</span>transcode<span class="op">&lt;</span>whatwg<span class="op">::</span>encoding<span class="op">::</span>shift_jis<span class="op">,</span> whatwg<span class="op">::</span>encoding<span class="op">::</span>utf_8<span class="op">&gt;);</span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">});</span></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
 <p><code>count_elements</code> traverses the range, returns the element
@@ -817,6 +830,6 @@ suite under callgrind into <code>BENCH_DISPATCH_DIR</code> (default
 call and its difference from <code>fixed codecs</code>. Counts per call,
 not per byte, since the difference does not grow with the input.
 <code>make bench</code> times the same suite with the rest.</p>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/README.md">docs/benchmarks/README.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/README.md">docs/benchmarks/README.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

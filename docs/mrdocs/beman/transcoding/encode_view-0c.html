@@ -441,7 +441,8 @@ window.MathJax = {
     <a href="./error_mode.html">error_mode</a> E = error_mode::replacement&gt;
 requires unicode_scalar_range&lt;R&gt;
 class encode_view
-    : public std::ranges::view_interface&lt;encode_view&lt;Codec, R, E&gt;&gt;</code></pre>
+    : public std::ranges::view_interface&lt;encode_view&lt;Codec, R, E&gt;&gt;
+    , public std::ranges::view_interface&lt;encode_view&lt;Codec, R, E&gt;&gt;</code></pre>
 </div><!-- /synopsis -->
 <div class="description">
 <h2>Description</h2>
@@ -454,6 +455,7 @@ class encode_view
 <tr><th>Name</th><th>Description</th></tr>
 </thead>
 <tbody>
+<tr><td><code>std::ranges::view_interface&lt;encode_view&lt;Codec, R, E&gt;&gt;</code></td><td></td></tr>
 <tr><td><code>std::ranges::view_interface&lt;encode_view&lt;Codec, R, E&gt;&gt;</code></td><td></td></tr>
 </tbody>
 </table>

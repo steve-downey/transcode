@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Adopting the PR #131 review - beman.transcode</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../../site.css" />
+</head>
+<body>
+<nav class="site-nav"><a href="../../index.html">beman.transcode</a> <a href="../../doxygen/index.html">Doxygen</a> <a href="../../mrdocs/index.html">MrDocs</a> <a href="../../paper/transcode-view.html">Paper</a> <span class="site-nav-path">docs/plans/pr131-review-adoption.md</span></nav>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#adopting-the-pr-131-review"
+id="toc-adopting-the-pr-131-review">Adopting the PR #131 review</a>
+<ul>
+<li><a href="#resolved" id="toc-resolved">Resolved</a></li>
+<li><a href="#open" id="toc-open">Open</a></li>
+<li><a href="#not-actionable" id="toc-not-actionable">Not
+actionable</a></li>
+</ul></li>
+</ul>
+</nav>
+<!--
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+<h1 id="adopting-the-pr-131-review">Adopting the PR #131 review</h1>
+<p><a
+href="../review-findings-2026-10-30-pr131.html"><code>review-findings-2026-10-30-pr131.md</code></a>
+reviewed the SG16 review response (#131) at <code>f225333</code>, before
+it merged. This plan takes each point the review raised, says where it
+stands against <code>main</code> as of 2026-11-08, and orders what is
+left.</p>
+<p>Each item has a slug for its identity. The four findings the review
+gave headings to keep the review's own anchors; the rest are named
+here.</p>
+<h2 id="resolved">Resolved</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="../review-findings-2026-10-30-pr131.html#clang-regex-ci-failure">clang-regex-ci-failure</a></td>
+<td>#138 gave every negative compile test one <code>EXPECT</code> line
+per compiler. CI on <code>main</code> is green across the clang
+matrix.</td>
+</tr>
+<tr>
+<td><code>ruff-pin-mismatch</code></td>
+<td><code>pyproject.toml</code> and <code>.pre-commit-config.yaml</code>
+both pin ruff 0.17.2.</td>
+</tr>
+<tr>
+<td><code>stale-names</code></td>
+<td>This branch. <code>README.md</code> footnote 5 says "codec" again;
+<code>docs/benchmarks/README.md</code> and
+<code>PLATFORM_NOTES.md</code> use <code>whatwg::transcode</code> and
+<code>whatwg::decode</code>; <code>docs/p2728-alignment.md</code>
+describes the current code in current names and P5-Step 3c's in its own;
+<code>CLAUDE.md</code>'s architecture section describes the
+<code>whatwg/</code> layout.</td>
+</tr>
+<tr>
+<td><a
+href="../review-findings-2026-10-30-pr131.html#x-user-defined-encoder">x-user-defined-encoder</a></td>
+<td><code>whatwg::encoder&lt;x_user_defined&gt;</code> implements the
+Standard's encoder: an ASCII code point is its own byte, U+F780 to
+U+F7FF are 0x80 to 0xFF, anything else is an error. It models
+<code>single_byte_text_encoder</code>, so its views are random access.
+<code>has_encoder</code> and <code>transcode_string</code> accept it,
+and the wording no longer says the Standard defines no such
+encoder.</td>
+</tr>
+<tr>
+<td><code>decode-state-constraint-leak</code></td>
+<td><code>flush</code> is constrained on the exposition-only
+<code>$has-decode-state$&lt;C&gt;</code>, and the decoder's Remarks say
+which encodings it holds for. Still showing <code>detail::</code> in the
+synopsis, and not raised by the review: the types of the exposition-only
+<code>$state$</code> members of <code>whatwg::decoder</code> and
+<code>whatwg::encoder</code>.</td>
+</tr>
+<tr>
+<td><code>encoding-standard-review-draft</code></td>
+<td>[intro.refs] names the June 2025 Review Draft. The five commits
+between it and the commit the tables come from are meta and editorial.
+Recorded in <a
+href="../decisions.html#encoding-standard-reference">encoding-standard-reference</a>.</td>
+</tr>
+<tr>
+<td><code>text-encoding-cast</code></td>
+<td>"Why Not <code>text_encoding::id</code>?" now says no cast between
+the enumerations can be correct: several ids land on one encoding, and
+three encodings have none.</td>
+</tr>
+<tr>
+<td><code>label-matching-quote</code></td>
+<td>The same section quotes the Encoding Standard's note that its label
+matching is stricter than UTS #22, for compatibility with deployed
+content.</td>
+</tr>
+<tr>
+<td><code>caller-buffer-answer</code></td>
+<td>The bulk-conversion section says the WHATWG views allocate nothing
+and shows a bounded write into a caller-owned buffer, compiled in
+<code>examples/paper_bulk_conversion.cpp</code>.</td>
+</tr>
+<tr>
+<td><code>runtime-encoding-visitor</code></td>
+<td>Decided 2026-11-08: no visitor over <code>whatwg::encoding</code>.
+The paper's runtime example ended in "Use std::visit or switch", which
+invited the question; it now hands the labels to
+<code>whatwg::transcode_string</code>. Looking at the use cases behind
+the question found a real gap, which is <a
+href="#stage-6--runtime-codec-objects">runtime-codec-objects</a>
+below.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="open">Open</h2>
+<p>Ordered so that each stage can land as its own pull request, smallest
+and least contested first. Stages 1 to 4 are done and listed above;
+Stage 6 is built, below; Stage 5's measurements are what remain.</p>
+<h3 id="stage-5--benchmarks">Stage 5 — benchmarks</h3>
+<p>These need a quiet machine and <code>make bench</code>. The cloud
+container's numbers in the review are a guide, not publishable.</p>
+<ul>
+<li><a
+href="../review-findings-2026-10-30-pr131.html#naive-iconv-comparison">naive-iconv-comparison</a>.
+The <code>naive_iconv_to_string</code> benchmark is on this branch.
+Re-measure, then: rename or drop the README's <code>Raw iconv()</code>
+row, which measures 4 KB chunking rather than a floor; replace the "~4x"
+claims; put the table next to the paper's Before/After
+<code>iconv</code> example, with a caption saying what "naive" means;
+and say in the iconv adaptor section that
+<code>iconv_transcode_to</code> is the whole-buffer form and that the
+view and <code>iconv_transcode_into</code> lose to the naive loop.</li>
+<li><a
+href="../review-findings-2026-10-30-pr131.html#bulk-helper-vs-ranges-to">bulk-helper-vs-ranges-to</a>.
+Measure <code>decode_to</code> / <code>encode_to</code> against
+<code>view | ranges::to</code>, and <code>decode_into</code> /
+<code>encode_into</code> against <code>ranges::copy</code> into a
+pre-sized buffer. Add a <code>view | ranges::to</code> row for UTF-8 to
+UTF-32 beside the iconv rows.</li>
+<li><code>benchmark-baseline-break</code>. Done:
+<code>docs/benchmarks/README.md</code> says once, near the top, that
+numbers from before and after commit <code>c447694a</code> are not
+comparable, and why.</li>
+<li><code>corpus-download-user-agent</code>. Done:
+<code>tools/download_benchmark_corpora.py</code> sends a User-Agent
+naming the project, with a test.</li>
+</ul>
+<h3 id="stage-6--runtime-codec-objects">Stage 6 — runtime codec
+objects</h3>
+<p><code>runtime-codec-objects</code>. Decided 2026-11-08.</p>
+<p>Processing an SMTP or MIME message is a prime use case: each part
+declares its <code>charset</code> in the data, and the reader wants the
+part's text as <code>char32_t</code>. Today it cannot get that without
+writing a <code>switch</code> over every encoding.
+<code>whatwg::transcode_string</code> takes runtime encodings but always
+re-encodes to bytes, and the code-point helpers
+<code>decode_to&lt;C&gt;</code> and <code>decode_into&lt;C&gt;</code>
+take the encoding only as a template parameter. It is also a gap against
+P2728, where getting <code>char32_t</code> from UTF is the
+straightforward case: code points are the common currency of text
+conversion, and getting them should be as easy for an encoding named at
+run time as for one named at compile time.</p>
+<p>The fix, in two layers:</p>
+<ul>
+<li><code>whatwg::dynamic_decoder</code> and
+<code>whatwg::dynamic_encoder</code>, codec objects that hold a
+<code>whatwg::encoding</code> chosen at run time and model
+<code>text_decoder</code> and <code>text_encoder</code>. They plug into
+what exists: <code>bytes | decode(whatwg::dynamic_decoder{e})</code> is
+a lazy <code>char32_t</code> range, and <code>decode_or_error</code>,
+<code>encode</code>, <code>transcode(from, to)</code> and
+<code>ranges::to</code> work unchanged. A MIME body arrives as a range
+out of a base64 or quoted-printable decoder, and can be large, so the
+lazy form matters. Each call to <code>decode_one</code> dispatches on
+the encoding; callers opt into that cost, so the paper's argument
+against dispatching on every code point by default still stands.</li>
+<li>Runtime overloads of the bulk helpers on top of them:
+<code>decode_to(src, e)</code>, <code>encode_to(src, e)</code> and the
+<code>_into</code> forms, by <code>whatwg::encoding</code> and by label.
+<code>transcode_string</code> becomes a thin layer over the same
+objects, and its 40-case <code>switch</code> goes away.</li>
+</ul>
+<p>A MIME reader, as a real example, is the first caller of both layers
+and is written before them, so the API is shaped by the program that
+needs it:</p>
+<ul>
+<li><code>examples/mime_reader/</code>, its own example target. Not a
+library facility, and nothing in it goes near a specification
+header.</li>
+<li>A small parser-combinator kit, copied from specgen's
+<code>parse/cursor.hpp</code> and <code>parse/parser.hpp</code>
+(themselves adapted from compile-time-scheme to run at run time; same
+author, same license) and adjusted to read bytes, since a MIME message
+is bytes until a part's charset says otherwise.</li>
+<li>A grammar written close to the RFCs' ABNF, covering what a reader
+needs and no more: RFC 5322 header fields with folding; RFC 2045
+<code>Content-Type</code> with token and quoted-string parameters, and
+<code>Content-Transfer-Encoding</code>; RFC 2046 multipart bodies with
+nested boundaries, preamble and epilogue skipped; RFC 2047 encoded-words
+in unstructured headers such as <code>Subject</code>. RFC 2231 parameter
+continuations are out of scope.</li>
+<li>Base64 and quoted-printable as lazy byte views, so a part's text is
+<code>body | base64 | decode(whatwg::dynamic_decoder{*cs})</code>.
+Encoded-words are short, so they use the eager
+<code>decode_to(bytes, label)</code>.</li>
+<li>The charset goes through <code>whatwg::get_encoding</code>, so
+<code>us-ascii</code> and <code>iso-8859-1</code> mean windows-1252 as
+they do in a browser. An unknown charset is reported, not guessed.</li>
+<li>A few messages under <code>examples/mime_reader/messages/</code>,
+chosen to exercise the runtime path: an ISO-2022-JP text part, a
+Shift_JIS attachment, a windows-1252 quoted-printable part, a UTF-8
+base64 part, and a KOI8-R encoded-word subject. A ctest runs the reader
+over each and compares its UTF-8 output with an expected file.</li>
+</ul>
+<p>What was built, and how the questions were settled:</p>
+<ul>
+<li><code>whatwg::dynamic_decoder</code> and
+<code>whatwg::dynamic_encoder</code> in
+<code>whatwg/dynamic_codec.hpp</code>, clause
+<code>[transcode.whatwg.dynamic]</code>. Each holds a
+<code>std::variant</code> over the per-encoding codecs, indexed by the
+enumerator's value.</li>
+<li>An encoding with no encoder, decided 2026-11-08: there is no
+constructor from <code>whatwg::encoding</code>.
+<code>whatwg::make_dynamic_encoder(e)</code> returns
+<code>optional&lt;dynamic_encoder&gt;</code>, empty for
+<code>utf_16be</code>, <code>utf_16le</code> and
+<code>replacement</code>. A precondition was the first design, and was
+dropped: a program holding an encoding from its input would have had to
+call <code>has_encoder</code> first, a second check that is easy to
+forget and repeats work the construction does anyway. The eager
+<code>encode_to</code> returns <code>nullopt</code> and
+<code>encode_into</code> returns <code>false</code> in the same case, so
+every runtime entry point reports it in the call that would have used
+the encoder. The Standard's "get an output encoding", which maps those
+three to UTF-8 as a browser does for form submission, is not applied
+implicitly; it could be offered as an explicit function.</li>
+<li>Refinements: both objects model the flushable refinement, and the
+decoder models <code>bom_aware_text_decoder</code>, forwarding
+<code>decode_first</code> to <code>decode_one</code> where the encoding
+strips no BOM. Neither models the single-byte refinements.</li>
+<li><code>constexpr</code>: both are usable in constant evaluation, with
+<code>constify</code> tests.</li>
+<li>Argument order, decided 2026-11-08: every eager helper takes the
+source first, then the encodings or codecs in "from, to" order, then any
+output: <code>transcode_string(src, from, to)</code>,
+<code>decode_to(source, e)</code>,
+<code>decode_into(source, codec, out)</code>. The codec-object bulk
+helpers took the codec first and were changed to match; nothing outside
+their own header called them, and they had no tests, which they now
+have.</li>
+<li>The eager runtime overloads dispatch once, through
+<code>detail::with_encoding</code>, and then run the compile-time loop.
+<code>transcode_string</code> uses the same dispatch, so its two 40-case
+<code>switch</code>es are gone.</li>
+<li>The MIME reader in <code>examples/mime_reader/</code> decodes part
+bodies lazily through <code>dynamic_decoder</code> and encoded-words
+through <code>decode_to(bytes, label)</code>. Its seven messages match
+Python's <code>email</code> package.</li>
+<li>The paper's runtime example and "Template Parameter vs Runtime
+Selection" now show both forms and what each costs.</li>
+</ul>
+<p>Still open:</p>
+<ul>
+<li>The paper's dispatch-cost figure (about 121 instructions per call)
+was measured against <code>transcode_string</code>'s old
+<code>switch</code>. The fold-based dispatch may compile differently, so
+re-run the dispatch benchmark with Stage 5's measurements before the
+figure is published again.</li>
+<li>The exposition-only members of <code>dynamic_decoder</code> and
+<code>dynamic_encoder</code> show a <code>detail::</code> type in the
+synopsis, as <code>whatwg::decoder</code>'s <code>$state$</code>
+does.</li>
+</ul>
+<h2 id="not-actionable">Not actionable</h2>
+<ul>
+<li><code>decode_result</code> carries a <code>whatwg::error</code>
+while the concepts are presented as generic. The paper owns this; it is
+the next design question, not a defect.</li>
+<li>The random-access iterators compare by position only. Consistent
+with the single-byte codecs being stateless.</li>
+</ul>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/pr131-review-adoption.md">docs/plans/pr131-review-adoption.md</a> at a094bc8038bc.</footer>
+</body>
+</html>

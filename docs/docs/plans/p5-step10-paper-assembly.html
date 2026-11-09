@@ -60,24 +60,28 @@ carry the clauses; the paper carries the editing instructions around
 them — "Add a new header <code>&lt;transcode&gt;</code> to [headers],
 Table 1", "Add a new clause [transcode] as follows", the feature-test
 macro row for <code>__cpp_lib_transcode_view</code> in [version.syn].
-Those are the parts specgen cannot know. Per index D6 this is authored
-prose, not <code>--paper</code> mode.</li>
+Those are the parts specgen cannot know. Per <a
+href="../decisions.html#editing-instruction-form">editing-instruction-form</a>
+this is authored prose, not <code>--paper</code> mode.</li>
 <li><strong>Fix the section's position.</strong> Wording goes after
 "Impact on the Standard" and before the bibliography. Because
-transclusion is prerequisite order (index D3), everything that must
-follow the wording — Acknowledgements, Prior Art, Relationship to Other
-Proposals, References — moves out of <code>transcode-view.md</code> into
-a second authored file, listed after <code>$(WORDING_MD)</code> in the
-paper's prerequisites. <code>flat.mk</code> globs
-<code>papers/*.md</code> and would build that file as a paper of its
-own, so it lives in a subdirectory: <code>papers/parts/tail.md</code>.
-The YAML metadata block stays at the top of
-<code>transcode-view.md</code>, which remains the first input.</li>
+transclusion is prerequisite order (<a
+href="../decisions.html#transclusion-mechanism">transclusion-mechanism</a>),
+everything that must follow the wording — Acknowledgements, Prior Art,
+Relationship to Other Proposals, References — moves out of
+<code>transcode-view.md</code> into a second authored file, listed after
+<code>$(WORDING_MD)</code> in the paper's prerequisites.
+<code>flat.mk</code> globs <code>papers/*.md</code> and would build that
+file as a paper of its own, so it lives in a subdirectory:
+<code>papers/parts/tail.md</code>. The YAML metadata block stays at the
+top of <code>transcode-view.md</code>, which remains the first
+input.</li>
 <li><strong>Resolve heading levels.</strong> Generated clause headings
-are <code>##</code> (index U2). Either accept them as siblings of the
-paper's own sections, or take the upstream
-<code>--base-heading-level</code> flag if it has landed by now. State
-which in the commit message.</li>
+are <code>##</code> (<a
+href="../decisions.html#clause-heading-level">clause-heading-level</a>).
+Either accept them as siblings of the paper's own sections, or take the
+upstream <code>--base-heading-level</code> flag if it has landed by now.
+State which in the commit message.</li>
 <li><strong>Resolve the bibliography placement</strong> decided in Step
 1 task 5: with an explicit <code>::: {#refs}</code> div if citeproc
 would otherwise append it after the wording.</li>
@@ -91,8 +95,8 @@ with GCC 16 and skip it with an explicit, loud message elsewhere, rather
 than silently passing.</li>
 <li><strong>Full-document validation.</strong>
 <code>specgen render --validate</code> over every spec-facing header
-must be clean, with no allowlist: U1 landed upstream on 2026-09-04 and
-the <code>ranges</code> noise it excused is gone.</li>
+must be clean, with no allowlist: specgen#3 landed upstream on
+2026-09-04 and the <code>ranges</code> noise it excused is gone.</li>
 <li><strong>Reconcile the design sections against the generated
 clauses.</strong> The authored prose was written before the wording
 existed and has drifted from it in at least one place: the "Concepts"
@@ -136,7 +140,8 @@ and was not run again. The diff now excludes the authored files, from a
 list <code>generate.sh</code> owns and shares with its own cleanup.</p>
 <p>And <code>wording-check</code> is not a CI job. It was, briefly; see
 the drift gate below.</p>
-<p><strong>Heading levels: flat, deliberately</strong> (task 3). U2's
+<p><strong>Heading levels: flat, deliberately</strong> (task 3). <a
+href="../decisions.html#clause-heading-level">clause-heading-level</a>'s
 <code>--base-heading-level</code> is still absent upstream, and the
 clauses come out at <code>##</code>, which is the level the paper's own
 sections use, so they are siblings of "Design" rather than children of
@@ -145,16 +150,17 @@ list under the Wording heading, which is close enough to right that
 spending an upstream flag and another cross-repository dependency on it
 was not worth it. A nested rendering needs the flag <em>and</em>
 <code>toc-depth: 3</code>.</p>
-<p><strong>U6 is worked around here and still open upstream.</strong>
-The warning was the visible half. The other half is that mpark emits the
-link anyway, so every clause heading and every cross-reference in the
-published paper pointed at a <code>c++draft</code> page that does not
-exist -- 23 distinct names, all of them clauses this paper adds.
-<code>generate.sh</code> now drops the <code>.sref</code> class from
-names under this paper's two stable-name roots, which leaves
-<code>[transcode.iconv]</code>, what the draft itself prints. Keyed on
-the roots on purpose: a citation of a clause that <em>is</em> in the
-draft keeps its <code>.sref</code> and still resolves. Filed as <a
+<p><strong>specgen#89 is worked around here and still open
+upstream.</strong> The warning was the visible half. The other half is
+that mpark emits the link anyway, so every clause heading and every
+cross-reference in the published paper pointed at a
+<code>c++draft</code> page that does not exist -- 23 distinct names, all
+of them clauses this paper adds. <code>generate.sh</code> now drops the
+<code>.sref</code> class from names under this paper's two stable-name
+roots, which leaves <code>[transcode.iconv]</code>, what the draft
+itself prints. Keyed on the roots on purpose: a citation of a clause
+that <em>is</em> in the draft keeps its <code>.sref</code> and still
+resolves. Filed as <a
 href="https://github.com/steve-downey/specgen/issues/89">specgen#89</a>;
 the <code>sed</code> comes out when that lands. The paper build is
 warning-free apart from a pre-existing duplicate <code>email</code> key
@@ -268,6 +274,6 @@ make the strong check affordable and safe at the same time.</p>
 <p><code>papers/wording/README.md</code> -- Step 1 task 6, which never
 landed -- says the fragments are generated, how to regenerate them, and
 what the gate checks.</p>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step10-paper-assembly.md">docs/plans/p5-step10-paper-assembly.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/p5-step10-paper-assembly.md">docs/plans/p5-step10-paper-assembly.md</a> at a094bc8038bc.</footer>
 </body>
 </html>

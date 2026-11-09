@@ -1,7 +1,8 @@
 var searchData=
 [
-  ['pending_5ferror_5fvalue_5f_0',['pending_error_value_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a66d1c9e568f1f664148299bfbb85b29c',1,'beman::transcoding::iconv_transcode_or_error_view::iterator']]],
-  ['pending_5fterminal_5ferror_5f_1',['pending_terminal_error_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a71a5c331bb57eb37252f95a5053d7cd1',1,'beman::transcoding::iconv_transcode_or_error_view::iterator']]],
-  ['pos_5f_2',['pos_',['../classbeman_1_1transcoding_1_1encode__view_1_1iterator.html#a195927978a55255645a2c5665e56baf9',1,'beman::transcoding::encode_view::iterator']]],
-  ['ptr_5f_3',['ptr_',['../classbeman_1_1transcoding_1_1null__term__view.html#a4769d0a29f6f92f8c5cd0cb13e7e0c2f',1,'beman::transcoding::null_term_view']]]
+  ['offset_0',['offset',['../structmime__reader_1_1parse_1_1parse__error.html#aa55fe1cff68a06f0904c40cde1a40b36',1,'mime_reader::parse::parse_error']]],
+  ['offset_5f_1',['offset_',['../classmime__reader_1_1parse_1_1cursor.html#acdac9537739cf2b9ea03582cd7e02c2f',1,'mime_reader::parse::cursor']]],
+  ['open_2',['open',['../structbeman_1_1transcoding_1_1iconv__functions.html#a45a78085df5e82fe1e8a5d9964411414',1,'beman::transcoding::iconv_functions']]],
+  ['output_5fend_5f_3',['output_end_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#a14fcd7645df963630f86cebfc470ae17',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::output_end_'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#acfcde90628819d44ba9f49d6c984e044',1,'beman::transcoding::iconv_transcode_view::iterator::output_end_']]],
+  ['output_5fpos_5f_4',['output_pos_',['../classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html#ae7eca2405ff8ebac36cd12a21e9ac497',1,'beman::transcoding::iconv_transcode_or_error_view::iterator::output_pos_'],['../classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html#a74afdff3aacafb365a457ac301a861dd',1,'beman::transcoding::iconv_transcode_view::iterator::output_pos_']]]
 ];

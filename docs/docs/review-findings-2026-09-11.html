@@ -72,8 +72,9 @@ problem that still needs a clean build or focused experiment.</li>
 </ul>
 <h2 id="must-address-before-proposal-or-public-release">Must address
 before proposal or public release</h2>
-<h3 id="c-01-sniff_encoding-consumes-single-pass-input">C-01:
-<code>sniff_encoding</code> consumes single-pass input</h3>
+<h3 id="sniff-consumes-single-pass">sniff-consumes-single-pass</h3>
+<p><strong>Finding:</strong> <code>sniff_encoding</code> consumes
+single-pass input.</p>
 <p><strong>Status:</strong> Confirmed correctness and contract
 defect.</p>
 <p><code>sniff_encoding</code> accepts a <code>legacy_byte_range</code>,
@@ -92,8 +93,9 @@ with the result, or explicitly make consumption part of the API. Add
 tests using a genuinely single-pass range for both BOM and non-BOM
 input.</p>
 <h3
-id="c-02-a-too-small-iconv-view-buffer-silently-loses-valid-input">C-02:
-A too-small iconv view buffer silently loses valid input</h3>
+id="iconv-small-buffer-loses-input">iconv-small-buffer-loses-input</h3>
+<p><strong>Finding:</strong> A too-small iconv view buffer silently
+loses valid input.</p>
 <p><strong>Status:</strong> Confirmed correctness defect.</p>
 <p><code>iconv_transcode_view::iterator::load</code> treats
 <code>E2BIG</code> with no produced output as the end of a load, then
@@ -107,8 +109,9 @@ converted.</p>
 buffer size, dynamically stage one complete output unit, or report
 <code>output_full</code> without consuming or completing the range. Add
 real-iconv tests for zero-, one-, and boundary-sized buffers.</p>
-<h3 id="c-03-streaming-iconv-flush-is-attempted-only-once">C-03:
-Streaming iconv flush is attempted only once</h3>
+<h3 id="iconv-flush-once">iconv-flush-once</h3>
+<p><strong>Finding:</strong> Streaming iconv flush is attempted only
+once.</p>
 <p><strong>Status:</strong> Confirmed correctness defect.</p>
 <p>Both streaming views set <code>flushed_</code> before one flush call
 and ignore the call's return value and <code>errno</code>:</p>
@@ -128,8 +131,9 @@ retaining pending state between increments. Treat non-<code>E2BIG</code>
 flush failures according to the view's error policy. Add a mock that
 requires two or more flush calls.</p>
 <h3
-id="c-04-lossy-iconv-bulk-replacement-can-corrupt-the-destination-encoding">C-04:
-Lossy iconv bulk replacement can corrupt the destination encoding</h3>
+id="iconv-lossy-replacement-corrupts">iconv-lossy-replacement-corrupts</h3>
+<p><strong>Finding:</strong> Lossy iconv bulk replacement can corrupt
+the destination encoding.</p>
 <p><strong>Status:</strong> Confirmed correctness defect and contract
 mismatch.</p>
 <p>The lossy bulk helpers append the raw byte <code>0x3F</code> on
@@ -145,9 +149,9 @@ wording. If replacement is desired, encode the chosen replacement
 through the destination converter; do not append an encoding-independent
 byte. Apply the same policy to the container and output-iterator helpers
 and test multibyte destinations.</p>
-<h3
-id="c-05-iconv-open-and-unexpected-system-errors-are-conflated">C-05:
-iconv open and unexpected system errors are conflated</h3>
+<h3 id="iconv-error-conflation">iconv-error-conflation</h3>
+<p><strong>Finding:</strong> Iconv open and unexpected system errors are
+conflated.</p>
 <p><strong>Status:</strong> Confirmed API and error-model defect.</p>
 <p>Failure to open a conversion descriptor has three incompatible
 results:</p>
@@ -174,9 +178,9 @@ unsupported-encoding/open/system error, or make construction/opening a
 separate fallible operation. Specify how unexpected platform errors
 propagate. Do not use valid empty output as a failure signal.</p>
 <h3
-id="c-06-null_term_view-has-no-reachable-terminator-precondition">C-06:
-<code>null_term_view</code> has no reachable-terminator
-precondition</h3>
+id="null-term-reachable-terminator">null-term-reachable-terminator</h3>
+<p><strong>Finding:</strong> <code>null_term_view</code> has no
+reachable-terminator precondition.</p>
 <p><strong>Status:</strong> Confirmed specification and object-state
 defect.</p>
 <p><code>null_sentinel_t</code> dereferences the current iterator to
@@ -194,9 +198,9 @@ and lifetime precondition. Value-initialize <code>ptr_</code> and define
 the singular state, or remove default construction if the view cannot
 have a useful safe default.</p>
 <h3
-id="c-07-runtime-transcoding-uses-empty-output-as-an-unsupported-target-error">C-07:
-Runtime transcoding uses empty output as an unsupported-target
-error</h3>
+id="empty-output-as-unsupported-target">empty-output-as-unsupported-target</h3>
+<p><strong>Finding:</strong> Runtime transcoding uses empty output as an
+unsupported-target error.</p>
 <p><strong>Status:</strong> Confirmed API defect.</p>
 <p>The <code>codec</code> overload of <code>transcode_string</code>
 returns <code>std::string</code> and documents empty output for a codec
@@ -210,9 +214,9 @@ rejects an unsupported target.</p>
 before decoding and return a fallible result such as
 <code>expected</code>/<code>optional</code>, or narrow the accepted
 target type. Make the codec and label overloads agree.</p>
-<h3
-id="p-01-the-optionalportable-iconv-story-does-not-match-the-build">P-01:
-The optional/portable iconv story does not match the build</h3>
+<h3 id="optional-iconv-story">optional-iconv-story</h3>
+<p><strong>Finding:</strong> The optional/portable iconv story does not
+match the build.</p>
 <p><strong>Status:</strong> Decision required; build behavior is
 confirmed.</p>
 <p>The paper calls iconv optional (<a
@@ -230,9 +234,9 @@ unless a compatible iconv is separately supplied.</p>
 option and header split that allows the portable API to install without
 iconv, or state iconv as a mandatory platform dependency and narrow the
 portability claims.</p>
-<h3
-id="p-02-proposed-iso-c-wording-exposes-an-undefined-posix-type">P-02:
-Proposed ISO C++ wording exposes an undefined POSIX type</h3>
+<h3 id="posix-type-in-wording">posix-type-in-wording</h3>
+<p><strong>Finding:</strong> Proposed ISO C++ wording exposes an
+undefined POSIX type.</p>
 <p><strong>Status:</strong> Confirmed proposal-surface issue.</p>
 <p>The generated <code>&lt;transcode&gt;</code> synopsis exposes
 <code>iconv_t</code> in <code>iconv_functions</code> (<a
@@ -248,10 +252,9 @@ provide explicit wording for the implementation-defined integration.
 Resolve this before asking LEWG to review the synopsis.</p>
 <h2 id="specification-and-api-decisions">Specification and API
 decisions</h2>
-<h3
-id="s-01-invalid-char32_t-is-both-a-precondition-violation-and-a-reported-error">S-01:
-Invalid <code>char32_t</code> is both a precondition violation and a
-reported error</h3>
+<h3 id="invalid-char32-contract">invalid-char32-contract</h3>
+<p><strong>Finding:</strong> Invalid <code>char32_t</code> is both a
+precondition violation and a reported error.</p>
 <p><strong>Status:</strong> Decision required.</p>
 <p>The codec requirements and encode-view wording require every input
 element to already be a Unicode scalar value (<a
@@ -265,8 +268,9 @@ deliberately replace or report surrogate and out-of-range
 are outside the function contract or supported erroneous input. Remove
 the precondition if reporting is part of the API; otherwise remove
 normative promises and tests that imply defined recovery.</p>
-<h3 id="s-02-lossy-iconv-apis-do-not-share-one-recovery-policy">S-02:
-Lossy iconv APIs do not share one recovery policy</h3>
+<h3 id="iconv-lossy-recovery-policy">iconv-lossy-recovery-policy</h3>
+<p><strong>Finding:</strong> Lossy iconv APIs do not share one recovery
+policy.</p>
 <p><strong>Status:</strong> Decision required.</p>
 <p>The streaming view skips <code>EILSEQ</code> one byte at a time (<a
 href="https://github.com/steve-downey/transcode/blob/main/include/beman/transcode/iconv_transcode_view.hpp"><code>include/beman/transcode/iconv_transcode_view.hpp</code></a>,
@@ -277,10 +281,10 @@ substitute an eager API for a lazy one without changing output.</p>
 fatal policies once and apply them consistently across streaming and
 eager forms. If multiple policies are intentional, put the distinction
 in API names/types rather than prose.</p>
-<h3
-id="s-03-random_access_decode_codec_type-reserves-ufffd-as-an-error-sentinel">S-03:
+<h3 id="fffd-error-sentinel">fffd-error-sentinel</h3>
+<p><strong>Finding:</strong>
 <code>random_access_decode_codec_type</code> reserves U+FFFD as an error
-sentinel</h3>
+sentinel.</p>
 <p><strong>Status:</strong> Confirmed extensibility limitation; decision
 required.</p>
 <p>The concept says <code>decode_byte</code> returns U+FFFD when a byte
@@ -295,8 +299,9 @@ mode.</p>
 <p><strong>Recommended action:</strong> Return a result/optional value
 from <code>decode_byte</code>, add a separate validity query, or
 document U+FFFD as reserved and accept the loss of that mapping.</p>
-<h3 id="s-04-review-generated-free-standing-synopsis-prose">S-04: Review
-generated free-standing synopsis prose</h3>
+<h3 id="synopsis-free-standing-prose">synopsis-free-standing-prose</h3>
+<p><strong>Finding:</strong> Review generated free-standing synopsis
+prose.</p>
 <p><strong>Status:</strong> Verify generator intent.</p>
 <p>The generated synopsis contains substantial semantic prose after the
 class and function declarations, including encode/decode view and iconv
@@ -308,9 +313,9 @@ clauses.</p>
 intentionally attaching these remarks to synopsis declarations. If not,
 relocate the source annotations so the synopsis remains a synopsis and
 each normative rule has one home.</p>
-<h3
-id="s-05-narrow-or-substantiate-factual-and-performance-claims">S-05:
-Narrow or substantiate factual and performance claims</h3>
+<h3 id="unsubstantiated-claims">unsubstantiated-claims</h3>
+<p><strong>Finding:</strong> Narrow or substantiate factual and
+performance claims.</p>
 <p><strong>Status:</strong> Editorial verification required.</p>
 <p>Claims such as “<code>std::codecvt</code> allocated on every call,”
 <code>mbstowcs</code> being about twice as fast, “four browser engines,”
@@ -327,8 +332,8 @@ variants.” Verify the browser-engine count or use “major browser
 engines.”</p>
 <h2 id="documentation-paper-build-and-ci-drift">Documentation, paper,
 build, and CI drift</h2>
-<h3 id="d-01-duplicate-author-email-key">D-01: Duplicate author email
-key</h3>
+<h3 id="duplicate-author-email">duplicate-author-email</h3>
+<p><strong>Finding:</strong> Duplicate author email key.</p>
 <p><strong>Status:</strong> Confirmed.</p>
 <p>The paper YAML has two <code>email</code> keys for one author (<a
 href="../paper/transcode-view.html"><code>papers/transcode-view.md</code></a>,
@@ -336,16 +341,19 @@ lines 11-14). The renderer warns
 <code>Duplicate key: .author[0].email</code> and discards one value.</p>
 <p><strong>Action:</strong> Keep one address or use the renderer's
 supported representation for multiple addresses.</p>
-<h3 id="d-02-feature-test-macro-placeholders-disagree">D-02:
-Feature-test macro placeholders disagree</h3>
+<h3
+id="feature-test-macro-placeholders">feature-test-macro-placeholders</h3>
+<p><strong>Finding:</strong> Feature-test macro placeholders
+disagree.</p>
 <p><strong>Status:</strong> Confirmed.</p>
 <p>The paper uses both <code>202XXXL</code> and <code>20XXXXL</code> (<a
 href="../paper/transcode-view.html"><code>papers/transcode-view.md</code></a>,
 lines 866-870 and 937-942).</p>
 <p><strong>Action:</strong> Choose one placeholder until a real value is
 assigned.</p>
-<h3 id="d-03-documentation-claims-unsupported-utf-32-bom-sniffing">D-03:
-Documentation claims unsupported UTF-32 BOM sniffing</h3>
+<h3 id="utf32-bom-sniffing-claim">utf32-bom-sniffing-claim</h3>
+<p><strong>Finding:</strong> Documentation claims unsupported UTF-32 BOM
+sniffing.</p>
 <p><strong>Status:</strong> Confirmed.</p>
 <p>README and paper-tail text say <code>sniff_encoding</code> detects
 UTF-8/16/32 BOMs (<a href="../README.html"><code>README.md</code></a>,
@@ -355,8 +363,9 @@ lines 125-128). The function and <code>codec</code> enum support only
 UTF-8, UTF-16BE, and UTF-16LE BOM results.</p>
 <p><strong>Action:</strong> Remove UTF-32 from the claim, or add UTF-32
 codecs and detection as a separately designed feature.</p>
-<h3 id="d-04-paper-and-related-proposal-revisions-have-drifted">D-04:
-Paper and related proposal revisions have drifted</h3>
+<h3 id="revision-drift">revision-drift</h3>
+<p><strong>Finding:</strong> Paper and related proposal revisions have
+drifted.</p>
 <p><strong>Status:</strong> Confirmed.</p>
 <ul>
 <li><a href="../papers/README.html"><code>papers/README.md</code></a>,
@@ -369,8 +378,9 @@ P2728R13.</li>
 <p><strong>Action:</strong> Update the stale revisions and consider
 defining each cited revision once to reduce repeated manual updates.</p>
 <h3
-id="d-05-build-instructions-name-the-wrong-test-framework-and-language-level">D-05:
-Build instructions name the wrong test framework and language level</h3>
+id="build-instructions-framework-and-standard">build-instructions-framework-and-standard</h3>
+<p><strong>Finding:</strong> Build instructions name the wrong test
+framework and language level.</p>
 <p><strong>Status:</strong> Confirmed.</p>
 <p>README and CONTRIBUTING say GoogleTest, but test CMake requires
 Catch2 (<a
@@ -380,8 +390,9 @@ href="../CONTRIBUTING.html"><code>CONTRIBUTING.md</code></a>, lines
 39-47, 70-77, and 94-101), while the target requires C++23.</p>
 <p><strong>Action:</strong> Replace GoogleTest with Catch2 and make
 every configuration example request C++23.</p>
-<h3 id="d-06-advertised-compiler-support-disagrees-with-cmake">D-06:
-Advertised compiler support disagrees with CMake</h3>
+<h3 id="compiler-support-vs-cmake">compiler-support-vs-cmake</h3>
+<p><strong>Finding:</strong> Advertised compiler support disagrees with
+CMake.</p>
 <p><strong>Status:</strong> Confirmed.</p>
 <p>README advertises Clang 17 and 18 (<a
 href="../README.html"><code>README.md</code></a>, lines 570-580), but
@@ -393,9 +404,9 @@ lines 22-29).</p>
 the limitation is only Clang plus libstdc++, make the check test that
 combination rather than the compiler version alone.</p>
 <h3
-id="d-07-the-documented-table_codec-api-and-example-are-not-public-examples">D-07:
-The documented <code>table_codec</code> API and example are not public
-examples</h3>
+id="table-codec-documented-as-public">table-codec-documented-as-public</h3>
+<p><strong>Finding:</strong> The documented <code>table_codec</code> API
+and example are not public examples.</p>
 <p><strong>Status:</strong> Confirmed.</p>
 <p>README presents <code>beman::transcoding::table_codec</code> as
 provided public API and links
@@ -409,8 +420,9 @@ lines 56-61). The linked example manually decodes bytes and does not use
 <p><strong>Action:</strong> Promote and specify the helper with a real
 API example, or remove the public claim and replace the example with a
 custom codec implementing the documented concepts.</p>
-<h3 id="d-08-icu-does-not-expose-the-posix-iconv-api-as-stated">D-08:
-ICU does not expose the POSIX iconv API as stated</h3>
+<h3 id="icu-iconv-claim">icu-iconv-claim</h3>
+<p><strong>Finding:</strong> ICU does not expose the POSIX iconv API as
+stated.</p>
 <p><strong>Status:</strong> Confirmed factual error.</p>
 <p>README groups ICU with implementations exposing
 <code>iconv_open</code>/<code>iconv</code>/<code>iconv_close</code> (<a
@@ -418,10 +430,9 @@ href="../README.html"><code>README.md</code></a>, lines 188-195). ICU's
 native converter API is the <code>ucnv_*</code> family.</p>
 <p><strong>Action:</strong> Remove ICU from that list or describe it as
 a separate transcoding backend that would need an adapter.</p>
-<h3
-id="d-09-a-root-file-literally-named---contains-stale-generated-wording">D-09:
-A root file literally named <code>-</code> contains stale generated
-wording</h3>
+<h3 id="root-file-named-dash">root-file-named-dash</h3>
+<p><strong>Finding:</strong> A root file literally named <code>-</code>
+contains stale generated wording.</p>
 <p><strong>Status:</strong> Confirmed repository hygiene issue.</p>
 <p>The tracked root file <code>./-</code> contains an old wording
 snapshot. Git history shows it was introduced by commit
@@ -430,10 +441,9 @@ that specgen can”).</p>
 <p><strong>Action:</strong> Remove the file and fix the
 generation/redirection invocation that created it. Add a CI hygiene
 check if the failure mode can recur.</p>
-<h3
-id="d-10-docsplanshandoff-nextmd-is-stale-operational-guidance">D-10:
-<code>docs/plans/handoff-next.md</code> is stale operational
-guidance</h3>
+<h3 id="stale-handoff-guide">stale-handoff-guide</h3>
+<p><strong>Finding:</strong> <code>docs/plans/handoff-next.md</code> is
+stale operational guidance.</p>
 <p><strong>Status:</strong> Confirmed.</p>
 <p>The handoff reports 707 C++ tests, a future paper update, and merge
 instructions for an old branch (<a
@@ -442,8 +452,9 @@ lines 20, 71-88). It now reads as current guidance despite describing an
 earlier project state.</p>
 <p><strong>Action:</strong> Archive/remove it, or add a prominent
 historical date and completed status.</p>
-<h3 id="d-11-manual-lint-ci-repeats-the-normal-lint-target">D-11:
-“Manual Lint” CI repeats the normal lint target</h3>
+<h3 id="manual-lint-duplicate">manual-lint-duplicate</h3>
+<p><strong>Finding:</strong> “Manual Lint” CI repeats the normal lint
+target.</p>
 <p><strong>Status:</strong> Confirmed.</p>
 <p>The <code>Manual Lint</code> step runs <code>make lint</code>,
 exactly like the preceding <code>Lint</code> step (<a
@@ -451,8 +462,9 @@ href="https://github.com/steve-downey/transcode/blob/main/.github/workflows/test
 lines 86-95).</p>
 <p><strong>Action:</strong> Run <code>make lint-manual</code> if that is
 the intended additional gate, or remove/rename the duplicate step.</p>
-<h3 id="d-12-module-packaging-needs-a-clean-install-consumer-test">D-12:
-Module packaging needs a clean install-consumer test</h3>
+<h3 id="module-install-consumer-test">module-install-consumer-test</h3>
+<p><strong>Finding:</strong> Module packaging needs a clean
+install-consumer test.</p>
 <p><strong>Status:</strong> Verify; SPDX omission is confirmed.</p>
 <p><a
 href="https://github.com/steve-downey/transcode/blob/main/include/beman/transcode/transcode.cppm"><code>include/beman/transcode/transcode.cppm</code></a>
@@ -467,8 +479,8 @@ lines 3-15), while the module interface includes
 install-and-consume in module mode from a clean prefix; if consumers
 rebuild the interface unit, install every header needed by its include
 graph.</p>
-<h3 id="d-13-telemetry-script-shebang-is-on-line-2">D-13: Telemetry
-script shebang is on line 2</h3>
+<h3 id="telemetry-shebang">telemetry-shebang</h3>
+<p><strong>Finding:</strong> Telemetry script shebang is on line 2.</p>
 <p><strong>Status:</strong> Confirmed, low priority.</p>
 <p><code>infra/cmake/telemetry.sh</code> has its shebang on the second
 line, which shellcheck flags. Current CMake usage invokes it explicitly
@@ -485,7 +497,7 @@ gaps</h2>
 <li>Every example compiled and ran directly against the current headers
 with <code>g++-16</code>.</li>
 <li>Paper rendering completed, apart from the duplicate-email warning in
-D-01.</li>
+<a href="#duplicate-author-email">duplicate-author-email</a>.</li>
 <li><code>make wording-inputs-check</code> passed.</li>
 </ul>
 <p>The following remain open verification work:</p>
@@ -497,25 +509,52 @@ current tree.</li>
 <li>Full <code>make wording-check</code> could not run because
 <code>specgen</code> is not installed.</li>
 <li><code>codespell</code> was not available.</li>
-<li>Run the new focused regressions described in C-01 through C-05 on at
+<li>Run the new focused regressions described in <a
+href="#sniff-consumes-single-pass">sniff-consumes-single-pass</a>, <a
+href="#iconv-small-buffer-loses-input">iconv-small-buffer-loses-input</a>,
+<a href="#iconv-flush-once">iconv-flush-once</a>, <a
+href="#iconv-lossy-replacement-corrupts">iconv-lossy-replacement-corrupts</a>
+and <a href="#iconv-error-conflation">iconv-error-conflation</a> on at
 least glibc iconv and one other iconv implementation.</li>
 <li>Run an install-consumer test with
-<code>BEMAN_TRANSCODE_USE_MODULES=ON</code> for D-12.</li>
+<code>BEMAN_TRANSCODE_USE_MODULES=ON</code> for <a
+href="#module-install-consumer-test">module-install-consumer-test</a>.</li>
 </ul>
 <h2 id="suggested-triage-order">Suggested triage order</h2>
 <ol type="1">
-<li>Resolve the ISO/POSIX scope and optional-dependency questions (P-01,
-P-02).</li>
-<li>Fix silent data loss and malformed output (C-01 through C-04).</li>
-<li>Settle the public error contracts (C-05, C-07, S-01 through
-S-03).</li>
-<li>Regenerate and review wording after the API decisions (S-04, D-01
-through D-04).</li>
-<li>Clean up user-facing build/platform docs and CI (D-05 through
-D-13).</li>
+<li>Resolve the ISO/POSIX scope and optional-dependency questions (<a
+href="#optional-iconv-story">optional-iconv-story</a>, <a
+href="#posix-type-in-wording">posix-type-in-wording</a>).</li>
+<li>Fix silent data loss and malformed output (<a
+href="#sniff-consumes-single-pass">sniff-consumes-single-pass</a>, <a
+href="#iconv-small-buffer-loses-input">iconv-small-buffer-loses-input</a>,
+<a href="#iconv-flush-once">iconv-flush-once</a> and <a
+href="#iconv-lossy-replacement-corrupts">iconv-lossy-replacement-corrupts</a>).</li>
+<li>Settle the public error contracts (<a
+href="#iconv-error-conflation">iconv-error-conflation</a>, <a
+href="#empty-output-as-unsupported-target">empty-output-as-unsupported-target</a>,
+<a href="#invalid-char32-contract">invalid-char32-contract</a>, <a
+href="#iconv-lossy-recovery-policy">iconv-lossy-recovery-policy</a> and
+<a href="#fffd-error-sentinel">fffd-error-sentinel</a>).</li>
+<li>Regenerate and review wording after the API decisions (<a
+href="#synopsis-free-standing-prose">synopsis-free-standing-prose</a>,
+<a href="#duplicate-author-email">duplicate-author-email</a>, <a
+href="#feature-test-macro-placeholders">feature-test-macro-placeholders</a>,
+<a href="#utf32-bom-sniffing-claim">utf32-bom-sniffing-claim</a> and <a
+href="#revision-drift">revision-drift</a>).</li>
+<li>Clean up user-facing build/platform docs and CI (<a
+href="#build-instructions-framework-and-standard">build-instructions-framework-and-standard</a>,
+<a href="#compiler-support-vs-cmake">compiler-support-vs-cmake</a>, <a
+href="#table-codec-documented-as-public">table-codec-documented-as-public</a>,
+<a href="#icu-iconv-claim">icu-iconv-claim</a>, <a
+href="#root-file-named-dash">root-file-named-dash</a>, <a
+href="#stale-handoff-guide">stale-handoff-guide</a>, <a
+href="#manual-lint-duplicate">manual-lint-duplicate</a>, <a
+href="#module-install-consumer-test">module-install-consumer-test</a>
+and <a href="#telemetry-shebang">telemetry-shebang</a>).</li>
 <li>Complete fresh C++, wording, install, and cross-iconv
 verification.</li>
 </ol>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/review-findings-2026-09-11.md">docs/review-findings-2026-09-11.md</a> at e81d90eea5b1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/review-findings-2026-09-11.md">docs/review-findings-2026-09-11.md</a> at a094bc8038bc.</footer>
 </body>
 </html>
