@@ -70,6 +70,9 @@ The design changed, and the wording is regenerated from the reference implementa
 - An encoding chosen at run time no longer needs a hand-written `switch` to reach code points.
   `whatwg::dynamic_decoder` and `whatwg::dynamic_encoder` are codec objects for it, and the bulk helpers take the encoding as a value or a label.
   [Template Parameter vs Runtime Selection](#template-parameter-vs-runtime-selection) says what each costs.
+- `decode_to_or_error` and `encode_to_or_error` collect a whole text or return the first error, in WHATWG and codec-object forms.
+  They are the eager counterparts of the `_or_error` views, as `iconv_transcode_to_or_error` already was for the `iconv` adaptor.
+- [The Codec Protocol Is a Coalgebra](#the-codec-protocol-is-a-coalgebra) names the shape the codec concepts have, and derives from it the decisions the rest of the rationale argues one at a time.
 - The namespace and `single_byte_text_encoder` are open questions for SG16.
 
 ### Wording
@@ -375,6 +378,21 @@ whatwg::decode_into<C>(r, out)  is  ranges::copy(r | whatwg::decode<C>, out)
 whatwg::encode_into<C>(r, out)  is  ranges::copy(r | whatwg::encode<C>, out)
 ```
 
+Two more answer the question the `_or_error` views leave with the caller: the whole text, or the first thing wrong with it.
+
+```cpp
+decode_to_or_error(r, codec)            ->  expected<vector<char32_t>, whatwg::error>
+encode_to_or_error<Cont>(r, codec)      ->  expected<Cont, whatwg::error>
+whatwg::decode_to_or_error<C>(r)        is  decode_to_or_error(r, whatwg::decoder<C>{})
+whatwg::encode_to_or_error<C, Cont>(r)  is  encode_to_or_error<Cont>(r, whatwg::encoder<C>{})
+```
+
+Each runs the `_or_error` pipeline it names and collects the values, or stops at the first element that holds an error and returns that error instead.
+Nothing after the first error is examined.
+`ranges::to` does not do this: collecting a range of `expected<T, E>` into an `expected<vector<T>, E>` is what functional libraries call sequencing the range through the `expected` applicative, first error wins, and the standard has no spelling for it.
+`iconv_transcode_to_or_error` already answered the same question for the `iconv` adaptor; these are its WHATWG and codec-object counterparts.
+An encoding chosen at run time goes through the codec-object form with `whatwg::dynamic_decoder` or `whatwg::dynamic_encoder`.
+
 ## Design Rationale
 
 ### The Status Quo
@@ -457,6 +475,44 @@ Same four bytes, different text, and which reading applies depends on how many `
 
 WHATWG's state machines are designed as forward-only decoders, resetting their state at each character boundary, and bidirectional iteration would require caching all byte offsets during forward traversal.
 The encodings are like that. The implementation has no choice.
+
+### The Codec Protocol Is a Coalgebra
+
+The codec concepts in [Decoder and Encoder Concepts](#decoder-and-encoder-concepts) were arrived at one requirement at a time, and each is argued on its own below.
+They also have a shape, and naming it says why the pieces are the ones they are.
+
+A decoder's `decode_one` takes a seed, the input position together with whatever state the codec carries, and produces one step: a scalar value and the advanced seed, an error and the advanced seed, or, with `is_empty`, the advanced seed alone.
+That is the step type of stream fusion [@stream-fusion], `Done | Yield a s | Skip s`, and a function from a seed to one step is a coalgebra.
+`decode_view` is the unfold of that coalgebra, realised as an iterator rather than as a list: each increment runs the coalgebra until it yields, and the iterator's position is the seed.
+The companion paper on recursive tree algorithms [@D4322] calls the operation `unfold_with`.
+There the embedding allocates one layer of a tree; here it advances an iterator.
+
+Several decisions follow from the shape, and not only from the case made for each:
+
+- *The state lives in the codec, and a codec is `semiregular`.*
+  A coalgebra is a function of its seed, so the seed has to hold everything the next step depends on.
+  That is why `begin()` starts from a fresh copy of the codec and the range carries nothing.
+- *`is_empty` exists.*
+  The coalgebra is one step, not a loop.
+  An escape sequence that only changes the decoder's mode consumes input and yields nothing, and `Skip` is the honest result.
+  Without it the codec would loop internally and the view would loop around it.
+- *`flush` exists.*
+  `Done` is the coalgebra's decision, not the sentinel's.
+  A seed whose input is exhausted may still yield, as a decoder that stopped mid-sequence yields a truncation error, which is why the view asks `flush()` again after each engaged result until it declines.
+- *Forward-only is structural.*
+  An unfold produces a sequence one step at a time, and such a sequence has no random access.
+  The `single_byte_` refinements are the one case where the coalgebra factors: when every byte decodes on its own, the view is a transform of the byte range, a map rather than an unfold, and random access survives.
+  It is a property the codec declares, not one the view can supply.
+
+An encoder's `encode_one` runs the other way, and the asymmetry between the two views has the same explanation.
+One scalar value becomes zero to eight bytes, so `encode_view` is a flattening, `concat_map` rather than `unfold`, and that is why it buffers where `decode_view` holds one element.
+
+`transcode(from, to)` is specified as `decode(from) | encode(to)`, with no transcoder type.
+In these terms a transcoding pipeline run to completion is an unfold whose output is consumed by a fold, a hylomorphism, and the fusion law for that composition says the intermediate sequence of scalar values need never exist.
+Range laziness is what carries the law out, and the paper's claim that `whatwg::transcode<From, To>` materialises nothing is that law stated for this library.
+The `_or_error` views do not compose the same way, and that too is the shape: `unicode_scalar_range` asks for `char32_t`, so a decode error has to be settled before an encoder sees the value.
+Composing two error-producing stages is a monadic bind, not the functor-level composition `decode | encode` is, and the proposal declines to spell it.
+The bulk `_or_error` helpers in [Bulk conversion to owned storage](#bulk-conversion-to-owned-storage) are the eager sequencing of one stage's results, which is as far as the composition goes.
 
 ## Design
 
@@ -1250,6 +1306,13 @@ For codecs where encode is defined, roundtrip tests verify that `encode(decode(b
 
 Bulk collection through `ranges::to` and output-iterator paths via `ranges::copy`
 are covered alongside the named helpers that forward to them.
+
+### Order-Sensitive Inputs
+
+A roundtrip is not a sufficient test of anything that carries state or order.
+A codec with no state roundtrips even if the view drops codec state, a decoder that ignores `is_empty` or calls `flush` once too few roundtrips every input with no escape sequence and no truncated tail, and `decode(encode(x)) == x` holds for a helper that reports the last error instead of the first.
+So every test of a stateful codec, of `flush` and `is_empty` handling, or of an `_or_error` helper uses an input for which a plausible wrong implementation gives a visibly different answer: the Shift_JIS `81 81 81 40` sequence above, whose reading depends on where the boundary falls; an ISO-2022-JP text that ends mid-escape, so a missing `flush` is a missing error; two errors of different kinds in one input, so first-versus-last is caught; and a codec that counts its calls through a pointer the test owns, so "stopped at the first error" is observed rather than assumed.
+The rule is borrowed from the tree algorithms paper's test discipline [@D4322], where a monotone, idempotent test function could not distinguish a correct fold from a plausible wrong one and a non-idempotent one could.
 
 ## Impact on the Standard
 

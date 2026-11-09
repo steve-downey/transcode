@@ -217,6 +217,31 @@ references:
     issued: { year: 2018 }
     URL: "https://github.com/hsivonen/encoding_rs"
     note: "A Gecko-oriented implementation of the WHATWG Encoding Standard in Rust."
+  - id: stream-fusion
+    citation-label: Stream-Fusion
+    type: paper-conference
+    title: "Stream Fusion: From Lists to Streams to Nothing at All"
+    author:
+      - family: Coutts
+        given: Duncan
+      - family: Leshchinskiy
+        given: Roman
+      - family: Stewart
+        given: Don
+    container-title: "Proceedings of the 12th ACM SIGPLAN International Conference on Functional Programming (ICFP 2007)"
+    issued: { year: 2007 }
+    DOI: "10.1145/1291151.1291199"
+    note: "The `Step` type a decoder's result is an instance of: `Done | Yield a s | Skip s`."
+  - id: D4322
+    citation-label: D4322
+    type: article
+    title: "Algorithms for Trees"
+    author:
+      - family: Downey
+        given: Steve
+    issued: { year: 2026 }
+    URL: "https://github.com/bemanproject/typeclass/blob/main/papers/algorithms-for-trees.md"
+    note: "WG21 D4322R0, in progress. The fold and unfold verbs over recursive structures, `fold_fix`, `unfold_fix`, `refold`, `fold_with` and `unfold_with`, and the test discipline this paper borrows."
   - id: schultke-quote
     citation-label: Schultke
     type: personal_communication

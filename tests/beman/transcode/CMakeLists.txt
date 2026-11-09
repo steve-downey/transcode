@@ -673,6 +673,22 @@ if(BEMAN_TRANSCODE_HAS_RANGES_TO)
     )
 endif()
 
+# The _or_error bulk helpers collect with a loop of their own, so this test
+# does not wait on std::ranges::to.
+add_executable(beman.transcode.tests.bulk_or_error)
+target_sources(
+    beman.transcode.tests.bulk_or_error
+    PRIVATE bulk_or_error.test.cpp
+)
+target_include_directories(
+    beman.transcode.tests.bulk_or_error
+    PRIVATE ${TEST_INCLUDE_DIR}
+)
+target_link_libraries(
+    beman.transcode.tests.bulk_or_error
+    PRIVATE beman::transcode Catch2::Catch2WithMain
+)
+
 add_executable(beman.transcode.tests.iconv_bulk)
 target_sources(beman.transcode.tests.iconv_bulk PRIVATE iconv_bulk.test.cpp)
 target_include_directories(
@@ -752,6 +768,7 @@ catch_discover_tests(beman.transcode.tests.transcode_view)
 if(BEMAN_TRANSCODE_HAS_RANGES_TO)
     catch_discover_tests(beman.transcode.tests.bulk_transcode)
 endif()
+catch_discover_tests(beman.transcode.tests.bulk_or_error)
 catch_discover_tests(beman.transcode.tests.iconv_bulk)
 catch_discover_tests(beman.transcode.tests.iconv_null_term)
 

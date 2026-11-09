@@ -2,7 +2,8 @@
 //
 // The eager bulk helpers in their WHATWG form: decode_to, encode_to,
 // decode_into and encode_into, each taking the encoding either as a template
-// parameter or as a value chosen at run time.  The codec-object forms are in
+// parameter or as a value chosen at run time, and the all-or-first-error forms
+// decode_to_or_error and encode_to_or_error.  The codec-object forms are in
 // <beman/transcode/bulk_transcode.hpp>.
 //
 // Every one is a one-line forward to the pipeline it names.  That is the whole
@@ -16,33 +17,40 @@
 #include <beman/transcode/config.hpp>
 #include <beman/transcode/config_generated.hpp>
 
-// A library without `ranges::to` cannot provide these, and says so by not
-// declaring them.  The wording is generated from a toolchain that has it; a
-// toolchain that does not would drop the whole clause, which `make
-// wording-check` reports as a diff rather than passing over in silence.
-#if BEMAN_TRANSCODE_HAS_RANGES_TO
+#include <beman/transcode/bulk_transcode.hpp>
+#include <beman/transcode/concepts.hpp>
+#include <beman/transcode/whatwg/decode_view.hpp>
+#include <beman/transcode/whatwg/decoder.hpp>
+#include <beman/transcode/whatwg/encode_view.hpp>
+#include <beman/transcode/whatwg/encoder.hpp>
+#include <beman/transcode/whatwg/encoding.hpp>
+#include <beman/transcode/whatwg/error.hpp>
+#include <beman/transcode/whatwg/label.hpp>
+#include <beman/transcode/detail/whatwg_dispatch.hpp>
+#include <beman/transcode/detail/whatwg_encode_select.hpp>
 
-    #include <beman/transcode/concepts.hpp>
-    #include <beman/transcode/whatwg/decode_view.hpp>
-    #include <beman/transcode/whatwg/encode_view.hpp>
-    #include <beman/transcode/whatwg/encoding.hpp>
-    #include <beman/transcode/whatwg/label.hpp>
-    #include <beman/transcode/detail/whatwg_dispatch.hpp>
-    #include <beman/transcode/detail/whatwg_encode_select.hpp>
+#if !BEMAN_TRANSCODE_USE_MODULES()
+    #include <algorithm>
+    #include <expected>
+    #include <iterator>
+    #include <optional>
+    #include <ranges>
+    #include <string>
+    #include <string_view>
+    #include <type_traits>
+    #include <utility>
+    #include <vector>
 
-    #if !BEMAN_TRANSCODE_USE_MODULES()
-        #include <algorithm>
-        #include <iterator>
-        #include <optional>
-        #include <ranges>
-        #include <string>
-        #include <string_view>
-        #include <type_traits>
-        #include <utility>
-        #include <vector>
-
-    #endif
+#endif
 namespace beman::transcoding::whatwg {
+
+// A library without `ranges::to` cannot provide the collecting and copying
+// helpers, and says so by not declaring them.  The wording is generated from
+// a toolchain that has it; a toolchain that does not would drop them from the
+// clause, which `make wording-check` reports as a diff rather than passing
+// over in silence.  The _or_error forms collect with a loop of their own and
+// are declared regardless.
+#if BEMAN_TRANSCODE_HAS_RANGES_TO
 
 // \ref{transcode.bulk}, eager bulk conversion
 
@@ -78,9 +86,21 @@ constexpr void decode_into(R&& source, encoding e, Output output);
 template <unicode_scalar_range R, std::output_iterator<char> Output>
 constexpr bool encode_into(R&& source, encoding e, Output output);
 
+#endif // BEMAN_TRANSCODE_HAS_RANGES_TO
+
+// \ref{transcode.bulk}, or the first error
+
+template <encoding C, legacy_byte_range R>
+constexpr std::expected<std::vector<char32_t>, error> decode_to_or_error(R&& source);
+
+template <encoding C, typename Container = std::string, unicode_scalar_range R>
+constexpr std::expected<Container, error> encode_to_or_error(R&& source);
+
 // ---------------------------------------------------------------------------
 // Out-of-line definitions
 // ---------------------------------------------------------------------------
+
+#if BEMAN_TRANSCODE_HAS_RANGES_TO
 
 //! \returns-expr
 //! \remarks Each of these is the pipeline it names, run to completion.  They
@@ -184,7 +204,33 @@ constexpr bool encode_into(R&& source, encoding e, Output output) {
     });
 }
 
+#endif // BEMAN_TRANSCODE_HAS_RANGES_TO
+
+//! \returns `decode_to_or_error(std::forward<R>(source), whatwg::decoder<C>{})`
+//! \iref{transcode.bulk}.
+//! \remarks `whatwg::decode_to<C>(source)` with the errors reported rather than
+//! substituted: the whole text as scalar values, or the first error the
+//! Encoding Standard's decoder for `C` reports in it.  For an encoding chosen
+//! at run time, `decode_to_or_error(source, whatwg::dynamic_decoder(e))`
+//! \iref{transcode.whatwg.dynamic}.
+template <encoding C, legacy_byte_range R>
+constexpr std::expected<std::vector<char32_t>, error> decode_to_or_error(R&& source) {
+    return transcoding::decode_to_or_error(std::forward<R>(source), whatwg::decoder<C>{});
+}
+
+//! \returns `encode_to_or_error<Container>(std::forward<R>(source),
+//! whatwg::encoder<C>{})` \iref{transcode.bulk}.
+//! \remarks `whatwg::encode_to<C, Container>(source)` with the errors
+//! reported rather than substituted: the whole text as bytes, or the first
+//! scalar value that is not a Unicode scalar value or that `C` has no
+//! representation for.
+//!
+//! *Mandates:* The Encoding Standard defines an encoder for `C`.
+template <encoding C, typename Container, unicode_scalar_range R>
+constexpr std::expected<Container, error> encode_to_or_error(R&& source) {
+    return transcoding::encode_to_or_error<Container>(std::forward<R>(source), whatwg::encoder<C>{});
+}
+
 } // namespace beman::transcoding::whatwg
 
-#endif // BEMAN_TRANSCODE_HAS_RANGES_TO
 #endif // INCLUDE_BEMAN_TRANSCODE_WHATWG_BULK_HPP

@@ -269,6 +269,9 @@ Legend: ✅ implemented · n/a architectural model doesn't support this ·
 | **Bulk decode → container** | ✅ `whatwg::decode_to<C>(r)` | ✅ `decode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
 | **Bulk encode → container** | ✅ `whatwg::encode_to<C,Cont>(r)` | ✅ `encode_to(codec,r)` | n/a ¹ | ✅ `v\|ranges::to<>()` |
 | **Bulk transcode → container** | n/a ² | n/a ² | ✅ `iconv_transcode_to(range,f,t)` | n/a ² |
+| **Bulk decode → container or first error** | ✅ `whatwg::decode_to_or_error<C>(r)` | ✅ `decode_to_or_error(r,codec)` | n/a ¹ | 🔴 |
+| **Bulk encode → container or first error** | ✅ `whatwg::encode_to_or_error<C,Cont>(r)` | ✅ `encode_to_or_error<Cont>(r,codec)` | n/a ¹ | 🔴 |
+| **Bulk transcode → container or first error** | n/a ² | n/a ² | ✅ `iconv_transcode_to_or_error(range,f,t)` | n/a ² |
 | **Bulk decode → output iter** | ✅ `whatwg::decode_into<C>(r,out)` | ✅ `decode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
 | **Bulk encode → output iter** | ✅ `whatwg::encode_into<C>(r,out)` | ✅ `encode_into(codec,r,out)` | n/a ¹ | ✅ `ranges::copy(v, out)` |
 | **Bulk transcode → output iter** | n/a ² | n/a ² | ✅ `iconv_transcode_into(range,f,t,out)` | n/a ² |
@@ -341,6 +344,24 @@ auto cps2     = whatwg::decode_to<whatwg::encoding::utf_8>(bytes);
 auto encoded2 = whatwg::encode_to<whatwg::encoding::shift_jis, std::string>(codepoints);
 whatwg::decode_into<whatwg::encoding::utf_8>(bytes, std::back_inserter(vec));
 whatwg::encode_into<whatwg::encoding::utf_8>(codepoints, std::back_inserter(str));
+```
+
+The `_or_error` forms collect the whole text or return the first error, as
+`std::expected`.  They run the `_or_error` view and stop at the first element
+holding an error; nothing after it is examined.  `ranges::to` has no
+equivalent, and they do not need it, so they are available on every toolchain.
+
+```cpp
+// Whole text or first error
+std::expected<std::vector<char32_t>, whatwg::error> cps3 =
+    whatwg::decode_to_or_error<whatwg::encoding::utf_8>(bytes);
+std::expected<std::string, whatwg::error> encoded3 =
+    whatwg::encode_to_or_error<whatwg::encoding::windows_1252>(codepoints);
+
+// The same over a codec object, which is also the route for an encoding
+// chosen at run time
+auto cps4 = decode_to_or_error(bytes, whatwg::dynamic_decoder(whatwg::encoding::iso_8859_15));
+auto enc4 = encode_to_or_error<std::vector<char>>(codepoints, my_codec{});
 ```
 
 Each helper is a one-line forward to the pipeline it names, with no measurable
