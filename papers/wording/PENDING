@@ -15,8 +15,3 @@
 # This does not defer correctness, only the staleness report.
 # `make wording-check` regenerates and diffs, and ignores this file entirely,
 # so a paper revision still cannot go out against stale wording.
-
-# 2026-11-09: decode_to_or_error / encode_to_or_error added in both forms; the
-# [transcode.bulk] fragment and the synopsis need a regeneration.
-include/beman/transcode/bulk_transcode.hpp
-include/beman/transcode/whatwg/bulk.hpp

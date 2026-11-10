@@ -393,6 +393,14 @@ namespace std {
   template<unicode_scalar_range R, output_iterator<char> Output>
   constexpr bool encode_into(R&& source, encoding e, Output output);
 
+  // @[transcode.bulk]@, or the first error
+
+  template<encoding C, legacy_byte_range R>
+  constexpr expected<vector<char32_t>, error> decode_to_or_error(R&& source);
+
+  template<encoding C, typename Container = string, unicode_scalar_range R>
+  constexpr expected<Container, error> encode_to_or_error(R&& source);
+
   // @[transcode.bulk]@, eager bulk conversion
 
   template<legacy_byte_range R, text_decoder Codec>
@@ -406,6 +414,16 @@ namespace std {
 
   template<unicode_scalar_range R, text_encoder Codec, output_iterator<char> Output>
   constexpr void encode_into(R&& source, Codec codec, Output output);
+
+  // @[transcode.bulk]@, or the first error
+
+  template<legacy_byte_range R, text_decoder Codec>
+  constexpr expected<vector<char32_t>, whatwg::error> decode_to_or_error(R&& source,
+                                                                         Codec codec);
+
+  template<typename Container = string, unicode_scalar_range R, text_encoder Codec>
+  constexpr expected<Container, whatwg::error> encode_to_or_error(R&& source,
+                                                                  Codec codec);
 
   // @[transcode.whatwg.sniff]@, byte order mark sniffing
 

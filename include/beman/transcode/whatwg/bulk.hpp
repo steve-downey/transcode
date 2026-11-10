@@ -17,15 +17,17 @@
 #include <beman/transcode/config.hpp>
 #include <beman/transcode/config_generated.hpp>
 
-#include <beman/transcode/bulk_transcode.hpp>
+// Not <beman/transcode/bulk_transcode.hpp>: the umbrella header includes this
+// one first, and the wording is generated only from the headers it includes
+// directly, so a nested include here would drop the codec-object bulk helpers
+// from [transcode.bulk].  The _or_error forms below collect directly instead.
 #include <beman/transcode/concepts.hpp>
 #include <beman/transcode/whatwg/decode_view.hpp>
-#include <beman/transcode/whatwg/decoder.hpp>
 #include <beman/transcode/whatwg/encode_view.hpp>
-#include <beman/transcode/whatwg/encoder.hpp>
 #include <beman/transcode/whatwg/encoding.hpp>
 #include <beman/transcode/whatwg/error.hpp>
 #include <beman/transcode/whatwg/label.hpp>
+#include <beman/transcode/detail/collect_or_error.hpp>
 #include <beman/transcode/detail/whatwg_dispatch.hpp>
 #include <beman/transcode/detail/whatwg_encode_select.hpp>
 
@@ -215,7 +217,8 @@ constexpr bool encode_into(R&& source, encoding e, Output output) {
 //! \iref{transcode.whatwg.dynamic}.
 template <encoding C, legacy_byte_range R>
 constexpr std::expected<std::vector<char32_t>, error> decode_to_or_error(R&& source) {
-    return transcoding::decode_to_or_error(std::forward<R>(source), whatwg::decoder<C>{});
+    return transcoding::detail::collect_or_error<std::vector<char32_t>, error>(std::forward<R>(source) |
+                                                                               whatwg::decode_or_error<C>);
 }
 
 //! \returns `encode_to_or_error<Container>(std::forward<R>(source),
@@ -228,7 +231,8 @@ constexpr std::expected<std::vector<char32_t>, error> decode_to_or_error(R&& sou
 //! *Mandates:* The Encoding Standard defines an encoder for `C`.
 template <encoding C, typename Container, unicode_scalar_range R>
 constexpr std::expected<Container, error> encode_to_or_error(R&& source) {
-    return transcoding::encode_to_or_error<Container>(std::forward<R>(source), whatwg::encoder<C>{});
+    return transcoding::detail::collect_or_error<Container, error>(std::forward<R>(source) |
+                                                                   whatwg::encode_or_error<C>);
 }
 
 } // namespace beman::transcoding::whatwg
