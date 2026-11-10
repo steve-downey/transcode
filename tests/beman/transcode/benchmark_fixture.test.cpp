@@ -35,6 +35,7 @@ using beman::transcoding::bench::end_benchmark;
 using beman::transcoding::bench::load_corpus;
 using beman::transcoding::bench::metadata_json;
 using beman::transcoding::bench::parse_count_runs;
+using beman::transcoding::bench::parse_jobs;
 using beman::transcoding::bench::parse_load_average;
 using beman::transcoding::bench::read_load_average;
 using beman::transcoding::bench::record_input;
@@ -285,7 +286,8 @@ TEST_CASE("metadata_json records the machine state", "[bench][metadata]") {
 
     std::string before = metadata_json(benchmark_records());
     CHECK(before.find("\"load_start\": null") != std::string::npos);
-    for (const char* key : {"\"kernel\": ", "\"cpus\": ", "\"governor\": ", "\"turbo\": ", "\"load_end\": "})
+    for (const char* key :
+         {"\"kernel\": ", "\"cpus\": ", "\"governor\": ", "\"turbo\": ", "\"load_end\": ", "\"jobs\": "})
         CHECK(before.find(key) != std::string::npos);
 
     begin_run();
@@ -309,6 +311,19 @@ TEST_CASE("parse_count_runs turns anything else into 0", "[bench][count]") {
     CHECK(parse_count_runs("-1") == 0u);
     CHECK(parse_count_runs("5x") == 0u);
     CHECK(parse_count_runs("many") == 0u);
+}
+
+TEST_CASE("parse_jobs reads a positive count", "[bench][metadata]") {
+    CHECK(parse_jobs("1") == 1u);
+    CHECK(parse_jobs("8") == 8u);
+}
+
+TEST_CASE("parse_jobs turns anything else into 1", "[bench][metadata]") {
+    CHECK(parse_jobs(nullptr) == 1u);
+    CHECK(parse_jobs("") == 1u);
+    CHECK(parse_jobs("0") == 1u);
+    CHECK(parse_jobs("-2") == 1u);
+    CHECK(parse_jobs("8x") == 1u);
 }
 
 TEST_CASE("begin_count counts each benchmark once", "[bench][count]") {
