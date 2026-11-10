@@ -95,8 +95,34 @@ $(function(){initNavTree('bulk__transcode_8hpp.html','',''); });
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="config_8hpp_source.html">beman/transcode/config.hpp</a>&gt;</code><br />
 <code>#include &lt;beman/transcode/config_generated.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="codec__concepts_8hpp_source.html">beman/transcode/codec_concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="decode__view_8hpp_source.html">beman/transcode/decode_view.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="collect__or__error_8hpp_source.html">beman/transcode/detail/collect_or_error.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="encode__view_8hpp_source.html">beman/transcode/encode_view.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="whatwg_2error_8hpp_source.html">beman/transcode/whatwg/error.hpp</a>&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;expected&gt;</code><br />
+<code>#include &lt;iterator&gt;</code><br />
+<code>#include &lt;ranges&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;utility&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
 </div>
 <p><a href="bulk__transcode_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:beman" id="r_beman"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman.html">beman</a></td></tr>
+<tr class="memitem:beman_3A_3Atranscoding" id="r_beman_3A_3Atranscoding"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html">beman::transcoding</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:acc651c95b4fb3191e2d325ecfe636855" id="r_acc651c95b4fb3191e2d325ecfe636855"><td class="memTemplParams" colspan="2">template&lt;legacy_byte_range R, text_decoder Codec&gt; </td></tr>
+<tr class="memitem:acc651c95b4fb3191e2d325ecfe636855 template"><td class="memItemLeft" align="right" valign="top">constexpr std::expected&lt; std::vector&lt; char32_t &gt;, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">whatwg::error</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#acc651c95b4fb3191e2d325ecfe636855">beman::transcoding::decode_to_or_error</a> (R &amp;&amp;source, Codec codec)</td></tr>
+<tr class="memitem:a114b4b02ba134ca57ea4ae7222a85e5c" id="r_a114b4b02ba134ca57ea4ae7222a85e5c"><td class="memTemplParams" colspan="2">template&lt;typename Container = std::string, unicode_scalar_range R, text_encoder Codec&gt; </td></tr>
+<tr class="memitem:a114b4b02ba134ca57ea4ae7222a85e5c template"><td class="memItemLeft" align="right" valign="top">constexpr std::expected&lt; Container, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">whatwg::error</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html#a114b4b02ba134ca57ea4ae7222a85e5c">beman::transcoding::encode_to_or_error</a> (R &amp;&amp;source, Codec codec)</td></tr>
+</table>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">

@@ -171,6 +171,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a304fac24436817f056512460400c310e" id="r_a304fac24436817f056512460400c310e"><td class="memTemplParams" colspan="2">template&lt;legacy_byte_range R&gt; <br />
 requires std::ranges::forward_range&lt;R&gt;</td></tr>
 <tr class="memitem:a304fac24436817f056512460400c310e template"><td class="memItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a304fac24436817f056512460400c310e">bom_sniff</a> (R &amp;&amp;r) noexcept</td></tr>
+<tr class="memitem:afdb6e7feff55be4ac3ffaa358e2cc6d1" id="r_afdb6e7feff55be4ac3ffaa358e2cc6d1"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> C, legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:afdb6e7feff55be4ac3ffaa358e2cc6d1 template"><td class="memItemLeft" align="right" valign="top">constexpr std::expected&lt; std::vector&lt; char32_t &gt;, <a class="el" href="#ab07481207f475a505dd3afb5d24ffe77">error</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afdb6e7feff55be4ac3ffaa358e2cc6d1">decode_to_or_error</a> (R &amp;&amp;source)</td></tr>
+<tr class="memitem:a0e698e67d530b3638f2ff32a565df6e2" id="r_a0e698e67d530b3638f2ff32a565df6e2"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> C, typename Container = std::string, unicode_scalar_range R&gt; </td></tr>
+<tr class="memitem:a0e698e67d530b3638f2ff32a565df6e2 template"><td class="memItemLeft" align="right" valign="top">constexpr std::expected&lt; Container, <a class="el" href="#ab07481207f475a505dd3afb5d24ffe77">error</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e698e67d530b3638f2ff32a565df6e2">encode_to_or_error</a> (R &amp;&amp;source)</td></tr>
 <tr class="memitem:ae1ae051ea51791b10889c2b60c080af5" id="r_ae1ae051ea51791b10889c2b60c080af5"><td class="memItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1dynamic__encoder.html">dynamic_encoder</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae1ae051ea51791b10889c2b60c080af5">make_dynamic_encoder</a> (<a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">whatwg::encoding</a> e)</td></tr>
 <tr class="memitem:adfcc16ee23070a85f60adef94d30bcf1" id="r_adfcc16ee23070a85f60adef94d30bcf1"><td class="memItemLeft" align="right" valign="top">constexpr std::optional&lt; <a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adfcc16ee23070a85f60adef94d30bcf1">get_encoding</a> (std::string_view label) noexcept</td></tr>
 <tr class="memitem:a026954b3ae033f10fa366ffe1f9e6b44" id="r_a026954b3ae033f10fa366ffe1f9e6b44"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a026954b3ae033f10fa366ffe1f9e6b44">has_encoder</a> (<a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">whatwg::encoding</a> <a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a>) noexcept</td></tr>
@@ -315,6 +319,66 @@ requires std::ranges::forward_range&lt;R&gt;</div>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>The encoding <span class="tt">r</span> begins with a byte order mark for: \item <span class="tt"><a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5a2d58586ca53bf1248a6349d97f865bf3">whatwg::encoding::utf_8</a></span>, if <span class="tt">r</span> begins with <span class="tt">EF BB BF</span>; \item <span class="tt"><a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5a0f4291507e17c4c6d550ebdd51087c65">whatwg::encoding::utf_16be</a></span>, if <span class="tt">r</span> begins with <span class="tt">FE FF</span>; \item <span class="tt"><a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5a8995e63b559f0f74f3efa7dc973dd2a8">whatwg::encoding::utf_16le</a></span>, if <span class="tt">r</span> begins with <span class="tt">FF FE</span>; \item <span class="tt">nullopt</span> otherwise. </dd></dl>
 <dl class="section remark"><dt>Remarks</dt><dd>The mark is not consumed: <span class="tt">r</span> can be passed on unchanged. </dd></dl>
+
+</div>
+</div>
+<a id="afdb6e7feff55be4ac3ffaa358e2cc6d1" name="afdb6e7feff55be4ac3ffaa358e2cc6d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afdb6e7feff55be4ac3ffaa358e2cc6d1">&#9670;&#160;</a></span>decode_to_or_error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> C, legacy_byte_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; std::vector&lt; char32_t &gt;, <a class="el" href="#ab07481207f475a505dd3afb5d24ffe77">error</a> &gt; beman::transcoding::whatwg::decode_to_or_error </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>source</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd><span class="tt"><a class="el" href="#afdb6e7feff55be4ac3ffaa358e2cc6d1">decode_to_or_error</a>(std::forward&lt;R&gt;(source), <a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1decoder.html">whatwg::decoder</a>&lt;C&gt;{})</span> \iref{transcode.bulk}. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd><span class="tt">whatwg::decode_to&lt;C&gt;(source)</span> with the errors reported rather than substituted: the whole text as scalar values, or the first error the Encoding Standard's decoder for <span class="tt">C</span> reports in it. For an encoding chosen at run time, <span class="tt">decode_to_or_error(source, whatwg::dynamic_decoder(e))</span> \iref{transcode.whatwg.dynamic}. </dd></dl>
+
+</div>
+</div>
+<a id="a0e698e67d530b3638f2ff32a565df6e2" name="a0e698e67d530b3638f2ff32a565df6e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e698e67d530b3638f2ff32a565df6e2">&#9670;&#160;</a></span>encode_to_or_error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> C, typename Container = std::string, unicode_scalar_range R&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; Container, <a class="el" href="#ab07481207f475a505dd3afb5d24ffe77">error</a> &gt; beman::transcoding::whatwg::encode_to_or_error </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>source</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd><span class="tt"><a class="el" href="#a0e698e67d530b3638f2ff32a565df6e2">encode_to_or_error</a>&lt;Container&gt;(std::forward&lt;R&gt;(source),
+<a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1encoder.html">whatwg::encoder</a>&lt;C&gt;{})</span> \iref{transcode.bulk}. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd><span class="tt">whatwg::encode_to&lt;C, Container&gt;(source)</span> with the errors reported rather than substituted: the whole text as bytes, or the first scalar value that is not a Unicode scalar value or that <span class="tt">C</span> has no representation for.</dd></dl>
+<p><em>Mandates:</em> The Encoding Standard defines an encoder for <span class="tt">C</span>. </p>
 
 </div>
 </div>

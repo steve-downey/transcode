@@ -1,7 +1,7 @@
 var dir_c6fa91ed0dea9e7960231c66537c0486 =
 [
     [ "bom_sniff.hpp", "bom__sniff_8hpp.html", "bom__sniff_8hpp" ],
-    [ "bulk.hpp", "bulk_8hpp.html", null ],
+    [ "bulk.hpp", "bulk_8hpp.html", "bulk_8hpp" ],
     [ "decode_view.hpp", "whatwg_2decode__view_8hpp.html", "whatwg_2decode__view_8hpp" ],
     [ "decoder.hpp", "decoder_8hpp.html", "decoder_8hpp" ],
     [ "dynamic_codec.hpp", "dynamic__codec_8hpp.html", "dynamic__codec_8hpp" ],

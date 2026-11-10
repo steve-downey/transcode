@@ -279,9 +279,11 @@ step 12 of the SG16 response</td>
 <td>Eager bulk conversion</td>
 <td><code>decode_to</code>, <code>encode_to</code>,
 <code>decode_into</code>, <code>encode_into</code>, each in a WHATWG and
-a pluggable form</td>
+a pluggable form; <code>decode_to_or_error</code>,
+<code>encode_to_or_error</code>, the whole text or the first error,
+likewise in both forms</td>
 <td><code>whatwg/bulk.hpp</code>, <code>bulk_transcode.hpp</code>, done
-2026-09-08</td>
+2026-09-08; the <code>_or_error</code> pair added 2026-11-09</td>
 </tr>
 <tr>
 <td><code>transcode.iconv</code></td>
@@ -636,6 +638,6 @@ perform. A single enumeration would have to either drop the distinction
 or carry both sets, and the second is two vocabularies with one name.
 See <code>docs/p2728-alignment.md</code>.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/wording-outline.md">docs/wording-outline.md</a> at bbc8d92e1ffb.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/wording-outline.md">docs/wording-outline.md</a> at cdc790a16728.</footer>
 </body>
 </html>

@@ -429,6 +429,27 @@ UTF-to-UTF conversion.</p>
 <td>n/a ²</td>
 </tr>
 <tr>
+<td><strong>Bulk decode → container or first error</strong></td>
+<td>✅ <code>whatwg::decode_to_or_error&lt;C&gt;(r)</code></td>
+<td>✅ <code>decode_to_or_error(r,codec)</code></td>
+<td>n/a ¹</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td><strong>Bulk encode → container or first error</strong></td>
+<td>✅ <code>whatwg::encode_to_or_error&lt;C,Cont&gt;(r)</code></td>
+<td>✅ <code>encode_to_or_error&lt;Cont&gt;(r,codec)</code></td>
+<td>n/a ¹</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td><strong>Bulk transcode → container or first error</strong></td>
+<td>n/a ²</td>
+<td>n/a ²</td>
+<td>✅ <code>iconv_transcode_to_or_error(range,f,t)</code></td>
+<td>n/a ²</td>
+</tr>
+<tr>
 <td><strong>Bulk decode → output iter</strong></td>
 <td>✅ <code>whatwg::decode_into&lt;C&gt;(r,out)</code></td>
 <td>✅ <code>decode_into(codec,r,out)</code></td>
@@ -565,6 +586,23 @@ class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> encoded2 <span class="op">=</span> whatwg<span class="op">::</span>encode_to<span class="op">&lt;</span>whatwg<span class="op">::</span>encoding<span class="op">::</span>shift_jis<span class="op">,</span> <span class="bu">std::</span>string<span class="op">&gt;(</span>codepoints<span class="op">);</span></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>whatwg<span class="op">::</span>decode_into<span class="op">&lt;</span>whatwg<span class="op">::</span>encoding<span class="op">::</span>utf_8<span class="op">&gt;(</span>bytes<span class="op">,</span> <span class="bu">std::</span>back_inserter<span class="op">(</span>vec<span class="op">));</span></span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>whatwg<span class="op">::</span>encode_into<span class="op">&lt;</span>whatwg<span class="op">::</span>encoding<span class="op">::</span>utf_8<span class="op">&gt;(</span>codepoints<span class="op">,</span> <span class="bu">std::</span>back_inserter<span class="op">(</span>str<span class="op">));</span></span></code></pre></div>
+<p>The <code>_or_error</code> forms collect the whole text or return the
+first error, as <code>std::expected</code>. They run the
+<code>_or_error</code> view and stop at the first element holding an
+error; nothing after it is examined. <code>ranges::to</code> has no
+equivalent, and they do not need it, so they are available on every
+toolchain.</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Whole text or first error</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>expected<span class="op">&lt;</span><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">char32_t</span><span class="op">&gt;,</span> whatwg<span class="op">::</span>error<span class="op">&gt;</span> cps3 <span class="op">=</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    whatwg<span class="op">::</span>decode_to_or_error<span class="op">&lt;</span>whatwg<span class="op">::</span>encoding<span class="op">::</span>utf_8<span class="op">&gt;(</span>bytes<span class="op">);</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>expected<span class="op">&lt;</span><span class="bu">std::</span>string<span class="op">,</span> whatwg<span class="op">::</span>error<span class="op">&gt;</span> encoded3 <span class="op">=</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    whatwg<span class="op">::</span>encode_to_or_error<span class="op">&lt;</span>whatwg<span class="op">::</span>encoding<span class="op">::</span>windows_1252<span class="op">&gt;(</span>codepoints<span class="op">);</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">// The same over a codec object, which is also the route for an encoding</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">// chosen at run time</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> cps4 <span class="op">=</span> decode_to_or_error<span class="op">(</span>bytes<span class="op">,</span> whatwg<span class="op">::</span>dynamic_decoder<span class="op">(</span>whatwg<span class="op">::</span>encoding<span class="op">::</span>iso_8859_15<span class="op">));</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> enc4 <span class="op">=</span> encode_to_or_error<span class="op">&lt;</span><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">char</span><span class="op">&gt;&gt;(</span>codepoints<span class="op">,</span> my_codec<span class="op">{});</span></span></code></pre></div>
 <p>Each helper is a one-line forward to the pipeline it names, with no
 measurable performance difference. Both spellings are supported, and
 both are proposed; see <code>papers/transcode-view.md</code> for the
@@ -1086,10 +1124,10 @@ will be lower.</p>
 </tbody>
 </table>
 <h3 id="reproducing">Reproducing</h3>
-<div class="sourceCode" id="cb12"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the full corpora, build the GCC-16 Perf config, run every suite</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and every baseline library (encoding_rs needs cargo), and write the report</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the full corpora, build the GCC-16 Perf config, run every suite</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and every baseline library (encoding_rs needs cargo), and write the report</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> bench</span></code></pre></div>
 <p>Throughput formula: <code>input_bytes / mean_time_s / 2^20</code>
 MiB/s.</p>
 <hr />
@@ -1168,11 +1206,11 @@ claimed here until someone runs it.</p>
 beman.transcode into your project</h2>
 <h3 id="build">Build</h3>
 <p>You can build transcode using a CMake workflow preset:</p>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--workflow</span> <span class="at">--preset</span> gcc-release</span></code></pre></div>
-<p>To list available workflow presets, you can invoke:</p>
 <div class="sourceCode" id="cb14"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--list-presets</span><span class="op">=</span>workflow</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--workflow</span> <span class="at">--preset</span> gcc-release</span></code></pre></div>
+<p>To list available workflow presets, you can invoke:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--list-presets</span><span class="op">=</span>workflow</span></code></pre></div>
 <p>For details on building beman.transcode without using a CMake preset,
 refer to the <a href="CONTRIBUTING.html">Contributing
 Guidelines</a>.</p>
@@ -1188,45 +1226,45 @@ href="https://github.com/steve-downey/transcode/blob/main/vcpkg-configuration.js
 <h4 id="manual">Manual</h4>
 <p>To install beman.transcode globally after building with the
 <code>gcc-release</code> preset, you can run:</p>
-<div class="sourceCode" id="cb15"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> cmake <span class="at">--install</span> build/gcc-release</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> cmake <span class="at">--install</span> build/gcc-release</span></code></pre></div>
 <p>Alternatively, to install to a prefix, for example
 <code>/opt/beman</code>, you can run:</p>
-<div class="sourceCode" id="cb16"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> cmake <span class="at">--install</span> build/gcc-release <span class="at">--prefix</span> /opt/beman</span></code></pre></div>
-<p>This will generate the following directory structure:</p>
 <div class="sourceCode" id="cb17"><pre
-class="sourceCode txt"><code class="sourceCode default"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>/opt/beman</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>├── include</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>│   └── beman</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>│       └── transcode</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>│           ├── transcode.hpp</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>│           └── ...</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>└── lib</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    └── cmake</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        └── beman.transcode</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>            ├── beman.transcode-config-version.cmake</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>            ├── beman.transcode-config.cmake</span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>            └── beman.transcode-targets.cmake</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> cmake <span class="at">--install</span> build/gcc-release <span class="at">--prefix</span> /opt/beman</span></code></pre></div>
+<p>This will generate the following directory structure:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>/opt/beman</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>├── include</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>│   └── beman</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>│       └── transcode</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>│           ├── transcode.hpp</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>│           └── ...</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>└── lib</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    └── cmake</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        └── beman.transcode</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>            ├── beman.transcode-config-version.cmake</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>            ├── beman.transcode-config.cmake</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>            └── beman.transcode-targets.cmake</span></code></pre></div>
 <h3 id="cmake-configuration">CMake Configuration</h3>
 <p>If you installed beman.transcode to a prefix, you can specify that
 prefix to your CMake project using <code>CMAKE_PREFIX_PATH</code>; for
 example, <code>-DCMAKE_PREFIX_PATH=/opt/beman</code>.</p>
 <p>You need to bring in the <code>beman.transcode</code> package to
 define the <code>beman::transcode</code> CMake target:</p>
-<div class="sourceCode" id="cb18"><pre
-class="sourceCode cmake"><code class="sourceCode cmake"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">find_package</span>(beman.transcode <span class="ot">REQUIRED</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode cmake"><code class="sourceCode cmake"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">find_package</span>(beman.transcode <span class="ot">REQUIRED</span>)</span></code></pre></div>
 <p>You will then need to add <code>beman::transcode</code> to the link
 libraries of any libraries or executables that include
 <code>beman.transcode</code> headers.</p>
-<div class="sourceCode" id="cb19"><pre
-class="sourceCode cmake"><code class="sourceCode cmake"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">target_link_libraries</span>(<span class="bn">yourlib</span> <span class="ot">PUBLIC</span> <span class="bn">beman::transcode</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode cmake"><code class="sourceCode cmake"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">target_link_libraries</span>(<span class="bn">yourlib</span> <span class="ot">PUBLIC</span> <span class="bn">beman::transcode</span>)</span></code></pre></div>
 <h3 id="using-bemantranscode">Using beman.transcode</h3>
 <p>To use <code>beman.transcode</code> in your C++ project, include an
 appropriate <code>beman.transcode</code> header from your source
 code.</p>
-<div class="sourceCode" id="cb20"><pre
-class="sourceCode c++"><code class="sourceCode cpp"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;beman/transcode/transcode.hpp&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode c++"><code class="sourceCode cpp"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;beman/transcode/transcode.hpp&gt;</span></span></code></pre></div>
 <div class="note">
 <div class="title">
 <p>Note</p>
@@ -1236,6 +1274,6 @@ class="sourceCode c++"><code class="sourceCode cpp"><span id="cb20-1"><a href="#
 spell the include target another way (e.g.
 <code>#include &lt;transcode.hpp&gt;</code>) is unsupported.</p>
 </div>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/README.md">README.md</a> at bbc8d92e1ffb.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/README.md">README.md</a> at cdc790a16728.</footer>
 </body>
 </html>

@@ -2,7 +2,7 @@ var dir_19d3d3c6f4aef79816d3fd4a558f5e3d =
 [
     [ "detail", "dir_9d798d0e78a5d20e3b6770198d219460.html", "dir_9d798d0e78a5d20e3b6770198d219460" ],
     [ "whatwg", "dir_c6fa91ed0dea9e7960231c66537c0486.html", "dir_c6fa91ed0dea9e7960231c66537c0486" ],
-    [ "bulk_transcode.hpp", "bulk__transcode_8hpp.html", null ],
+    [ "bulk_transcode.hpp", "bulk__transcode_8hpp.html", "bulk__transcode_8hpp" ],
     [ "codec_concepts.hpp", "codec__concepts_8hpp.html", "codec__concepts_8hpp" ],
     [ "codec_result.hpp", "codec__result_8hpp.html", "codec__result_8hpp" ],
     [ "concepts.hpp", "concepts_8hpp.html", "concepts_8hpp" ],

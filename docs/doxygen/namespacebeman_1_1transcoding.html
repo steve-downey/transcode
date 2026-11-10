@@ -160,6 +160,10 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:acc651c95b4fb3191e2d325ecfe636855" id="r_acc651c95b4fb3191e2d325ecfe636855"><td class="memTemplParams" colspan="2">template&lt;legacy_byte_range R, text_decoder Codec&gt; </td></tr>
+<tr class="memitem:acc651c95b4fb3191e2d325ecfe636855 template"><td class="memItemLeft" align="right" valign="top">constexpr std::expected&lt; std::vector&lt; char32_t &gt;, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">whatwg::error</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acc651c95b4fb3191e2d325ecfe636855">decode_to_or_error</a> (R &amp;&amp;source, Codec codec)</td></tr>
+<tr class="memitem:a114b4b02ba134ca57ea4ae7222a85e5c" id="r_a114b4b02ba134ca57ea4ae7222a85e5c"><td class="memTemplParams" colspan="2">template&lt;typename Container = std::string, unicode_scalar_range R, text_encoder Codec&gt; </td></tr>
+<tr class="memitem:a114b4b02ba134ca57ea4ae7222a85e5c template"><td class="memItemLeft" align="right" valign="top">constexpr std::expected&lt; Container, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">whatwg::error</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a114b4b02ba134ca57ea4ae7222a85e5c">encode_to_or_error</a> (R &amp;&amp;source, Codec codec)</td></tr>
 <tr class="memitem:a2a8cf435be86f869e1d87473858a15b5" id="r_a2a8cf435be86f869e1d87473858a15b5"><td class="memTemplParams" colspan="2">template&lt;text_decoder Codec&gt; </td></tr>
 <tr class="memitem:a2a8cf435be86f869e1d87473858a15b5 template"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2a8cf435be86f869e1d87473858a15b5">decode</a> (Codec codec={})</td></tr>
 <tr class="memitem:a3486df0560b619e9d31447832d57e33e" id="r_a3486df0560b619e9d31447832d57e33e"><td class="memTemplParams" colspan="2">template&lt;text_decoder Codec&gt; </td></tr>
@@ -315,6 +319,39 @@ template&lt;text_decoder Codec&gt; </div>
 
 </div>
 </div>
+<a id="acc651c95b4fb3191e2d325ecfe636855" name="acc651c95b4fb3191e2d325ecfe636855"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc651c95b4fb3191e2d325ecfe636855">&#9670;&#160;</a></span>decode_to_or_error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;legacy_byte_range R, text_decoder Codec&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; std::vector&lt; char32_t &gt;, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">whatwg::error</a> &gt; beman::transcoding::decode_to_or_error </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>source</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Codec</td>          <td class="paramname"><span class="paramname"><em>codec</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>Let <span class="tt">v</span> be <span class="tt">std::forward&lt;R&gt;(source) | decode_or_error(codec)</span> \iref{transcode.codec.decode}. If an element of <span class="tt">v</span> holds an error, the error of the first such element; otherwise a <span class="tt">vector&lt;char32_t&gt;</span> holding the value of each element of <span class="tt">v</span>, in order. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This is <span class="tt">decode_to(source, codec)</span> with the errors reported rather than substituted: the whole text, or the first thing wrong with it. The elements of <span class="tt">v</span> after the first error are not examined. A codec for an encoding chosen at run time is <span class="tt"><a class="el" href="classbeman_1_1transcoding_1_1whatwg_1_1dynamic__decoder.html">whatwg::dynamic_decoder</a></span> \iref{transcode.whatwg.dynamic}. </dd></dl>
+
+</div>
+</div>
 <a id="a013f0d39e705e5a254e1f70998c65694" name="a013f0d39e705e5a254e1f70998c65694"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a013f0d39e705e5a254e1f70998c65694">&#9670;&#160;</a></span>encode()</h2>
 
@@ -368,6 +405,39 @@ template&lt;text_encoder Codec&gt; </div>
 </table>
 </div><div class="memdoc">
 <p>\seebelow </p><dl class="section return"><dt>Returns</dt><dd><span class="tt">encode(codec)</span> with <span class="tt"><a class="el" href="#aca8839f719a85cf9f24d0f78474b294aae98d2f001da5678b39482efbdf5770dc">error_mode::report</a></span>: the view it adapts to has value type <span class="tt">expected&lt;char, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">whatwg::error</a>&gt;</span>, and an encoding or UTF-32 validation error is reported rather than replaced. </dd></dl>
+
+</div>
+</div>
+<a id="a114b4b02ba134ca57ea4ae7222a85e5c" name="a114b4b02ba134ca57ea4ae7222a85e5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a114b4b02ba134ca57ea4ae7222a85e5c">&#9670;&#160;</a></span>encode_to_or_error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Container = std::string, unicode_scalar_range R, text_encoder Codec&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; Container, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">whatwg::error</a> &gt; beman::transcoding::encode_to_or_error </td>
+          <td>(</td>
+          <td class="paramtype">R &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>source</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Codec</td>          <td class="paramname"><span class="paramname"><em>codec</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>Let <span class="tt">v</span> be <span class="tt">std::forward&lt;R&gt;(source) | encode_or_error(codec)</span> \iref{transcode.codec.encode}. If an element of <span class="tt">v</span> holds an error, the error of the first such element; otherwise a <span class="tt">Container</span> holding the value of each element of <span class="tt">v</span>, in order. </dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>This is <span class="tt">encode_to&lt;Container&gt;(source, codec)</span> with the errors reported rather than substituted. The elements of <span class="tt">v</span> after the first error are not examined, and the encoder is not flushed past it. </dd></dl>
 
 </div>
 </div>

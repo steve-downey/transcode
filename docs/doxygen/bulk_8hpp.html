@@ -95,8 +95,41 @@ $(function(){initNavTree('bulk_8hpp.html','',''); });
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="config_8hpp_source.html">beman/transcode/config.hpp</a>&gt;</code><br />
 <code>#include &lt;beman/transcode/config_generated.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="concepts_8hpp_source.html">beman/transcode/concepts.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="whatwg_2decode__view_8hpp_source.html">beman/transcode/whatwg/decode_view.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="whatwg_2encode__view_8hpp_source.html">beman/transcode/whatwg/encode_view.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="encoding_8hpp_source.html">beman/transcode/whatwg/encoding.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="whatwg_2error_8hpp_source.html">beman/transcode/whatwg/error.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="label_8hpp_source.html">beman/transcode/whatwg/label.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="collect__or__error_8hpp_source.html">beman/transcode/detail/collect_or_error.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="whatwg__dispatch_8hpp_source.html">beman/transcode/detail/whatwg_dispatch.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="whatwg__encode__select_8hpp_source.html">beman/transcode/detail/whatwg_encode_select.hpp</a>&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;expected&gt;</code><br />
+<code>#include &lt;iterator&gt;</code><br />
+<code>#include &lt;optional&gt;</code><br />
+<code>#include &lt;ranges&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;string_view&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
+<code>#include &lt;utility&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
 </div>
 <p><a href="bulk_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:beman" id="r_beman"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman.html">beman</a></td></tr>
+<tr class="memitem:beman_3A_3Atranscoding" id="r_beman_3A_3Atranscoding"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding.html">beman::transcoding</a></td></tr>
+<tr class="memitem:beman_3A_3Atranscoding_3A_3Awhatwg" id="r_beman_3A_3Atranscoding_3A_3Awhatwg"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html">beman::transcoding::whatwg</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:afdb6e7feff55be4ac3ffaa358e2cc6d1" id="r_afdb6e7feff55be4ac3ffaa358e2cc6d1"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> C, legacy_byte_range R&gt; </td></tr>
+<tr class="memitem:afdb6e7feff55be4ac3ffaa358e2cc6d1 template"><td class="memItemLeft" align="right" valign="top">constexpr std::expected&lt; std::vector&lt; char32_t &gt;, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">error</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#afdb6e7feff55be4ac3ffaa358e2cc6d1">beman::transcoding::whatwg::decode_to_or_error</a> (R &amp;&amp;source)</td></tr>
+<tr class="memitem:a0e698e67d530b3638f2ff32a565df6e2" id="r_a0e698e67d530b3638f2ff32a565df6e2"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#a49e2251f301ef9ecd2a4229279507ba5">encoding</a> C, typename Container = std::string, unicode_scalar_range R&gt; </td></tr>
+<tr class="memitem:a0e698e67d530b3638f2ff32a565df6e2 template"><td class="memItemLeft" align="right" valign="top">constexpr std::expected&lt; Container, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">error</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#a0e698e67d530b3638f2ff32a565df6e2">beman::transcoding::whatwg::encode_to_or_error</a> (R &amp;&amp;source)</td></tr>
+</table>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">

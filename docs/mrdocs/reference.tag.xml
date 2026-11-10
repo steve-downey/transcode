@@ -82,6 +82,13 @@
     <arglist>(R&amp;&amp; source, Codec codec)</arglist>
   </member>
   <member kind="function">
+    <type>std::expected&lt;std::vector&lt;char32_t&gt;, whatwg::error&gt;</type>
+    <name>decode_to_or_error</name>
+    <anchorfile>beman/transcoding/decode_to_or_error.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; source, Codec codec)</arglist>
+  </member>
+  <member kind="function">
     <type>auto</type>
     <name>encode</name>
     <anchorfile>beman/transcoding/encode.html</anchorfile>
@@ -106,6 +113,13 @@
     <type>Container</type>
     <name>encode_to</name>
     <anchorfile>beman/transcoding/encode_to.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; source, Codec codec)</arglist>
+  </member>
+  <member kind="function">
+    <type>std::expected&lt;Container, whatwg::error&gt;</type>
+    <name>encode_to_or_error</name>
+    <anchorfile>beman/transcoding/encode_to_or_error.html</anchorfile>
     <anchor/>
     <arglist>(R&amp;&amp; source, Codec codec)</arglist>
   </member>
@@ -188,6 +202,20 @@
     <anchorfile>beman/transcoding/whatwg/bom_sniff.html</anchorfile>
     <anchor/>
     <arglist>(R&amp;&amp; r)</arglist>
+  </member>
+  <member kind="function">
+    <type>std::expected&lt;std::vector&lt;char32_t&gt;, error&gt;</type>
+    <name>decode_to_or_error</name>
+    <anchorfile>beman/transcoding/whatwg/decode_to_or_error.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; source)</arglist>
+  </member>
+  <member kind="function">
+    <type>std::expected&lt;Container, error&gt;</type>
+    <name>encode_to_or_error</name>
+    <anchorfile>beman/transcoding/whatwg/encode_to_or_error.html</anchorfile>
+    <anchor/>
+    <arglist>(R&amp;&amp; source)</arglist>
   </member>
   <member kind="function">
     <type>bool</type>
