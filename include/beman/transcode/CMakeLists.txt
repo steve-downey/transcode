@@ -41,6 +41,7 @@ set(BEMAN_TRANSCODE_HEADERS
     whatwg/transcode_string.hpp
     whatwg/transcode_view.hpp
     detail/big5.hpp
+    detail/collect_or_error.hpp
     detail/euc_jp.hpp
     detail/euc_kr.hpp
     detail/labels.hpp
