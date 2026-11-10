@@ -25,6 +25,13 @@ library its best numbers.  It writes a report at the end.
   before sampling it.  The suites then run five times over.  Each repeat runs
   every suite before the next repeat starts, and the report combines the
   repeats (see [README.md](README.md#repeated-runs)).
+- **Side by side.**  The suites are single threaded, so a repeat runs them all
+  at once, one process each.  That is several times faster than running them
+  in turn, at a cost: they share the CPU's power budget, and on a hybrid CPU
+  which suite gets a performance core changes from repeat to repeat.
+  `BENCH_JOBS=1` runs them one at a time.
+- **Settling.**  Before timing it waits, up to five minutes, until the
+  1-minute load leaves a CPU free for each suite run side by side.
 - **Output.**  Each run writes a new directory,
   `data/benchmarks/results/<UTC timestamp>/`, holding the XML, `report.md`,
   `report.html`, the SVG charts and a Vega-Lite spec.
@@ -37,7 +44,8 @@ left alone:
 |----------|---------|
 | `BENCH_REPEATS` | `5` |
 | `BENCH_WARMUP_MS` | `1000` |
-| `BENCH_SETTLE_LOAD` | `2.0`, the 1-minute load the report calls busy; timing waits up to five minutes for it |
+| `BENCH_JOBS` | the number of suites: how many run side by side |
+| `BENCH_SETTLE_LOAD` | the CPU count less `BENCH_JOBS`, the most other load the report does not call busy; timing waits up to five minutes for it |
 | `BENCH_SUITES` | `utf whatwg pluggable dispatch boundary iconv codecvt encoding_rs simdutf` |
 | `BENCH_DIR` | `$(BENCH_RESULTS_DIR)/<UTC timestamp>` |
 

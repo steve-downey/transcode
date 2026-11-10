@@ -84,6 +84,12 @@ void set_count_runs(std::size_t runs);
 // integer, or 0 for anything else, including null.
 std::size_t parse_count_runs(const char* text);
 
+// A BEMAN_TRANSCODE_BENCH_JOBS value as the number of benchmark processes the
+// runner started side by side, which the sidecar records so the report does
+// not count the others as outside load: a positive decimal integer, or 1 for
+// anything else, including null.
+std::size_t parse_jobs(const char* text);
+
 // For bench::measure.  The number of calls to count for the running benchmark:
 // count_runs() the first time it asks, and 0 after that, outside count mode,
 // or outside a benchmark.

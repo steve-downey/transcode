@@ -22,6 +22,7 @@ from process_benchmark_results import (
     Ratio,
     Run,
     assign_labels,
+    busy,
     comparison_groups,
     comparison_warnings,
     count_ratio,
@@ -758,6 +759,30 @@ def test_other_load_discounts_the_benchmark_thread() -> None:
     assert other_load({"load_start": [0.5, 0, 0], "load_end": [4.0, 0, 0]}) == 3.0
 
 
+def test_other_load_discounts_the_suites_run_side_by_side() -> None:
+    assert other_load({"load_end": [12.0, 0, 0], "jobs": 8}) == 4.0
+    assert other_load({"load_end": [5.0, 0, 0], "jobs": 8}) == 0.0
+    assert (
+        other_load({"load_start": [6.0, 0, 0], "load_end": [9.0, 0, 0], "jobs": 8})
+        == 6.0
+    )
+
+
+def test_busy_is_relative_to_the_cpus() -> None:
+    # A 20-CPU machine idling near 10 is not busy for one suite, or for eight.
+    assert not busy({"load_start": [10.5, 0, 0], "cpus": 20})
+    assert not busy(
+        {"load_start": [10.5, 0, 0], "load_end": [18.0, 0, 0], "cpus": 20, "jobs": 8}
+    )
+    # Other work and the suites together want more than the CPUs.
+    assert busy({"load_start": [12.5, 0, 0], "cpus": 20, "jobs": 8})
+    assert busy({"load_start": [19.5, 0, 0], "cpus": 20})
+    # Without a CPU count, the absolute threshold.
+    assert not busy({"load_start": [BUSY_LOAD, 0, 0]})
+    assert busy({"load_start": [BUSY_LOAD + 0.5, 0, 0]})
+    assert not busy({})
+
+
 def test_busy_suite_is_warned_about(tmp_path: Path) -> None:
     busy = load("", write_run(tmp_path / "a", load_start=[21.5, 20, 18], cpus=20))
     (warning,) = suite_warnings(busy.suites)
@@ -772,6 +797,15 @@ def test_busy_suite_is_warned_about(tmp_path: Path) -> None:
         ),
     )
     assert suite_warnings(quiet.suites) == []
+    side_by_side = load(
+        "", write_run(tmp_path / "c", load_start=[13.0, 10, 10], cpus=20, jobs=8)
+    )
+    (warning,) = suite_warnings(side_by_side.suites)
+    assert warning == (
+        "smoke: the machine was busy (1-minute load 13.00 at the start, on 20 "
+        "CPUs, with 8 suites side by side), so other work may have slowed these "
+        "timings."
+    )
 
 
 def test_environment_summary_shows_the_machine_state(tmp_path: Path) -> None:

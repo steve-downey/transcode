@@ -97,7 +97,10 @@ and, once per run:
   taken at build time) and sanitizers;
 - the host, CPU model, logical CPU count, kernel version, CPU frequency
   governor, and whether turbo/boost is enabled;
-- the load averages from `/proc/loadavg` as the run starts and as it ends.
+- the load averages from `/proc/loadavg` as the run starts and as it ends;
+- how many benchmark processes ran side by side, from
+  `BEMAN_TRANSCODE_BENCH_JOBS` (1 when unset), so the report does not count
+  the others as outside load.
 
 Set `BEMAN_TRANSCODE_BENCH_META=PATH` to write the sidecar somewhere else.
 
@@ -151,11 +154,13 @@ would be.  The report also warns when a suite was built with a sanitizer or
 without optimization, or when suites were built with different compilers.
 
 It also warns when a suite ran on a busy machine.  The *other load* is the
-1-minute load average from work other than the benchmark.  It is the larger of
-the load as the suite started and the load as it ended less one, the
-benchmark's own thread.  A suite is busy when its other load is above 2.0.  The
-benchmarks are single-threaded, but other work still shares the CPU's power
-budget and cache.  A busy suite is reported, not dropped: the warning stops a
+1-minute load average from work other than the benchmarks.  It is the larger of
+the load as the suite started and the load as it ended less one thread for each
+benchmark process run side by side.  A suite is busy when its other load and
+those processes together want more threads than there are CPUs, so something
+had to wait for one; where the sidecar has no CPU count, when the other load is
+above 2.0.  The threshold is relative because a quiet machine can sit well above
+an absolute one.  A busy suite is reported, not dropped: the warning stops a
 noisy run being read as a quiet one.
 
 Passing several XML files merges them into one report.  Several files of the

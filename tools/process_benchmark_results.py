@@ -71,9 +71,12 @@ COUNT_TOLERANCE = 0.01
 # a reliable summary of the samples.
 NOISY_OUTLIER_VARIANCE = 0.5
 
-# A suite is "busy" when work other than the benchmark kept more than this many
-# threads runnable, by the 1-minute load average.  The benchmarks are single
-# threaded, so a little other work already shares the CPU's power and cache.
+# A suite is "busy" when work other than the benchmarks, by the 1-minute load
+# average, and the benchmark processes run side by side together wanted more
+# threads than the machine has CPUs, so something had to wait for one.  Where
+# the CPU count is unknown, it is busy when the other work alone kept more than
+# BUSY_LOAD threads runnable.  The threshold is relative because a quiet
+# machine can sit well above an absolute one: a 20-CPU WSL host idles near 10.
 # Provisional: see busy-threshold in docs/plans/bench-comparison.md.
 BUSY_LOAD = 2.0
 
@@ -814,8 +817,7 @@ def suite_warnings(suites: list[SuiteRun]) -> list[str]:
                 )
             # Load slows a count down but does not change it.
             continue
-        load = other_load(env)
-        if load is not None and load > BUSY_LOAD:
+        if busy(env):
             warnings.append(
                 f"{name}: the machine was busy ({load_text(env)}), so other "
                 "work may have slowed these timings."
@@ -823,19 +825,39 @@ def suite_warnings(suites: list[SuiteRun]) -> list[str]:
     return warnings
 
 
+def jobs(env: dict[str, Any]) -> int:
+    """The benchmark processes run side by side with this one, itself included."""
+    return int(env.get("jobs") or 1)
+
+
 def other_load(env: dict[str, Any]) -> float | None:
-    """The 1-minute load from work other than the benchmark, or None if unknown.
+    """The 1-minute load from work other than the benchmarks, or None if unknown.
 
     The larger of the load as the suite started, and the load as it ended less
-    the benchmark's own thread.
+    a thread for each benchmark process run side by side.  Suites started
+    together are not yet in the load at the start; one started later, when
+    another finished, is, so that start overstates the other load.
     """
     start, end = env.get("load_start"), env.get("load_end")
-    loads = ([start[0]] if start else []) + ([max(end[0] - 1.0, 0.0)] if end else [])
+    loads = ([start[0]] if start else []) + (
+        [max(end[0] - jobs(env), 0.0)] if end else []
+    )
     return max(loads) if loads else None
 
 
+def busy(env: dict[str, Any]) -> bool:
+    """Whether other work competed with the benchmarks for the CPUs."""
+    load = other_load(env)
+    if load is None:
+        return False
+    if env.get("cpus"):
+        return bool(load + jobs(env) > env["cpus"])
+    return load > BUSY_LOAD
+
+
 def load_text(env: dict[str, Any]) -> str:
-    """'1-minute load 21.50 at the start and 22.10 at the end, on 20 CPUs'."""
+    """'1-minute load 21.50 at the start and 22.10 at the end, on 20 CPUs,
+    with 8 suites side by side'."""
     start, end = env.get("load_start"), env.get("load_end")
     parts = ([f"{start[0]:.2f} at the start"] if start else []) + (
         [f"{end[0]:.2f} at the end"] if end else []
@@ -843,6 +865,8 @@ def load_text(env: dict[str, Any]) -> str:
     text = "1-minute load " + " and ".join(parts)
     if env.get("cpus"):
         text += f", on {env['cpus']} CPUs"
+    if jobs(env) > 1:
+        text += f", with {jobs(env)} suites side by side"
     return text
 
 
@@ -1591,7 +1615,9 @@ def run_load_text(run: Run) -> str:
     if not loads:
         return "—"
     worst = max(loads)
-    return f"{worst:.2f} (busy)" if worst > BUSY_LOAD else f"{worst:.2f}"
+    if any(busy(s.environment) for s in run.suites):
+        return f"{worst:.2f} (busy)"
+    return f"{worst:.2f}"
 
 
 def render_comparison_markdown(runs: list[Run], label: str = "") -> str:

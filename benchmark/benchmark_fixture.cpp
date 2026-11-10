@@ -356,6 +356,11 @@ std::size_t parse_count_runs(const char* text) {
     return runs;
 }
 
+std::size_t parse_jobs(const char* text) {
+    std::size_t jobs = parse_count_runs(text);
+    return jobs == 0 ? 1 : jobs;
+}
+
 std::size_t begin_count() {
     std::lock_guard lock(state_mutex());
     recorder&       r = state();
@@ -473,6 +478,7 @@ std::string metadata_json(const std::vector<benchmark_record>& records) {
     }
     out += "    \"load_start\": " + json_load(load_start) + ",\n";
     out += "    \"load_end\": " + json_load(read_load_average()) + ",\n";
+    out += std::format("    \"jobs\": {},\n", parse_jobs(std::getenv("BEMAN_TRANSCODE_BENCH_JOBS")));
     out += std::format("    \"count_runs\": {}\n", count_runs());
     out += "  },\n";
     out += "  \"benchmarks\": [";

@@ -489,6 +489,16 @@ quiet runs on pwyll.
   until calibrated. pwyll at rest showed a 1-minute load of 1.4 on 20 CPUs,
   and 21.5 during the `clang++-23` builds that slowed the
   [multi-run](#multi-run) trial about 7×.
+- 2026-11-03: Relative to the CPU count. A suite is busy when its other load
+  plus the suites run side by side with it exceeds the CPUs, so something had
+  to wait for one; 2.0 remains only for a sidecar without a CPU count. The
+  absolute threshold flagged every suite on a 20-CPU WSL host whose quiet load
+  sits above 10, and `make bench` waited its full five minutes for a load it
+  never reached. `make bench` now runs a repeat's suites side by side
+  (`BENCH_JOBS`), and the sidecar records that count as `jobs`, which
+  `other_load` subtracts from the load at the end. Still provisional: it
+  ignores SMT siblings and hybrid cores, which perturb a suite well before
+  the CPUs run out.
 
 ### count-mode-driver
 

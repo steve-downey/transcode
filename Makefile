@@ -376,9 +376,10 @@ view-coverage: ## View the coverage report
 # (fetched on the first configure).  A baseline that was not built is skipped.
 #
 # Before timing starts it waits, up to five minutes, for the 1-minute load to
-# fall below BENCH_SETTLE_LOAD, the load the report calls busy
-# (tools/process_benchmark_results.py), so the build just finished does not
-# share the machine with the first repeat.
+# fall to BENCH_SETTLE_LOAD, by default the CPUs less BENCH_JOBS: the most other
+# load that leaves a CPU for each suite, which is where the report starts
+# calling a suite busy (tools/process_benchmark_results.py).  So the build just
+# finished does not share the machine with the first repeat.
 #
 # The full corpora are downloaded on the first run; the checked-in fallback
 # samples are a few hundred bytes, too small to time meaningfully.
@@ -388,7 +389,11 @@ view-coverage: ## View the coverage report
 # settle.  The suites then run BENCH_REPEATS times, each repeat running every
 # suite before the next starts, so the libraries in one repeat see much the
 # same machine state; the report takes the median across repeats and compares
-# libraries within a repeat (docs/benchmarks/README.md).  Each run writes a new
+# libraries within a repeat (docs/benchmarks/README.md).  The suites are single
+# threaded, so a repeat runs up to BENCH_JOBS of them side by side, by default
+# all of them.  That is faster but not free: they share the power budget, and
+# on a hybrid CPU which suite lands on a performance core changes from repeat
+# to repeat.  BENCH_JOBS=1 runs them one at a time.  Each run writes a new
 # timestamped directory under BENCH_RESULTS_DIR, and `latest` points at it.
 #
 # Holding the library constant and varying the compiler or flags is the other
@@ -398,7 +403,9 @@ BENCH_RESULTS_DIR ?= data/benchmarks/results
 BENCH_SUITES ?= utf whatwg pluggable dispatch boundary iconv codecvt encoding_rs simdutf
 BENCH_REPEATS ?= 5
 BENCH_WARMUP_MS ?= 1000
-BENCH_SETTLE_LOAD ?= 2.0
+BENCH_JOBS ?= $(words $(BENCH_SUITES))
+BENCH_SETTLE_LOAD ?= $(shell awk -v c=$$(nproc) -v j=$(BENCH_JOBS) \
+	'BEGIN { print (c - j > 1 ? c - j : 1) }')
 BENCH_RUN := $(shell date -u '+%Y%m%dT%H%M%SZ')
 BENCH_DIR ?= $(BENCH_RESULTS_DIR)/$(BENCH_RUN)
 BENCH_CORPUS := data/benchmarks/corpus_manifest.json
@@ -429,23 +436,29 @@ bench: $(_PERF_BUILD)/CMakeCache.txt $(BENCH_CORPUS) ## Build GCC-16 Perf, run e
 	@mkdir -p $(BENCH_DIR)
 	@if [ -r /proc/loadavg ]; then \
 		for t in $$(seq 1 60); do \
-			awk '{ exit !($$1 < $(BENCH_SETTLE_LOAD)) }' /proc/loadavg && break; \
-			[ $$t -eq 1 ] && echo "waiting for the load to fall below $(BENCH_SETTLE_LOAD)"; \
+			awk '{ exit !($$1 <= $(BENCH_SETTLE_LOAD)) }' /proc/loadavg && break; \
+			[ $$t -eq 1 ] && echo "waiting for the load to fall to $(BENCH_SETTLE_LOAD)"; \
 			sleep 5; \
 		done; \
 	fi
-	@for i in $$(seq 1 $(BENCH_REPEATS)); do \
-		for s in $(BENCH_SUITES); do \
-			bin=$(_PERF_BENCH)/beman.transcode.benchmarks.$$s; \
-			if [ ! -x $$bin ]; then \
-				[ $$i -eq 1 ] && echo "skip: $$s was not built"; \
-				continue; \
-			fi; \
-			echo "repeat $$i of $(BENCH_REPEATS): $$s"; \
-			$$bin "[benchmark][$$s]" --benchmark-warmup-time $(BENCH_WARMUP_MS) \
-				--reporter xml --out $(BENCH_DIR)/$$s.$$i.xml >/dev/null \
-				|| echo "warning: $$s exited with status $$?"; \
-		done; \
+	@suites=; \
+	for s in $(BENCH_SUITES); do \
+		if [ -x $(_PERF_BENCH)/beman.transcode.benchmarks.$$s ]; then \
+			suites="$$suites $$s"; \
+		else \
+			echo "skip: $$s was not built"; \
+		fi; \
+	done; \
+	jobs=$$(echo $$suites | wc -w); \
+	[ $$jobs -gt $(BENCH_JOBS) ] && jobs=$(BENCH_JOBS); \
+	for i in $$(seq 1 $(BENCH_REPEATS)); do \
+		echo "repeat $$i of $(BENCH_REPEATS):$$suites, $$jobs at a time"; \
+		printf '%s\n' $$suites | BEMAN_TRANSCODE_BENCH_JOBS=$$jobs \
+			xargs -P $$jobs -I{} sh -c ' \
+				$(_PERF_BENCH)/beman.transcode.benchmarks.$$1 "[benchmark][$$1]" \
+					--benchmark-warmup-time $(BENCH_WARMUP_MS) \
+					--reporter xml --out $(BENCH_DIR)/$$1.$$2.xml >/dev/null \
+					|| echo "warning: $$1 exited with status $$?"' sh {} $$i; \
 	done
 	$(UV) run python tools/process_benchmark_results.py \
 		--label "GCC-16 Perf, $(BENCH_REPEATS) repeats" \
