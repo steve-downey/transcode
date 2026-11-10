@@ -650,6 +650,17 @@ the CPU count. That is <code>BUSY_LOAD</code> in
 until calibrated. pwyll at rest showed a 1-minute load of 1.4 on 20
 CPUs, and 21.5 during the <code>clang++-23</code> builds that slowed the
 <a href="#multi-run">multi-run</a> trial about 7×.</li>
+<li>2026-11-03: Relative to the CPU count. A suite is busy when its
+other load plus the suites run side by side with it exceeds the CPUs, so
+something had to wait for one; 2.0 remains only for a sidecar without a
+CPU count. The absolute threshold flagged every suite on a 20-CPU WSL
+host whose quiet load sits above 10, and <code>make bench</code> waited
+its full five minutes for a load it never reached.
+<code>make bench</code> now runs a repeat's suites side by side
+(<code>BENCH_JOBS</code>), and the sidecar records that count as
+<code>jobs</code>, which <code>other_load</code> subtracts from the load
+at the end. Still provisional: it ignores SMT siblings and hybrid cores,
+which perturb a suite well before the CPUs run out.</li>
 </ul>
 <h3 id="count-mode-driver">count-mode-driver</h3>
 <p><strong>Question:</strong> How does count mode run each benchmark
@@ -698,6 +709,6 @@ outcomes:</p>
 <li>neither is, and pwyll stays the only timing reference.
 <strong>Decided by:</strong> — <strong>Log:</strong></li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/bench-comparison.md">docs/plans/bench-comparison.md</a> at b09a8ac24f72.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/bench-comparison.md">docs/plans/bench-comparison.md</a> at bbc8d92e1ffb.</footer>
 </body>
 </html>

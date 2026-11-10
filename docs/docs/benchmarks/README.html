@@ -265,7 +265,10 @@ sanitizers;</li>
 <li>the host, CPU model, logical CPU count, kernel version, CPU
 frequency governor, and whether turbo/boost is enabled;</li>
 <li>the load averages from <code>/proc/loadavg</code> as the run starts
-and as it ends.</li>
+and as it ends;</li>
+<li>how many benchmark processes ran side by side, from
+<code>BEMAN_TRANSCODE_BENCH_JOBS</code> (1 when unset), so the report
+does not count the others as outside load.</li>
 </ul>
 <p>Set <code>BEMAN_TRANSCODE_BENCH_META=PATH</code> to write the sidecar
 somewhere else.</p>
@@ -378,12 +381,14 @@ sanitizer or without optimization, or when suites were built with
 different compilers.</p>
 <p>It also warns when a suite ran on a busy machine. The <em>other
 load</em> is the 1-minute load average from work other than the
-benchmark. It is the larger of the load as the suite started and the
-load as it ended less one, the benchmark's own thread. A suite is busy
-when its other load is above 2.0. The benchmarks are single-threaded,
-but other work still shares the CPU's power budget and cache. A busy
-suite is reported, not dropped: the warning stops a noisy run being read
-as a quiet one.</p>
+benchmarks. It is the larger of the load as the suite started and the
+load as it ended less one thread for each benchmark process run side by
+side. A suite is busy when its other load and those processes together
+want more threads than there are CPUs, so something had to wait for one;
+where the sidecar has no CPU count, when the other load is above 2.0.
+The threshold is relative because a quiet machine can sit well above an
+absolute one. A busy suite is reported, not dropped: the warning stops a
+noisy run being read as a quiet one.</p>
 <p>Passing several XML files merges them into one report. Several files
 of the same suite are <a href="#repeated-runs">repeats</a> of it.</p>
 <h3 id="repeated-runs">Repeated runs</h3>
@@ -830,6 +835,6 @@ suite under callgrind into <code>BENCH_DISPATCH_DIR</code> (default
 call and its difference from <code>fixed codecs</code>. Counts per call,
 not per byte, since the difference does not grow with the input.
 <code>make bench</code> times the same suite with the rest.</p>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/README.md">docs/benchmarks/README.md</a> at b09a8ac24f72.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/README.md">docs/benchmarks/README.md</a> at bbc8d92e1ffb.</footer>
 </body>
 </html>

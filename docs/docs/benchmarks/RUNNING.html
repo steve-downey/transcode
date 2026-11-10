@@ -138,6 +138,15 @@ for one second before sampling it. The suites then run five times over.
 Each repeat runs every suite before the next repeat starts, and the
 report combines the repeats (see <a
 href="README.html#repeated-runs">README.md</a>).</li>
+<li><strong>Side by side.</strong> The suites are single threaded, so a
+repeat runs them all at once, one process each. That is several times
+faster than running them in turn, at a cost: they share the CPU's power
+budget, and on a hybrid CPU which suite gets a performance core changes
+from repeat to repeat. <code>BENCH_JOBS=1</code> runs them one at a
+time.</li>
+<li><strong>Settling.</strong> Before timing it waits, up to five
+minutes, until the 1-minute load leaves a CPU free for each suite run
+side by side.</li>
 <li><strong>Output.</strong> Each run writes a new directory,
 <code>data/benchmarks/results/&lt;UTC timestamp&gt;/</code>, holding the
 XML, <code>report.md</code>, <code>report.html</code>, the SVG charts
@@ -163,9 +172,13 @@ to be left alone:</p>
 <td><code>1000</code></td>
 </tr>
 <tr>
+<td><code>BENCH_JOBS</code></td>
+<td>the number of suites: how many run side by side</td>
+</tr>
+<tr>
 <td><code>BENCH_SETTLE_LOAD</code></td>
-<td><code>2.0</code>, the 1-minute load the report calls busy; timing
-waits up to five minutes for it</td>
+<td>the CPU count less <code>BENCH_JOBS</code>, the most other load the
+report does not call busy; timing waits up to five minutes for it</td>
 </tr>
 <tr>
 <td><code>BENCH_SUITES</code></td>
@@ -261,6 +274,6 @@ benchmarking.</li>
 pinning frequency with <code>cpupower</code> if precise comparisons
 matter.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/RUNNING.md">docs/benchmarks/RUNNING.md</a> at b09a8ac24f72.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/benchmarks/RUNNING.md">docs/benchmarks/RUNNING.md</a> at bbc8d92e1ffb.</footer>
 </body>
 </html>
