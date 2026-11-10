@@ -91,6 +91,26 @@ constexpr bool encode_into(R&& source, encoding e, Output output);
 [#]{.pnum} *Returns*: Whether the Encoding Standard defines an encoder for `e`.
 
 ```cpp
+template<encoding C, legacy_byte_range R>
+constexpr expected<vector<char32_t>, error> decode_to_or_error(R&& source);
+```
+
+[#]{.pnum} *Returns*: `decode_to_or_error(std::forward<R>(source), whatwg::decoder<C>{})` ([transcode.bulk]).
+
+[#]{.pnum} *Remarks*: `whatwg::decode_to<C>(source)` with the errors reported rather than substituted: the whole text as scalar values, or the first error the Encoding Standard's decoder for `C` reports in it.  For an encoding chosen at run time, `decode_to_or_error(source, whatwg::dynamic_decoder(e))` ([transcode.whatwg.dynamic]).
+
+```cpp
+template<encoding C, typename Container = string, unicode_scalar_range R>
+constexpr expected<Container, error> encode_to_or_error(R&& source);
+```
+
+[#]{.pnum} *Returns*: `encode_to_or_error<Container>(std::forward<R>(source), whatwg::encoder<C>{})` ([transcode.bulk]).
+
+[#]{.pnum} *Remarks*: `whatwg::encode_to<C, Container>(source)` with the errors reported rather than substituted: the whole text as bytes, or the first scalar value that is not a Unicode scalar value or that `C` has no representation for.
+
+[#]{.pnum} *Mandates:* The Encoding Standard defines an encoder for `C`.
+
+```cpp
 template<legacy_byte_range R, text_decoder Codec>
 constexpr vector<char32_t> decode_to(R&& source, Codec codec);
 ```
@@ -127,5 +147,25 @@ constexpr void encode_into(R&& source, Codec codec, Output output);
 ```cpp
 ranges::copy(forward<R>(source) | encode(codec), output);
 ```
+
+```cpp
+template<legacy_byte_range R, text_decoder Codec>
+constexpr expected<vector<char32_t>, whatwg::error> decode_to_or_error(R&& source,
+                                                                       Codec codec);
+```
+
+[#]{.pnum} *Returns*: Let `v` be `std::forward<R>(source) | decode_or_error(codec)` ([transcode.codec.decode]).  If an element of `v` holds an error, the error of the first such element; otherwise a `vector<char32_t>` holding the value of each element of `v`, in order.
+
+[#]{.pnum} *Remarks*: This is `decode_to(source, codec)` with the errors reported rather than substituted: the whole text, or the first thing wrong with it.  The elements of `v` after the first error are not examined.  A codec for an encoding chosen at run time is `whatwg::dynamic_decoder` ([transcode.whatwg.dynamic]).
+
+```cpp
+template<typename Container = string, unicode_scalar_range R, text_encoder Codec>
+constexpr expected<Container, whatwg::error> encode_to_or_error(R&& source,
+                                                                Codec codec);
+```
+
+[#]{.pnum} *Returns*: Let `v` be `std::forward<R>(source) | encode_or_error(codec)` ([transcode.codec.encode]).  If an element of `v` holds an error, the error of the first such element; otherwise a `Container` holding the value of each element of `v`, in order.
+
+[#]{.pnum} *Remarks*: This is `encode_to<Container>(source, codec)` with the errors reported rather than substituted.  The elements of `v` after the first error are not examined, and the encoder is not flushed past it.
 
 :::

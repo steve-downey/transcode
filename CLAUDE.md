@@ -139,6 +139,17 @@ Every concept constraint or `static_assert` must have:
 
 Negative compile tests are registered in `tests/beman/transcode/CMakeLists.txt` as `beman_add_xfail_compile_test(<name> SOURCE <file> LINK_LIBRARIES beman::transcode)`. The function makes the source an `OBJECT` library excluded from the default build and adds a ctest that runs a nested `cmake --build --target` on it and matches the output against the source's `EXPECT` lines, reporting "compiled", "failed for another reason", and "failed as expected" separately. Every such test carries the CTest label `xfail-compile`, so `ctest -L xfail-compile` runs just that suite and `-LE xfail-compile` skips it. Run a new one under both GCC and Clang (`make TOOLCHAIN=gcc-16 ...` and `make TOOLCHAIN=clang-23 ...`) before pushing it. The driver reads the `EXPECT` lines when the test runs, so editing one takes effect on the next `ctest` with no reconfigure or rebuild.
 
+### Order-sensitive inputs
+
+A roundtrip or an idempotent check is not a sufficient test of anything that carries state or order. A stateless codec roundtrips even when the view drops codec state; a decoder that ignores `is_empty` or calls `flush` once too few roundtrips every input with no escape sequence and no truncated tail; `decode(encode(x)) == x` holds for a helper that reports the last error instead of the first. Every test of a stateful codec, of `flush`/`is_empty` handling, or of an `_or_error` view or helper must therefore use an input for which a plausible wrong implementation gives a visibly different answer:
+
+- two errors of different kinds in one input, so first-versus-last is caught (`tests/beman/transcode/bulk_or_error.test.cpp`);
+- a sequence that ends mid-escape or mid-character, so a missing `flush` is a missing error;
+- the Shift_JIS `81 81 81 40` sequence from the paper, so a lost byte boundary changes the text;
+- a codec that counts its calls through a pointer the test owns, so "stopped at the first error" is observed, not assumed. The view copies the codec, so a counter inside the codec is the copy's.
+
+The rule is `beman.typeclass`'s DEV-01 (`docs/tree_algorithms/DECISIONS.md` there): a monotone, idempotent test function could not tell a correct fold from a plausible wrong one, and a non-idempotent one could. Roundtrip tests stay, as a check on the tables; they are not the correctness gate for a view or a helper.
+
 ### Coverage
 
 Run `make coverage` to generate a coverage report. New code should have coverage. Don't fight the compiler to reach 100% — template instantiations and platform-specific branches may not all be reachable. But any *surprising* uncovered code (logic you expected tests to hit) should either get a test added or be noted for follow-up. Branch coverage is not a priority; line/function coverage is what matters.

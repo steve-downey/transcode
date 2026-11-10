@@ -66,7 +66,7 @@ order the compiler needs and need not match.
 | `transcode.whatwg.decode` | 2 | Decoding adaptors | the two variable templates `whatwg::decode<C>` / `whatwg::decode_or_error<C>`, each the codec-object adaptor over `whatwg::decoder<C>` | `whatwg/decode_view.hpp`, reduced to the two variables in step 09 of the SG16 response |
 | `transcode.whatwg.encode` | 2 | Encoding adaptors | the two variable templates `whatwg::encode<C>` / `whatwg::encode_or_error<C>`, each the codec-object adaptor over `whatwg::encoder<C>` | `whatwg/encode_view.hpp`, reduced to the two variables in step 12 of the SG16 response |
 | `transcode.string` | 2 | Eager transcoding | `whatwg::transcode_string`, both overloads | `whatwg/transcode_string.hpp`, done 2026-09-08 |
-| `transcode.bulk` | 2 | Eager bulk conversion | `decode_to`, `encode_to`, `decode_into`, `encode_into`, each in a WHATWG and a pluggable form | `whatwg/bulk.hpp`, `bulk_transcode.hpp`, done 2026-09-08 |
+| `transcode.bulk` | 2 | Eager bulk conversion | `decode_to`, `encode_to`, `decode_into`, `encode_into`, each in a WHATWG and a pluggable form; `decode_to_or_error`, `encode_to_or_error`, the whole text or the first error, likewise in both forms | `whatwg/bulk.hpp`, `bulk_transcode.hpp`, done 2026-09-08; the `_or_error` pair added 2026-11-09 |
 | `transcode.iconv` | 2 | iconv adaptors | `iconv_functions`, the two views, the closures, `iconv_transcode`, `iconv_transcode_or_error`, `iconv_transcode_to`, `iconv_transcode_into`, `iconv_transcode_to_or_error` | the four `iconv_*.hpp` headers, done 2026-09-08 |
 | `transcode.iconv.iterator` | 3 | The two iconv iterators | `iconv_transcode_view::$iterator$`, `iconv_transcode_or_error_view::$iterator$` | the same headers, done 2026-09-08 |
 
