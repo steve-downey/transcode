@@ -26,5 +26,14 @@ updates:
   # file and opens a duplicate pull request for every update.
   - package-ecosystem: "uv"
     directory: "/"
+    # clang-format and clang-tidy come from the same LLVM release, and
+    # tools/tests/test_tool_versions.py requires them to match, so they are
+    # bumped in one pull request. The pre-commit mirrors-clang-format rev in
+    # .pre-commit-config.yaml has to be moved by hand in that same PR.
+    groups:
+      llvm:
+        patterns:
+          - "clang-format"
+          - "clang-tidy"
     schedule:
       interval: "daily"
