@@ -26,14 +26,14 @@ updates:
   # file and opens a duplicate pull request for every update.
   - package-ecosystem: "uv"
     directory: "/"
-    # clang-format and clang-tidy come from the same LLVM release, and
-    # tools/tests/test_tool_versions.py requires them to match, so they are
-    # bumped in one pull request. The pre-commit mirrors-clang-format rev in
-    # .pre-commit-config.yaml has to be moved by hand in that same PR.
-    groups:
-      llvm:
-        patterns:
-          - "clang-format"
-          - "clang-tidy"
+    # clang-format and clang-tidy are pinned to the same LLVM release, and
+    # tools/tests/test_tool_versions.py requires it. Their PyPI wheels are not
+    # published together: clang-format 23.1.5 existed while clang-tidy stopped
+    # at 23.1.4, so any Dependabot bump (grouped or not) lands one without the
+    # other, and never touches the pre-commit mirrors-clang-format rev. Bump
+    # all three by hand, in one change, once both wheels exist.
+    ignore:
+      - dependency-name: "clang-format"
+      - dependency-name: "clang-tidy"
     schedule:
       interval: "daily"
