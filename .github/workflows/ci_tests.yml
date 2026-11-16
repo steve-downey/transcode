@@ -19,7 +19,7 @@ permissions: read-all
 
 jobs:
   preset-test:
-    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-preset-test.yml@1.7.4
+    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-preset-test.yml@1.7.5
     with:
       matrix_config: >
         [
@@ -30,7 +30,7 @@ jobs:
         ]
 
   build-and-test:
-    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-build-and-test.yml@1.7.4
+    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-build-and-test.yml@1.7.5
     with:
       matrix_config: >
         {
@@ -145,7 +145,7 @@ jobs:
         }
 
   vcpkg-ci:
-    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-vcpkg-ci.yml@1.7.4
+    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-vcpkg-ci.yml@1.7.5
     with:
       port_name: beman-transcode
       feature_combinations: |
@@ -182,4 +182,4 @@ jobs:
     permissions:
       contents: read
       issues: write
-    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-create-issue-when-fault.yml@1.7.4
+    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-create-issue-when-fault.yml@1.7.5
