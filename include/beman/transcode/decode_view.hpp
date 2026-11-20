@@ -49,7 +49,7 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
                 return U'\xFFFD';
         }
         using iterator_concept  = std::random_access_iterator_tag;
-        using iterator_category = std::random_access_iterator_tag;
+        using iterator_category = std::input_iterator_tag;
         using difference_type   = std::ptrdiff_t;
         using reference         = value_type;
 
@@ -132,7 +132,7 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
 
     //! \expos
     //! \seebelow
-    class iterator {
+    class iterator : public detail::prvalue_iterator_category<std::ranges::forward_range<R>> {
         using base_iter = detail::compatible_iterator_t<R>;
         using base_sent = detail::compatible_sentinel_t<R>;
         using result_t = std::conditional_t<E == error_mode::report, std::expected<char32_t, whatwg::error>, char32_t>;
@@ -164,10 +164,9 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
       public:
         using iterator_concept =
             std::conditional_t<std::ranges::forward_range<R>, std::forward_iterator_tag, std::input_iterator_tag>;
-        using iterator_category = iterator_concept;
-        using value_type        = result_t;
-        using difference_type   = std::ptrdiff_t;
-        using reference         = result_t;
+        using value_type      = result_t;
+        using difference_type = std::ptrdiff_t;
+        using reference       = result_t;
 
         constexpr iterator() = default;
 

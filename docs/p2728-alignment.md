@@ -7,11 +7,12 @@ This document records how `beman.transcode` relates to WG21
 reference implementation [`beman.utf_view`][utf_view]), and what we should do to
 **follow that model as closely as possible while tracking its evolution**.
 
-Latest revision reviewed: **P2728R13** (2026-05-26). When a new revision lands,
+Latest revision reviewed: **P2728R17** (2026-11-18), design-approved by LEWG
+on 2026-11-19. When a new revision lands,
 update the [Revision history](#revision-history-of-the-model) and
 [Action items](#action-items) sections below.
 
-[p2728]: https://isocpp.org/files/papers/P2728R13.html
+[p2728]: https://isocpp.org/files/papers/P2728R17.html
 [utf_view]: https://github.com/bemanproject/utf_view
 
 ## How the two relate
@@ -34,30 +35,44 @@ matching P2728's **structural and error-handling patterns**, **not** copying its
 (`as_char8_t`, etc.) are the natural *interop seam* between the two libraries,
 not a feature gap.
 
-## The model in brief (P2728R13)
+## The model in brief (P2728R17)
 
-- **One view template:** `to_utf_view<V, E, ToType>`, where `V`'s value type is
-  a `code-unit` (`char8_t`/`char16_t`/`char32_t`), `ToType` is the target
-  code-unit type, and `E` is a `to_utf_view_error_kind` constant.
+- **One view template:** `to_utf_view<V, K, charT>`, where `V`'s value type is
+  a `code-unit` (`char8_t`/`char16_t`/`char32_t`), `charT` is the target
+  code-unit type, and `K` is a `to_utf_view_kind` constant.
 - **Error handling is a template parameter, not separate classes:**
-  `enum class to_utf_view_error_kind { replacement, expected }` — modeled on
-  `subrange_kind`. `replacement` substitutes U+FFFD; `expected` yields
-  `expected<ToType, utf_transcoding_error>`.
-- **`utf_transcoding_error`** — eight enumerators
+  `enum class to_utf_view_kind : unspecified { replacement, expected }` —
+  modeled on `subrange_kind`, and named `_kind` rather than `_error_kind` so
+  that later kinds need not be about errors. `replacement` substitutes U+FFFD;
+  `expected` yields `expected<charT, utf_transcoding_error>`.
+- **`std::utf_transcoding_error`** — eight enumerators
   (`truncated_utf8_sequence`, `unpaired_high_surrogate`, `unpaired_low_surrogate`,
   `unexpected_utf8_continuation_byte`, `overlong`, `encoded_surrogate`,
   `out_of_range`, `invalid_utf8_leading_byte`); **unspecified underlying type**.
-- **CPOs:** `views::to_utf<ToType>` / `to_utf_or_error<ToType>`, plus the fixed
-  `to_utf8/16/32` and their `_or_error` variants. CTAD uses
-  `to_utf_tag_t<ToType>` plus a `std::constant_wrapper<E>` constructor tag.
-- **Iterator:** small `inplace_vector<value_type, 4/sizeof(ToType)> buf_`, plus
-  `buf_index_` and `to_increment_`; three iterators (`begin_`/`current_`/`end_`)
-  for the bidirectional case; `base()` only for `forward_range`; up to
-  `bidirectional_iterator`; borrowed when the base is.
+- **Range adaptor objects:** `views::to_utf<charT>` / `to_utf_or_error<charT>`;
+  `to_utf8/16/32` and their `_or_error` forms are defined in the synopsis as
+  copies of those, after `views::keys`/`views::pairwise`. **No CTAD:** the tag
+  types and the deduction guide are gone, following `elements_view`,
+  `adjacent_view` and `adjacent_transform_view`.
+- **Iterator:** `expected<inplace_vector<charT, N>, utf_transcoding_error> buf_`,
+  plus `buf_index_` and `to_increment_`; three iterators (`begin_`/`current_`/
+  `end_`) for the bidirectional case; a converting constructor from
+  `iterator<!Const>`; *simple-view* `begin()`/`end()`.
+  `iterator_concept` goes up to `bidirectional_iterator`, and to
+  `random_access_iterator` for UTF-32→UTF-32. **`iterator_category` is
+  always `input_iterator_tag`, present only over a forward base,** because
+  `operator*` returns a prvalue.
+- **`base()` and `base_code_units()`, forward ranges only.** `base()` is the
+  start of the input subsequence that produced the current element;
+  `base_code_units()` is `subrange(current_, next(current_, to_increment_))`,
+  that subsequence.
 - **Code-unit cast adaptors:** `as_char`, `as_wchar_t`, `as_char8_t`,
-  `as_char16_t`, `as_char32_t` (thin `transform_view` casts).
+  `as_char16_t`, `as_char32_t`, restricted to same-width integral and
+  `std::byte` sources, and returning the range itself (not a `transform_view`)
+  when it already has the target element type, which keeps contiguity.
 - `null_term`; rejects raw arrays (string-literal null-terminator trap);
-  does not cache `begin()`; double-transcode elision in the CPO; feature macro
+  does not cache `begin()`; double-transcode elision in the adaptor, for the
+  replacement kind only; `<ranges>` includes `<expected>`; feature macro
   `__cpp_lib_unicode_transcoding`.
 
 ## Revision history of the model
@@ -66,12 +81,37 @@ The evolution we are tracking, most recent first:
 
 | Rev | Change | Relevance here |
 |-----|--------|----------------|
+| **R17** | `iterator_category` always `input_iterator_tag` (prvalue `operator*`); converting constructor from `iterator<!Const>`; *simple-view* `begin()`/`end()`; non-const `empty()` and its missing constraint; sentinel `==` tests the iterator's base for forwardness; no elision for `_or_error`; `utf_transcoding_error` in `std::`; `reserve_hint` result unspecified; `K`/`charT` parameter names; code-unit adaptors keep contiguity; "input subsequence" defined in a General subclause. | `iterator_category` applies here directly; the rest is wording or the iterator's const shape. |
+| **R16** | Removed the `to_utf_tag` types and the deduction guide (no CTAD, after `elements_view`); `to_utfN` defined as copies of `to_utf<charN_t>`; code-unit adaptor rule stated by width, with a standard-guarantee table and a typical-platform table; buffer sized by target type. | Confirms we need no CTAD machinery. |
+| **R15** | Reverted SIMD support, with a design discussion of why; renamed `to_utf_view_error_kind` → `to_utf_view_kind`; added `it.base_code_units()` for forward ranges; random access for UTF-32→UTF-32; code-unit adaptors restricted to same-width integral and `std::byte` sources. | `base_code_units()` is now an iterator member — see [base-position](#base-position). |
+| **R14** | Loosened the wording to admit chunked (SIMD) implementations over forward ranges, respecifying `base()` and equality positionally; design discussion of `base_code_units()`. | Superseded by R15's revert. |
 | **R13** | Both enums given **unspecified underlying type** (precedent `memory_order`/`launch`/`assertion_kind`); remove `base()` for input-not-forward; add `as_char`/`as_wchar_t` (reverse-direction casts); wording fixes. | Latest polish to match. |
 | **R12** | Removed the iterator's **back-pointer to parent view**, restoring the three-iterator design → **borrowedness** (precedent: `views::adjacent<N>`). | Borrowed-range correctness. |
 | **R11** | `std::nontype` → **`std::constant_wrapper`** (P3948R1) for the compile-time error-kind. | CTAD plumbing. |
 | **R10** | Replaced separate `to_utfX_view` classes with a **single `to_utf_view`** + tag constructors; replaced `bool OrError` with the **`to_utf_view_error_kind` enum**; stopped caching `begin()`; reject `charN_t` arrays; double-transcode elision in CPOs. | The big structural consolidation. |
 
 ### Design intent from committee review
+
+The SG9 review at Brno (2026-06-10, on R14) settled several of the questions
+the Kona review left open:
+
+- **`base()` for forward ranges**, at the price of decoding a code point twice
+  or keeping an extra iterator: unanimous consent.
+- **`base_code_units()` for forward ranges**, as pure syntactic sugar for
+  `subrange(it.base(), next(it).base())`: strong consensus (1/4/0/1/0). For
+  input ranges it was rejected unanimously, since it would need a cache with
+  lifetime problems.
+- **Change the error-kind enum to allow more options later**: unanimous
+  consent. This produced the `to_utf_view_kind` rename.
+- **Borrowed when the base is borrowed**, at the price of three iterators:
+  strong consensus.
+- **Leave implementations free to buffer ahead for SIMD**: strong consensus
+  *against*.
+- Action item: UTF-32→UTF-32 random access when the base is.
+
+SG16 forwarded R15 to LEWG by unanimous consent (2026-10-14), asking that the
+code-unit adaptors be gated on representability of the code points rather than
+on the width of the types.
 
 The SG9 review (Kona 2025, on R9) records the *reasoning* behind several of the
 above changes — useful because it tells us which patterns are load-bearing:
@@ -87,8 +127,9 @@ above changes — useful because it tells us which patterns are load-bearing:
 - **`base()` / `base_code_units`.** `base()` is forward-only and points at the
   code unit at the **start of the current code point**. A `base_code_units`
   helper (`subrange(it.base(), ranges::next(it).base())`) for error reporting
-  was discussed only as a **future bolt-on**, not in the paper — and would be
-  expressed through the value/error, not a new iterator member.
+  was discussed then as a future bolt-on. Brno later adopted it as an iterator
+  member for forward ranges (see above), so the guidance that it would not be
+  a new iterator member no longer holds.
 - **Borrowedness mirrors the base range;** whether to use a smaller back-pointer
   form when the base is not borrowed is an ABI/stack-size QoI tradeoff
   (motivated by industrial users who avoid ranges over stack usage).
@@ -157,17 +198,38 @@ on an **extensible error-kind enum** — the analog of `to_utf_view_error_kind`:
   deliberately).
 - Keep errors in the `value_type`; do not add an error-query iterator member.
 
-### 2. Unspecified underlying type for the error enums (R13)
+### 2. `iterator_category` of a prvalue iterator (R17) — **done**
+
+`decode_view` and `encode_view` iterators return their elements by value, so
+they meet at most the C++17 input-iterator requirements. Their
+`iterator_category` was `iterator_concept` (forward) on the generic views and
+`random_access_iterator_tag` on the single-byte random-access views, which told
+C++17 algorithms they could take multiple passes through references that do not
+exist. It is now `input_iterator_tag`, present only over a forward base, as in
+R17 and as for `iota_view` and `enumerate_view`. `iterator_concept` is
+unchanged.
+
+### <a id="base-position"></a>3. `base()` position and `base_code_units()` (R15, Brno) — OPEN
+
+Our decode iterator decodes eagerly, so `base()` returned the position *after*
+the current element, where P2728's returns the start of it. P2728 also now has
+`base_code_units()` as an iterator member for forward ranges, and no `base()`
+for input ranges. To match: keep the start position for forward ranges, make
+`base()` return it, add `base_code_units()` to the decode and encode iterators,
+and drop `base()` from input-only iterators. A codec's `is_empty` results (an
+ISO-2022-JP escape, a byte order mark) have no counterpart in UTF; their bytes
+count as input to the element that follows, so that successive elements' input
+is adjacent, as `subrange(it.base(), next(it).base())` requires.
+
+### 4. Unspecified underlying type for the error enums (R13)
 
 `whatwg::error` currently has the implicit `int`. Match R13 by not depending on a
 fixed underlying type for the error / error-kind enums.
 
-### 3. Verify `base()` semantics
+### 5. Verify `base()` semantics
 
-Confirm the decode `iterator::base()` returns the position at the **start of the
-current code point's bytes** (P2728's forward-range contract), not the next
-boundary — the repo's decoder advances eagerly in `load()`, so this is worth a
-test.
+Checked: the decode `iterator::base()` returned the next boundary, not the start
+of the current code point. Now tracked as [base-position](#base-position).
 
 ### Intentional, non-convergent differences (do not "fix" toward P2728)
 
@@ -175,6 +237,16 @@ test.
   traversal assume *stateless* UTF-N. The repo's CJK codecs (ISO-2022-JP,
   GB18030 replay) are inherently **stateful and forward-only**; bidirectional
   like P2728 is not achievable for them.
+- **`empty()` is not forwarded to the base.** R17's `to_utf_view::empty()`
+  returns `ranges::empty(base_)`, which holds for UTF because non-empty input
+  always yields at least one element. A legacy codec can consume input and
+  yield nothing — ISO-2022-JP input that is only `ESC ( B` decodes to an empty
+  range — so our views keep `view_interface`'s `empty()`.
+- **The iterator is not a `Const` template.** R17 has `iterator<bool Const>`,
+  a converting constructor from `iterator<!Const>`, and *simple-view*
+  `begin()`/`end()`. Our views use one iterator type for both, built from
+  `detail::compatible_iterator_t`. The observable behavior is the same; revisit
+  only if wording review asks for the standard's shape.
 - `as_charN_t` cast adaptors are pointless for a byte-in/`char32_t`-out pipeline —
   unless added deliberately as the interop seam to feed `char`-stored UTF into a
   P2728-typed pipeline.
@@ -200,15 +272,15 @@ test.
 - [ ] Give the error / error-kind enums an unspecified underlying type. Nothing
       to change in the code — neither enum names an enum-base — so this is a
       constraint on the *wording*, which must not fix one either.
-- [ ] Add a test pinning `iterator::base()` to the start-of-code-point byte
-      position.
+- [x] Make `iterator_category` `input_iterator_tag`, present only over a
+      forward base (R17).
+- [ ] Return the start of the current element from `iterator::base()`, add
+      `base_code_units()`, and drop `base()` for input-only bases
+      ([base-position](#base-position)).
 - [ ] Make the closures' `operator()` `static` (C++23) — small QoI.
-- [ ] (Future, not now) A "which input bytes failed" capability for error
-      reporting, expressed as an error-kind / error payload rather than a new
-      iterator member.
+- [ ] Update the paper's related-work citation and the README link from
+      P2728R13 to R17, and add R14–R17 to the bibliography.
 
 ## Future bolt-ons that the model leaves open
 
-- A `base_code_units`-style accessor for error reporting (forward ranges only),
-  as syntactic sugar over `subrange(it.base(), ranges::next(it).base())`.
 - A SIMD/bulk "kind" or separate view, kept out of the lazy `operator++`.
