@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <array>
 #include <concepts>
+#include <cstddef>
+#include <iterator>
 #include <ranges>
 #include <optional>
 #include <span>
@@ -444,4 +446,92 @@ TEST_CASE("decode_view: borrowed_range over a span", "[decode_view]") {
 
 TEST_CASE("decode_view: borrowed find in a constant expression", "[decode_view]") {
     CHECK(constify(find_through_span()) == U'\x00C0');
+}
+
+// ---------------------------------------------------------------------------
+// iterator_category: operator* returns a prvalue, so the C++17 category is at
+// most input, whatever the C++20 iterator_concept.  Over an input-only base
+// it is absent.  This follows P2728's to_utf_view and the standard's iota_view.
+// ---------------------------------------------------------------------------
+
+namespace {
+// A single-pass range of bytes: an input range that is not a forward range.
+struct input_only_bytes : std::ranges::view_interface<input_only_bytes> {
+    const char* first_{nullptr};
+    const char* last_{nullptr};
+
+    struct iterator {
+        using iterator_concept = std::input_iterator_tag;
+        using value_type       = char;
+        using difference_type  = std::ptrdiff_t;
+
+        const char* p_{nullptr};
+
+        constexpr char      operator*() const { return *p_; }
+        constexpr iterator& operator++() {
+            ++p_;
+            return *this;
+        }
+        constexpr void        operator++(int) { ++p_; }
+        friend constexpr bool operator==(const iterator& it, const iterator& e) { return it.p_ == e.p_; }
+    };
+
+    input_only_bytes() = default;
+    constexpr explicit input_only_bytes(std::string_view s) : first_(s.data()), last_(s.data() + s.size()) {}
+    constexpr iterator begin() const { return {first_}; }
+    constexpr iterator end() const { return {last_}; }
+};
+
+static_assert(std::ranges::input_range<input_only_bytes>);
+static_assert(!std::ranges::forward_range<input_only_bytes>);
+
+template <typename I>
+concept has_iterator_category = requires { typename I::iterator_category; };
+
+using fwd_decode_iter   = std::ranges::iterator_t<decode_view<xor_codec, std::string_view>>;
+using fwd_report_iter   = std::ranges::iterator_t<decode_view<xor_codec, std::string_view, error_mode::report>>;
+using ra_decode_iter    = std::ranges::iterator_t<random_access_decode_view<latin1_codec, std::string_view>>;
+using input_decode_iter = std::ranges::iterator_t<decode_view<xor_codec, input_only_bytes>>;
+
+static_assert(std::forward_iterator<fwd_decode_iter>);
+static_assert(std::same_as<fwd_decode_iter::iterator_concept, std::forward_iterator_tag>);
+static_assert(std::same_as<fwd_decode_iter::iterator_category, std::input_iterator_tag>);
+static_assert(std::same_as<std::iterator_traits<fwd_decode_iter>::iterator_category, std::input_iterator_tag>);
+static_assert(std::same_as<fwd_report_iter::iterator_category, std::input_iterator_tag>);
+
+static_assert(std::random_access_iterator<ra_decode_iter>);
+static_assert(std::same_as<ra_decode_iter::iterator_concept, std::random_access_iterator_tag>);
+static_assert(std::same_as<ra_decode_iter::iterator_category, std::input_iterator_tag>);
+static_assert(std::same_as<std::iterator_traits<ra_decode_iter>::iterator_category, std::input_iterator_tag>);
+
+static_assert(std::input_iterator<input_decode_iter>);
+static_assert(!std::forward_iterator<input_decode_iter>);
+static_assert(std::same_as<input_decode_iter::iterator_concept, std::input_iterator_tag>);
+static_assert(!has_iterator_category<input_decode_iter>);
+
+constexpr char32_t first_of_input_only() {
+    auto v = input_only_bytes{"ab"} | decode(latin1_codec{});
+    return *v.begin();
+}
+} // namespace
+
+TEST_CASE("decode_view: a legacy iterator-pair constructor sees an input iterator", "[decode_view]") {
+    // The C++17 category drives the iterator-pair constructors; they must still
+    // work, as a single pass, now that the category is input.
+    std::string_view src{"\x41\x42\xC0"};
+    auto             view = src | decode(latin1_codec{});
+    std::u32string   out(view.begin(), view.end());
+    CHECK(out == U"AB\u00C0");
+
+    auto           fwd = src | decode(xor_codec{});
+    std::u32string out2(fwd.begin(), fwd.end());
+    CHECK(out2 == std::u32string{char32_t{0x41 ^ 1}, char32_t{0x42 ^ 2}, char32_t{0xC0 ^ 3}});
+}
+
+TEST_CASE("decode_view: decodes an input-only base", "[decode_view]") {
+    std::u32string out;
+    for (char32_t c : input_only_bytes{"a\xC0"} | decode(latin1_codec{}))
+        out.push_back(c);
+    CHECK(out == U"a\u00C0");
+    CHECK(constify(first_of_input_only()) == U'a');
 }
