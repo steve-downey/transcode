@@ -209,17 +209,38 @@ exist. It is now `input_iterator_tag`, present only over a forward base, as in
 R17 and as for `iota_view` and `enumerate_view`. `iterator_concept` is
 unchanged.
 
-### <a id="base-position"></a>3. `base()` position and `base_code_units()` (R15, Brno) — OPEN
+### <a id="base-position"></a>3. `base()` position and `base_code_units()` (R15, Brno) — **done**
 
 Our decode iterator decodes eagerly, so `base()` returned the position *after*
 the current element, where P2728's returns the start of it. P2728 also now has
 `base_code_units()` as an iterator member for forward ranges, and no `base()`
-for input ranges. To match: keep the start position for forward ranges, make
-`base()` return it, add `base_code_units()` to the decode and encode iterators,
-and drop `base()` from input-only iterators. A codec's `is_empty` results (an
-ISO-2022-JP escape, a byte order mark) have no counterpart in UTF; their bytes
-count as input to the element that follows, so that successive elements' input
-is adjacent, as `subrange(it.base(), next(it).base())` requires.
+for input ranges.
+
+Now matched. Over a forward base, the `decode_view` and `encode_view`
+iterators keep the position where the current element's input began
+(`start_`, absent over an input-only base), `base()` returns it, and
+`base_code_units()` is `subrange(start_, current_)`. Input-only iterators have
+neither. The single-byte random-access iterators already pointed at the
+current element; their `base_code_units()` is that one element.
+
+A legacy codec has cases UTF does not, settled as follows:
+
+- **Input that yields nothing** (`is_empty`: an ISO-2022-JP escape, a byte
+  order mark through `decode_first`) counts as input to the element that
+  follows it. Successive elements' inputs are therefore adjacent, and
+  `base_code_units()` is `subrange(it.base(), next(it).base())`, which is the
+  identity Brno polled. Such input after the last element belongs to none, and
+  `base()` of an iterator equal to `end()` is the end of the base range.
+- **An element yielded without consuming input** — the second of Big5's two
+  scalar values for `88 62`, or a second `flush()` result — has an empty
+  `base_code_units()`.
+- **Encode:** every byte of one scalar value's encoding has that scalar value
+  as its `base_code_units()`; bytes yielded by `flush()` have an empty range at
+  the end of the base.
+
+The iconv views are not changed: their `base()` is how far iconv has consumed,
+which runs ahead of the output being yielded, since iconv converts a buffer at
+a time and does not say which input produced which output byte.
 
 ### 4. Unspecified underlying type for the error enums (R13)
 
@@ -274,7 +295,7 @@ of the current code point. Now tracked as [base-position](#base-position).
       constraint on the *wording*, which must not fix one either.
 - [x] Make `iterator_category` `input_iterator_tag`, present only over a
       forward base (R17).
-- [ ] Return the start of the current element from `iterator::base()`, add
+- [x] Return the start of the current element from `iterator::base()`, add
       `base_code_units()`, and drop `base()` for input-only bases
       ([base-position](#base-position)).
 - [ ] Make the closures' `operator()` `static` (C++23) — small QoI.

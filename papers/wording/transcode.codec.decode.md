@@ -86,6 +86,26 @@ constexpr iterator(base_iter current, base_sent end, Codec codec);
 [#]{.pnum} *Effects*: Initializes `$current$` with `std::move(current)`, `$end$` with `std::move(end)` and the iterator's own copy of the codec with `codec`, then decodes the first element.  When `Codec` models `bom_aware_text_decoder` and `current != end`, that element is decoded by `decode_first`, and, if its result has `is_empty`, decoding goes on as `operator++` does.
 
 ```cpp
+constexpr const base_iter& base() const noexcept;
+```
+
+[#]{.pnum} *Constraints*: `R` models `forward_range`.
+
+[#]{.pnum} *Returns*: The iterator into `R` at the first byte of the input decoded to produce the current element.  The bytes of any preceding `decode_one` or `decode_first` results with `is_empty`, such as an escape sequence or a byte order mark, count as input to the element that follows them, including an element yielded by `flush()`.  For an iterator equal to `end()`, it is the end of the base range.
+
+[#]{.pnum} *Remarks*: As a consequence, the inputs of successive elements are adjacent and together are the whole base range, except for bytes after the last element that yielded nothing.
+
+```cpp
+constexpr auto base_code_units() const;
+```
+
+[#]{.pnum} *Constraints*: `R` models `forward_range`.
+
+[#]{.pnum} *Returns*: `subrange(base(), $current$)`, the bytes decoded to produce the current element.  When the next element exists, `$current$` is where decoding of it begins, so this is `subrange(base(), ranges::next(*this).base())`.
+
+[#]{.pnum} *Remarks*: The range is empty for an element that a codec yields without consuming input, such as the second of two scalar values that one byte sequence decodes to, or the second of two elements yielded by `flush()`.
+
+```cpp
 constexpr result_t operator*() const;
 ```
 
