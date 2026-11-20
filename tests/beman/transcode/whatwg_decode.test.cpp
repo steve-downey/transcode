@@ -6,8 +6,10 @@
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/test_utilities.hpp>
 
+#include <cstddef>
 #include <ranges>
 #include <span>
+#include <string_view>
 #include <vector>
 
 namespace {
@@ -442,13 +444,88 @@ TEST_CASE("whatwg::decode: view base() returns underlying range", "[transcoding:
     CHECK(view.base()[0] == 'A');
 }
 
-TEST_CASE("whatwg::decode: iterator base() points past consumed bytes", "[transcoding::whatwg::decode]") {
+TEST_CASE("whatwg::decode: iterator base() is the start of the current element", "[transcoding::whatwg::decode]") {
     std::vector<char> bytes{'A', 'B', 'C'};
     auto              view = bytes | whatwg::decode<whatwg::encoding::utf_8>;
     auto              it   = view.begin();
     CHECK(*it == U'A');
-    CHECK(*it.base() == 'B');
+    CHECK(*it.base() == 'A');
     ++it;
     CHECK(*it == U'B');
-    CHECK(*it.base() == 'C');
+    CHECK(*it.base() == 'B');
+}
+
+// ---------------------------------------------------------------------------
+// base_code_units(): the bytes each element was decoded from.  Inputs mix
+// element lengths, errors, and input that yields nothing, so an iterator that
+// reports the following element's bytes gives a different answer.
+// ---------------------------------------------------------------------------
+
+namespace {
+// The bytes of each element's base_code_units(), and check that base() is
+// where they begin and the previous element's end.
+template <typename View>
+std::vector<std::string_view> units_of(View&& v) {
+    std::vector<std::string_view> out;
+    auto                          expected_start = std::ranges::begin(v.base());
+    for (auto it = v.begin(); it != v.end(); ++it) {
+        auto units = it.base_code_units();
+        REQUIRE(it.base() == units.begin());
+        REQUIRE(it.base() == expected_start);
+        expected_start = units.end();
+        out.emplace_back(units.empty() ? nullptr : &*units.begin(), static_cast<std::size_t>(units.size()));
+    }
+    REQUIRE(v.end().base() == std::ranges::end(v.base()));
+    return out;
+}
+
+using sv = std::string_view;
+} // namespace
+
+TEST_CASE("whatwg::decode: UTF-8 base_code_units() spans each sequence and maximal subpart",
+          "[transcoding::whatwg::decode][base]") {
+    // 'A', U+00E9, a lone 0xFF, the maximal subpart E2 82 of a truncated
+    // U+20AC that the 'B' after it ends, then U+20AC whole.
+    sv   src{"A\xC3\xA9\xFF\xE2\x82"
+             "B\xE2\x82\xAC"};
+    auto view = src | whatwg::decode_or_error<whatwg::encoding::utf_8>;
+    CHECK(units_of(view) ==
+          std::vector<sv>{sv{"A"}, sv{"\xC3\xA9"}, sv{"\xFF"}, sv{"\xE2\x82"}, sv{"B"}, sv{"\xE2\x82\xAC"}});
+    auto it = std::ranges::next(view.begin(), 3);
+    REQUIRE_FALSE((*it).has_value());
+    CHECK(it.base() == src.begin() + 4);
+}
+
+TEST_CASE("whatwg::decode: a UTF-8 sequence truncated by the end of input", "[transcoding::whatwg::decode][base]") {
+    sv   src{"A\xE2\x82"};
+    auto view = src | whatwg::decode_or_error<whatwg::encoding::utf_8>;
+    CHECK(units_of(view) == std::vector<sv>{sv{"A"}, sv{"\xE2\x82"}});
+}
+
+TEST_CASE("whatwg::decode: a byte order mark is input to the first element", "[transcoding::whatwg::decode][base]") {
+    sv   src{"\xEF\xBB\xBF"
+             "AB"};
+    auto view = src | whatwg::decode<whatwg::encoding::utf_8>;
+    CHECK(units_of(view) == std::vector<sv>{sv{"\xEF\xBB\xBF"
+                                               "A"},
+                                            sv{"B"}});
+}
+
+TEST_CASE("whatwg::decode: ISO-2022-JP escape sequences are input to the element after them",
+          "[transcoding::whatwg::decode][base]") {
+    // ESC $ B switches to JIS X 0208, 30 21 is U+4E9C, ESC ( B switches back.
+    sv   src{"\x1B$B\x30\x21\x1B(BA\x1B(B"};
+    auto view = src | whatwg::decode<whatwg::encoding::iso_2022_jp>;
+    CHECK(units_of(view) == std::vector<sv>{sv{"\x1B$B\x30\x21"}, sv{"\x1B(BA"}});
+}
+
+TEST_CASE("whatwg::decode: Big5 two scalar values from one byte pair", "[transcoding::whatwg::decode][base]") {
+    // 88 62 decodes to U+00CA U+0304; the second consumes no input.
+    sv   src{"A\x88\x62"
+             "B"};
+    auto view = src | whatwg::decode<whatwg::encoding::big5>;
+    CHECK(units_of(view) == std::vector<sv>{sv{"A"}, sv{"\x88\x62"}, sv{}, sv{"B"}});
+    auto it = std::ranges::next(view.begin(), 2);
+    CHECK(*it == U'\x0304');
+    CHECK(it.base() == src.begin() + 3);
 }

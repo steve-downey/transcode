@@ -86,6 +86,22 @@ constexpr iterator(base_iter current, base_sent end, Codec codec);
 [#]{.pnum} *Effects*: Initializes `$current$` with `std::move(current)`, `$end$` with `std::move(end)` and the iterator's own copy of the codec with `codec`, then encodes the first element.
 
 ```cpp
+constexpr const base_iter& base() const noexcept;
+```
+
+[#]{.pnum} *Constraints*: `R` models `forward_range`.
+
+[#]{.pnum} *Returns*: The iterator into `R` at the element whose encoding the current byte belongs to.  For a byte yielded by `flush()`, and for an iterator equal to `end()`, it is the end of the base range.
+
+```cpp
+constexpr auto base_code_units() const;
+```
+
+[#]{.pnum} *Constraints*: `R` models `forward_range`.
+
+[#]{.pnum} *Returns*: `subrange(base(), $current$)`: the element whose encoding the current byte belongs to, or an empty range for a byte yielded by `flush()`.
+
+```cpp
 constexpr result_t operator*() const;
 ```
 
