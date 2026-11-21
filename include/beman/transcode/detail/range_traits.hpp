@@ -11,6 +11,7 @@
 
 #if !BEMAN_TRANSCODE_USE_MODULES()
     #include <concepts>
+    #include <iterator>
     #include <ranges>
     #include <type_traits>
 
@@ -62,6 +63,20 @@ concept const_iterator_compatible_range =
 template <typename R>
 concept const_sentinel_compatible_range =
     std::ranges::range<const R> && std::constructible_from<compatible_sentinel_t<R>, std::ranges::sentinel_t<const R>>;
+
+// A view iterator whose operator* returns a prvalue meets at most the
+// Cpp17InputIterator requirements, whatever its iterator_concept, so its
+// iterator_category is input_iterator_tag.  Over a base that is not a forward
+// range the iterator may be move-only and so not a Cpp17InputIterator at all,
+// and iterator_category is absent.  The standard views say this as "present
+// only if"; a nested iterator gets it by deriving from this.
+template <bool Present>
+struct prvalue_iterator_category {};
+
+template <>
+struct prvalue_iterator_category<true> {
+    using iterator_category = std::input_iterator_tag;
+};
 
 } // namespace beman::transcoding::detail
 

@@ -710,3 +710,46 @@ TEST_CASE("encode_view: a single-byte encoder in a constant expression", "[encod
     CHECK(bytes[2] == '?');
     CHECK(bytes[3] == 'z');
 }
+
+// ---------------------------------------------------------------------------
+// iterator_category: operator* returns a prvalue, so the C++17 category is at
+// most input, whatever the C++20 iterator_concept.  Over an input-only base
+// it is absent.  This follows P2728's to_utf_view and the standard's iota_view.
+// ---------------------------------------------------------------------------
+
+namespace {
+template <typename I>
+concept has_iterator_category = requires { typename I::iterator_category; };
+
+using fwd_encode_iter   = std::ranges::iterator_t<encode_view<shift_state_encoder, std::u32string_view>>;
+using fwd_report_iter   = std::ranges::iterator_t<encode_view<latin1_codec, std::u32string_view, error_mode::report>>;
+using ra_encode_iter    = std::ranges::iterator_t<decltype(std::u32string_view{} | encode(latin1_encoder{}))>;
+using input_encode_iter = std::ranges::iterator_t<encode_view<shift_state_encoder, input_only_scalars>>;
+
+static_assert(std::forward_iterator<fwd_encode_iter>);
+static_assert(std::same_as<fwd_encode_iter::iterator_concept, std::forward_iterator_tag>);
+static_assert(std::same_as<fwd_encode_iter::iterator_category, std::input_iterator_tag>);
+static_assert(std::same_as<std::iterator_traits<fwd_encode_iter>::iterator_category, std::input_iterator_tag>);
+static_assert(std::same_as<fwd_report_iter::iterator_category, std::input_iterator_tag>);
+
+static_assert(std::random_access_iterator<ra_encode_iter>);
+static_assert(std::same_as<ra_encode_iter::iterator_concept, std::random_access_iterator_tag>);
+static_assert(std::same_as<ra_encode_iter::iterator_category, std::input_iterator_tag>);
+static_assert(std::same_as<std::iterator_traits<ra_encode_iter>::iterator_category, std::input_iterator_tag>);
+
+static_assert(std::input_iterator<input_encode_iter>);
+static_assert(!std::forward_iterator<input_encode_iter>);
+static_assert(std::same_as<input_encode_iter::iterator_concept, std::input_iterator_tag>);
+static_assert(!has_iterator_category<input_encode_iter>);
+} // namespace
+
+TEST_CASE("encode_view: a legacy iterator-pair constructor sees an input iterator", "[encode_view]") {
+    using namespace std::string_literals;
+    auto        view = std::u32string_view{U"A\u00E9"} | encode(latin1_codec{});
+    std::string out(view.begin(), view.end());
+    CHECK(out == "A\xE9"s);
+
+    auto        shifted = std::u32string_view{U"a\u00E9"} | encode(shift_state_encoder{});
+    std::string out2(shifted.begin(), shifted.end());
+    CHECK(out2 == "a\x0E\xE9\x0F"s);
+}
