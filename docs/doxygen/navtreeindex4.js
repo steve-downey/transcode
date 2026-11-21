@@ -1,9 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"labels_8hpp.html":[4,0,2,0,0,0,8],
-"labels_8hpp_source.html":[4,0,2,0,0,0,8],
-"macintosh_8hpp.html":[4,0,2,0,0,0,0,20],
-"macintosh_8hpp_source.html":[4,0,2,0,0,0,0,20],
 "main_8cpp.html":[4,0,1,0,5],
 "main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627":[4,0,1,0,5,1],
 "mime_8cpp.html":[4,0,1,0,6],
@@ -249,5 +245,9 @@ var NAVTREEINDEX4 =
 "paper__bulk__conversion_8cpp.html":[4,0,1,2],
 "paper__bulk__conversion_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4":[4,0,1,2,3],
 "paper__custom__codec_8cpp.html":[4,0,1,3],
-"paper__custom__codec_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4":[4,0,1,3,2]
+"paper__custom__codec_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4":[4,0,1,3,2],
+"paper__decode__utf8_8cpp.html":[4,0,1,4],
+"paper__decode__utf8_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4":[4,0,1,4,2],
+"paper__error__visibility_8cpp.html":[4,0,1,5],
+"paper__error__visibility_8cpp.html#a3cbee09b3872848b0382552ae45acb13":[4,0,1,5,0]
 };

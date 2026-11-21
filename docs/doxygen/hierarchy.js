@@ -23,8 +23,6 @@ var hierarchy =
     [ "beman::transcoding::iconv_transcode_closure&lt; IconvFns &gt;", "structbeman_1_1transcoding_1_1iconv__transcode__closure.html", null ],
     [ "beman::transcoding::iconv_transcode_or_error_closure&lt; IconvFns &gt;", "structbeman_1_1transcoding_1_1iconv__transcode__or__error__closure.html", null ],
     [ "anonymous_namespace{paper_custom_codec.cpp}::iso_8859_1", "structanonymous__namespace_02paper__custom__codec_8cpp_03_1_1iso__8859__1.html", null ],
-    [ "beman::transcoding::decode_view&lt; Codec, R, E &gt;::iterator", "classbeman_1_1transcoding_1_1decode__view_1_1iterator.html", null ],
-    [ "beman::transcoding::encode_view&lt; Codec, R, E &gt;::iterator", "classbeman_1_1transcoding_1_1encode__view_1_1iterator.html", null ],
     [ "beman::transcoding::iconv_transcode_or_error_view&lt; IconvFns, R &gt;::iterator", "classbeman_1_1transcoding_1_1iconv__transcode__or__error__view_1_1iterator.html", null ],
     [ "beman::transcoding::iconv_transcode_view&lt; IconvFns, R &gt;::iterator", "classbeman_1_1transcoding_1_1iconv__transcode__view_1_1iterator.html", null ],
     [ "beman::transcoding::random_access_decode_view&lt; Codec, R, E &gt;::iterator", "classbeman_1_1transcoding_1_1random__access__decode__view_1_1iterator.html", null ],
@@ -39,6 +37,10 @@ var hierarchy =
     [ "mime_reader::parse::parse_error", "structmime__reader_1_1parse_1_1parse__error.html", null ],
     [ "mime_reader::parse::parse_state&lt; T &gt;", "structmime__reader_1_1parse_1_1parse__state.html", null ],
     [ "mime_reader::parse::parser&lt; F &gt;", "classmime__reader_1_1parse_1_1parser.html", null ],
+    [ "beman::transcoding::detail::prvalue_iterator_category&lt; std::ranges::forward_range&lt; R &gt; &gt;", null, [
+      [ "beman::transcoding::decode_view< Codec, R, E >::iterator", "classbeman_1_1transcoding_1_1decode__view_1_1iterator.html", null ],
+      [ "beman::transcoding::encode_view< Codec, R, E >::iterator", "classbeman_1_1transcoding_1_1encode__view_1_1iterator.html", null ]
+    ] ],
     [ "mime_reader::q_decode_fn", "structmime__reader_1_1q__decode__fn.html", null ],
     [ "mime_reader::quoted_printable_decode_fn", "structmime__reader_1_1quoted__printable__decode__fn.html", null ],
     [ "mime_reader::parse::rule&lt; T &gt;", "classmime__reader_1_1parse_1_1rule.html", null ],

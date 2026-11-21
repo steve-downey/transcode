@@ -3,7 +3,6 @@ var classbeman_1_1transcoding_1_1decode__view_1_1iterator =
     [ "base_iter", "classbeman_1_1transcoding_1_1decode__view_1_1iterator.html#a74d2f0b32560c17780b37767cadbbe2e", null ],
     [ "base_sent", "classbeman_1_1transcoding_1_1decode__view_1_1iterator.html#a2e7ae2cd106a25f99127415b82a97937", null ],
     [ "difference_type", "classbeman_1_1transcoding_1_1decode__view_1_1iterator.html#aad188443cfe1033e5c0600ab68b01269", null ],
-    [ "iterator_category", "classbeman_1_1transcoding_1_1decode__view_1_1iterator.html#af0676ecd46baef416d7638001927ff7b", null ],
     [ "iterator_concept", "classbeman_1_1transcoding_1_1decode__view_1_1iterator.html#a85e287389fd8e3fcd0dd708f38080d9f", null ],
     [ "reference", "classbeman_1_1transcoding_1_1decode__view_1_1iterator.html#ac7cbebf3351cd593d02f8984ca8dd77d", null ],
     [ "result_t", "classbeman_1_1transcoding_1_1decode__view_1_1iterator.html#a446d9ff9a39f3f5c5ea1e203a0183b80", null ],

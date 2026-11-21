@@ -98,7 +98,7 @@ $(function(){initNavTree('classbeman_1_1transcoding_1_1random__access__encode__v
 Public Types</h2></td></tr>
 <tr class="memitem:a8de2b6601d5d0ed5b478f62a83a487b5" id="r_a8de2b6601d5d0ed5b478f62a83a487b5"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8de2b6601d5d0ed5b478f62a83a487b5">value_type</a> = std::conditional_t&lt;E == <a class="el" href="namespacebeman_1_1transcoding.html#aca8839f719a85cf9f24d0f78474b294aae98d2f001da5678b39482efbdf5770dc">error_mode::report</a>, std::expected&lt;char, <a class="el" href="namespacebeman_1_1transcoding_1_1whatwg.html#ab07481207f475a505dd3afb5d24ffe77">whatwg::error</a>&gt;, char&gt;</td></tr>
 <tr class="memitem:a43c63f4e877bafafb06d97f56b0e4c90" id="r_a43c63f4e877bafafb06d97f56b0e4c90"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a43c63f4e877bafafb06d97f56b0e4c90">iterator_concept</a> = std::random_access_iterator_tag</td></tr>
-<tr class="memitem:ade85f2f1a3e22364c26d0b35c03b5481" id="r_ade85f2f1a3e22364c26d0b35c03b5481"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade85f2f1a3e22364c26d0b35c03b5481">iterator_category</a> = std::random_access_iterator_tag</td></tr>
+<tr class="memitem:a8032341bf34215ae488beca82ec590e0" id="r_a8032341bf34215ae488beca82ec590e0"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8032341bf34215ae488beca82ec590e0">iterator_category</a> = std::input_iterator_tag</td></tr>
 <tr class="memitem:a3a47ccc4435e9e2b345fdbe109cc27b5" id="r_a3a47ccc4435e9e2b345fdbe109cc27b5"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3a47ccc4435e9e2b345fdbe109cc27b5">difference_type</a> = std::ptrdiff_t</td></tr>
 <tr class="memitem:a85b2292874a782c3563d5f03eb029993" id="r_a85b2292874a782c3563d5f03eb029993"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a85b2292874a782c3563d5f03eb029993">reference</a> = <a class="el" href="#a8de2b6601d5d0ed5b478f62a83a487b5">value_type</a></td></tr>
 </table><table class="memberdecls">
@@ -179,8 +179,8 @@ template&lt;single_byte_text_encoder Codec, std::ranges::random_access_range R, 
 
 </div>
 </div>
-<a id="ade85f2f1a3e22364c26d0b35c03b5481" name="ade85f2f1a3e22364c26d0b35c03b5481"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ade85f2f1a3e22364c26d0b35c03b5481">&#9670;&#160;</a></span>iterator_category</h2>
+<a id="a8032341bf34215ae488beca82ec590e0" name="a8032341bf34215ae488beca82ec590e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8032341bf34215ae488beca82ec590e0">&#9670;&#160;</a></span>iterator_category</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -188,7 +188,7 @@ template&lt;single_byte_text_encoder Codec, std::ranges::random_access_range R, 
 template&lt;single_byte_text_encoder Codec, std::ranges::random_access_range R, <a class="el" href="namespacebeman_1_1transcoding.html#aca8839f719a85cf9f24d0f78474b294a">error_mode</a> E = error_mode::replacement&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__encode__view.html">beman::transcoding::random_access_encode_view</a>&lt; Codec, R, E &gt;::iterator::iterator_category = std::random_access_iterator_tag</td>
+          <td class="memname">using <a class="el" href="classbeman_1_1transcoding_1_1random__access__encode__view.html">beman::transcoding::random_access_encode_view</a>&lt; Codec, R, E &gt;::iterator::iterator_category = std::input_iterator_tag</td>
         </tr>
       </table>
 </div><div class="memdoc">

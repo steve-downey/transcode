@@ -1,9 +1,5 @@
 var NAVTREEINDEX6 =
 {
-"structmime__reader_1_1header__chunk.html#ab19298d7dfe8b1d95ec8a02904c7099b":[3,0,4,5,4],
-"structmime__reader_1_1header__chunk.html#aeec0f7132103ce620f28b8f8f9df56c2":[1,0,8,8,5],
-"structmime__reader_1_1header__chunk.html#aeec0f7132103ce620f28b8f8f9df56c2":[3,0,4,5,5],
-"structmime__reader_1_1header__field.html":[1,0,8,4],
 "structmime__reader_1_1header__field.html":[3,0,4,1],
 "structmime__reader_1_1header__field.html#ab0f65bf42d8ff696a0dba65d571014cd":[1,0,8,4,0],
 "structmime__reader_1_1header__field.html#ab0f65bf42d8ff696a0dba65d571014cd":[3,0,4,1,0],
