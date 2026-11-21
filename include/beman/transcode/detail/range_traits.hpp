@@ -18,6 +18,16 @@
 #endif
 namespace beman::transcoding::detail {
 
+// Stands in for an iterator member that only a forward-range iterator keeps.
+// An input range's iterator may be move-only, and a position behind the
+// current one means nothing for a single-pass range anyway.
+struct no_position {
+    friend constexpr bool operator==(no_position, no_position) = default;
+};
+
+template <typename I, bool Present>
+using position_if_t = std::conditional_t<Present, I, no_position>;
+
 template <typename Mutable, typename Const, bool = std::common_with<Mutable, Const>>
 struct common_or_mutable {
     using type = Mutable;

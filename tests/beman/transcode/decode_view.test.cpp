@@ -295,7 +295,7 @@ TEST_CASE("decode_view: iterator equality sees the codec's state", "[decode_view
     auto        i2  = v.begin();
     CHECK(i1 == i2);
     ++i2; // same offset in the base, different decoded element and decoder state
-    CHECK(i1.base() == i2.base());
+    CHECK(i1.base_code_units().end() == i2.base_code_units().end());
     CHECK(i1 != i2);
     ++i1;
     CHECK(i1 == i2);
@@ -534,4 +534,110 @@ TEST_CASE("decode_view: decodes an input-only base", "[decode_view]") {
         out.push_back(c);
     CHECK(out == U"a\u00C0");
     CHECK(constify(first_of_input_only()) == U'a');
+}
+
+// ---------------------------------------------------------------------------
+// base() and base_code_units(): base() is where decoding of the current
+// element began, as in P2728's to_utf_view, and base_code_units() is the input
+// decoded to produce it.  Each input below gives a visibly different answer
+// for an iterator that reports the position after the element instead.
+// ---------------------------------------------------------------------------
+
+namespace {
+// The offsets of base() and base_code_units() for each element, and of base()
+// at the end.
+struct element_span {
+    char32_t    value;
+    std::size_t first;
+    std::size_t last;
+    friend bool operator==(const element_span&, const element_span&) = default;
+};
+
+template <typename View>
+std::vector<element_span> spans_of(View&& v, const char* origin) {
+    std::vector<element_span> out;
+    for (auto it = v.begin(); it != v.end(); ++it) {
+        auto units = it.base_code_units();
+        REQUIRE(units.begin() == it.base());
+        out.push_back({*it,
+                       static_cast<std::size_t>(&*it.base() - origin),
+                       static_cast<std::size_t>(&*it.base() - origin) + static_cast<std::size_t>(units.size())});
+    }
+    return out;
+}
+
+constexpr std::size_t owing_units_of_second(std::string_view src) {
+    auto v  = std::span<const char>(src.data(), src.size()) | decode(owing_codec{});
+    auto it = std::ranges::next(v.begin());
+    return static_cast<std::size_t>(it.base() - std::ranges::begin(v.base())) * 10 +
+           static_cast<std::size_t>(it.base_code_units().size());
+}
+
+using input_only_decode_iter = std::ranges::iterator_t<decode_view<xor_codec, input_only_bytes>>;
+template <typename I>
+concept has_base = requires(const I& i) { i.base(); };
+template <typename I>
+concept has_base_code_units = requires(const I& i) { i.base_code_units(); };
+static_assert(!has_base<input_only_decode_iter>);
+static_assert(!has_base_code_units<input_only_decode_iter>);
+static_assert(has_base<std::ranges::iterator_t<decode_view<xor_codec, std::string_view>>>);
+static_assert(has_base_code_units<std::ranges::iterator_t<decode_view<xor_codec, std::string_view>>>);
+} // namespace
+
+TEST_CASE("decode_view: base() is where the current element's input begins", "[decode_view][base]") {
+    // '-' is consumed and yields nothing, so it is input to the element after
+    // it; 'X' leaves 'Y' owed, which is yielded without consuming input.
+    std::string_view src  = "-aX--b-";
+    auto             view = std::span<const char>(src.data(), src.size()) | decode(owing_codec{});
+    CHECK(spans_of(view, src.data()) == std::vector<element_span>{
+                                            {U'a', 0, 2}, // "-a"
+                                            {U'X', 2, 3}, // "X"
+                                            {U'Y', 3, 3}, // owed, consumes nothing
+                                            {U'b', 3, 6}, // "--b"
+                                        });
+    // the trailing '-' yields nothing and so belongs to no element
+    CHECK(view.end().base() == std::ranges::end(view.base()));
+    CHECK(std::ranges::next(view.begin(), 4).base() == std::ranges::end(view.base()));
+}
+
+TEST_CASE("decode_view: base_code_units() is base() to the next element's base()", "[decode_view][base]") {
+    std::string_view src  = "-aX--b";
+    auto             view = std::span<const char>(src.data(), src.size()) | decode(owing_codec{});
+    for (auto it = view.begin(); it != view.end(); ++it) {
+        auto next = std::ranges::next(it);
+        CHECK(it.base_code_units().begin() == it.base());
+        CHECK(it.base_code_units().end() == next.base());
+    }
+}
+
+TEST_CASE("decode_view: an element owed at the end of input is flushed with no input", "[decode_view][base]") {
+    std::string_view src  = "aX";
+    auto             view = std::span<const char>(src.data(), src.size()) | decode(owing_codec{});
+    CHECK(spans_of(view, src.data()) == std::vector<element_span>{{U'a', 0, 1}, {U'X', 1, 2}, {U'Y', 2, 2}});
+
+    // input that yielded nothing before a flushed element is input to it
+    std::string_view src2  = "X-";
+    auto             view2 = std::span<const char>(src2.data(), src2.size()) | decode(owing_codec{});
+    CHECK(spans_of(view2, src2.data()) == std::vector<element_span>{{U'X', 0, 1}, {U'Y', 1, 1}});
+}
+
+TEST_CASE("decode_view: decode_first's skipped input belongs to the first element", "[decode_view][base]") {
+    std::string_view src  = "^ab";
+    auto             view = src | decode(start_codec{});
+    CHECK(spans_of(view, src.data()) == std::vector<element_span>{{U'a', 0, 2}, {U'b', 2, 3}});
+}
+
+TEST_CASE("decode_view: random-access base_code_units() is the one byte", "[decode_view][base]") {
+    std::vector<unsigned char> src{0x41, 0xC0, 0x42};
+    auto                       view = src | decode(latin1_codec{});
+    auto                       it   = view.begin() + 1;
+    CHECK(it.base() == src.begin() + 1);
+    CHECK(it.base_code_units().size() == 1);
+    CHECK(*it.base_code_units().begin() == 0xC0);
+}
+
+TEST_CASE("decode_view: base() and base_code_units() in a constant expression", "[decode_view][base]") {
+    CHECK(constify(owing_units_of_second("-aX")) == 21);  // 'X': offset 2, one byte
+    CHECK(constify(owing_units_of_second("X-a")) == 10);  // owed 'Y': offset 1, no bytes
+    CHECK(constify(owing_units_of_second("a--b")) == 13); // 'b': offset 1, "--b"
 }

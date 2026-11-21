@@ -8,8 +8,11 @@
 #include <catch2/catch_all.hpp>
 #include <tests/beman/transcode/test_utilities.hpp>
 
+#include <cstddef>
 #include <ranges>
 #include <span>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -277,4 +280,59 @@ TEST_CASE("single-byte encode of an unmapped code point is '?'", "[transcoding::
         result.push_back(c);
     REQUIRE(result.size() == 1);
     CHECK(result[0] == '?');
+}
+
+// ---------------------------------------------------------------------------
+// base() and base_code_units(): every byte of a scalar value's encoding
+// reports that scalar value; bytes yielded by flush() report none.
+// ---------------------------------------------------------------------------
+
+using beman::transcoding::tests::constify;
+
+namespace {
+// For each byte, the offset of base() and the size of base_code_units().
+template <typename View>
+std::vector<std::pair<std::size_t, std::size_t>> positions_of(View&& v) {
+    std::vector<std::pair<std::size_t, std::size_t>> out;
+    auto                                             origin = std::ranges::begin(v.base());
+    for (auto it = v.begin(); it != v.end(); ++it) {
+        REQUIRE(it.base_code_units().begin() == it.base());
+        out.emplace_back(static_cast<std::size_t>(it.base() - origin),
+                         static_cast<std::size_t>(it.base_code_units().size()));
+    }
+    REQUIRE(v.end().base() == std::ranges::end(v.base()));
+    return out;
+}
+
+using pos = std::pair<std::size_t, std::size_t>;
+
+constexpr std::size_t third_byte_base(std::u32string_view src) {
+    auto v = src | whatwg::encode<whatwg::encoding::utf_8>;
+    return static_cast<std::size_t>(std::ranges::next(v.begin(), 2).base() - src.begin());
+}
+} // namespace
+
+TEST_CASE("whatwg::encode: each byte's base() is the scalar value it encodes", "[transcoding::whatwg::encode][base]") {
+    std::u32string_view src{U"A\u00E9\u20AC"};
+    auto                view = src | whatwg::encode<whatwg::encoding::utf_8>;
+    CHECK(positions_of(view) == std::vector<pos>{{0, 1}, {1, 1}, {1, 1}, {2, 1}, {2, 1}, {2, 1}});
+    CHECK(constify(third_byte_base(U"A\u00E9\u20AC")) == 1);
+}
+
+TEST_CASE("whatwg::encode: an unmappable scalar value is its error's input", "[transcoding::whatwg::encode][base]") {
+    std::u32string_view src{U"A\u4E00B"};
+    auto                view = src | whatwg::encode_or_error<whatwg::encoding::windows_1252>;
+    auto                it   = std::ranges::next(view.begin());
+    REQUIRE_FALSE((*it).has_value());
+    CHECK(it.base() == src.begin() + 1);
+    CHECK(it.base_code_units().size() == 1);
+    CHECK(*it.base_code_units().begin() == U'\u4E00');
+}
+
+TEST_CASE("whatwg::encode: bytes yielded by flush() have no input", "[transcoding::whatwg::encode][base]") {
+    // U+4E9C needs ESC $ B, then 30 21; the closing ESC ( B comes from flush().
+    std::u32string_view src{U"A\u4E9C"};
+    auto                view = src | whatwg::encode<whatwg::encoding::iso_2022_jp>;
+    CHECK(positions_of(view) ==
+          std::vector<pos>{{0, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {1, 1}, {2, 0}, {2, 0}, {2, 0}});
 }

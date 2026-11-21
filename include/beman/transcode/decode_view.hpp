@@ -56,7 +56,8 @@ class random_access_decode_view : public std::ranges::view_interface<random_acce
         constexpr iterator() = default;
         constexpr iterator(base_iter current, Codec codec);
 
-        constexpr const base_iter& base() const noexcept { return current_; }
+        constexpr const base_iter&                 base() const noexcept { return current_; }
+        constexpr std::ranges::subrange<base_iter> base_code_units() const;
 
         constexpr value_type operator*() const;
         constexpr value_type operator[](difference_type n) const;
@@ -146,6 +147,10 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
         }
 
         //! \expos
+        //! Where decoding of the current element began; kept only over a
+        //! forward range.
+        [[no_unique_address]] detail::position_if_t<base_iter, std::ranges::forward_range<R>> start_{};
+        //! \expos
         base_iter current_{};
         //! \expos
         base_sent end_{};
@@ -156,6 +161,10 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
         //! \expos
         bool done_{false};
 
+        //! \expos
+        constexpr void mark();
+        //! \expos
+        constexpr void advance();
         //! \expos
         constexpr void load();
         //! \expos
@@ -171,15 +180,16 @@ class decode_view : public std::ranges::view_interface<decode_view<Codec, R, E>>
         constexpr iterator() = default;
 
         //! \expos
-        static constexpr iterator terminal()
+        static constexpr iterator terminal(base_iter end)
             requires std::ranges::forward_range<R>;
 
         // \ref{transcode.codec.decode.iterator}, iterator operations
         constexpr iterator(base_iter current, base_sent end, Codec codec);
 
-        //! \returns The iterator into `R` this iterator reads from, positioned
-        //! at the first byte of the element it has not yet decoded.
-        constexpr const base_iter& base() const noexcept { return current_; }
+        constexpr const base_iter& base() const noexcept
+            requires std::ranges::forward_range<R>;
+        constexpr auto base_code_units() const
+            requires std::ranges::forward_range<R>;
 
         constexpr result_t  operator*() const;
         constexpr iterator& operator++();
@@ -284,6 +294,13 @@ template <single_byte_text_decoder Codec, std::ranges::random_access_range R, er
     requires legacy_byte_range<R>
 constexpr random_access_decode_view<Codec, R, E>::iterator::iterator(base_iter current, Codec codec)
     : current_(current), codec_(codec) {}
+
+template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
+    requires legacy_byte_range<R>
+constexpr auto random_access_decode_view<Codec, R, E>::iterator::base_code_units() const
+    -> std::ranges::subrange<base_iter> {
+    return {current_, std::ranges::next(current_)};
+}
 
 template <single_byte_text_decoder Codec, std::ranges::random_access_range R, error_mode E>
     requires legacy_byte_range<R>
@@ -431,17 +448,59 @@ constexpr decode_view<Codec, R, E>::iterator::iterator(base_iter current, base_s
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 //! \omit
-constexpr auto decode_view<Codec, R, E>::iterator::terminal() -> iterator
+constexpr auto decode_view<Codec, R, E>::iterator::terminal(base_iter end) -> iterator
     requires std::ranges::forward_range<R>
 {
     iterator it;
-    it.done_ = true;
+    it.start_   = end;
+    it.current_ = end;
+    it.done_    = true;
     return it;
 }
 
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
+//! \returns The iterator into `R` at the first byte of the input decoded to
+//! produce the current element.  The bytes of any preceding `decode_one` or
+//! `decode_first` results with `is_empty`, such as an escape sequence or a
+//! byte order mark, count as input to the element that follows them,
+//! including an element yielded by `flush()`.  For an iterator equal to
+//! `end()`, it is the end of the base range.
+//! \remarks As a consequence, the inputs of successive elements are adjacent
+//! and together are the whole base range, except for bytes after the last
+//! element that yielded nothing.
+constexpr auto decode_view<Codec, R, E>::iterator::base() const noexcept -> const base_iter&
+    requires std::ranges::forward_range<R>
+{
+    return start_;
+}
+
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
+    requires legacy_byte_range<R>
+//! \returns `subrange(base(), $current$)`, the bytes decoded to produce the
+//! current element.  When the next element exists, `$current$` is where
+//! decoding of it begins, so this is
+//! `subrange(base(), ranges::next(*this).base())`.
+//! \remarks The range is empty for an element that a codec yields without
+//! consuming input, such as the second of two scalar values that one byte
+//! sequence decodes to, or the second of two elements yielded by `flush()`.
+constexpr auto decode_view<Codec, R, E>::iterator::base_code_units() const
+    requires std::ranges::forward_range<R>
+{
+    return std::ranges::subrange<base_iter>(start_, current_);
+}
+
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
+    requires legacy_byte_range<R>
+constexpr void decode_view<Codec, R, E>::iterator::mark() {
+    if constexpr (std::ranges::forward_range<R>)
+        start_ = current_;
+}
+
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
+    requires legacy_byte_range<R>
 constexpr void decode_view<Codec, R, E>::iterator::load_first() {
+    mark();
     if constexpr (bom_aware_text_decoder<Codec>) {
         if (current_ != end_) {
             auto r = codec_.decode_first(current_, end_);
@@ -454,12 +513,19 @@ constexpr void decode_view<Codec, R, E>::iterator::load_first() {
             }
         }
     }
-    load();
+    advance();
 }
 
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
     requires legacy_byte_range<R>
 constexpr void decode_view<Codec, R, E>::iterator::load() {
+    mark();
+    advance();
+}
+
+template <text_decoder Codec, std::ranges::input_range R, error_mode E>
+    requires legacy_byte_range<R>
+constexpr void decode_view<Codec, R, E>::iterator::advance() {
     while (true) {
         if (current_ == end_) {
             if constexpr (flushable_text_decoder<Codec>) {
@@ -472,6 +538,9 @@ constexpr void decode_view<Codec, R, E>::iterator::load() {
                     return;
                 }
             }
+            // Trailing input that yielded nothing belongs to no element, and
+            // an iterator equal to end() is at the end of the base range.
+            mark();
             done_ = true;
             return;
         }
@@ -552,7 +621,7 @@ template <text_decoder Codec, std::ranges::input_range R, error_mode E>
 constexpr auto decode_view<Codec, R, E>::end() -> iterator
     requires std::ranges::forward_range<R> && std::ranges::common_range<R>
 {
-    return iterator::terminal();
+    return iterator::terminal(std::ranges::end(base_));
 }
 
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
@@ -563,7 +632,7 @@ constexpr auto decode_view<Codec, R, E>::end() const -> iterator
     requires std::ranges::forward_range<const R> && std::ranges::common_range<const R> &&
              detail::const_iterator_compatible_range<R> && detail::const_sentinel_compatible_range<R>
 {
-    return iterator::terminal();
+    return iterator::terminal(std::ranges::end(base_));
 }
 
 template <text_decoder Codec, std::ranges::input_range R, error_mode E>
