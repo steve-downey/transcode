@@ -12,7 +12,7 @@ const R& base() const& noexcept;
 R base() &&;
 ```
 
-[#]{.pnum} *Returns*: `move($base$)`.
+[#]{.pnum} *Returns*: `std::move($base$)`.
 
 ```cpp
 const R& base() const& noexcept;
@@ -24,7 +24,7 @@ const R& base() const& noexcept;
 R base() &&;
 ```
 
-[#]{.pnum} *Returns*: `move($base$)`.
+[#]{.pnum} *Returns*: `std::move($base$)`.
 
 ```cpp
 inline constexpr size_t iconv_min_buffer_size = 4;
@@ -36,7 +36,7 @@ inline constexpr size_t iconv_min_buffer_size = 4;
 
 [#]{.pnum} The facilities in this subclause are provided only when a POSIX-conforming `iconv` interface, including the required constants and typedefs, is available.  The interface may be supplied by the operating system or by a third-party library.  The type `iconv_t` is the type supplied by that interface and denotes its conversion descriptors.
 
-[#]{.pnum} *Remarks*: `iconv_transcode_view<IconvFns, R>` presents the bytes of `R` converted from the encoding named by `from` to the encoding named by `to`, one element per output byte, using the `iconv` implementation `IconvFns` names.  Conversion is lazy and proceeds in batches: the view converts into the caller's buffer, yields those bytes, and converts again.
+[#]{.pnum} *Remarks*: `iconv_transcode_view<IconvFns, R>` presents the bytes of `R` converted from the encoding named by `$from$` to the encoding named by `$to$`, one element per output byte, using the `iconv` implementation `IconvFns` names.  Conversion is lazy and proceeds in batches: the view converts into the caller's buffer, yields those bytes, and converts again.
 
 [#]{.pnum} What the encoding names mean, which pairs convert, and what a conversion does with input the source encoding does not allow are determined by the supplied `iconv` interface, not this specification.
 
@@ -45,8 +45,7 @@ inline constexpr size_t iconv_min_buffer_size = 4;
 [#]{.pnum} The output buffer is the caller's, and is not owned by the view. Its contents between two increments are unspecified, and the program must keep it alive for the lifetime of every iterator the view produces. If `iconv` reports `E2BIG` without producing a byte, the range ends because its `char` value type has no error channel.  A program that needs to detect that condition uses `iconv_transcode_or_error`, which reports `iconv_error::output_full` instead.
 
 ```cpp
-explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to,
-                              span<char> buf);
+explicit iconv_transcode_view(R base, IconvFns fns, const char* from, const char* to, span<char> buf);
 ```
 
 [#]{.pnum} *Preconditions*: `buf.size() >= iconv_min_buffer_size` is `true`.
@@ -70,8 +69,7 @@ default_sentinel_t end() const;
 [#]{.pnum} *Remarks*: `iconv_transcode_or_error_view<IconvFns, R>` is `iconv_transcode_view` ([transcode.iconv]) with the errors reported rather than skipped: its value type is `expected<char, iconv_error>`, and a conversion failure is an element holding the `iconv_error` POSIX reported rather than input the range passes over. The buffer has no minimum-size precondition.  If it cannot hold one indivisible conversion or flush unit, the view reports `iconv_error::output_full`.
 
 ```cpp
-explicit iconv_transcode_or_error_view(R base, IconvFns fns, const char* from,
-                                       const char* to, span<char> buf);
+explicit iconv_transcode_or_error_view(R base, IconvFns fns, const char* from, const char* to, span<char> buf);
 ```
 
 [#]{.pnum} *Effects*: Initializes the view with `std::move(base)`, `std::move(fns)`, `from`, `to` and `buf`.
@@ -105,8 +103,7 @@ inline $see below$ iconv_transcode(const char* from, const char* to, span<char> 
 [#]{.pnum} *Remarks*: `buf` is the caller's, and every iterator the adaptor produces converts into it.  Two ranges adapted with the same buffer must not be iterated at the same time.
 
 ```cpp
-inline $see below$ iconv_transcode_or_error(const char* from, const char* to,
-                                         span<char> buf);
+inline $see below$ iconv_transcode_or_error(const char* from, const char* to, span<char> buf);
 ```
 
 [#]{.pnum} *Returns*: `iconv_transcode(from, to, buf)` with the errors reported rather than skipped: the view it adapts to has value type `expected<char, iconv_error>`.
@@ -115,23 +112,21 @@ inline $see below$ iconv_transcode_or_error(const char* from, const char* to,
 
 ```cpp
 template<typename Container = string, typename IconvFns, legacy_byte_range R>
-Container iconv_transcode_to(R&& source, const char* from, const char* to,
-                             IconvFns fns);
+  Container iconv_transcode_to(R&& source, const char* from, const char* to, IconvFns fns);
 ```
 
 [#]{.pnum} *Returns*: A `Container` holding the bytes of `source` converted from `from` to `to` by `fns`.  Input the conversion does not accept is skipped, as it is by `iconv_transcode_view` ([transcode.iconv]).  The result is empty when the conversion descriptor cannot be opened -- which is what `iconv_open` failing means, and is not distinguishable here from an empty input.  An unexpected system failure ends conversion and returns the bytes produced before the failure.  Use `iconv_transcode_to_or_error` when either distinction matters.
 
 ```cpp
 template<typename Container = string, legacy_byte_range R>
-Container iconv_transcode_to(R&& source, const char* from, const char* to);
+  Container iconv_transcode_to(R&& source, const char* from, const char* to);
 ```
 
-[#]{.pnum} *Returns*: `iconv_transcode_to<Container>(forward<R>(source), from, to, make_real_iconv_fns())`.
+[#]{.pnum} *Returns*: `iconv_transcode_to<Container>(std::forward<R>(source), from, to, make_real_iconv_fns())`.
 
 ```cpp
 template<typename IconvFns, legacy_byte_range R, output_iterator<char> Output>
-Output iconv_transcode_into(R&& source, const char* from, const char* to, Output output,
-                            IconvFns fns);
+  Output iconv_transcode_into(R&& source, const char* from, const char* to, Output output, IconvFns fns);
 ```
 
 [#]{.pnum} *Effects*: Converts the bytes of `source` from `from` to `to` by `fns` and writes them through `output`.
@@ -142,18 +137,15 @@ Output iconv_transcode_into(R&& source, const char* from, const char* to, Output
 
 ```cpp
 template<legacy_byte_range R, output_iterator<char> Output>
-Output iconv_transcode_into(R&& source, const char* from, const char* to,
-                            Output output);
+  Output iconv_transcode_into(R&& source, const char* from, const char* to, Output output);
 ```
 
-[#]{.pnum} *Returns*: `iconv_transcode_into(forward<R>(source), from, to, move(output), make_real_iconv_fns())`.
+[#]{.pnum} *Returns*: `iconv_transcode_into(std::forward<R>(source), from, to, std::move(output), make_real_iconv_fns())`.
 
 ```cpp
 template<typename Container = string, typename IconvFns, legacy_byte_range R>
-expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
-                                                             const char* from,
-                                                             const char* to,
-                                                             IconvFns fns);
+  expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source, const char* from, const char* to,
+                                                               IconvFns fns);
 ```
 
 [#]{.pnum} *Returns*: A `Container` holding the converted bytes, or the first `iconv_error` the conversion reported.
@@ -162,17 +154,15 @@ expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
 
 ```cpp
 template<typename Container = string, legacy_byte_range R>
-expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source,
-                                                             const char* from,
-                                                             const char* to);
+  expected<Container, iconv_error> iconv_transcode_to_or_error(R&& source, const char* from, const char* to);
 ```
 
-[#]{.pnum} *Returns*: `iconv_transcode_to_or_error<Container>(forward<R>(source), from, to, make_real_iconv_fns())`.
+[#]{.pnum} *Returns*: `iconv_transcode_to_or_error<Container>(std::forward<R>(source), from, to, make_real_iconv_fns())`.
 
 ### Classes `iconv_transcode_view::iterator` and `iconv_transcode_or_error_view::iterator` [transcode.iconv.iterator] {-}
 
 ```cpp
-iterator($iterator$&&) noexcept;
+$iterator$($iterator$&&) noexcept;
 ```
 
 [#]{.pnum} *Effects*: Takes over `other`'s conversion descriptor and leaves `other` holding none.
@@ -220,7 +210,7 @@ void operator++(int);
 ```
 
 ```cpp
-iterator($iterator$&&) noexcept;
+$iterator$($iterator$&&) noexcept;
 ```
 
 [#]{.pnum} *Effects*: Takes over `other`'s conversion descriptor and leaves `other` holding none.

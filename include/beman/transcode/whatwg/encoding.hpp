@@ -5,6 +5,9 @@
 
 #include <beman/transcode/config.hpp>
 
+// The WHATWG surface is proposed as namespace std::whatwg; marking it here,
+// in a header every other WHATWG header includes, marks it everywhere.
+//! \specified
 namespace beman::transcoding::whatwg {
 
 // \ref{transcode.whatwg.encoding}, encodings

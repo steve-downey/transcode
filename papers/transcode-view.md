@@ -80,8 +80,10 @@ The design changed, and the wording is regenerated from the reference implementa
 - The enumerator-value claim is corrected, and the rationale is removed from [transcode.whatwg.encoding].
 - Remarks that had lost their clauses are routed to the clauses they belong to.
 - *Mandates* and *Constraints* replace "is required to be".
-- The clause headings carry stable names, and an editor's note covers the nested namespaces.
+- The clause headings carry stable names, and the synopses declare the `whatwg` and `views` names inside their namespaces.
 - `whatwg::decoder<C>::flush` is constrained on the exposition-only `$has-decode-state$<C>`, where the wording had shown a comparison of `detail::` types.
+- The codec objects' exposition-only members are declared with the exposition-only types `$decode-state-t$<C>`, `$encode-state-t$<C>`, `$decoder-variant$` and `$encoder-variant$`, where the wording had shown `detail::` types.
+  The Remarks of [transcode.whatwg.decoders], [transcode.whatwg.encoders] and [transcode.whatwg.dynamic] say what each holds.
 - The normative reference in [intro.refs] names the Encoding Standard's June 2025 Review Draft, a dated document, where R0 named the living standard.
 - The synopsis no longer names the adaptor closure types.
   `decode`, `decode_or_error`, `encode`, `encode_or_error` and `transcode(from, to)` are declared `constexpr auto`, the way `std::ranges::to` is in [range.utility.conv], and their clauses say what they return.
@@ -1467,17 +1469,4 @@ Add a new clause [transcode], "Text transcoding", as follows.
 [*Editor's note*: the clause headings below carry their stable names.
 `[transcode.syn]` and `[null.term.syn]` are the two header synopses; every
 other clause specifies what one of them declares.
---- *end note*]
-
-[*Editor's note*: the synopsis below is rendered without its nested namespace
-blocks.  The declarations of `[transcode.whatwg.encoding]`,
-`[transcode.whatwg.label]`, `[transcode.whatwg.sniff]`,
-`[transcode.whatwg.decoders]`, `[transcode.whatwg.encoders]`,
-`[transcode.whatwg.decode]` and `[transcode.whatwg.encode]` are members of
-namespace `std::whatwg`, as is every other name the synopsis spells with the
-`whatwg::` prefix, including `whatwg::transcode` in `[transcode.pipeline]`,
-`whatwg::transcode_string` in `[transcode.string]` and the `whatwg::` forms of
-`decode_to`, `encode_to`, `decode_into` and `encode_into` in `[transcode.bulk]`.
-In `[null.term.syn]`, `null_term` is a member of namespace `std::views`.  The
-remaining declarations are members of namespace `std`.
 --- *end note*]

@@ -81,6 +81,7 @@ struct null_term_adaptor : null_term_fn {
 } // namespace detail
 
 // \ref{null.term.adaptor}, range adaptor object
+//! \specified
 namespace views {
 //! \seebelow
 //! \remarks The name `views::null_term` denotes a range adaptor object.  Given

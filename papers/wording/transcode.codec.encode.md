@@ -12,7 +12,7 @@ constexpr const R& base() const& noexcept;
 constexpr R base() &&;
 ```
 
-[#]{.pnum} *Returns*: `move($base$)`.
+[#]{.pnum} *Returns*: `std::move($base$)`.
 
 [#]{.pnum} *Remarks*: `encode_view<Codec, R, E>` validates the `char32_t` elements of `R` as UTF-32, presents the resulting scalar values as the bytes `Codec` encodes them to, and encodes lazily.  When `E` is `error_mode::replacement`, its value type is `char`.  When `E` is `error_mode::report`, its value type is `expected<char, whatwg::error>` and an error yields an element holding the error.  Ill-formed UTF-32 is replaced with U+FFFD before `Codec::encode_one` is called in replacement mode and is reported without calling the codec in report mode.  A custom codec therefore receives only Unicode scalar values.  When `Codec::encode_one` fails and supplies bytes, the view in replacement mode yields those bytes as the replacement; if it supplies none, the replacement is `'?'`.  In report mode the bytes are ignored.
 
@@ -66,13 +66,15 @@ constexpr default_sentinel_t end() const;
 [#]{.pnum} *Returns*: `default_sentinel`.
 
 ```cpp
-template<text_encoder Codec> constexpr $see below$ encode(Codec codec = {});
+template<text_encoder Codec>
+  constexpr $see below$ encode(Codec codec = {});
 ```
 
 [#]{.pnum} *Returns*: A range adaptor object over `codec`.  Given a subexpression `E` that models `unicode_scalar_range`, `encode(codec)(E)` and `E | encode(codec)` are each expression-equivalent to an `encode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of `codec`.
 
 ```cpp
-template<text_encoder Codec> constexpr $see below$ encode_or_error(Codec codec = {});
+template<text_encoder Codec>
+  constexpr $see below$ encode_or_error(Codec codec = {});
 ```
 
 [#]{.pnum} *Returns*: `encode(codec)` with `error_mode::report`: the view it adapts to has value type `expected<char, whatwg::error>`, and an encoding or UTF-32 validation error is reported rather than replaced.
@@ -80,7 +82,7 @@ template<text_encoder Codec> constexpr $see below$ encode_or_error(Codec codec =
 ### Class `encode_view::iterator` [transcode.codec.encode.iterator] {-}
 
 ```cpp
-constexpr iterator(base_iter current, base_sent end, Codec codec);
+constexpr $iterator$(base_iter current, base_sent end, Codec codec);
 ```
 
 [#]{.pnum} *Effects*: Initializes `$current$` with `std::move(current)`, `$end$` with `std::move(end)` and the iterator's own copy of the codec with `codec`, then encodes the first element.

@@ -4,7 +4,7 @@
 
 ```cpp
 template<text_decoder From, text_encoder To>
-constexpr $see below$ transcode(From from, To to);
+  constexpr $see below$ transcode(From from, To to);
 ```
 
 [#]{.pnum} *Returns*: A range adaptor object over `from` and `to`.  Given a subexpression `E` that models `legacy_byte_range`, `transcode(from, to)(E)` and `E | transcode(from, to)` are each expression-equivalent to `E | decode(from) | encode(to)`.
@@ -12,7 +12,8 @@ constexpr $see below$ transcode(From from, To to);
 [#]{.pnum} *Remarks*: `from` and `to` may be the library's codec objects (`whatwg::decoder`, `whatwg::encoder`) or a program's own, in any combination.  `whatwg::transcode<From, To>` ([transcode.pipeline]) is defined in terms of this function, with codecs named by enumerators rather than supplied as values.
 
 ```cpp
-template<encoding From, encoding To> inline constexpr $unspecified$ transcode;
+template<encoding From, encoding To>
+  inline constexpr $unspecified$ whatwg::transcode;
 ```
 
 [#]{.pnum} *Remarks*: `whatwg::transcode<From, To>` is `transcode(whatwg::decoder<From>{}, whatwg::encoder<To>{})` ([transcode.pipeline]), and so is `E | whatwg::decode<From> | whatwg::encode<To>` for a subexpression `E` that models `legacy_byte_range`.  An `E` of array type is ill-formed.

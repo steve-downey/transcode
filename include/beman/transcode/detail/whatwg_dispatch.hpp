@@ -67,7 +67,11 @@ template <std::size_t... I>
 auto encoder_variant_for(std::index_sequence<I...>)
     -> std::variant<encoder_or_placeholder<static_cast<whatwg::encoding>(I)>...>;
 
+// The member types of whatwg::dynamic_decoder and whatwg::dynamic_encoder;
+// described in those classes' remarks.
+//! \expos
 using decoder_variant = decltype(decoder_variant_for(std::make_index_sequence<whatwg_encoding_count>{}));
+//! \expos
 using encoder_variant = decltype(encoder_variant_for(std::make_index_sequence<whatwg_encoding_count>{}));
 
 template <typename Variant, std::size_t... I>

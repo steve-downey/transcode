@@ -52,7 +52,7 @@ enum class encoding {
 ### Label lookup [transcode.whatwg.label] {-}
 
 ```cpp
-constexpr optional<encoding> get_encoding(string_view label) noexcept;
+constexpr optional<encoding> whatwg::get_encoding(string_view label) noexcept;
 ```
 
 [#]{.pnum} *Returns*: The `encoding` whose WHATWG label set contains `label`, and `nullopt` if no encoding has that label.  Leading and trailing ASCII whitespace is ignored and the comparison is ASCII case-insensitive, which is the Encoding Standard's "get an encoding" algorithm.
@@ -60,7 +60,7 @@ constexpr optional<encoding> get_encoding(string_view label) noexcept;
 [#]{.pnum} *Remarks*: An encoding's labels are the alternative names a document may spell it with -- `latin1`, `iso-8859-1` and `windows-1252` are all labels of `whatwg::encoding::windows_1252` -- so a lookup that fails is a name no encoding claims, not an encoding that cannot be represented.
 
 ```cpp
-constexpr optional<encoding> get_encoding(text_encoding::id id) noexcept;
+constexpr optional<encoding> whatwg::get_encoding(text_encoding::id id) noexcept;
 ```
 
 [#]{.pnum} *Returns*: `get_encoding(label)` ([transcode.whatwg.label]) for the first of the name and the aliases of `std::text_encoding(id)` that is a label of an encoding, and `nullopt` if there is none, which includes `id::other` and `id::unknown`.
@@ -68,7 +68,7 @@ constexpr optional<encoding> get_encoding(text_encoding::id id) noexcept;
 [#]{.pnum} *Remarks*: This is the Encoding Standard's "get an encoding" applied to the registered names, so `std::text_encoding::id::ISOLatin1` is `encoding::windows_1252`.
 
 ```cpp
-constexpr optional<text_encoding::id> to_text_encoding_id(encoding e) noexcept;
+constexpr optional<text_encoding::id> whatwg::to_text_encoding_id(encoding e) noexcept;
 ```
 
 [#]{.pnum} *Returns*: The `id` of the registered encoding whose name is the name of `e` in the Encoding Standard, and `nullopt` if that name has no registry entry, which includes `encoding::replacement`, `encoding::x_user_defined` and `encoding::x_mac_cyrillic`.
@@ -78,7 +78,8 @@ constexpr optional<text_encoding::id> to_text_encoding_id(encoding e) noexcept;
 ### Byte order mark sniffing [transcode.whatwg.sniff] {-}
 
 ```cpp
-template<legacy_byte_range R> constexpr optional<encoding> bom_sniff(R&& r) noexcept;
+template<legacy_byte_range R>
+  constexpr optional<encoding> whatwg::bom_sniff(R&& r) noexcept;
 ```
 
 [#]{.pnum} *Constraints*: `R` models `forward_range`.

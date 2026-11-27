@@ -2,11 +2,11 @@
 
 ## Decoders [transcode.whatwg.decoders] {-}
 
-[#]{.pnum} *Remarks*: `whatwg::decoder<C>` is the decoder, as a codec object, for the encoding `C` the Encoding Standard defines.  It models `text_decoder` ([transcode.codec.reqs]) for every encoding, and the decode adaptor over it ([transcode.codec.decode]) yields what `whatwg::decode<C>` does.  It models `single_byte_text_decoder` when `C` names an encoding that decodes one byte to one scalar value, `flushable_text_decoder` when `C` names an encoding whose decoding can leave a result owed after the last byte, and `bom_aware_text_decoder` when `C` names a UTF encoding: its `decode_first` discards one leading U+FEFF BYTE ORDER MARK from the text it decodes.  `$strips-leading-bom$<C>` is `true` when `C` is `utf_8`, `utf_16be` or `utf_16le`, `$has-decode-state$<C>` is `true` when `C` is `utf_16be`, `utf_16le`, `gbk`, `gb18030`, `big5` or `iso_2022_jp`, and `$random-access-decode-codec$<C>` is `true` when `C` is `x_user_defined` or one of the Encoding Standard's single-byte encodings.  It is equality comparable.
+[#]{.pnum} *Remarks*: `whatwg::decoder<C>` is the decoder, as a codec object, for the encoding `C` the Encoding Standard defines.  It models `text_decoder` ([transcode.codec.reqs]) for every encoding, and the decode adaptor over it ([transcode.codec.decode]) yields what `whatwg::decode<C>` does.  It models `single_byte_text_decoder` when `C` names an encoding that decodes one byte to one scalar value, `flushable_text_decoder` when `C` names an encoding whose decoding can leave a result owed after the last byte, and `bom_aware_text_decoder` when `C` names a UTF encoding: its `decode_first` discards one leading U+FEFF BYTE ORDER MARK from the text it decodes.  `$strips-leading-bom$<C>` is `true` when `C` is `utf_8`, `utf_16be` or `utf_16le`, `$has-decode-state$<C>` is `true` when `C` is `utf_16be`, `utf_16le`, `gbk`, `gb18030`, `big5` or `iso_2022_jp`, and `$random-access-decode-codec$<C>` is `true` when `C` is `x_user_defined` or one of the Encoding Standard's single-byte encodings. `$decode-state-t$<C>` is an unspecified equality-comparable type holding what the Encoding Standard's decoder for `C` keeps between bytes; it is an empty type when `$has-decode-state$<C>` is `false`.  It is equality comparable.
 
 ```cpp
 template<input_iterator I, sentinel_for<I> S>
-constexpr decode_result decode_one(I& current, S end);
+  constexpr decode_result decode_one(I& current, S end);
 ```
 
 [#]{.pnum} *Effects*: Decodes one scalar value from `[current, end)` as the encoding `C` says, advancing `current` past the bytes it consumed.
@@ -15,7 +15,7 @@ constexpr decode_result decode_one(I& current, S end);
 
 ```cpp
 template<input_iterator I, sentinel_for<I> S>
-constexpr decode_result decode_first(I& current, S end);
+  constexpr decode_result decode_first(I& current, S end);
 ```
 
 [#]{.pnum} *Constraints*: `C` models `$strips-leading-bom$`.

@@ -2,7 +2,7 @@
 
 ## Codecs for an encoding chosen at run time [transcode.whatwg.dynamic] {-}
 
-[#]{.pnum} *Remarks*: `whatwg::dynamic_decoder` is a decoder, as a codec object, for an encoding chosen at run time.  Each operation behaves as the same operation of `whatwg::decoder<E>` does, where `E` is the encoding it was constructed with.  It models `text_decoder`, `flushable_text_decoder` and `bom_aware_text_decoder` ([transcode.codec.reqs]) whatever the encoding, so the decode adaptor over it ([transcode.codec.decode]) yields what `whatwg::decode<E>` does.  It does not model `single_byte_text_decoder`.  It is equality comparable; two objects are equal if they decode the same encoding and are in the same state.
+[#]{.pnum} *Remarks*: `whatwg::dynamic_decoder` is a decoder, as a codec object, for an encoding chosen at run time.  Each operation behaves as the same operation of `whatwg::decoder<E>` does, where `E` is the encoding it was constructed with.  It models `text_decoder`, `flushable_text_decoder` and `bom_aware_text_decoder` ([transcode.codec.reqs]) whatever the encoding, so the decode adaptor over it ([transcode.codec.decode]) yields what `whatwg::decode<E>` does.  It does not model `single_byte_text_decoder`.  It is equality comparable; two objects are equal if they decode the same encoding and are in the same state. `$decoder-variant$` is a `variant` with one alternative for each enumerator of `whatwg::encoding`: the alternative at index `I` is `whatwg::decoder<static_cast<whatwg::encoding>(I)>`.
 
 ```cpp
 constexpr dynamic_decoder() noexcept;
@@ -24,14 +24,14 @@ constexpr whatwg::encoding encoding() const noexcept;
 
 ```cpp
 template<input_iterator I, sentinel_for<I> S>
-constexpr decode_result decode_one(I& current, S end);
+  constexpr decode_result decode_one(I& current, S end);
 ```
 
 [#]{.pnum} *Effects*: Equivalent to `d.decode_one(current, end)`, where `d` is the `whatwg::decoder<E>` this object behaves as.
 
 ```cpp
 template<input_iterator I, sentinel_for<I> S>
-constexpr decode_result decode_first(I& current, S end);
+  constexpr decode_result decode_first(I& current, S end);
 ```
 
 [#]{.pnum} *Effects*: Equivalent to `d.decode_first(current, end)` if the `whatwg::decoder<E>` this object behaves as has `decode_first`, and to `d.decode_one(current, end)` otherwise.
@@ -44,7 +44,7 @@ constexpr optional<decode_result> flush();
 
 [#]{.pnum} *Returns*: The result of `d.flush()` if there is one, and `nullopt` otherwise.
 
-[#]{.pnum} *Remarks*: `whatwg::dynamic_encoder` is an encoder, as a codec object, for an encoding chosen at run time.  Each operation behaves as the same operation of `whatwg::encoder<E>` does, where `E` is the encoding it was constructed with.  It models `text_encoder` and `flushable_text_encoder` ([transcode.codec.reqs]) whatever the encoding, so the encode adaptor over it ([transcode.codec.encode]) yields what `whatwg::encode<E>` does.  It does not model `single_byte_text_encoder`.  It is equality comparable.  An encoding with no encoder has no `dynamic_encoder`; `whatwg::make_dynamic_encoder` says which.
+[#]{.pnum} *Remarks*: `whatwg::dynamic_encoder` is an encoder, as a codec object, for an encoding chosen at run time.  Each operation behaves as the same operation of `whatwg::encoder<E>` does, where `E` is the encoding it was constructed with.  It models `text_encoder` and `flushable_text_encoder` ([transcode.codec.reqs]) whatever the encoding, so the encode adaptor over it ([transcode.codec.encode]) yields what `whatwg::encode<E>` does.  It does not model `single_byte_text_encoder`.  It is equality comparable.  An encoding with no encoder has no `dynamic_encoder`; `whatwg::make_dynamic_encoder` says which.  `$encoder-variant$` is a `variant` with one alternative for each enumerator of `whatwg::encoding`: the alternative at index `I` is `whatwg::encoder<static_cast<whatwg::encoding>(I)>` when the Encoding Standard defines an encoder for that encoding, and an unspecified empty type otherwise.
 
 ```cpp
 constexpr dynamic_encoder() noexcept;
@@ -73,7 +73,7 @@ constexpr optional<encode_result> flush();
 [#]{.pnum} *Returns*: The result of `e.flush()` if there is one, and `nullopt` otherwise.
 
 ```cpp
-friend constexpr optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e);
+constexpr optional<dynamic_encoder> whatwg::make_dynamic_encoder(whatwg::encoding e);
 ```
 
 [#]{.pnum} *Returns*: `nullopt` if `whatwg::has_encoder(e)` is `false` ([transcode.string]), and otherwise an encoder for `e`, in its initial state.

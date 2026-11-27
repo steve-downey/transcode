@@ -7,9 +7,6 @@ namespace std {
   struct null_sentinel_t {
     // @[null.term.sentinel]@, comparison
     template<input_iterator I>
-      requires requires(I i) {
-        { *i == 0 };
-      }
     friend constexpr bool operator==(const I& it, null_sentinel_t);
   };
 
@@ -28,9 +25,11 @@ namespace std {
     constexpr null_sentinel_t end() const;
   };
 
-  // @[null.term.adaptor]@, range adaptor object
+  namespace views {
+    // @[null.term.adaptor]@, range adaptor object
 
-  inline constexpr $unspecified$ null_term;
+    inline constexpr $unspecified$ null_term;
+  }
 }
 ```
 
