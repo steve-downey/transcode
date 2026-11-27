@@ -29,7 +29,8 @@ by the clause numbering the paper prints.  Two consequences:
   (observed in Step 1).  The umbrella, and `[transcode.general]`, are authored
   in the paper around the generated clauses.
 
-Heading level follows from mpark's fixed `base_heading_level = 2` ([clause-heading-level](decisions.md#clause-heading-level)):
+Heading level follows from the mpark render's default base heading level of 2,
+which `generate.sh` leaves alone ([clause-heading-level](decisions.md#clause-heading-level)):
 `\rSec2` prints as `##`, `\rSec3` as `###`.
 
 A class's own description is routed to its clause with `\at`, as a member's
@@ -175,14 +176,16 @@ worth recording because Steps 6 and 7 inherit it.
 - `detail::const_iterator_compatible_range` and
   `const_sentinel_compatible_range` constrain every `begin() const` and
   `end() const`, so they are genuinely part of what the specification says.
-  They are **exposition-only in the wording**, but they cannot be rendered that
-  way yet: `\expos` works on a concept (verified) and not on the alias template
-  and class template the concept is defined in terms of (specgen#23).  They
-  therefore stay in `detail/range_traits.hpp` for now, and **Step 6 chooses**
-  between restating the concept in the specification header without helper
-  aliases so a single `\expos` covers it, and waiting for specgen#23.  Whichever it
-  picks, the constraint is authored `\constraints` prose on the affected
-  members rather than derived from the requires-clause.
+  They are **exposition-only in the wording**, and render that way.  When this
+  outline was written, `\expos` worked on a concept but not on the alias
+  template and class template the concept is defined in terms of (specgen#23),
+  and Step 6 was to choose between restating the concepts without helper
+  aliases and waiting for the fix.  Neither was needed: specgen#23 closed on
+  2026-09-05, and `1c24ca66` marked both concepts `\expos` where they stand in
+  `detail/range_traits.hpp`.  The wording names them as
+  `$const-iterator-compatible-range$` and `$const-sentinel-compatible-range$`;
+  the helper aliases never appear in it.  The *Constraints* element on each
+  affected member is derived from its requires-clause, not authored.
 
 ## Decisions this outline settles
 

@@ -80,7 +80,7 @@ here or anywhere else in the repo, is a link to its anchor.
 | [encoding-standard-reference](../decisions.md#encoding-standard-reference) | By reference to the WHATWG Encoding Standard, named in prose |
 | [null-term-header](../decisions.md#null-term-header) | `<null_term>` stays a separate header |
 | [drift-gate](../decisions.md#drift-gate) | A specgen-free hash check per pull request; the real check runs locally |
-| [clause-heading-level](../decisions.md#clause-heading-level) | Flat, accepted; the upstream flag is specgen#97 |
+| [clause-heading-level](../decisions.md#clause-heading-level) | Flat, accepted; `--base-heading-level` exists (specgen#97, closed) if it is ever revisited |
 
 ## Step index
 
@@ -248,27 +248,41 @@ fragment.
 
 ### Open
 
-- **[clause-heading-level](../decisions.md#clause-heading-level) — `--base-heading-level` on the command line.**  Still absent, and
-  **filed at last as
-  [specgen#97](https://github.com/steve-downey/specgen/issues/97)** on
-  2026-09-10.  This entry tracked it from the first measuring round without
-  ever reaching specgen's tracker, which is why it is the one U-item here that
-  cited no issue number.  The option exists in all three backends'
-  `Options` -- `mpark`'s and `org`'s `base_heading_level`, LaTeX's
-  `base_section_depth` -- and the CLI passes `paper_mode` and `new_roots`
-  through to the backend while leaving these at their defaults.  **Step 10 accepted flat headings**: the
+- ~~**[clause-heading-level](../decisions.md#clause-heading-level) — `--base-heading-level` on the command line.**~~
+  **Closed.**  Filed as
+  [specgen#97](https://github.com/steve-downey/specgen/issues/97) on
+  2026-09-10 and fixed the same day by specgen `14be9d0`, which the pinned
+  revision already contains; the org render in `generate.sh` passes
+  `--base-heading-level 2`.  This entry went on calling the flag absent until
+  2026-11-25.  What follows is why the clauses are still flat, which is a
+  decision and not a missing feature.  **Step 10 accepted flat headings**: the
   clauses are `##`, which is the level the paper's own sections use, so they
   are siblings of "Design" rather than children of "Wording".  The table of
   contents reads as a clause list under the Wording heading, which is close
   enough to right that spending an upstream flag on it was not worth another
   cross-repository dependency.  `toc-depth: 2` is what makes it read that way;
-  a nested rendering would need the flag *and* `toc-depth: 3`.
+  a nested rendering needs `--base-heading-level 3` on the mpark render *and*
+  `toc-depth: 3`.
 - ~~**specgen#93 — a documented enumerator is reported as a foreign name when a
   generated table shares its spelling.**~~  **Closed.**  Filed 2026-09-09 against
   the bare-name leakage check in specgen `8caa569`, which text-matched names
   declared outside the run and so could not tell `codec::windows_1252` from
-  `detail::tables::windows_1252`.  `--validate` is back to **zero findings**
-  over this document, and nothing was marked `\expos` to get there.
+  `detail::tables::windows_1252`.  `--validate` was back to zero findings over
+  this document when #93 closed, and nothing was marked `\expos` to get there.
+  **That no longer holds.**  On 2026-11-25, `make wording-validate` with the
+  pinned specgen (`b79ff35`) reports 86 errors:
+  - 81 are the namespace-qualifier check on `whatwg::` names in descriptions,
+    item declarations and the synopsis.  They go away once the `whatwg` and
+    `views` namespaces are marked `\specified`
+    ([specgen#209](https://github.com/steve-downey/specgen/issues/209)),
+    which needs the pin moved past `b79ff35`.
+  - 4 are `detail::` names in the `[transcode.syn]` synopsis:
+    `decoder_variant` and `encoder_variant` (`detail/whatwg_dispatch.hpp`),
+    `decode_state_t` and `encode_state_t` (`detail/whatwg_decode_select.hpp`,
+    `detail/whatwg_encode_select.hpp`).
+  - 1 is `make_dynamic_encoder`, declared in the synopsis and not described.
+
+  The last five are transcode markup to fix.
 - ~~**specgen#94 — `--new-root` takes one name.**~~  **Closed and adopted.**
   The flag repeats now, so `generate.sh` renders with `--new-root transcode
   --new-root null.term` and the `sed` that stripped the `.sref` class is gone.
@@ -283,13 +297,14 @@ fragment.
   [fs.enum.file.type]'s shape, which is what an enumeration's meanings look
   like in the draft.  The `\item` list they used while the two-dimensional
   table was the only one is gone.
-- **specgen#89 — every generated clause heading warns at paper-build time.**  An mpark
-  warning, not a specgen finding: `stable name <x> not found`, once per clause.
-  It is what a stable name that is not in the draft yet looks like, so it is
-  one per clause the phase adds -- seventeen by Step 10.
+- ~~**specgen#89 — every generated clause heading warns at paper-build time.**~~
+  **Closed and adopted** (specgen#89 closed 2026-09-09, #94 on 2026-09-10).
+  An mpark warning, not a specgen finding: `stable name <x> not found`, once
+  per clause.  It is what a stable name that is not in the draft yet looks
+  like, so it is one per clause the phase adds -- seventeen by Step 10.
 
-  **Worked around downstream in Step 10, and still open upstream.**  The
-  warning was the visible half; the other half is that mpark emits a link
+  **First worked around downstream in Step 10.**  The warning was the visible
+  half; the other half is that mpark emits a link
   anyway, so every clause heading and every cross-reference in the published
   paper pointed at a `c++draft` page that does not exist.  `generate.sh` now
   drops the `.sref` class from names under this paper's own two stable-name
@@ -303,6 +318,21 @@ fragment.
   ([#94](https://github.com/steve-downey/specgen/issues/94)) before it could
   take both of this paper's roots.  **The `sed` is gone**; `generate.sh` passes
   the roots instead.  The build is warning-free either way.
+- **[specgen#432](https://github.com/steve-downey/specgen/issues/432) —
+  description spans are renamed to exposition-only names they do not name.**
+  Filed 2026-11-23 against specgen `fbacede`, the candidate for the next pin.
+  Its new rewrite of backticked spans double-wraps a span the author already
+  wrote as `$iterator$` (giving `$$iterator$$`), matches a qualified name
+  (`whatwg::decoder<E>` becomes `whatwg::$decoder$<E>`, because
+  `dynamic_decoder` has an exposition-only `decoder_`), and matches a call
+  (`end()` becomes `$end$()`, because the iterator has an `end_`).  Blocks
+  moving `papers/wording/specgen-ref`.
+- **[specgen#433](https://github.com/steve-downey/specgen/issues/433) — a
+  fenced header synopsis emits undocumented out-of-line definitions.**  Filed
+  2026-11-23 against `fbacede`.  The `[transcode.syn]` fragment gains a stray
+  code block holding every member of the omitted `random_access_decode_view`
+  and `random_access_encode_view` and the iconv iterators' private
+  constructors, the latter with an empty name.  Blocks moving `specgen-ref`.
 
 
 ## Risks
