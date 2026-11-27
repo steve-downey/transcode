@@ -258,7 +258,8 @@ locally</td>
 <tr>
 <td><a
 href="../decisions.html#clause-heading-level">clause-heading-level</a></td>
-<td>Flat, accepted; the upstream flag is specgen#97</td>
+<td>Flat, accepted; <code>--base-heading-level</code> exists
+(specgen#97, closed) if it is ever revisited</td>
 </tr>
 </tbody>
 </table>
@@ -540,26 +541,24 @@ it out of the header synopsis.</li>
 </ul>
 <h3 id="open">Open</h3>
 <ul>
-<li><p><strong><a
+<li><p><del><strong><a
 href="../decisions.html#clause-heading-level">clause-heading-level</a> —
-<code>--base-heading-level</code> on the command line.</strong> Still
-absent, and <strong>filed at last as <a
-href="https://github.com/steve-downey/specgen/issues/97">specgen#97</a></strong>
-on 2026-09-10. This entry tracked it from the first measuring round
-without ever reaching specgen's tracker, which is why it is the one
-U-item here that cited no issue number. The option exists in all three
-backends' <code>Options</code> -- <code>mpark</code>'s and
-<code>org</code>'s <code>base_heading_level</code>, LaTeX's
-<code>base_section_depth</code> -- and the CLI passes
-<code>paper_mode</code> and <code>new_roots</code> through to the
-backend while leaving these at their defaults. <strong>Step 10 accepted
-flat headings</strong>: the clauses are <code>##</code>, which is the
-level the paper's own sections use, so they are siblings of "Design"
-rather than children of "Wording". The table of contents reads as a
-clause list under the Wording heading, which is close enough to right
-that spending an upstream flag on it was not worth another
-cross-repository dependency. <code>toc-depth: 2</code> is what makes it
-read that way; a nested rendering would need the flag <em>and</em>
+<code>--base-heading-level</code> on the command line.</strong></del>
+<strong>Closed.</strong> Filed as <a
+href="https://github.com/steve-downey/specgen/issues/97">specgen#97</a>
+on 2026-09-10 and fixed the same day by specgen <code>14be9d0</code>,
+which the pinned revision already contains; the org render in
+<code>generate.sh</code> passes <code>--base-heading-level 2</code>.
+This entry went on calling the flag absent until 2026-11-25. What
+follows is why the clauses are still flat, which is a decision and not a
+missing feature. <strong>Step 10 accepted flat headings</strong>: the
+clauses are <code>##</code>, which is the level the paper's own sections
+use, so they are siblings of "Design" rather than children of "Wording".
+The table of contents reads as a clause list under the Wording heading,
+which is close enough to right that spending an upstream flag on it was
+not worth another cross-repository dependency. <code>toc-depth: 2</code>
+is what makes it read that way; a nested rendering needs
+<code>--base-heading-level 3</code> on the mpark render <em>and</em>
 <code>toc-depth: 3</code>.</p></li>
 <li><p><del><strong>specgen#93 — a documented enumerator is reported as
 a foreign name when a generated table shares its
@@ -567,9 +566,28 @@ spelling.</strong></del> <strong>Closed.</strong> Filed 2026-09-09
 against the bare-name leakage check in specgen <code>8caa569</code>,
 which text-matched names declared outside the run and so could not tell
 <code>codec::windows_1252</code> from
-<code>detail::tables::windows_1252</code>. <code>--validate</code> is
-back to <strong>zero findings</strong> over this document, and nothing
-was marked <code>\expos</code> to get there.</p></li>
+<code>detail::tables::windows_1252</code>. <code>--validate</code> was
+back to zero findings over this document when #93 closed, and nothing
+was marked <code>\expos</code> to get there. <strong>That no longer
+holds.</strong> On 2026-11-25, <code>make wording-validate</code> with
+the pinned specgen (<code>b79ff35</code>) reports 86 errors:</p>
+<ul>
+<li>81 are the namespace-qualifier check on <code>whatwg::</code> names
+in descriptions, item declarations and the synopsis. They go away once
+the <code>whatwg</code> and <code>views</code> namespaces are marked
+<code>\specified</code> (<a
+href="https://github.com/steve-downey/specgen/issues/209">specgen#209</a>),
+which needs the pin moved past <code>b79ff35</code>.</li>
+<li>4 are <code>detail::</code> names in the
+<code>[transcode.syn]</code> synopsis: <code>decoder_variant</code> and
+<code>encoder_variant</code> (<code>detail/whatwg_dispatch.hpp</code>),
+<code>decode_state_t</code> and <code>encode_state_t</code>
+(<code>detail/whatwg_decode_select.hpp</code>,
+<code>detail/whatwg_encode_select.hpp</code>).</li>
+<li>1 is <code>make_dynamic_encoder</code>, declared in the synopsis and
+not described.</li>
+</ul>
+<p>The last five are transcode markup to fix.</p></li>
 <li><p><del><strong>specgen#94 — <code>--new-root</code> takes one
 name.</strong></del> <strong>Closed and adopted.</strong> The flag
 repeats now, so <code>generate.sh</code> renders with
@@ -589,22 +607,23 @@ a Constant/Meaning table -- [fs.enum.file.type]'s shape, which is what
 an enumeration's meanings look like in the draft. The <code>\item</code>
 list they used while the two-dimensional table was the only one is
 gone.</p></li>
-<li><p><strong>specgen#89 — every generated clause heading warns at
-paper-build time.</strong> An mpark warning, not a specgen finding:
-<code>stable name &lt;x&gt; not found</code>, once per clause. It is
-what a stable name that is not in the draft yet looks like, so it is one
-per clause the phase adds -- seventeen by Step 10.</p>
-<p><strong>Worked around downstream in Step 10, and still open
-upstream.</strong> The warning was the visible half; the other half is
-that mpark emits a link anyway, so every clause heading and every
-cross-reference in the published paper pointed at a
-<code>c++draft</code> page that does not exist. <code>generate.sh</code>
-now drops the <code>.sref</code> class from names under this paper's own
-two stable-name roots, after rendering and before the fragments are
-committed, which leaves <code>[transcode.iconv]</code> -- what the draft
-itself prints. It is keyed on the roots on purpose: a citation of a
-clause that <em>is</em> in the draft keeps its <code>.sref</code> and
-still resolves.</p>
+<li><p><del><strong>specgen#89 — every generated clause heading warns at
+paper-build time.</strong></del> <strong>Closed and adopted</strong>
+(specgen#89 closed 2026-09-09, #94 on 2026-09-10). An mpark warning, not
+a specgen finding: <code>stable name &lt;x&gt; not found</code>, once
+per clause. It is what a stable name that is not in the draft yet looks
+like, so it is one per clause the phase adds -- seventeen by Step
+10.</p>
+<p><strong>First worked around downstream in Step 10.</strong> The
+warning was the visible half; the other half is that mpark emits a link
+anyway, so every clause heading and every cross-reference in the
+published paper pointed at a <code>c++draft</code> page that does not
+exist. <code>generate.sh</code> now drops the <code>.sref</code> class
+from names under this paper's own two stable-name roots, after rendering
+and before the fragments are committed, which leaves
+<code>[transcode.iconv]</code> -- what the draft itself prints. It is
+keyed on the roots on purpose: a citation of a clause that <em>is</em>
+in the draft keeps its <code>.sref</code> and still resolves.</p>
 <p>Filed as <a
 href="https://github.com/steve-downey/specgen/issues/89">specgen#89</a>
 and fixed upstream as <code>render --new-root</code>, which needed a
@@ -613,6 +632,28 @@ href="https://github.com/steve-downey/specgen/issues/94">#94</a>) before
 it could take both of this paper's roots. <strong>The <code>sed</code>
 is gone</strong>; <code>generate.sh</code> passes the roots instead. The
 build is warning-free either way.</p></li>
+<li><p><strong><a
+href="https://github.com/steve-downey/specgen/issues/432">specgen#432</a>
+— description spans are renamed to exposition-only names they do not
+name.</strong> Filed 2026-11-23 against specgen <code>fbacede</code>,
+the candidate for the next pin. Its new rewrite of backticked spans
+double-wraps a span the author already wrote as <code>$iterator$</code>
+(giving <code>$$iterator$$</code>), matches a qualified name
+(<code>whatwg::decoder&lt;E&gt;</code> becomes
+<code>whatwg::$decoder$&lt;E&gt;</code>, because
+<code>dynamic_decoder</code> has an exposition-only
+<code>decoder_</code>), and matches a call (<code>end()</code> becomes
+<code>$end$()</code>, because the iterator has an <code>end_</code>).
+Blocks moving <code>papers/wording/specgen-ref</code>.</p></li>
+<li><p><strong><a
+href="https://github.com/steve-downey/specgen/issues/433">specgen#433</a>
+— a fenced header synopsis emits undocumented out-of-line
+definitions.</strong> Filed 2026-11-23 against <code>fbacede</code>. The
+<code>[transcode.syn]</code> fragment gains a stray code block holding
+every member of the omitted <code>random_access_decode_view</code> and
+<code>random_access_encode_view</code> and the iconv iterators' private
+constructors, the latter with an empty name. Blocks moving
+<code>specgen-ref</code>.</p></li>
 </ul>
 <h2 id="risks">Risks</h2>
 <ul>
@@ -631,6 +672,6 @@ change under us. The committed fragments plus
 <code>make wording-check</code> make that visible as a diff rather than
 as a silent divergence.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase5-index.md">docs/plans/phase5-index.md</a> at 9fdbc6aee7c1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/plans/phase5-index.md">docs/plans/phase5-index.md</a> at 9143f4d9f598.</footer>
 </body>
 </html>

@@ -401,20 +401,22 @@ the same time.</li>
 <h2 id="clause-heading-level">clause-heading-level</h2>
 <p><strong>Question:</strong> At what heading level do the generated
 clauses render, relative to the paper's own sections?
-<strong>Status:</strong> DECIDED 2026-09-08 — accepted as-is, upstream
-fix wanted <strong>Decided by:</strong> Step 10.
-<strong>Decision:</strong> Flat. The clauses come out at
+<strong>Status:</strong> DECIDED 2026-09-08 — accepted as-is;
+revisitable, since the flag now exists <strong>Decided by:</strong> Step
+10. <strong>Decision:</strong> Flat. The clauses come out at
 <code>##</code>, which is the level the paper's own sections use, so
 they are siblings of "Design" rather than children of the "Wording"
-heading that introduces them. <strong>Why:</strong> specgen's
-<code>base_heading_level</code> is fixed at 2 and not reachable from the
-command line (specgen#97). With <code>toc-depth: 2</code> the contents
-read as a clause list under the Wording heading, which is close enough
-to right that spending a cross-repository dependency on it was not worth
-it. A nested rendering needs the flag <em>and</em>
-<code>toc-depth: 3</code>. <strong>Why it is not just a defect
-entry:</strong> the accept is the decision; the flag is the thing that
-would let it be revisited. <strong>Log:</strong></p>
+heading that introduces them. <strong>Why:</strong> When this was
+decided, specgen's <code>base_heading_level</code> was fixed at 2 and
+not reachable from the command line (specgen#97). With
+<code>toc-depth: 2</code> the contents read as a clause list under the
+Wording heading, which is close enough to right that spending a
+cross-repository dependency on it was not worth it. A nested rendering
+needs <code>--base-heading-level 3</code> on the mpark
+<code>render</code> in <code>papers/wording/generate.sh</code>
+<em>and</em> <code>toc-depth: 3</code>. <strong>Why it is not just a
+defect entry:</strong> the accept is the decision; the flag is the thing
+that would let it be revisited. <strong>Log:</strong></p>
 <ul>
 <li>2026-09-03 — Measured: the option exists in all three backends'
 <code>Options</code> structs and the CLI passes <code>paper_mode</code>
@@ -425,7 +427,15 @@ pending.</li>
 tracked here from the first measuring round without ever reaching
 specgen's tracker, which is why it was the one dependency in the index
 citing no issue number.</li>
+<li>2026-11-25 — specgen#97 was closed the day it was filed, by specgen
+<code>14be9d0</code> ("Reach the backends' base level from the command
+line"), which is an ancestor of the pinned revision.
+<code>--base-heading-level</code> has therefore been available to
+<code>generate.sh</code> all along; the org backend already passes
+<code>--base-heading-level 2</code>. Nothing here changes the decision:
+the clauses stay flat until someone chooses to nest them, and that is
+now a two-line change rather than an upstream dependency.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/decisions.md">docs/decisions.md</a> at 9fdbc6aee7c1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/decisions.md">docs/decisions.md</a> at 9143f4d9f598.</footer>
 </body>
 </html>

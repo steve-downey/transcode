@@ -86,8 +86,8 @@ with no declarations under it renders as a bare heading (observed in
 Step 1). The umbrella, and <code>[transcode.general]</code>, are
 authored in the paper around the generated clauses.</li>
 </ul>
-<p>Heading level follows from mpark's fixed
-<code>base_heading_level = 2</code> (<a
+<p>Heading level follows from the mpark render's default base heading
+level of 2, which <code>generate.sh</code> leaves alone (<a
 href="decisions.html#clause-heading-level">clause-heading-level</a>):
 <code>\rSec2</code> prints as <code>##</code>, <code>\rSec3</code> as
 <code>###</code>.</p>
@@ -562,16 +562,18 @@ headers entirely. Nothing left to decide.</li>
 <code>const_sentinel_compatible_range</code> constrain every
 <code>begin() const</code> and <code>end() const</code>, so they are
 genuinely part of what the specification says. They are
-<strong>exposition-only in the wording</strong>, but they cannot be
-rendered that way yet: <code>\expos</code> works on a concept (verified)
-and not on the alias template and class template the concept is defined
-in terms of (specgen#23). They therefore stay in
-<code>detail/range_traits.hpp</code> for now, and <strong>Step 6
-chooses</strong> between restating the concept in the specification
-header without helper aliases so a single <code>\expos</code> covers it,
-and waiting for specgen#23. Whichever it picks, the constraint is
-authored <code>\constraints</code> prose on the affected members rather
-than derived from the requires-clause.</li>
+<strong>exposition-only in the wording</strong>, and render that way.
+When this outline was written, <code>\expos</code> worked on a concept
+but not on the alias template and class template the concept is defined
+in terms of (specgen#23), and Step 6 was to choose between restating the
+concepts without helper aliases and waiting for the fix. Neither was
+needed: specgen#23 closed on 2026-09-05, and <code>1c24ca66</code>
+marked both concepts <code>\expos</code> where they stand in
+<code>detail/range_traits.hpp</code>. The wording names them as
+<code>$const-iterator-compatible-range$</code> and
+<code>$const-sentinel-compatible-range$</code>; the helper aliases never
+appear in it. The <em>Constraints</em> element on each affected member
+is derived from its requires-clause, not authored.</li>
 </ul>
 <h2 id="decisions-this-outline-settles">Decisions this outline
 settles</h2>
@@ -638,6 +640,6 @@ perform. A single enumeration would have to either drop the distinction
 or carry both sets, and the second is two vocabularies with one name.
 See <code>docs/p2728-alignment.md</code>.</li>
 </ul>
-<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/wording-outline.md">docs/wording-outline.md</a> at 9fdbc6aee7c1.</footer>
+<footer class="site-footer">Rendered from <a href="https://github.com/steve-downey/transcode/blob/main/docs/wording-outline.md">docs/wording-outline.md</a> at 9143f4d9f598.</footer>
 </body>
 </html>
