@@ -283,6 +283,14 @@ fragment.
   - 1 is `make_dynamic_encoder`, declared in the synopsis and not described.
 
   The last five are transcode markup to fix.
+
+  **Back at zero on 2026-11-27.**  The four `detail::` types are marked
+  `\expos` and described in their classes' *Remarks* ([#175](https://github.com/steve-downey/transcode/pull/175)).  The
+  pin moved to specgen `bdd04d9` and both namespaces are marked `\specified`
+  ([#176](https://github.com/steve-downey/transcode/pull/176)), which cleared the 81 qualifier findings.  The
+  `make_dynamic_encoder` finding was a specgen defect, not markup:
+  [specgen#441](https://github.com/steve-downey/specgen/issues/441), fixed
+  in the same pin.
 - ~~**specgen#94 — `--new-root` takes one name.**~~  **Closed and adopted.**
   The flag repeats now, so `generate.sh` renders with `--new-root transcode
   --new-root null.term` and the `sed` that stripped the `.sref` class is gone.
@@ -318,21 +326,39 @@ fragment.
   ([#94](https://github.com/steve-downey/specgen/issues/94)) before it could
   take both of this paper's roots.  **The `sed` is gone**; `generate.sh` passes
   the roots instead.  The build is warning-free either way.
-- **[specgen#432](https://github.com/steve-downey/specgen/issues/432) —
-  description spans are renamed to exposition-only names they do not name.**
+- ~~**[specgen#432](https://github.com/steve-downey/specgen/issues/432) —
+  description spans are renamed to exposition-only names they do not name.**~~
+  **Closed and adopted** (closed 2026-11-24; pinned at `bdd04d9`).
   Filed 2026-11-23 against specgen `fbacede`, the candidate for the next pin.
   Its new rewrite of backticked spans double-wraps a span the author already
   wrote as `$iterator$` (giving `$$iterator$$`), matches a qualified name
   (`whatwg::decoder<E>` becomes `whatwg::$decoder$<E>`, because
   `dynamic_decoder` has an exposition-only `decoder_`), and matches a call
-  (`end()` becomes `$end$()`, because the iterator has an `end_`).  Blocks
-  moving `papers/wording/specgen-ref`.
-- **[specgen#433](https://github.com/steve-downey/specgen/issues/433) — a
-  fenced header synopsis emits undocumented out-of-line definitions.**  Filed
+  (`end()` becomes `$end$()`, because the iterator has an `end_`).  It
+  blocked moving `papers/wording/specgen-ref`.
+- ~~**[specgen#433](https://github.com/steve-downey/specgen/issues/433) — a
+  fenced header synopsis emits undocumented out-of-line definitions.**~~
+  **Closed and adopted** (closed 2026-11-24; pinned at `bdd04d9`).  Filed
   2026-11-23 against `fbacede`.  The `[transcode.syn]` fragment gains a stray
   code block holding every member of the omitted `random_access_decode_view`
   and `random_access_encode_view` and the iconv iterators' private
-  constructors, the latter with an empty name.  Blocks moving `specgen-ref`.
+  constructors, the latter with an empty name.  It blocked moving
+  `specgen-ref`.
+- ~~**[specgen#441](https://github.com/steve-downey/specgen/issues/441) — a
+  function redeclared as a friend is keyed to the friend.**~~  **Closed and
+  adopted** (closed 2026-11-27; pinned at `bdd04d9`).  Filed 2026-11-24.
+  `whatwg::make_dynamic_encoder` is declared at namespace scope and befriended
+  by `dynamic_encoder`.  Its item rendered with `friend`, the namespace-scope
+  declaration was missing from the `[transcode.syn]` synopsis, and
+  `--validate` reported it as undescribed.  An `\omit` on the friend
+  declaration did not help.
+- **[specgen#446](https://github.com/steve-downey/specgen/issues/446) — item
+  declarations wrapped at 120 columns are clipped in the PDF.**  Filed
+  2026-11-26 against `bdd04d9`, the current pin.  specgen wraps item
+  declarations at 120 columns, while the mpark/wg21 PDF shows about 100 and
+  does not wrap.  `text_decoder` in `[transcode.codec.reqs]` stops at
+  `const unsigned c`, and LaTeX reports no overfull box.  The HTML scrolls
+  and is complete.  Regenerate when it lands.
 
 
 ## Risks
