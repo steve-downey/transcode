@@ -12,7 +12,7 @@ constexpr const R& base() const& noexcept;
 constexpr R base() &&;
 ```
 
-[#]{.pnum} *Returns*: `move($base$)`.
+[#]{.pnum} *Returns*: `std::move($base$)`.
 
 [#]{.pnum} *Remarks*: `decode_view<Codec, R, E>` presents the bytes of `R` as the Unicode scalar values `Codec` decodes them to, and decodes lazily.  When `E` is `error_mode::replacement`, its value type is `char32_t` and a decoding error yields U+FFFD.  When `E` is `error_mode::report`, its value type is `expected<char32_t, whatwg::error>` and a decoding error yields an element holding the error.  The view does not validate a successful `code_point`; the program-supplied `Codec` is responsible for returning Unicode scalar values as required by `text_decoder`.
 
@@ -66,13 +66,15 @@ constexpr default_sentinel_t end() const;
 [#]{.pnum} *Returns*: `default_sentinel`.
 
 ```cpp
-template<text_decoder Codec> constexpr $see below$ decode(Codec codec = {});
+template<text_decoder Codec>
+  constexpr $see below$ decode(Codec codec = {});
 ```
 
 [#]{.pnum} *Returns*: A range adaptor object over `codec`.  Given a subexpression `E` that models `legacy_byte_range`, `decode(codec)(E)` and `E | decode(codec)` are each expression-equivalent to a `decode_view<Codec, views::all_t<decltype((E))>>` over `E` and a copy of `codec`.  An `E` of array type is ill-formed.
 
 ```cpp
-template<text_decoder Codec> constexpr $see below$ decode_or_error(Codec codec = {});
+template<text_decoder Codec>
+  constexpr $see below$ decode_or_error(Codec codec = {});
 ```
 
 [#]{.pnum} *Returns*: `decode(codec)` with `error_mode::report`: the view it adapts to has value type `expected<char32_t, whatwg::error>`, and a decoding error is the error rather than U+FFFD.
@@ -80,7 +82,7 @@ template<text_decoder Codec> constexpr $see below$ decode_or_error(Codec codec =
 ### Class `decode_view::iterator` [transcode.codec.decode.iterator] {-}
 
 ```cpp
-constexpr iterator(base_iter current, base_sent end, Codec codec);
+constexpr $iterator$(base_iter current, base_sent end, Codec codec);
 ```
 
 [#]{.pnum} *Effects*: Initializes `$current$` with `std::move(current)`, `$end$` with `std::move(end)` and the iterator's own copy of the codec with `codec`, then decodes the first element.  When `Codec` models `bom_aware_text_decoder` and `current != end`, that element is decoded by `decode_first`, and, if its result has `is_empty`, decoding goes on as `operator++` does.

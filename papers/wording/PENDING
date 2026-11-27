@@ -15,6 +15,3 @@
 # This does not defer correctness, only the staleness report.
 # `make wording-check` regenerates and diffs, and ignores this file entirely,
 # so a paper revision still cannot go out against stale wording.
-include/beman/transcode/whatwg/decoder.hpp
-include/beman/transcode/whatwg/dynamic_codec.hpp
-include/beman/transcode/whatwg/encoder.hpp

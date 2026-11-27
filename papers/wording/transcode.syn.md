@@ -19,16 +19,18 @@ namespace std {
     report,
   };
 
-  // @[transcode.errors]@, error types
+  namespace whatwg {
+    // @[transcode.errors]@, error types
 
-  enum class error {
-    invalid_byte,
-    truncated_sequence,
-    overlong_encoding,
-    surrogate_code_point,
-    out_of_range,
-    unmapped_codepoint,
-  };
+    enum class error {
+      invalid_byte,
+      truncated_sequence,
+      overlong_encoding,
+      surrogate_code_point,
+      out_of_range,
+      unmapped_codepoint,
+    };
+  }
 
   // @[transcode.reqs]@, range requirements
 
@@ -46,60 +48,62 @@ namespace std {
       ranges::input_range<R> && !is_array_v<remove_cvref_t<R>> &&
       same_as<remove_cv_t<ranges::range_value_t<R>>, char32_t>;
 
-  // @[transcode.whatwg.encoding]@, encodings
+  namespace whatwg {
+    // @[transcode.whatwg.encoding]@, encodings
 
-  enum class encoding {
-    utf_8,
-    replacement,
-    x_user_defined,
-    ibm866,
-    iso_8859_2,
-    iso_8859_3,
-    iso_8859_4,
-    iso_8859_5,
-    iso_8859_6,
-    iso_8859_7,
-    iso_8859_8,
-    iso_8859_8_i,
-    iso_8859_10,
-    iso_8859_13,
-    iso_8859_14,
-    iso_8859_15,
-    iso_8859_16,
-    koi8_r,
-    koi8_u,
-    macintosh,
-    windows_874,
-    windows_1250,
-    windows_1251,
-    windows_1252,
-    windows_1253,
-    windows_1254,
-    windows_1255,
-    windows_1256,
-    windows_1257,
-    windows_1258,
-    x_mac_cyrillic,
-    utf_16be,
-    utf_16le,
-    gbk,
-    gb18030,
-    big5,
-    shift_jis,
-    euc_jp,
-    iso_2022_jp,
-    euc_kr,
-  };
+    enum class encoding {
+      utf_8,
+      replacement,
+      x_user_defined,
+      ibm866,
+      iso_8859_2,
+      iso_8859_3,
+      iso_8859_4,
+      iso_8859_5,
+      iso_8859_6,
+      iso_8859_7,
+      iso_8859_8,
+      iso_8859_8_i,
+      iso_8859_10,
+      iso_8859_13,
+      iso_8859_14,
+      iso_8859_15,
+      iso_8859_16,
+      koi8_r,
+      koi8_u,
+      macintosh,
+      windows_874,
+      windows_1250,
+      windows_1251,
+      windows_1252,
+      windows_1253,
+      windows_1254,
+      windows_1255,
+      windows_1256,
+      windows_1257,
+      windows_1258,
+      x_mac_cyrillic,
+      utf_16be,
+      utf_16le,
+      gbk,
+      gb18030,
+      big5,
+      shift_jis,
+      euc_jp,
+      iso_2022_jp,
+      euc_kr,
+    };
 
-  // @[transcode.whatwg.label]@, label lookup
+    // @[transcode.whatwg.label]@, label lookup
 
-  constexpr optional<encoding> get_encoding(string_view label) noexcept;
+    constexpr optional<encoding> get_encoding(string_view label) noexcept;
 
-  // @[transcode.whatwg.label]@, label lookup
+    // @[transcode.whatwg.label]@, label lookup
 
-  constexpr optional<encoding> get_encoding(text_encoding::id id) noexcept;
+    constexpr optional<encoding> get_encoding(text_encoding::id id) noexcept;
 
-  constexpr optional<text_encoding::id> to_text_encoding_id(encoding e) noexcept;
+    constexpr optional<text_encoding::id> to_text_encoding_id(encoding e) noexcept;
+  }
 
   // @[transcode.codec.reqs]@, codec requirements
 
@@ -158,95 +162,93 @@ namespace std {
     { c.flush() } -> same_as<optional<encode_result>>;
   };
 
-  // @[transcode.whatwg.decoders]@, decoders
+  namespace whatwg {
+    // @[transcode.whatwg.decoders]@, decoders
 
-  template<encoding C>
-  class decoder {
-    [[no_unique_address]] detail::decode_state_t<C> $state${}; // exposition only
+    template<encoding C>
+    class decoder {
+      [[no_unique_address]] $decode-state-t$<C> $state${}; // exposition only
 
-  public:
-    // @[transcode.whatwg.decoders]@, decoding
-    template<input_iterator I, sentinel_for<I> S>
-    constexpr decode_result decode_one(I& current, S end);
+    public:
+      // @[transcode.whatwg.decoders]@, decoding
+      template<input_iterator I, sentinel_for<I> S>
+      constexpr decode_result decode_one(I& current, S end);
 
-    template<input_iterator I, sentinel_for<I> S>
-    constexpr decode_result decode_first(I& current, S end)
-      requires $strips-leading-bom$<C>;
+      template<input_iterator I, sentinel_for<I> S>
+      constexpr decode_result decode_first(I& current, S end);
 
-    constexpr char32_t decode_byte(unsigned char byte) const
-      requires $random-access-decode-codec$<C>;
+      constexpr char32_t decode_byte(unsigned char byte) const;
 
-    constexpr optional<decode_result> flush()
-      requires $has-decode-state$<C>;
+      constexpr optional<decode_result> flush();
 
-    friend constexpr bool operator==(const decoder&, const decoder&) = default;
-  };
+      friend constexpr bool operator==(const decoder&, const decoder&) = default;
+    };
 
-  // @[transcode.whatwg.encoders]@, encoders
+    // @[transcode.whatwg.encoders]@, encoders
 
-  template<encoding C>
-    requires $whatwg-encode-codec$<C>
-  class encoder {
-    [[no_unique_address]] detail::encode_state_t<C> $state${}; // exposition only
+    template<encoding C>
+      requires $whatwg-encode-codec$<C>
+    class encoder {
+      [[no_unique_address]] $encode-state-t$<C> $state${}; // exposition only
 
-  public:
-    // @[transcode.whatwg.encoders]@, encoding
-    constexpr encode_result encode_one(char32_t scalar);
+    public:
+      // @[transcode.whatwg.encoders]@, encoding
+      constexpr encode_result encode_one(char32_t scalar);
 
-    constexpr optional<unsigned char> encode_byte(char32_t scalar) const
-      requires $random-access-encode-codec$<C>;
+      constexpr optional<unsigned char> encode_byte(char32_t scalar) const;
 
-    constexpr optional<encode_result> flush()
-      requires(C == encoding::iso_2022_jp);
+      constexpr optional<encode_result> flush();
 
-    friend constexpr bool operator==(const encoder&, const encoder&) = default;
-  };
+      friend constexpr bool operator==(const encoder&, const encoder&) = default;
+    };
 
-  // @[transcode.whatwg.dynamic]@, codecs for an encoding chosen at run time
+    // @[transcode.whatwg.dynamic]@, codecs for an encoding chosen at run time
 
-  class dynamic_decoder {
-    detail::decoder_variant $decoder$; // exposition only
+    class dynamic_decoder {
+      $decoder-variant$ $decoder$; // exposition only
 
-  public:
-    // @[transcode.whatwg.dynamic]@, construction
-    constexpr dynamic_decoder() noexcept;
-    constexpr explicit dynamic_decoder(whatwg::encoding e);
+    public:
+      // @[transcode.whatwg.dynamic]@, construction
+      constexpr dynamic_decoder() noexcept;
+      constexpr explicit dynamic_decoder(whatwg::encoding e);
 
-    constexpr whatwg::encoding encoding() const noexcept;
+      constexpr whatwg::encoding encoding() const noexcept;
 
-    // @[transcode.whatwg.dynamic]@, decoding
-    template<input_iterator I, sentinel_for<I> S>
-    constexpr decode_result decode_one(I& current, S end);
+      // @[transcode.whatwg.dynamic]@, decoding
+      template<input_iterator I, sentinel_for<I> S>
+      constexpr decode_result decode_one(I& current, S end);
 
-    template<input_iterator I, sentinel_for<I> S>
-    constexpr decode_result decode_first(I& current, S end);
+      template<input_iterator I, sentinel_for<I> S>
+      constexpr decode_result decode_first(I& current, S end);
 
-    constexpr optional<decode_result> flush();
+      constexpr optional<decode_result> flush();
 
-    friend constexpr bool operator==(const dynamic_decoder&,
-                                     const dynamic_decoder&) = default;
-  };
+      friend constexpr bool operator==(const dynamic_decoder&,
+                                       const dynamic_decoder&) = default;
+    };
 
-  class dynamic_encoder {
-    detail::encoder_variant $encoder$; // exposition only
+    class dynamic_encoder {
+      $encoder-variant$ $encoder$; // exposition only
 
-  public:
-    // @[transcode.whatwg.dynamic]@, construction
-    constexpr dynamic_encoder() noexcept;
-    friend constexpr optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e);
+    public:
+      // @[transcode.whatwg.dynamic]@, construction
+      constexpr dynamic_encoder() noexcept;
 
-    constexpr whatwg::encoding encoding() const noexcept;
+      constexpr whatwg::encoding encoding() const noexcept;
 
-    // @[transcode.whatwg.dynamic]@, encoding
-    constexpr encode_result encode_one(char32_t scalar);
+      // @[transcode.whatwg.dynamic]@, encoding
+      constexpr encode_result encode_one(char32_t scalar);
 
-    constexpr optional<encode_result> flush();
+      constexpr optional<encode_result> flush();
 
-    friend constexpr bool operator==(const dynamic_encoder&,
-                                     const dynamic_encoder&) = default;
-  };
+      friend constexpr bool operator==(const dynamic_encoder&,
+                                       const dynamic_encoder&) = default;
+    };
 
-  // @[transcode.whatwg.dynamic]@, creating an encoder for an encoding chosen at run time
+    // @[transcode.whatwg.dynamic]@, creating an encoder for an encoding chosen at run time
+
+    constexpr optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e);
+  }
 
   // @[transcode.codec.decode]@, class template decode_view
 
@@ -267,13 +269,9 @@ namespace std {
     constexpr R base() &&;
 
     constexpr $iterator$ begin();
-    constexpr $iterator$ begin() const
-      requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-    constexpr $iterator$ end()
-      requires ranges::forward_range<R> && ranges::common_range<R>;
-    constexpr $iterator$ end() const
-      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
-               $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
+    constexpr $iterator$ begin() const;
+    constexpr $iterator$ end();
+    constexpr $iterator$ end() const;
     constexpr default_sentinel_t end() const;
   };
 
@@ -307,13 +305,9 @@ namespace std {
     constexpr R base() &&;
 
     constexpr $iterator$ begin();
-    constexpr $iterator$ begin() const
-      requires $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
-    constexpr $iterator$ end()
-      requires ranges::forward_range<R> && ranges::common_range<R>;
-    constexpr $iterator$ end() const
-      requires ranges::forward_range<const R> && ranges::common_range<const R> &&
-               $const-iterator-compatible-range$<R> && $const-sentinel-compatible-range$<R>;
+    constexpr $iterator$ begin() const;
+    constexpr $iterator$ end();
+    constexpr $iterator$ end() const;
     constexpr default_sentinel_t end() const;
   };
 
@@ -328,78 +322,82 @@ namespace std {
         borrowed_range<R>;
   }
 
-  // @[transcode.whatwg.decode]@, decoding adaptors
+  namespace whatwg {
+    // @[transcode.whatwg.decode]@, decoding adaptors
 
-  template<whatwg::encoding C> inline constexpr $unspecified$ decode;
+    template<whatwg::encoding C> inline constexpr $unspecified$ decode;
 
-  template<whatwg::encoding C> inline constexpr $unspecified$ decode_or_error;
+    template<whatwg::encoding C> inline constexpr $unspecified$ decode_or_error;
 
-  // @[transcode.whatwg.encode]@, encoding adaptors
+    // @[transcode.whatwg.encode]@, encoding adaptors
 
-  template<whatwg::encoding C> inline constexpr $unspecified$ encode;
+    template<whatwg::encoding C> inline constexpr $unspecified$ encode;
 
-  template<whatwg::encoding C> inline constexpr $unspecified$ encode_or_error;
+    template<whatwg::encoding C> inline constexpr $unspecified$ encode_or_error;
+  }
 
   // @[transcode.pipeline]@, transcoding pipelines
 
   template<text_decoder From, text_encoder To>
   constexpr auto transcode(From from, To to);
 
-  // @[transcode.pipeline]@, transcoding pipelines
+  namespace whatwg {
+    // @[transcode.pipeline]@, transcoding pipelines
 
-  template<encoding From, encoding To> inline constexpr $unspecified$ transcode;
+    template<encoding From, encoding To> inline constexpr $unspecified$ transcode;
 
-  // @[transcode.string]@, eager transcoding
+    // @[transcode.string]@, eager transcoding
 
-  constexpr bool has_encoder(whatwg::encoding encoding) noexcept;
+    constexpr bool has_encoder(whatwg::encoding encoding) noexcept;
 
-  optional<string> transcode_string(span<const char> src, whatwg::encoding from,
-                                    whatwg::encoding to);
+    optional<string> transcode_string(span<const char> src, whatwg::encoding from,
+                                      whatwg::encoding to);
 
-  optional<string> transcode_string(span<const char> src, string_view from_label,
-                                    string_view to_label);
+    optional<string> transcode_string(span<const char> src, string_view from_label,
+                                      string_view to_label);
 
-  // @[transcode.bulk]@, eager bulk conversion
+    // @[transcode.bulk]@, eager bulk conversion
 
-  template<encoding C, legacy_byte_range R>
-  constexpr vector<char32_t> decode_to(R&& source);
+    template<encoding C, legacy_byte_range R>
+    constexpr vector<char32_t> decode_to(R&& source);
 
-  template<encoding C, typename Container = string, unicode_scalar_range R>
-  constexpr Container encode_to(R&& source);
+    template<encoding C, typename Container = string, unicode_scalar_range R>
+    constexpr Container encode_to(R&& source);
 
-  template<encoding C, legacy_byte_range R, output_iterator<char32_t> Output>
-  constexpr void decode_into(R&& source, Output output);
+    template<encoding C, legacy_byte_range R, output_iterator<char32_t> Output>
+    constexpr void decode_into(R&& source, Output output);
 
-  template<encoding C, unicode_scalar_range R, output_iterator<char> Output>
-  constexpr void encode_into(R&& source, Output output);
+    template<encoding C, unicode_scalar_range R, output_iterator<char> Output>
+    constexpr void encode_into(R&& source, Output output);
 
-  // @[transcode.bulk]@, with the encoding chosen at run time
+    // @[transcode.bulk]@, with the encoding chosen at run time
 
-  template<legacy_byte_range R>
-  constexpr vector<char32_t> decode_to(R&& source, encoding e);
+    template<legacy_byte_range R>
+    constexpr vector<char32_t> decode_to(R&& source, encoding e);
 
-  template<legacy_byte_range R>
-  constexpr optional<vector<char32_t>> decode_to(R&& source, string_view label);
+    template<legacy_byte_range R>
+    constexpr optional<vector<char32_t>> decode_to(R&& source, string_view label);
 
-  template<typename Container = string, unicode_scalar_range R>
-  constexpr optional<Container> encode_to(R&& source, encoding e);
+    template<typename Container = string, unicode_scalar_range R>
+    constexpr optional<Container> encode_to(R&& source, encoding e);
 
-  template<typename Container = string, unicode_scalar_range R>
-  constexpr optional<Container> encode_to(R&& source, string_view label);
+    template<typename Container = string, unicode_scalar_range R>
+    constexpr optional<Container> encode_to(R&& source, string_view label);
 
-  template<legacy_byte_range R, output_iterator<char32_t> Output>
-  constexpr void decode_into(R&& source, encoding e, Output output);
+    template<legacy_byte_range R, output_iterator<char32_t> Output>
+    constexpr void decode_into(R&& source, encoding e, Output output);
 
-  template<unicode_scalar_range R, output_iterator<char> Output>
-  constexpr bool encode_into(R&& source, encoding e, Output output);
+    template<unicode_scalar_range R, output_iterator<char> Output>
+    constexpr bool encode_into(R&& source, encoding e, Output output);
 
-  // @[transcode.bulk]@, or the first error
+    // @[transcode.bulk]@, or the first error
 
-  template<encoding C, legacy_byte_range R>
-  constexpr expected<vector<char32_t>, error> decode_to_or_error(R&& source);
+    template<encoding C, legacy_byte_range R>
+    constexpr expected<vector<char32_t>, error> decode_to_or_error(R&& source);
 
-  template<encoding C, typename Container = string, unicode_scalar_range R>
-  constexpr expected<Container, error> encode_to_or_error(R&& source);
+    template<encoding C, typename Container = string, unicode_scalar_range R>
+    constexpr expected<Container, error> encode_to_or_error(R&& source);
+  }
 
   // @[transcode.bulk]@, eager bulk conversion
 
@@ -425,11 +423,12 @@ namespace std {
   constexpr expected<Container, whatwg::error> encode_to_or_error(R&& source,
                                                                   Codec codec);
 
-  // @[transcode.whatwg.sniff]@, byte order mark sniffing
+  namespace whatwg {
+    // @[transcode.whatwg.sniff]@, byte order mark sniffing
 
-  template<legacy_byte_range R>
-    requires ranges::forward_range<R>
-  constexpr optional<encoding> bom_sniff(R&& r) noexcept;
+    template<legacy_byte_range R>
+    constexpr optional<encoding> bom_sniff(R&& r) noexcept;
+  }
 
   // @[transcode.iconv]@, iconv adaptors
 
