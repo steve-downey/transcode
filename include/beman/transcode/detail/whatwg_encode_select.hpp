@@ -59,6 +59,9 @@ struct encode_state_of<whatwg::encoding::iso_2022_jp> {
     using type = iso2022jp_encode_state;
 };
 
+// The member type of whatwg::encoder<C>'s state; described in that class's
+// remarks.
+//! \expos
 template <whatwg::encoding C>
 using encode_state_t = encode_state_of<C>::type;
 

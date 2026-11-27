@@ -39,7 +39,10 @@ namespace beman::transcoding::whatwg {
 //! `whatwg::encode<C>` does.  It models `flushable_text_encoder` when `C` is
 //! `encoding::iso_2022_jp`, which owes an escape sequence returning to ASCII
 //! after the last scalar value.  It models `single_byte_text_encoder` when
-//! `$random-access-encode-codec$<C>` is `true`.  It is equality comparable.
+//! `$random-access-encode-codec$<C>` is `true`.  `$encode-state-t$<C>` is an
+//! unspecified equality-comparable type holding what the Encoding Standard's
+//! encoder for `C` keeps between scalar values; it is an empty type unless `C`
+//! is `encoding::iso_2022_jp`.  It is equality comparable.
 template <encoding C>
     requires detail::whatwg_encode_codec<C>
 class encoder {

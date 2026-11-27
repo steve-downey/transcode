@@ -31,6 +31,9 @@ namespace beman::transcoding::whatwg {
 //! yields what `whatwg::decode<E>` does.  It does not model
 //! `single_byte_text_decoder`.  It is equality comparable; two objects are
 //! equal if they decode the same encoding and are in the same state.
+//! `$decoder-variant$` is a `variant` with one alternative for each
+//! enumerator of `whatwg::encoding`: the alternative at index `I` is
+//! `whatwg::decoder<static_cast<whatwg::encoding>(I)>`.
 class dynamic_decoder {
     //! \expos
     beman::transcoding::detail::decoder_variant decoder_;
@@ -63,7 +66,12 @@ class dynamic_decoder {
 //! over it \iref{transcode.codec.encode} yields what `whatwg::encode<E>`
 //! does.  It does not model `single_byte_text_encoder`.  It is equality
 //! comparable.  An encoding with no encoder has no `dynamic_encoder`;
-//! `whatwg::make_dynamic_encoder` says which.
+//! `whatwg::make_dynamic_encoder` says which.  `$encoder-variant$` is a
+//! `variant` with one alternative for each enumerator of `whatwg::encoding`:
+//! the alternative at index `I` is
+//! `whatwg::encoder<static_cast<whatwg::encoding>(I)>` when the Encoding
+//! Standard defines an encoder for that encoding, and an unspecified empty
+//! type otherwise.
 class dynamic_encoder {
     //! \expos
     beman::transcoding::detail::encoder_variant encoder_;
@@ -74,6 +82,7 @@ class dynamic_encoder {
   public:
     // \ref{transcode.whatwg.dynamic}, construction
     constexpr dynamic_encoder() noexcept;
+    //! \omit
     friend constexpr std::optional<dynamic_encoder> make_dynamic_encoder(whatwg::encoding e);
 
     constexpr whatwg::encoding encoding() const noexcept;

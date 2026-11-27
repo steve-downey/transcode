@@ -95,6 +95,9 @@ struct decode_state_of<whatwg::encoding::big5> {
     using type = big5_decode_state;
 };
 
+// The member type of whatwg::decoder<C>'s state; described in that class's
+// remarks.
+//! \expos
 template <whatwg::encoding C>
 using decode_state_t = decode_state_of<C>::type;
 

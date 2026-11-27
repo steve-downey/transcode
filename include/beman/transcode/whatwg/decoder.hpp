@@ -44,7 +44,10 @@ namespace beman::transcoding::whatwg {
 //! `utf_16be` or `utf_16le`, `$has-decode-state$<C>` is `true` when `C` is
 //! `utf_16be`, `utf_16le`, `gbk`, `gb18030`, `big5` or `iso_2022_jp`, and
 //! `$random-access-decode-codec$<C>` is `true` when `C` is `x_user_defined`
-//! or one of the Encoding Standard's single-byte encodings.  It is equality
+//! or one of the Encoding Standard's single-byte encodings.
+//! `$decode-state-t$<C>` is an unspecified equality-comparable type holding
+//! what the Encoding Standard's decoder for `C` keeps between bytes; it is an
+//! empty type when `$has-decode-state$<C>` is `false`.  It is equality
 //! comparable.
 template <encoding C>
 class decoder {
