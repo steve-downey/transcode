@@ -82,6 +82,8 @@ The design changed, and the wording is regenerated from the reference implementa
 - *Mandates* and *Constraints* replace "is required to be".
 - The clause headings carry stable names, and an editor's note covers the nested namespaces.
 - `whatwg::decoder<C>::flush` is constrained on the exposition-only `$has-decode-state$<C>`, where the wording had shown a comparison of `detail::` types.
+- The codec objects' exposition-only members are declared with the exposition-only types `$decode-state-t$<C>`, `$encode-state-t$<C>`, `$decoder-variant$` and `$encoder-variant$`, where the wording had shown `detail::` types.
+  The Remarks of [transcode.whatwg.decoders], [transcode.whatwg.encoders] and [transcode.whatwg.dynamic] say what each holds.
 - The normative reference in [intro.refs] names the Encoding Standard's June 2025 Review Draft, a dated document, where R0 named the living standard.
 - The synopsis no longer names the adaptor closure types.
   `decode`, `decode_or_error`, `encode`, `encode_or_error` and `transcode(from, to)` are declared `constexpr auto`, the way `std::ranges::to` is in [range.utility.conv], and their clauses say what they return.
