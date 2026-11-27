@@ -322,16 +322,18 @@ nothing.
 
 **Question:** At what heading level do the generated clauses render, relative to
 the paper's own sections?
-**Status:** DECIDED 2026-09-08 — accepted as-is, upstream fix wanted
+**Status:** DECIDED 2026-09-08 — accepted as-is; revisitable, since the flag now
+exists
 **Decided by:** Step 10.
 **Decision:** Flat. The clauses come out at `##`, which is the level the paper's
 own sections use, so they are siblings of "Design" rather than children of the
 "Wording" heading that introduces them.
-**Why:** specgen's `base_heading_level` is fixed at 2 and not reachable from the
-command line (specgen#97). With `toc-depth: 2` the contents read as a clause
-list under the Wording heading, which is close enough to right that spending a
-cross-repository dependency on it was not worth it. A nested rendering needs the
-flag *and* `toc-depth: 3`.
+**Why:** When this was decided, specgen's `base_heading_level` was fixed at 2
+and not reachable from the command line (specgen#97). With `toc-depth: 2` the
+contents read as a clause list under the Wording heading, which is close enough
+to right that spending a cross-repository dependency on it was not worth it. A
+nested rendering needs `--base-heading-level 3` on the mpark `render` in
+`papers/wording/generate.sh` *and* `toc-depth: 3`.
 **Why it is not just a defect entry:** the accept is the decision; the flag is
 the thing that would let it be revisited.
 **Log:**
@@ -342,3 +344,10 @@ the thing that would let it be revisited.
 - 2026-09-10 — Filed upstream at last as specgen#97. It had been tracked here
   from the first measuring round without ever reaching specgen's tracker, which
   is why it was the one dependency in the index citing no issue number.
+- 2026-11-25 — specgen#97 was closed the day it was filed, by specgen
+  `14be9d0` ("Reach the backends' base level from the command line"), which is
+  an ancestor of the pinned revision. `--base-heading-level` has therefore been
+  available to `generate.sh` all along; the org backend already passes
+  `--base-heading-level 2`. Nothing here changes the decision: the clauses stay
+  flat until someone chooses to nest them, and that is now a two-line change
+  rather than an upstream dependency.
